@@ -35,18 +35,6 @@
     <build>
         <defaultGoal>package</defaultGoal>
 
-        <sourceDirectory>mirai-core/src/main/java</sourceDirectory>
-
-        <resources>
-            <resource>
-                <directory>mirai-core/src/main/resources</directory>
-
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-            </resource>
-        </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

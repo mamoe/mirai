@@ -7,6 +7,8 @@
     <artifactId>mirai-core</artifactId>
     <version>1.0</version>
 
+    <packaging>jar</packaging>
+
     <parent>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai</artifactId>
@@ -15,11 +17,36 @@
     </parent>
 
     <build>
+        <sourceDirectory>/src/main/java</sourceDirectory>
+
+        <resources>
+            <resource>
+                <directory>/src/main/resources</directory>
+
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>net.mamoe.mirai.MiraiMain</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.1</version>
+                <version>2.4.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -29,10 +56,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <artifactSet>
-                        <excludes>
-                        </excludes>
-                    </artifactSet>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <shadedClassifierName>shaded</shadedClassifierName>
                 </configuration>
             </plugin>
         </plugins>
