@@ -16,13 +16,18 @@ public class MiraiServer {
 
     protected MiraiServer(){
         instance = this;
+
         this.onLoad();
+
+        Thread.yield();
+
+        this.onEnable();
     }
 
-    boolean isEnabled;
+    private boolean enabled;
 
     protected void shutdown(){
-        if(this.isEnabled) {
+        if(this.enabled) {
             this.getEventManager().boardcastEvent(new ServerDisableEvent());
         }
     }
@@ -46,8 +51,12 @@ public class MiraiServer {
            this.shutdown();
         }
 
+
+    }
+
+    private void onEnable(){
         this.eventManager.boardcastEvent(new ServerEnableEvent());
-        this.isEnabled = true;
+        this.enabled = true;
     }
 
 
