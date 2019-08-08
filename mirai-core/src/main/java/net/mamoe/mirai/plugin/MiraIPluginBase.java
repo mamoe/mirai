@@ -1,4 +1,4 @@
 package net.mamoe.mirai.plugin;
 
-public class MiralPluginBase {
+public class MiraIPluginBase {
 }

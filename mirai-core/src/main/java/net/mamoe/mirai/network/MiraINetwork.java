@@ -1,4 +1,4 @@
 package net.mamoe.mirai.network;
 
-public class MiralNetwork {
+public class MiraINetwork {
 }
