@@ -11,6 +11,7 @@
 
     <modules>
         <module>mirai-core</module>
+        <module>mirai-native</module>
     </modules>
 
     <repositories>
