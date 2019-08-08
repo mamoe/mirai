@@ -30,7 +30,12 @@ public class MiraiEventManager {
 
     public <D extends MiraiEvent> void registerUntil(MiraiEventHook<D> hook, Predicate<D> toRemove){
         hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
-        hooks.get(hook.getEventClass()).add(hook.setValid(toRemove));
+        hooks.get(hook.getEventClass()).add(hook.setValidUntil(toRemove));
+    }
+
+    public <D extends MiraiEvent> void registerWhile(MiraiEventHook<D> hook, Predicate<D> toKeep){
+        hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
+        hooks.get(hook.getEventClass()).add(hook.setValidWhile(toKeep));
     }
 
     public <D extends MiraiEvent> void registerOnce(MiraiEventHook<D> hook){
@@ -46,6 +51,26 @@ public class MiraiEventManager {
         this.register(hook);
         return hook;
     }
+
+    public <D extends MiraiEvent> MiraiEventHook<D> onEventOnce(Class<D> event){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.registerOnce(hook);
+        return hook;
+    }
+
+    public <D extends MiraiEvent> MiraiEventHook<D> onEventUntil(Class<D> event, Predicate<D> toRemove){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.registerUntil(hook,toRemove);
+        return hook;
+    }
+
+    public <D extends MiraiEvent> MiraiEventHook<D> onEventWhile(Class<D> event, Predicate<D> toKeep){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.registerWhile(hook,toKeep);
+        return hook;
+    }
+
+
 
     public void boardcastEvent(MiraiEvent event){
         hooksLock.lock();

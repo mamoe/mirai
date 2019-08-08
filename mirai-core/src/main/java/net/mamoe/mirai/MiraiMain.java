@@ -14,10 +14,32 @@ public final class MiraiMain {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             server.shutdown();
         }));
-        server.getEventManager().register(
-                new MiraiEventHook<>(ServerDisableEvent.class)
-                .setHandler(a -> System.out.println("close"))
-        );
+        server.getEventManager()
+                .onEvent(ServerDisableEvent.class)
+                .setHandler(a -> {
+                    System.out.println("?");
+                });
+
+        server.getEventManager()
+                .onEventOnce(ServerDisableEvent.class)
+                .setHandler(a -> {
+                    System.out.println("?");
+                });
+
+        server.getEventManager()
+                .onEvent(ServerDisableEvent.class)
+                .setHandler(a -> {
+                    System.out.println("?");
+                })
+                .setValidWhile((a) -> true);
+
+
+        server.getEventManager()
+                .onEvent(ServerDisableEvent.class)
+                .setHandler(a -> {
+                    System.out.println("?");
+                })
+                .setValidUntil((a) -> true);
 
     }
 }

@@ -21,6 +21,9 @@ public class MiraiEventHook<T extends MiraiEvent> {
     @Getter
     private boolean ignoreCancelled = true;
 
+    /**
+     * return true -> this hook need to be removed
+     */
     @Getter
     private Predicate<T> valid;
 
@@ -49,10 +52,19 @@ public class MiraiEventHook<T extends MiraiEvent> {
     }
 
 
-    public MiraiEventHook<T> setValid(Predicate<T> valid) {
+    private MiraiEventHook<T> setValid(Predicate<T> valid) {
         this.valid = valid;
         return this;
     }
+
+    public MiraiEventHook<T> setValidUntil(Predicate<T> valid) {
+        return this.setValid(valid);
+    }
+
+    public MiraiEventHook<T> setValidWhile(Predicate<T> valid) {
+        return this.setValid(valid.negate());
+    }
+
 
     @SuppressWarnings("unchecked")
     public boolean accept(MiraiEvent event) {
