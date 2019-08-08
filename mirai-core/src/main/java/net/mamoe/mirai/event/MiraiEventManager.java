@@ -26,11 +26,11 @@ public class MiraiEventManager {
     }
 
     Lock hooksLock = new ReentrantLock();
-    private Map<Class<? extends MiraiEvent>, List<MiraiEventConsumer<? extends MiraiEvent>>> hooks = new HashMap<>();
+    private Map<Class<? extends MiraiEvent>, List<MiraiEventHook<? extends MiraiEvent>>> hooks = new HashMap<>();
 
     public <D extends MiraiEvent> void registerUntil(MiraiEventHook<D> hook, Predicate<D> toRemove){
         hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
-        hooks.get(hook.getEventClass()).add(new MiraiEventConsumer<>(hook,toRemove));
+        hooks.get(hook.getEventClass()).add(hook.setValid(toRemove));
     }
 
     public <D extends MiraiEvent> void registerOnce(MiraiEventHook<D> hook){
@@ -53,7 +53,7 @@ public class MiraiEventManager {
             hooks.put(event.getClass(),
                     hooks.get(event.getClass())
                     .stream()
-                    .sorted(Comparator.comparingInt(MiraiEventConsumer::getPriority))
+                    .sorted(Comparator.comparingInt(MiraiEventHook::getPriority))
                     .dropWhile(a -> a.accept(event))
                     .collect(Collectors.toList())
             );
@@ -62,23 +62,5 @@ public class MiraiEventManager {
     }
 
 }
-@Data
-@AllArgsConstructor
-class MiraiEventConsumer<T extends MiraiEvent>{
-    private MiraiEventHook<T> hook;
-    private Predicate<T> remove;
 
-
-    public int getPriority(){
-        return hook.getPreferences().getPriority();
-    }
-
-    @SuppressWarnings("unchecked")
-    public boolean accept(MiraiEvent event) {
-        if(!(event instanceof Cancellable && event.isCancelled() && hook.getPreferences().isIgnoreCanceled())){
-            hook.getHandler().accept((T) event);
-        }
-        return remove.test((T)event);
-    }
-}
 

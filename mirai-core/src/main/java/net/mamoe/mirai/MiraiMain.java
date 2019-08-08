@@ -18,5 +18,6 @@ public final class MiraiMain {
                 new MiraiEventHook<>(ServerDisableEvent.class)
                 .setHandler(a -> System.out.println("close"))
         );
+
     }
 }
