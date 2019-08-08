@@ -13,8 +13,8 @@ public abstract class ClientPacket extends DataOutputStream implements Packet {
         super(new ByteArrayOutputStream());
     }
 
-    public long readQQ() {
-
+    protected void writeQQHex(long qq) {
+        this.write
     }
 
     /**
