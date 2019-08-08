@@ -13,9 +13,30 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 
 <br>
 
+## 使用方法
+### 要求
+``` php
+    Java 10 或以上
+    ...
+```
+### 插件开发
+``` php
+    to be continue
+    ...
+```
 
 
-
+## Usage
+### Requirements
+``` php
+    Java 10 or higher
+    ...
+```
+### Plugin Developments
+``` php
+    to be continue
+    ...
+```
 
 
 
