@@ -8,8 +8,8 @@
 <br>
 
 a JAVA powered open-sources project under GPL license<br>
-It use protocols from <i>TIM QQ</i>, meaning it won't be affect by the close of <i>smart QQ</i>
-The project is all for learning propose and still in developing stage<br>
+It use protocols from <i>TIM QQ</i>, meaning it won't be affect by the close of <i>smart QQ</i><br>
+The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
 
 <br>
 
