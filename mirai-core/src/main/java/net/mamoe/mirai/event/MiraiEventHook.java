@@ -1,6 +1,7 @@
 package net.mamoe.mirai.event;
 
 import lombok.Getter;
+import net.mamoe.mirai.event.events.MiraiEvent;
 
 import java.util.function.Consumer;
 

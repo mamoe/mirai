@@ -2,11 +2,12 @@ package net.mamoe.mirai.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import net.mamoe.mirai.event.events.Cancellable;
+import net.mamoe.mirai.event.events.MiraiEvent;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ public class MiraiEventManager {
 
     private static MiraiEventManager instance;
 
-    static MiraiEventManager getInstance(){
+    public static MiraiEventManager getInstance(){
         if(MiraiEventManager.instance == null){
             MiraiEventManager.instance = new MiraiEventManager();
         }
@@ -68,7 +69,7 @@ class MiraiEventConsumer<T extends MiraiEvent>{
 
     @SuppressWarnings("unchecked")
     public boolean accept(MiraiEvent event) {
-        if(!(event instanceof Cancelable && event.isCancelled() && hook.getPreferences().isIgnoreCanceled())){
+        if(!(event instanceof Cancellable && event.isCancelled() && hook.getPreferences().isIgnoreCanceled())){
             hook.getHandler().accept((T) event);
         }
         return remove.test((T)event);

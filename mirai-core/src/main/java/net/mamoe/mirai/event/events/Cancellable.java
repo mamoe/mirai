@@ -1,8 +1,8 @@
-package net.mamoe.mirai.event;
+package net.mamoe.mirai.event.events;
 
 import lombok.Getter;
 
-interface Cancelable {
+public interface Cancellable {
 
 
     boolean isCancelled();
