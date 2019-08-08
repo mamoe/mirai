@@ -41,6 +41,12 @@ public class MiraiEventManager {
         this.registerUntil(hook,(a) -> false);
     }
 
+    public <D extends MiraiEvent> MiraiEventHook<D> onEvent(Class<D> event){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.register(hook);
+        return hook;
+    }
+
     public void boardcastEvent(MiraiEvent event){
         hooksLock.lock();
         if(hooks.containsKey(event.getClass())){
