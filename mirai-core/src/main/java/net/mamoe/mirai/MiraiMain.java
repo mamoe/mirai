@@ -1,5 +1,6 @@
 package net.mamoe.mirai;
 
+
 /**
  * @author Him188moe @ Mirai Project
  */
