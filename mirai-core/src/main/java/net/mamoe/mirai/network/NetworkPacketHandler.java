@@ -4,7 +4,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
 /**
  * 网络数据包接收器. 该类属于网络层, 插件一般不需要使用
@@ -31,7 +30,7 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<byte[]> {
      * Synchronized by {@code synchronized (this)} in {@link #channelRead0}
      */
     private void handlePacket(ChannelHandlerContext ctx, byte[] data) {
-        try {
+        /*try {
             temp = Utils.arrayAppend(temp, data);
             while (temp.length != 0) {
                 int position = Utils.arraySearch(temp, Protocol.SIGNATURE);
@@ -46,7 +45,7 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<byte[]> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     //TODO 改为 public, 并将 ctx 改为插件可扩展的消息源以实现多源化
@@ -54,12 +53,12 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<byte[]> {
         if (data.length == 0) {
             return;
         }
-        processPacket(ctx, new BinaryStream(data));
+        processPacket(ctx, new BinaryStream());
     }
 
     private void processPacket(ChannelHandlerContext ctx, BinaryStream stream) {
         //System.out.println(stream);
-        for (MPQClient client : clients) {
+        /*for (MPQClient client : clients) {
             if (client.is((InetSocketAddress) ctx.channel().remoteAddress())) {
                 client.getFrame().getScheduler().addTask(() -> {
                     try {
@@ -70,7 +69,7 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<byte[]> {
                 });
                 return;
             }
-        }
+        }*/
     }
 
     @Override
@@ -86,6 +85,7 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<byte[]> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
 
+        /*
         FrameConnectionEvent event = null;
         for (MPQClient client : clients) {
             if (client.is((InetSocketAddress) ctx.channel().remoteAddress())) {
@@ -103,13 +103,13 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<byte[]> {
             event = new FrameConnectionEvent(frame);
         }
 
-        event.getFrame().getPluginManager().callEvent(event);
+        event.getFrame().getPluginManager().callEvent(event);*/
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("[Network] RemoteClient: " + ctx.channel().remoteAddress() + " disconnected.");
-
+/*
         for (MPQClient client : clients) {
             if (client.is((InetSocketAddress) ctx.channel().remoteAddress())) {
                 FrameDisconnectionEvent event = new FrameDisconnectionEvent(client.getFrame());
@@ -117,7 +117,7 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<byte[]> {
                 break;
             }
         }
-
+*/
         super.channelInactive(ctx);
     }
 }
