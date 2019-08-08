@@ -53,6 +53,12 @@ public abstract class ClientPacket extends DataOutputStream implements Packet {
         }
     }
 
+    protected void writeRandom(int length) throws IOException {
+        for (int i = 0; i < length; i++) {
+            this.writeByte((byte) (int) (Math.random() * 255));
+        }
+    }
+
     protected void writeQQ(long qq) throws IOException {
         this.writeLong(qq);
     }
@@ -60,9 +66,9 @@ public abstract class ClientPacket extends DataOutputStream implements Packet {
 
     /**
      * Encode this packet.
-     *
+     * <p>
      * Before sending the packet, an {@linkplain Protocol#tail tail} will be added.
-     */
+     */// TODO: 2019/8/9 添加 tail
     public abstract void encode() throws IOException;
 
     public byte[] toByteArray() {

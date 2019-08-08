@@ -39,6 +39,6 @@ public class ClientLoginPacket extends ClientPacket {
         };
         data.encode();
 
-        TEAEncryption.encrypt(data.toByteArray(), Protocol.hexToBytes(Protocol._0825key));
+        this.write(TEAEncryption.encrypt(data.toByteArray(), Protocol.hexToBytes(Protocol._0825key)));
     }
 }
