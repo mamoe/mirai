@@ -12,4 +12,9 @@ public class MiraiTaskManager {
         return MiraiTaskManager.instance;
     }
 
+    private MiraiTaskPool pool;
+
+    private MiraiTaskManager(){
+
+    }
 }
