@@ -5,7 +5,10 @@ import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.MiraiEvent;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
+import net.mamoe.mirai.network.Network;
 import net.mamoe.mirai.task.MiraiTaskManager;
+
+import java.io.IOException;
 
 public class MiraiServer {
     @Getter
@@ -16,8 +19,12 @@ public class MiraiServer {
         this.onLoad();
     }
 
+    boolean isEnabled;
+
     protected void shutdown(){
-        this.getEventManager().boardcastEvent(new ServerDisableEvent());
+        if(this.isEnabled) {
+            this.getEventManager().boardcastEvent(new ServerDisableEvent());
+        }
     }
 
 
@@ -26,12 +33,21 @@ public class MiraiServer {
     @Getter
     MiraiTaskManager taskManager;
 
+
     private void onLoad(){
 
         this.eventManager = MiraiEventManager.getInstance();
         this.taskManager = MiraiTaskManager.getInstance();
 
+        try {
+            Network.start(Network.getAvaliablePort());
+        } catch (InterruptedException | IOException e) {
+            e.printStackTrace();
+           this.shutdown();
+        }
+
         this.eventManager.boardcastEvent(new ServerEnableEvent());
+        this.isEnabled = true;
     }
 
 

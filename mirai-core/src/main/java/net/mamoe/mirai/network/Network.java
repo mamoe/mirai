@@ -10,6 +10,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.bytes.ByteArrayDecoder;
 import io.netty.handler.codec.bytes.ByteArrayEncoder;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 /**
  * JPRE 网络层启动器.
  * 本类用于启动网络服务器. 包接受器请参考 {@link NetworkPacketHandler}
@@ -54,5 +57,13 @@ public final class Network {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+    }
+
+
+    public static int getAvaliablePort() throws IOException {
+        ServerSocket serverSocket =  new ServerSocket(0); //读取空闲的可用端口
+        int port = serverSocket.getLocalPort();
+        serverSocket.close();
+        return port;
     }
 }
