@@ -65,7 +65,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>net.mamoe.mirai.MiraIMain</mainClass>
+                            <mainClass>net.mamoe.mirai.MiraiMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

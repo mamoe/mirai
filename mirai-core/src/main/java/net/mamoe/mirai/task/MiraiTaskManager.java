@@ -1,4 +1,4 @@
 package net.mamoe.mirai.task;
 
-public class MiraITaskManager {
+public class MiraiTaskManager {
 }
