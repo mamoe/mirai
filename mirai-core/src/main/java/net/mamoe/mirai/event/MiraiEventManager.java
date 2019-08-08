@@ -3,12 +3,10 @@ package net.mamoe.mirai.event;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MiraiEventManager {
     private MiraiEventManager(){
@@ -39,11 +37,37 @@ public class MiraiEventManager {
         this.registerUntil(hook,(a) -> false);
     }
 
+
+    public void boardcastEvent(MiraiEvent event){
+        if(hooks.containsKey(event.getClass())){
+            hooks.put(event.getClass(),
+                    hooks.get(event.getClass())
+                    .stream()
+                    .sorted(Comparator.comparingInt(MiraiEventConsumer::getPriority))
+                    .dropWhile(a -> a.accept(event))
+                    .collect(Collectors.toList())
+            );
+        }
+    }
+
 }
 @Data
 @AllArgsConstructor
 class MiraiEventConsumer<T extends MiraiEvent>{
     private MiraiEventHook<T> hook;
     private Predicate<T> remove;
+
+
+    public int getPriority(){
+        return hook.getPreferences().getPriority();
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean accept(MiraiEvent event) {
+        if(!(event instanceof Cancelable && event.isCancelled() && hook.getPreferences().isIgnoreCanceled())){
+            hook.getHandler().accept((T) event);
+        }
+        return remove.test((T)event);
+    }
 }
 
