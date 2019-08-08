@@ -2,11 +2,12 @@ package net.mamoe.mirai.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import net.mamoe.mirai.event.events.Cancellable;
+import net.mamoe.mirai.event.events.MiraiEvent;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ public class MiraiEventManager {
 
     private static MiraiEventManager instance;
 
-    static MiraiEventManager getInstance(){
+    public static MiraiEventManager getInstance(){
         if(MiraiEventManager.instance == null){
             MiraiEventManager.instance = new MiraiEventManager();
         }
@@ -25,11 +26,16 @@ public class MiraiEventManager {
     }
 
     Lock hooksLock = new ReentrantLock();
-    private Map<Class<? extends MiraiEvent>, List<MiraiEventConsumer<? extends MiraiEvent>>> hooks = new HashMap<>();
+    private Map<Class<? extends MiraiEvent>, List<MiraiEventHook<? extends MiraiEvent>>> hooks = new HashMap<>();
 
     public <D extends MiraiEvent> void registerUntil(MiraiEventHook<D> hook, Predicate<D> toRemove){
         hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
-        hooks.get(hook.getEventClass()).add(new MiraiEventConsumer<>(hook,toRemove));
+        hooks.get(hook.getEventClass()).add(hook.setValidUntil(toRemove));
+    }
+
+    public <D extends MiraiEvent> void registerWhile(MiraiEventHook<D> hook, Predicate<D> toKeep){
+        hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
+        hooks.get(hook.getEventClass()).add(hook.setValidWhile(toKeep));
     }
 
     public <D extends MiraiEvent> void registerOnce(MiraiEventHook<D> hook){
@@ -40,13 +46,39 @@ public class MiraiEventManager {
         this.registerUntil(hook,(a) -> false);
     }
 
+    public <D extends MiraiEvent> MiraiEventHook<D> onEvent(Class<D> event){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.register(hook);
+        return hook;
+    }
+
+    public <D extends MiraiEvent> MiraiEventHook<D> onEventOnce(Class<D> event){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.registerOnce(hook);
+        return hook;
+    }
+
+    public <D extends MiraiEvent> MiraiEventHook<D> onEventUntil(Class<D> event, Predicate<D> toRemove){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.registerUntil(hook,toRemove);
+        return hook;
+    }
+
+    public <D extends MiraiEvent> MiraiEventHook<D> onEventWhile(Class<D> event, Predicate<D> toKeep){
+        MiraiEventHook<D> hook = new MiraiEventHook<>(event);
+        this.registerWhile(hook,toKeep);
+        return hook;
+    }
+
+
+
     public void boardcastEvent(MiraiEvent event){
         hooksLock.lock();
         if(hooks.containsKey(event.getClass())){
             hooks.put(event.getClass(),
                     hooks.get(event.getClass())
                     .stream()
-                    .sorted(Comparator.comparingInt(MiraiEventConsumer::getPriority))
+                    .sorted(Comparator.comparingInt(MiraiEventHook::getPriority))
                     .dropWhile(a -> a.accept(event))
                     .collect(Collectors.toList())
             );
@@ -55,23 +87,5 @@ public class MiraiEventManager {
     }
 
 }
-@Data
-@AllArgsConstructor
-class MiraiEventConsumer<T extends MiraiEvent>{
-    private MiraiEventHook<T> hook;
-    private Predicate<T> remove;
 
-
-    public int getPriority(){
-        return hook.getPreferences().getPriority();
-    }
-
-    @SuppressWarnings("unchecked")
-    public boolean accept(MiraiEvent event) {
-        if(!(event instanceof Cancelable && event.isCancelled() && hook.getPreferences().isIgnoreCanceled())){
-            hook.getHandler().accept((T) event);
-        }
-        return remove.test((T)event);
-    }
-}
 

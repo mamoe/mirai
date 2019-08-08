@@ -1,6 +1,6 @@
-package net.mamoe.mirai.event;
+package net.mamoe.mirai.event.events;
 
-import net.mamoe.jpre.event.Cancellable;
+import net.mamoe.mirai.event.events.Cancellable;
 import net.mamoe.mirai.utils.EventException;
 
 public abstract class MiraiEvent {
@@ -24,5 +24,14 @@ public abstract class MiraiEvent {
         }
         this.cancelled = value;
     }
+
+    protected String eventName;
+    public String getEventName() {
+        if(this.eventName == null){
+            return this.getClass().getSimpleName();
+        }
+        return this.eventName;
+    }
+
 
 }
