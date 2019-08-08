@@ -1,7 +1,13 @@
 package net.mamoe.mirai.event;
 
+import lombok.Getter;
+
 interface Cancelable {
 
-    void setCancel(boolean value);
 
+    boolean isCancelled();
+
+    void setCancelled();
+
+    void setCancelled(boolean forceCancel);
 }
