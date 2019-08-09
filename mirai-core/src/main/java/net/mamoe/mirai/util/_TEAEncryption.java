@@ -27,7 +27,7 @@ import java.util.Random;
  * </code>
  * </pre>
  *
- * @author https://juejin.im/post/5c5bdf8cf265da2dc706d532
+ * @author b
  * @author luma
  * @author notXX
  */

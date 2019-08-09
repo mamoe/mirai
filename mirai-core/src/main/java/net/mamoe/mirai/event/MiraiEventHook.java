@@ -13,13 +13,13 @@ public class MiraiEventHook<T extends MiraiEvent> {
     Class<T> eventClass;
 
     @Getter
-    private Consumer<T> handler;
+    private volatile Consumer<T> handler;
 
     @Getter
-    private int priority = 0;
+    private volatile int priority = 0;
 
     @Getter
-    private boolean ignoreCancelled = true;
+    private volatile boolean ignoreCancelled = true;
 
     /**
      * return true -> this hook need to be removed

@@ -43,6 +43,7 @@ public class MiraiServer {
         this.eventManager = MiraiEventManager.getInstance();
         this.taskManager = MiraiTaskManager.getInstance();
 
+        /*
         try {
             Network.start(Network.getAvailablePort());
         } catch (InterruptedException | IOException e) {
@@ -50,6 +51,7 @@ public class MiraiServer {
            this.shutdown();
         }
 
+           */
 
     }
 

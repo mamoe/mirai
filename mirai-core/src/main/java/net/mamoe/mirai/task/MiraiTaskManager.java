@@ -25,9 +25,11 @@ public class MiraiTaskManager {
 
     private MiraiTaskManager() {
         this.pool = new MiraiThreadPool();
+
         MiraiServer.getInstance().getEventManager()
                 .onEvent(ServerDisableEvent.class)
                 .setHandler(a -> this.pool.close());
+
     }
 
     /**
@@ -99,7 +101,7 @@ public class MiraiTaskManager {
     }
 
     public void repeatingTask(Runnable runnable, long interval, int times,  MiraiTaskExceptionHandler handler){
-        AtomicInteger integer = new AtomicInteger(times);
+        AtomicInteger integer = new AtomicInteger(times-1);
         this.repeatingTask(
                 runnable,interval, a ->  integer.getAndDecrement() > 0, handler
         );

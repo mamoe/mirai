@@ -29,13 +29,17 @@ public class MiraiEventManager {
     private Map<Class<? extends MiraiEvent>, List<MiraiEventHook<? extends MiraiEvent>>> hooks = new HashMap<>();
 
     public <D extends MiraiEvent> void registerUntil(MiraiEventHook<D> hook, Predicate<D> toRemove){
+        hooksLock.lock();
         hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
         hooks.get(hook.getEventClass()).add(hook.setValidUntil(toRemove));
+        hooksLock.unlock();
     }
 
     public <D extends MiraiEvent> void registerWhile(MiraiEventHook<D> hook, Predicate<D> toKeep){
+        hooksLock.lock();
         hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
         hooks.get(hook.getEventClass()).add(hook.setValidWhile(toKeep));
+        hooksLock.unlock();
     }
 
     public <D extends MiraiEvent> void registerOnce(MiraiEventHook<D> hook){
@@ -74,12 +78,14 @@ public class MiraiEventManager {
 
     public void boardcastEvent(MiraiEvent event){
         hooksLock.lock();
+        System.out.println(hooks);
         if(hooks.containsKey(event.getClass())){
+            System.out.println(hooks.get(event.getClass()).size());
             hooks.put(event.getClass(),
                     hooks.get(event.getClass())
                     .stream()
                     .sorted(Comparator.comparingInt(MiraiEventHook::getPriority))
-                    .dropWhile(a -> a.accept(event))
+                    .filter(a -> !a.accept(event))
                     .collect(Collectors.toList())
             );
         }
