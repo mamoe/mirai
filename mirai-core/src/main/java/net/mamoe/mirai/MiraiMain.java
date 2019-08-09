@@ -33,7 +33,6 @@ public final class MiraiMain {
                 })
                 .setValidWhile((a) -> true);
 
-
         server.getEventManager()
                 .onEvent(ServerDisableEvent.class)
                 .setHandler(a -> {

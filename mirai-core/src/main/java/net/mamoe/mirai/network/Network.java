@@ -60,7 +60,7 @@ public final class Network {
     }
 
 
-    public static int getAvaliablePort() throws IOException {
+    public static int getAvailablePort() throws IOException {
         ServerSocket serverSocket =  new ServerSocket(0); //读取空闲的可用端口
         int port = serverSocket.getLocalPort();
         serverSocket.close();

@@ -2,7 +2,6 @@ package net.mamoe.mirai;
 
 import lombok.Getter;
 import net.mamoe.mirai.event.MiraiEventManager;
-import net.mamoe.mirai.event.events.MiraiEvent;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
 import net.mamoe.mirai.network.Network;
@@ -45,7 +44,7 @@ public class MiraiServer {
         this.taskManager = MiraiTaskManager.getInstance();
 
         try {
-            Network.start(Network.getAvaliablePort());
+            Network.start(Network.getAvailablePort());
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
            this.shutdown();
