@@ -1,7 +1,6 @@
 package net.mamoe.mirai.task;
 
 
-import lombok.Getter;
 import net.mamoe.mirai.MiraiServer;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 
@@ -36,10 +35,10 @@ public class MiraiTaskManager {
      */
 
     public void execute(Runnable runnable){
-        this.execute(runnable,MiralTaskExceptionHandler.byDefault());
+        this.execute(runnable, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public void execute(Runnable runnable, MiralTaskExceptionHandler handler){
+    public void execute(Runnable runnable, MiraiTaskExceptionHandler handler){
         this.pool.execute(() ->
         {
             try{
@@ -52,10 +51,10 @@ public class MiraiTaskManager {
 
 
     public <D> Future<D> submit(Callable<D> callable) {
-        return this.submit(callable, MiralTaskExceptionHandler.byDefault());
+        return this.submit(callable, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public <D> Future<D> submit(Callable<D> callable, MiralTaskExceptionHandler handler) {
+    public <D> Future<D> submit(Callable<D> callable, MiraiTaskExceptionHandler handler) {
         return this.pool.submit(() -> {
             try {
                 return callable.call();
@@ -70,10 +69,10 @@ public class MiraiTaskManager {
      异步任务
      */
     public <D> void ansycTask(Callable<D> callable, Consumer<D> callback){
-        this.ansycTask(callable,callback,MiralTaskExceptionHandler.byDefault());
+        this.ansycTask(callable,callback, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public <D> void ansycTask(Callable<D> callable, Consumer<D> callback,  MiralTaskExceptionHandler handler){
+    public <D> void ansycTask(Callable<D> callable, Consumer<D> callback,  MiraiTaskExceptionHandler handler){
         this.pool.execute(() -> {
             try {
                 callback.accept(callable.call());
@@ -88,25 +87,25 @@ public class MiraiTaskManager {
      */
 
     public void repeatingTask(Runnable runnable, long interval){
-        this.repeatingTask(runnable,interval, MiralTaskExceptionHandler.byDefault());
+        this.repeatingTask(runnable,interval, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public void repeatingTask(Runnable runnable, long interval,  MiralTaskExceptionHandler handler){
+    public void repeatingTask(Runnable runnable, long interval,  MiraiTaskExceptionHandler handler){
         this.repeatingTask(runnable,interval,a -> true,handler);
     }
 
     public void repeatingTask(Runnable runnable, long interval, int times){
-        this.repeatingTask(runnable,interval,times,MiralTaskExceptionHandler.byDefault());
+        this.repeatingTask(runnable,interval,times, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public void repeatingTask(Runnable runnable, long interval, int times,  MiralTaskExceptionHandler handler){
+    public void repeatingTask(Runnable runnable, long interval, int times,  MiraiTaskExceptionHandler handler){
         AtomicInteger integer = new AtomicInteger(times);
         this.repeatingTask(
                 runnable,interval, a ->  integer.getAndDecrement() > 0, handler
         );
     }
 
-    public <D extends Runnable> void repeatingTask(D runnable, long interval, Predicate<D> shouldContinue, MiralTaskExceptionHandler handler){
+    public <D extends Runnable> void repeatingTask(D runnable, long interval, Predicate<D> shouldContinue, MiraiTaskExceptionHandler handler){
         new Thread(() -> {
             do {
                 this.pool.execute(() -> {

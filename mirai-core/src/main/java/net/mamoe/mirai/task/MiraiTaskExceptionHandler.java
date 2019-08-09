@@ -1,10 +1,10 @@
 package net.mamoe.mirai.task;
 
 @FunctionalInterface
-public interface MiralTaskExceptionHandler {
+public interface MiraiTaskExceptionHandler {
     void onHandle(Throwable e);
 
-    static MiralTaskExceptionHandler byDefault(){
+    static MiraiTaskExceptionHandler byDefault(){
         return Throwable::printStackTrace;
     }
 }
