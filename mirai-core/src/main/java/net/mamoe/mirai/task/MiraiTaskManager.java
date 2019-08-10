@@ -126,7 +126,7 @@ public class MiraiTaskManager {
         }).start();
     }
 
-    public void deleteTask(Runnable runnable, long interval){
+    public void deletingTask(Runnable runnable, long interval){
         new Thread(() -> {
             try{
                 Thread.sleep(interval);

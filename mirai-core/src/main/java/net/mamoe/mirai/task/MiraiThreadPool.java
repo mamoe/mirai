@@ -25,5 +25,4 @@ public class MiraiThreadPool  extends ThreadPoolExecutor implements Closeable {
         }
     }
 
-
 }

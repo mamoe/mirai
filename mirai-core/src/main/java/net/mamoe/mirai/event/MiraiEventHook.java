@@ -74,5 +74,4 @@ public class MiraiEventHook<T extends MiraiEvent> {
         return this.valid.test((T)event);
     }
 
-
 }

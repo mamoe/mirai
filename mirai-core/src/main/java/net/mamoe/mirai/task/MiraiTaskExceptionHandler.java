@@ -7,4 +7,12 @@ public interface MiraiTaskExceptionHandler {
     static MiraiTaskExceptionHandler byDefault(){
         return Throwable::printStackTrace;
     }
+
+    static MiraiTaskExceptionHandler byIgnore(){
+        return a -> {};
+    }
+
+    static MiraiTaskExceptionHandler byPrint(){
+        return Throwable::printStackTrace;
+    }
 }
