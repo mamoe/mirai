@@ -84,16 +84,17 @@ public class MiraiServer {
             this.setting = new MiraiConfig(setting);
         }
 
-        int port = this.setting.getMapSection("network").getInt("port");
-        MiraiNetwork.start(port);
-        Thread.yield();
-        if(MiraiNetwork.getLastError()!=null){
-            this.getLogger().log(LoggerTextFormat.RED + "an error occurred when staring network layer");
-            this.shutdown();
-        }
+        MiraiMapSection qqs = this.setting.getMapSection("qq");
+        qqs.forEach((a,p) -> {
+            this.getLogger().log(LoggerTextFormat.SKY_BLUE + "Finding available ports between " + "1-65536");
+            try {
+                int port = MiraiNetwork.getAvailablePort();
+                this.getLogger().log(LoggerTextFormat.SKY_BLUE + "Listening on port " + port);
 
-        this.getLogger().log(LoggerTextFormat.SKY_BLUE + "Listening on port " + port);
-
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void initSetting(File setting){
@@ -108,7 +109,7 @@ public class MiraiServer {
         }
         this.setting = new MiraiConfig(setting);
         MiraiMapSection network  = this.setting.getMapSection("network");
-        network.put("port",19139);
+
         MiraiMapSection qqs = this.setting.getMapSection("qq");
         Scanner scanner = new Scanner(System.in);
         this.getLogger().log(LoggerTextFormat.SKY_BLUE + "input one "  + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.SKY_BLUE  +"for default robot");
