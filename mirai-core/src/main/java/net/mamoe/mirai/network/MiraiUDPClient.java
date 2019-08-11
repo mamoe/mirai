@@ -1,5 +1,7 @@
 package net.mamoe.mirai.network;
 
+import net.mamoe.mirai.MiraiServer;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
@@ -10,6 +12,7 @@ public class MiraiUDPClient {
     private Thread thread;
 
     public MiraiUDPClient(InetAddress target, int targetPort, int localPort) {
+        MiraiServer.getInstance().getLogger().log("creating client");
         try{
             this.localUDPSocket = new DatagramSocket(localPort);
             this.localUDPSocket.connect(target,targetPort);
@@ -36,6 +39,7 @@ public class MiraiUDPClient {
         } catch (SocketException e) {
             e.printStackTrace();
         }
+        MiraiServer.getInstance().getLogger().log("created client");
     }
     public void onReceive(DatagramPacket packet){
         System.out.println(new String(packet.getData(), 0 , packet.getLength(), StandardCharsets.UTF_8));

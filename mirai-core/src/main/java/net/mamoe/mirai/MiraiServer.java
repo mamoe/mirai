@@ -5,6 +5,8 @@ import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
 import net.mamoe.mirai.network.MiraiNetwork;
+import net.mamoe.mirai.network.MiraiUDPClient;
+import net.mamoe.mirai.network.MiraiUDPServer;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -14,6 +16,9 @@ import net.mamoe.mirai.utils.config.MiraiMapSection;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -48,7 +53,6 @@ public class MiraiServer {
     protected MiraiServer(){
         instance = this;
         this.onLoad();
-        Thread.yield();
         this.onEnable();
     }
 
@@ -84,6 +88,7 @@ public class MiraiServer {
             this.setting = new MiraiConfig(setting);
         }
 
+        /*
         MiraiMapSection qqs = this.setting.getMapSection("qq");
         qqs.forEach((a,p) -> {
             this.getLogger().log(LoggerTextFormat.SKY_BLUE + "Finding available ports between " + "1-65536");
@@ -95,6 +100,23 @@ public class MiraiServer {
                 e.printStackTrace();
             }
         });
+        */
+
+        System.out.println("network test");
+        try {
+            MiraiUDPServer server = new MiraiUDPServer();
+            MiraiUDPClient client = new MiraiUDPClient(InetAddress.getLocalHost(),9999,MiraiNetwork.getAvailablePort());
+            this.getTaskManager().repeatingTask(() -> {
+                byte[] sendInfo = "test test".getBytes(StandardCharsets.UTF_8);
+                try {
+                    client.send(new DatagramPacket(sendInfo,sendInfo.length));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            },300);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void initSetting(File setting){
