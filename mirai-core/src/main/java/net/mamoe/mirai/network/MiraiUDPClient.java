@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 public class MiraiUDPClient {
     private DatagramSocket localUDPSocket;
     private Thread thread;
+
     public MiraiUDPClient(InetAddress target, int targetPort, int localPort) {
         try{
             this.localUDPSocket = new DatagramSocket(localPort);
