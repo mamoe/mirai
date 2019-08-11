@@ -14,9 +14,5 @@ public final class MiraiMain {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             server.shutdown();
         }));
-        server.getTaskManager().repeatingTask(() -> {
-            System.out.println(3);
-        },1000,5);
-
     }
 }

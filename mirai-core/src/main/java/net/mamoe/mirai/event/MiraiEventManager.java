@@ -78,9 +78,7 @@ public class MiraiEventManager {
 
     public void boardcastEvent(MiraiEvent event){
         hooksLock.lock();
-        System.out.println(hooks);
         if(hooks.containsKey(event.getClass())){
-            System.out.println(hooks.get(event.getClass()).size());
             hooks.put(event.getClass(),
                     hooks.get(event.getClass())
                     .stream()
