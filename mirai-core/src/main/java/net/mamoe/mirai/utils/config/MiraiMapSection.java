@@ -41,7 +41,7 @@ public class MiraiMapSection extends ConcurrentHashMap<String, Object> implement
     }
 
     public int getInt(String key, int defaultValue) {
-        return this.get(key, defaultValue);
+        return Integer.parseInt(String.valueOf(this.get(key, defaultValue)));
     }
 
     public double getDouble(String key) {
@@ -49,7 +49,7 @@ public class MiraiMapSection extends ConcurrentHashMap<String, Object> implement
     }
 
     public double getDouble(String key, double defaultValue) {
-        return this.get(key, defaultValue);
+        return Double.parseDouble(String.valueOf(this.get(key, defaultValue)));
     }
 
     public float getFloat(String key) {
@@ -57,7 +57,7 @@ public class MiraiMapSection extends ConcurrentHashMap<String, Object> implement
     }
 
     public float getFloat(String key, float defaultValue) {
-        return this.get(key, defaultValue);
+        return Float.parseFloat(String.valueOf(this.get(key, defaultValue)));
     }
 
     public String getString(String key) {
