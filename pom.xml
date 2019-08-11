@@ -83,6 +83,13 @@
             <version>1.18.8</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.ini4j</groupId>
+            <artifactId>ini4j</artifactId>
+            <version>0.5.2</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -100,6 +107,13 @@
                 <artifactId>netty-all</artifactId>
                 <version>4.1.38.Final</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.ini4j</groupId>
+                <artifactId>ini4j</artifactId>
+                <version>0.5.2</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

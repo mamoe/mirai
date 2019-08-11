@@ -46,7 +46,9 @@ public class MiraiServer {
 
     protected void shutdown(){
         if(this.enabled) {
+            this.getLogger().log(LoggerTextFormat.SKY_BLUE + "About to shutdown Mirai");
             this.getEventManager().boardcastEvent(new ServerDisableEvent());
+            this.getLogger().log(LoggerTextFormat.SKY_BLUE + "Data have been saved");
         }
     }
 
@@ -61,9 +63,10 @@ public class MiraiServer {
         this.eventManager = MiraiEventManager.getInstance();
         this.taskManager = MiraiTaskManager.getInstance();
 
-        this.getLogger().log(LoggerTextFormat.SKY_BLUE + "About to run Mirai" + MiraiServer.getMiraiVersion() + " under " + (isUnix()?"unix":"windows") );
-        this.getLogger().log("Loading data under " + this.parentFolder);
+        this.getLogger().log(LoggerTextFormat.SKY_BLUE + "About to run Mirai (" + MiraiServer.getMiraiVersion() + ") under " + (isUnix()?"unix":"windows") );
+        this.getLogger().log("Loading data under " + LoggerTextFormat.GREEN + this.parentFolder);
 
+        
         /*
         try {
             Network.start(Network.getAvailablePort());
