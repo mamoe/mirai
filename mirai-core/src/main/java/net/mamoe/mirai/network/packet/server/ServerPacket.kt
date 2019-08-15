@@ -1,28 +1,55 @@
-package net.mamoe.mirai.network.packet.server;
+package net.mamoe.mirai.network.packet.server
 
-import net.mamoe.mirai.network.packet.Packet;
-import org.jetbrains.annotations.NotNull;
+import net.mamoe.mirai.network.packet.Packet
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.InputStream;
+import java.io.DataInputStream
 
 /**
  * @author Him188moe @ Mirai Project
  */
-public abstract class ServerPacket extends DataInputStream implements Packet {
-    public static ServerPacket ofByteArray(byte[] bytes) {
-        // TODO: 2019/8/15 process bytes
+abstract class ServerPacket(val input: DataInputStream) : Packet {
+
+    abstract fun decode()
+
+    companion object {
+
+        fun ofByteArray(bytes: ByteArray): ServerPacket {
+
+            val stream = DataInputStream(bytes.inputStream())
+
+            stream.skipUntil(10)
+            val idBytes = stream.readUntil(11)
+            val id = idBytes.map { it.toString(16) }.joinToString("")
+
+            return when (id) {
+                "08 25 31 01" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_01, stream);
+                "08 25 31 02" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_02, stream);
+
+                else -> throw UnsupportedOperationException();
+            }
+        }
     }
+}
 
+fun DataInputStream.skipUntil(byte: Byte) {
+    while (readByte() != byte);
+}
 
-    public ServerPacket(@NotNull InputStream in) {
-        super(in);
+fun DataInputStream.readUntil(byte: Byte): ByteArray {
+    var buff = byteArrayOf()
+    var b: Byte
+    b = readByte()
+    while (b != byte) {
+        buff += b
+        b = readByte()
     }
+    return buff
+}
 
-    public ServerPacket(@NotNull byte[] in) {
-        this(new ByteArrayInputStream(in));
+fun DataInputStream.readIP(): String {
+    var buff = "";
+    for (i in 0..12) {//todo: check that
+        buff += readByte().toInt();
     }
-
-    public abstract void decode();
+    return buff;
 }

@@ -19,7 +19,7 @@ class QQ(number: Long) : Contact(number) {
     /**
      * At(@) this account.
      */
-    open fun at(): String {
-        return "[@" + this.number + "]"
+    fun at(): String {
+        return "[@$number]"
     }
 }
