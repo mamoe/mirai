@@ -12,6 +12,11 @@ import java.io.DataInputStream
 class Server0825Packet(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
     lateinit var serverIP: String;
 
+    var loginTime: Long = 0;
+    lateinit var loginIP: String;
+    lateinit var token: ByteArray;
+    lateinit var tgtgtKey: ByteArray
+
     enum class Type {
         TYPE_08_25_31_01,
         TYPE_08_25_31_02,
@@ -19,7 +24,7 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
 
     override fun decode() {
         input.skip(43 - 11)//todo: check
-        val data = DataInputStream(TEAEncryption.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 45) }, when (type) {
+        val data = DataInputStream(TEAEncryption.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 2) }, when (type) {//todo: check array range
             Type.TYPE_08_25_31_01 -> Protocol.redirectionKey.toByteArray()
             Type.TYPE_08_25_31_02 -> Protocol._0825key.toByteArray()
         }).inputStream());
@@ -29,7 +34,12 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
                 serverIP = data.readIP()
             }
             0X00 -> {
+                data.skip(16 - 2)
+                token = data.readNBytes(167 - (16 - 2))
+                loginTime = data.readLong()//todo check
+                loginIP = data.readIP()
 
+                TODO("从易语言抄协议来")
             }
             else -> {
             }

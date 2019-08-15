@@ -23,7 +23,7 @@ class Robot(val number: Long) {
         }
     }
 
-    internal fun sendPacket(packet: Packet) {
+    private fun sendPacket(packet: Packet) {
         TODO()
     }
 }

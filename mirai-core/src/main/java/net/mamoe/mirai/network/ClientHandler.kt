@@ -16,7 +16,7 @@ class ClientHandler(val robot: Robot) : SimpleChannelInboundHandler<ByteArray>()
         private lateinit var bytes: ByteArray
 
         fun init(bytes: ByteArray) {
-            this.length = length
+            this.length = bytes.size
             this.bytes = bytes
         }
 
