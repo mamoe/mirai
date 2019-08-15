@@ -1,6 +1,5 @@
 package net.mamoe.mirai.event.events;
 
-import net.mamoe.mirai.event.events.Cancellable;
 import net.mamoe.mirai.utils.EventException;
 
 public abstract class MiraiEvent {
@@ -14,11 +13,11 @@ public abstract class MiraiEvent {
         return this.cancelled;
     }
 
-    public void setCancelled() {
-        setCancelled(true);
+    public void cancel() {
+        cancel(true);
     }
 
-    public void setCancelled(boolean value) {
+    public void cancel(boolean value) {
         if (!(this instanceof Cancellable)) {
             throw new EventException("Event is not Cancellable");
         }

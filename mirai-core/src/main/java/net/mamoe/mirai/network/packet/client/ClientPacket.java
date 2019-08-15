@@ -74,4 +74,10 @@ public abstract class ClientPacket extends DataOutputStream implements Packet {
     public byte[] toByteArray() {
         return ((ByteArrayOutputStream) this.out).toByteArray();
     }
+
+    public final byte[] encodeToByteArray() throws IOException {
+        encode();
+        return toByteArray();
+    }
+
 }

@@ -5,7 +5,7 @@ public interface MiraiTaskExceptionHandler {
     void onHandle(Throwable e);
 
     static MiraiTaskExceptionHandler byDefault(){
-        return Throwable::printStackTrace;
+        return byPrint();
     }
 
     static MiraiTaskExceptionHandler byIgnore(){

@@ -9,13 +9,13 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.codec.dns.DatagramDnsQueryDecoder;
 import io.netty.util.CharsetUtil;
-import net.mamoe.mirai.MiraiServer;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class MiraiUDPServer {
     public MiraiUDPServer() {
-        MiraiServer.getInstance().getLogger().log("creating server");
+        log.info("creating server");
         new Thread(() -> {
             Bootstrap b = new Bootstrap();
             EventLoopGroup group = new NioEventLoopGroup();
@@ -25,7 +25,7 @@ public class MiraiUDPServer {
                         protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet)
                                 throws Exception {
                             // 读取收到的数据
-                            ByteBuf buf = (ByteBuf) packet.copy().content();
+                            ByteBuf buf = packet.copy().content();
                             byte[] req = new byte[buf.readableBytes()];
                             buf.readBytes(req);
                             String body = new String(req, CharsetUtil.UTF_8);
@@ -46,6 +46,6 @@ public class MiraiUDPServer {
                 e.printStackTrace();
             }
         }).start();
-        MiraiServer.getInstance().getLogger().log("created server");
+        log.info("created server");
     }
 }

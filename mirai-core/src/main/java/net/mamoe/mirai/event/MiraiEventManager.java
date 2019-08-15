@@ -1,8 +1,5 @@
 package net.mamoe.mirai.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import net.mamoe.mirai.event.events.Cancellable;
 import net.mamoe.mirai.event.events.MiraiEvent;
 
 import java.util.*;

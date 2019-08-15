@@ -11,6 +11,11 @@ import java.io.InputStream;
  * @author Him188moe @ Mirai Project
  */
 public abstract class ServerPacket extends DataInputStream implements Packet {
+    public static ServerPacket ofByteArray(byte[] bytes) {
+        // TODO: 2019/8/15 process bytes
+    }
+
+
     public ServerPacket(@NotNull InputStream in) {
         super(in);
     }

@@ -25,7 +25,7 @@ public class ClientLoginPacket extends ClientPacket {
 
 
         //TEA 加密
-        var data = new ClientPacket() {
+        this.write(TEAEncryption.encrypt(new ClientPacket() {
             @Override
             public void encode() throws IOException {
                 this.writeHex(Protocol._0825data0);
@@ -36,9 +36,6 @@ public class ClientLoginPacket extends ClientPacket {
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19");
                 this.writeHex(Protocol.publicKey);
             }
-        };
-        data.encode();
-
-        this.write(TEAEncryption.encrypt(data.toByteArray(), Protocol.hexToBytes(Protocol._0825key)));
+        }.encodeToByteArray(), Protocol.hexToBytes(Protocol._0825key)));
     }
 }
