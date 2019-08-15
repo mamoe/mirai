@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
+import net.mamoe.mirai.network.Protocol;
 import net.mamoe.mirai.network.Robot;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
@@ -94,7 +95,13 @@ public class MiraiServer {
         });
         */
 
-        new Robot(1994701021L);
+        Robot robot = new Robot(1994701021L);
+        try {
+            robot.connect(Protocol.SERVER_IP.get(2), 8000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 /*
         System.out.println("network test");
         try {
