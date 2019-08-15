@@ -19,13 +19,12 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
             stream.skipUntil(10)
             val idBytes = stream.readUntil(11)
-            val id = idBytes.map { it.toString(16) }.joinToString("")
 
-            return when (id) {
-                "08 25 31 01" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_01, stream);
-                "08 25 31 02" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_02, stream);
+            return when (idBytes.joinToString("") { it.toString(16) }) {
+                "08 25 31 01" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_01, stream)
+                "08 25 31 02" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_02, stream)
 
-                else -> throw UnsupportedOperationException();
+                else -> throw UnsupportedOperationException()
             }
         }
     }
@@ -47,9 +46,9 @@ fun DataInputStream.readUntil(byte: Byte): ByteArray {
 }
 
 fun DataInputStream.readIP(): String {
-    var buff = "";
+    var buff = ""
     for (i in 0..12) {//todo: check that
-        buff += readByte().toInt();
+        buff += readByte().toInt()
     }
-    return buff;
+    return buff
 }
