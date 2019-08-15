@@ -5,9 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
-import net.mamoe.mirai.network.MiraiNetwork;
-import net.mamoe.mirai.network.MiraiUDPClient;
-import net.mamoe.mirai.network.MiraiUDPServer;
+import net.mamoe.mirai.network.Robot;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.config.MiraiConfig;
@@ -16,9 +14,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 @Log4j2
@@ -99,8 +94,12 @@ public class MiraiServer {
         });
         */
 
+        new Robot(1994701021L);
+/*
         System.out.println("network test");
         try {
+
+
             MiraiUDPServer server = new MiraiUDPServer();
             MiraiUDPClient client = new MiraiUDPClient(InetAddress.getLocalHost(),9999,MiraiNetwork.getAvailablePort());
             this.getTaskManager().repeatingTask(() -> {
@@ -113,7 +112,7 @@ public class MiraiServer {
             },300);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void initSetting(File setting){
