@@ -33,6 +33,9 @@ public class MiraiConfig {
         }
         this.file = file;
         try {
+            if(file.exists()){
+                file.createNewFile();
+            }
             Config config = new Config();
             config.setMultiSection(true);
             ini = new Ini();
@@ -78,6 +81,7 @@ public class MiraiConfig {
             }
             a.saveAsSection(ini.get(k));
         });
+        this.clearCache();
         try {
             ini.store(file);
         } catch (IOException e) {
