@@ -3,6 +3,9 @@ package net.mamoe.mirai.utils
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * used to replace old logger
+ */
 object MiraiLogger{
     fun info(o: Any) {
         this.print(o.toString())
