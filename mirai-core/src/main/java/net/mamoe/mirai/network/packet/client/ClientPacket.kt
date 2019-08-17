@@ -72,6 +72,25 @@ fun DataOutputStream.writeHex(hex: String) {
     }
 }
 
+@ExperimentalUnsignedTypes
+@Throws(IOException::class)
+fun DataOutputStream.writeTLV0006(qq: Int, password: String) {
+    this.writeRandom(4)
+    this.writeHex("00 02")
+    this.writeQQ(qq)
+    this.writeHex(Protocol._0825data2)
+    this.writeHex("00 00 01")
+    this.writeHex()
+}
+
+@ExperimentalUnsignedTypes
+@Throws(IOException::class)
+fun DataOutputStream.writeZero(count: Int) {
+    for (x in 0..count) {
+        this.writeByte(0)
+    }
+}
+
 @Throws(IOException::class)
 fun DataOutputStream.writeRandom(length: Int) {
     for (i in 0 until length) {
