@@ -85,11 +85,10 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: ByteArra
         it.writeHex(Protocol._0825data2)
         it.writeHex("00 00 01")
 
-        val md5_1: ByteArray = md5(password);
-
+        val md5_1 = md5(password);
         val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toBytes())
         it.write(md5_1)
-        it.write(loginTime)//FIXED 12(maybe 11???) bytes
+        it.write(loginTime)//todo FIXED 12(maybe 11???) bytes??? check that
         it.writeByte(0);
         it.writeZero(4 * 3)
         it.write(loginIP)

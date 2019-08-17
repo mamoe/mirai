@@ -11,7 +11,7 @@ import java.io.IOException
  * @author Him188moe @ Mirai Project
  */
 @ExperimentalUnsignedTypes
-@PacketId(0x08_25_31_01)
+@PacketId("08 25 31 01")
 class ClientLoginPacket : ClientPacket() {
     var qq: Int = 0
 
