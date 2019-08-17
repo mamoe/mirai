@@ -37,7 +37,7 @@ class Client0836_622Packet(private val qq: Int, private val password: String, pr
                 this.writeQQ(qq)
                 this.writeHex("00 06")//tag
                 this.writeHex("00 78")//length
-                this.writeTLV0006(qq, password)
+                this.writeTLV0006(qq, password,)
                 //fix
                 this.writeHex(Protocol._0836_622_fix2)
                 this.writeHex("00 1A")//tag

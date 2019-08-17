@@ -50,8 +50,7 @@ fun DataInputStream.readUntil(byte: Byte): ByteArray {
 fun DataInputStream.readIP(): String {
     var buff = ""
     for (i in 0..3) {//todo: check t// hat
-        val b = readByte()
-        buff += (b.toInt() + (128)).toString()
+        buff += (readByte().toInt()).toString()
         if(i !=3)buff+="."
     }
     return buff
