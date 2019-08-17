@@ -14,7 +14,7 @@ import java.io.IOException
 /**
  * The packet to touch server.
  *
- * @see net.mamoe.mirai.network.packet.server.Server0825Packet
+ * @see net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
  *
  * @author Him188moe @ Mirai Project
  */

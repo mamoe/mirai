@@ -11,7 +11,7 @@ import java.io.DataInputStream
  *
  * @author Him188moe @ Mirai Project
  */
-class Server0825Packet(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
+class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
     lateinit var serverIP: String;
 
     var loginTime: Int = 0

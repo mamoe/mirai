@@ -13,8 +13,8 @@ import io.netty.handler.codec.bytes.ByteArrayEncoder
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
 import net.mamoe.mirai.network.packet.client.writeHex
-import net.mamoe.mirai.network.packet.server.Server0825Packet
 import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
 import net.mamoe.mirai.utils.MiraiLogger
 import java.net.DatagramPacket
 import java.net.InetSocketAddress
@@ -31,7 +31,7 @@ class Robot(val number: Int) {
     @ExperimentalUnsignedTypes
     internal fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
-        if (packet is Server0825Packet) {
+        if (packet is ServerTouchResponsePacket) {
             connect(packet.serverIP)
             sendPacket(ClientServerRedirectionPacket(packet.serverIP, number))
         }
