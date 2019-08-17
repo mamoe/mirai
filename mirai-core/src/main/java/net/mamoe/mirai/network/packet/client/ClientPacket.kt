@@ -39,7 +39,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
      *
      *
      * Before sending the packet, an [tail][Protocol.tail] will be added.
-     */// TODO: 2019/8/9 添加 tail
+     */
     @Throws(IOException::class)
     abstract fun encode()
 

@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.packet.server
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.util.TEACryptor
+import net.mamoe.mirai.util.getRandomKey
 import java.io.DataInputStream
 
 /**
@@ -22,6 +23,7 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
         TYPE_08_25_31_02,
     }
 
+    @ExperimentalUnsignedTypes
     override fun decode() {
         input.skip(43 - 11)//todo: check
         val data = DataInputStream(TEACryptor.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 2) }, when (type) {//todo: check array range
@@ -38,10 +40,10 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
                 token = data.readNBytes(167 - (16 - 2))
                 loginTime = data.readLong()//todo check
                 loginIP = data.readIP()
-
-                TODO("从易语言抄协议来")
+                tgtgtKey = getRandomKey(16);
             }
             else -> {
+                throw IllegalStateException()
             }
         }
     }
