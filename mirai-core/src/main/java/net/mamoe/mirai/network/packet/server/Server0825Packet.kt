@@ -11,7 +11,7 @@ import java.io.DataInputStream
 class Server0825Packet(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
     lateinit var serverIP: String;
 
-    var loginTime: Long = 0;
+    var loginTime: Int = 0;
     lateinit var loginIP: String;
     lateinit var token: ByteArray;
     lateinit var tgtgtKey: ByteArray
@@ -32,15 +32,18 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
 
         when (data.readByte().toInt()) {
             0xFE -> {
+                System.out.println("0xfe")
                 serverIP = data.readIP()
             }
             0X00 -> {
-                data.skip(16 - 2)
-                token = data.readNBytes(167 - (16 - 2))
-                loginTime = data.readLong()//todo check
+                data.skip(67)
+
+                loginTime = data.readInt()
                 loginIP = data.readIP()
-                tgtgtKey = getRandomKey(16);
+                token = data.readNBytes(56)
+                tgtgtKey = getRandomKey(16)
             }
+
             else -> {
                 throw IllegalStateException()
             }

@@ -1,6 +1,7 @@
 package net.mamoe.mirai.network.packet.server
 
 import net.mamoe.mirai.network.packet.Packet
+import net.mamoe.mirai.util.toHexString
 
 import java.io.DataInputStream
 
@@ -45,10 +46,13 @@ fun DataInputStream.readUntil(byte: Byte): ByteArray {
     return buff
 }
 
+@ExperimentalUnsignedTypes
 fun DataInputStream.readIP(): String {
     var buff = ""
-    for (i in 0..12) {//todo: check that
-        buff += readByte().toInt()
+    for (i in 0..3) {//todo: check t// hat
+        val b = readByte()
+        buff += (b.toInt() + (128)).toString()
+        if(i !=3)buff+="."
     }
     return buff
 }
