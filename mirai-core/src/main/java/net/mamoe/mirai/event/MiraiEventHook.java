@@ -1,8 +1,10 @@
 package net.mamoe.mirai.event;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.mamoe.mirai.event.events.Cancellable;
 import net.mamoe.mirai.event.events.MiraiEvent;
+import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -20,6 +22,10 @@ public class MiraiEventHook<T extends MiraiEvent> {
 
     @Getter
     private volatile boolean ignoreCancelled = true;
+
+    @Getter
+    @Setter
+    private volatile boolean mount = false;
 
     /**
      * return true -> this hook need to be removed
@@ -73,5 +79,24 @@ public class MiraiEventHook<T extends MiraiEvent> {
         }
         return this.valid.test((T)event);
     }
+
+    /**
+     * 更加安全高效的方式
+     * Remember to use {@link this.mount()} at last
+     * */
+
+    public static <D extends MiraiEvent> MiraiEventHook<D> onEvent(Class<D> event){
+        return new MiraiEventHook<>(event);
+    }
+
+    public void mount(){
+        MiraiEventManager.getInstance().registerHook(this);
+    }
+
+    public void mountOnce(){
+        MiraiEventManager.getInstance().hookOnce(this);
+    }
+
+
 
 }
