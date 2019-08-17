@@ -32,12 +32,12 @@ class ClientPasswordSubmissionPacket(private val qq: Int, private val password: 
                 val hostName: String = InetAddress.getLocalHost().hostName.let { it.substring(0, it.length - 3) };
 
                 this.writeQQ(System.currentTimeMillis().toInt())//that's correct
-                this.writeHex("01 12");//tag
-                this.writeHex("00 38");//length
-                this.write(token0825);//length
-                this.writeHex("03 0F");//tag
-                this.writeShort(hostName.length / 2);//todo check that
-                this.writeShort(hostName.length);
+                this.writeHex("01 12")//tag
+                this.writeHex("00 38")//length
+                this.write(token0825)//length
+                this.writeHex("03 0F")//tag
+                this.writeShort(hostName.length / 2)//todo check that
+                this.writeShort(hostName.length)
                 this.writeBytes(hostName)
                 this.writeHex("00 05 00 06 00 02")
                 this.writeQQ(qq)
