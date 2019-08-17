@@ -25,49 +25,61 @@ public class MiraiEventManager {
     Lock hooksLock = new ReentrantLock();
     private Map<Class<? extends MiraiEvent>, List<MiraiEventHook<? extends MiraiEvent>>> hooks = new HashMap<>();
 
-    public <D extends MiraiEvent> void registerUntil(MiraiEventHook<D> hook, Predicate<D> toRemove){
+    public <D extends MiraiEvent> void hookUntil(MiraiEventHook<D> hook, Predicate<D> toRemove){
         hooksLock.lock();
         hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
         hooks.get(hook.getEventClass()).add(hook.setValidUntil(toRemove));
         hooksLock.unlock();
     }
 
-    public <D extends MiraiEvent> void registerWhile(MiraiEventHook<D> hook, Predicate<D> toKeep){
+    public <D extends MiraiEvent> void hookWhile(MiraiEventHook<D> hook, Predicate<D> toKeep){
         hooksLock.lock();
         hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
         hooks.get(hook.getEventClass()).add(hook.setValidWhile(toKeep));
         hooksLock.unlock();
     }
 
-    public <D extends MiraiEvent> void registerOnce(MiraiEventHook<D> hook){
-        this.registerUntil(hook,(a) -> true);
+    public <D extends MiraiEvent> void hookOnce(MiraiEventHook<D> hook){
+        this.hookUntil(hook,(a) -> true);
     }
 
-    public <D extends MiraiEvent> void register(MiraiEventHook<D> hook){
-        this.registerUntil(hook,(a) -> false);
+    public <D extends MiraiEvent> void registerHook(MiraiEventHook<D> hook){
+        this.hookUntil(hook,(a) -> false);
     }
 
+
+    /**
+     * 不推荐onEvent
+     * 非线程安全
+     * 不能保证下一个 D event发生时handler就位
+     * @author NaturalHG Aug27
+     */
+
+    @Deprecated
     public <D extends MiraiEvent> MiraiEventHook<D> onEvent(Class<D> event){
         MiraiEventHook<D> hook = new MiraiEventHook<>(event);
-        this.register(hook);
+        this.registerHook(hook);
         return hook;
     }
 
+    @Deprecated
     public <D extends MiraiEvent> MiraiEventHook<D> onEventOnce(Class<D> event){
         MiraiEventHook<D> hook = new MiraiEventHook<>(event);
-        this.registerOnce(hook);
+        this.hookOnce(hook);
         return hook;
     }
 
+    @Deprecated
     public <D extends MiraiEvent> MiraiEventHook<D> onEventUntil(Class<D> event, Predicate<D> toRemove){
         MiraiEventHook<D> hook = new MiraiEventHook<>(event);
-        this.registerUntil(hook,toRemove);
+        this.hookUntil(hook,toRemove);
         return hook;
     }
 
+    @Deprecated
     public <D extends MiraiEvent> MiraiEventHook<D> onEventWhile(Class<D> event, Predicate<D> toKeep){
         MiraiEventHook<D> hook = new MiraiEventHook<>(event);
-        this.registerWhile(hook,toKeep);
+        this.hookWhile(hook,toKeep);
         return hook;
     }
 
