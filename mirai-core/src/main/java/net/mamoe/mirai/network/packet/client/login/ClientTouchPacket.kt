@@ -1,18 +1,27 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet.client.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.client.ClientPacket
+import net.mamoe.mirai.network.packet.client.writeHex
+import net.mamoe.mirai.network.packet.client.writeIP
+import net.mamoe.mirai.network.packet.client.writeQQ
 import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.toHexString
 import java.io.IOException
 
 /**
+ * The packet to touch server.
+ *
+ * @see net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
+ *
  * @author Him188moe @ Mirai Project
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 01")
-class ClientLoginPacket : ClientPacket() {
+class ClientTouchPacket : ClientPacket() {
+    //已经完成测试
     var qq: Int = 0
 
     @ExperimentalUnsignedTypes
@@ -34,9 +43,9 @@ class ClientLoginPacket : ClientPacket() {
                 this.writeHex(Protocol._0825data2)
                 this.writeQQ(qq)
                 this.writeHex("00 00 00 00 03 09 00 08 00 01")
-                this.writeIp("192.168.1.1");
-                //this.writeIp(Protocol.SERVER_IP[2]);
-                //this.writeIp("123456789")
+                this.writeIP("192.168.1.1");
+                //this.writeIP(Protocol.SERVER_IP[2]);
+                //this.writeIP("123456789")
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
                 this.writeHex(Protocol.publicKey)
                 println(this.toUByteArray().toHexString(" "))
@@ -49,7 +58,7 @@ class ClientLoginPacket : ClientPacket() {
 
 @ExperimentalUnsignedTypes
 fun main() {
-    val pk = ClientLoginPacket()
+    val pk = ClientTouchPacket()
     pk.qq = 1994701021
     pk.encode()
     pk.writeHex(Protocol.tail)
@@ -70,13 +79,13 @@ fun main() {
     println(object : ByteArrayDataOutputStream() {
         @Throws(IOException::class)
         override fun toUByteArray(): UByteArray {
-            //this.writeIp("192.168.1.1")
+            //this.writeIP("192.168.1.1")
             this.writeHex(Protocol._0825data0)
             this.writeHex(Protocol._0825data2)
             this.writeQQ(1994701021)
             this.writeHex("00 00 00 00 03 09 00 08 00 01")
-            //this.writeIp(Protocol.SERVER_IP.get(2));
-            this.writeIp("192.168.1.1")
+            //this.writeIP(Protocol.SERVER_IP.get(2));
+            this.writeIP("192.168.1.1")
             this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
             this.writeHex(Protocol.publicKey)
             return super.toUByteArray()

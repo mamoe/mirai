@@ -6,10 +6,13 @@ import java.io.DataInputStream
 /**
  * A packet received when logging in, used to redirect server address
  *
+ * @see net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
+ * @see net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
+ *
  * @author Him188moe @ Mirai Project
  */
-class Server0825Packet(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
-    lateinit var serverIP: String;
+class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
+    var serverIP: String? = null;
 
     var loginTime: Int = 0
     lateinit var loginIP: String
@@ -32,7 +35,7 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
 
         when (data.readByte().toInt()) {
             0xFE -> {
-                System.out.println("0xfe")
+                println("0xfe")
                 serverIP = data.readIP()
             }
             0X00 -> {

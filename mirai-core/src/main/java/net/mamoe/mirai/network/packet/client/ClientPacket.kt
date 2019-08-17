@@ -58,7 +58,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 
 
 @Throws(IOException::class)
-fun DataOutputStream.writeIp(ip: String) {
+fun DataOutputStream.writeIP(ip: String) {
     for (s in ip.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
         this.writeByte(s.toInt())
     }
@@ -78,7 +78,7 @@ fun DataOutputStream.writeHex(hex: String) {
 
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)
-fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: ByteArray, loginIP: ByteArray, tgtgtKey: ByteArray) {
+fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
     ByteArrayDataOutputStream().let {
         it.writeRandom(4)
         it.writeHex("00 02")
@@ -89,10 +89,10 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: ByteArra
         val md5_1 = md5(password);
         val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toByteArray())
         it.write(md5_1)
-        it.write(loginTime)//todo FIXED 12(maybe 11???) bytes??? check that
+        it.writeInt(loginTime)//todo FIXED 12(maybe 11???) bytes??? check that
         it.writeByte(0);
         it.writeZero(4 * 3)
-        it.write(loginIP)
+        it.writeIP(loginIP)
         it.writeHex("00 10")
         it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")
         it.write(tgtgtKey)
