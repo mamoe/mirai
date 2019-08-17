@@ -100,14 +100,14 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: ByteArra
     }
 }
 
-private fun Int.toByteArray(): ByteArray = byteArrayOf(//todo 检查这方法对不对, 这其实就是从 DataInputStream copy来的
+fun Int.toByteArray(): ByteArray = byteArrayOf(//todo 检查这方法对不对, 这其实就是从 DataInputStream copy来的
         (this.ushr(24) and 0xFF).toByte(),
         (this.ushr(16) and 0xFF).toByte(),
         (this.ushr(8) and 0xFF).toByte(),
         (this.ushr(0) and 0xFF).toByte()
 )
 
-private fun Int.toHexString(separator: String = " "): String = this.toByteArray().toHexString(separator);
+fun Int.toHexString(separator: String = " "): String = this.toByteArray().toHexString(separator);
 
 private fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 
