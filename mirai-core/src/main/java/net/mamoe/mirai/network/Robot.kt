@@ -14,6 +14,7 @@ import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.client.Client0825ResponsePacket
 import net.mamoe.mirai.network.packet.server.Server0825Packet
 import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.utils.MiraiLogger
 import java.net.InetSocketAddress
 
 /**
@@ -22,7 +23,7 @@ import java.net.InetSocketAddress
  * @author Him188moe @ Mirai Project
  */
 class Robot(val number: Long) {
-    private lateinit var ctx: ChannelHandlerContext;
+    private lateinit var ctx: ChannelHandlerContext
 
     internal fun onPacketReceived(packet: Packet) {
         if (packet !is ServerPacket) {
@@ -56,7 +57,7 @@ class Robot(val number: Long) {
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
                                 override fun channelRead0(ctx: ChannelHandlerContext, bytes: ByteArray) {
                                     try {
-                                        this@Robot.ctx = ctx;
+                                        this@Robot.ctx = ctx
                                         /*val remaining = Reader.read(bytes);
                                         if (Reader.isPacketAvailable()) {
                                             robot.onPacketReceived(Reader.toServerPacket())
@@ -65,7 +66,7 @@ class Robot(val number: Long) {
                                         }*/
                                         this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes))
                                     } catch (e: Exception) {
-                                        MiraiServer.getLogger().catching(e)
+                                        MiraiLogger.catching(e)
                                     }
                                 }
 
@@ -74,7 +75,7 @@ class Robot(val number: Long) {
                                 }
 
                                 override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-                                    MiraiServer.getLogger().catching(cause)
+                                    MiraiLogger.catching(cause)
                                 }
                             })
                         }
@@ -102,10 +103,10 @@ class Robot(val number: Long) {
          */
         fun read(bytes: ByteArray): ByteArray? {
             checkNotNull(this.length)
-            val needSize = length!! - this.bytes.size;//How many bytes we need
+            val needSize = length!! - this.bytes.size//How many bytes we need
             if (needSize == bytes.size || needSize > bytes.size) {
                 this.bytes += bytes
-                return null;
+                return null
             }
 
             //We got more than we need

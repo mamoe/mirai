@@ -9,6 +9,7 @@ import net.mamoe.mirai.network.Protocol;
 import net.mamoe.mirai.network.Robot;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
+import net.mamoe.mirai.utils.MiraiLogger;
 import net.mamoe.mirai.utils.config.MiraiConfig;
 import net.mamoe.mirai.utils.config.MiraiMapSection;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
-@Log4j2
 public class MiraiServer {
     @Getter
     private static MiraiServer instance;
@@ -40,11 +40,11 @@ public class MiraiServer {
     @Getter
     MiraiTaskManager taskManager;
 
+    @Getter
+    MiraiLogger logger;
+
     MiraiConfig setting;
 
-    public static Logger getLogger() {
-        return log;
-    }
 
     protected MiraiServer(){
         instance = this;
@@ -60,6 +60,7 @@ public class MiraiServer {
             this.getEventManager().boardcastEvent(new ServerDisableEvent());
             getLogger().info(LoggerTextFormat.SKY_BLUE + "Data have been saved");
         }
+
     }
 
 
@@ -67,6 +68,7 @@ public class MiraiServer {
         this.parentFolder = new File(System.getProperty("user.dir"));
         this.unix = !System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS");
 
+        this.logger = MiraiLogger.INSTANCE;
         this.eventManager = MiraiEventManager.getInstance();
         this.taskManager = MiraiTaskManager.getInstance();
 
