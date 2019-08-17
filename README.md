@@ -28,10 +28,8 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 
 ## Usage
 ### Requirements
-``` php
-    Java 11 or higher
-    ...
-```
+- Java 11 or higher
+- Kotlin
 ### Plugin Developments
 ``` php
     to be continue
