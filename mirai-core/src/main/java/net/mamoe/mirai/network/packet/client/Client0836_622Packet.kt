@@ -14,10 +14,15 @@ import java.net.InetAddress
  */
 @PacketId("08 36")
 @ExperimentalUnsignedTypes
-class Client0836_622Packet(private val qq: Int, private val password: String, private val tgtgtKey: ByteArray, private val seq: String, private val token0825: ByteArray) : ClientPacket() {
+class Client0836_622Packet(private val qq: Int, private val password: String, private val loginTime: ByteArray, private val loginIP: ByteArray, private val tgtgtKey: ByteArray, private val seq: String, private val token0825: ByteArray) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
-
+        this.writeHex(seq)
+        this.writeQQ(qq)
+        this.writeHex(Protocol._0836_622_fix1)
+        this.writeHex(Protocol.publicKey)
+        this.writeHex("00 00 00 10")
+        this.writeHex(Protocol._0836key1)
 
         //TEA 加密
         this.write(TEACryptor.encrypt(object : ClientPacket() {
@@ -37,7 +42,7 @@ class Client0836_622Packet(private val qq: Int, private val password: String, pr
                 this.writeQQ(qq)
                 this.writeHex("00 06")//tag
                 this.writeHex("00 78")//length
-                this.writeTLV0006(qq, password,)
+                this.writeTLV0006(qq, password, loginTime, loginIP, tgtgtKey)
                 //fix
                 this.writeHex(Protocol._0836_622_fix2)
                 this.writeHex("00 1A")//tag
@@ -88,7 +93,7 @@ class Client0836_622Packet(private val qq: Int, private val password: String, pr
                     writeLong(getCrc32(it))//todo may be int? check that.
                 }
             }
-        }.encodeToByteArray(), Protocol.redirectionKey.hexToBytes()))
+        }.encodeToByteArray(), Protocol.shareKey.hexToBytes()))
     }
 
 

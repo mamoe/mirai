@@ -10,7 +10,7 @@ import java.io.IOException
  * @author Him188moe @ Mirai Project
  */
 @ExperimentalUnsignedTypes
-@PacketId(0x08_25_31_02)
+@PacketId("08 25 31 02")
 class Client0825ResponsePacket(private val serverIP: String, private val qq: Int) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {

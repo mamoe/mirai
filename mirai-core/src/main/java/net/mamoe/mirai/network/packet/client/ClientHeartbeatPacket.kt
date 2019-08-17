@@ -8,7 +8,8 @@ import java.io.IOException
 /**
  * @author Him188moe @ Mirai Project
  */
-@PacketId(0x00_58)
+@ExperimentalUnsignedTypes
+@PacketId("00 58")
 class ClientHeartbeatPacket : ClientPacket() {
     var qq: Int = 0
     var sessionKey: ByteArray? = null//登录后获得
