@@ -11,7 +11,7 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.bytes.ByteArrayDecoder
 import io.netty.handler.codec.bytes.ByteArrayEncoder
 import net.mamoe.mirai.network.packet.client.ClientPacket
-import net.mamoe.mirai.network.packet.client.ClientServerRedirectionPacket
+import net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.Server0825Packet
 import net.mamoe.mirai.network.packet.server.ServerPacket

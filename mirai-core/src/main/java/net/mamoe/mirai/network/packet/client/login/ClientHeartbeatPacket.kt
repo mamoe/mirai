@@ -1,7 +1,11 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet.client.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.client.ClientPacket
+import net.mamoe.mirai.network.packet.client.writeHex
+import net.mamoe.mirai.network.packet.client.writeQQ
+import net.mamoe.mirai.network.packet.client.writeRandom
 import net.mamoe.mirai.util.TEACryptor
 import java.io.IOException
 
@@ -9,7 +13,7 @@ import java.io.IOException
  * @author Him188moe @ Mirai Project
  */
 @ExperimentalUnsignedTypes
-@PacketId("00 58")
+@PacketId("00 58")//todo check
 class ClientHeartbeatPacket : ClientPacket() {
     var qq: Int = 0
     var sessionKey: ByteArray? = null//登录后获得

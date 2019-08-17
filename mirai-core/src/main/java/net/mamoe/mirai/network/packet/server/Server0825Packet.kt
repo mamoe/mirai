@@ -6,6 +6,9 @@ import java.io.DataInputStream
 /**
  * A packet received when logging in, used to redirect server address
  *
+ * @see net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
+ * @see net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
+ *
  * @author Him188moe @ Mirai Project
  */
 class Server0825Packet(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {

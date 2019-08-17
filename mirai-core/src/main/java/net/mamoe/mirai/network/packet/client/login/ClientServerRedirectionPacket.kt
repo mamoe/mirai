@@ -1,7 +1,11 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet.client.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.client.ClientPacket
+import net.mamoe.mirai.network.packet.client.writeHex
+import net.mamoe.mirai.network.packet.client.writeIp
+import net.mamoe.mirai.network.packet.client.writeQQ
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import java.io.IOException

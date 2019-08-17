@@ -1,7 +1,8 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet.client.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.client.*
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.getCrc32
 import net.mamoe.mirai.util.getRandomKey
@@ -14,7 +15,7 @@ import java.net.InetAddress
  *
  * @author Him188moe @ Mirai Project
  */
-@PacketId("08 36 31 03")
+@PacketId("08 36 31 03")//may be 08 36, 31 03 has another meaning
 @ExperimentalUnsignedTypes
 class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: ByteArray, private val loginIP: ByteArray, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
     @ExperimentalUnsignedTypes
@@ -81,7 +82,7 @@ class ClientPasswordSubmissionPacket(private val qq: Int, private val password: 
 
                 this.writeHex("01 02")//tag
                 this.writeHex("00 62")//length
-                this.writeHex("00 01")//word?
+                this.writeHex("00 01")//word
                 this.writeHex("04 EB B7 C1 86 F9 08 96 ED 56 84 AB 50 85 2E 48")//key
                 this.writeHex("00 38")//length
                 //value

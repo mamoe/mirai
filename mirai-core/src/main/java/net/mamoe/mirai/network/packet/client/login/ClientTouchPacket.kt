@@ -1,18 +1,26 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet.client.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.client.ClientPacket
+import net.mamoe.mirai.network.packet.client.writeHex
+import net.mamoe.mirai.network.packet.client.writeIp
+import net.mamoe.mirai.network.packet.client.writeQQ
 import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.toHexString
 import java.io.IOException
 
 /**
+ * The packet to touch server.
+ *
+ * @see net.mamoe.mirai.network.packet.server.Server0825Packet
+ *
  * @author Him188moe @ Mirai Project
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 01")
-class ClientLoginPacket : ClientPacket() {
+class ClientTouchPacket : ClientPacket() {
     var qq: Int = 0
 
     @ExperimentalUnsignedTypes
@@ -49,7 +57,7 @@ class ClientLoginPacket : ClientPacket() {
 
 @ExperimentalUnsignedTypes
 fun main() {
-    val pk = ClientLoginPacket()
+    val pk = ClientTouchPacket()
     pk.qq = 1994701021
     pk.encode()
     pk.writeHex(Protocol.tail)
