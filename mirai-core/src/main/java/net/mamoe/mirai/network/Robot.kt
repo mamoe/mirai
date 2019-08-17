@@ -35,7 +35,10 @@ class Robot(val number: Int, private val password: String) {
         if (packet is ServerTouchResponsePacket) {
             if (packet.serverIP != null) {//redirection
                 connect(packet.serverIP!!)
-                sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, number))
+                sendPacket(ClientServerRedirectionPacket(
+                        serverIP = packet.serverIP!!,
+                        qq = number
+                ))
             } else {//password submission
                 sendPacket(ClientPasswordSubmissionPacket(
                         qq = this.number,

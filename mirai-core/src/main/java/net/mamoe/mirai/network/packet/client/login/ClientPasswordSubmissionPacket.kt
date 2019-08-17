@@ -3,10 +3,7 @@ package net.mamoe.mirai.network.packet.client.login
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.client.*
-import net.mamoe.mirai.util.TEACryptor
-import net.mamoe.mirai.util.getCrc32
-import net.mamoe.mirai.util.getRandomKey
-import net.mamoe.mirai.util.hexToBytes
+import net.mamoe.mirai.util.*
 import java.io.IOException
 import java.net.InetAddress
 
@@ -15,6 +12,21 @@ import java.net.InetAddress
  *
  * @author Him188moe @ Mirai Project
  */
+
+@ExperimentalUnsignedTypes
+fun main() {
+    val pk = ClientPasswordSubmissionPacket(
+            qq = 1994701021,
+            password = "D1 A5 C8 BB E1 Q3 CC DD",//其实这个就是普通的密码, 不是HEX
+            loginTime = 131513,
+            loginIP = "123.123.123.123",
+            token0825 = byteArrayOf(),
+            tgtgtKey = "AA BB CC DD EE FF AA BB CC".hexToBytes()
+    )
+
+    println(pk.encodeToByteArray().toHexString())
+}
+
 @PacketId("08 36 31 03")//may be 08 36, 31 03 has another meaning
 @ExperimentalUnsignedTypes
 class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: Int, private val loginIP: String, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
@@ -27,12 +39,12 @@ class ClientPasswordSubmissionPacket(private val qq: Int, private val password: 
         this.writeHex(Protocol._0836key1)
 
         //TEA 加密
-        this.write(TEACryptor.encrypt(object : ClientPacket() {
+        this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
-            override fun encode() {
+            override fun toByteArray(): ByteArray {
                 val hostName: String = InetAddress.getLocalHost().hostName.let { it.substring(0, it.length - 3) };
 
-                this.writeQQ(System.currentTimeMillis().toInt())//that's correct
+                this.writeInt(System.currentTimeMillis().toInt())
                 this.writeHex("01 12");//tag
                 this.writeHex("00 38");//length
                 this.write(token0825);//length
@@ -94,9 +106,9 @@ class ClientPasswordSubmissionPacket(private val qq: Int, private val password: 
                     write(it)//key
                     writeLong(getCrc32(it))//todo may be int? check that.
                 }
+
+                return super.toByteArray();
             }
-        }.encodeToByteArray(), Protocol.shareKey.hexToBytes()))
+        }.toByteArray(), Protocol.shareKey.hexToBytes()))
     }
-
-
 }
