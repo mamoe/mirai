@@ -107,7 +107,8 @@ fun Int.toByteArray(): ByteArray = byteArrayOf(//todo 检查这方法对不对, 
         (this.ushr(0) and 0xFF).toByte()
 )
 
-fun Int.toHexString(separator: String = " "): String = this.toByteArray().toHexString(separator);
+@ExperimentalUnsignedTypes
+fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toHexString(separator);
 
 private fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 

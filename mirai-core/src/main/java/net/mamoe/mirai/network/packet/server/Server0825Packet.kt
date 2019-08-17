@@ -38,7 +38,7 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
             0X00 -> {
                 data.skip(4)
                 token = data.readNBytes(56)
-                data.skip(28)
+                data.skip(6)
 
                 loginTime = data.readInt()
                 loginIP = data.readIP()
