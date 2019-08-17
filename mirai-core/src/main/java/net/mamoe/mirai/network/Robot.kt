@@ -1,6 +1,7 @@
 package net.mamoe.mirai.network
 
 import io.netty.bootstrap.Bootstrap
+import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.SimpleChannelInboundHandler
@@ -9,11 +10,13 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.bytes.ByteArrayDecoder
 import io.netty.handler.codec.bytes.ByteArrayEncoder
-import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.client.Client0825ResponsePacket
+import net.mamoe.mirai.network.packet.client.ClientPacket
+import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.Server0825Packet
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.utils.MiraiLogger
+import java.net.DatagramPacket
 import java.net.InetSocketAddress
 
 /**
@@ -22,28 +25,36 @@ import java.net.InetSocketAddress
  * @author Him188moe @ Mirai Project
  */
 class Robot(val number: Int) {
-    private lateinit var ctx: ChannelHandlerContext
+    private lateinit var channel: Channel
 
-    internal fun onPacketReceived(packet: Packet) {
-        if (packet !is ServerPacket) {
-            return
-        }
 
+    @ExperimentalUnsignedTypes
+    internal fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
-        if (packet is Server0825Packet) {//todo 检查是否需要修改 UDP 连接???
+        if (packet is Server0825Packet) {
+            connect(packet.serverIP)
             sendPacket(Client0825ResponsePacket(packet.serverIP, number))
         }
     }
 
-    private fun sendPacket(packet: Packet) {
-
+    @ExperimentalUnsignedTypes
+    private fun sendPacket(packet: ClientPacket) {
+        packet.encode()
+        packet.writeHex(Protocol.tail);
+        channel.writeAndFlush(DatagramPacket(packet.toByteArray()))
     }
 
+    companion object {
+        private fun DatagramPacket(toByteArray: ByteArray): DatagramPacket = DatagramPacket(toByteArray, toByteArray.size)
+    }
+
+    @ExperimentalUnsignedTypes
     @Throws(InterruptedException::class)
-    fun connect(host: String, port: Int) {
+    fun connect(host: String, port: Int = 8000) {
         val group = NioEventLoopGroup()
         try {
             val b = Bootstrap()
+
             b.group(group)
                     .channel(NioSocketChannel::class.java)
                     .remoteAddress(InetSocketAddress(host, port))
@@ -56,7 +67,6 @@ class Robot(val number: Int) {
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
                                 override fun channelRead0(ctx: ChannelHandlerContext, bytes: ByteArray) {
                                     try {
-                                        this@Robot.ctx = ctx
                                         /*val remaining = Reader.read(bytes);
                                         if (Reader.isPacketAvailable()) {
                                             robot.onPacketReceived(Reader.toServerPacket())
@@ -80,9 +90,8 @@ class Robot(val number: Int) {
                         }
                     })
 
-            val cf = b.connect().sync()
-
-            cf.channel().closeFuture().sync()
+            channel = b.connect().sync().channel();
+            channel.closeFuture().sync()
         } finally {
             group.shutdownGracefully().sync()
         }

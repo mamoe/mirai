@@ -122,7 +122,7 @@ public class MiraiServer {
         }*/
     }
 
-    public void initSetting(File setting){
+    private void initSetting(File setting) {
         getLogger().info(LoggerTextFormat.SKY_BLUE + "Thanks for using Mirai");
         getLogger().info(LoggerTextFormat.SKY_BLUE + "initializing Settings");
         try {
