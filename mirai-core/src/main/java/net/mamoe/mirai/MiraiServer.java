@@ -97,7 +97,7 @@ public class MiraiServer {
 
         Robot robot = new Robot(1994701021L);
         try {
-            robot.connect(Protocol.SERVER_IP.get(2), 8000);
+            robot.connect(Protocol.Companion.getSERVER_IP().get(2), 8000);
         } catch (InterruptedException e) {
             e.printStackTrace();
             System.exit(1);

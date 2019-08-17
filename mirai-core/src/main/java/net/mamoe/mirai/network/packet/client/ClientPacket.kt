@@ -1,81 +1,83 @@
-package net.mamoe.mirai.network.packet.client;
+package net.mamoe.mirai.network.packet.client
 
-import lombok.Getter;
-import net.mamoe.mirai.network.Protocol;
-import net.mamoe.mirai.network.packet.Packet;
-import net.mamoe.mirai.network.packet.PacketId;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import lombok.Getter
+import net.mamoe.mirai.network.Protocol
+import net.mamoe.mirai.network.packet.Packet
+import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.util.ByteArrayDataOutputStream
+import java.io.DataOutputStream
+import java.io.IOException
 
 /**
  * @author Him188moe @ Mirai Project
  */
-public abstract class ClientPacket extends DataOutputStream implements Packet {
-
+abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
     @Getter
-    private final int packageId;
+    val packageId: Int
 
-    public ClientPacket() {
-        super(new ByteArrayOutputStream());
-        var annotation = this.getClass().getAnnotation(PacketId.class);
-        packageId = annotation.value();
+    init {
+        val annotation = this.javaClass.getAnnotation(PacketId::class.java)
+        packageId = annotation.value
 
         try {
-            this.writeHex(Protocol.head);
-            this.writeHex(Protocol.ver);
-            writePacketId();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            this.writeHex(Protocol.head)
+            this.writeHex(Protocol.ver)
+            writePacketId()
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
+
     }
 
-    protected void writeIp(String ip) throws IOException {
-        for (String s : ip.split("\\.")) {
-            this.writeInt(Integer.parseInt(s));
-        }
+    @Throws(IOException::class)
+    fun writePacketId() {
+        this.writeInt(this@ClientPacket.packageId)
     }
-
-    protected void writePacketId() throws IOException {
-        this.writeInt(this.packageId);
-    }
-
-    protected void writeHex(String hex) throws IOException {
-        for (String s : hex.split(" ")) {
-            s = s.trim();
-            if (s.isEmpty()) {
-                continue;
-            }
-            this.writeByte(Byte.valueOf(s, 16));
-        }
-    }
-
-    protected void writeRandom(int length) throws IOException {
-        for (int i = 0; i < length; i++) {
-            this.writeByte((byte) (int) (Math.random() * 255));
-        }
-    }
-
-    protected void writeQQ(long qq) throws IOException {
-        this.writeLong(qq);
-    }
-
 
     /**
      * Encode this packet.
-     * <p>
-     * Before sending the packet, an {@linkplain Protocol#tail tail} will be added.
+     *
+     *
+     * Before sending the packet, an [tail][Protocol.tail] will be added.
      */// TODO: 2019/8/9 添加 tail
-    public abstract void encode() throws IOException;
+    @Throws(IOException::class)
+    abstract fun encode()
 
-    public byte[] toByteArray() {
-        return ((ByteArrayOutputStream) this.out).toByteArray();
+    @Throws(IOException::class)
+    fun encodeToByteArray(): ByteArray {
+        encode()
+        return toByteArray()
     }
 
-    public final byte[] encodeToByteArray() throws IOException {
-        encode();
-        return toByteArray();
-    }
+}
 
+
+@Throws(IOException::class)
+fun DataOutputStream.writeIp(ip: String) {
+    for (s in ip.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+        this.writeInt(Integer.parseInt(s))
+    }
+}
+
+
+@Throws(IOException::class)
+fun DataOutputStream.writeHex(hex: String) {
+    for (s in hex.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+        if (s.isEmpty()) {
+            continue
+        }
+        this.writeByte(Integer.parseInt(s, 16))
+    }
+}
+
+@Throws(IOException::class)
+fun DataOutputStream.writeRandom(length: Int) {
+    for (i in 0 until length) {
+        this.writeByte((Math.random() * 255).toInt().toByte().toInt())
+    }
+}
+
+@Throws(IOException::class)
+fun DataOutputStream.writeQQ(qq: Long) {
+    this.writeLong(qq)
 }
