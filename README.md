@@ -29,7 +29,7 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 ## Usage
 ### Requirements
 ``` php
-    Java 10 or higher
+    Java 11 or higher
     ...
 ```
 ### Plugin Developments
