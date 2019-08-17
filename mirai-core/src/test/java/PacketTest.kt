@@ -1,4 +1,4 @@
-import net.mamoe.mirai.network.packet.client.Client0825ResponsePacket
+import net.mamoe.mirai.network.packet.client.toHexString
 import net.mamoe.mirai.network.packet.server.Server0825Packet
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
@@ -13,6 +13,6 @@ fun main(){
     val packet = Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_01,s)
     packet.decode()
     System.out.println(packet.token.toUByteArray().toHexString(" "))
-    System.out.println(packet.loginTime)
+    System.out.println(packet.loginTime.toHexString(" "))
     System.out.println(packet.loginIP)
 }
