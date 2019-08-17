@@ -12,7 +12,7 @@ import java.io.DataInputStream
  * @author Him188moe @ Mirai Project
  */
 class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
-    lateinit var serverIP: String;
+    var serverIP: String? = null;
 
     var loginTime: Int = 0
     lateinit var loginIP: String
@@ -35,7 +35,7 @@ class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputSt
 
         when (data.readByte().toInt()) {
             0xFE -> {
-                System.out.println("0xfe")
+                println("0xfe")
                 serverIP = data.readIP()
             }
             0X00 -> {

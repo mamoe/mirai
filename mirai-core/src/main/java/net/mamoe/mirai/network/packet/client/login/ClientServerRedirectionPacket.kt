@@ -4,7 +4,7 @@ import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.writeHex
-import net.mamoe.mirai.network.packet.client.writeIp
+import net.mamoe.mirai.network.packet.client.writeIP
 import net.mamoe.mirai.network.packet.client.writeQQ
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
@@ -32,7 +32,7 @@ class ClientServerRedirectionPacket(private val serverIP: String, private val qq
                 this.writeHex(Protocol._0825data2)
                 this.writeQQ(qq)
                 this.writeHex("00 01 00 00 03 09 00 0C 00 01")
-                this.writeIp(serverIP)
+                this.writeIP(serverIP)
                 this.writeHex("01 6F A1 58 22 01 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 03 00 19")
                 this.writeHex(Protocol.publicKey)
             }

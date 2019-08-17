@@ -17,7 +17,7 @@ import java.net.InetAddress
  */
 @PacketId("08 36 31 03")//may be 08 36, 31 03 has another meaning
 @ExperimentalUnsignedTypes
-class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: ByteArray, private val loginIP: ByteArray, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
+class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: Int, private val loginIP: String, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)

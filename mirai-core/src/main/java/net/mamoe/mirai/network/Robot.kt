@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.bytes.ByteArrayDecoder
 import io.netty.handler.codec.bytes.ByteArrayEncoder
 import net.mamoe.mirai.network.packet.client.ClientPacket
+import net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
 import net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.ServerPacket
@@ -24,7 +25,7 @@ import java.net.InetSocketAddress
  *
  * @author Him188moe @ Mirai Project
  */
-class Robot(val number: Int) {
+class Robot(val number: Int, private val password: String) {
     private lateinit var channel: Channel
 
 
@@ -32,8 +33,19 @@ class Robot(val number: Int) {
     internal fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
         if (packet is ServerTouchResponsePacket) {
-            connect(packet.serverIP)
-            sendPacket(ClientServerRedirectionPacket(packet.serverIP, number))
+            if (packet.serverIP != null) {//redirection
+                connect(packet.serverIP!!)
+                sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, number))
+            } else {//password submission
+                sendPacket(ClientPasswordSubmissionPacket(
+                        qq = this.number,
+                        password = this.password,
+                        loginTime = packet.loginTime,
+                        loginIP = packet.loginIP,
+                        token0825 = packet.token,
+                        tgtgtKey = packet.tgtgtKey
+                ))
+            }
         }
     }
 
