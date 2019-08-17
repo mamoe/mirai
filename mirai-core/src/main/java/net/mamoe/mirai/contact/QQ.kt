@@ -3,7 +3,7 @@ package net.mamoe.mirai.contact
 /**
  * @author Him188moe @ Mirai Project
  */
-class QQ(number: Long) : Contact(number) {
+class QQ(number: Int) : Contact(number) {
     init {
         Instances.qqs.add(this)
     }

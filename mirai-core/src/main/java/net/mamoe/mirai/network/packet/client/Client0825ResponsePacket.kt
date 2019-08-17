@@ -10,7 +10,7 @@ import java.io.IOException
  * @author Him188moe @ Mirai Project
  */
 @PacketId(0x08_25_31_02)
-class Client0825ResponsePacket(private val serverIP: String, private val qq: Long) : ClientPacket() {
+class Client0825ResponsePacket(private val serverIP: String, private val qq: Int) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)

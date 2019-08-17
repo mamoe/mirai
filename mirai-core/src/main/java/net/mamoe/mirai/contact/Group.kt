@@ -1,6 +1,6 @@
 package net.mamoe.mirai.contact
 
-class Group(number: Long) : Contact(number) {
+class Group(number: Int) : Contact(number) {
     init {
         Instances.groups.add(this)
     }

@@ -5,7 +5,7 @@ package net.mamoe.mirai.contact
  *
  * @author Him188moe @ Mirai Project
  */
-abstract class Contact(val number: Long) {
+abstract class Contact(val number: Int) {
 
     /**
      * Async

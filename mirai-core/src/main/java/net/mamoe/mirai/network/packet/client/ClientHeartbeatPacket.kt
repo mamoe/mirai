@@ -8,9 +8,9 @@ import java.io.IOException
 /**
  * @author Him188moe @ Mirai Project
  */
-@PacketId(value = 0x00_58)
+@PacketId(0x00_58)
 class ClientHeartbeatPacket : ClientPacket() {
-    var qq: Long = 0
+    var qq: Int = 0
     var sessionKey: ByteArray? = null//登录后获得
 
     @Throws(IOException::class)

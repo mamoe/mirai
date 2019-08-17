@@ -22,7 +22,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
         try {
             this.writeHex(Protocol.head)
             this.writeHex(Protocol.ver)
-            writePacketId()
+            this.writePacketId()
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -78,6 +78,6 @@ fun DataOutputStream.writeRandom(length: Int) {
 }
 
 @Throws(IOException::class)
-fun DataOutputStream.writeQQ(qq: Long) {
-    this.writeLong(qq)
+fun DataOutputStream.writeQQ(qq: Int) {
+    this.writeInt(qq)
 }

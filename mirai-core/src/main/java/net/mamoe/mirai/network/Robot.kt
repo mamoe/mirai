@@ -9,7 +9,6 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.bytes.ByteArrayDecoder
 import io.netty.handler.codec.bytes.ByteArrayEncoder
-import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.client.Client0825ResponsePacket
 import net.mamoe.mirai.network.packet.server.Server0825Packet
@@ -22,7 +21,7 @@ import java.net.InetSocketAddress
  *
  * @author Him188moe @ Mirai Project
  */
-class Robot(val number: Long) {
+class Robot(val number: Int) {
     private lateinit var ctx: ChannelHandlerContext
 
     internal fun onPacketReceived(packet: Packet) {
