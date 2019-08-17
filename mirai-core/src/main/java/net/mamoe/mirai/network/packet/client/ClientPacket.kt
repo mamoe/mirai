@@ -11,6 +11,7 @@ import java.io.IOException
 /**
  * @author Him188moe @ Mirai Project
  */
+@ExperimentalUnsignedTypes
 abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
     @Getter
     val packageId: Int
