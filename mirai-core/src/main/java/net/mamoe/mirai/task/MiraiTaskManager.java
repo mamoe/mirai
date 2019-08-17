@@ -2,6 +2,7 @@ package net.mamoe.mirai.task;
 
 
 import net.mamoe.mirai.MiraiServer;
+import net.mamoe.mirai.event.MiraiEventHook;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 
 import java.util.concurrent.Callable;
@@ -26,9 +27,10 @@ public class MiraiTaskManager {
     private MiraiTaskManager() {
         this.pool = new MiraiThreadPool();
 
-        MiraiServer.getInstance().getEventManager()
+        MiraiEventHook
                 .onEvent(ServerDisableEvent.class)
-                .setHandler(a -> this.pool.close());
+                .setHandler(a -> this.pool.close())
+                .mount();
 
     }
 

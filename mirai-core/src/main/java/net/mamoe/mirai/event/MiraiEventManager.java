@@ -26,17 +26,11 @@ public class MiraiEventManager {
     private Map<Class<? extends MiraiEvent>, List<MiraiEventHook<? extends MiraiEvent>>> hooks = new HashMap<>();
 
     public <D extends MiraiEvent> void hookUntil(MiraiEventHook<D> hook, Predicate<D> toRemove){
-        hooksLock.lock();
-        hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
-        hooks.get(hook.getEventClass()).add(hook.setValidUntil(toRemove));
-        hooksLock.unlock();
+        this.mountHook(hook.setValidUntil(toRemove));
     }
 
     public <D extends MiraiEvent> void hookWhile(MiraiEventHook<D> hook, Predicate<D> toKeep){
-        hooksLock.lock();
-        hooks.putIfAbsent(hook.getEventClass(),new ArrayList<>());
-        hooks.get(hook.getEventClass()).add(hook.setValidWhile(toKeep));
-        hooksLock.unlock();
+        this.mountHook(hook.setValidWhile(toKeep));
     }
 
     public <D extends MiraiEvent> void hookOnce(MiraiEventHook<D> hook){
@@ -44,15 +38,25 @@ public class MiraiEventManager {
     }
 
     public <D extends MiraiEvent> void registerHook(MiraiEventHook<D> hook){
-        this.hookUntil(hook,(a) -> false);
+       this.mountHook(hook);
     }
 
+    private <D extends MiraiEvent> void mountHook(MiraiEventHook<D> hook){
+        if(!hook.isMount()) {
+            hook.setMount(true);
+            hooksLock.lock();
+            hooks.putIfAbsent(hook.getEventClass(), new ArrayList<>());
+            hooks.get(hook.getEventClass()).add(hook);
+            hooksLock.unlock();
+        }
+    }
 
     /**
      * 不推荐onEvent
-     * 非线程安全
+     * 由于不能保证Hook的原子性 非线程安全
      * 不能保证下一个 D event发生时handler就位
      * @author NaturalHG Aug27
+     * use {@link MiraiEventHook::onEvent()} to replace
      */
 
     @Deprecated
@@ -82,6 +86,7 @@ public class MiraiEventManager {
         this.hookWhile(hook,toKeep);
         return hook;
     }
+
 
 
 

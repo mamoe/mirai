@@ -1,13 +1,17 @@
 package net.mamoe.mirai.event;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.mamoe.mirai.event.events.Cancellable;
 import net.mamoe.mirai.event.events.MiraiEvent;
+import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class MiraiEventHook<T extends MiraiEvent> {
+public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
 
     @Getter
     Class<T> eventClass;
@@ -21,6 +25,10 @@ public class MiraiEventHook<T extends MiraiEvent> {
     @Getter
     private volatile boolean ignoreCancelled = true;
 
+    @Getter
+    @Setter
+    private volatile boolean mount = false;
+
     /**
      * return true -> this hook need to be removed
      */
@@ -28,7 +36,7 @@ public class MiraiEventHook<T extends MiraiEvent> {
     private Predicate<T> valid;
 
     public MiraiEventHook(Class<T> eventClass) {
-        this(eventClass,a -> {});
+        this(eventClass,null);
     }
 
     public MiraiEventHook(Class<T> eventClass, Consumer<T> handler){
@@ -74,4 +82,29 @@ public class MiraiEventHook<T extends MiraiEvent> {
         return this.valid.test((T)event);
     }
 
+    /**
+     * 更加安全高效的方式
+     * Remember to use {@link this.mount()} at last
+     * */
+
+    public static <D extends MiraiEvent> MiraiEventHook<D> onEvent(Class<D> event){
+        return new MiraiEventHook<>(event);
+    }
+
+    public void mount(){
+        if(this.handler == null)this.handler = a -> {};
+        MiraiEventManager.getInstance().registerHook(this);
+    }
+
+    public void mountOnce(){
+        if(this.handler == null)this.handler = a -> {};
+        MiraiEventManager.getInstance().hookOnce(this);
+    }
+
+
+    @Override
+    public void close(){
+        this.handler = null;
+        this.valid = null;
+    }
 }
