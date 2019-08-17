@@ -54,7 +54,7 @@ fun DataInputStream.readIP(): String {
         val byte = readByte();
         buff += (byte.toUByte().toString())
         if(i !=3)buff+="."
-        System.out.println(byte.toHexString())
+        //System.out.println(byte.toHexString())
     }
     return buff
 }
