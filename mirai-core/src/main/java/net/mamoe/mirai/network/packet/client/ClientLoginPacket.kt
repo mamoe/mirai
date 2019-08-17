@@ -14,6 +14,7 @@ import java.io.IOException
 class ClientLoginPacket : ClientPacket() {
     var qq: Int = 0
 
+    @ExperimentalUnsignedTypes
     @Throws(IOException::class)
     override fun encode() {
         //println(this.toUByteArray().toHexString(" "))
@@ -32,10 +33,12 @@ class ClientLoginPacket : ClientPacket() {
                 this.writeHex(Protocol._0825data2)
                 this.writeQQ(qq)
                 this.writeHex("00 00 00 00 03 09 00 08 00 01")
-                //this.writeIp(Protocol.SERVER_IP.get(2));
-                this.writeIp("123456789")
+                this.writeIp("192.168.1.1");
+                //this.writeIp(Protocol.SERVER_IP[2]);
+                //this.writeIp("123456789")
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
                 this.writeHex(Protocol.publicKey)
+                println(this.toUByteArray().toHexString(" "))
                 return super.toByteArray()
             }
         }.toByteArray(), Protocol.hexToBytes(Protocol._0825key)))
@@ -51,8 +54,46 @@ fun main() {
     pk.writeHex(Protocol.tail)
     println("pk.toByteArray() = " + pk.toUByteArray().contentToString())
     println(pk.toUByteArray().toHexString(" "))
+
+    /*
+    println(object : ByteArrayDataOutputStream() {
+        @Throws(IOException::class)
+        override fun toUByteArray(): UByteArray {
+            this.writeInt(1994701021)
+            return super.toUByteArray()
+        }
+    }.toUByteArray().toHexString())*/
+
+
+/*
+    println(object : ByteArrayDataOutputStream() {
+        @Throws(IOException::class)
+        override fun toUByteArray(): UByteArray {
+            //this.writeIp("192.168.1.1")
+            this.writeHex(Protocol._0825data0)
+            this.writeHex(Protocol._0825data2)
+            this.writeQQ(1994701021)
+            this.writeHex("00 00 00 00 03 09 00 08 00 01")
+            //this.writeIp(Protocol.SERVER_IP.get(2));
+            this.writeIp("192.168.1.1")
+            this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
+            this.writeHex(Protocol.publicKey)
+            return super.toUByteArray()
+        }
+    }.toUByteArray().toHexString(" "))
+*/
+
 }
 
 
-//mirai: 02 37 13 08 25 31 01 76 E4 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D 64 CB 62 9D 7D FE 2A 20 B6 14 B8 25 68 8A 85 D6 34 12 A6 5F C5 7D 94 EE 6F 47 CB E2 45 BF 46 7B 90 A2 F7 C0 E7 9A 73 FF 03 51 B5 2C C2 1A 66 A6 A1 DE 2D FE E2 6F 68 58 F0 C1 92 AF 00 51 60 9D 32 17 73 3E 94 EE 6C F8 CB FF 46 66 E6 9D 8D 51 8D B3 44 EE 52 5F 67 6C 23 EE 0F 04 9C 13 E5 A4 82 DE E7 80 7B 16 4B 9C 03
-//epl  : 02 37 13 08 25 31 01 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D 37 B1 B1 62 C2 09 06 C5 FA 7B 4A 1A 77 DA BE 69 FE 03 61 3B 20 3E 99 72 33 65 D1 FA 16 03 33 DC E0 91 43 10 6D DE B7 E1 6C F8 21 A6 FA F4 A7 16 7A 7C 78 2F C1 7C 1A 1F 2A 38 68 AF 61 CE F4 0A A5 E8 BC AA 8E 4E AC FA 31 8C 70 33 DD DC FD FC 72 69 B8 FB 80 29 05 F4 61 97 E9 AD DB 89 51 D2 B1 44 A3 B2 E2 B8 89 63 03
+//
+//mirai: 00 18 00 16 00 01 00 00 04 53 00 00 00 01 00 00 15 85 76 E4 B8 DD 00 00 00 00 03 09 00 08 00 01 C0 A8 01 01 00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19 02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3
+//epl  : 00 18 00 16 00 01 00 00 04 53 00 00 00 01 00 00 15 85 76 E4 B8 DD 00 00 00 00 03 09 00 08 00 01 C0 A8 01 01 00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19 02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3
+
+//encryption data
+//mirai: 00 18 00 16 00 01 00 00 04 53 00 00 00 01 00 00 15 85 76 E4 B8 DD 00 00 00 00 03 09 00 08 00 01 C0 A8 01 01 00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19 02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3
+//epl  : 00 18 00 16 00 01 00 00 04 53 00 00 00 01 00 00 15 85 76 E4 B8 DD 00 00 00 00 03 09 00 08 00 01 C0 A8 01 01 00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19 02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3
+
+//whole package
+//mirai: 02 37 13 08 25 31 01 76 E4 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D 91 DE 6C 86 08 E0 5C ED C7 78 97 E4 A2 3E A6 F9 59 89 91 0A A3 5B 17 35 8B 1A 1F 6A 6C EA 26 C0 CE A1 FE 70 47 A2 FC 6C FA 17 0B 0E 64 A3 8E 59 21 AA E3 EF 5E 3D 4A C3 03 2B 66 FB 44 B8 C4 3F AC BB 6E 12 D0 0D 55 CD 1D 9E 96 6C B5 AE 46 DC 28 B6 81 30 04 10 B0 A4 04 7C 51 E8 EF FE F5 D3 19 9C 77 F6 FD 7B A8 02 03
+//epl  : 02 37 13 08 25 31 01 76 E4 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D E6 3D D4 31 C7 80 74 0A EE 0F 6C 8F 4B 13 77 40 CE C9 C3 96 AB 05 13 3F C7 D0 1C 11 18 A9 03 32 FF 1F EB D9 6A 00 4E D4 AC 86 03 A4 30 2F 62 A0 77 6D 47 F3 4F EF AB 01 80 3D EB 47 65 8A A4 DB 63 8E 38 5A 4B 59 D0 D8 AF 42 6C 6D B3 F7 5B A4 2A 42 FD CA 8C 11 85 92 4A 0F 28 FB F3 3C A1 50 79 66 C4 21 09 E0 51 9E 03

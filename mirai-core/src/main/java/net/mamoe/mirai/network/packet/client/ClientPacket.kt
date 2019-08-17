@@ -55,18 +55,19 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 @Throws(IOException::class)
 fun DataOutputStream.writeIp(ip: String) {
     for (s in ip.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
-        this.writeInt(Integer.parseInt(s))
+        this.writeByte(s.toInt())
     }
 }
 
 
+@ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeHex(hex: String) {
     for (s in hex.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
         if (s.isEmpty()) {
             continue
         }
-        this.writeByte(Integer.parseInt(s, 16))
+        this.writeByte(s.toUByte(16).toByte().toInt())
     }
 }
 
