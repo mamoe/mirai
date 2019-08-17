@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.packet.client
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.util.ByteArrayDataOutputStream
-import net.mamoe.mirai.util.TEAEncryption
+import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.toHexString
 import java.io.IOException
 
@@ -26,7 +26,7 @@ class ClientLoginPacket : ClientPacket() {
 
 
         //TEA 加密
-        this.write(TEAEncryption.encrypt(object : ByteArrayDataOutputStream() {
+        this.write(TEACryptor.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {
                 this.writeHex(Protocol._0825data0)
@@ -41,7 +41,7 @@ class ClientLoginPacket : ClientPacket() {
                 println(this.toUByteArray().toHexString(" "))
                 return super.toByteArray()
             }
-        }.toByteArray(), Protocol.hexToBytes(Protocol._0825key)))
+        }.toByteArray()))
     }
 
 }
@@ -52,7 +52,7 @@ fun main() {
     pk.qq = 1994701021
     pk.encode()
     pk.writeHex(Protocol.tail)
-    println("pk.toByteArray() = " + pk.toUByteArray().contentToString())
+    //println("pk.toByteArray() = " + pk.toUByteArray().contentToString())
     println(pk.toUByteArray().toHexString(" "))
 
     /*
@@ -94,6 +94,5 @@ fun main() {
 //mirai: 00 18 00 16 00 01 00 00 04 53 00 00 00 01 00 00 15 85 76 E4 B8 DD 00 00 00 00 03 09 00 08 00 01 C0 A8 01 01 00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19 02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3
 //epl  : 00 18 00 16 00 01 00 00 04 53 00 00 00 01 00 00 15 85 76 E4 B8 DD 00 00 00 00 03 09 00 08 00 01 C0 A8 01 01 00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19 02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3
 
-//whole package
-//mirai: 02 37 13 08 25 31 01 76 E4 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D 91 DE 6C 86 08 E0 5C ED C7 78 97 E4 A2 3E A6 F9 59 89 91 0A A3 5B 17 35 8B 1A 1F 6A 6C EA 26 C0 CE A1 FE 70 47 A2 FC 6C FA 17 0B 0E 64 A3 8E 59 21 AA E3 EF 5E 3D 4A C3 03 2B 66 FB 44 B8 C4 3F AC BB 6E 12 D0 0D 55 CD 1D 9E 96 6C B5 AE 46 DC 28 B6 81 30 04 10 B0 A4 04 7C 51 E8 EF FE F5 D3 19 9C 77 F6 FD 7B A8 02 03
-//epl  : 02 37 13 08 25 31 01 76 E4 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D E6 3D D4 31 C7 80 74 0A EE 0F 6C 8F 4B 13 77 40 CE C9 C3 96 AB 05 13 3F C7 D0 1C 11 18 A9 03 32 FF 1F EB D9 6A 00 4E D4 AC 86 03 A4 30 2F 62 A0 77 6D 47 F3 4F EF AB 01 80 3D EB 47 65 8A A4 DB 63 8E 38 5A 4B 59 D0 D8 AF 42 6C 6D B3 F7 5B A4 2A 42 FD CA 8C 11 85 92 4A 0F 28 FB F3 3C A1 50 79 66 C4 21 09 E0 51 9E 03
+//mirai: 02 37 13 08 25 31 01 76 E4 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D C3 47 F0 25 A1 8E 74 EF 1E 0B 32 5B 20 8A FA 3B 0B 52 8F 86 E6 04 F1 D6 F8 63 75 60 8C 0C 7D 06 D1 E0 22 F8 49 EF AF 61 EE 7E 69 72 EB 10 08 30 69 50 1C 84 A9 C2 16 D7 52 B9 1C 79 CA 5A CF FD BC AE D8 A6 BB DC 21 6E 79 26 E1 A2 23 11 AA B0 9A 49 39 72 ED 61 12 B6 88 4D A2 56 23 E9 92 11 92 27 4A 70 00 C9 01 7B 03
+//epl  : 02 37 13 08 25 31 01 76 E4 B8 DD 03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00 A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D F0 1B 0A 8D 98 99 A9 78 B3 82 69 91 B1 8C FD 64 AC C1 DF B5 A1 A6 4C AC B6 CC A3 B2 11 51 15 00 A4 01 75 7C 61 83 C1 89 3E 93 42 A1 AF D4 1B B3 81 4E 52 67 C1 15 42 5D 28 00 3D 1E 40 28 B1 C9 CE 08 15 F3 2B B5 5A 88 59 4E F4 9A 15 CB 77 BE 56 86 16 CD 4F CD F6 14 D2 A6 B0 7B F1 22 B9 DD 64 98 5C 93 AE 6F 6C 43 03

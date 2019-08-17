@@ -2,7 +2,7 @@ package net.mamoe.mirai.network.packet.client
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.util.TEAEncryption
+import net.mamoe.mirai.util.TEACryptor
 import java.io.IOException
 
 /**
@@ -18,6 +18,6 @@ class ClientHeartbeatPacket : ClientPacket() {
         this.writeRandom(2)
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
-        this.write(TEAEncryption.encrypt(byteArrayOf(0x00, 0x01, 0x00, 0x01), sessionKey))
+        this.write(TEACryptor.encrypt(byteArrayOf(0x00, 0x01, 0x00, 0x01), sessionKey))
     }
 }

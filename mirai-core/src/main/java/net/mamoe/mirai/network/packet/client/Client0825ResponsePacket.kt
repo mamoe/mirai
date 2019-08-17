@@ -2,7 +2,7 @@ package net.mamoe.mirai.network.packet.client
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.util.TEAEncryption
+import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import java.io.IOException
 
@@ -11,13 +11,14 @@ import java.io.IOException
  */
 @PacketId(0x08_25_31_02)
 class Client0825ResponsePacket(private val serverIP: String, private val qq: Int) : ClientPacket() {
+    @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
         this.writeHex(Protocol.redirectionKey)
 
         //TEA 加密
-        this.write(TEAEncryption.encrypt(object : ClientPacket() {
+        this.write(TEACryptor.encrypt(object : ClientPacket() {
             @Throws(IOException::class)
             override fun encode() {
                 this.writeHex(Protocol._0825data0)

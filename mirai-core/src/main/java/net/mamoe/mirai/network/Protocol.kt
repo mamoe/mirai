@@ -45,18 +45,15 @@ interface Protocol {
         const val encryptKey = "“BA 42 FF 01 CF B4 FF D2 12 F0 6E A7 1B 7C B3 08”"
 
 
-        fun hexToBytes(hex: String): ByteArray = Arrays
-                .stream(hex.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
-                .map { value -> value.trim { it <= ' ' } }
-                .map { s -> s.toInt(16).toByte() }
-                .collect(Collectors.toList()).toByteArray()
+        @ExperimentalUnsignedTypes
+        fun hexToBytes(hex: String): ByteArray = hexToUBytes(hex).toByteArray()
 
         @ExperimentalUnsignedTypes
         fun hexToUBytes(hex: String): UByteArray = Arrays
                 .stream(hex.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
                 .map { value -> value.trim { it <= ' ' } }
-                .map { s -> s.toInt(16).toByte() }
-                .collect(Collectors.toList()).toByteArray().toUByteArray()
+                .map { s -> s.toUByte(16) }
+                .collect(Collectors.toList()).toUByteArray()
 
     }
 }

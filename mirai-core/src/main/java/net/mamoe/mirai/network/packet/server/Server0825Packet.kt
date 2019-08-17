@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network.packet.server
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.util.TEAEncryption
+import net.mamoe.mirai.util.TEACryptor
 import java.io.DataInputStream
 
 /**
@@ -24,7 +24,7 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
 
     override fun decode() {
         input.skip(43 - 11)//todo: check
-        val data = DataInputStream(TEAEncryption.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 2) }, when (type) {//todo: check array range
+        val data = DataInputStream(TEACryptor.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 2) }, when (type) {//todo: check array range
             Type.TYPE_08_25_31_01 -> Protocol.redirectionKey.toByteArray()
             Type.TYPE_08_25_31_02 -> Protocol._0825key.toByteArray()
         }).inputStream());
