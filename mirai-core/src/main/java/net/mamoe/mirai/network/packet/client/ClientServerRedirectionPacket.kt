@@ -7,11 +7,13 @@ import net.mamoe.mirai.util.hexToBytes
 import java.io.IOException
 
 /**
+ * Server redirection (0825 response)
+ *
  * @author Him188moe @ Mirai Project
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 02")
-class Client0825ResponsePacket(private val serverIP: String, private val qq: Int) : ClientPacket() {
+class ClientServerRedirectionPacket(private val serverIP: String, private val qq: Int) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)

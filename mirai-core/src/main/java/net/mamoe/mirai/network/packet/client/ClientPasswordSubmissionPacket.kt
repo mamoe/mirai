@@ -10,14 +10,15 @@ import java.io.IOException
 import java.net.InetAddress
 
 /**
+ * Password submission (0836_622)
+ *
  * @author Him188moe @ Mirai Project
  */
-@PacketId("08 36")
+@PacketId("08 36 31 03")
 @ExperimentalUnsignedTypes
-class Client0836_622Packet(private val qq: Int, private val password: String, private val loginTime: ByteArray, private val loginIP: ByteArray, private val tgtgtKey: ByteArray, private val seq: String, private val token0825: ByteArray) : ClientPacket() {
+class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: ByteArray, private val loginIP: ByteArray, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
-        this.writeHex(seq)
         this.writeQQ(qq)
         this.writeHex(Protocol._0836_622_fix1)
         this.writeHex(Protocol.publicKey)

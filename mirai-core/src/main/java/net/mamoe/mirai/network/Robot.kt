@@ -10,8 +10,8 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.bytes.ByteArrayDecoder
 import io.netty.handler.codec.bytes.ByteArrayEncoder
-import net.mamoe.mirai.network.packet.client.Client0825ResponsePacket
 import net.mamoe.mirai.network.packet.client.ClientPacket
+import net.mamoe.mirai.network.packet.client.ClientServerRedirectionPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.Server0825Packet
 import net.mamoe.mirai.network.packet.server.ServerPacket
@@ -33,7 +33,7 @@ class Robot(val number: Int) {
         packet.decode()
         if (packet is Server0825Packet) {
             connect(packet.serverIP)
-            sendPacket(Client0825ResponsePacket(packet.serverIP, number))
+            sendPacket(ClientServerRedirectionPacket(packet.serverIP, number))
         }
     }
 

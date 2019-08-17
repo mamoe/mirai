@@ -10,7 +10,7 @@ import java.util.zip.CRC32
  * @author Him188moe @ Mirai Project
  */
 object Utils {
-    fun toHexString(byteArray: ByteArray, separator: String = ","): String = byteArray.joinToString(separator) {
+    fun toHexString(byteArray: ByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
         var ret = it.toString(16).toUpperCase();
         if (ret.length == 1) {
             ret = "0$ret";
@@ -19,7 +19,7 @@ object Utils {
     }
 
     @ExperimentalUnsignedTypes
-    fun toHexString(byteArray: UByteArray, separator: String = ","): String = byteArray.joinToString(separator) {
+    fun toHexString(byteArray: UByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
         var ret = it.toString(16).toUpperCase();
         if (ret.length == 1) {
             ret = "0$ret";
@@ -28,9 +28,9 @@ object Utils {
     }
 }
 
-fun ByteArray.toHexString(separator: String = ", "): String = Utils.toHexString(this, separator)
+fun ByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
 @ExperimentalUnsignedTypes
-fun UByteArray.toHexString(separator: String = ", "): String = Utils.toHexString(this, separator)
+fun UByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
 
 fun Byte.toHexString(): String = this.toString(16)
 

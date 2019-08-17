@@ -7,6 +7,7 @@ import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
+import net.mamoe.mirai.util.toHexString
 import java.io.DataOutputStream
 import java.io.IOException
 import java.security.MessageDigest
@@ -86,7 +87,7 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: ByteArra
         it.writeHex("00 00 01")
 
         val md5_1 = md5(password);
-        val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toBytes())
+        val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toByteArray())
         it.write(md5_1)
         it.write(loginTime)//todo FIXED 12(maybe 11???) bytes??? check that
         it.writeByte(0);
@@ -99,12 +100,14 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: ByteArra
     }
 }
 
-private fun Int.toBytes(): ByteArray = byteArrayOf(
+private fun Int.toByteArray(): ByteArray = byteArrayOf(//todo 检查这方法对不对, 这其实就是从 DataInputStream copy来的
         (this.ushr(24) and 0xFF).toByte(),
         (this.ushr(16) and 0xFF).toByte(),
         (this.ushr(8) and 0xFF).toByte(),
         (this.ushr(0) and 0xFF).toByte()
 )
+
+private fun Int.toHexString(separator: String = " "): String = this.toByteArray().toHexString(separator);
 
 private fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 
