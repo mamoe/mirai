@@ -11,9 +11,9 @@ import java.io.DataInputStream
 class Server0825Packet(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
     lateinit var serverIP: String;
 
-    var loginTime: Int = 0;
-    lateinit var loginIP: String;
-    lateinit var token: ByteArray;
+    var loginTime: Int = 0
+    lateinit var loginIP: String
+    lateinit var token: ByteArray
     lateinit var tgtgtKey: ByteArray
 
     enum class Type {
@@ -36,7 +36,7 @@ class Server0825Packet(private val type: Type, inputStream: DataInputStream) : S
                 serverIP = data.readIP()
             }
             0X00 -> {
-                data.skip(5)
+                data.skip(4)
                 token = data.readNBytes(56)
                 data.skip(28)
 

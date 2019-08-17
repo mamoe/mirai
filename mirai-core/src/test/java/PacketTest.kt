@@ -12,6 +12,7 @@ fun main(){
     val s = DataInputStream(data.hexToBytes().inputStream())
     val packet = Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_01,s)
     packet.decode()
+    System.out.println(packet.token.toUByteArray().toHexString(" "))
     System.out.println(packet.loginTime)
     System.out.println(packet.loginIP)
 }
