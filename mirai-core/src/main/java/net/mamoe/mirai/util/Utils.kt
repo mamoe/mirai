@@ -34,6 +34,8 @@ fun UByteArray.toHexString(separator: String = " "): String = Utils.toHexString(
 
 fun Byte.toHexString(): String = this.toString(16)
 
+
+
 @ExperimentalUnsignedTypes
 fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 @ExperimentalUnsignedTypes
