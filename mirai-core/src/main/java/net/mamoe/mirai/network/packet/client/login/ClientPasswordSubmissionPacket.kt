@@ -1,7 +1,8 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet.client.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.client.*
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.getCrc32
 import net.mamoe.mirai.util.getRandomKey
@@ -16,7 +17,7 @@ import java.net.InetAddress
  */
 @PacketId("08 36 31 03")
 @ExperimentalUnsignedTypes
-class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: ByteArray, private val loginIP: ByteArray, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
+class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: Int, private val loginIP: String, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)

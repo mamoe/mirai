@@ -1,10 +1,3 @@
-import net.mamoe.mirai.network.packet.client.ClientPasswordSubmissionPacket
-import net.mamoe.mirai.network.packet.client.toHexString
-import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
-import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.toHexString
-import java.io.DataInputStream
-
 @ExperimentalUnsignedTypes
 fun main(){
     /*
