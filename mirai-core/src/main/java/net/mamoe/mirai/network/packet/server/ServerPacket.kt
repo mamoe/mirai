@@ -1,7 +1,6 @@
 package net.mamoe.mirai.network.packet.server
 
 import net.mamoe.mirai.network.packet.Packet
-
 import java.io.DataInputStream
 
 /**

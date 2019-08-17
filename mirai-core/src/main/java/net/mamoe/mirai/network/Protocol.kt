@@ -44,6 +44,9 @@ interface Protocol {
 
         const val encryptKey = "“BA 42 FF 01 CF B4 FF D2 12 F0 6E A7 1B 7C B3 08”"
 
+        const val _0836_622_fix2 = "00 15 00 30 00 01 01 27 9B C7 F5 00 10 65 03 FD 8B 00 00 00 00 00 00 00 00 00 00 00 00 02 90 49 55 33 00 10 15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B";
+        const val _0836_622_fix1 = "03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03 00 19";
+        const val _0836key1 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"
 
         @ExperimentalUnsignedTypes
         fun hexToBytes(hex: String): ByteArray = hexToUBytes(hex).toByteArray()
