@@ -1,5 +1,7 @@
-package net.mamoe.mirai.network.packet.server
+package net.mamoe.mirai.network.packet.server.touch
 
+import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.readIP
 import net.mamoe.mirai.util.getRandomKey
 import java.io.DataInputStream
 

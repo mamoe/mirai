@@ -51,7 +51,11 @@ class ClientPasswordSubmissionPacket(private val qq: Int, private val password: 
                 this.writeHex("03 0F");//tag
                 this.writeShort(hostName.length / 2);//todo check that
                 this.writeShort(hostName.length);
-                this.writeBytes(hostName)
+                this.writeBytes(hostName)//todo 这个对吗?
+                /*易语言源码: PCName就是HostName
+                PCName ＝ BytesToStr (Ansi转Utf8 (取主机名 ()))
+                PCName ＝ 取文本左边 (PCName, 取文本长度 (PCName) － 3)*/
+
                 this.writeHex("00 05 00 06 00 02")
                 this.writeQQ(qq)
                 this.writeHex("00 06")//tag

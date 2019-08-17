@@ -1,5 +1,5 @@
 import net.mamoe.mirai.network.packet.client.toHexString
-import net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
+import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
