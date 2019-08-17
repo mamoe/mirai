@@ -14,5 +14,5 @@ public @interface PacketId {
     /**
      * 获取用于识别的包 ID
      */
-    int value();
+    String value();
 }
