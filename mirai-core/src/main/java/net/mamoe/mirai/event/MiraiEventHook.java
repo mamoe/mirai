@@ -6,10 +6,12 @@ import net.mamoe.mirai.event.events.Cancellable;
 import net.mamoe.mirai.event.events.MiraiEvent;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class MiraiEventHook<T extends MiraiEvent> {
+public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
 
     @Getter
     Class<T> eventClass;
@@ -98,5 +100,9 @@ public class MiraiEventHook<T extends MiraiEvent> {
     }
 
 
-
+    @Override
+    public void close(){
+        this.handler = null;
+        this.valid = null;
+    }
 }
