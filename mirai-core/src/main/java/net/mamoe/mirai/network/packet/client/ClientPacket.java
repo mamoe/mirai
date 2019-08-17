@@ -13,14 +13,12 @@ import java.io.IOException;
  * @author Him188moe @ Mirai Project
  */
 public abstract class ClientPacket extends DataOutputStream implements Packet {
-    public ClientPacket() {
-        super(new ByteArrayOutputStream());
-    }
 
     @Getter
     private final int packageId;
 
-    {
+    public ClientPacket() {
+        super(new ByteArrayOutputStream());
         var annotation = this.getClass().getAnnotation(PacketId.class);
         packageId = annotation.value();
 

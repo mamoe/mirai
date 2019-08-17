@@ -22,20 +22,21 @@ import java.net.InetSocketAddress
  * @author Him188moe @ Mirai Project
  */
 class Robot(val number: Long) {
+    private lateinit var ctx: ChannelHandlerContext;
 
     internal fun onPacketReceived(packet: Packet) {
         if (packet !is ServerPacket) {
-            return;
+            return
         }
 
         packet.decode()
         if (packet is Server0825Packet) {//todo 检查是否需要修改 UDP 连接???
-            sendPacket(Client0825ResponsePacket(packet.serverIP, number));
+            sendPacket(Client0825ResponsePacket(packet.serverIP, number))
         }
     }
 
     private fun sendPacket(packet: Packet) {
-        TODO()
+
     }
 
     @Throws(InterruptedException::class)
@@ -53,8 +54,9 @@ class Robot(val number: Long) {
                             ch.pipeline().addLast(ByteArrayEncoder())
                             ch.pipeline().addLast(ByteArrayDecoder())
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
-                                override fun channelRead0(ctx: ChannelHandlerContext?, bytes: ByteArray) {
+                                override fun channelRead0(ctx: ChannelHandlerContext, bytes: ByteArray) {
                                     try {
+                                        this@Robot.ctx = ctx;
                                         /*val remaining = Reader.read(bytes);
                                         if (Reader.isPacketAvailable()) {
                                             robot.onPacketReceived(Reader.toServerPacket())
