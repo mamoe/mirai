@@ -23,8 +23,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
             val idBytes = stream.readUntil(11)
 
             return when (idBytes.joinToString("") { it.toString(16) }) {
-                "08 25 31 01" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_01, stream)
-                "08 25 31 02" -> Server0825Packet(Server0825Packet.Type.TYPE_08_25_31_02, stream)
+                "08 25 31 01" -> ServerTouchResponsePacket(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
+                "08 25 31 02" -> ServerTouchResponsePacket(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
 
                 else -> throw UnsupportedOperationException()
             }
