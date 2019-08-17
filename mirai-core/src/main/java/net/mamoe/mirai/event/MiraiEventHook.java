@@ -36,7 +36,7 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
     private Predicate<T> valid;
 
     public MiraiEventHook(Class<T> eventClass) {
-        this(eventClass,a -> {});
+        this(eventClass,null);
     }
 
     public MiraiEventHook(Class<T> eventClass, Consumer<T> handler){
@@ -92,10 +92,12 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
     }
 
     public void mount(){
+        if(this.handler == null)this.handler = a -> {};
         MiraiEventManager.getInstance().registerHook(this);
     }
 
     public void mountOnce(){
+        if(this.handler == null)this.handler = a -> {};
         MiraiEventManager.getInstance().hookOnce(this);
     }
 
