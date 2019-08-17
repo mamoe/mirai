@@ -1,6 +1,6 @@
 # Mirai
 
-一个以<b>TIM QQ协议</b>驱动的JAVA <b>全开源</b> QQ机器人服务端核心<br>
+一个以<b>TIM QQ协议</b>驱动的JAVA(+Kotlin) <b>全开源</b> QQ机器人服务端核心<br>
 不受由于<b>SMARTQQ</b>关停的影响<br>
 项目处于快速开发阶段<br>
 由于是学生, 无法每日更新<br>
@@ -8,7 +8,7 @@
 
 <br>
 
-a JAVA powered open-sources project under GPL license<br>
+A JAVA(+Kotlin) powered open-sources project under GPL license<br>
 It use protocols from <i>TIM QQ</i>, meaning it won't be affect by the close of <i>smart QQ</i><br>
 The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
 
