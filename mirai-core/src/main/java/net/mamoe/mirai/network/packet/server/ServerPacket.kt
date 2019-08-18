@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.packet.server
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseFailedPacket
 import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseResendPacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseSucceedPacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseSucceedPacketEncrypted
 import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseVerificationCodePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.util.toHexString
@@ -18,7 +18,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
     companion object {
 
-        fun ofByteArray(bytes: ByteArray, tgtgtKey: ByteArray?): ServerPacket {
+        fun ofByteArray(bytes: ByteArray): ServerPacket {
 
             val stream = DataInputStream(bytes.inputStream())
 
@@ -38,7 +38,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }
 
                     if (bytes.size > 700) {
-                        return ServerLoginResponseSucceedPacket(stream)
+                        return ServerLoginResponseSucceedPacketEncrypted(stream)
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
@@ -85,3 +85,6 @@ fun DataInputStream.readIP(): String {
     }
     return buff
 }
+
+
+fun ByteArray.dataInputStream(): DataInputStream = DataInputStream(this.inputStream())

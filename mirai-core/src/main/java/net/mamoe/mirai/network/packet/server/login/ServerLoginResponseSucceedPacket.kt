@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.packet.server.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.dataInputStream
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.hexToShort
@@ -11,49 +12,51 @@ import java.io.DataInputStream
  * @author Him188moe @ Mirai Project
  * @author NaturalHG @ Mirai Project
  */
-class ServerLoginResponseSucceedPacket(input: DataInputStream, val tgtgtKey: ByteArray) : ServerPacket(input) {
+class ServerLoginResponseSucceedPacket(input: DataInputStream) : ServerPacket(input) {
     lateinit var _0828_rec_decr_key: ByteArray
     var age: Int = 0
     var gender: Boolean = false//from 1byte
     lateinit var nick: String
     lateinit var clientKey: String
 
+    lateinit var token38: ByteArray
+    lateinit var token88: ByteArray
+    lateinit var encryptionKey: ByteArray
+
 
     @ExperimentalUnsignedTypes
     override fun decode() {
-        input.skip(21)
-        val data = input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }//Drop tail
 
-        val decryptedData = TEACryptor.decrypt(TEACryptor.decrypt(data, Protocol.shareKey.hexToBytes()), tgtgtKey);
-
-
-        DataInputStream(decryptedData.inputStream()).let {
-            //换成 readShort
-
-            it.skip(212)
-            val msgLength = when (it.readShort()) {
+        this.input.skip(141)//取文本中间 (data, 141 * 3 + 1, 5)
+        val msgLength = when (this.input.readShort()) {
                 "01 07".hexToShort() -> 0
                 "00 33".hexToShort() -> 28 * 3
                 "01 10".hexToShort() -> 64 * 3
                 else -> throw IllegalStateException()
             }
 
-            age = it.readShort(取文本中间(it, 取文本长度(it) - 82, 5)).toBoolean()
-            gender = it.readByte(取文本中间(it, 取文本长度(it) - 94, 2))
+        _0828_rec_decr_key = 取文本中间(data, 514 + msgLength, 47)
+        val nickLength = HexToDec(取文本中间(data, 1873 + msgLength, 2))
+        nick = 转_Ansi文本(取文本中间(data, 1876 + msgLength, 3 * nickLength - 1))
+        age = HexToDec(取文本中间(data, 取文本长度(data) - 82, 5))
+        gender = 取文本中间(data, 取文本长度(data) - 94, 2)
+        clientKey = 删全部空(取文本中间(data, 484 * 3 + msgLength + 1, 112 * 3 - 1))
 
-            var position = ((514 + msgLength) / 2 - 212 - 2).toLong();
-            it.skip(position)
-            _0828_rec_decr_key = it.readNBytes(13)
-            it.skip((1873 + msgLength) / 2 - position)
-            position += (1873 + msgLength) / 2
+        token38 = 取文本中间(data, 76, 167)
+        token88 = 取文本中间(data, 568 + msgLength, 407)
+        encryptionKey = 取文本中间(data, 22, 47)
+    }
+}
 
-            nick = it.readNBytes(it.readByte().toInt()).toString()
+class ServerLoginResponseSucceedPacketEncrypted(input: DataInputStream) : ServerPacket(input) {
+    override fun decode() {
 
+    }
 
-            clientKey = it.readBytes(取文本中间(it, 484 * 3 + msgLength + 1, 112 * 3 - 1))
-        }
-
-
-        //SendUdp (Construct_0828 (“04 34”, 取文本中间 (data, 76, 167), 取文本中间 (data, 568 + msg_length, 407), 取文本中间 (data, 22, 47)))
+    @ExperimentalUnsignedTypes
+    fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSucceedPacket {//todo test
+        this.input.skip(14)
+        return ServerLoginResponseSucceedPacket(TEACryptor.decrypt(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.shareKey.hexToBytes()), tgtgtKey).dataInputStream());
+        //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
     }
 }
