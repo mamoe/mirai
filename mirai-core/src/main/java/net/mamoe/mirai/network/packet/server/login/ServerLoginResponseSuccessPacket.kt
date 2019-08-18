@@ -1,9 +1,7 @@
 package net.mamoe.mirai.network.packet.server.login
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.dataInputStream
-import net.mamoe.mirai.network.packet.server.readVarString
+import net.mamoe.mirai.network.packet.server.*
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.hexToShort
@@ -27,7 +25,8 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
 
     @ExperimentalUnsignedTypes
     override fun decode() {
-
+        /**
+         * Version 1  @Deprecated
         this.input.skip(7)//8
 
         encryptionKey = this.input.readNBytes(16)//24
@@ -88,6 +87,33 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
         age = HexToDec(取文本中间(data, 取文本长度(data) - 82, 5))
         gender = 取文本中间(data, 取文本长度(data) - 94, 2)
         */
+         * **/
+        /** version 2 */
+
+        this.input.skip(7)//8
+        this.encryptionKey = this.input.readNBytes(16)//24
+
+        this.input.skip(2)//26
+        this.token38 = this.input.readNBytes(56)//82
+
+        this.input.skip(60L)//142
+        val msgLength = when (this.input.readNBytes(2).toUByteArray().toHexString()) {
+            "01 07" -> 0
+            "00 33" -> 28
+            "01 10" -> 64
+            else -> throw IllegalStateException()
+        }
+
+        this._0828_rec_decr_key = this.input.readNBytes(171 + msgLength,16)
+
+        this.token88 = this.input.readNBytes(189 + msgLength,136)
+
+        val nickLength = this.input.goto(624 + msgLength).readByte().toInt()
+        this.nick = this.input.readVarString(nickLength)
+
+        this.age = this.input.goto(packetDataLength - 28).readShort()
+
+        this.gender = this.input.goto(packetDataLength - 32).readByte().toInt()
     }
 }
 
