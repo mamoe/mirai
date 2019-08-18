@@ -35,7 +35,7 @@ class ClientTouchPacket : ClientPacket() {
         this.writeHex(Protocol._0825key)
 
 
-        //TEA 加密
+
         this.write(TEACryptor.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {

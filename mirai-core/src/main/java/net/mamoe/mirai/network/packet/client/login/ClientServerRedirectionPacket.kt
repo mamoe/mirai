@@ -24,7 +24,7 @@ class ClientServerRedirectionPacket(private val serverIP: String, private val qq
         this.writeHex(Protocol.fixVer)
         this.writeHex(Protocol.redirectionKey)
 
-        //TEA 加密
+
         this.write(TEACryptor.encrypt(object : ClientPacket() {
             @Throws(IOException::class)
             override fun encode() {
