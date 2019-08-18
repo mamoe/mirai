@@ -9,10 +9,10 @@ import java.io.DataInputStream
 
 /**
  * @author Him188moe @ Mirai Project
+ * @author NaturalHG @ Mirai Project
  */
 class ServerLoginResponseSucceedPacket(input: DataInputStream, val tgtgtKey: ByteArray) : ServerPacket(input) {
     lateinit var _0828_rec_decr_key: ByteArray
-    lateinit var nick_length: ByteArray
     var age: Int = 0
     var gender: Boolean = false//from 1byte
     lateinit var nick: String
@@ -26,6 +26,7 @@ class ServerLoginResponseSucceedPacket(input: DataInputStream, val tgtgtKey: Byt
 
         val decryptedData = TEACryptor.decrypt(TEACryptor.decrypt(data, Protocol.shareKey.hexToBytes()), tgtgtKey);
 
+
         DataInputStream(decryptedData.inputStream()).let {
             //换成 readShort
 
@@ -37,13 +38,18 @@ class ServerLoginResponseSucceedPacket(input: DataInputStream, val tgtgtKey: Byt
                 else -> throw IllegalStateException()
             }
 
-            it.skip(((514 + msgLength) / 2 - 212 - 2).toLong())
-            _0828_rec_decr_key = it.readBytes(取文本中间(it, 514 + msgLength, 47))
-            nick_length = it.readByte(取文本中间(it, 1873 + msgLength, 2))
-            nick = it.readBytes(取文本中间(it, 1876 + msgLength, 3 * nick_length - 1)).toString()
-
             age = it.readShort(取文本中间(it, 取文本长度(it) - 82, 5)).toBoolean()
             gender = it.readByte(取文本中间(it, 取文本长度(it) - 94, 2))
+
+            var position = ((514 + msgLength) / 2 - 212 - 2).toLong();
+            it.skip(position)
+            _0828_rec_decr_key = it.readNBytes(13)
+            it.skip((1873 + msgLength) / 2 - position)
+            position += (1873 + msgLength) / 2
+
+            nick = it.readNBytes(it.readByte().toInt()).toString()
+
+
             clientKey = it.readBytes(取文本中间(it, 484 * 3 + msgLength + 1, 112 * 3 - 1))
         }
 

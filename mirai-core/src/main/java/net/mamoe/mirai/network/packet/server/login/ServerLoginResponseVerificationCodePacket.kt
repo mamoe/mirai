@@ -1,6 +1,5 @@
 package net.mamoe.mirai.network.packet.server.login
 
-import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import java.io.DataInputStream
 
@@ -14,13 +13,14 @@ class ServerLoginResponseVerificationCodePacket(input: DataInputStream) : Server
     var unknownBoolean: Boolean? = null
 
 
-    override fun decode() {
+    override fun decode() {//todo decode 注释的内容
+        /*
         data = 取文本中间(data, 43, 取文本长度(data) - 45)
         data = TeaDecrypt(data, Protocol.shareKey)
 
         verifyCodeLength = HexToDec(取文本中间(data, 235, 5))
         verifyCode = 取文本中间(data, 241, verifyCodeLength * 3 - 1)
         unknownBoolean = 取文本中间(data, 245 + verifyCodeLength * 3 - 1, 2) == "01"
-        token00BA = 取文本中间(data, 取文本长度(data) - 178, 119)
+        token00BA = 取文本中间(data, 取文本长度(data) - 178, 119)*/
     }
 }
