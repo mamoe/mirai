@@ -73,6 +73,6 @@ public class HaxComparator {
 
 
     public static void main(String[] args){
-        System.out.println(HaxComparator.compare("AA CC AA DD EE FF","AA CC AA DD EE GG HH"));
+        System.out.println(HaxComparator.compare("00 01 09 00 70 00 01 23 7B FE 83 D1 37 64 46 84 9D E9 9C E7 BB 8E 44 00 38 9B A4 3B C2 BB 49 4C DA B0 A5 5C C8 27 29 74 EF CB 38 59 4E 03 C8 15 C6 F9 BF 3F 88 22 7E 22 5B 48 02 71 59 1A 2C C8 42 BA 81 76 66 0C 46 91 89 6C B2 17 BF 2A 00 F8 8B 00 20 7C 28 07 3D AA 24 EF B4 49 9D 85 7F 4C F5 41 56 F4 1F AD 53 81 9F C1 03 F3 03 65 DD 0C 04 CC 68 00 00 01 03 00 14 00 01 00 10 60 C9 5D A7 45 70 04 7F 21 7D 84 50 5C 66 A5 C6","AA CC AA DD EE GG HH"));
     }
 }

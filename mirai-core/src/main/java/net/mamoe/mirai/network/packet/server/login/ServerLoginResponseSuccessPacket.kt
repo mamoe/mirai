@@ -7,6 +7,7 @@ import net.mamoe.mirai.network.packet.server.readVarString
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.hexToShort
+import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
 /**
@@ -18,7 +19,6 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
     var age: Short = 0
     var gender: Int = 0//from 1byte
     lateinit var nick: String
-    lateinit var clientKey: ByteArray
 
     lateinit var token38: ByteArray
     lateinit var token88: ByteArray
@@ -32,44 +32,47 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
 
         encryptionKey = this.input.readNBytes(16)//24
 
-        this.input.skip(1)//25
+        this.input.skip(2)//25->26
 
-        token38 = this.input.readNBytes(56)//81
+        token38 = this.input.readNBytes(56)//81->82
 
-        this.input.skip(61L)//142
+        this.input.skip(60L)//142
 
-        val msgLength = when (this.input.readShort()) {
-                "01 07".hexToShort() -> 0
-                "00 33".hexToShort() -> 28 * 3
-                "01 10".hexToShort() -> 64 * 3
+        //??
+        var b = this.input.readNBytes(2)
+        val msgLength = when (b.toUByteArray().toHexString()) {
+                "01 07" -> 0
+                "00 33" -> 28
+                "01 10" -> 65
                 else -> throw IllegalStateException()
             }//144
 
+
+        System.out.println(msgLength)
+
         this.input.skip(17L +  msgLength)//161+msgLength
-
-        this.input.mark(113)//161+msgLength
-
-        clientKey = this.input.readNBytes(112)//273+msgLength
-
-        this.input.reset()//161+msgLength
 
         this.input.skip(10)//171+msgLength
 
-        this._0828_rec_decr_key = this.input.readNBytes(16)//187+msgLength
+        _0828_rec_decr_key = this.input.readNBytes(16)//187+msgLength
 
-        this.input.skip(2)//189+msgLength
 
-        token88 = this.input.readNBytes(136)//325+msgLength
+        this.input.skip(2)
+
+        token88 = this.input.readNBytes(136)//325+ // msgLength
 
         this.input.skip(299L)//624+msgLength
 
         //varString (nickLength bytes)
-        val nickLength = this.input.readByte().toUByte().toInt()//625+msgLength
+        val nickLength = this.input.readByte().toInt()//625+msgLength
+
+        System.out.println(nickLength)
 
         nick = this.input.readVarString(nickLength)//625+msgLength+nickLength
 
         val dataIndex = packetDataLength - 31
 
+        /*
         this.input.skip((dataIndex - (625 + msgLength + nickLength)) + 0L)//-31
 
         gender = this.input.readByte().toUByte().toInt()//-30
@@ -77,6 +80,9 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
         this.input.skip(9)//-27
 
         age = this.input.readShort()//-25
+        */
+        age = 0
+        gender = 0
 
         /*
         age = HexToDec(取文本中间(data, 取文本长度(data) - 82, 5))
