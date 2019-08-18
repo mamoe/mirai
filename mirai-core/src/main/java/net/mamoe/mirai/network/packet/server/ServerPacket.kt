@@ -34,7 +34,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                             "08 36 31 03" -> ServerLoginResponseResendPacket.Flag.`08 36 31 03`
                             else -> ServerLoginResponseResendPacket.Flag.OTHER
                         })
-                        871 -> return ServerLoginResponseVerificationCodePacket(stream)
+                        871 -> return ServerLoginResponseVerificationCodePacket(stream, bytes.size)
                     }
 
                     if (bytes.size > 700) {
