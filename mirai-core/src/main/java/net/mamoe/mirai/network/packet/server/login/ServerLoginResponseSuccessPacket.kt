@@ -3,6 +3,8 @@ package net.mamoe.mirai.network.packet.server.login
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.dataInputStream
+import net.mamoe.mirai.network.packet.server.readIP
+import net.mamoe.mirai.network.packet.server.readVarString
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.hexToShort
@@ -12,8 +14,8 @@ import java.io.DataInputStream
  * @author Him188moe @ Mirai Project
  * @author NaturalHG @ Mirai Project
  */
-class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(input) {
-    lateinit var _0828_rec_decr_key: ByteArray
+class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLength: Int) : ServerPacket(input) {
+    lateinit var _0828_rec_decr_key: ByteArray//16 bytes|
     var age: Int = 0
     var gender: Boolean = false//from 1byte
     lateinit var nick: String
@@ -27,24 +29,41 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
     @ExperimentalUnsignedTypes
     override fun decode() {
 
-        this.input.skip(141)//取文本中间 (data, 141 * 3 + 1, 5)
+        this.input.skip(7)//8
+
+        encryptionKey = this.input.readNBytes(16)//24
+
+        this.input.skip(1)//25
+
+        token38 = this.input.readNBytes(56)//81
+
+        this.input.skip(61L)//142
+
         val msgLength = when (this.input.readShort()) {
                 "01 07".hexToShort() -> 0
                 "00 33".hexToShort() -> 28 * 3
                 "01 10".hexToShort() -> 64 * 3
                 else -> throw IllegalStateException()
-            }
+            }//144
 
-        _0828_rec_decr_key = 取文本中间(data, 514 + msgLength, 47)
-        val nickLength = HexToDec(取文本中间(data, 1873 + msgLength, 2))
-        nick = 转_Ansi文本(取文本中间(data, 1876 + msgLength, 3 * nickLength - 1))
+        this.input.skip(27L +  msgLength)//171+msgLength
+
+        this._0828_rec_decr_key = this.input.readNBytes(16)//187+msgLength
+
+        this.input.skip(437L)//187+msgLength
+
+        //varString (nickLength bytes)
+        val nickLength = this.input.readByte().toUByte().toInt()//625+msgLength
+
+        nick = this.input.readVarString(nickLength)//625+msgLength+nickLength
+
+        val dataIndex = packetDataLength - 31
+
         age = HexToDec(取文本中间(data, 取文本长度(data) - 82, 5))
         gender = 取文本中间(data, 取文本长度(data) - 94, 2)
         clientKey = 删全部空(取文本中间(data, 484 * 3 + msgLength + 1, 112 * 3 - 1))
 
-        token38 = 取文本中间(data, 76, 167)
         token88 = 取文本中间(data, 568 + msgLength, 407)
-        encryptionKey = 取文本中间(data, 22, 47)
     }
 }
 
