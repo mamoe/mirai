@@ -1,6 +1,9 @@
 package net.mamoe.mirai.network.packet.server.login
 
 import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.dataInputStream
+import net.mamoe.mirai.network.packet.server.goto
+import net.mamoe.mirai.util.TEACryptor
 import java.io.DataInputStream
 
 /**
@@ -22,5 +25,16 @@ class ServerLoginResponseVerificationCodePacket(input: DataInputStream) : Server
         verifyCode = 取文本中间(data, 241, verifyCodeLength * 3 - 1)
         unknownBoolean = 取文本中间(data, 245 + verifyCodeLength * 3 - 1, 2) == "01"
         token00BA = 取文本中间(data, 取文本长度(data) - 178, 119)*/
+    }
+}
+
+class ServerLoginResponseVerificationCodePacketEncrypted(input: DataInputStream) : ServerPacket(input) {
+    override fun decode() {
+
+    }
+
+    fun decrypt(): ServerLoginResponseVerificationCodePacket {
+        this.input goto 14
+        return ServerLoginResponseVerificationCodePacket(TEACryptor.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }).dataInputStream())
     }
 }

@@ -86,7 +86,7 @@ fun DataInputStream.readIP(): String {
     return buff
 }
 
-fun DataInputStream.readVarString(length:Int): String{
+fun DataInputStream.readVarString(length: Int): String {
     return String(this.readNBytes(length))
 }
 

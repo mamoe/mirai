@@ -9,6 +9,7 @@ import java.util.Random;
  * @author iweiz https://github.com/iweizime/StepChanger/blob/master/app/src/main/java/me/iweizi/stepchanger/qq/Cryptor.java
  */
 public class TEACryptor {
+    public static final TEACryptor CRYPTOR_SHARE_KEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol.shareKey));
     public static final TEACryptor CRYPTOR_0825KEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._0825key));
     public static final TEACryptor CRYPTOR_00BAKEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._00BaKey));
 
