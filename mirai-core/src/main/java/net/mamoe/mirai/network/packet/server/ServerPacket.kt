@@ -38,7 +38,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }
 
                     if (bytes.size > 700) {
-                        return ServerLoginResponseSucceedPacketEncrypted(stream)
+                        return ServerLoginResponseSucceedPacketEncrypted(stream, bytes.size)
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {

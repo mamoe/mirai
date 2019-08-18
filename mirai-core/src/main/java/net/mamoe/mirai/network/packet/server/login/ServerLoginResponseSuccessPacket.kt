@@ -3,7 +3,6 @@ package net.mamoe.mirai.network.packet.server.login
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.dataInputStream
-import net.mamoe.mirai.network.packet.server.readIP
 import net.mamoe.mirai.network.packet.server.readVarString
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
@@ -86,7 +85,7 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
     }
 }
 
-class ServerLoginResponseSucceedPacketEncrypted(input: DataInputStream) : ServerPacket(input) {
+class ServerLoginResponseSucceedPacketEncrypted(input: DataInputStream, val length: Int) : ServerPacket(input) {
     override fun decode() {
 
     }
@@ -94,7 +93,7 @@ class ServerLoginResponseSucceedPacketEncrypted(input: DataInputStream) : Server
     @ExperimentalUnsignedTypes
     fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {//todo test
         this.input.skip(14)
-        return ServerLoginResponseSuccessPacket(TEACryptor.decrypt(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.shareKey.hexToBytes()), tgtgtKey).dataInputStream());
+        return ServerLoginResponseSuccessPacket(TEACryptor.decrypt(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.shareKey.hexToBytes()), tgtgtKey).dataInputStream(), length);
         //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
     }
 }
