@@ -98,7 +98,8 @@ public class MiraiServer {
         Robot robot = new Robot(1994701021, "xiaoqqq");
         try {
             //System.out.println(Protocol.Companion.getSERVER_IP().toString());
-            robot.connect("125.39.132.242", 8000);
+            //robot.connect("127.0.0.1");
+            robot.connect("125.39.132.242");
         } catch (InterruptedException e) {
             e.printStackTrace();
             System.exit(1);

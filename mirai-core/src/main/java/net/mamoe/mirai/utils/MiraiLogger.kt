@@ -21,6 +21,6 @@ object MiraiLogger{
 
     private fun print(value:String?){
         val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
-        System.out.println(LoggerTextFormat.BLUE.toString() + "[Mirai] $s : $value")
+        println(LoggerTextFormat.BLUE.toString() + "[Mirai] $s : $value")
     }
 }

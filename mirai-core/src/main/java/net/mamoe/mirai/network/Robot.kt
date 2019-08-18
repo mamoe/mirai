@@ -3,10 +3,9 @@ package net.mamoe.mirai.network
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
-import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.channel.socket.nio.NioDatagramChannel
+import io.netty.handler.codec.MessageToMessageEncoder
 import io.netty.handler.codec.bytes.ByteArrayDecoder
-import io.netty.handler.codec.bytes.ByteArrayEncoder
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
 import net.mamoe.mirai.network.packet.client.touch.ClientTouchPacket
@@ -34,6 +33,7 @@ class Robot(val number: Int, private val password: String) {
     private var serverIP: String = ""
         set(value) {
             serverAddress = InetSocketAddress(value, 8000)
+            field = value
         }
 
     private lateinit var serverAddress: InetSocketAddress;
@@ -61,7 +61,7 @@ class Robot(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     private fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
-        println(packet.toString())
+        println("Packet received: $packet")
         when (packet) {
             is ServerTouchResponsePacket -> {
                 if (packet.serverIP != null) {//redirection
@@ -130,49 +130,41 @@ class Robot(val number: Int, private val password: String) {
         }
         packet.writeHex(Protocol.tail)
         println("Packet sent: $packet")
-        val p = DatagramPacket(packet.toByteArray());
-        p.socketAddress = this.serverAddress
-        channel!!.writeAndFlush(p)
+        /*val p = DatagramPacket(packet.toByteArray());
+        p.socketAddress = this.serverAddress*/
+        channel!!.writeAndFlush(packet.toByteArray())
     }
 
-    companion object {
-        private fun DatagramPacket(toByteArray: ByteArray): DatagramPacket = DatagramPacket(toByteArray, toByteArray.size)
-    }
+    private fun DatagramPacket(toByteArray: ByteArray): DatagramPacket = DatagramPacket(toByteArray, toByteArray.size, this.serverAddress)
+
 
     @ExperimentalUnsignedTypes
     @Throws(InterruptedException::class)
-    fun connect(ip: String, port: Int = 8000) {
+    fun connect(ip: String) {
         this.serverIP = ip;
         val group = NioEventLoopGroup()
         try {
             val b = Bootstrap()
 
             b.group(group)
-                    .channel(NioSocketChannel::class.java)
-                    .remoteAddress(InetSocketAddress("0.0.0.0", 62154))
+                    .channel(NioDatagramChannel::class.java)
                     .option(ChannelOption.SO_BROADCAST, true)
-                    .handler(object : ChannelInitializer<SocketChannel>() {
+                    .handler(object : ChannelInitializer<NioDatagramChannel>() {
                         @Throws(Exception::class)
-                        override fun initChannel(ch: SocketChannel) {
-                            ch.pipeline().addLast(ByteArrayEncoder())
+                        override fun initChannel(ch: NioDatagramChannel) {
+                            ch.pipeline().addLast(object : MessageToMessageEncoder<ByteArray>() {
+                                override fun encode(ctx: ChannelHandlerContext?, msg: ByteArray?, out: MutableList<Any>?) {
+                                    out!!.add(DatagramPacket(msg!!))
+                                }
+                            })
                             ch.pipeline().addLast(ByteArrayDecoder())
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
                                 override fun channelRead0(ctx: ChannelHandlerContext, bytes: ByteArray) {
                                     try {
-                                        /*val remaining = Reader.read(bytes);
-                                        if (Reader.isPacketAvailable()) {
-                                            robot.onPacketReceived(Reader.toServerPacket())
-                                            Reader.init()
-                                            remaining
-                                        }*/
                                         this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes))
                                     } catch (e: Exception) {
                                         MiraiLogger.catching(e)
                                     }
-                                }
-
-                                override fun channelActive(ctx: ChannelHandlerContext) {
-                                    println("Successfully connected to server")
                                 }
 
                                 override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
@@ -182,7 +174,7 @@ class Robot(val number: Int, private val password: String) {
                         }
                     })
 
-            channel = b.connect().sync().channel()
+            channel = b.bind(15345).sync().channel()
 
             sendPacket(ClientTouchPacket(this@Robot.number, serverIP))
             channel!!.closeFuture().sync()

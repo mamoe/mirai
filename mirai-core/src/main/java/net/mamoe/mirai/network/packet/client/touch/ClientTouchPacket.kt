@@ -48,7 +48,7 @@ class ClientTouchPacket(val qq: Int, val serverIp: String) : ClientPacket() {
     }
 
     override fun toString(): String {
-        return this.javaClass.simpleName + this.javaClass.declaredFields.joinToString(", ", "{", "}") { it.name + "=" + it.get(this) }
+        return this.javaClass.simpleName + this.javaClass.declaredFields.joinToString(", ", "{", "}") { it.trySetAccessible(); it.name + "=" + it.get(this) }
     }
 
 }

@@ -1,6 +1,7 @@
 package net.mamoe.mirai.network.packet.server
 
 import net.mamoe.mirai.network.packet.Packet
+import net.mamoe.mirai.network.packet.client.toHexString
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
@@ -16,19 +17,20 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
     companion object {
 
+        @ExperimentalUnsignedTypes
         fun ofByteArray(bytes: ByteArray): ServerPacket {
+            println("Raw received: $bytes")
 
-            val stream = DataInputStream(bytes.inputStream())
+            val stream = bytes.dataInputStream()
 
-            stream.skipUntil(10)
-            val idBytes = stream.readUntil(11)
+            stream.skip(3)
 
-            return when (val flag = idBytes.joinToString("") { it.toString(16) }) {
+            return when (val idBytes = stream.readInt().toHexString(" ")) {
                 "08 25 31 01" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
                 "08 25 31 02" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
                 "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
                     when (bytes.size) {
-                        271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (flag) {
+                        271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (idBytes) {
                             "08 36 31 03" -> ServerLoginResponseResendPacket.Flag.`08 36 31 03`
                             else -> ServerLoginResponseResendPacket.Flag.OTHER
                         })
