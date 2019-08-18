@@ -6,7 +6,7 @@ import java.io.DataInputStream
 /**
  * @author Him188moe @ Mirai Project
  */
-class ServerLoginFailedResponsePacket(val state: State, input: DataInputStream) : ServerPacket(input) {
+class ServerLoginResponseFailedPacket(val state: State, input: DataInputStream) : ServerPacket(input) {
     enum class State {
         WRONG_PASSWORD,
         // UNKNOWN,//? 要再次发送某数据包

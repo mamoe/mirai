@@ -8,7 +8,7 @@ import java.io.DataInputStream
  * @author Him188moe @ Mirai Project
  */
 @PacketId("08 36 31 03")
-class ServerLoginResendResponsePacket(input: DataInputStream, private val flag: Flag) : ServerPacket(input) {
+class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : ServerPacket(input) {
     enum class Flag {
         `08 36 31 03`,
         OTHER,
@@ -18,11 +18,16 @@ class ServerLoginResendResponsePacket(input: DataInputStream, private val flag: 
     lateinit var token: ByteArray
     lateinit var tgtgtKey: ByteArray
 
-    override fun decode() {
-        _0836_tlv0006_encr = 取文本中间(data, 76, 359)
+    override fun decode() {//todo 检查
+        this.input.skip(8)
+        tgtgtKey = this.input.readNBytes(13)
+        this.input.skip(17)
+
+        _0836_tlv0006_encr = this.input.readNBytes(179)
         when (flag) {
             Flag.`08 36 31 03` -> {
-                token = 取文本中间(data, 460, 167)
+                this.input.skip(13)
+                token = this.input.readNBytes(83)
             }
 
             Flag.OTHER -> {
@@ -30,6 +35,5 @@ class ServerLoginResendResponsePacket(input: DataInputStream, private val flag: 
                 //[this.token] will be set in [Robot]
             }
         }
-        m_tgtgtKey = 取文本中间(data, 16, 47)
     }
 }

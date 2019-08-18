@@ -10,6 +10,7 @@ import java.util.Random;
  */
 public class TEACryptor {
     public static final TEACryptor CRYPTOR_0825KEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._0825key));
+    public static final TEACryptor CRYPTOR_00BAKEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._00BaKey));
 
     private static final long UINT32_MASK = 0xffffffffL;
     private final long[] mKey;
@@ -33,11 +34,11 @@ public class TEACryptor {
         isFirstBlock = true;
     }
 
-    public static byte[] encrypt(byte[] key, byte[] source) {
+    public static byte[] encrypt(byte[] source, byte[] key) {
         return new TEACryptor(key).encrypt(source);
     }
 
-    public static byte[] decrypt(byte[] key, byte[] source) {
+    public static byte[] decrypt(byte[] source, byte[] key) {
         return new TEACryptor(key).decrypt(source);
     }
 

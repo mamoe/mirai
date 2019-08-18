@@ -4,12 +4,10 @@ import lombok.Getter
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.util.ByteArrayDataOutputStream
-import net.mamoe.mirai.util.TEACryptor
-import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.toHexString
+import net.mamoe.mirai.util.*
 import java.io.DataOutputStream
 import java.io.IOException
+import java.net.InetAddress
 import java.security.MessageDigest
 
 /**
@@ -77,6 +75,28 @@ fun DataOutputStream.writeHex(hex: String) {
 }
 
 @ExperimentalUnsignedTypes
+fun DataOutputStream.writeVarInt(dec: UInt) {
+    /*.判断开始 (n ＜ 256)
+    返回 (取文本右边 (“0” ＋ 取十六进制文本 (n), 2))
+    .判断 (n ≥ 256)
+    hex ＝ 取文本右边 (“0” ＋ 取十六进制文本 (n), 4)
+    返回 (取文本左边 (hex, 2) ＋ “ ” ＋ 取文本右边 (hex, 2))
+    .默认
+    返回 (“”)
+    .判断结束*/
+
+    if (dec < 256u) {
+        this.writeByte(dec.toByte().toInt())//drop other bits
+    }
+
+    if (dec > 256u) {
+        this.writeShort(dec.toShort().toInt())
+    }
+
+    throw UnsupportedOperationException()
+}
+
+@ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
     ByteArrayDataOutputStream().let {
@@ -98,6 +118,21 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
         it.write(tgtgtKey)
         this.write(TEACryptor.encrypt(md5_2, it.toByteArray()))
     }
+}
+
+@ExperimentalUnsignedTypes
+fun DataOutputStream.writeCRC32() {
+    getRandomKey(16).let {
+        write(it)//key
+        writeLong(getCrc32(it))//todo may be int? check that.
+    }
+}
+
+fun DataOutputStream.writeHostname() {
+    val hostName: String = InetAddress.getLocalHost().hostName.let { it.substring(0, it.length - 3) };
+    this.writeShort(hostName.length / 2);//todo check that
+    this.writeShort(hostName.length);
+    this.writeBytes(hostName)//todo 这个对吗?
 }
 
 fun Int.toByteArray(): ByteArray = byteArrayOf(//todo 检查这方法对不对, 这其实就是从 DataInputStream copy来的

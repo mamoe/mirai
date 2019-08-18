@@ -11,15 +11,15 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.bytes.ByteArrayDecoder
 import io.netty.handler.codec.bytes.ByteArrayEncoder
 import net.mamoe.mirai.network.packet.client.ClientPacket
-import net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
-import net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
+import net.mamoe.mirai.network.packet.client.login.*
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginFailedResponsePacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResendResponsePacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginSucceedResponsePacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginVerificationCodeResponsePacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseFailedPacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseResendPacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseSucceedPacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseVerificationCodePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
+import net.mamoe.mirai.util.getRandomKey
 import net.mamoe.mirai.utils.MiraiLogger
 import java.net.DatagramPacket
 import java.net.InetSocketAddress
@@ -30,11 +30,22 @@ import java.net.InetSocketAddress
  * @author Him188moe @ Mirai Project
  */
 class Robot(val number: Int, private val password: String) {
+    private var sequence: Int = 0
+
     private var channel: Channel? = null
+
+    private lateinit var token00BA: ByteArray
+    private lateinit var token0825: ByteArray
+    private var loginTime: Int = 0
+    private lateinit var loginIP: String
+    private var tgtgtKey: ByteArray? = null
+
+    @ExperimentalUnsignedTypes
+    private var md5_32: ByteArray = getRandomKey(32)
 
 
     @ExperimentalUnsignedTypes
-    internal fun onPacketReceived(packet: ServerPacket) {
+    private fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
         when (packet) {
             is ServerTouchResponsePacket -> {
@@ -45,6 +56,10 @@ class Robot(val number: Int, private val password: String) {
                             qq = number
                     ))
                 } else {//password submission
+                    this.loginIP = packet.loginIP
+                    this.loginTime = packet.loginTime
+                    this.token0825 = packet.token
+                    this.tgtgtKey = packet.tgtgtKey
                     sendPacket(ClientPasswordSubmissionPacket(
                             qq = this.number,
                             password = this.password,
@@ -56,22 +71,55 @@ class Robot(val number: Int, private val password: String) {
                 }
             }
 
-            is ServerLoginFailedResponsePacket -> {
+            is ServerLoginResponseFailedPacket -> {
                 channel = null
                 println("Login failed: " + packet.state.toString())
                 return
             }
 
-            is ServerLoginVerificationCodeResponsePacket -> {
+            is ServerLoginResponseVerificationCodePacket -> {
+                //[token00BA]可能来自这里
+                this.token00BA = packet.token00BA
+                if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
+                    this.sequence = 1
+                    sendPacket(ClientLoginVerificationCodePacket(
+                            qq = this.number,
+                            token0825 = this.token0825,
+                            token00BA = this.token00BA,
+                            sequence = this.sequence
+                    ))
+                }
 
             }
 
-            is ServerLoginSucceedResponsePacket -> {
+            is ServerLoginResponseSucceedPacket -> {
 
             }
 
-            is ServerLoginResendResponsePacket -> {
-
+            //这个有可能是客户端发送验证码之后收到的回复验证码是否正确?
+            is ServerLoginResponseResendPacket -> {
+                if (packet.flag == ServerLoginResponseResendPacket.Flag.`08 36 31 03`) {
+                    this.tgtgtKey = packet.tgtgtKey
+                    sendPacket(ClientLoginResendPacket3104(
+                            tgtgtKey = packet.tgtgtKey,
+                            token00BA = packet.token,
+                            qq = this.number,
+                            password = this.password,
+                            loginIP = this.loginIP,
+                            loginTime = this.loginTime,
+                            token0825 = this.token0825
+                    ))
+                } else {
+                    sendPacket(ClientLoginResendPacket3106(
+                            tgtgtKey = packet.tgtgtKey,
+                            token00BA = packet.token,
+                            qq = this.number,
+                            password = this.password,
+                            loginIP = this.loginIP,
+                            loginTime = this.loginTime,
+                            token0825 = this.token0825
+                    ))
+                }
             }
 
             else -> throw IllegalStateException()
@@ -82,7 +130,7 @@ class Robot(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     private fun sendPacket(packet: ClientPacket) {
         packet.encode()
-        packet.writeHex(Protocol.tail);
+        packet.writeHex(Protocol.tail)
         channel!!.writeAndFlush(DatagramPacket(packet.toByteArray()))
     }
 
@@ -115,7 +163,7 @@ class Robot(val number: Int, private val password: String) {
                                             Reader.init()
                                             remaining
                                         }*/
-                                        this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes))
+                                        this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes, tgtgtKey))
                                     } catch (e: Exception) {
                                         MiraiLogger.catching(e)
                                     }
@@ -132,42 +180,10 @@ class Robot(val number: Int, private val password: String) {
                         }
                     })
 
-            channel = b.connect().sync().channel();
+            channel = b.connect().sync().channel()
             channel!!.closeFuture().sync()
         } finally {
             group.shutdownGracefully().sync()
-        }
-    }
-
-    private object Reader {
-        private var length: Int? = null
-        private lateinit var bytes: ByteArray
-
-        fun init(bytes: ByteArray) {
-            this.length = bytes.size
-            this.bytes = bytes
-        }
-
-        /**
-         * Reads bytes, combining them to create a packet, returning remaining bytes.
-         */
-        fun read(bytes: ByteArray): ByteArray? {
-            checkNotNull(this.length)
-            val needSize = length!! - this.bytes.size//How many bytes we need
-            if (needSize == bytes.size || needSize > bytes.size) {
-                this.bytes += bytes
-                return null
-            }
-
-            //We got more than we need
-            this.bytes += bytes.copyOfRange(0, needSize)
-            return bytes.copyOfRange(needSize, bytes.size - needSize)//We got remaining bytes, that is of another packet
-        }
-
-        fun isPacketAvailable() = this.length == this.bytes.size
-
-        fun toServerPacket(): ServerPacket {
-            return ServerPacket.ofByteArray(this.bytes)
         }
     }
 }

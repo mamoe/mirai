@@ -1,7 +1,7 @@
 
 # ServerLoginResendResponsePacket
 
-## Dispose_0836
+## Dispose_0836 (RESEND)
 data ＝ TeaDecrypt (取文本中间 (data, 43, 取文本长度 (data) － 45), #shareKey)
 data ＝ TeaDecrypt (data, m_tgtgtKey)
 .如果真 (data ≠ “”)
@@ -98,3 +98,20 @@ pack.PutDword (crc32_data)
 调试输出 (pack.GetPacket ())
 ret ＝ #head ＋ “37 13 08 36 ” ＋ seq ＋ “ ” ＋ g_QQ ＋ fix1 ＋ #publicKey ＋ “ 00 00 00 10 ” ＋ _0836key1 ＋ TeaEncrypt (pack.GetPacket (), #shareKey) ＋ #tail
 返回 (ret)
+
+
+
+
+
+## Dispose_0836 (VERIFICATION CODE)
+data ＝ 取文本中间 (data, 43, 取文本长度 (data) － 45)
+data ＝ TeaDecrypt (data, #shareKey)
+verifyCode_length ＝ HexToDec (取文本中间 (data, 235, 5))
+g_verifyCode ＝ 取文本中间 (data, 241, verifyCode_length × 3 － 1)
+m_bool ＝ 取文本中间 (data, 245 ＋ verifyCode_length × 3 － 1, 2) ＝ “01”
+m_00BaToken ＝ 取文本中间 (data, 取文本长度 (data) － 178, 119)
+.如果真 (m_bool)
+    g_sequence ＝ 1
+    SendUdp (#head ＋ #ver ＋ “00 BA 31 01 ” ＋ g_QQ ＋ #fixVer ＋ #_00BaKey ＋ “ ” ＋ TeaEncrypt (“00 02 00 00 08 04 01 E0 ” ＋ #_0825date2 ＋ “00 00 38 ” ＋ m_0825token ＋ “ 01 03 00 19 ” ＋ #publicKey ＋ “ 13 00 05 00 00 00 00 ” ＋ DecToHex (g_sequence) ＋ “ 00 28 ” ＋ m_00BaToken ＋ “ 00 10 ” ＋ #_00BaFixKey, #_00BaKey) ＋ #tail)
+.如果真结束
+返回 ()

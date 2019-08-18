@@ -42,6 +42,9 @@ fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 @ExperimentalUnsignedTypes
 fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 
+@ExperimentalUnsignedTypes//todo test that
+fun String.hexToShort(): Short = hexToBytes().let { ((it[1].toInt() shl 8) + it[0]).toShort() }
+
 open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream()) {
     open fun toByteArray(): ByteArray = (out as ByteArrayOutputStream).toByteArray()
     @ExperimentalUnsignedTypes
