@@ -5,7 +5,7 @@ import java.util.*
 import java.util.stream.Collectors
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 interface Protocol {
     companion object {

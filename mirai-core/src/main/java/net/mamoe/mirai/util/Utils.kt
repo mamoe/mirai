@@ -7,7 +7,7 @@ import java.util.*
 import java.util.zip.CRC32
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 object Utils {
     fun toHexString(byteArray: ByteArray, separator: String = " "): String = byteArray.joinToString(separator) {

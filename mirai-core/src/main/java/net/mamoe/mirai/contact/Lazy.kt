@@ -7,6 +7,10 @@ fun Int.asGroup(): Group = Instances.groups.stream().filter { t: Group? -> t?.nu
 
 fun String.withImage(id: String, type: String) = "{$id}.$type"
 
+fun String.withAt(qq: Int) = qq.asQQ().at()
+
+fun String.withAt(qq: QQ) = qq.at()
+
 object Instances {
     var qqs = arrayListOf<QQ>()
     var groups = arrayListOf<Group>()

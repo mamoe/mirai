@@ -16,7 +16,7 @@ import java.io.IOException
  *
  * @see net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 01")
@@ -35,7 +35,7 @@ class ClientTouchPacket : ClientPacket() {
         this.writeHex(Protocol._0825key)
 
 
-        //TEA 加密
+
         this.write(TEACryptor.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {

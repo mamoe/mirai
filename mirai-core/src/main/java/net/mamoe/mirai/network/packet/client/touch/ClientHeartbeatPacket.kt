@@ -10,7 +10,7 @@ import net.mamoe.mirai.util.TEACryptor
 import java.io.IOException
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @ExperimentalUnsignedTypes
 @PacketId("00 58")//todo check

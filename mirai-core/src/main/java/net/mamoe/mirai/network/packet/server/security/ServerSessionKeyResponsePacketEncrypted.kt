@@ -8,7 +8,7 @@ import java.io.DataInputStream
 /**
  * Dispose_0828
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class ServerSessionKeyResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
     lateinit var sessionKey: ByteArray
@@ -39,7 +39,7 @@ class ServerSessionKeyResponsePacket(inputStream: DataInputStream) : ServerPacke
 /**
  * Encrypted using []0828_rec_decr_key], decrypting in Robot
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class ServerSessionKeyResponsePacketEncrypted(inputStream: DataInputStream) : ServerPacket(inputStream) {
     override fun decode() {

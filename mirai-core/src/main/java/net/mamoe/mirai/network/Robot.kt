@@ -25,7 +25,7 @@ import java.net.InetSocketAddress
 /**
  * [number] is a QQ number.
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class Robot(val number: Int, private val password: String) {
     private var sequence: Int = 0

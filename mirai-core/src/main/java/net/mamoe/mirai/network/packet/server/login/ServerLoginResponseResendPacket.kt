@@ -5,7 +5,7 @@ import net.mamoe.mirai.network.packet.server.ServerPacket
 import java.io.DataInputStream
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @PacketId("08 36 31 03")
 class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : ServerPacket(input) {

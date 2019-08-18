@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network.packet.client
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @ExperimentalUnsignedTypes
 class ClientSendMessagePacket : ClientPacket() {

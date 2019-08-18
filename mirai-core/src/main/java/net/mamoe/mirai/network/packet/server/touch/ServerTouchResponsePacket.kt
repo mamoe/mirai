@@ -11,7 +11,7 @@ import java.io.DataInputStream
  * @see net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
  * @see net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
     var serverIP: String? = null;

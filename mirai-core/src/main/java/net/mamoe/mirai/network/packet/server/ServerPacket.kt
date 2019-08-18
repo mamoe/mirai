@@ -10,7 +10,7 @@ import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 abstract class ServerPacket(val input: DataInputStream) : Packet {
 
@@ -92,3 +92,32 @@ fun DataInputStream.readVarString(length:Int): String{
 
 
 fun ByteArray.dataInputStream(): DataInputStream = DataInputStream(this.inputStream())
+
+/**
+ * Reset and skip(position)
+ */
+infix fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
+    this.reset()
+    this.skip(position.toLong());
+    return this
+}
+
+fun <N : Number> DataInputStream.readNBytes(position: N, length: Int): ByteArray {
+    this.goto(position)
+    return this.readNBytes(length)
+}
+
+fun <N : Number> DataInputStream.readInt(position: N): Int {
+    this.goto(position)
+    return this.readInt();
+}
+
+fun <N : Number> DataInputStream.readByte(position: N): Byte {
+    this.goto(position)
+    return this.readByte();
+}
+
+fun <N : Number> DataInputStream.readShort(position: N): Short {
+    this.goto(position)
+    return this.readShort();
+}
