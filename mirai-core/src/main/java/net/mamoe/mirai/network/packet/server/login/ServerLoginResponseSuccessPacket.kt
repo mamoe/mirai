@@ -4,12 +4,10 @@ import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.server.*
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.hexToShort
 import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
 /**
- * @author Him188moe
  * @author NaturalHG
  */
 class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLength: Int) : ServerPacket(input) {
@@ -118,7 +116,7 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
     }
 }
 
-class ServerLoginResponseSucceedPacketEncrypted(input: DataInputStream, val length: Int) : ServerPacket(input) {
+class ServerLoginResponseSuccessPacketEncrypted(input: DataInputStream, val length: Int) : ServerPacket(input) {
     override fun decode() {
 
     }

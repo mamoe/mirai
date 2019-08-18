@@ -15,6 +15,7 @@ import net.mamoe.mirai.network.packet.client.login.*
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.login.*
+import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacket
 import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacketEncrypted
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.util.getRandomKey
@@ -102,7 +103,13 @@ class Robot(val number: Int, private val password: String) {
                 }
             }
 
-            is ServerLoginResponseSucceedPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
+            is ServerSessionKeyResponsePacket -> {
+                this.sessionKey = packet.sessionKey
+                this.tlv0105 = packet.tlv0105
+            }
+
+            is ServerLoginResponseResendPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
+            is ServerLoginResponseSuccessPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
             is ServerSessionKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this._0828_rec_decr_key))
 
             else -> throw IllegalStateException()

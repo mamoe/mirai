@@ -1,10 +1,7 @@
 package net.mamoe.mirai.network.packet.server
 
 import net.mamoe.mirai.network.packet.Packet
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseFailedPacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseResendPacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseSucceedPacketEncrypted
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseVerificationCodePacket
+import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
@@ -30,7 +27,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                 "08 25 31 02" -> ServerTouchResponsePacket(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
                 "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
                     when (bytes.size) {
-                        271, 207 -> return ServerLoginResponseResendPacket(stream, when (flag) {
+                        271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (flag) {
                             "08 36 31 03" -> ServerLoginResponseResendPacket.Flag.`08 36 31 03`
                             else -> ServerLoginResponseResendPacket.Flag.OTHER
                         })
@@ -38,7 +35,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }
 
                     if (bytes.size > 700) {
-                        return ServerLoginResponseSucceedPacketEncrypted(stream, bytes.size)
+                        return ServerLoginResponseSuccessPacketEncrypted(stream, bytes.size)
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {

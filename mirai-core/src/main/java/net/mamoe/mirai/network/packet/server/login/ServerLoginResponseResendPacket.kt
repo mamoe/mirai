@@ -2,6 +2,9 @@ package net.mamoe.mirai.network.packet.server.login
 
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.dataInputStream
+import net.mamoe.mirai.network.packet.server.goto
+import net.mamoe.mirai.util.TEACryptor
 import java.io.DataInputStream
 
 /**
@@ -35,5 +38,19 @@ class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : 
                 //[this.token] will be set in [Robot]
             }
         }
+    }
+}
+
+class ServerLoginResponseResendPacketEncrypted(input: DataInputStream, private val flag: ServerLoginResponseResendPacket.Flag) : ServerPacket(input) {
+    override fun decode() {
+
+    }
+
+    fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseResendPacket {
+        this.input goto 14
+        var data: ByteArray = this.input.readAllBytes()
+        data = TEACryptor.CRYPTOR_SHARE_KEY.decrypt(data.let { it.copyOfRange(0, it.size - 1) });
+        data = TEACryptor.decrypt(data, tgtgtKey);
+        return ServerLoginResponseResendPacket(data.dataInputStream(), flag)
     }
 }
