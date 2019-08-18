@@ -86,5 +86,9 @@ fun DataInputStream.readIP(): String {
     return buff
 }
 
+fun DataInputStream.readVarString(length:Int): String{
+    return String(this.readNBytes(length))
+}
+
 
 fun ByteArray.dataInputStream(): DataInputStream = DataInputStream(this.inputStream())
