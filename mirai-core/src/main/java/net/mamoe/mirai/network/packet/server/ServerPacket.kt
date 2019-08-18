@@ -30,7 +30,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                 "08 25 31 02" -> ServerTouchResponsePacket(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
                 "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
                     when (bytes.size) {
-                        271, 207 -> return ServerLoginResendResponsePacket(stream)
+                        271, 207 -> {
+                            ServerLoginResendResponsePacket(stream)
+                        }
                         871 -> return ServerLoginVerificationCodeResponsePacket(stream)
                     }
 

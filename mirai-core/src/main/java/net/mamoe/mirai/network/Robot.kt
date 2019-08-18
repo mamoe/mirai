@@ -59,6 +59,7 @@ class Robot(val number: Int, private val password: String) {
             is ServerLoginFailedResponsePacket -> {
                 channel = null
                 println("Login failed: " + packet.state.toString())
+                return
             }
 
             is ServerLoginVerificationCodeResponsePacket -> {
