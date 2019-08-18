@@ -1,4 +1,4 @@
-package net.mamoe.mirai.network.packet.client.login
+package net.mamoe.mirai.network.packet.client.touch
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId

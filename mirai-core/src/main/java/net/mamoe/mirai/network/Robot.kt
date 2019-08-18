@@ -15,7 +15,11 @@ import net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacke
 import net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginFailedResponsePacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginResendResponsePacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginSucceedResponsePacket
+import net.mamoe.mirai.network.packet.server.login.ServerLoginVerificationCodeResponsePacket
+import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.utils.MiraiLogger
 import java.net.DatagramPacket
 import java.net.InetSocketAddress
@@ -26,37 +30,60 @@ import java.net.InetSocketAddress
  * @author Him188moe @ Mirai Project
  */
 class Robot(val number: Int, private val password: String) {
-    private lateinit var channel: Channel
+    private var channel: Channel? = null
 
 
     @ExperimentalUnsignedTypes
     internal fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
-        if (packet is ServerTouchResponsePacket) {
-            if (packet.serverIP != null) {//redirection
-                connect(packet.serverIP!!)
-                sendPacket(ClientServerRedirectionPacket(
-                        serverIP = packet.serverIP!!,
-                        qq = number
-                ))
-            } else {//password submission
-                sendPacket(ClientPasswordSubmissionPacket(
-                        qq = this.number,
-                        password = this.password,
-                        loginTime = packet.loginTime,
-                        loginIP = packet.loginIP,
-                        token0825 = packet.token,
-                        tgtgtKey = packet.tgtgtKey
-                ))
+        when (packet) {
+            is ServerTouchResponsePacket -> {
+                if (packet.serverIP != null) {//redirection
+                    connect(packet.serverIP!!)
+                    sendPacket(ClientServerRedirectionPacket(
+                            serverIP = packet.serverIP!!,
+                            qq = number
+                    ))
+                } else {//password submission
+                    sendPacket(ClientPasswordSubmissionPacket(
+                            qq = this.number,
+                            password = this.password,
+                            loginTime = packet.loginTime,
+                            loginIP = packet.loginIP,
+                            token0825 = packet.token,
+                            tgtgtKey = packet.tgtgtKey
+                    ))
+                }
             }
+
+            is ServerLoginFailedResponsePacket -> {
+                channel = null
+                println("Login failed: " + packet.state.toString())
+                return
+            }
+
+            is ServerLoginVerificationCodeResponsePacket -> {
+
+            }
+
+            is ServerLoginSucceedResponsePacket -> {
+
+            }
+
+            is ServerLoginResendResponsePacket -> {
+
+            }
+
+            else -> throw IllegalStateException()
         }
+
     }
 
     @ExperimentalUnsignedTypes
     private fun sendPacket(packet: ClientPacket) {
         packet.encode()
         packet.writeHex(Protocol.tail);
-        channel.writeAndFlush(DatagramPacket(packet.toByteArray()))
+        channel!!.writeAndFlush(DatagramPacket(packet.toByteArray()))
     }
 
     companion object {
@@ -106,7 +133,7 @@ class Robot(val number: Int, private val password: String) {
                     })
 
             channel = b.connect().sync().channel();
-            channel.closeFuture().sync()
+            channel!!.closeFuture().sync()
         } finally {
             group.shutdownGracefully().sync()
         }
