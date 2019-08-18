@@ -1,7 +1,6 @@
 package net.mamoe.mirai.network.packet.client
 
 import lombok.Getter
-import lombok.ToString
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.PacketId
@@ -14,7 +13,6 @@ import java.security.MessageDigest
 /**
  * @author Him188moe
  */
-@ToString
 @ExperimentalUnsignedTypes
 abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
     @Getter
@@ -52,6 +50,10 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
     fun encodeToByteArray(): ByteArray {
         encode()
         return toByteArray()
+    }
+
+    override fun toString(): String {
+        return this.javaClass.simpleName + this.javaClass.declaredFields.joinToString(", ", "{", "}") { it.trySetAccessible(); it.name + "=" + it.get(this) }
     }
 }
 

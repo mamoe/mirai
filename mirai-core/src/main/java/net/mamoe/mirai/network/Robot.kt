@@ -4,7 +4,6 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioDatagramChannel
-import io.netty.handler.codec.MessageToMessageEncoder
 import io.netty.handler.codec.bytes.ByteArrayDecoder
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
@@ -124,15 +123,16 @@ class Robot(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     private fun sendPacket(packet: ClientPacket) {
         try {
+            MiraiLogger log "Encoding"
             packet.encode()
         } catch (e: Exception) {
             e.printStackTrace()
         }
         packet.writeHex(Protocol.tail)
-        println("Packet sent: $packet")
         /*val p = DatagramPacket(packet.toByteArray());
         p.socketAddress = this.serverAddress*/
-        channel!!.writeAndFlush(packet.toByteArray())
+        channel!!.writeAndFlush(DatagramPacket(packet.toByteArray()))
+        MiraiLogger info "Packet sent: $packet"
     }
 
     private fun DatagramPacket(toByteArray: ByteArray): DatagramPacket = DatagramPacket(toByteArray, toByteArray.size, this.serverAddress)
@@ -146,17 +146,18 @@ class Robot(val number: Int, private val password: String) {
         try {
             val b = Bootstrap()
 
+            MiraiLogger.info("Connecting")
             b.group(group)
                     .channel(NioDatagramChannel::class.java)
                     .option(ChannelOption.SO_BROADCAST, true)
                     .handler(object : ChannelInitializer<NioDatagramChannel>() {
                         @Throws(Exception::class)
                         override fun initChannel(ch: NioDatagramChannel) {
-                            ch.pipeline().addLast(object : MessageToMessageEncoder<ByteArray>() {
+                            /*ch.pipeline().addLast(object : MessageToMessageEncoder<ByteArray>() {
                                 override fun encode(ctx: ChannelHandlerContext?, msg: ByteArray?, out: MutableList<Any>?) {
                                     out!!.add(DatagramPacket(msg!!))
                                 }
-                            })
+                            })*/
                             ch.pipeline().addLast(ByteArrayDecoder())
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
                                 override fun channelRead0(ctx: ChannelHandlerContext, bytes: ByteArray) {
@@ -176,6 +177,7 @@ class Robot(val number: Int, private val password: String) {
 
             channel = b.bind(15345).sync().channel()
 
+            MiraiLogger info "Succeed"
             sendPacket(ClientTouchPacket(this@Robot.number, serverIP))
             channel!!.closeFuture().sync()
         } finally {
