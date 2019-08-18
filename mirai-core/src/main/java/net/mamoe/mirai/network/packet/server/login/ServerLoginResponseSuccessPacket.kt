@@ -14,7 +14,7 @@ import java.io.DataInputStream
  * @author Him188moe @ Mirai Project
  * @author NaturalHG @ Mirai Project
  */
-class ServerLoginResponseSucceedPacket(input: DataInputStream, val packetDataLength: Int) : ServerPacket(input) {
+class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLength: Int) : ServerPacket(input) {
     lateinit var _0828_rec_decr_key: ByteArray//16 bytes|
     var age: Short = 0
     var gender: Int = 0//from 1byte
@@ -92,9 +92,9 @@ class ServerLoginResponseSucceedPacketEncrypted(input: DataInputStream) : Server
     }
 
     @ExperimentalUnsignedTypes
-    fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSucceedPacket {//todo test
+    fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {//todo test
         this.input.skip(14)
-        return ServerLoginResponseSucceedPacket(TEACryptor.decrypt(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.shareKey.hexToBytes()), tgtgtKey).dataInputStream());
+        return ServerLoginResponseSuccessPacket(TEACryptor.decrypt(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.shareKey.hexToBytes()), tgtgtKey).dataInputStream());
         //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
     }
 }
