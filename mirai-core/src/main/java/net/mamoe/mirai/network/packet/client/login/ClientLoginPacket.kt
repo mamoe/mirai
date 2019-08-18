@@ -69,7 +69,7 @@ open class ClientLoginResendPacket(val qq: Int, val password: String, val loginT
 }
 
 @ExperimentalUnsignedTypes
-@PacketId("08 28 04 34")//todo
+@PacketId("08 28 04 34")
 class ClientLoginSucceedConfirmationPacket(
         private val qq: Int,
         private val serverIp: String,
