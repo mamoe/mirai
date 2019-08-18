@@ -1,8 +1,9 @@
 package net.mamoe.mirai.network.packet.server.login
 
 import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.dataInputStream
 import net.mamoe.mirai.network.packet.server.goto
-import net.mamoe.mirai.network.packet.server.readVarString
+import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
@@ -30,7 +31,7 @@ class ServerLoginResponseVerificationCodePacket(input: DataInputStream, val pack
         this.input.skip(1)
 
         val b = this.input.readByte()
-        System.out.println(b.toHexString())
+        println(b.toHexString())
 
         this.token00BA = this.input.goto(packetLength - 60).readNBytes(40)
     }
@@ -43,6 +44,7 @@ class ServerLoginResponseVerificationCodePacketEncrypted(input: DataInputStream)
 
     fun decrypt(): ServerLoginResponseVerificationCodePacket {
         this.input goto 14
-        return ServerLoginResponseVerificationCodePacket(TEACryptor.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }).dataInputStream())
+        val data = TEACryptor.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) });
+        return ServerLoginResponseVerificationCodePacket(data.dataInputStream(), data.size)
     }
 }

@@ -1,12 +1,9 @@
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseSuccessPacket
 import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseVerificationCodePacket
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.toHexString
-import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.File
-import javax.imageio.ImageIO
-import javax.imageio.stream.ImageInputStream
+import java.io.FileOutputStream
 
 @ExperimentalUnsignedTypes
 fun main(){
@@ -40,17 +37,10 @@ fun main(){
     val s = DataInputStream(data.hexToBytes().inputStream())
     val packet =  ServerLoginResponseVerificationCodePacket(s,(data.length+1)/3)
     packet.decode()
-    System.out.println(packet.token00BA.toUByteArray().toHexString(" "))
-    System.out.println(packet.verifyCode.toUByteArray().toHexString(" "))
-    System.out.println(packet.verifyCodeLength)
+    println(packet.token00BA.toUByteArray().toHexString(" "))
+    println(packet.verifyCode.toUByteArray().toHexString(" "))
+    println(packet.verifyCodeLength)
 
-    val f = File(System.getProperty("user.dir") + "/test.jpg")
-    f.createNewFile()
-    val io = ImageIO.createImageInputStream(ByteArrayInputStream(packet.verifyCode))
-    try {
-        ImageIO.write(Render, "jpg", f)
-    }catch (e: Exception){
-        e.printStackTrace()
-    }
-
+    File("C:\\Users\\Him18\\Desktop\\5.png").createNewFile()
+    s.transferTo(FileOutputStream("C:\\Users\\Him18\\Desktop\\5.png"))
 }
