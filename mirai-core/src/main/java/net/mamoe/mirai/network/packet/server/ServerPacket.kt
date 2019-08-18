@@ -3,6 +3,7 @@ package net.mamoe.mirai.network.packet.server
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
+import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
 import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
@@ -23,8 +24,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
             val idBytes = stream.readUntil(11)
 
             return when (val flag = idBytes.joinToString("") { it.toString(16) }) {
-                "08 25 31 01" -> ServerTouchResponsePacket(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
-                "08 25 31 02" -> ServerTouchResponsePacket(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
+                "08 25 31 01" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
+                "08 25 31 02" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
                 "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
                     when (bytes.size) {
                         271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (flag) {

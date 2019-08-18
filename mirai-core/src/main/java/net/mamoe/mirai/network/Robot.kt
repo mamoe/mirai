@@ -1,10 +1,7 @@
 package net.mamoe.mirai.network
 
 import io.netty.bootstrap.Bootstrap
-import io.netty.channel.Channel
-import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -34,7 +31,12 @@ class Robot(val number: Int, private val password: String) {
 
     private var channel: Channel? = null
 
-    private lateinit var serverIP: String;
+    private var serverIP: String = ""
+        set(value) {
+            serverAddress = InetSocketAddress(value, 8000)
+        }
+
+    private lateinit var serverAddress: InetSocketAddress;
 
     private lateinit var token00BA: ByteArray
     private lateinit var token0825: ByteArray
@@ -59,6 +61,7 @@ class Robot(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     private fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
+        println(packet.toString())
         when (packet) {
             is ServerTouchResponsePacket -> {
                 if (packet.serverIP != null) {//redirection
@@ -120,9 +123,16 @@ class Robot(val number: Int, private val password: String) {
 
     @ExperimentalUnsignedTypes
     private fun sendPacket(packet: ClientPacket) {
-        packet.encode()
+        try {
+            packet.encode()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         packet.writeHex(Protocol.tail)
-        channel!!.writeAndFlush(DatagramPacket(packet.toByteArray()))
+        println("Packet sent: $packet")
+        val p = DatagramPacket(packet.toByteArray());
+        p.socketAddress = this.serverAddress
+        channel!!.writeAndFlush(p)
     }
 
     companion object {
@@ -139,11 +149,11 @@ class Robot(val number: Int, private val password: String) {
 
             b.group(group)
                     .channel(NioSocketChannel::class.java)
-                    .remoteAddress(InetSocketAddress(ip, port))
+                    .remoteAddress(InetSocketAddress("0.0.0.0", 62154))
+                    .option(ChannelOption.SO_BROADCAST, true)
                     .handler(object : ChannelInitializer<SocketChannel>() {
                         @Throws(Exception::class)
                         override fun initChannel(ch: SocketChannel) {
-                            println("connected server...")
                             ch.pipeline().addLast(ByteArrayEncoder())
                             ch.pipeline().addLast(ByteArrayDecoder())
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
@@ -169,11 +179,12 @@ class Robot(val number: Int, private val password: String) {
                                     MiraiLogger.catching(cause)
                                 }
                             })
-                            sendPacket(ClientTouchPacket())
                         }
                     })
 
             channel = b.connect().sync().channel()
+
+            sendPacket(ClientTouchPacket(this@Robot.number, serverIP))
             channel!!.closeFuture().sync()
         } finally {
             group.shutdownGracefully().sync()

@@ -4,7 +4,6 @@ import lombok.Getter;
 import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
-import net.mamoe.mirai.network.Protocol;
 import net.mamoe.mirai.network.Robot;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
@@ -80,6 +79,7 @@ public class MiraiServer {
         }else {
             this.setting = new MiraiConfig(setting);
         }
+        getLogger().info("Success");
 
         /*
         MiraiMapSection qqs = this.setting.getMapSection("qq");
@@ -97,7 +97,8 @@ public class MiraiServer {
 
         Robot robot = new Robot(1994701021, "xiaoqqq");
         try {
-            robot.connect(Protocol.Companion.getSERVER_IP().get(3), 8000);
+            //System.out.println(Protocol.Companion.getSERVER_IP().toString());
+            robot.connect("125.39.132.242", 8000);
         } catch (InterruptedException e) {
             e.printStackTrace();
             System.exit(1);

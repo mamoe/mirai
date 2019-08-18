@@ -22,6 +22,7 @@ interface Protocol {
                         "sz8.tencent.com",
                         "sz9.tencent.com"
                 ).forEach { this.add(InetAddress.getByName(it).hostAddress) }
+
             }
         }
 

@@ -18,10 +18,8 @@ import java.io.IOException
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 01")
-class ClientTouchPacket : ClientPacket() {
+class ClientTouchPacket(val qq: Int, val serverIp: String) : ClientPacket() {
     //已经完成测试
-    var qq: Int = 0
-
     @ExperimentalUnsignedTypes
     @Throws(IOException::class)
     override fun encode() {
@@ -32,8 +30,6 @@ class ClientTouchPacket : ClientPacket() {
         this.writeHex(Protocol.fixVer)
         this.writeHex(Protocol._0825key)
 
-
-
         this.write(TEACryptor.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {
@@ -42,22 +38,24 @@ class ClientTouchPacket : ClientPacket() {
                 this.writeQQ(qq)
                 this.writeHex("00 00 00 00 03 09 00 08 00 01")
                 //this.writeIP("192.168.1.1");
-                this.writeIP(Protocol.SERVER_IP[2]);
+                this.writeIP(serverIp);
                 //this.writeIP("123456789")
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
                 this.writeHex(Protocol.publicKey)
-                println(this.toUByteArray().toHexString(" "))
                 return super.toByteArray()
             }
         }.toByteArray()))
+    }
+
+    override fun toString(): String {
+        return this.javaClass.simpleName + this.javaClass.declaredFields.joinToString(", ", "{", "}") { it.name + "=" + it.get(this) }
     }
 
 }
 
 @ExperimentalUnsignedTypes
 fun main() {
-    val pk = ClientTouchPacket()
-    pk.qq = 1994701021
+    val pk = ClientTouchPacket(1994701021, "123.123.123.123")
     pk.encode()
     pk.writeHex(Protocol.tail)
     //println("pk.toByteArray() = " + pk.toUByteArray().contentToString())
