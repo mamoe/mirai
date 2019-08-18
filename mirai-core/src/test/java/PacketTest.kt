@@ -41,6 +41,6 @@ fun main(){
     println(packet.verifyCode.toUByteArray().toHexString(" "))
     println(packet.verifyCodeLength)
 
-    File("C:\\Users\\Him18\\Desktop\\5.png").createNewFile()
-    packet.verifyCode.inputStream().transferTo(FileOutputStream("C:\\Users\\Him18\\Desktop\\5.png"))
+    File(System.getProperty("user.dir") + "/5.png").createNewFile()
+    packet.verifyCode.inputStream().transferTo(FileOutputStream(System.getProperty("user.dir") + "/5.png"))
 }
