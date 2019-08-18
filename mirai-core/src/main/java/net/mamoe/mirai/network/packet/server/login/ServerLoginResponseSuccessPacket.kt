@@ -25,6 +25,7 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
 
     @ExperimentalUnsignedTypes
     override fun decode() {
+        //测试完成 @NaturalHG
         /**
          * Version 1  @Deprecated
         this.input.skip(7)//8
