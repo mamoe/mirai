@@ -87,7 +87,7 @@ class Robot(val number: Int, private val password: String) {
 
             }
 
-            is ServerLoginResponseSucceedPacket -> {
+            is ServerLoginResponseSuccessPacket -> {
                 this._0828_rec_decr_key = packet._0828_rec_decr_key
                 sendPacket(ClientLoginSucceedConfirmationPacket(this.number, this.serverIP, this.md5_32, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
             }
