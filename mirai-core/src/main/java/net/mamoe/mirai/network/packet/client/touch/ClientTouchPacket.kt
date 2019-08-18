@@ -14,8 +14,6 @@ import java.io.IOException
 /**
  * The packet to touch server.
  *
- * @see net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
- *
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes

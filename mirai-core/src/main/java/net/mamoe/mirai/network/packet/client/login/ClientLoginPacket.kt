@@ -43,7 +43,7 @@ class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, log
 class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA)
 
 @ExperimentalUnsignedTypes
-open class ClientLoginResendPacket(val qq: Int, val password: String, val loginTime: Int, val loginIP: String, val tgtgtKey: ByteArray, val token0825: ByteArray, val token00BA: ByteArray) : ClientPacket() {
+open class ClientLoginResendPacket internal constructor(val qq: Int, val password: String, val loginTime: Int, val loginIP: String, val tgtgtKey: ByteArray, val token0825: ByteArray, val token00BA: ByteArray) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol._0836_622_fix1)

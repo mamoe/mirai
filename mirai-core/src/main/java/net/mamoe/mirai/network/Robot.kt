@@ -12,6 +12,7 @@ import io.netty.handler.codec.bytes.ByteArrayDecoder
 import io.netty.handler.codec.bytes.ByteArrayEncoder
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
+import net.mamoe.mirai.network.packet.client.touch.ClientTouchPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.login.*
@@ -168,6 +169,7 @@ class Robot(val number: Int, private val password: String) {
                                     MiraiLogger.catching(cause)
                                 }
                             })
+                            sendPacket(ClientTouchPacket())
                         }
                     })
 
