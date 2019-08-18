@@ -42,5 +42,5 @@ fun main(){
     println(packet.verifyCodeLength)
 
     File("C:\\Users\\Him18\\Desktop\\5.png").createNewFile()
-    s.transferTo(FileOutputStream("C:\\Users\\Him18\\Desktop\\5.png"))
+    packet.verifyCode.inputStream().transferTo(FileOutputStream("C:\\Users\\Him18\\Desktop\\5.png"))
 }
