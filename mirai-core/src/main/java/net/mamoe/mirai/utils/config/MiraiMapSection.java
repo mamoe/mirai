@@ -5,17 +5,11 @@ import org.ini4j.Profile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
 public class MiraiMapSection extends ConcurrentHashMap<String, Object> implements MiraiConfigSection {
-
-    public Object get(String key){
-        return this.get(key,null);
-    }
 
     @SuppressWarnings("unchecked")
     public <T> T get(String key, T defaultValue) {
@@ -26,6 +20,17 @@ public class MiraiMapSection extends ConcurrentHashMap<String, Object> implement
             return (T) super.get(key);
         }
         return defaultValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(String key) {
+        if (key == null || key.isEmpty()) {
+            return null;
+        }
+        if (super.containsKey(key)) {
+            return (T) super.get(key);
+        }
+        return null;
     }
 
     public void set(String key, Object value){
@@ -66,6 +71,10 @@ public class MiraiMapSection extends ConcurrentHashMap<String, Object> implement
 
     public String getString(String key, String defaultValue) {
         return String.valueOf(this.get(key, defaultValue));
+    }
+
+    public Object getObject(String key) {
+        return this.get(key);
     }
 
     @SuppressWarnings("unchecked")
