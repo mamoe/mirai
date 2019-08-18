@@ -1,7 +1,8 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet.client.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.client.*
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.getCrc32
 import net.mamoe.mirai.util.getRandomKey
