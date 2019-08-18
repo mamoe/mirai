@@ -8,7 +8,7 @@ import net.mamoe.mirai.util.TEACryptor
 import java.io.DataInputStream
 
 /**
- * @author Him188moe
+ * @author NaturalHG
  */
 @PacketId("08 36 31 03")
 class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : ServerPacket(input) {
@@ -21,7 +21,7 @@ class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : 
     lateinit var token: ByteArray
     lateinit var tgtgtKey: ByteArray
 
-    override fun decode() {//todo 检查
+    override fun decode() {
         this.input.skip(5)
         tgtgtKey = this.input.readNBytes(16)//22
         this.input.skip(3)//25
