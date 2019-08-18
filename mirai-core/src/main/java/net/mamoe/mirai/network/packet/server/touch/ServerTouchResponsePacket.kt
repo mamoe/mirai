@@ -37,7 +37,7 @@ class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputSt
 
         when (data.readByte().toInt()) {
             0xFE -> {
-                println("0xfe")
+                data.skip(94)
                 serverIP = data.readIP()
             }
             0X00 -> {
