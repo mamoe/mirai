@@ -11,30 +11,27 @@ import java.io.DataInputStream
  * @author Him188moe @ Mirai Project
  */
 class ServerSessionKeyResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
+    lateinit var sessionKey: ByteArray
+    lateinit var tlv0105: ByteArray
     override fun decode() {
         var data = this.input.readAllBytes();
-        when (data.size) {
+        val input = data.dataInputStream()
+
+        sessionKey = when (data.size) {
             407 -> {
+                input.skip(25)
+                input.readNBytes(16)
             }
 
-            439 -> {
-
+            439, 527 -> {
+                input.skip(63)
+                input.readNBytes(16)
             }
 
-            527 -> {
-
-            }
-            else -> {
-            }
+            else -> throw IllegalStateException()
         }
 
-                .判断开始(length ＝ 407)
-        g_sessionKey ＝ 取文本中间 (data, 76, 47)
-        .判断(length ＝ 439)
-        g_sessionKey ＝ 取文本中间 (data, 190, 47)
-        .判断(length ＝ 527)
-        g_sessionKey ＝ 取文本中间 (data, 190, 47)
-        g_tlv0105 ＝ “01 05 00 88 00 01 01 02 ” ＋ “00 40 02 01 03 3C 01 03 00 00 ” ＋ 取文本中间 (data, 取文本长度 (data) － 367, 167) ＋ “ 00 40 02 02 03 3C 01 03 00 00 ” ＋ 取文本中间 (data, 取文本长度 (data) － 166, 167)
+        tlv0105 = "01 05 00 88 00 01 01 02 00 40 02 01 03 3C 01 03 00 00" + 取文本中间(data, 取文本长度(data) － 367, 167) ＋ “00 40 02 02 03 3C 01 03 00 00 ” ＋ 取文本中间 (data, 取文本长度 (data) － 166, 167)
 
     }
 }
