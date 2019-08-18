@@ -92,3 +92,12 @@ fun DataInputStream.readVarString(length:Int): String{
 
 
 fun ByteArray.dataInputStream(): DataInputStream = DataInputStream(this.inputStream())
+
+/**
+ * Reset and skip(position)
+ */
+fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
+    this.reset()
+    this.skip(position.toLong());
+    return this
+}
