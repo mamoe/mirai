@@ -1,5 +1,5 @@
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 public class NetworkTest {
     public static void main(String[] args) {

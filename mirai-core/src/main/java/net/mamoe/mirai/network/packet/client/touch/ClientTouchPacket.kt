@@ -16,7 +16,7 @@ import java.io.IOException
  *
  * @see net.mamoe.mirai.network.packet.server.ServerTouchResponsePacket
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 01")

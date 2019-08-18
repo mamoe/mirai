@@ -1,11 +1,8 @@
 package net.mamoe.mirai;
 
 
-import net.mamoe.mirai.event.MiraiEventHook;
-import net.mamoe.mirai.event.events.server.ServerDisableEvent;
-
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 public final class MiraiMain {
     private static MiraiServer server;

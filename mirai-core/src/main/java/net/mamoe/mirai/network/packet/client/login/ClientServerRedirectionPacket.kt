@@ -13,7 +13,7 @@ import java.io.IOException
 /**
  * Server redirection (0825 response)
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 02")

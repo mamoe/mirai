@@ -10,7 +10,7 @@ import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 abstract class ServerPacket(val input: DataInputStream) : Packet {
 

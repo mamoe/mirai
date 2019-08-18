@@ -10,7 +10,7 @@ import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @PacketId("00 BA 31 01")
 @ExperimentalUnsignedTypes

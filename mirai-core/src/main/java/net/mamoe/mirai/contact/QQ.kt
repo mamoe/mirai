@@ -1,7 +1,7 @@
 package net.mamoe.mirai.contact
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class QQ(number: Int) : Contact(number) {
     init {

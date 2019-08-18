@@ -10,8 +10,8 @@ import net.mamoe.mirai.util.hexToShort
 import java.io.DataInputStream
 
 /**
- * @author Him188moe @ Mirai Project
- * @author NaturalHG @ Mirai Project
+ * @author Him188moe
+ * @author NaturalHG
  */
 class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLength: Int) : ServerPacket(input) {
     lateinit var _0828_rec_decr_key: ByteArray//16 bytes|

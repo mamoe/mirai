@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

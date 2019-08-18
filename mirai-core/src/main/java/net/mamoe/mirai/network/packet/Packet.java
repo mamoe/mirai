@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network.packet;
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 public interface Packet {
 

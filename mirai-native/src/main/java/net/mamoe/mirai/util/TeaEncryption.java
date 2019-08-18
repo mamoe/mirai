@@ -1,7 +1,7 @@
 package net.mamoe.mirai.util;
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 public final class TeaEncryption {
 

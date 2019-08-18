@@ -3,7 +3,7 @@ package net.mamoe.mirai.contact
 /**
  * A contact is a QQ account or a QQ Group.
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 abstract class Contact(val number: Int) {
 

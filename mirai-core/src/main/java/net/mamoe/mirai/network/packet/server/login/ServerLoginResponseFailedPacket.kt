@@ -4,7 +4,7 @@ import net.mamoe.mirai.network.packet.server.ServerPacket
 import java.io.DataInputStream
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class ServerLoginResponseFailedPacket(val state: State, input: DataInputStream) : ServerPacket(input) {
     enum class State {

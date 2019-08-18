@@ -11,7 +11,7 @@ import java.net.InetAddress
 import java.security.MessageDigest
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @ExperimentalUnsignedTypes
 abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {

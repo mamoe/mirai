@@ -4,7 +4,7 @@ import net.mamoe.mirai.network.packet.server.ServerPacket
 import java.io.DataInputStream
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class ServerLoginResponseVerificationCodePacket(input: DataInputStream) : ServerPacket(input) {
     var verifyCodeLength: Int = 0

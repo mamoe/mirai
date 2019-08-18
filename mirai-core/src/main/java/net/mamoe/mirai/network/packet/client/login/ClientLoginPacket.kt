@@ -11,7 +11,7 @@ import net.mamoe.mirai.util.hexToBytes
 /**
  * Password submission (0836_622)
  *
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @PacketId("08 36 31 03")
 @ExperimentalUnsignedTypes
@@ -120,7 +120,7 @@ class ClientLoginSucceedConfirmationPacket(
 }
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 @ExperimentalUnsignedTypes
 private fun ClientPacket.writePart1(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray) {

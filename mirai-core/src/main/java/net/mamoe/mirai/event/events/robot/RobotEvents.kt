@@ -4,7 +4,7 @@ import net.mamoe.mirai.event.events.MiraiEvent
 import net.mamoe.mirai.network.Robot
 
 /**
- * @author Him188moe @ Mirai Project
+ * @author Him188moe
  */
 class RobotLoginEvent(val robot: Robot) : MiraiEvent()
 
