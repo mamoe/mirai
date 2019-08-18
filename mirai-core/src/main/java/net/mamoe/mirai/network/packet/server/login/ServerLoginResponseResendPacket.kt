@@ -5,7 +5,7 @@ import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.dataInputStream
 import net.mamoe.mirai.network.packet.server.goto
 import net.mamoe.mirai.util.TEACryptor
-yaimport java.io.DataInputStream
+import java.io.DataInputStream
 
 /**
  * @author Him188moe
