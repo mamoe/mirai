@@ -20,7 +20,7 @@ import java.net.DatagramPacket
 import java.net.InetSocketAddress
 
 /**
- * [number] is a QQ number.
+ * A robot account.
  *
  * @author Him188moe
  */
@@ -35,7 +35,7 @@ class Robot(val number: Int, private val password: String) {
             field = value
         }
 
-    private lateinit var serverAddress: InetSocketAddress;
+    private lateinit var serverAddress: InetSocketAddress
 
     private lateinit var token00BA: ByteArray
     private lateinit var token0825: ByteArray
@@ -141,7 +141,7 @@ class Robot(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     @Throws(InterruptedException::class)
     fun connect(ip: String) {
-        this.serverIP = ip;
+        this.serverIP = ip
         val group = NioEventLoopGroup()
         try {
             val b = Bootstrap()

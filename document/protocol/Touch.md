@@ -2,14 +2,15 @@
 
 ## Touch
 
-C -> S
+### C -> S
 
-### Var
+#### Var
 type | var name | value/from
 ---- | ---|---
 int |g_qq | qq number
 int| g_server| server ip 
-### Packet data
+
+#### Packet data
 
 type | value
 ---- | ---
@@ -34,5 +35,8 @@ hex | 00 00 00 00 03 09 00 08 00 01
 int | g_server
 hex | 00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19
 hex | #publicKey
-
 TEA加密以上, key=MD52
+
+### S -> C
+
+[Redirection](Redirection.md)
