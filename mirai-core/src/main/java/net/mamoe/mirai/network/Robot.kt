@@ -1,22 +1,20 @@
 package net.mamoe.mirai.network
 
-import io.netty.bootstrap.Bootstrap
-import io.netty.channel.*
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.nio.NioDatagramChannel
-import io.netty.handler.codec.bytes.ByteArrayDecoder
+import io.netty.channel.Channel
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
-import net.mamoe.mirai.network.packet.client.touch.ClientTouchPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacket
 import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacketEncrypted
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
+import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
 import net.mamoe.mirai.util.getRandomKey
+import net.mamoe.mirai.util.toHexString
 import net.mamoe.mirai.utils.MiraiLogger
 import java.net.DatagramPacket
+import java.net.DatagramSocket
 import java.net.InetSocketAddress
 
 /**
@@ -29,7 +27,7 @@ class Robot(val number: Int, private val password: String) {
 
     private var channel: Channel? = null
 
-    private var serverIP: String = ""
+    var serverIP: String = ""
         set(value) {
             serverAddress = InetSocketAddress(value, 8000)
             field = value
@@ -64,7 +62,8 @@ class Robot(val number: Int, private val password: String) {
         when (packet) {
             is ServerTouchResponsePacket -> {
                 if (packet.serverIP != null) {//redirection
-                    connect(packet.serverIP!!)
+                    serverIP = packet.serverIP!!
+                    //connect(packet.serverIP!!)
                     sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, number))
                 } else {//password submission
                     this.loginIP = packet.loginIP
@@ -93,7 +92,7 @@ class Robot(val number: Int, private val password: String) {
 
             is ServerLoginResponseSuccessPacket -> {
                 this._0828_rec_decr_key = packet._0828_rec_decr_key
-                sendPacket(ClientLoginSucceedConfirmationPacket(this.number, this.serverIP, this.md5_32, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
+                sendPacket(ClientLoginSucceedConfirmationPacket(this.number, this.serverIP, this.loginIP, this.md5_32, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
             }
 
             //这个有可能是客户端发送验证码之后收到的回复验证码是否正确?
@@ -114,14 +113,15 @@ class Robot(val number: Int, private val password: String) {
             is ServerLoginResponseResendPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
             is ServerLoginResponseSuccessPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
             is ServerSessionKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this._0828_rec_decr_key))
+            is ServerTouchResponsePacketEncrypted -> onPacketReceived(packet.decrypt())
 
-            else -> throw IllegalStateException()
+            else -> throw IllegalArgumentException(packet.toString())
         }
 
     }
 
     @ExperimentalUnsignedTypes
-    private fun sendPacket(packet: ClientPacket) {
+    fun sendPacket(packet: ClientPacket) {
         try {
             MiraiLogger log "Encoding"
             packet.encode()
@@ -129,19 +129,68 @@ class Robot(val number: Int, private val password: String) {
             e.printStackTrace()
         }
         packet.writeHex(Protocol.tail)
+        println(packet)
+        println(packet.toByteArray().toUByteArray().toHexString())
         /*val p = DatagramPacket(packet.toByteArray());
         p.socketAddress = this.serverAddress*/
-        channel!!.writeAndFlush(DatagramPacket(packet.toByteArray()))
+        //ctx.writeAndFlush(packet.toByteArray()).sync()
+        send(packet.toByteArray())
+        //println(channel!!.writeAndFlush(packet.toByteArray()).channel().connect(serverAddress).sync().get())
         MiraiLogger info "Packet sent: $packet"
     }
 
     private fun DatagramPacket(toByteArray: ByteArray): DatagramPacket = DatagramPacket(toByteArray, toByteArray.size, this.serverAddress)
 
+    //  private val socket = DatagramSocket(15314)
 
+    @ExperimentalUnsignedTypes
+    fun send(data: ByteArray) {
+        try {
+            val socket = DatagramSocket((15314 + Math.random() * 5).toInt())
+            socket.connect(this.serverAddress)
+
+            val dp1 = DatagramPacket(ByteArray(22312), 22312)
+            socket.send(DatagramPacket(data, data.size))
+            socket.receive(dp1)
+            val zeroByte: Byte = 0
+            var i = dp1.data.size - 1;
+            while (dp1.data[i] == zeroByte) {
+                --i
+            }
+            socket.close()
+            onPacketReceived(ServerPacket.ofByteArray(dp1.data.copyOfRange(0, i + 1)))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+    }
+    /*
+private lateinit var ctx: ChannelHandlerContext
     @ExperimentalUnsignedTypes
     @Throws(InterruptedException::class)
     fun connect(ip: String) {
         this.serverIP = ip
+
+
+         NioDatagramConnector().let { it.handler = object : IoHandlerAdapter(), IoHandler {
+
+         } }
+        IoConnector connector=udpClient.getConnector();
+        connector.getFilterChain().addLast("codec",
+                 ProtocolCodecFilter(
+                         TextLineCodecFactory(
+                                Charset.forName("UTF-8"),
+                LineDelimiter.WINDOWS.getValue(),
+                LineDelimiter.WINDOWS.getValue())));
+
+        ConnectFuture connectFuture=connector.connect(udpClient.getInetSocketAddress());
+        // 等待是否连接成功，相当于是转异步执行为同步执行。
+        connectFuture.awaitUninterruptibly();
+        //连接成功后获取会话对象。如果没有上面的等待，由于connect()方法是异步的，
+        //connectFuture.getSession(),session可能会无法获取。
+        udpClient.setSession(connectFuture.getSession());
+        udpClient.getSession().write("Hello，UDPServer!");
+
         val group = NioEventLoopGroup()
         try {
             val b = Bootstrap()
@@ -151,18 +200,35 @@ class Robot(val number: Int, private val password: String) {
                     .channel(NioDatagramChannel::class.java)
                     .option(ChannelOption.SO_BROADCAST, true)
                     .handler(object : ChannelInitializer<NioDatagramChannel>() {
+
+                        override fun channelActive(ctx: ChannelHandlerContext?) {
+                            this@Robot.ctx = ctx!!
+                            super.channelActive(ctx)
+                        }
+
                         @Throws(Exception::class)
                         override fun initChannel(ch: NioDatagramChannel) {
-                            /*ch.pipeline().addLast(object : MessageToMessageEncoder<ByteArray>() {
-                                override fun encode(ctx: ChannelHandlerContext?, msg: ByteArray?, out: MutableList<Any>?) {
-                                    out!!.add(DatagramPacket(msg!!))
-                                }
-                            })*/
                             ch.pipeline().addLast(ByteArrayDecoder())
+                            ch.pipeline().addLast(ByteArrayEncoder())
+
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
                                 override fun channelRead0(ctx: ChannelHandlerContext, bytes: ByteArray) {
                                     try {
                                         this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes))
+                                    } catch (e: Exception) {
+                                        MiraiLogger.catching(e)
+                                    }
+                                }
+
+                                override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+                                    MiraiLogger.catching(cause)
+                                }
+                            })
+
+                            ch.pipeline().addLast(object : SimpleChannelInboundHandler<DatagramPacket>() {
+                                override fun channelRead0(ctx: ChannelHandlerContext, bytes: DatagramPacket) {
+                                    try {
+                                        this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes.data))
                                     } catch (e: Exception) {
                                         MiraiLogger.catching(e)
                                     }
@@ -183,5 +249,5 @@ class Robot(val number: Int, private val password: String) {
         } finally {
             group.shutdownGracefully().sync()
         }
-    }
+    }*/
 }

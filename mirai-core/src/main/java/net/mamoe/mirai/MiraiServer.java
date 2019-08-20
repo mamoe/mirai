@@ -4,8 +4,8 @@ import lombok.Getter;
 import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
-import net.mamoe.mirai.network.Protocol;
 import net.mamoe.mirai.network.Robot;
+import net.mamoe.mirai.network.packet.client.touch.ClientTouchPacket;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -116,11 +116,16 @@ public class MiraiServer {
 
         Robot robot = new Robot(1994701021, "xiaoqqq");
         try {
-            System.out.println(Protocol.Companion.getSERVER_IP().get(3));
+            //System.out.println(Protocol.Companion.getSERVER_IP().get(3));
             //System.out.println(Protocol.Companion.getSERVER_IP().toString());
-            robot.connect(Protocol.Companion.getSERVER_IP().get(3));
+
+            robot.setServerIP("14.116.136.106");
+            robot.sendPacket(new ClientTouchPacket(1994701021, "14.116.136.106"));
+            while (true) ;
+            //robot.connect("14.116.136.106");
+            //robot.connect(Protocol.Companion.getSERVER_IP().get(2));
             //robot.connect("125.39.132.242");
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }

@@ -6,6 +6,7 @@ import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.client.writeIP
 import net.mamoe.mirai.network.packet.client.writeQQ
+import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import java.io.IOException
@@ -25,9 +26,9 @@ class ClientServerRedirectionPacket(private val serverIP: String, private val qq
         this.writeHex(Protocol.redirectionKey)
 
 
-        this.write(TEACryptor.encrypt(object : ClientPacket() {
+        this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
-            override fun encode() {
+            override fun toByteArray(): ByteArray {
                 this.writeHex(Protocol._0825data0)
                 this.writeHex(Protocol._0825data2)
                 this.writeQQ(qq)
@@ -35,7 +36,8 @@ class ClientServerRedirectionPacket(private val serverIP: String, private val qq
                 this.writeIP(serverIP)
                 this.writeHex("01 6F A1 58 22 01 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 03 00 19")
                 this.writeHex(Protocol.publicKey)
+                return super.toByteArray()
             }
-        }.encodeToByteArray(), Protocol.redirectionKey.hexToBytes()))
+        }.toByteArray(), Protocol.redirectionKey.hexToBytes()))
     }
 }

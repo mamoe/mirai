@@ -19,7 +19,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
         @ExperimentalUnsignedTypes
         fun ofByteArray(bytes: ByteArray): ServerPacket {
-            println("Raw received: $bytes")
+            println("Raw received: ${bytes.toUByteArray().toHexString()}")
 
             val stream = bytes.dataInputStream()
 
@@ -78,10 +78,9 @@ fun DataInputStream.readUntil(byte: Byte): ByteArray {
 fun DataInputStream.readIP(): String {
     var buff = ""
     for (i in 0..3) {
-        val byte = readByte()
-        buff += (byte.toUByte().toString())
+        val byte = readUnsignedByte()
+        buff += byte.toString()
         if (i != 3) buff += "."
-        println(byte.toHexString())
     }
     return buff
 }

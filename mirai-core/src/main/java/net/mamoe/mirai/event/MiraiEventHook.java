@@ -4,10 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.mamoe.mirai.event.events.Cancellable;
 import net.mamoe.mirai.event.events.MiraiEvent;
-import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -79,7 +77,7 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
         if(!(event instanceof Cancellable && event.isCancelled() && this.isIgnoreCancelled())){
              this.getHandler().accept((T) event);
         }
-        return this.valid.test((T)event);
+        return this.valid == null || this.valid.test((T) event);
     }
 
     /**
