@@ -34,4 +34,5 @@ object MiraiLogger {
 
 }
 
+
 fun log(any: Any?) = MiraiLogger.info(any)

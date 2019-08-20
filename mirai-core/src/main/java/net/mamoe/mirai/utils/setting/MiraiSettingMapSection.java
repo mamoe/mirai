@@ -1,4 +1,4 @@
-package net.mamoe.mirai.utils.config;
+package net.mamoe.mirai.utils.setting;
 
 
 import org.ini4j.Profile;
@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
-public class MiraiMapSection extends ConcurrentHashMap<String, Object> implements MiraiConfigSection {
+public class MiraiSettingMapSection extends ConcurrentHashMap<String, Object> implements MiraiSettingSection {
 
     @SuppressWarnings("unchecked")
     public <T> T get(String key, T defaultValue) {

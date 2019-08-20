@@ -1,96 +1,76 @@
 package net.mamoe.mirai.utils.config;
 
-import org.ini4j.Config;
-import org.ini4j.Ini;
-import org.ini4j.Profile;
+import net.mamoe.mirai.MiraiServer;
+import net.mamoe.mirai.utils.Utils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Mirai Config
- * Only support {INI} format
- * Support MAP and LIST
- * Thread safe
+ * YAML-TYPE CONFIG
+ * Thread SAFE
+ * @author NaturalHG
  */
-public class MiraiConfig {
+public class MiraiConfig extends MiraiConfigSection<Object>{
 
-    private File file;
-
-    private Ini ini;
-
-    private volatile Map<String, MiraiConfigSection> cacheSection = new ConcurrentHashMap<>();
+    private volatile File root;
 
     public MiraiConfig(File file){
-        if(!file.getName().contains(".")){
-            file = new File(file.getParent() + file.getName() + ".ini");
+        super();
+        if(!file.toURI().getPath().contains(MiraiServer.getInstance().getParentFolder().getPath())){
+            file = new File((MiraiServer.getInstance().getParentFolder().getPath() + "/" + file).replace("//","/"));
         }
-        this.file = file;
-        try {
-            if(file.exists()){
-                file.createNewFile();
+
+        this.root = file;
+
+        if(!file.exists()){
+            try {
+                if(!file.createNewFile()){
+                    return;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            Config config = new Config();
-            config.setMultiSection(true);
-            ini = new Ini();
-            ini.setConfig(config);
-            ini.load(this.file.toURI().toURL());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        this.parse();
     }
 
-    public void setSection(String key, MiraiConfigSection section){
-        cacheSection.put(key, section);
+    private MiraiConfig(){
+
     }
-
-
-    public MiraiMapSection getMapSection(String key){
-        if(!cacheSection.containsKey(key)) {
-            MiraiMapSection section = new MiraiMapSection();
-            if(ini.containsKey(key)){
-                section.putAll(ini.get(key));
-            }
-            cacheSection.put(key, section);
-        }
-        return (MiraiMapSection) cacheSection.get(key);
-    }
-
-    public MiraiListSection getListSection(String key){
-        if(!cacheSection.containsKey(key)) {
-            MiraiListSection section = new MiraiListSection();
-            if(ini.containsKey(key)){
-                section.addAll(ini.get(key).values());
-            }
-            cacheSection.put(key, section);
-        }
-        return (MiraiListSection) cacheSection.get(key);
-    }
-
 
     public synchronized void save(){
-        cacheSection.forEach((k,a) -> {
-            if(!ini.containsKey(k)) {
-                ini.put(k,"",new HashMap<>());
-            }
-            a.saveAsSection(ini.get(k));
-        });
-        this.clearCache();
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        Yaml yaml = new Yaml(dumperOptions);
+        String content = yaml.dump(this);
         try {
-            ini.store(file);
+            Utils.writeFile(this.root,content);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void clearCache(){
-        cacheSection.clear();
+    @SuppressWarnings("unchecked")
+    private void parse(){
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        Yaml yaml = new Yaml(dumperOptions);
+        this.clear();
+        try {
+            Map<String,Object> content = yaml.loadAs(Utils.readFile(this.root), LinkedHashMap.class);
+            if(content != null) {
+                this.putAll(content);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-}
 
+
+
+}

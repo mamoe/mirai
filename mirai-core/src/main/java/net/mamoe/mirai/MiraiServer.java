@@ -10,7 +10,10 @@ import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
 import net.mamoe.mirai.utils.config.MiraiConfig;
-import net.mamoe.mirai.utils.config.MiraiMapSection;
+import net.mamoe.mirai.utils.config.MiraiConfigSection;
+import net.mamoe.mirai.utils.setting.MiraiSetting;
+import net.mamoe.mirai.utils.setting.MiraiSettingListSection;
+import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +44,9 @@ public class MiraiServer {
     @Getter
     MiraiLogger logger;
 
-    MiraiConfig setting;
+    MiraiSetting setting;
+
+    MiraiConfig qqs;
 
 
     protected MiraiServer(){
@@ -74,16 +79,27 @@ public class MiraiServer {
         getLogger().info("Loading data under " + LoggerTextFormat.GREEN + this.parentFolder);
 
         File setting = new File(this.parentFolder + "/Mirai.ini");
+        getLogger().info("Selecting setting from " + LoggerTextFormat.GREEN + setting);
 
         if(!setting.exists()){
             this.initSetting(setting);
         }else {
-            this.setting = new MiraiConfig(setting);
+            this.setting = new MiraiSetting(setting);
         }
-        getLogger().info("Success");
+
+        File qqs = new File(this.parentFolder + "/QQ.yml");
+        getLogger().info("Reading QQ accounts from  " + LoggerTextFormat.GREEN + qqs);
+        if(!qqs.exists()){
+            this.initQQConfig(qqs);
+        }else {
+            this.qqs = new MiraiConfig(qqs);
+        }
+        if(this.qqs.isEmpty()){
+            this.initQQConfig(qqs);
+        }
 
         /*
-        MiraiMapSection qqs = this.setting.getMapSection("qq");
+        MiraiSettingMapSection qqs = this.setting.getMapSection("qq");
         qqs.forEach((a,p) -> {
             this.getLogger().info(LoggerTextFormat.SKY_BLUE + "Finding available ports between " + "1-65536");
             try {
@@ -95,6 +111,8 @@ public class MiraiServer {
             }
         });
         */
+
+        getLogger().info("ready to connect");
 
         Robot robot = new Robot(1994701021, "xiaoqqq");
         try {
@@ -136,10 +154,30 @@ public class MiraiServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.setting = new MiraiConfig(setting);
-        MiraiMapSection network  = this.setting.getMapSection("network");
+        this.setting = new MiraiSetting(setting);
+        MiraiSettingMapSection network  = this.setting.getMapSection("network");
+        network.set("enable_proxy","not supporting yet");
 
-        MiraiMapSection qqs = this.setting.getMapSection("qq");
+        MiraiSettingListSection proxy  = this.setting.getListSection("proxy");
+        proxy.add("1.2.3.4:95");
+        proxy.add("1.2.3.4:100");
+
+        MiraiSettingMapSection worker  = this.setting.getMapSection("worker");
+        worker.set("core_task_pool_worker_amount",5);
+
+        MiraiSettingMapSection plugin = this.setting.getMapSection("plugin");
+        plugin.set("debug", false);
+
+        this.setting.save();
+        getLogger().info(LoggerTextFormat.SKY_BLUE + "initialized; changing can be made in setting file: " + setting.toString());
+    }
+
+    private void initQQConfig(File qqConfig){
+        this.qqs = new MiraiConfig(qqConfig);
+
+        MiraiConfigSection<Object> section = new MiraiConfigSection<>();
+
+        System.out.println("/");
         Scanner scanner = new Scanner(System.in);
         getLogger().info(LoggerTextFormat.SKY_BLUE + "input one " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.SKY_BLUE + "for default robot");
         getLogger().info(LoggerTextFormat.SKY_BLUE + "输入用于默认机器人的QQ号");
@@ -147,9 +185,13 @@ public class MiraiServer {
         getLogger().info(LoggerTextFormat.SKY_BLUE + "input the password for that QQ account");
         getLogger().info(LoggerTextFormat.SKY_BLUE + "输入该QQ号对应密码");
         String qqPassword = scanner.next();
-        getLogger().info(LoggerTextFormat.SKY_BLUE + "initialized; changing can be made in config file: " + setting.toString());
-        qqs.put(String.valueOf(qqNumber),qqPassword);
-        this.setting.save();
+
+        section.put("password",qqPassword);
+        section.put("owner","default");
+
+        this.qqs.put(String.valueOf(qqNumber),section);
+        this.qqs.save();
+        getLogger().info(LoggerTextFormat.SKY_BLUE + "QQ account initialized; changing can be made in Config file: " + qqConfig.toString());
     }
 
     private void onEnable(){

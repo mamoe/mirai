@@ -1,12 +1,21 @@
 package net.mamoe.mirai.utils.config;
 
-import org.ini4j.Profile;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.Closeable;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-public interface MiraiConfigSection extends Closeable {
-    void saveAsSection(Profile.Section section);
+public class MiraiConfigSection<T> extends ConcurrentSkipListMap<String, T> {
+
+    public MiraiConfigSection(){
+        /*
+        * Ensure the key will be in order
+        * */
+        super((a,b) -> 1);
+    }
+
+
 }
-
-

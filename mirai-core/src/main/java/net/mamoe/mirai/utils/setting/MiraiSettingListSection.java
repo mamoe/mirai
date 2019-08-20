@@ -1,17 +1,16 @@
-package net.mamoe.mirai.utils.config;
+package net.mamoe.mirai.utils.setting;
 
 
 import org.ini4j.Profile;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-public class MiraiListSection extends Vector<Object> implements MiraiConfigSection{
+public class MiraiSettingListSection extends Vector<Object> implements MiraiSettingSection {
     private Lock lock = new ReentrantLock();
 
     @SuppressWarnings("unchecked")
