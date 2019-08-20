@@ -8,8 +8,8 @@ import net.mamoe.mirai.network.Robot;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
-import net.mamoe.mirai.utils.config.MiraiConfig;
-import net.mamoe.mirai.utils.config.MiraiMapSection;
+import net.mamoe.mirai.utils.setting.MiraiSetting;
+import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class MiraiServer {
     @Getter
     MiraiLogger logger;
 
-    MiraiConfig setting;
+    MiraiSetting setting;
 
 
     protected MiraiServer(){
@@ -77,12 +77,12 @@ public class MiraiServer {
         if(!setting.exists()){
             this.initSetting(setting);
         }else {
-            this.setting = new MiraiConfig(setting);
+            this.setting = new MiraiSetting(setting);
         }
         getLogger().info("Success");
 
         /*
-        MiraiMapSection qqs = this.setting.getMapSection("qq");
+        MiraiSettingMapSection qqs = this.setting.getMapSection("qq");
         qqs.forEach((a,p) -> {
             this.getLogger().info(LoggerTextFormat.SKY_BLUE + "Finding available ports between " + "1-65536");
             try {
@@ -134,10 +134,10 @@ public class MiraiServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.setting = new MiraiConfig(setting);
-        MiraiMapSection network  = this.setting.getMapSection("network");
+        this.setting = new MiraiSetting(setting);
+        MiraiSettingMapSection network  = this.setting.getMapSection("network");
 
-        MiraiMapSection qqs = this.setting.getMapSection("qq");
+        MiraiSettingMapSection qqs = this.setting.getMapSection("qq");
         Scanner scanner = new Scanner(System.in);
         getLogger().info(LoggerTextFormat.SKY_BLUE + "input one " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.SKY_BLUE + "for default robot");
         getLogger().info(LoggerTextFormat.SKY_BLUE + "输入用于默认机器人的QQ号");

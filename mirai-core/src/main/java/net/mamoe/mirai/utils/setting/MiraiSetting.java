@@ -1,16 +1,12 @@
-package net.mamoe.mirai.utils.config;
+package net.mamoe.mirai.utils.setting;
 
 import org.ini4j.Config;
 import org.ini4j.Ini;
-import org.ini4j.Profile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -19,15 +15,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * Support MAP and LIST
  * Thread safe
  */
-public class MiraiConfig {
+public class MiraiSetting {
 
     private File file;
 
     private Ini ini;
 
-    private volatile Map<String, MiraiConfigSection> cacheSection = new ConcurrentHashMap<>();
+    private volatile Map<String, MiraiSettingSection> cacheSection = new ConcurrentHashMap<>();
 
-    public MiraiConfig(File file){
+    public MiraiSetting(File file){
         if(!file.getName().contains(".")){
             file = new File(file.getParent() + file.getName() + ".ini");
         }
@@ -46,31 +42,31 @@ public class MiraiConfig {
         }
     }
 
-    public void setSection(String key, MiraiConfigSection section){
+    public void setSection(String key, MiraiSettingSection section){
         cacheSection.put(key, section);
     }
 
 
-    public MiraiMapSection getMapSection(String key){
+    public MiraiSettingMapSection getMapSection(String key){
         if(!cacheSection.containsKey(key)) {
-            MiraiMapSection section = new MiraiMapSection();
+            MiraiSettingMapSection section = new MiraiSettingMapSection();
             if(ini.containsKey(key)){
                 section.putAll(ini.get(key));
             }
             cacheSection.put(key, section);
         }
-        return (MiraiMapSection) cacheSection.get(key);
+        return (MiraiSettingMapSection) cacheSection.get(key);
     }
 
-    public MiraiListSection getListSection(String key){
+    public MiraiSettingListSection getListSection(String key){
         if(!cacheSection.containsKey(key)) {
-            MiraiListSection section = new MiraiListSection();
+            MiraiSettingListSection section = new MiraiSettingListSection();
             if(ini.containsKey(key)){
                 section.addAll(ini.get(key).values());
             }
             cacheSection.put(key, section);
         }
-        return (MiraiListSection) cacheSection.get(key);
+        return (MiraiSettingListSection) cacheSection.get(key);
     }
 
 
