@@ -114,16 +114,20 @@ public class MiraiServer {
 
         getLogger().info("ready to connect");
 
-        /*
-        this.qqs.put("test",new MiraiConfigSection<String>(){{
-            put("1","2");
-            put("11","2");
-            put("111","2");
-            put("1111","2");
-        }});
+
+        MiraiConfigSection section = new MiraiConfigSection<MiraiConfigSection<String>>(){{
+            put("1",new MiraiConfigSection<>(){{
+                put("1","0");
+            }});
+        }};
+
+        this.qqs.put("test",section);
         this.qqs.save();
-        */
-        System.out.println(this.qqs.get());
+
+
+        MiraiConfigSection<MiraiConfigSection> x = this.qqs.getTypedSection("test");
+        System.out.println(x.getSection("1").getInt("1"));
+
         /*
         System.out.println(v);
 

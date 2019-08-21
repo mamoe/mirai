@@ -8,9 +8,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * YAML-TYPE CONFIG
@@ -51,7 +49,7 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(dumperOptions);
-        String content = yaml.dump(this);
+        String content = yaml.dump(this.sortedMap);
         try {
             Utils.writeFile(this.root, content);
         } catch (IOException e) {
@@ -64,12 +62,10 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(dumperOptions);
-        this.clear();
         try {
-            Map<String, Object> content = yaml.loadAs(Utils.readFile(this.root), LinkedHashMap.class);
+            LinkedHashMap<String, Object> content = yaml.loadAs(Utils.readFile(this.root), LinkedHashMap.class);
             if (content != null) {
-                this.putAll(content);
-                System.out.println(this.keySet().toString());
+                setContent(content);
             }
         } catch (IOException e) {
             e.printStackTrace();

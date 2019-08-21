@@ -1,20 +1,23 @@
 package net.mamoe.mirai.utils.config;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class MiraiAbstractConfigSection<K,V> implements Map<K,V> {
+public class MiraiSynchronizedLInkedListMap<K,V> extends AbstractMap<K,V> {
 
-
-    private SortedMap<K, V> sortedMap;
-
-    protected void setContent(SortedMap<K,V> map){
-        this.sortedMap = map;
+    public MiraiSynchronizedLInkedListMap(){
+        this.sortedMap = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
+    protected Map<K, V> sortedMap;
+
+    protected void setContent(LinkedHashMap<K,V> map){
+        this.sortedMap = Collections.synchronizedMap(map);
+    }
 
     @Override
     public int size() {
@@ -79,4 +82,12 @@ public class MiraiAbstractConfigSection<K,V> implements Map<K,V> {
     public Set<Entry<K, V>> entrySet() {
         return sortedMap.entrySet();
     }
+
+    @Override
+    public String toString() {
+        return this.sortedMap.toString();
+    }
+
+
+
 }
