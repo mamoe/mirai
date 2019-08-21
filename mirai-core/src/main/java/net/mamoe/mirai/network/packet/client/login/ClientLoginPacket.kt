@@ -73,6 +73,7 @@ open class ClientLoginResendPacket internal constructor(val qq: Int, val passwor
 class ClientLoginSucceedConfirmationPacket(
         private val qq: Int,
         private val serverIp: String,
+        private val loginIP: String,
         private val md5_32: ByteArray,
         private val token38: ByteArray,
         private val token88: ByteArray,
@@ -111,7 +112,7 @@ class ClientLoginSucceedConfirmationPacket(
                 this.writeHex("68")
 
                 this.writeHex("00 00 00 00 00 2D 00 06 00 01")
-                this.writeIP("127.0.0.1")//本地IP地址? todo test that
+                this.writeIP(loginIP)//本地IP地址? todo test that
 
                 return super.toByteArray()
             }

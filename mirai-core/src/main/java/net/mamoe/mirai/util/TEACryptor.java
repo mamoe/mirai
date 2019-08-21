@@ -177,7 +177,7 @@ public class TEACryptor {
 
     private byte[] decrypt(byte[] ciphertext, int offset, int len) {
         if (len % 8 != 0 || len < 16) {
-            return null;
+            throw new IllegalArgumentException("must len % 8 == 0 && len >= 16");
         }
         mIV = decode(ciphertext, offset);
         mIndexPos = mIV[0] & 7;
@@ -199,7 +199,7 @@ public class TEACryptor {
             if (mIndexPos == 8) {
                 isFirstBlock = false;
                 if (!decodeOneBlock(ciphertext, offset, len)) {
-                    return null;
+                    throw new RuntimeException("Unable to decode");
                 }
             }
         }
@@ -215,14 +215,14 @@ public class TEACryptor {
                 mPreOutPos = mOutPos - 8;
                 isFirstBlock = false;
                 if (!decodeOneBlock(ciphertext, offset, len)) {
-                    return null;
+                    throw new RuntimeException("Unable to decode");
                 }
             }
         }
         for (g = 0; g < 7; g++) {
             if (mIndexPos < 8) {
                 if ((ciphertext[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]) != 0) {
-                    return null;
+                    throw new RuntimeException();
                 } else {
                     ++mIndexPos;
                 }
@@ -231,7 +231,7 @@ public class TEACryptor {
             if (mIndexPos == 8) {
                 mPreOutPos = mOutPos;
                 if (!decodeOneBlock(ciphertext, offset, len)) {
-                    return null;
+                    throw new RuntimeException("Unable to decode");
                 }
             }
         }

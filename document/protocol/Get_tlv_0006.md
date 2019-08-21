@@ -2,16 +2,16 @@
 
 ## Get_tlv_0006
 
-C 构建包
+C 构建包, 近 C 使用
 
-### Var
+#### Var
 type | var name | value/from
 ---- | ---|---
-?bytes | MD51 | md5(raw password)  
+?bytes | MD51 | md5(raw password)
 ?bytes | MD52 | md5((MD51 ＋ “ 00 00 00 00 ” ＋ g_QQ).hextobytes())
-4bytes |m_loginIP | 服务器提供(Dispose_0825)  
-16bytes| m_tgtgtKey| random 
-### Packet data
+4bytes |m_loginIP | 服务器提供(Dispose_0825)
+16bytes| m_tgtgtKey| |
+#### Packet data
 
 type | value
 ---- | ---

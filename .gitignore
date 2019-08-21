@@ -29,3 +29,6 @@ mirai.iml
 /.idea/
 .idea/*
 /.idea/*
+
+test/
+/test

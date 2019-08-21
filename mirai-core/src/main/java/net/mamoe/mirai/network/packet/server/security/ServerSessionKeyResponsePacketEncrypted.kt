@@ -47,7 +47,7 @@ class ServerSessionKeyResponsePacketEncrypted(inputStream: DataInputStream) : Se
     }
 
     fun decrypt(_0828_rec_decr_key: ByteArray): ServerSessionKeyResponsePacket {//todo test
-        this.input.skip(14)
+        this.input.skip(7)
         return ServerSessionKeyResponsePacket(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, _0828_rec_decr_key).dataInputStream());
         //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
     }

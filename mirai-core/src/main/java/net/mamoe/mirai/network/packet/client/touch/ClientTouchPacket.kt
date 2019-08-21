@@ -38,10 +38,12 @@ class ClientTouchPacket(val qq: Int, val serverIp: String) : ClientPacket() {
                 this.writeQQ(qq)
                 this.writeHex("00 00 00 00 03 09 00 08 00 01")
                 //this.writeIP("192.168.1.1");
+                println("serverIp=$serverIp")
                 this.writeIP(serverIp);
                 //this.writeIP("123456789")
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
                 this.writeHex(Protocol.publicKey)
+                println(super.toUByteArray().toHexString())
                 return super.toByteArray()
             }
         }.toByteArray()))

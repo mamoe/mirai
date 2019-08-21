@@ -123,7 +123,7 @@ class ServerLoginResponseSuccessPacketEncrypted(input: DataInputStream, val leng
 
     @ExperimentalUnsignedTypes
     fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {//todo test
-        this.input.skip(14)
+        this.input.skip(7)
         return ServerLoginResponseSuccessPacket(TEACryptor.decrypt(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.shareKey.hexToBytes()), tgtgtKey).dataInputStream(), length);
         //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
     }

@@ -11,9 +11,9 @@ object MiraiLogger {
         this.print(o.toString())
     }
 
-    infix fun log(o: Any?) = MiraiLogger.info(o)
+    infix fun log(o: Any?) = info(o)
 
-    infix fun println(o: Any?) = MiraiLogger.info(o)
+    infix fun println(o: Any?) = info(o)
 
     infix fun debug(o: Any?) {
         this.print(o.toString())

@@ -6,6 +6,8 @@ import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.readIP
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.getRandomKey
+import net.mamoe.mirai.util.hexToBytes
+import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
 /**
@@ -17,7 +19,7 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 @ToString
-class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
+class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
     var serverIP: String? = null;
 
     var loginTime: Int = 0
@@ -32,12 +34,12 @@ class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputSt
 
     @ExperimentalUnsignedTypes
     override fun decode() {
-        when (input.readByte().toInt()) {
+        when (val id = input.readByte().toUByte().toInt()) {
             0xFE -> {
                 input.skip(94)
                 serverIP = input.readIP()
             }
-            0X00 -> {
+            0x00 -> {
                 input.skip(4)
                 token = input.readNBytes(56)
                 input.skip(6)
@@ -48,7 +50,7 @@ class ServerTouchResponsePacket(private val type: Type, inputStream: DataInputSt
             }
 
             else -> {
-                throw IllegalStateException()
+                throw IllegalStateException(arrayOf(id.toUByte()).toUByteArray().toHexString())
             }
         }
     }
@@ -59,11 +61,16 @@ class ServerTouchResponsePacketEncrypted(private val type: ServerTouchResponsePa
 
     }
 
+    @ExperimentalUnsignedTypes
     fun decrypt(): ServerTouchResponsePacket {
-        input.skip(14)
-        return ServerTouchResponsePacket(type, DataInputStream(TEACryptor.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, when (type) {
-            ServerTouchResponsePacket.Type.TYPE_08_25_31_01 -> Protocol.redirectionKey.toByteArray()
-            ServerTouchResponsePacket.Type.TYPE_08_25_31_02 -> Protocol._0825key.toByteArray()
+        input.skip(7)
+        var bytes = input.readAllBytes();
+        bytes = bytes.copyOfRange(0, bytes.size - 1);
+        println(bytes.toUByteArray().toHexString())
+
+        return ServerTouchResponsePacket(DataInputStream(TEACryptor.decrypt(bytes, when (type) {
+            ServerTouchResponsePacket.Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()
+            ServerTouchResponsePacket.Type.TYPE_08_25_31_01 -> Protocol._0825key.hexToBytes()
         }).inputStream()));
     }
 }
