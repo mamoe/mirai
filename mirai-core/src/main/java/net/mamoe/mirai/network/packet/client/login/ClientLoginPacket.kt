@@ -7,6 +7,7 @@ import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.getRandomKey
 import net.mamoe.mirai.util.hexToBytes
+import java.net.InetAddress
 
 /**
  * Password submission (0836_622)
@@ -15,7 +16,14 @@ import net.mamoe.mirai.util.hexToBytes
  */
 @PacketId("08 36 31 03")
 @ExperimentalUnsignedTypes
-class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: Int, private val loginIP: String, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
+class ClientPasswordSubmissionPacket(
+        private val qq: Int,
+        private val password: String,
+        private val loginTime: Int,
+        private val loginIP: String,
+        private val tgtgtKey: ByteArray,
+        private val token0825: ByteArray
+) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)
@@ -24,13 +32,10 @@ class ClientPasswordSubmissionPacket(private val qq: Int, private val password: 
         this.writeHex("00 00 00 10")
         this.writeHex(Protocol._0836key1)
 
-        this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
-            override fun toByteArray(): ByteArray {
-                writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
-                writePart2()
-                return super.toByteArray()
-            }
-        }.toByteArray(), Protocol.shareKey.hexToBytes()))
+        this.encryptAndWrite(Protocol.shareKey.hexToBytes()) {
+            writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
+            writePart2()
+        }
     }
 }
 
@@ -66,6 +71,10 @@ open class ClientLoginResendPacket internal constructor(val qq: Int, val passwor
             }
         }.toByteArray(), Protocol.shareKey.hexToBytes()))
     }
+}
+
+fun main() {
+    println(InetAddress.getLocalHost().hostAddress)
 }
 
 @ExperimentalUnsignedTypes
@@ -112,7 +121,7 @@ class ClientLoginSucceedConfirmationPacket(
                 this.writeHex("68")
 
                 this.writeHex("00 00 00 00 00 2D 00 06 00 01")
-                this.writeIP(loginIP)//本地IP地址? todo test that
+                this.writeIP(InetAddress.getLocalHost().hostName)//? todo 这随便扔的
 
                 return super.toByteArray()
             }
@@ -126,12 +135,12 @@ class ClientLoginSucceedConfirmationPacket(
 @ExperimentalUnsignedTypes
 private fun ClientPacket.writePart1(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray) {
 
-    this.writeQQ(System.currentTimeMillis().toInt())//that's correct
+    this.writeInt(System.currentTimeMillis().toInt())
     this.writeHex("01 12")//tag
     this.writeHex("00 38")//length
     this.write(token0825)//length
     this.writeHex("03 0F")//tag
-    this.writeHostname()//todo 务必检查这个
+    this.writeDeviceName()
     /*易语言源码: PCName就是HostName
     PCName ＝ BytesToStr (Ansi转Utf8 (取主机名 ()))
     PCName ＝ 取文本左边 (PCName, 取文本长度 (PCName) － 3)*/

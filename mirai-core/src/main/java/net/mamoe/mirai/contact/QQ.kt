@@ -22,4 +22,12 @@ class QQ(number: Int) : Contact(number) {
     fun at(): String {
         return "[@$number]"
     }
+
+
+    /*
+    Make that we can use (QQ + QQ2 + QQ3).sendMessage( )
+
+    operator fun plus(qq: QQ): QQCombination {
+
+    }*/
 }

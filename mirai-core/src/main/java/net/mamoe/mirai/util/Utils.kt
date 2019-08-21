@@ -28,27 +28,36 @@ object Utils {
     }
 }
 
+fun ByteArray.toHexString(): String = toHexString(" ")
 fun ByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
+
 @ExperimentalUnsignedTypes
 fun UByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
 
 @ExperimentalUnsignedTypes
-fun Byte.toHexString(): String = this.toUByte().toString(16)
+fun UByteArray.toHexString(): String = toHexString(" ")
 
+@ExperimentalUnsignedTypes
+fun Byte.toHexString(): String = this.toUByte().toString(16)
 
 @ExperimentalUnsignedTypes
 fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 @ExperimentalUnsignedTypes
 fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 
-@ExperimentalUnsignedTypes//todo test that
+@ExperimentalUnsignedTypes
 fun String.hexToShort(): Short = hexToBytes().let { ((it[1].toInt() shl 8) + it[0]).toShort() }
+
+@ExperimentalUnsignedTypes
+fun String.hexToByte(): Byte = hexToBytes()[0]
 
 open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream()) {
     open fun toByteArray(): ByteArray = (out as ByteArrayOutputStream).toByteArray()
     @ExperimentalUnsignedTypes
     open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray();
 }
+
+fun lazyEncode(t: ByteArrayDataOutputStream.() -> Unit): ByteArray = ByteArrayDataOutputStream().let { it.t(); return it.toByteArray() }
 
 @ExperimentalUnsignedTypes
 fun getRandomKey(length: Int): ByteArray {
@@ -57,4 +66,4 @@ fun getRandomKey(length: Int): ByteArray {
     return bytes.toByteArray();
 }
 
-fun getCrc32(key: ByteArray): Long = with(CRC32()) { update(key); return@with this.value };
+fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }

@@ -1,6 +1,8 @@
 package net.mamoe.mirai.network
 
 import io.netty.channel.Channel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
 import net.mamoe.mirai.network.packet.client.writeHex
@@ -129,17 +131,15 @@ class Robot(val number: Int, private val password: String) {
             e.printStackTrace()
         }
         packet.writeHex(Protocol.tail)
-        println(packet)
-        println(packet.toByteArray().toUByteArray().toHexString())
         /*val p = DatagramPacket(packet.toByteArray());
         p.socketAddress = this.serverAddress*/
         //ctx.writeAndFlush(packet.toByteArray()).sync()
-        send(packet.toByteArray())
+        MiraiLogger info "Sending: $packet"
+        GlobalScope.launch {
+            send(packet.toByteArray())
+        }
         //println(channel!!.writeAndFlush(packet.toByteArray()).channel().connect(serverAddress).sync().get())
-        MiraiLogger info "Packet sent: $packet"
     }
-
-    private fun DatagramPacket(toByteArray: ByteArray): DatagramPacket = DatagramPacket(toByteArray, toByteArray.size, this.serverAddress)
 
     //  private val socket = DatagramSocket(15314)
 
@@ -151,6 +151,7 @@ class Robot(val number: Int, private val password: String) {
 
             val dp1 = DatagramPacket(ByteArray(22312), 22312)
             socket.send(DatagramPacket(data, data.size))
+            MiraiLogger info "Packet sent: ${data.toUByteArray().toHexString()}"
             socket.receive(dp1)
             val zeroByte: Byte = 0
             var i = dp1.data.size - 1;

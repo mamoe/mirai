@@ -1,6 +1,5 @@
 package net.mamoe.mirai.network.packet.server.touch
 
-import lombok.ToString
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.readIP
@@ -18,7 +17,6 @@ import java.io.DataInputStream
  *
  * @author Him188moe
  */
-@ToString
 class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
     var serverIP: String? = null;
 

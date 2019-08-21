@@ -56,6 +56,10 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
             }
         }
     }
+
+    override fun toString(): String {
+        return this.javaClass.simpleName + this.javaClass.declaredFields.joinToString(", ", "{", "}") { it.trySetAccessible(); it.name + "=" + it.get(this) }
+    }
 }
 
 

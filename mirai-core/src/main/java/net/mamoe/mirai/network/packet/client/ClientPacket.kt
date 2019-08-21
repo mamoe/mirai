@@ -41,7 +41,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
      * Encode this packet.
      *
      *
-     * Before sending the packet, an [tail][Protocol.tail] will be added.
+     * Before sending the packet, a [tail][Protocol.tail] will be added.
      */
     @Throws(IOException::class)
     abstract fun encode()
@@ -99,6 +99,22 @@ fun DataOutputStream.writeVarInt(dec: UInt) {
     throw UnsupportedOperationException()
 }
 
+fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, key: ByteArray) {
+    this.write(TEACryptor.encrypt(byteArray, key))
+}
+
+fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, cryptor: TEACryptor) {
+    this.write(cryptor.encrypt(byteArray))
+}
+
+fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: DataOutputStream.() -> Unit) {
+    this.write(TEACryptor.encrypt(ByteArrayDataOutputStream().let { it.encoder(); it.toByteArray() }, key))
+}
+
+fun DataOutputStream.encryptAndWrite(cryptor: TEACryptor, encoder: DataOutputStream.() -> Unit) {
+    this.write(cryptor.encrypt(ByteArrayDataOutputStream().let { it.encoder(); it.toByteArray() }))
+}
+
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
@@ -112,7 +128,7 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
         val md5_1 = md5(password);
         val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toByteArray())
         it.write(md5_1)
-        it.writeInt(loginTime)//todo FIXED 12(maybe 11???) bytes??? check that
+        it.writeInt(loginTime)
         it.writeByte(0);
         it.writeZero(4 * 3)
         it.writeIP(loginIP)
@@ -124,25 +140,42 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
 }
 
 @ExperimentalUnsignedTypes
-fun DataOutputStream.writeCRC32() {
-    getRandomKey(16).let {
+fun DataOutputStream.writeCRC32() = writeCRC32(getRandomKey(16))
+
+
+@ExperimentalUnsignedTypes
+fun DataOutputStream.writeCRC32(key: ByteArray) {
+    key.let {
         write(it)//key
-        writeLong(getCrc32(it))//todo may be int? check that.
+        writeInt(getCrc32(it))
     }
 }
 
-fun DataOutputStream.writeHostname() {
-    val hostName: String = InetAddress.getLocalHost().hostName.let { it.substring(0, it.length - 3) };
-    this.writeShort(hostName.length / 2);//todo check that
-    this.writeShort(hostName.length);
-    this.writeBytes(hostName)//todo 这个对吗?
+fun DataOutputStream.writeDeviceName() {
+    val deviceName = InetAddress.getLocalHost().hostName
+    this.writeShort(deviceName.length + 2)
+    this.writeShort(deviceName.length)
+    this.writeBytes(deviceName)
 }
 
-fun Int.toByteArray(): ByteArray = byteArrayOf(//todo 检查这方法对不对, 这其实就是从 DataInputStream copy来的
+/**
+ * 255 -> 00 00 00 FF
+ */
+fun Int.toByteArray(): ByteArray = byteArrayOf(
         (this.ushr(24) and 0xFF).toByte(),
         (this.ushr(16) and 0xFF).toByte(),
         (this.ushr(8) and 0xFF).toByte(),
         (this.ushr(0) and 0xFF).toByte()
+)
+
+/**
+ * 255 -> FF 00 00 00
+ */
+fun Int.toLByteArray(): ByteArray = byteArrayOf(
+        (this.ushr(0) and 0xFF).toByte(),
+        (this.ushr(8) and 0xFF).toByte(),
+        (this.ushr(16) and 0xFF).toByte(),
+        (this.ushr(24) and 0xFF).toByte()
 )
 
 @ExperimentalUnsignedTypes
@@ -155,14 +188,14 @@ private fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeZero(count: Int) {
-    for (x in 0..count) {
+    repeat(count) {
         this.writeByte(0)
     }
 }
 
 @Throws(IOException::class)
 fun DataOutputStream.writeRandom(length: Int) {
-    for (i in 0 until length) {
+    repeat(length) {
         this.writeByte((Math.random() * 255).toInt().toByte().toInt())
     }
 }
