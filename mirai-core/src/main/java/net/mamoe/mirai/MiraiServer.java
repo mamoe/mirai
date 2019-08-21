@@ -114,6 +114,24 @@ public class MiraiServer {
 
         getLogger().info("ready to connect");
 
+        /*
+        this.qqs.put("test",new MiraiConfigSection<String>(){{
+            put("1","2");
+            put("11","2");
+            put("111","2");
+            put("1111","2");
+        }});
+        this.qqs.save();
+        */
+        System.out.println(this.qqs.get());
+        /*
+        System.out.println(v);
+
+        System.out.println(v.get("1111"));
+        */
+
+        System.exit(0);
+
         Robot robot = new Robot(1994701021, "xiaoqqq");
         try {
             //System.out.println(Protocol.Companion.getSERVER_IP().get(3));

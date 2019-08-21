@@ -69,6 +69,7 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
             Map<String, Object> content = yaml.loadAs(Utils.readFile(this.root), LinkedHashMap.class);
             if (content != null) {
                 this.putAll(content);
+                System.out.println(this.keySet().toString());
             }
         } catch (IOException e) {
             e.printStackTrace();

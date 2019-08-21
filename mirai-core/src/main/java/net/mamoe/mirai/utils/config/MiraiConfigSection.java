@@ -1,31 +1,15 @@
 package net.mamoe.mirai.utils.config;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
-public class MiraiConfigSection<T> extends ConcurrentSkipListMap<String, T> {
+public class MiraiConfigSection<T> extends MiraiAbstractConfigSection<String, T>{
 
     public MiraiConfigSection(){
-        /*
-        * Ensure the key will be in order
-        * */
-        super((a,b) -> 1);
+
     }
 
-    @SuppressWarnings("unchecked")
-    public <D extends T> D getAs(String key){
-        return (D)this.get(key);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <D extends T> D getAs(String key, D defaultV){
-        return (D)(this.getOrDefault(key,defaultV));
-    }
 
     public Integer getInt(String key){
         return Integer.valueOf(this.get(key).toString());
@@ -45,13 +29,18 @@ public class MiraiConfigSection<T> extends ConcurrentSkipListMap<String, T> {
 
     @SuppressWarnings("unchecked")
     public <D extends T> MiraiConfigSection<D> getTypedSection(String key){
-        return (MiraiConfigSection<D>) this.getAs(key);
+        var content = (SortedMap<String,D>) this.get(key);
+        return new MiraiConfigSection<>(){{
+           setContent(Collections.synchronizedSortedMap(content));
+        }};
     }
 
     @SuppressWarnings("unchecked")
     public MiraiConfigSection<Object> getSection(String key){
-        return (MiraiConfigSection<Object>) this.getAs(key);
+        var content = (SortedMap<String,Object>) this.get(key);
+        return new MiraiConfigSection<>(){{
+            setContent(Collections.synchronizedSortedMap(content));
+        }};
     }
-
 
 }
