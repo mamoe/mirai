@@ -5,6 +5,7 @@ import net.mamoe.mirai.network.packet.client.toHexString
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
+import net.mamoe.mirai.util.getAllDeclaredFields
 import net.mamoe.mirai.util.toHexString
 import java.io.DataInputStream
 
@@ -168,7 +169,7 @@ DataArrived >> AnalyMessage
     }
 
     override fun toString(): String {
-        return this.javaClass.simpleName + this.javaClass.declaredFields.joinToString(", ", "{", "}") { it.trySetAccessible(); it.name + "=" + it.get(this) }
+        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") { it.trySetAccessible(); it.name + "=" + it.get(this) }
     }
 }
 

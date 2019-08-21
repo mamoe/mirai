@@ -1,8 +1,11 @@
 package net.mamoe.mirai.util
 
 import net.mamoe.mirai.network.Protocol
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
 
@@ -47,6 +50,7 @@ fun Byte.toHexString(): String = this.toUByte().toString(16)
 
 @ExperimentalUnsignedTypes
 fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
+
 @ExperimentalUnsignedTypes
 fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 
@@ -72,3 +76,37 @@ fun getRandomKey(length: Int): ByteArray {
 }
 
 fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
+
+
+/**
+ * 获取类的所有字段(类成员变量), 包括父类的和私有的. <br></br>
+ * 相当于将这个类和它所有父类的 [Class.getDeclaredFields] 都合并成一个 [List] <br></br>
+ * 不会排除重名的字段. <br></br>
+ *
+ * @param clazz class
+ *
+ * @return field list
+ */
+@Throws(SecurityException::class)
+fun Any.getAllDeclaredFields(): List<Field> {
+    val clazz: Class<out Any> = this.javaClass;
+    val list = LinkedList<Field>()
+    loop@ do {
+        list.addAll(listOf(*clazz.declaredFields))
+        if (this.javaClass == DataOutputStream::class) {
+            continue
+        }
+
+        when (this.javaClass) {
+            DataOutputStream::class, ByteArrayDataOutputStream::class, DataInputStream::class, ByteArrayInputStream::class -> {
+                break@loop;
+            }
+            else -> {
+            }
+        }
+
+        //clazz = clazz.superclass!!
+    } while (clazz != Any::class.java)
+
+    return list
+}
