@@ -1,9 +1,7 @@
 package net.mamoe.mirai.util
 
 import net.mamoe.mirai.network.Protocol
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.lang.reflect.Field
 import java.util.*
@@ -89,24 +87,22 @@ fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt
  */
 @Throws(SecurityException::class)
 fun Any.getAllDeclaredFields(): List<Field> {
-    val clazz: Class<out Any> = this.javaClass;
+    var clazz: Class<*> = this.javaClass;
     val list = LinkedList<Field>()
     loop@ do {
-        list.addAll(listOf(*clazz.declaredFields))
-        if (this.javaClass == DataOutputStream::class) {
-            continue
+
+        if (!clazz.name.contains("net.mamoe")) {
+            break@loop
         }
 
-        when (this.javaClass) {
-            DataOutputStream::class, ByteArrayDataOutputStream::class, DataInputStream::class, ByteArrayInputStream::class -> {
-                break@loop;
-            }
-            else -> {
-            }
-        }
+        list.addAll(clazz.declaredFields.filter { (it.name == "Companion" || it.name == "input").not() }.toList())
 
-        //clazz = clazz.superclass!!
-    } while (clazz != Any::class.java)
+        if (clazz.superclass == null) {
+            break
+        }
+        clazz = clazz.superclass
+
+    } while (clazz != Object::javaClass)
 
     return list
 }
