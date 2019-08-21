@@ -146,7 +146,7 @@ class Robot(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     fun send(data: ByteArray) {
         try {
-            val socket = DatagramSocket((15314 + Math.random() * 5).toInt())
+            val socket = DatagramSocket((15314 + Math.random() * 10).toInt())
             socket.connect(this.serverAddress)
 
             val dp1 = DatagramPacket(ByteArray(22312), 22312)

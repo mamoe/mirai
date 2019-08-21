@@ -58,6 +58,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 }
 
 
+@ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeIP(ip: String) {
     for (s in ip.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
@@ -107,12 +108,12 @@ fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, cryptor: TEACryptor) 
     this.write(cryptor.encrypt(byteArray))
 }
 
-fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: DataOutputStream.() -> Unit) {
-    this.write(TEACryptor.encrypt(ByteArrayDataOutputStream().let { it.encoder(); it.toByteArray() }, key))
+fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutputStream) -> Unit) {
+    this.write(TEACryptor.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }, key))
 }
 
-fun DataOutputStream.encryptAndWrite(cryptor: TEACryptor, encoder: DataOutputStream.() -> Unit) {
-    this.write(cryptor.encrypt(ByteArrayDataOutputStream().let { it.encoder(); it.toByteArray() }))
+fun DataOutputStream.encryptAndWrite(cryptor: TEACryptor, encoder: (ByteArrayDataOutputStream) -> Unit) {
+    this.write(cryptor.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }))
 }
 
 @ExperimentalUnsignedTypes
@@ -127,16 +128,26 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
 
         val md5_1 = md5(password);
         val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toByteArray())
+        println(md5_1.toUByteArray().toHexString())
+        println(md5_2.toUByteArray().toHexString())
         it.write(md5_1)
-        it.writeInt(loginTime)
+        it.writeShort(loginTime)
         it.writeByte(0);
         it.writeZero(4 * 3)
         it.writeIP(loginIP)
+        it.writeZero(8)
         it.writeHex("00 10")
         it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")
         it.write(tgtgtKey)
-        this.write(TEACryptor.encrypt(md5_2, it.toByteArray()))
+        println()
+        println(it.toByteArray().toUHexString())
+        this.write(TEACryptor.encrypt(it.toByteArray(), md5_2))
     }
+}
+
+@ExperimentalUnsignedTypes
+fun main() {
+    println(lazyEncode { it.writeTLV0006(1994701021, "D1 A5 C8 BB E1 Q3 CC DD", 131513, "123.123.123.123", "AA BB CC DD EE FF AA BB CC".hexToBytes()) }.toUByteArray().toHexString())
 }
 
 @ExperimentalUnsignedTypes

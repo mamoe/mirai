@@ -30,6 +30,11 @@ object Utils {
 
 fun ByteArray.toHexString(): String = toHexString(" ")
 fun ByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
+@ExperimentalUnsignedTypes
+fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toHexString(separator)
+
+@ExperimentalUnsignedTypes
+fun ByteArray.toUHexString(): String = this.toUByteArray().toHexString()
 
 @ExperimentalUnsignedTypes
 fun UByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
@@ -57,7 +62,7 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
     open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray();
 }
 
-fun lazyEncode(t: ByteArrayDataOutputStream.() -> Unit): ByteArray = ByteArrayDataOutputStream().let { it.t(); return it.toByteArray() }
+fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().let { t(it); return it.toByteArray() }
 
 @ExperimentalUnsignedTypes
 fun getRandomKey(length: Int): ByteArray {
