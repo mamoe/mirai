@@ -1,7 +1,19 @@
+import kotlin.ranges.IntRange;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+import net.mamoe.mirai.network.Protocol;
+
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
- * @author NaturalHG
  * This could be used to check packet encoding..
  * but better to run under UNIX
+ *
+ * @author NaturalHG
  */
 public class HexComparator {
 
@@ -9,17 +21,74 @@ public class HexComparator {
      * a string result
      */
 
-    private static String RED = "\033[31m";
+    private static final String RED = "\033[31m";
 
-    private static String GREEN = "\033[33m";
+    private static final String GREEN = "\033[33m";
 
-    private static String UNKNOWN = "\033[30m";
+    private static final String UNKNOWN = "\033[30m";
 
-    public static String compare(String hex1s, String hex2s) {
+    private static final String UNKNOWN2 = "\033[34m";
+
+    private static class ConstMatcher {
+        private static final List<Field> CONST_FIELDS = new LinkedList<>() {{
+            List.of(Protocol.class).forEach(aClass -> Arrays.stream(aClass.getDeclaredFields()).peek(this::add).forEach(Field::trySetAccessible));
+        }};
+
+        private final List<Match> matches = new LinkedList<>();
+
+        private ConstMatcher(String hex) {
+            CONST_FIELDS.forEach(field -> {
+                for (IntRange match : match(hex, field)) {
+                    matches.add(new Match(match, field.getName()));
+                }
+            });
+        }
+
+        private String getMatchedConstName(int hexNumber) {
+            for (Match match : this.matches) {
+                if (match.range.contains(hexNumber)) {
+                    return match.constName;
+                }
+            }
+            return null;
+        }
+
+        private static List<IntRange> match(String hex, Field field) {
+            final String constValue;
+            try {
+                constValue = ((String) field.get(null)).trim();
+                if (constValue.length() / 3 <= 3) {//Minimum numbers of const hex bytes
+                    return new LinkedList<>();
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (ClassCastException ignored) {
+                return new LinkedList<>();
+            }
+            return new LinkedList<>() {{
+                int index = 0;
+                while ((index = hex.indexOf(constValue, index + 1)) != -1) {
+                    add(new IntRange(index / 3, (index + constValue.length()) / 3));
+                }
+            }};
+        }
+
+        @ToString
+        @Getter
+        @AllArgsConstructor
+        private static class Match {
+            private IntRange range;
+            private String constName;
+        }
+    }
+
+    private static String compare(String hex1s, String hex2s) {
         StringBuilder builder = new StringBuilder();
 
         String[] hex1 = hex1s.trim().replace("\n", "").split(" ");
         String[] hex2 = hex2s.trim().replace("\n", "").split(" ");
+        ConstMatcher constMatcher1 = new ConstMatcher(hex1s);
+        ConstMatcher constMatcher2 = new ConstMatcher(hex2s);
 
         if (hex1.length == hex2.length) {
             builder.append(GREEN).append("长度一致:").append(hex1.length);
@@ -40,11 +109,22 @@ public class HexComparator {
             if (hex1.length <= i) {
                 h1 = RED + "__";
                 isDif = true;
+            } else {
+                String matchedConstName = constMatcher1.getMatchedConstName(i);
+                if (matchedConstName != null) {
+                    h1 = UNKNOWN2 + hex1[i];
+                }
             }
             if (hex2.length <= i) {
                 h2 = RED + "__";
                 isDif = true;
+            } else {
+                String matchedConstName = constMatcher2.getMatchedConstName(i);
+                if (matchedConstName != null) {
+                    h2 = UNKNOWN2 + hex2[i];
+                }
             }
+
             if (h1 == null && h2 == null) {
                 h1 = hex1[i];
                 h2 = hex2[i];
@@ -89,7 +169,6 @@ public class HexComparator {
         }
         return String.valueOf(number);
     }
-
 
     public static void main(String[] args) {
         System.out.println(HexComparator.compare(
