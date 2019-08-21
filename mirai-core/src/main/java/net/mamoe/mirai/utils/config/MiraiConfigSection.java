@@ -1,12 +1,10 @@
 package net.mamoe.mirai.utils.config;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.SortedMap;
 
-public class MiraiConfigSection<T> extends MiraiSynchronizedLInkedListMap<String, T> {
+public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String, T> {
 
     public MiraiConfigSection(){
 
