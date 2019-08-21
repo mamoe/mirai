@@ -57,7 +57,7 @@ open class ClientLoginResendPacket internal constructor(val qq: Int, val passwor
 
         this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
             override fun toByteArray(): ByteArray {
-                writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv_0006_encr)
+                this.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv_0006_encr)
 
                 this.writeHex("01 10") //tag
                 this.writeHex("00 3C")//length
@@ -65,7 +65,7 @@ open class ClientLoginResendPacket internal constructor(val qq: Int, val passwor
                 this.writeHex("00 38")//length
                 this.write(token00BA)//value
 
-                writePart2()
+                this.writePart2()
                 return super.toByteArray()
             }
         }.toByteArray(), Protocol.shareKey.hexToBytes()))

@@ -99,11 +99,11 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
         this.token38 = this.input.readNBytes(56)//82
 
         this.input.skip(60L)//142
-        val msgLength = when (this.input.readNBytes(2).toUByteArray().toHexString()) {
+        val msgLength = when (val id = this.input.readNBytes(2).toUByteArray().toHexString()) {
             "01 07" -> 0
             "00 33" -> 28
             "01 10" -> 64
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException(id)
         }
 
         this._0828_rec_decr_key = this.input.readNBytes(171 + msgLength, 16)
