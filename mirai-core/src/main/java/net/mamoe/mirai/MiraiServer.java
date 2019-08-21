@@ -115,6 +115,7 @@ public class MiraiServer {
         getLogger().info("ready to connect");
 
 
+        /*
         MiraiConfigSection section = new MiraiConfigSection<MiraiConfigSection<String>>(){{
             put("1",new MiraiConfigSection<>(){{
                 put("1","0");
@@ -123,6 +124,7 @@ public class MiraiServer {
 
         this.qqs.put("test",section);
         this.qqs.save();
+        */
 
 
         MiraiConfigSection<MiraiConfigSection> x = this.qqs.getTypedSection("test");
