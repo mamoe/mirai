@@ -21,6 +21,7 @@ public class MiraiUDPClient {
         this.listener = new LocalUDPListener(new LocalUDPSocketProvider(
                 address,localPort,serverPort,null
         ));
+        this.listener.startup();
     }
 }
 
