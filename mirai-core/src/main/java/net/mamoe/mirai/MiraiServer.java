@@ -16,6 +16,7 @@ import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 public class MiraiServer {
@@ -97,49 +98,7 @@ public class MiraiServer {
             this.initQQConfig(qqs);
         }
 
-        /*
-        MiraiSettingMapSection qqs = this.setting.getMapSection("qq");
-        qqs.forEach((a,p) -> {
-            this.getLogger().info(LoggerTextFormat.SKY_BLUE + "Finding available ports between " + "1-65536");
-            try {
-                int port = MiraiNetwork.getAvailablePort();
-                this.getLogger().info(LoggerTextFormat.SKY_BLUE + "Listening on port " + port);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        */
-
-        getLogger().info("ready to connect");
-
-        Robot robot = new Robot(1994701021, "xiaoqqq");
-        try {
-            //System.out.println(Protocol.Companion.getSERVER_IP().toString());
-            //robot.connect("127.0.0.1");
-            robot.connect("125.39.132.242");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-/*
-        System.out.println("network test");
-        try {
-
-
-            MiraiUDPServer server = new MiraiUDPServer();
-            MiraiUDPClient client = new MiraiUDPClient(InetAddress.getLocalHost(),9999,MiraiNetwork.getAvailablePort());
-            this.getTaskManager().repeatingTask(() -> {
-                byte[] sendInfo = "test test".getBytes(StandardCharsets.UTF_8);
-                try {
-                    client.send(new DatagramPacket(sendInfo,sendInfo.length));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            },300);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+        getLogger().info("Ready to enable");
     }
 
     private void initSetting(File setting) {
@@ -175,7 +134,6 @@ public class MiraiServer {
 
         MiraiConfigSection<Object> section = new MiraiConfigSection<>();
 
-        System.out.println("/");
         Scanner scanner = new Scanner(System.in);
         getLogger().info(LoggerTextFormat.SKY_BLUE + "input one " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.SKY_BLUE + "for default robot");
         getLogger().info(LoggerTextFormat.SKY_BLUE + "输入用于默认机器人的QQ号");
@@ -185,7 +143,7 @@ public class MiraiServer {
         String qqPassword = scanner.next();
 
         section.put("password",qqPassword);
-        section.put("owner","default");
+        section.put("owner", List.of("default"));
 
         this.qqs.put(String.valueOf(qqNumber),section);
         this.qqs.save();
@@ -197,6 +155,34 @@ public class MiraiServer {
         this.enabled = true;
         getLogger().info(LoggerTextFormat.GREEN + "Server enabled; Welcome to Mirai");
         getLogger().info("Mirai Version=" + MiraiServer.MIRAI_VERSION + " QQ Version=" + MiraiServer.QQ_VERSION);
+
+        Robot robot = new Robot(1994701021, "xiaoqqq");
+        try {
+            //System.out.println(Protocol.Companion.getSERVER_IP().toString());
+            //robot.connect("127.0.0.1");
+            robot.connect("125.39.132.242");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+/*
+        System.out.println("network test");
+        try {
+
+
+            MiraiUDPServer server = new MiraiUDPServer();
+            MiraiUDPClient client = new MiraiUDPClient(InetAddress.getLocalHost(),9999,MiraiNetwork.getAvailablePort());
+            this.getTaskManager().repeatingTask(() -> {
+                byte[] sendInfo = "test test".getBytes(StandardCharsets.UTF_8);
+                try {
+                    client.send(new DatagramPacket(sendInfo,sendInfo.length));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            },300);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 
 

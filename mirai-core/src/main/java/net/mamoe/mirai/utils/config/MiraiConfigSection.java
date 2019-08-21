@@ -17,5 +17,14 @@ public class MiraiConfigSection<T> extends ConcurrentSkipListMap<String, T> {
         super((a,b) -> 1);
     }
 
+    @SuppressWarnings("unchecked")
+    public <D extends T> D getAs(String key){
+        return (D)this.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <D extends T> D getAs(String key, D defaultV){
+        return (D)(this.getOrDefault(key,defaultV));
+    }
 
 }
