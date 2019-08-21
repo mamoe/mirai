@@ -131,7 +131,7 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
         println(md5_1.toUByteArray().toHexString())
         println(md5_2.toUByteArray().toHexString())
         it.write(md5_1)
-        it.writeShort(loginTime)
+        it.writeInt(loginTime)
         it.writeByte(0);
         it.writeZero(4 * 3)
         it.writeIP(loginIP)

@@ -67,7 +67,7 @@ fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDat
 @ExperimentalUnsignedTypes
 fun getRandomKey(length: Int): ByteArray {
     val bytes = LinkedList<Byte>();
-    for (i in 0..length) bytes.add((Math.random() * 255).toByte())
+    repeat(length) { bytes.add((Math.random() * 255).toByte()) }
     return bytes.toByteArray();
 }
 

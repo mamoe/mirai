@@ -22,7 +22,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
 
     var loginTime: Int = 0
     lateinit var loginIP: String
-    lateinit var token: ByteArray
+    lateinit var token0825: ByteArray
     lateinit var tgtgtKey: ByteArray
 
     enum class Type {
@@ -39,7 +39,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
             }
             0x00 -> {
                 input.skip(4)
-                token = input.readNBytes(56)
+                token0825 = input.readNBytes(56)
                 input.skip(6)
 
                 loginTime = input.readInt()

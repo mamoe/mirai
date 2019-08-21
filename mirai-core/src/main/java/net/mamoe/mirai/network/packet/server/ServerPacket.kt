@@ -32,7 +32,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     when (bytes.size) {
                         271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (idBytes) {
                             "08 36 31 03" -> ServerLoginResponseResendPacket.Flag.`08 36 31 03`
-                            else -> ServerLoginResponseResendPacket.Flag.OTHER
+                            else -> {
+                                println("flag=$idBytes"); ServerLoginResponseResendPacket.Flag.OTHER
+                            }
                         })
                         871 -> return ServerLoginResponseVerificationCodePacket(stream, bytes.size)
                     }
@@ -48,7 +50,12 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         263 -> ServerLoginResponseFailedPacket.State.UNKNOWN_QQ_NUMBER
                         551, 487 -> ServerLoginResponseFailedPacket.State.DEVICE_LOCK
                         359 -> ServerLoginResponseFailedPacket.State.TAKEN_BACK
-                        else -> throw IllegalStateException()
+
+                        //unknown
+                        63 -> throw IllegalArgumentException(bytes.size.toString())
+                        351 -> throw IllegalArgumentException(bytes.size.toString())
+
+                        else -> throw IllegalArgumentException(bytes.size.toString())
                     }, stream)
                 }
 

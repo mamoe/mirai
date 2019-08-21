@@ -18,7 +18,7 @@ class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : 
     }
 
     lateinit var _0836_tlv0006_encr: ByteArray;
-    lateinit var token: ByteArray
+    var token00BA: ByteArray? = null
     lateinit var tgtgtKey: ByteArray
 
     override fun decode() {
@@ -29,7 +29,7 @@ class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : 
 
         when (flag) {
             Flag.`08 36 31 03` -> {
-                token = this.input.goto(153).readNBytes(56)
+                token00BA = this.input.goto(153).readNBytes(56)
             }
 
             Flag.OTHER -> {
