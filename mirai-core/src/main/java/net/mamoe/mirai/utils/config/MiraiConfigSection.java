@@ -7,8 +7,13 @@ import java.util.Map;
 public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String, T> {
 
     public MiraiConfigSection(){
-
+        super();
     }
+
+    public MiraiConfigSection(LinkedHashMap<String, T> map){
+        super(map);
+    }
+
 
 
     public Integer getInt(String key){
@@ -41,9 +46,9 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
             return (MiraiConfigSection<D>) content;
         }
         if(content instanceof Map){
-            return new MiraiConfigSection<>(){{
-                setContent((LinkedHashMap<String, D>) content);
-            }};
+            return new MiraiConfigSection<>(
+                (LinkedHashMap<String, D>) content
+            );
         }
         return null;
     }

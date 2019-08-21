@@ -1,7 +1,5 @@
 package net.mamoe.mirai.utils.config;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,17 +8,24 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * 实现了可以直接被继承的 SynchronizedLinkedListMap<K,V>
+ *
+ * @param <K>
+ * @param <V>
+ */
 public class MiraiSynchronizedLinkedListMap<K,V> extends AbstractMap<K,V> {
 
     public MiraiSynchronizedLinkedListMap(){
         this.sortedMap = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
-    protected Map<K, V> sortedMap;
+    protected final Map<K, V> sortedMap;
 
-    protected void setContent(LinkedHashMap<K,V> map){
+    public MiraiSynchronizedLinkedListMap(LinkedHashMap<K,V> map){
         this.sortedMap = Collections.synchronizedMap(map);
     }
+
 
     @Override
     public int size() {

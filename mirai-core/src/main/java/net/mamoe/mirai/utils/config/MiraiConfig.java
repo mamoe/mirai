@@ -25,24 +25,8 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
     }
 
     public MiraiConfig(@NotNull File file) {
-        super();
-        Objects.requireNonNull(file);
-        /*if (!file.toURI().getPath().contains(MiraiServer.getInstance().getParentFolder().getPath())) {
-            file = new File(MiraiServer.getInstance().getParentFolder().getPath(), file.getName());
-        }*/
-
+        super(parse(Objects.requireNonNull(file)));
         this.root = file;
-
-        if (!file.exists()) {
-            try {
-                if (!file.createNewFile()) {
-                    return;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        this.parse();
     }
 
     public synchronized void save() {
@@ -58,18 +42,29 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
     }
 
     @SuppressWarnings("unchecked")
-    private void parse() {
+    private static LinkedHashMap<String,Object> parse(File file) {
+        if (!file.toURI().getPath().contains(MiraiServer.getInstance().getParentFolder().getPath())) {
+            file = new File(MiraiServer.getInstance().getParentFolder().getPath(), file.getName());
+        }
+        if (!file.exists()) {
+            try {
+                if (!file.createNewFile()) {
+                    return new LinkedHashMap<>();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new LinkedHashMap<>();
+            }
+        }
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(dumperOptions);
         try {
-            LinkedHashMap<String, Object> content = yaml.loadAs(Utils.readFile(this.root), LinkedHashMap.class);
-            if (content != null) {
-                setContent(content);
-            }
+            return yaml.loadAs(Utils.readFile(file), LinkedHashMap.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return new LinkedHashMap<>();
     }
 
 
