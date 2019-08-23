@@ -1,7 +1,10 @@
 package net.mamoe.mirai.network.packet.server.login
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.server.*
+import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.goto
+import net.mamoe.mirai.network.packet.server.readNBytes
+import net.mamoe.mirai.network.packet.server.readVarString
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.toHexString
@@ -39,11 +42,11 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
         //??
         var b = this.input.readNBytes(2)
         val msgLength = when (b.toUByteArray().toHexString()) {
-                "01 07" -> 0
-                "00 33" -> 28
-                "01 10" -> 65
-                else -> throw IllegalStateException()
-            }//144
+        "01 07" -> 0
+        "00 33" -> 28
+        "01 10" -> 65
+        else -> throw IllegalStateException()
+        }//144
 
 
         System.out.println(msgLength)
@@ -96,16 +99,16 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
         this.token38 = this.input.readNBytes(56)//82
 
         this.input.skip(60L)//142
-        val msgLength = when (this.input.readNBytes(2).toUByteArray().toHexString()) {
+        val msgLength = when (val id = this.input.readNBytes(2).toUByteArray().toHexString()) {
             "01 07" -> 0
             "00 33" -> 28
             "01 10" -> 64
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException(id)
         }
 
-        this._0828_rec_decr_key = this.input.readNBytes(171 + msgLength,16)
+        this._0828_rec_decr_key = this.input.readNBytes(171 + msgLength, 16)
 
-        this.token88 = this.input.readNBytes(189 + msgLength,136)
+        this.token88 = this.input.readNBytes(189 + msgLength, 136)
 
         val nickLength = this.input.goto(624 + msgLength).readByte().toInt()
         this.nick = this.input.readVarString(nickLength)
@@ -123,8 +126,12 @@ class ServerLoginResponseSuccessPacketEncrypted(input: DataInputStream, val leng
 
     @ExperimentalUnsignedTypes
     fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {//todo test
-        this.input.skip(7)
-        return ServerLoginResponseSuccessPacket(TEACryptor.decrypt(TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.shareKey.hexToBytes()), tgtgtKey).dataInputStream(), length);
+        input.skip(7)
+        var bytes = input.readAllBytes();
+        bytes = bytes.copyOfRange(0, bytes.size - 1);
+        println(bytes.toUByteArray().toHexString())
+
+        return ServerLoginResponseSuccessPacket(DataInputStream(TEACryptor.decrypt(bytes, Protocol.shareKey.hexToBytes()).inputStream()), length);
         //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
     }
 }

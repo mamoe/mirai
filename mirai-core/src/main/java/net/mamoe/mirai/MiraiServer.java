@@ -128,7 +128,7 @@ public class MiraiServer {
 
 
         MiraiConfigSection<MiraiConfigSection> x = this.qqs.getTypedSection("test");
-        System.out.println(x.getSection("1").getInt("1"));
+        //System.out.println(x.getSection("1").getInt("1"));
 
         /*
         System.out.println(v);
@@ -136,7 +136,6 @@ public class MiraiServer {
         System.out.println(v.get("1111"));
         */
 
-        System.exit(0);
 
         Robot robot = new Robot(1994701021, "xiaoqqq");
         try {

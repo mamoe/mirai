@@ -239,6 +239,7 @@ public class TEACryptor {
     }
 
     public byte[] encrypt(byte[] plaintext) {
+        System.out.println("TEA加密, 原文=" + UtilsKt.toUHexString(plaintext));
         return encrypt(plaintext, 0, plaintext.length);
     }
 

@@ -3,10 +3,9 @@ package net.mamoe.mirai.network.packet.client.login
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.client.*
-import net.mamoe.mirai.util.ByteArrayDataOutputStream
-import net.mamoe.mirai.util.TEACryptor
-import net.mamoe.mirai.util.getRandomKey
-import net.mamoe.mirai.util.hexToBytes
+import net.mamoe.mirai.util.*
+import java.io.DataOutputStream
+import java.net.InetAddress
 
 /**
  * Password submission (0836_622)
@@ -15,7 +14,14 @@ import net.mamoe.mirai.util.hexToBytes
  */
 @PacketId("08 36 31 03")
 @ExperimentalUnsignedTypes
-class ClientPasswordSubmissionPacket(private val qq: Int, private val password: String, private val loginTime: Int, private val loginIP: String, private val tgtgtKey: ByteArray, private val token0825: ByteArray) : ClientPacket() {
+class ClientPasswordSubmissionPacket(
+        private val qq: Int,
+        private val password: String,
+        private val loginTime: Int,
+        private val loginIP: String,
+        private val tgtgtKey: ByteArray,
+        private val token0825: ByteArray
+) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)
@@ -24,26 +30,24 @@ class ClientPasswordSubmissionPacket(private val qq: Int, private val password: 
         this.writeHex("00 00 00 10")
         this.writeHex(Protocol._0836key1)
 
-        this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
-            override fun toByteArray(): ByteArray {
-                writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
-                writePart2()
-                return super.toByteArray()
-            }
-        }.toByteArray(), Protocol.shareKey.hexToBytes()))
+        this.encryptAndWrite(Protocol.shareKey.hexToBytes()) {
+            it.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
+            it.writePart2()
+            println(it.toByteArray().toUHexString())
+        }
     }
 }
 
 @PacketId("08 36 31 04")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA)
+class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @PacketId("08 36 31 06")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA)
+class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @ExperimentalUnsignedTypes
-open class ClientLoginResendPacket internal constructor(val qq: Int, val password: String, val loginTime: Int, val loginIP: String, val tgtgtKey: ByteArray, val token0825: ByteArray, val token00BA: ByteArray) : ClientPacket() {
+open class ClientLoginResendPacket internal constructor(val qq: Int, val password: String, val loginTime: Int, val loginIP: String, val tgtgtKey: ByteArray, val token0825: ByteArray, val token00BA: ByteArray, val tlv_0006_encr: ByteArray? = null) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol._0836_622_fix1)
@@ -53,7 +57,7 @@ open class ClientLoginResendPacket internal constructor(val qq: Int, val passwor
 
         this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
             override fun toByteArray(): ByteArray {
-                writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
+                this.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv_0006_encr)
 
                 this.writeHex("01 10") //tag
                 this.writeHex("00 3C")//length
@@ -61,11 +65,15 @@ open class ClientLoginResendPacket internal constructor(val qq: Int, val passwor
                 this.writeHex("00 38")//length
                 this.write(token00BA)//value
 
-                writePart2()
+                this.writePart2()
                 return super.toByteArray()
             }
         }.toByteArray(), Protocol.shareKey.hexToBytes()))
     }
+}
+
+fun main() {
+    println(InetAddress.getLocalHost().hostAddress)
 }
 
 @ExperimentalUnsignedTypes
@@ -112,7 +120,7 @@ class ClientLoginSucceedConfirmationPacket(
                 this.writeHex("68")
 
                 this.writeHex("00 00 00 00 00 2D 00 06 00 01")
-                this.writeIP(loginIP)//本地IP地址? todo test that
+                this.writeIP(InetAddress.getLocalHost().hostName)//? todo 这随便扔的
 
                 return super.toByteArray()
             }
@@ -124,14 +132,14 @@ class ClientLoginSucceedConfirmationPacket(
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
-private fun ClientPacket.writePart1(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray) {
+private fun DataOutputStream.writePart1(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv_0006_encr: ByteArray? = null) {
 
-    this.writeQQ(System.currentTimeMillis().toInt())//that's correct
+    //this.writeInt(System.currentTimeMillis().toInt())
     this.writeHex("01 12")//tag
     this.writeHex("00 38")//length
     this.write(token0825)//length
     this.writeHex("03 0F")//tag
-    this.writeHostname()//todo 务必检查这个
+    this.writeDeviceName()
     /*易语言源码: PCName就是HostName
     PCName ＝ BytesToStr (Ansi转Utf8 (取主机名 ()))
     PCName ＝ 取文本左边 (PCName, 取文本长度 (PCName) － 3)*/
@@ -140,7 +148,11 @@ private fun ClientPacket.writePart1(qq: Int, password: String, loginTime: Int, l
     this.writeQQ(qq)
     this.writeHex("00 06")//tag
     this.writeHex("00 78")//length
-    this.writeTLV0006(qq, password, loginTime, loginIP, tgtgtKey)
+    if (tlv_0006_encr != null) {
+        this.write(tlv_0006_encr)
+    } else {
+        this.writeTLV0006(qq, password, loginTime, loginIP, tgtgtKey)
+    }
     //fix
     this.writeHex(Protocol._0836_622_fix2)
     this.writeHex("00 1A")//tag
@@ -160,7 +172,7 @@ private fun ClientPacket.writePart1(qq: Int, password: String, loginTime: Int, l
 }
 
 @ExperimentalUnsignedTypes
-private fun ClientPacket.writePart2() {
+private fun DataOutputStream.writePart2() {
 
     this.writeHex("03 12")//tag
     this.writeHex("00 05")//length

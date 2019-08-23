@@ -63,12 +63,6 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>com.intellij</groupId>
@@ -94,13 +88,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- https://mvnrepository.com/artifact/org.apache.mina/mina-core -->
-            <dependency>
-                <groupId>org.apache.mina</groupId>
-                <artifactId>mina-core</artifactId>
-                <version>2.1.3</version>
-            </dependency>
-
             <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
@@ -112,6 +99,13 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.8.5</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core -->
+            <dependency>
+                <groupId>org.jetbrains.kotlinx</groupId>
+                <artifactId>kotlinx-coroutines-core</artifactId>
+                <version>1.3.0-M2</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->

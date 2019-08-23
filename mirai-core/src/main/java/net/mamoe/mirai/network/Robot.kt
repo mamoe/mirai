@@ -68,9 +68,9 @@ class Robot(val number: Int, private val password: String) {
                 } else {//password submission
                     this.loginIP = packet.loginIP
                     this.loginTime = packet.loginTime
-                    this.token0825 = packet.token
+                    this.token0825 = packet.token0825
                     this.tgtgtKey = packet.tgtgtKey
-                    sendPacket(ClientPasswordSubmissionPacket(this.number, this.password, packet.loginTime, packet.loginIP, packet.tgtgtKey, packet.token))
+                    sendPacket(ClientPasswordSubmissionPacket(this.number, this.password, packet.loginTime, packet.loginIP, packet.tgtgtKey, packet.token0825))
                 }
             }
 
@@ -81,7 +81,7 @@ class Robot(val number: Int, private val password: String) {
             }
 
             is ServerLoginResponseVerificationCodePacket -> {
-                //[token00BA]可能来自这里
+                //[token00BA]来源之一: 验证码
                 this.token00BA = packet.token00BA
                 if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
                     this.sequence = 1
@@ -95,13 +95,17 @@ class Robot(val number: Int, private val password: String) {
                 sendPacket(ClientLoginSucceedConfirmationPacket(this.number, this.serverIP, this.loginIP, this.md5_32, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
             }
 
-            //这个有可能是客户端发送验证码之后收到的回复验证码是否正确?
+            //是ClientPasswordSubmissionPacket之后服务器回复的
             is ServerLoginResponseResendPacket -> {
+                if (packet.token00BA != null) {
+                    this.token00BA = packet.token00BA!!
+                    println(token00BA)
+                }
                 if (packet.flag == ServerLoginResponseResendPacket.Flag.`08 36 31 03`) {
                     this.tgtgtKey = packet.tgtgtKey
-                    sendPacket(ClientLoginResendPacket3104(this.number, this.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
+                    sendPacket(ClientLoginResendPacket3104(this.number, this.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA, packet._0836_tlv0006_encr))
                 } else {
-                    sendPacket(ClientLoginResendPacket3106(this.number, this.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
+                    sendPacket(ClientLoginResendPacket3106(this.number, this.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA, packet._0836_tlv0006_encr))
                 }
             }
 
@@ -129,28 +133,27 @@ class Robot(val number: Int, private val password: String) {
             e.printStackTrace()
         }
         packet.writeHex(Protocol.tail)
-        println(packet)
-        println(packet.toByteArray().toUByteArray().toHexString())
         /*val p = DatagramPacket(packet.toByteArray());
         p.socketAddress = this.serverAddress*/
         //ctx.writeAndFlush(packet.toByteArray()).sync()
-        send(packet.toByteArray())
+        MiraiLogger info "Sending: $packet"
+        //GlobalScope.launch {
+            send(packet.toByteArray())
+        //}
         //println(channel!!.writeAndFlush(packet.toByteArray()).channel().connect(serverAddress).sync().get())
-        MiraiLogger info "Packet sent: $packet"
     }
-
-    private fun DatagramPacket(toByteArray: ByteArray): DatagramPacket = DatagramPacket(toByteArray, toByteArray.size, this.serverAddress)
 
     //  private val socket = DatagramSocket(15314)
 
     @ExperimentalUnsignedTypes
     fun send(data: ByteArray) {
         try {
-            val socket = DatagramSocket((15314 + Math.random() * 5).toInt())
+            val socket = DatagramSocket((15314 + Math.random() * 10).toInt())
             socket.connect(this.serverAddress)
 
             val dp1 = DatagramPacket(ByteArray(22312), 22312)
             socket.send(DatagramPacket(data, data.size))
+            MiraiLogger info "Packet sent: ${data.toUByteArray().toHexString()}"
             socket.receive(dp1)
             val zeroByte: Byte = 0
             var i = dp1.data.size - 1;

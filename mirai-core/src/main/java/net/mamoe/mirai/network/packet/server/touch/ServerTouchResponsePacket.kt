@@ -1,6 +1,5 @@
 package net.mamoe.mirai.network.packet.server.touch
 
-import lombok.ToString
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.readIP
@@ -18,13 +17,12 @@ import java.io.DataInputStream
  *
  * @author Him188moe
  */
-@ToString
 class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
     var serverIP: String? = null;
 
     var loginTime: Int = 0
     lateinit var loginIP: String
-    lateinit var token: ByteArray
+    lateinit var token0825: ByteArray
     lateinit var tgtgtKey: ByteArray
 
     enum class Type {
@@ -41,7 +39,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
             }
             0x00 -> {
                 input.skip(4)
-                token = input.readNBytes(56)
+                token0825 = input.readNBytes(56)
                 input.skip(6)
 
                 loginTime = input.readInt()
