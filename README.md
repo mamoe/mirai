@@ -11,7 +11,7 @@
 ![LV7_YX10AQ5TW@E~308_0JN.png](https://i.loli.net/2019/08/24/oQIzhaLvyJOeW1f.png)
 
 ### 代码结构
-Network部分使用 Kotlin 完成, 与插件相关性强(或任何其他在二次开发中容易接触的部分)均使用 Java 完成.
+Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与插件相关性强(或任何其他在二次开发中容易接触的部分)均使用 Java 完成.
 
 ### TODO
 - [x] 事件(Event)模块  
