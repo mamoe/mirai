@@ -10,6 +10,17 @@
 ### 我们会坚持开发, 但是,
 ![LV7_YX10AQ5TW@E~308_0JN.png](https://i.loli.net/2019/08/24/oQIzhaLvyJOeW1f.png)
 
+### 代码结构
+Network部分使用 Kotlin 完成, 与插件(或任何其他在二次开发中容易接触的部分)均使用 Java 完成.
+
+### TODO
+- [x] 事件(Event)模块  
+- [ ] 插件(Plugin)模块 **(Working on)**  
+- [x] Network - Touch  
+- [ ] Network - Login **(Working on)**  
+- [ ] Network - Message  
+- [ ] Network - Events  
+
 <br>
 
 A JAVA(+Kotlin) powered open-sources project under GPL license<br>
