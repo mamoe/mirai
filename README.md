@@ -7,6 +7,9 @@
 协议来自网络的易语言开源软件  
 一切开发旨在学习, 请勿用于非法用途  
 
+### 我们会坚持开发, 但是,
+![LV7_YX10AQ5TW@E~308_0JN.png](https://i.loli.net/2019/08/24/oQIzhaLvyJOeW1f.png)
+
 <br>
 
 A JAVA(+Kotlin) powered open-sources project under GPL license<br>
