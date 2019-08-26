@@ -6,7 +6,7 @@ import net.mamoe.mirai.network.packet.server.readIP
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.getRandomKey
 import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.toHexString
+import net.mamoe.mirai.util.toUHexString
 import java.io.DataInputStream
 
 /**
@@ -48,7 +48,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
             }
 
             else -> {
-                throw IllegalStateException(arrayOf(id.toUByte()).toUByteArray().toHexString())
+                throw IllegalStateException(arrayOf(id.toUByte()).toUByteArray().toUHexString())
             }
         }
     }
@@ -64,7 +64,7 @@ class ServerTouchResponsePacketEncrypted(private val type: ServerTouchResponsePa
         input.skip(7)
         var bytes = input.readAllBytes();
         bytes = bytes.copyOfRange(0, bytes.size - 1);
-        println(bytes.toUByteArray().toHexString())
+        println(bytes.toUByteArray().toUHexString())
 
         return ServerTouchResponsePacket(DataInputStream(TEACryptor.decrypt(bytes, when (type) {
             ServerTouchResponsePacket.Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()

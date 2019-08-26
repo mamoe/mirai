@@ -32,20 +32,23 @@ object Utils {
 fun ByteArray.toHexString(): String = toHexString(" ")
 fun ByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
 @ExperimentalUnsignedTypes
-fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toHexString(separator)
+fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
 @ExperimentalUnsignedTypes
-fun ByteArray.toUHexString(): String = this.toUByteArray().toHexString()
+fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 
 @ExperimentalUnsignedTypes
-fun UByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
+fun UByteArray.toUHexString(separator: String = " "): String = Utils.toHexString(this, separator)
 
 @ExperimentalUnsignedTypes
-fun UByteArray.toHexString(): String = toHexString(" ")
+fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 
 @ExperimentalUnsignedTypes
-fun Byte.toHexString(): String = this.toUByte().toString(16)
+fun Byte.toUHexString(): String = this.toUByte().toString(16)
 
+/**
+ * firstly [Protocol.hexToUBytes], secondly [UByteArray.toByteArray]
+ */
 @ExperimentalUnsignedTypes
 fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 
@@ -54,6 +57,9 @@ fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 
 @ExperimentalUnsignedTypes
 fun String.hexToShort(): Short = hexToBytes().let { ((it[1].toInt() shl 8) + it[0]).toShort() }
+
+@ExperimentalUnsignedTypes
+fun String.hexToInt(): Int = hexToBytes().let { ((it[3].toInt() shl 24) + (it[2].toInt() shl 16) + (it[1].toInt() shl 8) + it[0]) }
 
 @ExperimentalUnsignedTypes
 fun String.hexToByte(): Byte = hexToBytes()[0]

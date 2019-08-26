@@ -8,7 +8,7 @@ import net.mamoe.mirai.network.packet.client.writeIP
 import net.mamoe.mirai.network.packet.client.writeQQ
 import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
-import net.mamoe.mirai.util.toHexString
+import net.mamoe.mirai.util.toUHexString
 import java.io.IOException
 
 /**
@@ -23,7 +23,7 @@ class ClientTouchPacket(val qq: Int, val serverIp: String) : ClientPacket() {
     @ExperimentalUnsignedTypes
     @Throws(IOException::class)
     override fun encode() {
-        //println(this.toUByteArray().toHexString(" "))
+        //println(this.toUByteArray().toUHexString(" "))
         //exitProcess(1)
 
         this.writeQQ(qq)
@@ -43,7 +43,7 @@ class ClientTouchPacket(val qq: Int, val serverIp: String) : ClientPacket() {
                 //this.writeIP("123456789")
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
                 this.writeHex(Protocol.publicKey)
-                println(super.toUByteArray().toHexString())
+                println(super.toUByteArray().toUHexString())
                 return super.toByteArray()
             }
         }.toByteArray()))
@@ -58,7 +58,7 @@ fun main() {
     pk.encode()
     pk.writeHex(Protocol.tail)
     //println("pk.toByteArray() = " + pk.toUByteArray().contentToString())
-    println(pk.toUByteArray().toHexString(" "))
+    println(pk.toUByteArray().toUHexString(" "))
 
     /*
     println(object : ByteArrayDataOutputStream() {
@@ -67,7 +67,7 @@ fun main() {
             this.writeInt(1994701021)
             return super.toUByteArray()
         }
-    }.toUByteArray().toHexString())*/
+    }.toUByteArray().toUHexString())*/
 
 
 /*
@@ -85,7 +85,7 @@ fun main() {
             this.writeHex(Protocol.publicKey)
             return super.toUByteArray()
         }
-    }.toUByteArray().toHexString(" "))
+    }.toUByteArray().toUHexString(" "))
 */
 
 }
