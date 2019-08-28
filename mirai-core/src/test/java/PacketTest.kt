@@ -1,10 +1,5 @@
 import net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
-import net.mamoe.mirai.network.packet.server.login.ServerLoginResponseVerificationCodePacket
-import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.toHexString
-import java.io.DataInputStream
-import java.io.File
-import java.io.FileOutputStream
+import net.mamoe.mirai.util.toUHexString
 
 @ExperimentalUnsignedTypes
 fun main(){
@@ -13,8 +8,8 @@ fun main(){
     val s = DataInputStream(data.hexToBytes().inputStream())
     val packet = ServerTouchResponsePacket(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, s)
     packet.decode()
-    System.out.println(packet.token.toUByteArray().toHexString(" "))
-    System.out.println(packet.loginTime.toHexString(" "))
+    System.out.println(packet.token.toUByteArray().toUHexString(" "))
+    System.out.println(packet.loginTime.toUHexString(" "))
     System.out.println(packet.loginIP)
     */
 
@@ -25,10 +20,10 @@ fun main(){
     val s = DataInputStream(data.hexToBytes().inputStream())
     val packet = ServerLoginResponseSuccessPacket(s,(data.length+1)/3)
     packet.decode()
-    System.out.println("0828key:  \n" + packet._0828_rec_decr_key.toUByteArray().toHexString(" "))
-    System.out.println("token88:  \n" + packet.token88.toUByteArray().toHexString(" "))
-    System.out.println("token38:  \n" + packet.token38.toUByteArray().toHexString(" "))
-    System.out.println("enckey:  \n" + packet.encryptionKey.toUByteArray().toHexString(" "))
+    System.out.println("0828key:  \n" + packet._0828_rec_decr_key.toUByteArray().toUHexString(" "))
+    System.out.println("token88:  \n" + packet.token88.toUByteArray().toUHexString(" "))
+    System.out.println("token38:  \n" + packet.token38.toUByteArray().toUHexString(" "))
+    System.out.println("enckey:  \n" + packet.encryptionKey.toUByteArray().toUHexString(" "))
     System.out.println("nick:  " + packet.nick)
     System.out.println("age:  " + packet.age)
     System.out.println("gender:  " + packet.gender)
@@ -39,8 +34,8 @@ fun main(){
     val s = DataInputStream(data.hexToBytes().inputStream())
     val packet =  ServerLoginResponseVerificationCodePacket(s,(data.length+1)/3)
     packet.decode()
-    println(packet.token00BA.toUByteArray().toHexString(" "))
-    println(packet.verifyCode.toUByteArray().toHexString(" "))
+    println(packet.token00BA.toUByteArray().toUHexString(" "))
+    println(packet.verifyCode.toUByteArray().toUHexString(" "))
     println(packet.verifyCodeLength)
 
     File(System.getProperty("user.dir") + "/5.png").createNewFile()
@@ -48,5 +43,5 @@ fun main(){
     */
 
     val packet = ClientPasswordSubmissionPacket(1994701021,"xiaoqqq",131513,"123.123.123.123","tgtgtKey".toByteArray(),"".toByteArray())
-    packet.encodeToByteArray().toUByteArray().toHexString(" ")
+    packet.encodeToByteArray().toUByteArray().toUHexString(" ")
 }

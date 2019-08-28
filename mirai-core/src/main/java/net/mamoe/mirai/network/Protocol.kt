@@ -49,8 +49,21 @@ interface Protocol {
         const val _0836_622_fix1 = "03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03 00 19";
         const val _0836key1 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"
 
+        private val hexToByteArrayCacheMap: MutableMap<Int, ByteArray> = mutableMapOf()
+
         @ExperimentalUnsignedTypes
-        fun hexToBytes(hex: String): ByteArray = hexToUBytes(hex).toByteArray()
+        fun hexToBytes(hex: String): ByteArray {
+            hex.hashCode().let { id ->
+                if (hexToByteArrayCacheMap.containsKey(id)) {
+                    return hexToByteArrayCacheMap[id]!!.clone()
+                } else {
+                    hexToUBytes(hex).toByteArray().let {
+                        hexToByteArrayCacheMap[id] = it.clone();
+                        return it
+                    }
+                }
+            }
+        }
 
         @ExperimentalUnsignedTypes
         fun hexToUBytes(hex: String): UByteArray = Arrays

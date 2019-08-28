@@ -14,6 +14,7 @@ import java.net.InetAddress
  */
 @PacketId("08 36 31 03")
 @ExperimentalUnsignedTypes
+@TestedSuccessfully
 class ClientPasswordSubmissionPacket(
         private val qq: Int,
         private val password: String,
@@ -38,8 +39,34 @@ class ClientPasswordSubmissionPacket(
     }
 }
 
+fun main() {
+    val loginTime = "5D 60 F6 33".hexToInt()
+    println(loginTime)
+
+    val loginIP = "AB 70 E2 96".let { it.split(" ").map { it.hexToByte() }.joinToString(".") { it.toString() } }
+
+
+    val tgtgtKey = "68 25 55 61 52 66 4A 54 71 6A 71 5A 24 50 27 6D".hexToBytes()
+
+    val token0825 = "56 3A E4 8B B4 64 D2 72 60 FE 01 54 FC B1 5F 88 E0 BA 64 1A 55 F2 84 FC 97 D0 BF 5F 47 A8 D9 76 BB FB 4A 7A F3 5E 0E A4 8E CA 8F 27 C2 02 6E 5D E7 68 9F 7C CF 91 83 F4".hexToBytes()
+    val token00ba = "57 3A 37 C3 FB A0 C3 E5 AE F3 0E B6 03 DE BF 9E E2 B5 C5 FE A0 F0 03 4F F7 8A 5C 29 5C E0 5A A2 89 D5 3F 60 E2 B2 81 FE D4 16 04 D4 E3 C6 4A D7 A9 D9 E6 FC 2E 7E 0C F3".hexToBytes()
+    val tlv_0006_encr = "0D DF 92 9C 5A 08 D1 67 FD 7D D6 DE CE D0 92 39 79 17 53 57 41 9B D6 D3 F9 F8 9A 3B E1 C2 3A E7 CF 02 6E 5E 36 B7 6D CF 33 66 77 FE AC 58 93 A3 85 E7 AF 6F 2D A2 74 E2 60 28 4B 29 17 04 79 95 39 D4 BF 4D C1 ED 61 49 13 23 9D 71 62 29 AF 87 D7 E3 42 49 88 3F D8 5C DB 9F 9E 5A 2A EA 02 F6 4F 2B D3 5B AF BE 0C B2 54 46 AE 99 1B 07 0B BE 6A C2 29 18 25 6A 95 0A".hexToBytes()
+
+
+    ClientLoginResendPacket3104(
+            1994701021,
+            "xiaoqqq",
+            loginTime,
+            loginIP,
+            tgtgtKey,
+            token0825,
+            token00ba,
+            tlv_0006_encr
+    ).let { it.encode();println(it.toUByteArray().toUHexString()) }
+}
+
 @PacketId("08 36 31 04")
-@ExperimentalUnsignedTypes
+@ExperimentalUnsignedTypes//todo 测试出来这个包长度有问题
 class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @PacketId("08 36 31 06")
@@ -47,7 +74,16 @@ class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, log
 class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @ExperimentalUnsignedTypes
-open class ClientLoginResendPacket internal constructor(val qq: Int, val password: String, val loginTime: Int, val loginIP: String, val tgtgtKey: ByteArray, val token0825: ByteArray, val token00BA: ByteArray, val tlv_0006_encr: ByteArray? = null) : ClientPacket() {
+open class ClientLoginResendPacket internal constructor(
+        val qq: Int,
+        val password: String,
+        val loginTime: Int,
+        val loginIP: String,
+        val tgtgtKey: ByteArray,
+        val token0825: ByteArray,
+        val token00BA: ByteArray,
+        val tlv_0006_encr: ByteArray? = null
+) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol._0836_622_fix1)
@@ -72,9 +108,6 @@ open class ClientLoginResendPacket internal constructor(val qq: Int, val passwor
     }
 }
 
-fun main() {
-    println(InetAddress.getLocalHost().hostAddress)
-}
 
 @ExperimentalUnsignedTypes
 @PacketId("08 28 04 34")
@@ -180,7 +213,7 @@ private fun DataOutputStream.writePart2() {
 
     this.writeHex("05 08")//tag
     this.writeHex("00 05")//length
-    this.writeHex("10 00 00 00 00")//value
+    this.writeHex("01 00 00 00 00")//value
 
     this.writeHex("03 13")//tag
     this.writeHex("00 19")//length

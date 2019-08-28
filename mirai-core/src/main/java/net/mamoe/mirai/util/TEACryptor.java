@@ -239,11 +239,13 @@ public class TEACryptor {
     }
 
     public byte[] encrypt(byte[] plaintext) {
+        DebugLoggerKt.encryptionDebugLogging(plaintext);
         System.out.println("TEA加密, 原文=" + UtilsKt.toUHexString(plaintext));
         return encrypt(plaintext, 0, plaintext.length);
     }
 
     public byte[] decrypt(byte[] ciphertext) {
+        DebugLoggerKt.decryptionDebugLogging(ciphertext);
         return decrypt(ciphertext, 0, ciphertext.length);
     }
 }

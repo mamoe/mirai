@@ -53,7 +53,15 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
     }
 
     override fun toString(): String {
-        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") { it.trySetAccessible(); it.name + "=" + it.get(this) }
+        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
+            it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
+            when (value) {
+                is ByteArray -> value.toUHexString()
+                is UByteArray -> value.toUHexString()
+                else -> value.toString()
+            }
+        }
+        }
     }
 }
 
@@ -128,8 +136,8 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
 
         val md5_1 = md5(password);
         val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toByteArray())
-        println(md5_1.toUByteArray().toHexString())
-        println(md5_2.toUByteArray().toHexString())
+        println(md5_1.toUByteArray().toUHexString())
+        println(md5_2.toUByteArray().toUHexString())
         it.write(md5_1)
         it.writeInt(loginTime)
         it.writeByte(0);
@@ -147,7 +155,7 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
 
 @ExperimentalUnsignedTypes
 fun main() {
-    println(lazyEncode { it.writeTLV0006(1994701021, "D1 A5 C8 BB E1 Q3 CC DD", 131513, "123.123.123.123", "AA BB CC DD EE FF AA BB CC".hexToBytes()) }.toUByteArray().toHexString())
+    println(lazyEncode { it.writeTLV0006(1994701021, "D1 A5 C8 BB E1 Q3 CC DD", 131513, "123.123.123.123", "AA BB CC DD EE FF AA BB CC".hexToBytes()) }.toUByteArray().toUHexString())
 }
 
 @ExperimentalUnsignedTypes
@@ -190,7 +198,7 @@ fun Int.toLByteArray(): ByteArray = byteArrayOf(
 )
 
 @ExperimentalUnsignedTypes
-fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toHexString(separator);
+fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator);
 
 private fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 

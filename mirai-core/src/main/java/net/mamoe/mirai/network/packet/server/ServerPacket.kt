@@ -6,7 +6,7 @@ import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
 import net.mamoe.mirai.util.getAllDeclaredFields
-import net.mamoe.mirai.util.toHexString
+import net.mamoe.mirai.util.toUHexString
 import java.io.DataInputStream
 
 /**
@@ -20,7 +20,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
         @ExperimentalUnsignedTypes
         fun ofByteArray(bytes: ByteArray): ServerPacket {
-            println("Raw received: ${bytes.toUByteArray().toHexString()}")
+            println("Raw received: ${bytes.toUByteArray().toUHexString()}")
 
             val stream = bytes.dataInputStream()
 
@@ -41,7 +41,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }
 
                     if (bytes.size > 700) {
-                        return ServerLoginResponseSuccessPacketEncrypted(stream, bytes.size)
+                        return ServerLoginResponseSuccessPacketEncrypted(stream)
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
@@ -53,7 +53,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         359 -> ServerLoginResponseFailedPacket.State.TAKEN_BACK
 
                         //unknown
-                        63 -> throw IllegalArgumentException(bytes.size.toString())
+                        63 -> throw IllegalArgumentException(bytes.size.toString())//可能是已经完成登录, 服务器拒绝第二次登录
                         351 -> throw IllegalArgumentException(bytes.size.toString())
 
                         else -> throw IllegalArgumentException(bytes.size.toString())
@@ -169,7 +169,15 @@ DataArrived >> AnalyMessage
     }
 
     override fun toString(): String {
-        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") { it.trySetAccessible(); it.name + "=" + it.get(this) }
+        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
+            it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
+            when (value) {
+                is ByteArray -> value.toUHexString()
+                is UByteArray -> value.toUHexString()
+                else -> value?.toString()
+            }
+        }
+        }
     }
 }
 
