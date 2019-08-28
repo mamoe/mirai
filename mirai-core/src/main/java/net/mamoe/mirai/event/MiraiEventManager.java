@@ -1,10 +1,13 @@
 package net.mamoe.mirai.event;
 
+import net.mamoe.mirai.MiraiServer;
 import net.mamoe.mirai.event.events.MiraiEvent;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -90,7 +93,7 @@ public class MiraiEventManager {
 
 
 
-    public void boardcastEvent(MiraiEvent event){
+    public void broadcastEvent(MiraiEvent event){
         hooksLock.lock();
         if(hooks.containsKey(event.getClass())){
             hooks.put(event.getClass(),
@@ -104,6 +107,20 @@ public class MiraiEventManager {
         hooksLock.unlock();
     }
 
+
+    public void ansycBroadcastEvent(MiraiEvent event){
+        this.ansycBroadcastEvent(event,a -> {});
+    }
+
+    public <D extends MiraiEvent> void ansycBroadcastEvent(D event, Consumer<D> callback){
+        MiraiServer.getInstance().getTaskManager().ansycTask(() -> {
+            MiraiEventManager.this.broadcastEvent(event);
+            return event;
+        },callback);
+    }
+
+
 }
+
 
 

@@ -14,18 +14,18 @@ object Utils {
     fun toHexString(byteArray: ByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
         var ret = it.toString(16).toUpperCase();
         if (ret.length == 1) {
-            ret = "0$ret";
+            ret = "0$ret"
         }
-        return@joinToString ret;
+        return@joinToString ret
     }
 
     @ExperimentalUnsignedTypes
     fun toHexString(byteArray: UByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
         var ret = it.toString(16).toUpperCase();
         if (ret.length == 1) {
-            ret = "0$ret";
+            ret = "0$ret"
         }
-        return@joinToString ret;
+        return@joinToString ret
     }
 }
 
@@ -68,7 +68,7 @@ fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDat
 
 @ExperimentalUnsignedTypes
 fun getRandomKey(length: Int): ByteArray {
-    val bytes = LinkedList<Byte>();
+    val bytes = LinkedList<Byte>()
     repeat(length) { bytes.add((Math.random() * 255).toByte()) }
     return bytes.toByteArray();
 }

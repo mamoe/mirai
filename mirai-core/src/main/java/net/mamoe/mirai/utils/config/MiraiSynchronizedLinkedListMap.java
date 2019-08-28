@@ -153,8 +153,13 @@ public class MiraiSynchronizedLinkedListMap<K,V> extends AbstractMap<K,V> {
         return this.sortedMap.merge(key,value,remappingFunction);
     }
 
+    public boolean equals(MiraiSynchronizedLinkedListMap o) {
+        return this.sortedMap.equals(o.sortedMap);
+    }
+
     @Override
     public boolean equals(Object o) {
-        return this.sortedMap.equals(o);
+        return o instanceof MiraiSynchronizedLinkedListMap?this.equals((MiraiSynchronizedLinkedListMap)o):super.equals(o);
     }
+
 }

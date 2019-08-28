@@ -4,8 +4,6 @@ import lombok.Getter;
 import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
-import net.mamoe.mirai.network.Robot;
-import net.mamoe.mirai.network.packet.client.touch.ClientTouchPacket;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -60,7 +58,7 @@ public class MiraiServer {
     protected void shutdown(){
         if(this.enabled) {
             getLogger().info(LoggerTextFormat.SKY_BLUE + "About to shutdown Mirai");
-            this.getEventManager().boardcastEvent(new ServerDisableEvent());
+            this.getEventManager().broadcastEvent(new ServerDisableEvent());
             getLogger().info(LoggerTextFormat.SKY_BLUE + "Data have been saved");
         }
 
@@ -137,17 +135,18 @@ public class MiraiServer {
         */
 
 
-        Robot robot = new Robot(1994701021, "xiaoqqq");
+        /*
+        RobotNetworkHandler robotNetworkHandler = new RobotNetworkHandler(1994701021, "xiaoqqq");
         try {
             //System.out.println(Protocol.Companion.getSERVER_IP().get(3));
             //System.out.println(Protocol.Companion.getSERVER_IP().toString());
 
-            robot.setServerIP("14.116.136.106");
-            robot.sendPacket(new ClientTouchPacket(1994701021, "14.116.136.106"));
+            robotNetworkHandler.setServerIP("14.116.136.106");
+            robotNetworkHandler.sendPacket(new ClientTouchPacket(1994701021, "14.116.136.106"));
             while (true) ;
-            //robot.connect("14.116.136.106");
-            //robot.connect(Protocol.Companion.getSERVER_IP().get(2));
-            //robot.connect("125.39.132.242");
+            //robotNetworkHandler.connect("14.116.136.106");
+            //robotNetworkHandler.connect(Protocol.Companion.getSERVER_IP().get(2));
+            //robotNetworkHandler.connect("125.39.132.242");
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -207,7 +206,7 @@ public class MiraiServer {
 
         System.out.println("/");
         Scanner scanner = new Scanner(System.in);
-        getLogger().info(LoggerTextFormat.SKY_BLUE + "input one " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.SKY_BLUE + "for default robot");
+        getLogger().info(LoggerTextFormat.SKY_BLUE + "input one " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.SKY_BLUE + "for default robotNetworkHandler");
         getLogger().info(LoggerTextFormat.SKY_BLUE + "输入用于默认机器人的QQ号");
         long qqNumber = scanner.nextLong();
         getLogger().info(LoggerTextFormat.SKY_BLUE + "input the password for that QQ account");
@@ -223,7 +222,7 @@ public class MiraiServer {
     }
 
     private void onEnable(){
-        this.eventManager.boardcastEvent(new ServerEnableEvent());
+        this.eventManager.broadcastEvent(new ServerEnableEvent());
         this.enabled = true;
         getLogger().info(LoggerTextFormat.GREEN + "Server enabled; Welcome to Mirai");
         getLogger().info("Mirai Version=" + MiraiServer.MIRAI_VERSION + " QQ Version=" + MiraiServer.QQ_VERSION);

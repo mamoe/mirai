@@ -34,7 +34,7 @@ class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : 
 
             Flag.OTHER -> {
                 //do nothing in this packet.
-                //[this.token] will be set in [Robot]
+                //[this.token] will be set in [RobotNetworkHandler]
                 //token
             }
         }

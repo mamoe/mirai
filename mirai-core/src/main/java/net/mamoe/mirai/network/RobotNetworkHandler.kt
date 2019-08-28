@@ -18,11 +18,11 @@ import java.net.DatagramSocket
 import java.net.InetSocketAddress
 
 /**
- * A robot account.
+ * A robotNetworkHandler account.
  *
  * @author Him188moe
  */
-class Robot(val number: Int, private val password: String) {
+class RobotNetworkHandler(val number: Int, private val password: String) {
     private var sequence: Int = 0
 
     private var channel: Channel? = null
@@ -205,7 +205,7 @@ private lateinit var ctx: ChannelHandlerContext
                     .handler(object : ChannelInitializer<NioDatagramChannel>() {
 
                         override fun channelActive(ctx: ChannelHandlerContext?) {
-                            this@Robot.ctx = ctx!!
+                            this@RobotNetworkHandler.ctx = ctx!!
                             super.channelActive(ctx)
                         }
 
@@ -217,7 +217,7 @@ private lateinit var ctx: ChannelHandlerContext
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<ByteArray>() {
                                 override fun channelRead0(ctx: ChannelHandlerContext, bytes: ByteArray) {
                                     try {
-                                        this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes))
+                                        this@RobotNetworkHandler.onPacketReceived(ServerPacket.ofByteArray(bytes))
                                     } catch (e: Exception) {
                                         MiraiLogger.catching(e)
                                     }
@@ -231,7 +231,7 @@ private lateinit var ctx: ChannelHandlerContext
                             ch.pipeline().addLast(object : SimpleChannelInboundHandler<DatagramPacket>() {
                                 override fun channelRead0(ctx: ChannelHandlerContext, bytes: DatagramPacket) {
                                     try {
-                                        this@Robot.onPacketReceived(ServerPacket.ofByteArray(bytes.data))
+                                        this@RobotNetworkHandler.onPacketReceived(ServerPacket.ofByteArray(bytes.data))
                                     } catch (e: Exception) {
                                         MiraiLogger.catching(e)
                                     }
@@ -247,7 +247,7 @@ private lateinit var ctx: ChannelHandlerContext
             channel = b.bind(15345).sync().channel()
 
             MiraiLogger info "Succeed"
-            sendPacket(ClientTouchPacket(this@Robot.number, serverIP))
+            sendPacket(ClientTouchPacket(this@RobotNetworkHandler.number, serverIP))
             channel!!.closeFuture().sync()
         } finally {
             group.shutdownGracefully().sync()

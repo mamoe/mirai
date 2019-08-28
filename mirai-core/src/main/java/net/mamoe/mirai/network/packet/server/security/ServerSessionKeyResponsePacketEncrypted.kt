@@ -37,7 +37,7 @@ class ServerSessionKeyResponsePacket(inputStream: DataInputStream) : ServerPacke
 }
 
 /**
- * Encrypted using []0828_rec_decr_key], decrypting in Robot
+ * Encrypted using []0828_rec_decr_key], decrypting in RobotNetworkHandler
  *
  * @author Him188moe
  */
