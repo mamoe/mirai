@@ -18,7 +18,7 @@ import java.net.InetSocketAddress
 import java.util.*
 
 /**
- * A robotNetworkHandler account.
+ * A RobotNetworkHandler is used to connect with Tencent servers.
  *
  * @author Him188moe
  */

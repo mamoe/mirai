@@ -1,10 +1,11 @@
 package net.mamoe.mirai.utils.config;
+
 import org.jetbrains.annotations.Nullable;
 
-import java.util.IllegalFormatException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String, T> {
 
@@ -12,18 +13,18 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
         super();
     }
 
-    public MiraiConfigSection(LinkedHashMap<String, T> map){
-        super(map);
+    public MiraiConfigSection(Map<String, T> copyOfMap) {
+        super(new LinkedHashMap<>(copyOfMap));
     }
 
     public int getInt(String key){
-        return Integer.valueOf(this.get(key).toString());
+        return Integer.parseInt(this.get(key).toString());
     }
 
     public int getIntOrDefault(String key, int defaultV){
         Object result = this.getOrDefault(key, null);
         try {
-            return result == null ? defaultV : Integer.valueOf(result.toString());
+            return result == null ? defaultV : Integer.parseInt(result.toString());
         }catch (NumberFormatException ignored){
             return defaultV;
         }
@@ -35,20 +36,20 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
             throw throwableCallable.call();
         }
         try {
-            return Integer.valueOf(result.toString());
+            return Integer.parseInt(result.toString());
         }catch (NumberFormatException ignored){
             throw throwableCallable.call();
         }
     }
 
     public double getDouble(String key){
-        return Double.valueOf(this.get(key).toString());
+        return Double.parseDouble(this.get(key).toString());
     }
 
     public double getDoubleOrDefault(String key, double defaultV){
         Object result = this.getOrDefault(key, null);
         try {
-            return result==null?defaultV:Double.valueOf(result.toString());
+            return result == null ? defaultV : Double.parseDouble(result.toString());
         }catch (NumberFormatException ignored){
             return defaultV;
         }
@@ -60,20 +61,20 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
             throw throwableCallable.call();
         }
         try {
-            return Double.valueOf(result.toString());
+            return Double.parseDouble(result.toString());
         }catch (NumberFormatException ignored){
             throw throwableCallable.call();
         }
     }
 
     public float getFloat(String key){
-        return Float.valueOf(this.get(key).toString());
+        return Float.parseFloat(this.get(key).toString());
     }
 
     public float getFloatOrDefault(String key, float defaultV){
         Object result = this.getOrDefault(key, null);
         try {
-            return result == null ? defaultV : Float.valueOf(result.toString());
+            return result == null ? defaultV : Float.parseFloat(result.toString());
         }catch (NumberFormatException ignored){
             return defaultV;
         }
@@ -85,20 +86,20 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
             throw throwableCallable.call();
         }
         try {
-            return Float.valueOf(result.toString());
+            return Float.parseFloat(result.toString());
         }catch (NumberFormatException ignored){
             throw throwableCallable.call();
         }
     }
 
     public long getLong(String key){
-        return Long.valueOf(this.get(key).toString());
+        return Long.parseLong(this.get(key).toString());
     }
 
     public long getLongOrDefault(String key, long defaultV){
         Object result = this.getOrDefault(key, null);
         try {
-            return result == null ? defaultV : Long.valueOf(result.toString());
+            return result == null ? defaultV : Long.parseLong(result.toString());
         }catch (NumberFormatException ignored){
             return defaultV;
         }
@@ -110,7 +111,7 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
             throw throwableCallable.call();
         }
         try {
-            return Long.valueOf(result.toString());
+            return Long.parseLong(result.toString());
         }catch (NumberFormatException ignored){
             throw throwableCallable.call();
         }
@@ -160,5 +161,19 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
     @SuppressWarnings("unchecked")
     public <D extends T> D getAsOrDefault(String key, D defaultV){
         return (D)this.getOrDefault(key,defaultV);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <D extends T> D getAsOrDefault(String key, Supplier<D> supplier) {
+        D d = (D) this.get(key);
+        if (d != null) {
+            return d;
+        }
+        return supplier.get();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <D extends T> D getAs(String key) {
+        return (D) this.get(key);
     }
 }

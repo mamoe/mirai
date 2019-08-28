@@ -12,7 +12,7 @@ public class Robot {
 
     private final int qq;
     private final String password;
-    private final RobotNetworkHandler handler ;
+    private final RobotNetworkHandler handler;
 
     /**
      * Ref list
@@ -20,7 +20,7 @@ public class Robot {
     @Getter
     private final List<String> owners;
 
-    public boolean isOwnBy(String ownerName){
+    public boolean isOwnBy(String ownerName) {
         return owners.contains(ownerName);
     }
 
@@ -29,28 +29,28 @@ public class Robot {
         this(
                 data.getIntOrThrow("account", () -> new Exception("can not parse QQ account")),
                 data.getStringOrThrow("password", () -> new Exception("can not parse QQ password")),
-                data.getAsOrDefault("owners",new ArrayList<>())
+                data.getAsOrDefault("owners", ArrayList::new)
         );
 
     }
 
 
-    public Robot(int qq, String password, List<String> owners){
+    public Robot(int qq, String password, List<String> owners) {
         this.qq = qq;
         this.password = password;
         this.owners = Collections.unmodifiableList(owners);
-        this.handler = new RobotNetworkHandler(this.qq,this.password);
+        this.handler = new RobotNetworkHandler(this.qq, this.password);
 
 
     }
 
 
-    public void connect(){
+    public void connect() {
 
     }
 
 
-    public void onPacketReceive(){
+    public void onPacketReceive() {
 
     }
 
