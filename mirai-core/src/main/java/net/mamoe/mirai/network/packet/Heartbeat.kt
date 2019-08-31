@@ -1,9 +1,6 @@
-package net.mamoe.mirai.network.packet.client.touch
+package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.network.packet.client.*
-import net.mamoe.mirai.network.packet.server.ServerPacket
 import java.io.DataInputStream
 import java.io.IOException
 

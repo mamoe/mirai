@@ -1,11 +1,7 @@
-package net.mamoe.mirai.network.packet.client.login
+package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.network.packet.client.ClientPacket
-import net.mamoe.mirai.network.packet.client.writeHex
-import net.mamoe.mirai.network.packet.client.writeQQ
-import net.mamoe.mirai.network.packet.client.writeVarInt
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.util.ByteArrayDataOutputStream
 import net.mamoe.mirai.util.TEACryptor
 

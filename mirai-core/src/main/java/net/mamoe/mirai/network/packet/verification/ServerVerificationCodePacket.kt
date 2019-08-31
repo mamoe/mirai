@@ -1,8 +1,8 @@
-package net.mamoe.mirai.network.packet.server.login
+package net.mamoe.mirai.network.packet.verification
 
-import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.dataInputStream
-import net.mamoe.mirai.network.packet.server.goto
+import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.network.packet.dataInputStream
+import net.mamoe.mirai.network.packet.goto
 import net.mamoe.mirai.util.TEACryptor
 import java.io.DataInputStream
 

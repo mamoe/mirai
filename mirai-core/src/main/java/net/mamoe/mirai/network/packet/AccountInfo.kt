@@ -1,11 +1,6 @@
-package net.mamoe.mirai.network.packet.client.session
+package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.network.packet.client.*
-import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.dataInputStream
-import net.mamoe.mirai.network.packet.server.goto
 import net.mamoe.mirai.util.TEACryptor
 import java.io.DataInputStream
 
