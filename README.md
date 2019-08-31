@@ -8,7 +8,10 @@
 一切开发旨在学习, 请勿用于非法用途  
 
 ### 代码结构
-Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与插件相关性强(或任何其他在二次开发中容易接触的部分)均使用 Java 完成.
+Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
+与插件相关性强(或其他在二次开发中容易接触的部分)均使用 Java 完成, 
+同时也会针对kotlin提供优化的方法调用. 例如对'+'操作符的重载: `String+BufferedImage+QQ.At+Face+URL+String+File` 将会被自动处理为String消息.
+
 
 ### TODO
 - [x] 事件(Event)模块  
@@ -16,6 +19,7 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与�
 - [x] Network - Touch  
 - [X] Network - Login 
 - [X] Network - Session
+- [ ] Network - Verification Code **(Low priority)**
 - [X] Network - Message Receiving
 - [ ] Network - Message Sending **(Working on)**  
 - [ ] Network - Events **(Working on)**  
@@ -34,7 +38,7 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 ## 使用方法
 ### 要求
 - Java 11 或更高
-- Kotlin
+- Kotlin 1.3 或更高
 ### 插件开发
 ``` php
     to be continued
@@ -45,8 +49,8 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 ## Usage
 ### Requirements
 - Java 11 or higher
-- Kotlin
-### Plugin Developments
+- Kotlin 1.3 or higher
+### Plugin Development
 ``` php
     to be continued
     ...
