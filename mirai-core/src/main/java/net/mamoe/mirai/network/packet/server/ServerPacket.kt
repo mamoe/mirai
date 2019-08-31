@@ -25,7 +25,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
         @ExperimentalUnsignedTypes
         fun ofByteArray(bytes: ByteArray): ServerPacket {
-            println("Raw received: ${bytes.toUByteArray().toUHexString()}")
+            //println("Raw received: ${bytes.toUByteArray().toUHexString()}")
 
             val stream = bytes.dataInputStream()
 
@@ -76,6 +76,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     "00 5C" -> ServerAccountInfoResponsePacketEncrypted(stream)
 
                     "00 58" -> ServerHeartbeatResponsePacket(stream)
+                    //"00 CE" ->
 
                     else -> throw IllegalArgumentException(idHex)
                 }
