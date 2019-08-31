@@ -1,6 +1,5 @@
 package net.mamoe.mirai.network.packet
 
-import net.mamoe.mirai.util.toUHexString
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -33,7 +32,7 @@ class ServerGroupUploadFileEventPacket(input: DataInputStream, packetId: ByteArr
     lateinit var message: String
 
     override fun decode() {
-        message = String(this.input.goto(64).readNBytes(this.input.goto(60).readShort().toInt()))
+        message = String(this.input.goto(65).readNBytes(this.input.goto(60).readShort().toInt()))
     }//todo test
 }
 
@@ -47,7 +46,12 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
         NORMAL,
         XML,
         AT,
-        IMAGE,
+        FACE,//qq自带表情 [face107.gif]
+
+        PLAIN_TEXT, //纯文本
+        IMAGE, //自定义图片 {F50C5235-F958-6DF7-4EFA-397736E125A4}.gif
+
+        ANONYMOUS,//匿名用户发出的消息
 
         OTHER,
     }
@@ -56,16 +60,25 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
         group = this.input.goto(51).readInt()
         qq = this.input.goto(56).readInt()
         val fontLength = this.input.goto(108).readShort()
-        println(this.input.goto(110 + fontLength).readNBytes(2).toUHexString())
+        //println(this.input.goto(110 + fontLength).readNBytes(2).toUHexString())//always 00 00
 
         messageType = when (val id = this.input.goto(110 + fontLength + 2).readByte().toInt()) {
             19 -> MessageType.NORMAL
             14 -> MessageType.XML
-            2 -> MessageType.IMAGE
             6 -> MessageType.AT
 
-            else -> MessageType.OTHER
+
+            1 -> MessageType.PLAIN_TEXT
+            2 -> MessageType.FACE
+            3 -> MessageType.IMAGE
+            25 -> MessageType.ANONYMOUS
+
+            else -> {
+                println("id=$id")
+                MessageType.OTHER
+            }
         }
+
 
         when (messageType) {
             MessageType.NORMAL -> {
@@ -84,7 +97,7 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
                 }
             }
 
-            MessageType.IMAGE -> {
+            MessageType.FACE -> {
                 val faceId = this.input.goto(110 + fontLength + 8).readByte()
                 message = "[face${faceId}.gif]"
             }

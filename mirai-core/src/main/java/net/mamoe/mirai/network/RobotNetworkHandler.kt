@@ -1,6 +1,9 @@
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.MiraiServer
+import net.mamoe.mirai.Robot
+import net.mamoe.mirai.event.MiraiEventManager
+import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacket
@@ -22,7 +25,7 @@ import java.util.concurrent.TimeUnit
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
-class RobotNetworkHandler(val number: Int, private val password: String) {
+class RobotNetworkHandler(val robot: Robot, val number: Int, private val password: String) {
 
     private var sequence: Int = 0
 
@@ -193,6 +196,7 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                 MiraiThreadPool.getInstance().scheduleWithFixedDelay({
                     sendPacket(ClientHeartbeatPacket(this.number, this.sessionKey))
                 }, 90000, 90000, TimeUnit.MILLISECONDS)
+                MiraiEventManager.getInstance().asyncBroadcastEvent(RobotLoginSucceedEvent(robot))
                 this.tlv0105 = packet.tlv0105
                 sendPacket(ClientLoginStatusPacket(this.number, this.sessionKey, ClientLoginStatus.ONLINE))
             }
@@ -237,6 +241,10 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             }
 
             is UnknownServerPacket -> {
+
+            }
+
+            is ServerGroupUploadFileEventPacket -> {
 
             }
 
