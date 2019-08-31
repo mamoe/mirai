@@ -4,6 +4,7 @@ import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.client.session.ServerAccountInfoResponsePacketEncrypted
 import net.mamoe.mirai.network.packet.client.toHexString
 import net.mamoe.mirai.network.packet.client.touch.ServerHeartbeatResponsePacket
+import net.mamoe.mirai.network.packet.server.event.ServerMessageEventPacketRawEncoded
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.security.ServerLoginSuccessPacket
 import net.mamoe.mirai.network.packet.server.security.ServerSKeyResponsePacketEncrypted
@@ -11,6 +12,7 @@ import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePa
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
 import net.mamoe.mirai.util.getAllDeclaredFields
+import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.toUHexString
 import java.io.DataInputStream
 
@@ -30,6 +32,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
             val stream = bytes.dataInputStream()
 
             stream.skip(3)
+
 
             return when (val idHex = stream.readInt().toHexString(" ")) {
                 "08 25 31 01" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
@@ -76,7 +79,12 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     "00 5C" -> ServerAccountInfoResponsePacketEncrypted(stream)
 
                     "00 58" -> ServerHeartbeatResponsePacket(stream)
-                    //"00 CE" ->
+
+                    "00 BA" -> ServerVerificationCodePacketEncrypted(stream)
+
+
+                    "00 CE", "00 17" -> ServerMessageEventPacketRawEncoded(stream, idHex.hexToBytes())
+
 
                     else -> throw IllegalArgumentException(idHex)
                 }
@@ -118,6 +126,10 @@ fun DataInputStream.readIP(): String {
         if (i != 3) buff += "."
     }
     return buff
+}
+
+fun DataInputStream.readShortVarString(): String {
+    return String(this.readNBytes(this.readShort().toInt()))
 }
 
 fun DataInputStream.readVarString(length: Int): String {

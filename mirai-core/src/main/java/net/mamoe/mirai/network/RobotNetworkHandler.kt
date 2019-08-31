@@ -1,7 +1,5 @@
 package net.mamoe.mirai.network
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
@@ -12,11 +10,12 @@ import net.mamoe.mirai.network.packet.client.touch.ServerHeartbeatResponsePacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.client.writeRandom
 import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.server.event.*
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.security.*
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
-import net.mamoe.mirai.task.MiraiTaskManager
+import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.util.*
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayInputStream
@@ -24,7 +23,7 @@ import java.io.FileOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
-import kotlin.system.exitProcess
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -51,8 +50,14 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             Thread {
                 while (true) {
                     val dp1 = DatagramPacket(ByteArray(2048), 2048)
-                    socket.receive(dp1)
-                    GlobalScope.async {
+                    try {
+                        socket.receive(dp1)
+                    } catch (e: Exception) {
+                        if (e.message == "socket closed") {
+                            return@Thread
+                        }
+                    }
+                    MiraiThreadPool.getInstance().submit {
                         var i = dp1.data.size - 1;
                         while (dp1.data[i] == zeroByte) {
                             --i
@@ -62,7 +67,7 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
-                    }.start()
+                    }
                 }
             }.start()
         }
@@ -105,7 +110,10 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     internal fun onPacketReceived(packet: ServerPacket) {
         packet.decode()
-        println("Packet received: $packet")
+        MiraiLogger info "Packet received: $packet"
+        if (packet is ServerEventPacket) {
+            sendPacket(ClientMessageResponsePacket(this.number, packet.packetId, this.sessionKey, packet.eventIdentity))
+        }
         when (packet) {
             is ServerTouchResponsePacket -> {
                 if (packet.serverIP != null) {//redirection
@@ -122,7 +130,7 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             }
 
             is ServerLoginResponseFailedPacket -> {
-                println("Login failed: " + packet.state.toString())
+                MiraiLogger error "Login failed: " + packet.state.toString()
                 return
             }
 
@@ -185,11 +193,16 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                 }
             }
 
+            is ServerVerificationCodePacket -> {
+                this.sequence++
+
+            }
+
             is ServerSessionKeyResponsePacket -> {
                 this.sessionKey = packet.sessionKey
-                MiraiTaskManager.getInstance().repeatingTask({
+                MiraiThreadPool.getInstance().scheduleWithFixedDelay({
                     sendPacket(ClientHeartbeatPacket(this.number, this.sessionKey))
-                }, 90000)
+                }, 90000, 90000, TimeUnit.MILLISECONDS)
                 this.tlv0105 = packet.tlv0105
                 sendPacket(ClientLoginStatusPacket(this.number, this.sessionKey, ClientLoginStatus.ONLINE))
             }
@@ -202,9 +215,10 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                 this.sKey = packet.sKey
                 this.cookies = "uin=o" + this.number + ";skey=" + this.sKey + ";"
 
-                MiraiTaskManager.getInstance().repeatingTask({
+                MiraiThreadPool.getInstance().scheduleWithFixedDelay({
                     sendPacket(ClientRefreshSKeyRequestPacket(this.number, this.sessionKey))
-                }, 1800000)
+                }, 1800000, 1800000, TimeUnit.MILLISECONDS)
+
                 this.gtk = getGTK(sKey)
                 sendPacket(ClientAccountInfoRequestPacket(this.number, this.sessionKey))
             }
@@ -217,6 +231,22 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
 
             }
 
+            is ServerMessageEventPacketRaw -> onPacketReceived(packet.analyze())
+
+
+            is ServerFriendMessageEventPacket -> {
+                //friend message
+            }
+
+            is ServerGroupMessageEventPacket -> {
+                //group message
+            }
+
+            is ServerUnknownEventPacket -> {
+                //unknown message event
+            }
+
+            is ServerVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt(this.token00BA))
             is ServerLoginResponseVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
             is ServerLoginResponseResendPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
             is ServerLoginResponseSuccessPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
@@ -224,6 +254,8 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             is ServerTouchResponsePacketEncrypted -> onPacketReceived(packet.decrypt())
             is ServerSKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
             is ServerAccountInfoResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
+            is ServerMessageEventPacketRawEncoded -> onPacketReceived(packet.decrypt(this.sessionKey))
+
 
             else -> throw IllegalArgumentException(packet.toString())
         }
@@ -232,21 +264,17 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
 
     @ExperimentalUnsignedTypes
     fun sendPacket(packet: ClientPacket) {
+        MiraiThreadPool.getInstance().submit {
+            try {
+                packet.encode()
+                packet.writeHex(Protocol.tail)
 
-        try {
-            packet.encode()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        packet.writeHex(Protocol.tail)
-
-        val data = packet.toByteArray()
-        try {
-            socket.send(DatagramPacket(data, data.size))
-            MiraiLogger info "Packet sent: ${data.toUByteArray().toUHexString()}"
-        } catch (e: Exception) {
-            e.printStackTrace()
-            exitProcess(1)
+                val data = packet.toByteArray()
+                socket.send(DatagramPacket(data, data.size))
+                MiraiLogger info "Packet sent: $packet"
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
         }
     }
 }

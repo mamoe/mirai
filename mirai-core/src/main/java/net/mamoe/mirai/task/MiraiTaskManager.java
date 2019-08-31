@@ -10,14 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class MiraiTaskManager {
+public final class MiraiTaskManager {
 
-    private static MiraiTaskManager instance;
+    private static MiraiTaskManager instance = new MiraiTaskManager();
 
-    public static MiraiTaskManager getInstance(){
-        if(MiraiTaskManager.instance == null){
-            MiraiTaskManager.instance = new MiraiTaskManager();
-        }
+    public static MiraiTaskManager getInstance() {
         return MiraiTaskManager.instance;
     }
 
@@ -34,19 +31,19 @@ public class MiraiTaskManager {
     }
 
     /**
-    基础Future处理
+     * 基础Future处理
      */
 
-    public void execute(Runnable runnable){
+    public void execute(Runnable runnable) {
         this.execute(runnable, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public void execute(Runnable runnable, MiraiTaskExceptionHandler handler){
+    public void execute(Runnable runnable, MiraiTaskExceptionHandler handler) {
         this.pool.execute(() ->
         {
-            try{
+            try {
                 runnable.run();
-            }catch (Exception e){
+            } catch (Exception e) {
                 handler.onHandle(e);
             }
         });
@@ -69,13 +66,13 @@ public class MiraiTaskManager {
     }
 
     /**
-     异步任务
+     * 异步任务
      */
-    public <D> void ansycTask(Callable<D> callable, Consumer<D> callback){
-        this.ansycTask(callable,callback, MiraiTaskExceptionHandler.byDefault());
+    public <D> void ansycTask(Callable<D> callable, Consumer<D> callback) {
+        this.ansycTask(callable, callback, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public <D> void ansycTask(Callable<D> callable, Consumer<D> callback,  MiraiTaskExceptionHandler handler){
+    public <D> void ansycTask(Callable<D> callable, Consumer<D> callback, MiraiTaskExceptionHandler handler) {
         this.pool.execute(() -> {
             try {
                 callback.accept(callable.call());
@@ -86,7 +83,7 @@ public class MiraiTaskManager {
     }
 
     /**
-     定时任务
+     * 定时任务
      */
 
     public void repeatingTask(Runnable runnable, long intervalMillis) {
@@ -102,11 +99,12 @@ public class MiraiTaskManager {
     }
 
     public void repeatingTask(Runnable runnable, long intervalMillis, int times, MiraiTaskExceptionHandler handler) {
-        AtomicInteger integer = new AtomicInteger(times-1);
+        AtomicInteger integer = new AtomicInteger(times - 1);
         this.repeatingTask(
                 runnable, intervalMillis, a -> integer.getAndDecrement() > 0, handler
         );
     }
+
 
     public <D extends Runnable> void repeatingTask(D runnable, long intervalMillis, Predicate<D> shouldContinue, MiraiTaskExceptionHandler handler) {
         new Thread(() -> {
@@ -129,7 +127,7 @@ public class MiraiTaskManager {
 
     public void deletingTask(Runnable runnable, long intervalMillis) {
         new Thread(() -> {
-            try{
+            try {
                 Thread.sleep(intervalMillis);
             } catch (InterruptedException e) {
                 e.printStackTrace();

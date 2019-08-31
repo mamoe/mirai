@@ -53,11 +53,6 @@ class ServerSessionKeyResponsePacket(inputStream: DataInputStream, val dataLengt
     }
 }
 
-/**
- * Encrypted using [0828_rec_decr_key], decrypting in RobotNetworkHandler
- *
- * @author Him188moe
- */
 class ServerSessionKeyResponsePacketEncrypted(inputStream: DataInputStream) : ServerPacket(inputStream) {
     override fun decode() {
 

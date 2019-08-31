@@ -11,6 +11,10 @@ object MiraiLogger {
         this.print(o.toString())
     }
 
+    infix fun error(o: Any?) {
+        this.print(o.toString(), LoggerTextFormat.RED)
+    }
+
     infix fun log(o: Any?) = info(o)
 
     infix fun println(o: Any?) = info(o)
@@ -27,11 +31,10 @@ object MiraiLogger {
         this.print(e.cause.toString())*/
     }
 
-    private fun print(value: String?) {
+    private fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.BLUE) {
         val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
-        kotlin.io.println(LoggerTextFormat.BLUE.toString() + "[Mirai] $s : $value")
+        kotlin.io.println("$color[Mirai] $s : $value")
     }
-
 }
 
 

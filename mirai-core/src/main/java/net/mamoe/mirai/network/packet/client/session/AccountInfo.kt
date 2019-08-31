@@ -6,7 +6,6 @@ import net.mamoe.mirai.network.packet.client.*
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.dataInputStream
 import net.mamoe.mirai.network.packet.server.goto
-import net.mamoe.mirai.network.packet.server.security.ServerSKeyResponsePacket
 import net.mamoe.mirai.util.TEACryptor
 import java.io.DataInputStream
 
@@ -47,9 +46,9 @@ class ServerAccountInfoResponsePacketEncrypted(inputStream: DataInputStream) : S
 
     }
 
-    fun decrypt(sessionKey: ByteArray): ServerSKeyResponsePacket {
+    fun decrypt(sessionKey: ByteArray): ServerAccountInfoResponsePacket {
         this.input goto 14
         val data = this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }
-        return ServerSKeyResponsePacket(TEACryptor.decrypt(data, sessionKey).dataInputStream());
+        return ServerAccountInfoResponsePacket(TEACryptor.decrypt(data, sessionKey).dataInputStream());
     }
 }
