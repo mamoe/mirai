@@ -147,12 +147,12 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
     @ExperimentalUnsignedTypes
     override fun decode() {
         //start at Sep1.0:27
-        qq = input.readInt()
+        qq = input.readInt(0)
         val msgLength = input.readShort(22)
         val fontLength = input.readShort(93+msgLength)
         val offset = msgLength+fontLength
         message = if(input.readByte(97+offset).toUHexString() == "02"){
-            "[face" + input.goto(103+offset).readVarString(1) + ".gif]"
+            "[face" + input.goto(103+offset).readByte(1).toInt().toString() + ".gif]"
             //.gif
         }else {
             val offset2 = input.readShort(101 + offset)
