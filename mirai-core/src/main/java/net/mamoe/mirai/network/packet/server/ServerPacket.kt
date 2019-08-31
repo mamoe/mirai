@@ -73,6 +73,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                 "08 28 04 34" -> ServerSessionKeyResponsePacketEncrypted(stream)
 
 
+                "00 81 EC 78" -> UnknownPacket(stream)
+                "00 81 AD 7A" -> UnknownPacket(stream)
+
                 else -> when (idHex.substring(0, 5)) {
                     "00 EC" -> ServerLoginSuccessPacket(stream)
                     "00 1D" -> ServerSKeyResponsePacketEncrypted(stream)
@@ -84,7 +87,6 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
 
                     "00 CE", "00 17" -> ServerMessageEventPacketRawEncoded(stream, idHex.hexToBytes())
-
 
                     else -> throw IllegalArgumentException(idHex)
                 }

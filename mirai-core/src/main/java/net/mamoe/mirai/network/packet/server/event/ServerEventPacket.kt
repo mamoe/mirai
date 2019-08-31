@@ -57,7 +57,6 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
         group = this.input.goto(51).readInt()
         qq = this.input.goto(56).readInt()
         val fontLength = this.input.goto(108).readShort()
-        println(this.toString())
         messageType = when (val id = this.input.goto(110 + fontLength + 2).readByte().toInt()) {
             19 -> MessageType.NORMAL
             14 -> MessageType.XML
@@ -130,8 +129,10 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
 }
 
 class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
+    var qq: Int = 0
+    lateinit var message: String
 
     override fun decode() {
-
+        TODO("FRIEND 解析")
     }
 }

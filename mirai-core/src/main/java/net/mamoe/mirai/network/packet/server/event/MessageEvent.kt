@@ -67,9 +67,9 @@ class ServerMessageEventPacketRaw(
 
         "00 A6" -> ServerFriendMessageEventPacket(this.input, packetId, eventIdentity)
 
-        "02 10" -> ServerUnknownEventPacket(this.input, packetId, eventIdentity)
+        //"02 10", "00 12" -> ServerUnknownEventPacket(this.input, packetId, eventIdentity)
 
-        else -> throw IllegalArgumentException(typeHex)
+        else -> ServerUnknownEventPacket(this.input, packetId, eventIdentity)
     }
 }
 
