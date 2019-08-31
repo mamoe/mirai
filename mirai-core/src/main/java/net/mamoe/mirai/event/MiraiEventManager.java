@@ -4,7 +4,6 @@ import net.mamoe.mirai.MiraiServer;
 import net.mamoe.mirai.event.events.MiraiEvent;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -108,11 +107,12 @@ public class MiraiEventManager {
     }
 
 
-    public void ansycBroadcastEvent(MiraiEvent event){
-        this.ansycBroadcastEvent(event,a -> {});
+    public void asyncBroadcastEvent(MiraiEvent event) {
+        this.asyncBroadcastEvent(event, a -> {
+        });
     }
 
-    public <D extends MiraiEvent> void ansycBroadcastEvent(D event, Consumer<D> callback){
+    public <D extends MiraiEvent> void asyncBroadcastEvent(D event, Consumer<D> callback) {
         MiraiServer.getInstance().getTaskManager().ansycTask(() -> {
             MiraiEventManager.this.broadcastEvent(event);
             return event;

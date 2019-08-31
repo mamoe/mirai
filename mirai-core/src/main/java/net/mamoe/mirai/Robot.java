@@ -1,8 +1,6 @@
 package net.mamoe.mirai;
 
 import lombok.Getter;
-import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.message.Message;
 import net.mamoe.mirai.network.RobotNetworkHandler;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
 
@@ -42,7 +40,7 @@ public class Robot {
         this.qq = qq;
         this.password = password;
         this.owners = Collections.unmodifiableList(owners);
-        this.handler = new RobotNetworkHandler(this.qq, this.password);
+        this.handler = new RobotNetworkHandler(this, this.qq, this.password);
     }
 
 
