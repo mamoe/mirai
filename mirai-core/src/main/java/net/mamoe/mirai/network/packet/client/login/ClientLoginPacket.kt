@@ -6,6 +6,7 @@ import net.mamoe.mirai.network.packet.client.*
 import net.mamoe.mirai.util.*
 import java.io.DataOutputStream
 import java.net.InetAddress
+import kotlin.system.exitProcess
 
 /**
  * Password submission (0836_622)
@@ -39,7 +40,11 @@ class ClientPasswordSubmissionPacket(
     }
 }
 
+@UseExperimental(ExperimentalUnsignedTypes::class)
 fun main() {
+    println(InetAddress.getLocalHost().hostName)
+    exitProcess(0)
+
     val loginTime = "5D 60 F6 33".hexToInt()
     println(loginTime)
 
@@ -67,11 +72,13 @@ fun main() {
 
 @PacketId("08 36 31 04")
 @ExperimentalUnsignedTypes//todo 测试出来这个包长度有问题
-class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
+class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @PacketId("08 36 31 06")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
+class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @ExperimentalUnsignedTypes
 open class ClientLoginResendPacket internal constructor(
@@ -111,7 +118,7 @@ open class ClientLoginResendPacket internal constructor(
 
 @ExperimentalUnsignedTypes
 @PacketId("08 28 04 34")
-class ClientLoginSucceedConfirmationPacket(
+class ClientSessionRequestPacket(
         private val qq: Int,
         private val serverIp: String,
         private val loginIP: String,
@@ -153,7 +160,7 @@ class ClientLoginSucceedConfirmationPacket(
                 this.writeHex("68")
 
                 this.writeHex("00 00 00 00 00 2D 00 06 00 01")
-                this.writeIP(InetAddress.getLocalHost().hostName)//? todo 这随便扔的
+                this.writeIP(InetAddress.getLocalHost().hostAddress)
 
                 return super.toByteArray()
             }
@@ -173,9 +180,6 @@ private fun DataOutputStream.writePart1(qq: Int, password: String, loginTime: In
     this.write(token0825)//length
     this.writeHex("03 0F")//tag
     this.writeDeviceName()
-    /*易语言源码: PCName就是HostName
-    PCName ＝ BytesToStr (Ansi转Utf8 (取主机名 ()))
-    PCName ＝ 取文本左边 (PCName, 取文本长度 (PCName) － 3)*/
 
     this.writeHex("00 05 00 06 00 02")
     this.writeQQ(qq)

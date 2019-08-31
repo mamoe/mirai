@@ -6,6 +6,7 @@ import net.mamoe.mirai.network.packet.server.goto
 import net.mamoe.mirai.network.packet.server.readNBytes
 import net.mamoe.mirai.network.packet.server.readVarString
 import net.mamoe.mirai.util.TEACryptor
+import net.mamoe.mirai.util.TestedSuccessfully
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.toUHexString
 import java.io.DataInputStream
@@ -13,10 +14,8 @@ import java.io.DataInputStream
 /**
  * @author NaturalHG
  */
-class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLength: Int) : ServerPacket(input) {
+class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(input) {
     lateinit var _0828_rec_decr_key: ByteArray//16 bytes|
-    var age: Short = 0
-    var gender: Int = 0//from 1byte
     lateinit var nick: String
 
     lateinit var token38: ByteArray
@@ -24,6 +23,7 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
     lateinit var encryptionKey: ByteArray
 
 
+    @TestedSuccessfully
     @ExperimentalUnsignedTypes
     override fun decode() {
         //测试完成 @NaturalHG
@@ -113,9 +113,9 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream, val packetDataLen
         val nickLength = this.input.goto(624 + msgLength).readByte().toInt()
         this.nick = this.input.readVarString(nickLength)
 
-        this.age = this.input.goto(packetDataLength - 28).readShort()
+        //this.age = this.input.goto(packetDataLength - 28).readShort()
 
-        this.gender = this.input.goto(packetDataLength - 32).readByte().toInt()
+        //this.gender = this.input.goto(packetDataLength - 32).readByte().toInt()
     }
 }
 
@@ -131,7 +131,7 @@ class ServerLoginResponseSuccessPacketEncrypted(input: DataInputStream) : Server
         bytes = bytes.copyOfRange(0, bytes.size - 1)
         println(bytes.toUByteArray().toUHexString())
 
-        return ServerLoginResponseSuccessPacket(DataInputStream(TEACryptor.decrypt(TEACryptor.decrypt(bytes, Protocol.shareKey.hexToBytes()), tgtgtKey).inputStream()), bytes.size);
+        return ServerLoginResponseSuccessPacket(DataInputStream(TEACryptor.decrypt(TEACryptor.decrypt(bytes, Protocol.shareKey.hexToBytes()), tgtgtKey).inputStream()));
         //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
     }
 }

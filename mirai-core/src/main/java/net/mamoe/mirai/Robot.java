@@ -12,6 +12,7 @@ public class Robot {
 
     private final int qq;
     private final String password;
+    @Getter
     private final RobotNetworkHandler handler;
 
     /**
@@ -40,19 +41,8 @@ public class Robot {
         this.password = password;
         this.owners = Collections.unmodifiableList(owners);
         this.handler = new RobotNetworkHandler(this.qq, this.password);
-
-
     }
 
-
-    public void connect() {
-
-    }
-
-
-    public void onPacketReceive() {
-
-    }
 
 }
 

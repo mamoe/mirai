@@ -12,7 +12,7 @@ import java.util.zip.CRC32
  */
 object Utils {
     fun toHexString(byteArray: ByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
-        var ret = it.toString(16).toUpperCase();
+        var ret = it.toString(16).toUpperCase()
         if (ret.length == 1) {
             ret = "0$ret"
         }
@@ -21,7 +21,7 @@ object Utils {
 
     @ExperimentalUnsignedTypes
     fun toHexString(byteArray: UByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
-        var ret = it.toString(16).toUpperCase();
+        var ret = it.toString(16).toUpperCase()
         if (ret.length == 1) {
             ret = "0$ret"
         }
@@ -67,7 +67,7 @@ fun String.hexToByte(): Byte = hexToBytes()[0]
 open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream()) {
     open fun toByteArray(): ByteArray = (out as ByteArrayOutputStream).toByteArray()
     @ExperimentalUnsignedTypes
-    open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray();
+    open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray()
 }
 
 fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().let { t(it); return it.toByteArray() }
@@ -76,7 +76,7 @@ fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDat
 fun getRandomKey(length: Int): ByteArray {
     val bytes = LinkedList<Byte>()
     repeat(length) { bytes.add((Math.random() * 255).toByte()) }
-    return bytes.toByteArray();
+    return bytes.toByteArray()
 }
 
 fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
@@ -93,7 +93,7 @@ fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt
  */
 @Throws(SecurityException::class)
 fun Any.getAllDeclaredFields(): List<Field> {
-    var clazz: Class<*> = this.javaClass;
+    var clazz: Class<*> = this.javaClass
     val list = LinkedList<Field>()
     loop@ do {
 

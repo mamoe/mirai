@@ -12,7 +12,7 @@ import net.mamoe.mirai.util.toUHexString
 import java.io.IOException
 
 /**
- * The packet to touch server.
+ * The packet to touch server, that is, to start the connection to the server.
  *
  * @author Him188moe
  */

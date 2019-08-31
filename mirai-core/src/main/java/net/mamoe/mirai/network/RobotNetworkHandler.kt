@@ -4,6 +4,7 @@ import io.netty.channel.Channel
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
 import net.mamoe.mirai.network.packet.client.writeHex
+import net.mamoe.mirai.network.packet.client.writeRandom
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacket
@@ -44,7 +45,18 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
     /**
      * Kind of key, similar to sessionKey
      */
-    private lateinit var tlv0105: ByteArray
+    private var tlv0105: ByteArray
+
+    init {
+        tlv0105 = lazyEncode {
+            it.writeHex("01 05 00 30")
+            it.writeHex("00 01 01 02 00 14 01 01 00 10")
+            it.writeRandom(16)
+            it.writeHex("00 14 01 02 00 10")
+            it.writeRandom(16)
+        }
+    }
+
     private lateinit var sessionKey: ByteArray
     /**
      * Kind of key, similar to sessionKey
@@ -92,7 +104,7 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
 
             is ServerLoginResponseSuccessPacket -> {
                 this._0828_rec_decr_key = packet._0828_rec_decr_key
-                sendPacket(ClientLoginSucceedConfirmationPacket(this.number, this.serverIP, this.loginIP, this.md5_32, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
+                sendPacket(ClientSessionRequestPacket(this.number, this.serverIP, this.loginIP, this.md5_32, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
             }
 
             //是ClientPasswordSubmissionPacket之后服务器回复的
@@ -150,8 +162,8 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
 
     @ExperimentalUnsignedTypes
     fun sendPacket(packet: ClientPacket) {
-        sendPacketDebug(packet);
-        if (true) return;
+        /*sendPacketDebug(packet);
+        if (true) return;*/
         try {
             //MiraiLogger log "Encoding"
             packet.encode()

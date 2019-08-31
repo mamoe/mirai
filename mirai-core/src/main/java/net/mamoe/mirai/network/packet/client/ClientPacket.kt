@@ -69,7 +69,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeIP(ip: String) {
-    for (s in ip.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+    for (s in ip.trim().split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
         this.writeByte(s.toInt())
     }
 }
@@ -78,7 +78,7 @@ fun DataOutputStream.writeIP(ip: String) {
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeHex(hex: String) {
-    for (s in hex.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+    for (s in hex.trim().split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
         if (s.isEmpty()) {
             continue
         }
@@ -128,7 +128,7 @@ fun DataOutputStream.encryptAndWrite(cryptor: TEACryptor, encoder: (ByteArrayDat
 @Throws(IOException::class)
 fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
     ByteArrayDataOutputStream().let {
-        it.writeRandom(4)
+        it.writeHex("12 12 12 12")//it.writeRandom(4) todo
         it.writeHex("00 02")
         it.writeQQ(qq)
         it.writeHex(Protocol._0825data2)
@@ -153,12 +153,18 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
     }
 }
 
+fun main() {
+
+}
+
+/*
 @ExperimentalUnsignedTypes
 fun main() {
     println(lazyEncode { it.writeTLV0006(1994701021, "D1 A5 C8 BB E1 Q3 CC DD", 131513, "123.123.123.123", "AA BB CC DD EE FF AA BB CC".hexToBytes()) }.toUByteArray().toUHexString())
-}
+}*/
 
 @ExperimentalUnsignedTypes
+@TestedSuccessfully
 fun DataOutputStream.writeCRC32() = writeCRC32(getRandomKey(16))
 
 
@@ -170,6 +176,7 @@ fun DataOutputStream.writeCRC32(key: ByteArray) {
     }
 }
 
+@TestedSuccessfully
 fun DataOutputStream.writeDeviceName() {
     val deviceName = InetAddress.getLocalHost().hostName
     this.writeShort(deviceName.length + 2)

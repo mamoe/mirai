@@ -58,7 +58,7 @@ S: 发送 `08 36 31 03` 告知登录结果.
 - 设备锁
 - 被回收
 
-C: 回复 `08 28 04 34`  
+C: 回复 `08 28 04 34`, 请求建立 Session  
 Sample
 
 ```text
@@ -66,7 +66,7 @@ Sample
 ```
 
 **Session**  
-S: 发送 `08 28 04 34`, 告知:  
+S: 发送 `08 28 04 34`, 完成 session 建立, 告知:
 - g_sessionKey  
 - g_tlv0105  
 - g_loginStatus  
