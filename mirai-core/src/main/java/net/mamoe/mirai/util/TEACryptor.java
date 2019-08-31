@@ -240,7 +240,7 @@ public class TEACryptor {
 
     public byte[] encrypt(byte[] plaintext) {
         DebugLoggerKt.encryptionDebugLogging(plaintext);
-        System.out.println("TEA加密, 原文=" + UtilsKt.toUHexString(plaintext));
+        //System.out.println("TEA加密, 原文=" + Utils.INSTANCE.toHexString(plaintext, ""));
         return encrypt(plaintext, 0, plaintext.length);
     }
 

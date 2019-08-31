@@ -9,23 +9,17 @@ import java.io.DataInputStream
 /**
  * @author Him188moe
  */
-class ServerLoginResponseVerificationCodePacket(input: DataInputStream, val packetLength: Int) : ServerPacket(input) {
-    var verifyCodeLength: Short = 0
+class ServerLoginResponseVerificationCodePacket(input: DataInputStream, private val packetLength: Int) : ServerPacket(input) {
+
     lateinit var verifyCode: ByteArray
     lateinit var token00BA: ByteArray
     var unknownBoolean: Boolean? = null
 
 
     @ExperimentalUnsignedTypes
-    override fun decode() {//todo decode 注释的内容
-        /*
-        verifyCodeLength = HexToDec(取文本中间(data, 235, 5))
-        verifyCode = 取文本中间(data, 241, verifyCodeLength * 3 - 1)
-        unknownBoolean = 取文本中间(data, 245 + verifyCodeLength * 3 - 1, 2) == "01"
-        token00BA = 取文本中间(data, 取文本长度(data) - 178, 119)
-        */
-        this.verifyCodeLength = this.input.goto(78).readShort()
-        this.verifyCode = this.input.readNBytes(this.verifyCodeLength.toInt())
+    override fun decode() {
+        val verifyCodeLength = this.input.goto(78).readShort()//2bytes
+        this.verifyCode = this.input.readNBytes(verifyCodeLength.toInt())
 
         this.input.skip(1)
 

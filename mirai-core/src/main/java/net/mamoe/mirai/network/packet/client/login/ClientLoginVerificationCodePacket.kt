@@ -24,7 +24,7 @@ class ClientLoginVerificationCodePacket(
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
         this.writeHex(Protocol._00BaKey)
-        this.write(TEACryptor.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
+        this.write(TEACryptor.CRYPTOR_00BAKEY.encrypt(object : ByteArrayDataOutputStream() {
             override fun toByteArray(): ByteArray {
                 this.writeHex("00 02 00 00 08 04 01 E0")
                 this.writeHex(Protocol._0825data2)
