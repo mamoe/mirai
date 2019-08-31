@@ -1,5 +1,6 @@
 package net.mamoe.mirai.network.packet
 
+import net.mamoe.mirai.util.toUHexString
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -55,6 +56,8 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
         group = this.input.goto(51).readInt()
         qq = this.input.goto(56).readInt()
         val fontLength = this.input.goto(108).readShort()
+        println(this.input.goto(110 + fontLength).readNBytes(2).toUHexString())
+
         messageType = when (val id = this.input.goto(110 + fontLength + 2).readByte().toInt()) {
             19 -> MessageType.NORMAL
             14 -> MessageType.XML

@@ -232,8 +232,12 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                 //group message
             }
 
-            is ServerUnknownEventPacket -> {
+            is UnknownServerEventPacket -> {
                 //unknown message event
+            }
+
+            is UnknownServerPacket -> {
+
             }
 
             is ServerVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt(this.token00BA))

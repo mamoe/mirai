@@ -29,7 +29,7 @@ open class ClientMessageResponsePacket(
 
 
 /**
- * 群聊和好友消息分析
+ * 群聊和好友消息分发
  */
 @PacketId("00 17")
 class ServerMessageEventPacketRaw(
@@ -61,11 +61,11 @@ class ServerMessageEventPacketRaw(
 
         //"02 10", "00 12" -> ServerUnknownEventPacket(this.input, packetId, eventIdentity)
 
-        else -> ServerUnknownEventPacket(this.input, packetId, eventIdentity)
+        else -> UnknownServerEventPacket(this.input, packetId, eventIdentity)
     }
 }
 
-class ServerUnknownEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity)
+class UnknownServerEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity)
 
 @PacketId("00 17")
 class ServerMessageEventPacketRawEncoded(input: DataInputStream, val packetId: ByteArray) : ServerPacket(input) {
