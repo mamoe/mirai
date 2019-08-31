@@ -10,22 +10,24 @@ import net.mamoe.mirai.util.lazyEncode
 @PacketId("00 CD")
 @ExperimentalUnsignedTypes
 class ClientSendFriendMessagePacket(
-        val qq: Int,
+        val robotQQ: Int,
+        val targetQQ: Int,
         val sessionKey: ByteArray,
         val message: String
 ) : ClientPacket() {
     override fun encode() {
         this.writeRandom(2)//part of packet id
-        this.writeQQ(qq)
+        this.writeQQ(robotQQ)
         this.writeHex(Protocol._fixVer)
 
         this.encryptAndWrite(sessionKey) {
-            it.writeQQ(qq)
-            it.writeQQ(qq)//that's correct
+            it.writeQQ(robotQQ)
+            it.writeQQ(targetQQ)
             it.writeHex("00 00 00 08 00 01 00 04 00 00 00 00")
             it.writeHex("37 0F")
-            it.writeQQ(qq)
-            it.write(md5(lazyEncode { md5Key -> md5Key.writeQQ(qq); md5Key.write(sessionKey) }))
+            it.writeQQ(robotQQ)
+            it.writeQQ(targetQQ)
+            it.write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
             it.writeHex("00 0B")
             it.writeRandom(2)
             it.writeInt(System.currentTimeMillis().toInt())
@@ -43,12 +45,13 @@ class ClientSendFriendMessagePacket(
                 TODO("复合消息构建")
             } else {
                 //Plain text
-                this.writeByte(0x01)
-                this.writeInt(message.length + 3)
-                this.writeByte(0x01)
-                this.writeInt(message.length)
-                this.write(message.toByteArray())
-            }
+                val bytes = message.toByteArray()
+                it.writeByte(0x01)
+                it.writeShort(bytes.size)
+                it.writeByte(0x01)
+                it.writeShort(bytes.size - 1)
+                it.write(bytes)
+            }//todo check
         }
     }
 }
