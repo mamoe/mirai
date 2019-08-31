@@ -201,9 +201,9 @@ fun Int.toLByteArray(): ByteArray = byteArrayOf(
 @ExperimentalUnsignedTypes
 fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator);
 
-private fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
+internal fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 
-private fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
+internal fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)

@@ -229,6 +229,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
 
 
             is ServerFriendMessageEventPacket -> {
+                println(packet.toString())
                 //friend message
             }
 

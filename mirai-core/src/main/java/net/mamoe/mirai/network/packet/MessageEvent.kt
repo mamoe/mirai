@@ -11,7 +11,7 @@ import java.io.DataInputStream
  */
 @PacketId("")//随后写入
 @ExperimentalUnsignedTypes
-open class ClientMessageResponsePacket(
+class ClientMessageResponsePacket(
         private val qq: Int,
         private val packetIdFromServer: ByteArray,
         private val sessionKey: ByteArray,

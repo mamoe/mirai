@@ -1,6 +1,6 @@
 package net.mamoe.mirai.network.packet
 
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.util.toUHexString
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.util.zip.GZIPInputStream
@@ -136,9 +136,6 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
                 }*/
             }
         }
-
-
-        MiraiLogger info this.toString()
     }
 }
 
