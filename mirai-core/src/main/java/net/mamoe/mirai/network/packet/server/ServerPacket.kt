@@ -1,7 +1,9 @@
 package net.mamoe.mirai.network.packet.server
 
 import net.mamoe.mirai.network.packet.Packet
+import net.mamoe.mirai.network.packet.client.session.ServerAccountInfoResponsePacketEncrypted
 import net.mamoe.mirai.network.packet.client.toHexString
+import net.mamoe.mirai.network.packet.client.touch.ServerHeartbeatResponsePacket
 import net.mamoe.mirai.network.packet.server.login.*
 import net.mamoe.mirai.network.packet.server.security.ServerLoginSuccessPacket
 import net.mamoe.mirai.network.packet.server.security.ServerSKeyResponsePacketEncrypted
@@ -68,10 +70,12 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                 "08 28 04 34" -> ServerSessionKeyResponsePacketEncrypted(stream)
 
 
-                else -> when (idHex.substring(0, 2)) {
+                else -> when (idHex.substring(0, 5)) {
                     "00 EC" -> ServerLoginSuccessPacket(stream)
                     "00 1D" -> ServerSKeyResponsePacketEncrypted(stream)
-                    // "00 5C" ->
+                    "00 5C" -> ServerAccountInfoResponsePacketEncrypted(stream)
+
+                    "00 58" -> ServerHeartbeatResponsePacket(stream)
 
                     else -> throw IllegalArgumentException(idHex)
                 }

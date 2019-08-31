@@ -97,15 +97,11 @@ fun DataOutputStream.writeVarInt(dec: UInt) {
     返回 (“”)
     .判断结束*/
 
-    if (dec < 256u) {
-        this.writeByte(dec.toByte().toInt())//drop other bits
+    when {
+        dec < 256u -> this.writeByte(dec.toByte().toInt())//drop other bits
+        dec > 256u -> this.writeShort(dec.toShort().toInt())
+        else -> throw IllegalArgumentException(dec.toString())
     }
-
-    if (dec > 256u) {
-        this.writeShort(dec.toShort().toInt())
-    }
-
-    throw UnsupportedOperationException()
 }
 
 fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, key: ByteArray) {

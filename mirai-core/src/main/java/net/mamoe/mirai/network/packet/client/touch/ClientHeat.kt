@@ -3,6 +3,8 @@ package net.mamoe.mirai.network.packet.client.touch
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.client.*
+import net.mamoe.mirai.network.packet.server.ServerPacket
+import java.io.DataInputStream
 import java.io.IOException
 
 /**
@@ -22,5 +24,11 @@ class ClientHeartbeatPacket(
         this.encryptAndWrite(sessionKey) {
             it.writeHex("00 01 00 01")
         }
+    }
+}
+
+class ServerHeartbeatResponsePacket(input: DataInputStream) : ServerPacket(input) {
+    override fun decode() {
+
     }
 }

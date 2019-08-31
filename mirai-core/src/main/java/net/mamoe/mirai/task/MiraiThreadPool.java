@@ -1,11 +1,11 @@
 package net.mamoe.mirai.task;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.*;
-import java.util.function.Consumer;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-public class MiraiThreadPool  extends ThreadPoolExecutor implements Closeable {
+public final class MiraiThreadPool extends ThreadPoolExecutor implements Closeable {
 
     protected MiraiThreadPool(){
         super(0,

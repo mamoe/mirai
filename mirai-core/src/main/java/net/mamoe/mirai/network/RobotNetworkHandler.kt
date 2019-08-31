@@ -4,9 +4,10 @@ import io.netty.channel.Channel
 import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
-import net.mamoe.mirai.network.packet.client.session.ClientHandshake1Packet
-import net.mamoe.mirai.network.packet.client.session.ClientLoginStatusPacket
-import net.mamoe.mirai.network.packet.client.session.ClientSKeyRequestPacket
+import net.mamoe.mirai.network.packet.client.session.*
+import net.mamoe.mirai.network.packet.client.touch.ClientHeartbeatPacket
+import net.mamoe.mirai.network.packet.client.touch.ClientRefreshSKeyRequestPacket
+import net.mamoe.mirai.network.packet.client.touch.ServerHeartbeatResponsePacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.client.writeRandom
 import net.mamoe.mirai.network.packet.server.ServerPacket
@@ -23,6 +24,7 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.util.*
+import kotlin.system.exitProcess
 
 /**
  * A RobotNetworkHandler is used to connect with Tencent servers.
@@ -104,16 +106,16 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             is ServerLoginResponseVerificationCodePacket -> {
                 //[token00BA]来源之一: 验证码
                 this.token00BA = packet.token00BA
-                if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
-                    this.sequence = 1
-                    sendPacket(ClientLoginVerificationCodePacket(this.number, this.token0825, this.sequence, this.token00BA))
-                }
 
                 with(MiraiServer.getInstance().parentFolder + "verifyCode.png") {
                     ByteArrayInputStream(packet.verifyCode).transferTo(FileOutputStream(this))
                     println("验证码已写入到 " + this.path)
                 }
 
+                if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
+                    this.sequence = 1
+                    sendPacket(ClientLoginVerificationCodePacket(this.number, this.token0825, this.sequence, this.token00BA))
+                }
 
             }
 
@@ -162,8 +164,11 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
 
             is ServerSessionKeyResponsePacket -> {
                 this.sessionKey = packet.sessionKey
+                MiraiTaskManager.getInstance().repeatingTask({
+                    sendPacket(ClientHeartbeatPacket(this.number, this.sessionKey))
+                }, 90000)
                 this.tlv0105 = packet.tlv0105
-                sendPacket(ClientLoginStatusPacket(this.number, sessionKey, ClientLoginStatus.ONLINE))
+                sendPacket(ClientLoginStatusPacket(this.number, this.sessionKey, ClientLoginStatus.ONLINE))
             }
 
             is ServerLoginSuccessPacket -> {
@@ -175,10 +180,18 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                 this.cookies = "uin=o" + this.number + ";skey=" + this.sKey + ";"
 
                 MiraiTaskManager.getInstance().repeatingTask({
-                    TODO("时钟_refreshSkey")
+                    sendPacket(ClientRefreshSKeyRequestPacket(this.number, this.sessionKey))
                 }, 1800000)
                 this.gtk = getGTK(sKey)
-                sendPacket(ClientHandshake1Packet(this.number, this.sessionKey))
+                sendPacket(ClientAccountInfoRequestPacket(this.number, this.sessionKey))
+            }
+
+            is ServerHeartbeatResponsePacket -> {
+
+            }
+
+            is ServerAccountInfoResponsePacket -> {
+
             }
 
             is ServerLoginResponseVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
@@ -187,6 +200,7 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             is ServerSessionKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this._0828_rec_decr_key))
             is ServerTouchResponsePacketEncrypted -> onPacketReceived(packet.decrypt())
             is ServerSKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
+            is ServerAccountInfoResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
 
             else -> throw IllegalArgumentException(packet.toString())
         }
@@ -252,7 +266,7 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
     @ExperimentalUnsignedTypes
     fun send(data: ByteArray) {
         try {
-            val socket = DatagramSocket((15314 + Math.random() * 10).toInt())
+            val socket = DatagramSocket((15314 + Math.random() * 100).toInt())
             socket.connect(this.serverAddress)
 
             val dp1 = DatagramPacket(ByteArray(22312), 22312)
@@ -268,9 +282,9 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             onPacketReceived(ServerPacket.ofByteArray(dp1.data.copyOfRange(0, i + 1)))
         } catch (e: Exception) {
             e.printStackTrace()
-            repeat(100) { println() }
-            println(DebugLogger.buff.toString())
-            System.exit(1)
+            //repeat(100) { println() }
+            //println(DebugLogger.buff.toString())
+            exitProcess(1)
         }
 
     }

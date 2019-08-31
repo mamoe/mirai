@@ -14,7 +14,12 @@ import net.mamoe.mirai.util.TEACryptor
  */
 @PacketId("00 BA 31 01")
 @ExperimentalUnsignedTypes
-class ClientLoginVerificationCodePacket(private val qq: Int, private val token0825: ByteArray, private val sequence: Int, private val token00BA: ByteArray) : ClientPacket() {
+class ClientLoginVerificationCodePacket(
+        private val qq: Int,
+        private val token0825: ByteArray,
+        private val sequence: Int,
+        private val token00BA: ByteArray
+) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)

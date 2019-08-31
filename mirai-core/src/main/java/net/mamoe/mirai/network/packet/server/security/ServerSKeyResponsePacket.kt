@@ -17,11 +17,6 @@ class ServerSKeyResponsePacket(input: DataInputStream) : ServerPacket(input) {
     }
 }
 
-/**
- * Encrypted using [0828_rec_decr_key], decrypting in RobotNetworkHandler
- *
- * @author Him188moe
- */
 class ServerSKeyResponsePacketEncrypted(inputStream: DataInputStream) : ServerPacket(inputStream) {
     override fun decode() {
 
