@@ -3,7 +3,7 @@
 一个以<b>TIM QQ协议</b>驱动的JAVA(+Kotlin) QQ机器人服务端核心  
 我们坚持免费与开源  
   
-项目处于快速开发阶段  
+项目处于快速开发阶段, 现在已经可以接受群聊/好友消息. 
 协议来自网络的易语言开源软件  
 一切开发旨在学习, 请勿用于非法用途  
 
@@ -19,8 +19,9 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与�
 - [x] Network - Touch  
 - [X] Network - Login 
 - [X] Network - Session
-- [ ] Network - Message **(Working on)**  
-- [ ] Network - Events  
+- [X] Network - Message Receive
+- [X] Network - Message Send
+- [ ] Network - Events **(Working on)**  
 
 <br>
 
