@@ -7,9 +7,6 @@
 协议来自网络的易语言开源软件  
 一切开发旨在学习, 请勿用于非法用途  
 
-### 我们会坚持开发, 但是,
-![LV7_YX10AQ5TW@E~308_0JN.png](https://i.loli.net/2019/08/24/oQIzhaLvyJOeW1f.png)
-
 ### 代码结构
 Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与插件相关性强(或任何其他在二次开发中容易接触的部分)均使用 Java 完成.
 
@@ -19,14 +16,17 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与�
 - [x] Network - Touch  
 - [X] Network - Login 
 - [X] Network - Session
-- [X] Network - Message Receive
-- [X] Network - Message Send
+- [X] Network - Message Receiving
+- [ ] Network - Message Sending **(Working on)**  
 - [ ] Network - Events **(Working on)**  
+- [ ] Robot - Friend/group list
+- [ ] Message Section
+- [ ] Contact
 
 <br>
 
-A JAVA(+Kotlin) powered open-sources project under GPL license<br>
-It use protocols from <i>TIM QQ</i>, meaning it won't be affect by the close of <i>smart QQ</i><br>
+A JAVA(+Kotlin) powered open-source project under GPL license<br>
+It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
 The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
 
 <br>
@@ -37,7 +37,7 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 - Kotlin
 ### 插件开发
 ``` php
-    to be continue
+    to be continued
     ...
 ```
 
@@ -48,7 +48,7 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 - Kotlin
 ### Plugin Developments
 ``` php
-    to be continue
+    to be continued
     ...
 ```
 
