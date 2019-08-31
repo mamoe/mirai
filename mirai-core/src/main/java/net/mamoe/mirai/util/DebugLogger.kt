@@ -24,11 +24,11 @@ fun ByteArray.decryptionDebugLogging() {
 }
 
 fun ServerPacket.logging() {
-    DebugLogger.buff.append(this.toString())
+    DebugLogger.buff.append(this.toString()).append("\n")
 
 }
 
 @ExperimentalUnsignedTypes
 fun ClientPacket.logging() {
-    DebugLogger.buff.append(this.toString())
+    DebugLogger.buff.append(this.toString()).append("\n")
 }

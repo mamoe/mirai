@@ -1,18 +1,24 @@
 package net.mamoe.mirai.network
 
 import io.netty.channel.Channel
+import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.network.packet.client.ClientPacket
 import net.mamoe.mirai.network.packet.client.login.*
+import net.mamoe.mirai.network.packet.client.session.ClientHandshake1Packet
+import net.mamoe.mirai.network.packet.client.session.ClientLoginStatusPacket
+import net.mamoe.mirai.network.packet.client.session.ClientSKeyRequestPacket
 import net.mamoe.mirai.network.packet.client.writeHex
 import net.mamoe.mirai.network.packet.client.writeRandom
 import net.mamoe.mirai.network.packet.server.ServerPacket
 import net.mamoe.mirai.network.packet.server.login.*
-import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacket
-import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacketEncrypted
+import net.mamoe.mirai.network.packet.server.security.*
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
+import net.mamoe.mirai.task.MiraiTaskManager
 import net.mamoe.mirai.util.*
 import net.mamoe.mirai.utils.MiraiLogger
+import java.io.ByteArrayInputStream
+import java.io.FileOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
@@ -24,6 +30,7 @@ import java.util.*
  * @author Him188moe
  */
 class RobotNetworkHandler(val number: Int, private val password: String) {
+
     private var sequence: Int = 0
 
     private var channel: Channel? = null
@@ -36,16 +43,23 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
 
     private lateinit var serverAddress: InetSocketAddress
 
-    private lateinit var token00BA: ByteArray
+    private lateinit var token00BA: ByteArray //这些数据全部是login用的
     private lateinit var token0825: ByteArray
     private var loginTime: Int = 0
     private lateinit var loginIP: String
     private var tgtgtKey: ByteArray? = null
+    private var tlv0105: ByteArray
+    private lateinit var _0828_rec_decr_key: ByteArray
+
+
+    private lateinit var sessionKey: ByteArray//这两个是登录成功后得到的
+    private lateinit var sKey: String
 
     /**
-     * Kind of key, similar to sessionKey
+     * Used to access web API(for friends list etc.)
      */
-    private var tlv0105: ByteArray
+    private lateinit var cookies: String
+    private var gtk: Int = 0
 
     init {
         tlv0105 = lazyEncode {
@@ -57,11 +71,6 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
         }
     }
 
-    private lateinit var sessionKey: ByteArray
-    /**
-     * Kind of key, similar to sessionKey
-     */
-    private lateinit var _0828_rec_decr_key: ByteArray
 
     @ExperimentalUnsignedTypes
     private var md5_32: ByteArray = getRandomKey(32)
@@ -99,6 +108,12 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                     this.sequence = 1
                     sendPacket(ClientLoginVerificationCodePacket(this.number, this.token0825, this.sequence, this.token00BA))
                 }
+
+                with(MiraiServer.getInstance().parentFolder + "verifyCode.png") {
+                    ByteArrayInputStream(packet.verifyCode).transferTo(FileOutputStream(this))
+                    println("验证码已写入到 " + this.path)
+                }
+
 
             }
 
@@ -148,12 +163,30 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
             is ServerSessionKeyResponsePacket -> {
                 this.sessionKey = packet.sessionKey
                 this.tlv0105 = packet.tlv0105
+                sendPacket(ClientLoginStatusPacket(this.number, sessionKey, ClientLoginStatus.ONLINE))
             }
 
+            is ServerLoginSuccessPacket -> {
+                sendPacket(ClientSKeyRequestPacket(this.number, this.sessionKey))
+            }
+
+            is ServerSKeyResponsePacket -> {
+                this.sKey = packet.sKey
+                this.cookies = "uin=o" + this.number + ";skey=" + this.sKey + ";"
+
+                MiraiTaskManager.getInstance().repeatingTask({
+                    TODO("时钟_refreshSkey")
+                }, 1800000)
+                this.gtk = getGTK(sKey)
+                sendPacket(ClientHandshake1Packet(this.number, this.sessionKey))
+            }
+
+            is ServerLoginResponseVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
             is ServerLoginResponseResendPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
             is ServerLoginResponseSuccessPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
             is ServerSessionKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this._0828_rec_decr_key))
             is ServerTouchResponsePacketEncrypted -> onPacketReceived(packet.decrypt())
+            is ServerSKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
 
             else -> throw IllegalArgumentException(packet.toString())
         }
@@ -328,3 +361,4 @@ private lateinit var ctx: ChannelHandlerContext
         }
     }*/
 }
+

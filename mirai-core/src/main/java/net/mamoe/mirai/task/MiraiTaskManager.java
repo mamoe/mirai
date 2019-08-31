@@ -1,7 +1,6 @@
 package net.mamoe.mirai.task;
 
 
-import net.mamoe.mirai.MiraiServer;
 import net.mamoe.mirai.event.MiraiEventHook;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 
@@ -90,26 +89,26 @@ public class MiraiTaskManager {
      定时任务
      */
 
-    public void repeatingTask(Runnable runnable, long interval){
-        this.repeatingTask(runnable,interval, MiraiTaskExceptionHandler.byDefault());
+    public void repeatingTask(Runnable runnable, long intervalMillis) {
+        this.repeatingTask(runnable, intervalMillis, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public void repeatingTask(Runnable runnable, long interval,  MiraiTaskExceptionHandler handler){
-        this.repeatingTask(runnable,interval,a -> true,handler);
+    public void repeatingTask(Runnable runnable, long intervalMillis, MiraiTaskExceptionHandler handler) {
+        this.repeatingTask(runnable, intervalMillis, a -> true, handler);
     }
 
-    public void repeatingTask(Runnable runnable, long interval, int times){
-        this.repeatingTask(runnable,interval,times, MiraiTaskExceptionHandler.byDefault());
+    public void repeatingTask(Runnable runnable, long intervalMillis, int times) {
+        this.repeatingTask(runnable, intervalMillis, times, MiraiTaskExceptionHandler.byDefault());
     }
 
-    public void repeatingTask(Runnable runnable, long interval, int times,  MiraiTaskExceptionHandler handler){
+    public void repeatingTask(Runnable runnable, long intervalMillis, int times, MiraiTaskExceptionHandler handler) {
         AtomicInteger integer = new AtomicInteger(times-1);
         this.repeatingTask(
-                runnable,interval, a ->  integer.getAndDecrement() > 0, handler
+                runnable, intervalMillis, a -> integer.getAndDecrement() > 0, handler
         );
     }
 
-    public <D extends Runnable> void repeatingTask(D runnable, long interval, Predicate<D> shouldContinue, MiraiTaskExceptionHandler handler){
+    public <D extends Runnable> void repeatingTask(D runnable, long intervalMillis, Predicate<D> shouldContinue, MiraiTaskExceptionHandler handler) {
         new Thread(() -> {
             do {
                 this.pool.execute(() -> {
@@ -120,7 +119,7 @@ public class MiraiTaskManager {
                     }
                 });
                 try {
-                    Thread.sleep(interval);
+                    Thread.sleep(intervalMillis);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -128,10 +127,10 @@ public class MiraiTaskManager {
         }).start();
     }
 
-    public void deletingTask(Runnable runnable, long interval){
+    public void deletingTask(Runnable runnable, long intervalMillis) {
         new Thread(() -> {
             try{
-                Thread.sleep(interval);
+                Thread.sleep(intervalMillis);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

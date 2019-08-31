@@ -3,6 +3,9 @@ package net.mamoe.mirai.network.packet.server
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.client.toHexString
 import net.mamoe.mirai.network.packet.server.login.*
+import net.mamoe.mirai.network.packet.server.security.ServerLoginSuccessPacket
+import net.mamoe.mirai.network.packet.server.security.ServerSKeyResponsePacketEncrypted
+import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacketEncrypted
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
 import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
 import net.mamoe.mirai.util.getAllDeclaredFields
@@ -28,7 +31,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
             return when (val idHex = stream.readInt().toHexString(" ")) {
                 "08 25 31 01" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
+
                 "08 25 31 02" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
+
                 "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
                     when (bytes.size) {
                         271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (idHex) {
@@ -37,7 +42,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                                 println("flag=$idHex"); ServerLoginResponseResendPacket.Flag.OTHER
                             }
                         })
-                        871 -> return ServerLoginResponseVerificationCodePacket(stream, bytes.size)
+                        871 -> return ServerLoginResponseVerificationCodePacketEncrypted(stream)
                     }
 
                     if (bytes.size > 700) {
@@ -53,14 +58,23 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         359 -> ServerLoginResponseFailedPacket.State.TAKEN_BACK
 
                         //unknown
-                        63 -> throw IllegalArgumentException(bytes.size.toString())//可能是已经完成登录, 服务器拒绝第二次登录
-                        351 -> throw IllegalArgumentException(bytes.size.toString())
+                        63 -> throw IllegalArgumentException(bytes.size.toString() + " (Already logged in)")//可能是已经完成登录, 服务器拒绝第二次登录
+                        351 -> throw IllegalArgumentException(bytes.size.toString() + " (Illegal package data)")//包数据有误
 
                         else -> throw IllegalArgumentException(bytes.size.toString())
                     }, stream)
                 }
 
-                else -> throw IllegalArgumentException(idHex)
+                "08 28 04 34" -> ServerSessionKeyResponsePacketEncrypted(stream)
+
+
+                else -> when (idHex.substring(0, 2)) {
+                    "00 EC" -> ServerLoginSuccessPacket(stream)
+                    "00 1D" -> ServerSKeyResponsePacketEncrypted(stream)
+                    // "00 5C" ->
+
+                    else -> throw IllegalArgumentException(idHex)
+                }
             }
         }
     }
@@ -78,10 +92,6 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
     }
 }
 
-
-fun DataInputStream.skipUntil(byte: Byte) {
-    while (readByte() != byte);
-}
 
 fun DataInputStream.readUntil(byte: Byte): ByteArray {
     var buff = byteArrayOf()

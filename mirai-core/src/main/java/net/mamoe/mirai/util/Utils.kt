@@ -3,6 +3,7 @@ package net.mamoe.mirai.util
 import net.mamoe.mirai.network.Protocol
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
+import java.io.File
 import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
@@ -77,6 +78,24 @@ fun getRandomKey(length: Int): ByteArray {
     val bytes = LinkedList<Byte>()
     repeat(length) { bytes.add((Math.random() * 255).toByte()) }
     return bytes.toByteArray()
+}
+
+operator fun File.plus(child: String): File = File(this, child)
+
+private const val GTK_BASE_VALUE: Int = 5381
+
+fun getGTK(sKey: String): Int {
+    var value = GTK_BASE_VALUE
+    for (c in sKey.toCharArray()) {
+        value += (value shl 5) + c.toInt()
+    }
+
+    value = value and Int.MAX_VALUE
+    return value
+}
+
+fun main() {
+    println(getGTK("ABCDEFGEFC"))
 }
 
 fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }

@@ -21,8 +21,11 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 public class MiraiServer {
-    @Getter
     private static MiraiServer instance;
+
+    public static MiraiServer getInstance() {
+        return instance;
+    }
 
     //mirai version
     private final static String MIRAI_VERSION = "1.0.0";
@@ -35,7 +38,7 @@ public class MiraiServer {
     private boolean unix;
 
     @Getter//file path
-    private File parentFolder;
+    public File parentFolder;
 
     @Getter
     MiraiEventManager eventManager;
