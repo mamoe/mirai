@@ -1,7 +1,5 @@
-package net.mamoe.mirai.network.packet.server.event
+package net.mamoe.mirai.network.packet
 
-import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.goto
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream

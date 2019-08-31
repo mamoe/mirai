@@ -1,16 +1,7 @@
-package net.mamoe.mirai.network.packet.server
+package net.mamoe.mirai.network.packet
 
-import net.mamoe.mirai.network.packet.Packet
-import net.mamoe.mirai.network.packet.client.session.ServerAccountInfoResponsePacketEncrypted
-import net.mamoe.mirai.network.packet.client.toHexString
-import net.mamoe.mirai.network.packet.client.touch.ServerHeartbeatResponsePacket
-import net.mamoe.mirai.network.packet.server.event.ServerMessageEventPacketRawEncoded
-import net.mamoe.mirai.network.packet.server.login.*
-import net.mamoe.mirai.network.packet.server.security.ServerLoginSuccessPacket
-import net.mamoe.mirai.network.packet.server.security.ServerSKeyResponsePacketEncrypted
-import net.mamoe.mirai.network.packet.server.security.ServerSessionKeyResponsePacketEncrypted
-import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
-import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
+import net.mamoe.mirai.network.packet.login.*
+import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.util.getAllDeclaredFields
 import net.mamoe.mirai.util.hexToBytes
 import net.mamoe.mirai.util.toUHexString
@@ -73,9 +64,6 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                 "08 28 04 34" -> ServerSessionKeyResponsePacketEncrypted(stream)
 
 
-                "00 81 EC 78" -> UnknownPacket(stream)
-                "00 81 AD 7A" -> UnknownPacket(stream)
-
                 else -> when (idHex.substring(0, 5)) {
                     "00 EC" -> ServerLoginSuccessPacket(stream)
                     "00 1D" -> ServerSKeyResponsePacketEncrypted(stream)
@@ -87,6 +75,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
 
                     "00 CE", "00 17" -> ServerMessageEventPacketRawEncoded(stream, idHex.hexToBytes())
+
+                    "00 81" -> UnknownServerPacket(stream)
 
                     else -> throw IllegalArgumentException(idHex)
                 }

@@ -5,7 +5,7 @@ import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
 import net.mamoe.mirai.network.RobotNetworkHandler;
-import net.mamoe.mirai.network.packet.client.touch.ClientTouchPacket;
+import net.mamoe.mirai.network.packet.ClientTouchPacket;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;

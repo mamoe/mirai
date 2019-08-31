@@ -1,20 +1,10 @@
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.MiraiServer
-import net.mamoe.mirai.network.packet.client.ClientPacket
-import net.mamoe.mirai.network.packet.client.login.*
-import net.mamoe.mirai.network.packet.client.session.*
-import net.mamoe.mirai.network.packet.client.touch.ClientHeartbeatPacket
-import net.mamoe.mirai.network.packet.client.touch.ClientRefreshSKeyRequestPacket
-import net.mamoe.mirai.network.packet.client.touch.ServerHeartbeatResponsePacket
-import net.mamoe.mirai.network.packet.client.writeHex
-import net.mamoe.mirai.network.packet.client.writeRandom
-import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.event.*
-import net.mamoe.mirai.network.packet.server.login.*
-import net.mamoe.mirai.network.packet.server.security.*
-import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacket
-import net.mamoe.mirai.network.packet.server.touch.ServerTouchResponsePacketEncrypted
+import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.network.packet.login.*
+import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacket
+import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.util.*
 import net.mamoe.mirai.utils.MiraiLogger
@@ -216,7 +206,7 @@ class RobotNetworkHandler(val number: Int, private val password: String) {
                 this.cookies = "uin=o" + this.number + ";skey=" + this.sKey + ";"
 
                 MiraiThreadPool.getInstance().scheduleWithFixedDelay({
-                    sendPacket(ClientRefreshSKeyRequestPacket(this.number, this.sessionKey))
+                    sendPacket(ClientSKeyRefreshmentRequestPacket(this.number, this.sessionKey))
                 }, 1800000, 1800000, TimeUnit.MILLISECONDS)
 
                 this.gtk = getGTK(sKey)

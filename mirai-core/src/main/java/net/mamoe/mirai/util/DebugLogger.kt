@@ -1,7 +1,7 @@
 package net.mamoe.mirai.util
 
-import net.mamoe.mirai.network.packet.client.ClientPacket
-import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.ClientPacket
+import net.mamoe.mirai.network.packet.ServerPacket
 
 /**
  * @author Him188moe

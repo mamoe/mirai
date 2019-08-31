@@ -1,6 +1,6 @@
-package net.mamoe.mirai.network.packet.server.security
+package net.mamoe.mirai.network.packet.login
 
-import net.mamoe.mirai.network.packet.server.ServerPacket
+import net.mamoe.mirai.network.packet.ServerPacket
 import java.io.DataInputStream
 
 /**

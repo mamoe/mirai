@@ -1,4 +1,4 @@
-import net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
+import net.mamoe.mirai.network.packet.login.ClientPasswordSubmissionPacket
 import net.mamoe.mirai.util.toUHexString
 
 @ExperimentalUnsignedTypes
@@ -42,6 +42,6 @@ fun main(){
     packet.verifyCode.inputStream().transferTo(FileOutputStream(System.getProperty("user.dir") + "/5.png"))
     */
 
-    val packet = ClientPasswordSubmissionPacket(1994701021,"xiaoqqq",131513,"123.123.123.123","tgtgtKey".toByteArray(),"".toByteArray())
+    val packet = ClientPasswordSubmissionPacket(1994701021, "xiaoqqq", 131513, "123.123.123.123", "tgtgtKey".toByteArray(), "".toByteArray())
     packet.encodeToByteArray().toUByteArray().toUHexString(" ")
 }

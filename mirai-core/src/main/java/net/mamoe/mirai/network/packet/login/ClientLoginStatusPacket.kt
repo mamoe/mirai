@@ -1,8 +1,7 @@
-package net.mamoe.mirai.network.packet.client.session
+package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.network.packet.client.*
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.util.ClientLoginStatus
 
 /**

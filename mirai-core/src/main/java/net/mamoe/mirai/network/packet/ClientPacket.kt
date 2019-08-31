@@ -1,9 +1,7 @@
-package net.mamoe.mirai.network.packet.client
+package net.mamoe.mirai.network.packet
 
 import lombok.Getter
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.Packet
-import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.util.*
 import java.io.DataOutputStream
 import java.io.IOException

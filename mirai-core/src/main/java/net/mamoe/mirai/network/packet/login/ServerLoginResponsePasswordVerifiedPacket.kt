@@ -1,10 +1,10 @@
-package net.mamoe.mirai.network.packet.server.login
+package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.server.ServerPacket
-import net.mamoe.mirai.network.packet.server.goto
-import net.mamoe.mirai.network.packet.server.readNBytes
-import net.mamoe.mirai.network.packet.server.readVarString
+import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.network.packet.goto
+import net.mamoe.mirai.network.packet.readNBytes
+import net.mamoe.mirai.network.packet.readVarString
 import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.TestedSuccessfully
 import net.mamoe.mirai.util.hexToBytes
