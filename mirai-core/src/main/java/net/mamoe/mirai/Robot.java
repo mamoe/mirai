@@ -1,6 +1,8 @@
 package net.mamoe.mirai;
 
 import lombok.Getter;
+import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.message.Message;
 import net.mamoe.mirai.network.RobotNetworkHandler;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
 
