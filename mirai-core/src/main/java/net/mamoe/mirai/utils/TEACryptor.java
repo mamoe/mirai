@@ -1,4 +1,4 @@
-package net.mamoe.mirai.util;
+package net.mamoe.mirai.utils;
 
 import net.mamoe.mirai.network.Protocol;
 
@@ -239,13 +239,10 @@ public class TEACryptor {
     }
 
     public byte[] encrypt(byte[] plaintext) {
-        DebugLoggerKt.encryptionDebugLogging(plaintext);
-        //System.out.println("TEA加密, 原文=" + Utils.INSTANCE.toHexString(plaintext, ""));
         return encrypt(plaintext, 0, plaintext.length);
     }
 
     public byte[] decrypt(byte[] ciphertext) {
-        DebugLoggerKt.decryptionDebugLogging(ciphertext);
         return decrypt(ciphertext, 0, ciphertext.length);
     }
 }

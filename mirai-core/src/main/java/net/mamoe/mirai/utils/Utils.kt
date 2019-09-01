@@ -1,4 +1,4 @@
-package net.mamoe.mirai.util
+package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.network.Protocol
 import java.io.ByteArrayOutputStream
@@ -8,30 +8,15 @@ import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
 
-/**
- * @author Him188moe
- */
-object Utils {
-    fun toHexString(byteArray: ByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
-        var ret = it.toString(16).toUpperCase()
-        if (ret.length == 1) {
-            ret = "0$ret"
-        }
-        return@joinToString ret
+fun ByteArray.toHexString(): String = toHexString(" ")
+fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(separator) {
+    var ret = it.toString(16).toUpperCase()
+    if (ret.length == 1) {
+        ret = "0$ret"
     }
-
-    @ExperimentalUnsignedTypes
-    fun toHexString(byteArray: UByteArray, separator: String = " "): String = byteArray.joinToString(separator) {
-        var ret = it.toString(16).toUpperCase()
-        if (ret.length == 1) {
-            ret = "0$ret"
-        }
-        return@joinToString ret
-    }
+    return@joinToString ret
 }
 
-fun ByteArray.toHexString(): String = toHexString(" ")
-fun ByteArray.toHexString(separator: String = " "): String = Utils.toHexString(this, separator)
 @ExperimentalUnsignedTypes
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
@@ -39,7 +24,13 @@ fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray(
 fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 
 @ExperimentalUnsignedTypes
-fun UByteArray.toUHexString(separator: String = " "): String = Utils.toHexString(this, separator)
+fun UByteArray.toUHexString(separator: String = " "): String = this.joinToString(separator) {
+    var ret = it.toString(16).toUpperCase()
+    if (ret.length == 1) {
+        ret = "0$ret"
+    }
+    return@joinToString ret
+}
 
 @ExperimentalUnsignedTypes
 fun UByteArray.toUHexString(): String = this.toUHexString(" ")
@@ -92,10 +83,6 @@ fun getGTK(sKey: String): Int {
 
     value = value and Int.MAX_VALUE
     return value
-}
-
-fun main() {
-    println(getGTK("ABCDEFGEFC"))
 }
 
 fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }

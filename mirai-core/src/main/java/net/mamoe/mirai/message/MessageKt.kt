@@ -1,5 +1,7 @@
 package net.mamoe.mirai.message
 
+import net.mamoe.mirai.message.defaults.PlainText
+
 /**
  * 实现使用 '+' 操作符连接 [Message] 与 [Message]
  */

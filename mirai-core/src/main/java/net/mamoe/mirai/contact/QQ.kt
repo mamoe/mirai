@@ -1,6 +1,6 @@
 package net.mamoe.mirai.contact
 
-import net.mamoe.mirai.message.At
+import net.mamoe.mirai.message.defaults.At
 
 /**
  * @author Him188moe

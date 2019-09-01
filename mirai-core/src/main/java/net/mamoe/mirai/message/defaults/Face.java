@@ -1,9 +1,12 @@
-package net.mamoe.mirai.message;
+package net.mamoe.mirai.message.defaults;
+
+import net.mamoe.mirai.message.FaceID;
+import net.mamoe.mirai.message.Message;
 
 /**
  * @author Him188moe
  */
-public class Face extends Message {
+public final class Face extends Message {
     private final FaceID id;
 
     public Face(FaceID id) {

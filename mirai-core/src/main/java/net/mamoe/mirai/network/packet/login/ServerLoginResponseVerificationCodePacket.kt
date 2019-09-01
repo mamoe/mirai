@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.packet.login
 import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.dataInputStream
 import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.util.TEACryptor
+import net.mamoe.mirai.utils.TEACryptor
 import java.io.DataInputStream
 
 /**

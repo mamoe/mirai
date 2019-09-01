@@ -1,5 +1,5 @@
 import net.mamoe.mirai.network.packet.login.ClientPasswordSubmissionPacket
-import net.mamoe.mirai.util.toUHexString
+import net.mamoe.mirai.utils.toUHexString
 
 @ExperimentalUnsignedTypes
 fun main(){

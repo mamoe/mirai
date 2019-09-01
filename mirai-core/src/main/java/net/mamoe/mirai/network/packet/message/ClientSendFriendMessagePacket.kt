@@ -2,7 +2,8 @@ package net.mamoe.mirai.network.packet.message
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.util.lazyEncode
+import net.mamoe.mirai.utils.lazyEncode
+import net.mamoe.mirai.utils.toUHexString
 
 /**
  * @author Him188moe
@@ -54,4 +55,15 @@ class ClientSendFriendMessagePacket(
             }//todo check
         }
     }
+}
+
+fun main() {
+    println(lazyEncode {
+        val bytes = "hahaha".toByteArray()
+        it.writeByte(0x01)
+        it.writeShort(bytes.size)
+        it.writeByte(0x01)
+        it.writeShort(bytes.size - 1)
+        it.write(bytes)
+    }.toUHexString())
 }

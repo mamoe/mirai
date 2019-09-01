@@ -1,6 +1,9 @@
 package net.mamoe.mirai.message;
 
 import net.mamoe.mirai.contact.QQ;
+import net.mamoe.mirai.message.defaults.At;
+import net.mamoe.mirai.message.defaults.MessageChain;
+import net.mamoe.mirai.message.defaults.PlainText;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.image.BufferedImage;

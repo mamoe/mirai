@@ -2,9 +2,9 @@ package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
-import net.mamoe.mirai.util.getAllDeclaredFields
-import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.toUHexString
+import net.mamoe.mirai.utils.getAllDeclaredFields
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
 /**

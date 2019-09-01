@@ -1,6 +1,6 @@
 package net.mamoe.mirai.network.packet
 
-import net.mamoe.mirai.util.toUHexString
+import net.mamoe.mirai.utils.toUHexString
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.util.zip.GZIPInputStream

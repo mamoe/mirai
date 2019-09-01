@@ -2,7 +2,8 @@ package net.mamoe.mirai.network.packet
 
 import lombok.Getter
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.util.*
+import net.mamoe.mirai.util.TestedSuccessfully
+import net.mamoe.mirai.utils.*
 import java.io.DataOutputStream
 import java.io.IOException
 import java.net.InetAddress

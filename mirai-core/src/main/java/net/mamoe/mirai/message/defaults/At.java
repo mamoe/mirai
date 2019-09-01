@@ -1,6 +1,7 @@
-package net.mamoe.mirai.message;
+package net.mamoe.mirai.message.defaults;
 
 import net.mamoe.mirai.contact.QQ;
+import net.mamoe.mirai.message.Message;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;

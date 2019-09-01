@@ -1,5 +1,6 @@
-package net.mamoe.mirai.message;
+package net.mamoe.mirai.message.defaults;
 
+import net.mamoe.mirai.message.Message;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 public final class MessageChain extends Message {
     private LinkedList<Message> list = new LinkedList<>();
 
-    MessageChain(@NotNull Message head, @NotNull Message tail) {
+    public MessageChain(@NotNull Message head, @NotNull Message tail) {
         Objects.requireNonNull(head);
         Objects.requireNonNull(tail);
 

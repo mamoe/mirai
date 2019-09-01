@@ -1,4 +1,4 @@
-package net.mamoe.mirai.util;
+package net.mamoe.mirai.utils;
 
 /**
  * @author Him188moe

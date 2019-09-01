@@ -1,4 +1,6 @@
-package net.mamoe.mirai.message;
+package net.mamoe.mirai.message.defaults;
+
+import net.mamoe.mirai.message.Message;
 
 /**
  * @author Him188moe

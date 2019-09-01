@@ -47,14 +47,17 @@ public class MiraiEventManager {
         if (!hook.isMount()) {
             hook.setMount(true);
             hooksLock.writeLock().lock();
-            if (!hooks.containsKey(hook.getEventClass())) {
-                hooks.put(hook.getEventClass(), new LinkedList<>() {{
-                    add(hook);
-                }});
-            } else {
-                hooks.get(hook.getEventClass()).add(hook);
+            try {
+                if (!hooks.containsKey(hook.getEventClass())) {
+                    hooks.put(hook.getEventClass(), new LinkedList<>() {{
+                        add(hook);
+                    }});
+                } else {
+                    hooks.get(hook.getEventClass()).add(hook);
+                }
+            } finally {
+                hooksLock.writeLock().unlock();
             }
-            hooksLock.writeLock().unlock();
         }
     }
 
@@ -98,16 +101,19 @@ public class MiraiEventManager {
 
     public void broadcastEvent(MiraiEvent event) {
         hooksLock.readLock().lock();
-        if (hooks.containsKey(event.getClass())) {
-            hooks.put(event.getClass(),
-                    hooks.get(event.getClass())
-                            .stream()
-                            .sorted(Comparator.comparingInt(MiraiEventHook::getPriority))
-                            .filter(a -> !a.accept(event))
-                            .collect(Collectors.toList())
-            );
+        try {
+            if (hooks.containsKey(event.getClass())) {
+                hooks.put(event.getClass(),
+                        hooks.get(event.getClass())
+                                .stream()
+                                .sorted(Comparator.comparingInt(MiraiEventHook::getPriority))
+                                .filter(a -> !a.accept(event))
+                                .collect(Collectors.toList())
+                );
+            }
+        } finally {
+            hooksLock.readLock().unlock();
         }
-        hooksLock.readLock().unlock();
     }
 
 

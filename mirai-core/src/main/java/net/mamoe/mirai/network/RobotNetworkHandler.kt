@@ -9,8 +9,7 @@ import net.mamoe.mirai.network.packet.message.ClientSendFriendMessagePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.task.MiraiThreadPool
-import net.mamoe.mirai.util.*
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import java.io.ByteArrayInputStream
 import java.io.FileOutputStream
 import java.net.DatagramPacket
