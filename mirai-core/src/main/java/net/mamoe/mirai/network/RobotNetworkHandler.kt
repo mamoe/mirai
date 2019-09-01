@@ -6,6 +6,7 @@ import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.network.packet.message.ClientSendFriendMessagePacket
+import net.mamoe.mirai.network.packet.message.ClientSendGroupMessagePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.task.MiraiThreadPool
@@ -238,6 +239,9 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
 
             is ServerGroupMessageEventPacket -> {
                 //group message
+                if (packet.message == "牛逼") {
+                    sendPacket(ClientSendGroupMessagePacket(packet.group, this.number, this.sessionKey, "牛逼!"))
+                }
             }
 
             is UnknownServerEventPacket -> {

@@ -73,6 +73,10 @@ fun DataOutputStream.writeIP(ip: String) {
     }
 }
 
+@Throws(IOException::class)
+fun DataOutputStream.writeTime() {
+    this.writeInt(System.currentTimeMillis().toInt())
+}
 
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)

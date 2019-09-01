@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.packet.message
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.utils.lazyEncode
-import net.mamoe.mirai.utils.toUHexString
+import java.io.DataInputStream
 
 /**
  * @author Him188moe
@@ -31,9 +31,9 @@ class ClientSendFriendMessagePacket(
             it.write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
             it.writeHex("00 0B")
             it.writeRandom(2)
-            it.writeInt(System.currentTimeMillis().toInt())
+            it.writeTime()
             it.writeHex("00 00 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00")
-            it.writeInt(System.currentTimeMillis().toInt())
+            it.writeTime()
             it.writeRandom(4)
             it.writeHex("00 00 00 00 09 00 86 00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91")
             it.writeZero(2)
@@ -48,22 +48,17 @@ class ClientSendFriendMessagePacket(
                 //Plain text
                 val bytes = message.toByteArray()
                 it.writeByte(0x01)
-                it.writeShort(bytes.size)
+                it.writeShort(bytes.size + 3)
                 it.writeByte(0x01)
-                it.writeShort(bytes.size - 1)
+                it.writeShort(bytes.size)
                 it.write(bytes)
             }//todo check
         }
     }
 }
 
-fun main() {
-    println(lazyEncode {
-        val bytes = "hahaha".toByteArray()
-        it.writeByte(0x01)
-        it.writeShort(bytes.size)
-        it.writeByte(0x01)
-        it.writeShort(bytes.size - 1)
-        it.write(bytes)
-    }.toUHexString())
+@PacketId("00 CD")
+class ServerSendFriendMessageResponsePacket(input: DataInputStream) : ServerPacket(input) {
+    override fun decode() {
+    }
 }
