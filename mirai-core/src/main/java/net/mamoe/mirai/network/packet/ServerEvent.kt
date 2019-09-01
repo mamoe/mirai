@@ -148,6 +148,6 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
             val offset2 = input.readShort(101 + offset)
             input.goto(103 + offset).readVarString(offset2.toInt())
         }
-       // TODO("FRIEND 解析")
+       // TODO("FRIEND 解析")d
     }
 }
