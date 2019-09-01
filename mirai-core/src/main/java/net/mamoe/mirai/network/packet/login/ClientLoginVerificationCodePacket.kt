@@ -2,8 +2,8 @@ package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.util.ByteArrayDataOutputStream
-import net.mamoe.mirai.util.TEACryptor
+import net.mamoe.mirai.utils.ByteArrayDataOutputStream
+import net.mamoe.mirai.utils.TEACryptor
 
 /**
  * @author Him188moe

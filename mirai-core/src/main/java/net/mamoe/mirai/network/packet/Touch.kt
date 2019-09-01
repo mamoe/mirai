@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.util.*
+import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 import java.io.IOException
 

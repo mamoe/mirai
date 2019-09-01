@@ -2,15 +2,15 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.Robot
-import net.mamoe.mirai.event.MiraiEventManager
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.login.*
+import net.mamoe.mirai.network.packet.message.ClientSendFriendMessagePacket
+import net.mamoe.mirai.network.packet.message.ClientSendGroupMessagePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.task.MiraiThreadPool
-import net.mamoe.mirai.util.*
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import java.io.ByteArrayInputStream
 import java.io.FileOutputStream
 import java.net.DatagramPacket
@@ -196,7 +196,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
                 MiraiThreadPool.getInstance().scheduleWithFixedDelay({
                     sendPacket(ClientHeartbeatPacket(this.number, this.sessionKey))
                 }, 90000, 90000, TimeUnit.MILLISECONDS)
-                MiraiEventManager.getInstance().asyncBroadcastEvent(RobotLoginSucceedEvent(robot))
+                RobotLoginSucceedEvent(robot).broadcast()
                 this.tlv0105 = packet.tlv0105
                 sendPacket(ClientLoginStatusPacket(this.number, this.sessionKey, ClientLoginStatus.ONLINE))
             }
@@ -229,11 +229,19 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
 
 
             is ServerFriendMessageEventPacket -> {
+                println(packet.toString())
+                if (packet.message == "牛逼") {
+                    sendPacket(ClientSendFriendMessagePacket(this.number, packet.qq, this.sessionKey, "牛逼!!"))
+                }
+
                 //friend message
             }
 
             is ServerGroupMessageEventPacket -> {
                 //group message
+                if (packet.message == "牛逼") {
+                    sendPacket(ClientSendGroupMessagePacket(packet.group, this.number, this.sessionKey, "牛逼!"))
+                }
             }
 
             is UnknownServerEventPacket -> {

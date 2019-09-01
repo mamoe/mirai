@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.util.TEACryptor
+import net.mamoe.mirai.utils.TEACryptor
 import java.io.DataInputStream
 
 /**

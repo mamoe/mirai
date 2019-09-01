@@ -1,10 +1,12 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.packet.login.*
+import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
+import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
-import net.mamoe.mirai.util.getAllDeclaredFields
-import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.toUHexString
+import net.mamoe.mirai.utils.getAllDeclaredFields
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
 /**
@@ -77,6 +79,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     "00 CE", "00 17" -> ServerMessageEventPacketRawEncoded(stream, idHex.hexToBytes())
 
                     "00 81" -> UnknownServerPacket(stream)
+
+                    "00 CD" -> ServerSendFriendMessageResponsePacket(stream)
+                    "00 02" -> ServerSendGroupMessageResponsePacket(stream)
 
                     else -> throw IllegalArgumentException(idHex)
                 }

@@ -1,5 +1,8 @@
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.message.Message
+import net.mamoe.mirai.message.defaults.At
+
 /**
  * @author Him188moe
  */
@@ -8,19 +11,19 @@ class QQ(number: Int) : Contact(number) {
         Instances.qqs.add(this)
     }
 
-    override fun sendMessage(message: String) {
+    override fun sendMessage(message: Message) {
 
     }
 
-    override fun sendObjectMessage(message: String) {
+    override fun sendXMLMessage(message: String) {
 
     }
 
     /**
      * At(@) this account.
      */
-    fun at(): String {
-        return "[@$number]"
+    fun at(): At {
+        return At(this)
     }
 
 

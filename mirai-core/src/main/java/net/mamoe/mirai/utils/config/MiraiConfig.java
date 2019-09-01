@@ -1,14 +1,18 @@
 package net.mamoe.mirai.utils.config;
 
+import kotlin.io.FilesKt;
 import net.mamoe.mirai.MiraiServer;
-import net.mamoe.mirai.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.nio.charset.Charset;
+import java.util.LinkedHashMap;
+import java.util.Objects;
 
 /**
  * YAML-TYPE CONFIG
@@ -35,7 +39,7 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
         Yaml yaml = new Yaml(dumperOptions);
         String content = yaml.dump(this.sortedMap);
         try {
-            Utils.writeFile(this.root, content);
+            new ByteArrayInputStream(content.getBytes()).transferTo(new FileOutputStream(this.root));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -59,12 +63,7 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(dumperOptions);
-        try {
-            return yaml.loadAs(Utils.readFile(file), LinkedHashMap.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new LinkedHashMap<>();
+        return yaml.loadAs(String.join("\n", FilesKt.readLines(file, Charset.defaultCharset())), LinkedHashMap.class);
     }
 
 

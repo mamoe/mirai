@@ -2,7 +2,8 @@ package net.mamoe.mirai.network.packet
 
 import lombok.Getter
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.util.*
+import net.mamoe.mirai.util.TestedSuccessfully
+import net.mamoe.mirai.utils.*
 import java.io.DataOutputStream
 import java.io.IOException
 import java.net.InetAddress
@@ -72,6 +73,10 @@ fun DataOutputStream.writeIP(ip: String) {
     }
 }
 
+@Throws(IOException::class)
+fun DataOutputStream.writeTime() {
+    this.writeInt(System.currentTimeMillis().toInt())
+}
 
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)
@@ -201,9 +206,9 @@ fun Int.toLByteArray(): ByteArray = byteArrayOf(
 @ExperimentalUnsignedTypes
 fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator);
 
-private fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
+internal fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 
-private fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
+internal fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)

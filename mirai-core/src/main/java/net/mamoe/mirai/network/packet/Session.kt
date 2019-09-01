@@ -1,10 +1,10 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.util.ByteArrayDataOutputStream
-import net.mamoe.mirai.util.TEACryptor
-import net.mamoe.mirai.util.getRandomKey
-import net.mamoe.mirai.util.lazyEncode
+import net.mamoe.mirai.utils.ByteArrayDataOutputStream
+import net.mamoe.mirai.utils.TEACryptor
+import net.mamoe.mirai.utils.getRandomKey
+import net.mamoe.mirai.utils.lazyEncode
 import java.io.DataInputStream
 import java.net.InetAddress
 
@@ -68,7 +68,7 @@ class ClientSessionRequestPacket(
  *
  * @author Him188moe
  */
-class ServerSessionKeyResponsePacket(inputStream: DataInputStream, val dataLength: Int) : ServerPacket(inputStream) {
+class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val dataLength: Int) : ServerPacket(inputStream) {
     lateinit var sessionKey: ByteArray
     lateinit var tlv0105: ByteArray
 

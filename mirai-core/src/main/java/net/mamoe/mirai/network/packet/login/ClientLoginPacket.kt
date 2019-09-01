@@ -2,7 +2,11 @@ package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.util.*
+import net.mamoe.mirai.util.TestedSuccessfully
+import net.mamoe.mirai.utils.ByteArrayDataOutputStream
+import net.mamoe.mirai.utils.TEACryptor
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataOutputStream
 
 /**

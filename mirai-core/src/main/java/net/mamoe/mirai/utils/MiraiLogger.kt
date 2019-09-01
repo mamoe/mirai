@@ -38,4 +38,8 @@ object MiraiLogger {
 }
 
 
-fun log(any: Any?) = MiraiLogger.info(any)
+fun Any.logInfo() = MiraiLogger.info(this)
+
+fun Any.logDebug() = MiraiLogger.debug(this)
+
+fun Any.logError() = MiraiLogger.error(this)

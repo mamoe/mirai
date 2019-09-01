@@ -5,10 +5,10 @@ import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.goto
 import net.mamoe.mirai.network.packet.readNBytes
 import net.mamoe.mirai.network.packet.readVarString
-import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.TestedSuccessfully
-import net.mamoe.mirai.util.hexToBytes
-import net.mamoe.mirai.util.toUHexString
+import net.mamoe.mirai.utils.TEACryptor
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
 /**

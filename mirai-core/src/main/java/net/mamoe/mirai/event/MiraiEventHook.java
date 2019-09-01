@@ -39,20 +39,20 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
 
     public MiraiEventHook(Class<T> eventClass, Consumer<T> handler){
         this.eventClass = eventClass;
-        this.setHandler(handler);
+        this.handler(handler);
     }
 
-    public MiraiEventHook<T> setHandler(Consumer<T> handler){
+    public MiraiEventHook<T> handler(Consumer<T> handler) {
         this.handler = handler;
         return this;
     }
 
-    public MiraiEventHook<T> setPriority(int priority){
+    public MiraiEventHook<T> priority(int priority) {
         this.priority = priority;
         return this;
     }
 
-    public MiraiEventHook<T> setIgnoreCancelled(boolean ignoreCancelled){
+    public MiraiEventHook<T> ignoreCancelled(boolean ignoreCancelled) {
         this.ignoreCancelled = ignoreCancelled;
         return this;
     }

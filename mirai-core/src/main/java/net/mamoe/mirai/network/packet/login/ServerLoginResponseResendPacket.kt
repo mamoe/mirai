@@ -4,10 +4,10 @@ import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.dataInputStream
 import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.util.TEACryptor
 import net.mamoe.mirai.util.TestedSuccessfully
-import net.mamoe.mirai.util.hexToUBytes
-import net.mamoe.mirai.util.toUHexString
+import net.mamoe.mirai.utils.TEACryptor
+import net.mamoe.mirai.utils.hexToUBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
 /**
