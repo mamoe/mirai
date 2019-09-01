@@ -27,7 +27,7 @@ class ServerVerificationCodePacket(input: DataInputStream) : ServerPacket(input)
 
         this.unknownBoolean = this.input.readByte().toInt() == 1
 
-        //this.token00BA = this.input.goto(packetLength - 60).readNBytes(40)
+        //this.token00BA = this.input.goto(packetLength - 60).readNBytesAt(40)
     }
 }
 

@@ -145,22 +145,22 @@ infix fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
     return this
 }
 
-fun <N : Number> DataInputStream.readNBytes(position: N, length: Int): ByteArray {
+fun <N : Number> DataInputStream.readNBytesAt(position: N, length: Int): ByteArray {
     this.goto(position)
     return this.readNBytes(length)
 }
 
-fun <N : Number> DataInputStream.readInt(position: N): Int {
+fun <N : Number> DataInputStream.readIntAt(position: N): Int {
     this.goto(position)
     return this.readInt();
 }
 
-fun <N : Number> DataInputStream.readByte(position: N): Byte {
+fun <N : Number> DataInputStream.readByteAt(position: N): Byte {
     this.goto(position)
     return this.readByte();
 }
 
-fun <N : Number> DataInputStream.readShort(position: N): Short {
+fun <N : Number> DataInputStream.readShortAt(position: N): Short {
     this.goto(position)
     return this.readShort();
 }

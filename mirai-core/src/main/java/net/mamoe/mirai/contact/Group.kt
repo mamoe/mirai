@@ -1,9 +1,11 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.message.Message
+import net.mamoe.mirai.utils.ContactList
 
 class Group(number: Int) : Contact(number) {
     val groupId = groupNumberToId(number)
+    val members = ContactList<QQ>()
 
     init {
         Instances.groups.add(this)
@@ -53,6 +55,11 @@ class Group(number: Int) : Contact(number) {
                 }
                 else -> number
             }
+        }
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            groupNumberToId(580266363)
         }
 
         fun groupIdToNumber(id: Int): Int {

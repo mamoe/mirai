@@ -2,11 +2,14 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.Robot
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.login.*
-import net.mamoe.mirai.network.packet.message.ClientSendFriendMessagePacket
 import net.mamoe.mirai.network.packet.message.ClientSendGroupMessagePacket
+import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
+import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacket
 import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.task.MiraiThreadPool
@@ -84,6 +87,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
      */
     private lateinit var cookies: String
     private var gtk: Int = 0
+    private var ignoreMessage: Boolean = false
 
     init {
         tlv0105 = lazyEncode {
@@ -197,6 +201,11 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
                     sendPacket(ClientHeartbeatPacket(this.number, this.sessionKey))
                 }, 90000, 90000, TimeUnit.MILLISECONDS)
                 RobotLoginSucceedEvent(robot).broadcast()
+
+                MiraiThreadPool.getInstance().schedule({
+                    ignoreMessage = false
+                }, 2, TimeUnit.SECONDS)
+
                 this.tlv0105 = packet.tlv0105
                 sendPacket(ClientLoginStatusPacket(this.number, this.sessionKey, ClientLoginStatus.ONLINE))
             }
@@ -225,23 +234,23 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
 
             }
 
-            is ServerMessageEventPacketRaw -> onPacketReceived(packet.analyze())
-
 
             is ServerFriendMessageEventPacket -> {
-                println(packet.toString())
-                if (packet.message == "牛逼") {
-                    sendPacket(ClientSendFriendMessagePacket(this.number, packet.qq, this.sessionKey, "牛逼!!"))
+                if (ignoreMessage) {
+                    return
                 }
 
-                //friend message
+                FriendMessageEvent(this.robot, this.robot.getQQ(packet.qq), packet.message)
             }
 
             is ServerGroupMessageEventPacket -> {
                 //group message
                 if (packet.message == "牛逼") {
-                    sendPacket(ClientSendGroupMessagePacket(packet.group, this.number, this.sessionKey, "牛逼!"))
+                    sendPacket(ClientSendGroupMessagePacket(Group.groupNumberToId(packet.groupNumber), this.number, this.sessionKey, "牛逼!"))
                 }
+
+                //todo
+                //GroupMessageEvent(this.robot, this.robot.getGroup(packet.groupNumber), this.robot.getQQ(packet.qq), packet.message)
             }
 
             is UnknownServerEventPacket -> {
@@ -256,6 +265,8 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
 
             }
 
+            is ServerMessageEventPacketRaw -> onPacketReceived(packet.analyze())
+
             is ServerVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt(this.token00BA))
             is ServerLoginResponseVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
             is ServerLoginResponseResendPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
@@ -266,6 +277,11 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
             is ServerAccountInfoResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
             is ServerMessageEventPacketRawEncoded -> onPacketReceived(packet.decrypt(this.sessionKey))
 
+
+            is ServerSendFriendMessageResponsePacket,
+            is ServerSendGroupMessageResponsePacket -> {
+
+            }
 
             else -> throw IllegalArgumentException(packet.toString())
         }
