@@ -2,7 +2,6 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.Robot
-import net.mamoe.mirai.event.MiraiEventManager
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.login.*
@@ -197,7 +196,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
                 MiraiThreadPool.getInstance().scheduleWithFixedDelay({
                     sendPacket(ClientHeartbeatPacket(this.number, this.sessionKey))
                 }, 90000, 90000, TimeUnit.MILLISECONDS)
-                MiraiEventManager.getInstance().asyncBroadcastEvent(RobotLoginSucceedEvent(robot))
+                RobotLoginSucceedEvent(robot).broadcast()
                 this.tlv0105 = packet.tlv0105
                 sendPacket(ClientLoginStatusPacket(this.number, this.sessionKey, ClientLoginStatus.ONLINE))
             }

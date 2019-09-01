@@ -1,5 +1,7 @@
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.message.At
+
 /**
  * @author Him188moe
  */
@@ -19,8 +21,8 @@ class QQ(number: Int) : Contact(number) {
     /**
      * At(@) this account.
      */
-    fun at(): String {
-        return "[@$number]"
+    fun at(): At {
+        return At(this)
     }
 
 

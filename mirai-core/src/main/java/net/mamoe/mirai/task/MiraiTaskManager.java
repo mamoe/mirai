@@ -25,7 +25,7 @@ public final class MiraiTaskManager {
 
         MiraiEventHook
                 .onEvent(ServerDisableEvent.class)
-                .setHandler(a -> this.pool.close())
+                .handler(a -> this.pool.close())
                 .mount();
 
     }

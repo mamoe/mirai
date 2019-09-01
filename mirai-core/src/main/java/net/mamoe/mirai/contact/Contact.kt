@@ -16,4 +16,5 @@ abstract class Contact(val number: Int) {
      * Async
      */
     abstract fun sendObjectMessage(message: String)
+
 }
