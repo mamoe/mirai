@@ -4,14 +4,20 @@
 我们坚持免费与开源  
   
 项目处于快速开发阶段, 现在已经可以接受群聊/好友消息. 
-协议来自网络的易语言开源软件  
+协议来自网络上开源项目
 一切开发旨在学习, 请勿用于非法用途  
 
-### 我们会坚持开发, 但是,
-![LV7_YX10AQ5TW@E~308_0JN.png](https://i.loli.net/2019/08/24/oQIzhaLvyJOeW1f.png)
+<br>
+
+A JAVA(+Kotlin) powered open-source project under GPL license<br>
+It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
+The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
 
 ### 代码结构
-Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与插件相关性强(或任何其他在二次开发中容易接触的部分)均使用 Java 完成.
+Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
+与插件相关性强(或其他在二次开发中容易接触的部分)均使用 Java 完成, 
+同时也会针对kotlin提供优化的方法调用. 例如对'+'操作符的重载: `String+BufferedImage+QQ.At+Face+URL+String+File` 将会被自动处理为String消息.
+
 
 ### TODO
 - [x] 事件(Event)模块  
@@ -19,25 +25,23 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持), 与�
 - [x] Network - Touch  
 - [X] Network - Login 
 - [X] Network - Session
-- [X] Network - Message Receive
-- [X] Network - Message Send
+- [ ] Network - Verification Code **(Low priority)**
+- [X] Network - Message Receiving
+- [ ] Network - Message Sending **(Working on)**  
 - [ ] Network - Events **(Working on)**  
-
-<br>
-
-A JAVA(+Kotlin) powered open-sources project under GPL license<br>
-It use protocols from <i>TIM QQ</i>, meaning it won't be affect by the close of <i>smart QQ</i><br>
-The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
+- [ ] Robot - Friend/group list
+- [ ] Message Section
+- [ ] Contact
 
 <br>
 
 ## 使用方法
 ### 要求
 - Java 11 或更高
-- Kotlin
+- Kotlin 1.3 或更高
 ### 插件开发
 ``` php
-    to be continue
+    to be continued
     ...
 ```
 
@@ -45,10 +49,10 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 ## Usage
 ### Requirements
 - Java 11 or higher
-- Kotlin
-### Plugin Developments
+- Kotlin 1.3 or higher
+### Plugin Development
 ``` php
-    to be continue
+    to be continued
     ...
 ```
 
