@@ -10,7 +10,7 @@ import net.mamoe.mirai.utils.ClientLoginStatus
 @ExperimentalUnsignedTypes
 @PacketId("00 EC")
 class ClientLoginStatusPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val sessionKey: ByteArray,
         private val loginStatus: ClientLoginStatus
 

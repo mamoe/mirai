@@ -3,7 +3,6 @@ package net.mamoe.mirai.network.packet
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
-import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.utils.getAllDeclaredFields
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toUHexString
@@ -148,6 +147,15 @@ infix fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
 fun <N : Number> DataInputStream.readNBytesAt(position: N, length: Int): ByteArray {
     this.goto(position)
     return this.readNBytes(length)
+}
+
+fun <N : Number> DataInputStream.readNBytes(length: N): ByteArray {
+    return this.readNBytes(length.toInt())
+}
+
+fun DataInputStream.readNBytesIn(range: IntRange): ByteArray {
+    this.goto(range.first)
+    return this.readNBytes(range.last - range.first + 1)
 }
 
 fun <N : Number> DataInputStream.readIntAt(position: N): Int {

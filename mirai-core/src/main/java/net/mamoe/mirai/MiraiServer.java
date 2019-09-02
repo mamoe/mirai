@@ -5,7 +5,6 @@ import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
 import net.mamoe.mirai.network.RobotNetworkHandler;
-import net.mamoe.mirai.network.packet.ClientTouchPacket;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -17,7 +16,6 @@ import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Scanner;
 
 public class MiraiServer {
@@ -119,62 +117,20 @@ public class MiraiServer {
         getLogger().info("ready to connect");
 
 
-        /*
-        MiraiConfigSection section = new MiraiConfigSection<MiraiConfigSection<String>>(){{
-            put("1",new MiraiConfigSection<>(){{
-                put("1","0");
-            }});
-        }};
+        this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
+            try {
+                Robot robot = new Robot(section);
+                RobotNetworkHandler robotNetworkHandler = robot.getHandler();
+                robotNetworkHandler.setServerIP("14.116.136.106");
+                robotNetworkHandler.touch$mirai_core();
 
-        this.qqs.put("test",section);
-        this.qqs.save();
-        */
-
-
-        MiraiConfigSection<MiraiConfigSection> x = this.qqs.getTypedSection("test");
-        //System.out.println(x.getSection("1").getInt("1"));
-
-        /*
-        System.out.println(v);
-
-        System.out.println(v.get("1111"));
-        */
-
-
-        Robot robot = new Robot(1994701021, "xiaoqqq", new LinkedList<>());
-        RobotNetworkHandler robotNetworkHandler = robot.getHandler();
-        try {
-            //System.out.println(Protocol.Companion.getSERVER_IP().get(3));
-            //System.out.println(Protocol.Companion.getSERVER_IP().toString());
-
-            robotNetworkHandler.setServerIP("14.116.136.106");
-            robotNetworkHandler.sendPacket(new ClientTouchPacket(1994701021, "14.116.136.106"));
-            while (true) ;
-            //robotNetworkHandler.connect("14.116.136.106");
-            //robotNetworkHandler.connect(Protocol.Companion.getSERVER_IP().get(2));
-            //robotNetworkHandler.connect("125.39.132.242");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-/*
-        System.out.println("network test");
-        try {
-
-
-            MiraiUDPServer server = new MiraiUDPServer();
-            MiraiUDPClient client = new MiraiUDPClient(InetAddress.getLocalHost(),9999,MiraiNetwork.getAvailablePort());
-            this.getTaskManager().repeatingTask(() -> {
-                byte[] sendInfo = "test test".getBytes(StandardCharsets.UTF_8);
-                try {
-                    client.send(new DatagramPacket(sendInfo,sendInfo.length));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            },300);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+                Robot.instances.add(robot);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                getLogger().error("Could not load QQ robots config!");
+                System.exit(1);
+            }
+        });
     }
 
     private void initSetting(File setting) {

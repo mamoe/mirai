@@ -11,10 +11,10 @@ import java.io.DataInputStream
 @PacketId("00 CD")
 @ExperimentalUnsignedTypes
 class ClientSendFriendMessagePacket(
-        val robotQQ: Int,
-        val targetQQ: Int,
-        val sessionKey: ByteArray,
-        val message: String
+        private val robotQQ: Long,
+        private val targetQQ: Long,
+        private val sessionKey: ByteArray,
+        private val message: String
 ) : ClientPacket() {
     override fun encode() {
         this.writeRandom(2)//part of packet id
@@ -52,7 +52,7 @@ class ClientSendFriendMessagePacket(
                 it.writeByte(0x01)
                 it.writeShort(bytes.size)
                 it.write(bytes)
-            }//todo check
+            }
         }
     }
 }

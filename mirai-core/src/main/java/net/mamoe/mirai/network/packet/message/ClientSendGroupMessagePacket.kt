@@ -12,8 +12,8 @@ import java.io.DataInputStream
 @PacketId("00 02")
 @ExperimentalUnsignedTypes
 class ClientSendGroupMessagePacket(
-        private val groupId: Int,//不是 number
-        private val qq: Int,
+        private val groupId: Long,//不是 number
+        private val qq: Long,
         private val sessionKey: ByteArray,
         private val message: String
 ) : ClientPacket() {
@@ -25,7 +25,7 @@ class ClientSendGroupMessagePacket(
         this.encryptAndWrite(sessionKey) {
             val bytes = message.toByteArray()
             it.writeByte(0x2A)
-            it.writeInt(groupId)
+            it.writeGroup(groupId)
             it.writeShort(56 + bytes.size)
 
             it.writeHex("00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")

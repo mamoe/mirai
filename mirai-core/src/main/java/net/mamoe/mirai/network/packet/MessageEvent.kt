@@ -12,7 +12,7 @@ import java.io.DataInputStream
 @PacketId("")//随后写入
 @ExperimentalUnsignedTypes
 class ClientMessageResponsePacket(
-        private val qq: Int,
+        private val qq: Long,
         private val packetIdFromServer: ByteArray,
         private val sessionKey: ByteArray,
         private val eventIdentity: ByteArray

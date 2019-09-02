@@ -6,10 +6,7 @@ import net.mamoe.mirai.message.defaults.At
 /**
  * @author Him188moe
  */
-class QQ(number: Int) : Contact(number) {
-    init {
-        Instances.qqs.add(this)
-    }
+class QQ(number: Long) : Contact(number) {
 
     override fun sendMessage(message: Message) {
 

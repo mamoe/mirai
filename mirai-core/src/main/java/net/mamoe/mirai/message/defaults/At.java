@@ -10,17 +10,17 @@ import java.util.Objects;
  * @author Him188moe
  */
 public final class At extends Message {
-    private final int target;
+    private final long target;
 
     public At(@NotNull QQ target) {
         this(Objects.requireNonNull(target).getNumber());
     }
 
-    public At(int target) {
+    public At(long target) {
         this.target = target;
     }
 
-    public int getTarget() {
+    public long getTarget() {
         return target;
     }
 

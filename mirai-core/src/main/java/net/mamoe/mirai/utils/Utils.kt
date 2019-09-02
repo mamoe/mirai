@@ -20,6 +20,8 @@ fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(s
 @ExperimentalUnsignedTypes
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
+fun ByteArray.__toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
+
 @ExperimentalUnsignedTypes
 fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 

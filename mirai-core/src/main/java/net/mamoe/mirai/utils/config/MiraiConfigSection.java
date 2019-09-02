@@ -126,10 +126,10 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
         return result==null?defaultV:result.toString();
     }
 
-    public String getStringOrThrow(String key, Callable<Throwable> throwableCallable) throws Throwable {
+    public String getStringOrThrow(String key, Supplier<Throwable> exceptionSupplier) throws Throwable {
         Object result = this.getOrDefault(key, null);
         if(result == null){
-            throw throwableCallable.call();
+            throw exceptionSupplier.get();
         }
         return result.toString();
     }

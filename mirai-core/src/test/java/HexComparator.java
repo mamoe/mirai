@@ -3,11 +3,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import net.mamoe.mirai.network.Protocol;
+import net.mamoe.mirai.network.packet.ClientPacketKt;
+import net.mamoe.mirai.utils.UtilsKt;
 
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -32,14 +38,23 @@ public class HexComparator {
 
     private static final String BLUE = "\033[34m";
 
-    public static final List<HexReader> consts  = new LinkedList<>(){{
+    public static final List<HexReader> consts = new LinkedList<>() {{
         add(new HexReader("90 5E 39 DF 00 02 76 E4 B8 DD 00"));
     }};
 
     private static class ConstMatcher {
         private static final List<Field> CONST_FIELDS = new LinkedList<>() {{
             List.of(Protocol.class).forEach(aClass -> Arrays.stream(aClass.getDeclaredFields()).peek(this::add).forEach(Field::trySetAccessible));
+            List.of(TestConsts.class).forEach(aClass -> Arrays.stream(aClass.getDeclaredFields()).peek(this::add).forEach(Field::trySetAccessible));
         }};
+
+        @SuppressWarnings({"unused", "NonAsciiCharacters"})
+        private static class TestConsts {
+            private static final String 牛逼 = UtilsKt.__toUHexString("牛逼".getBytes(), " ");
+            private static final String _1994701021 = ClientPacketKt.toHexString(1994701021, " ");
+            private static final String _1040400290 = ClientPacketKt.toHexString(1040400290, " ");
+            private static final String _580266363 = ClientPacketKt.toHexString(580266363, " ");
+        }
 
         private final List<Match> matches = new LinkedList<>();
 
@@ -89,6 +104,23 @@ public class HexComparator {
         }
     }
 
+    private static void buildConstNameChain(int length, ConstMatcher constMatcher, StringBuilder constNameBuilder) {
+        for (int i = 0; i < length; i++) {
+            constNameBuilder.append(" ");
+            String match = constMatcher.getMatchedConstName(i / 4);
+            if (match != null) {
+                int appendedNameLength = match.length();
+                constNameBuilder.append(match);
+                while (constMatcher.getMatchedConstName(i++ / 4) != null) {
+                    if (appendedNameLength-- <= 0) {
+                        constNameBuilder.append(" ");
+                    }
+                }
+
+            }
+        }
+    }
+
     private static String compare(String hex1s, String hex2s) {
         StringBuilder builder = new StringBuilder();
 
@@ -105,9 +137,16 @@ public class HexComparator {
 
 
         StringBuilder numberLine = new StringBuilder();
+        StringBuilder hex1ConstName = new StringBuilder();
         StringBuilder hex1b = new StringBuilder();
         StringBuilder hex2b = new StringBuilder();
+        StringBuilder hex2ConstName = new StringBuilder();
         int dif = 0;
+
+        int length = Math.max(hex1.length, hex2.length) * 4;
+        buildConstNameChain(length, constMatcher1, hex1ConstName);
+        buildConstNameChain(length, constMatcher2, hex2ConstName);
+
 
         for (int i = 0; i < Math.max(hex1.length, hex2.length); ++i) {
             String h1 = null;
@@ -152,7 +191,7 @@ public class HexComparator {
                 }
             }
 
-            numberLine.append(UNKNOWN).append(getNumber(i)).append(" ");
+            numberLine.append(UNKNOWN).append(getFixedNumber(i)).append(" ");
             hex1b.append(" ").append(h1).append(" ");
             hex2b.append(" ").append(h2).append(" ");
             if (isDif) {
@@ -165,42 +204,46 @@ public class HexComparator {
 
         return (builder.append(" ").append(dif).append(" 个不同").append("\n")
                 .append(numberLine).append("\n")
+                .append(hex1ConstName).append("\n")
                 .append(hex1b).append("\n")
-                .append(hex2b))
+                .append(hex2b).append("\n")
+                .append(hex2ConstName).append("\n")
+        )
                 .toString();
 
 
     }
 
 
-    private static void doConstReplacement(StringBuilder builder){
+    private static void doConstReplacement(StringBuilder builder) {
         String mirror = builder.toString();
         HexReader hexs = new HexReader(mirror);
-        for (AtomicInteger i=new AtomicInteger(0);i.get()<builder.length();i.addAndGet(1)){
+        for (AtomicInteger i = new AtomicInteger(0); i.get() < builder.length(); i.addAndGet(1)) {
             hexs.setTo(i.get());
             consts.forEach(a -> {
                 hexs.setTo(i.get());
                 List<Integer> posToPlaceColor = new LinkedList<>();
                 AtomicBoolean is = new AtomicBoolean(false);
 
-                a.readFully((c,d) -> {
-                    if(c.equals(hexs.readHex())){
+                a.readFully((c, d) -> {
+                    if (c.equals(hexs.readHex())) {
                         posToPlaceColor.add(d);
-                    }else{
+                    } else {
                         is.set(false);
                     }
                 });
 
-                if(is.get()){
+                if (is.get()) {
                     AtomicInteger adder = new AtomicInteger();
                     posToPlaceColor.forEach(e -> {
-                        builder.insert(e + adder.getAndAdd(BLUE.length()),BLUE);
+                        builder.insert(e + adder.getAndAdd(BLUE.length()), BLUE);
                     });
                 }
             });
         }
     }
-    private static String getNumber(int number) {
+
+    private static String getFixedNumber(int number) {
         if (number < 10) {
             return "00" + number;
         }
@@ -210,8 +253,31 @@ public class HexComparator {
         return String.valueOf(number);
     }
 
-    public static void main(String[] args) {
+    private static String getClipboardString() {
+        Transferable trans = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            try {
+                return (String) trans.getTransferData(DataFlavor.stringFlavor);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
+        return null;
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("Hex1: ");
+            var hex1 = scanner.nextLine();
+            System.out.println("Hex2: ");
+            var hex2 = scanner.nextLine();
+            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+            System.out.println(HexComparator.compare(hex1, hex2));
+            System.out.println();
+        }
+/*
         System.out.println(HexComparator.compare(
                 //mirai
 
@@ -230,66 +296,63 @@ public class HexComparator {
                 "6F 0B DF 92 00 02 76 E4 B8 DD 00 00 04 53 00 00 00 01 00 00 15 85 00 00 01 55 35 05 8E C9 BA 16 D0 01 63 5B 59 4B 59 52 31 01 B9 00 00 00 00 00 00 00 00 00 00 00 00 00 E9 E9 E9 E9 00 00 00 00 00 00 00 00 00 10 15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B AA BB CC DD EE FF AA BB CC\n\n\n"
         ));*/
     }
-
-
 }
 
-class HexReader{
+class HexReader {
     private String s;
     private int pos = 0;
     private int lastHaxPos = 0;
 
 
-    public HexReader(String s){
+    public HexReader(String s) {
         this.s = s;
     }
 
-    public String readHex(){
+    public String readHex() {
         boolean isStr = false;
         String next = "";
-        for (;pos<s.length()-2;++pos){
+        for (; pos < s.length() - 2; ++pos) {
 
             char s1 = ' ';
-            if(pos != 0){
+            if (pos != 0) {
                 s1 = this.s.charAt(0);
             }
-            char s2 = this.s.charAt(pos+1);
-            char s3 = this.s.charAt(pos+2);
+            char s2 = this.s.charAt(pos + 1);
+            char s3 = this.s.charAt(pos + 2);
             char s4 = ' ';
-            if(this.s.length() != (this.pos+3)){
-                s4 = this.s.charAt(pos+3);
+            if (this.s.length() != (this.pos + 3)) {
+                s4 = this.s.charAt(pos + 3);
             }
-            if(
+            if (
                     Character.isSpaceChar(s1) && Character.isSpaceChar(s4)
-                    &&
+                            &&
                             (Character.isDigit(s2) || Character.isAlphabetic(s2))
                             &&
                             (Character.isDigit(s3) || Character.isAlphabetic(s3))
-            ){
-                this.pos+=2;
-                this.lastHaxPos = this.pos+1;
-                return String.valueOf(s2) + String.valueOf(s3);
+            ) {
+                this.pos += 2;
+                this.lastHaxPos = this.pos + 1;
+                return String.valueOf(s2) + s3;
             }
         }
         return "";
     }
 
-    public void readFully(BiConsumer<String, Integer> processor){
+    public void readFully(BiConsumer<String, Integer> processor) {
         this.reset();
         String nextHax = this.readHex();
-        while (!nextHax.equals(" ")){
-            processor.accept(nextHax,this.lastHaxPos);
+        while (!nextHax.equals(" ")) {
+            processor.accept(nextHax, this.lastHaxPos);
             nextHax = this.readHex();
         }
     }
 
-    public void setTo(int pos){
+    public void setTo(int pos) {
         this.pos = pos;
     }
 
-    public void reset(){
+    public void reset() {
         this.pos = 0;
     }
-
 }
 

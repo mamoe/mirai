@@ -6,5 +6,5 @@ import net.mamoe.mirai.utils.config.MiraiSynchronizedLinkedListMap;
 /**
  * @author Him188moe
  */
-public class ContactList<C extends Contact> extends MiraiSynchronizedLinkedListMap<Integer, C> {
+public class ContactList<C extends Contact> extends MiraiSynchronizedLinkedListMap<Long, C> {
 }

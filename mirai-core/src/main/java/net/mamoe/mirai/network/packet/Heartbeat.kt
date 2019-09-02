@@ -10,7 +10,7 @@ import java.io.IOException
 @ExperimentalUnsignedTypes
 @PacketId("00 58")
 class ClientHeartbeatPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     @Throws(IOException::class)

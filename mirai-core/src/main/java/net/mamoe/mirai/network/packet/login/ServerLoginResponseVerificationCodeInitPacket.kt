@@ -7,19 +7,22 @@ import net.mamoe.mirai.utils.TEACryptor
 import java.io.DataInputStream
 
 /**
+ * 收到这个包意味着需要验证码登录, 并且能得到验证码图片文件的一半
+ *
  * @author Him188moe
  */
-class ServerLoginResponseVerificationCodePacket(input: DataInputStream, private val packetLength: Int) : ServerPacket(input) {
+class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, private val packetLength: Int) : ServerPacket(input) {
 
-    lateinit var verifyCode: ByteArray
+    lateinit var verifyCodePart1: ByteArray
     lateinit var token00BA: ByteArray
     var unknownBoolean: Boolean? = null
+//todo 也有可能这个包有问题, 也有可能 ClientVerificationCodeTransmissionRequestPacket. 检查
 
 
     @ExperimentalUnsignedTypes
     override fun decode() {
         val verifyCodeLength = this.input.goto(78).readShort()//2bytes
-        this.verifyCode = this.input.readNBytes(verifyCodeLength.toInt())
+        this.verifyCodePart1 = this.input.readNBytes(verifyCodeLength.toInt())
 
         this.input.skip(1)
 
@@ -34,9 +37,9 @@ class ServerLoginResponseVerificationCodePacketEncrypted(input: DataInputStream)
 
     }
 
-    fun decrypt(): ServerLoginResponseVerificationCodePacket {
+    fun decrypt(): ServerLoginResponseVerificationCodeInitPacket {
         this.input goto 14
         val data = TEACryptor.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) });
-        return ServerLoginResponseVerificationCodePacket(data.dataInputStream(), data.size)
+        return ServerLoginResponseVerificationCodeInitPacket(data.dataInputStream(), data.size)
     }
 }

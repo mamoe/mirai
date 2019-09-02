@@ -9,11 +9,13 @@ import net.mamoe.mirai.utils.config.MiraiConfigSection;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Robot {
+    public static final List<Robot> instances = Collections.synchronizedList(new LinkedList<>());
 
-    private final int qqNumber;
+    private final long qqNumber;
     private final String password;
     @Getter
     private final RobotNetworkHandler handler;
@@ -31,38 +33,41 @@ public class Robot {
         return owners.contains(ownerName);
     }
 
+    public long getQQNumber() {
+        return qqNumber;
+    }
 
     public Robot(MiraiConfigSection<Object> data) throws Throwable {
         this(
-                data.getIntOrThrow("account", () -> new IllegalArgumentException("account")),
+                data.getLongOrThrow("account", () -> new IllegalArgumentException("account")),
                 data.getStringOrThrow("password", () -> new IllegalArgumentException("password")),
                 data.getAsOrDefault("owners", ArrayList::new)
         );
 
     }
 
-    public Robot(int qqNumber, String password, List<String> owners) {
+    public Robot(long qqNumber, String password, List<String> owners) {
         this.qqNumber = qqNumber;
         this.password = password;
         this.owners = Collections.unmodifiableList(owners);
         this.handler = new RobotNetworkHandler(this, this.qqNumber, this.password);
     }
 
-    public QQ getQQ(int qqNumber) {
+    public QQ getQQ(long qqNumber) {
         if (!this.qqs.containsKey(qqNumber)) {
             this.qqs.put(qqNumber, new QQ(qqNumber));
         }
         return this.qqs.get(qqNumber);
     }
 
-    public Group getGroup(int groupNumber) {
+    public Group getGroup(long groupNumber) {
         if (!this.groups.containsKey(groupNumber)) {
             this.groups.put(groupNumber, new Group(groupNumber));
         }
         return groups.get(groupNumber);
     }
 
-    public Group getGroupByGroupId(int groupId) {
+    public Group getGroupByGroupId(long groupId) {
         return getGroup(Group.Companion.groupIdToNumber(groupId));
     }
 }

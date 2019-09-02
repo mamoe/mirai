@@ -76,7 +76,7 @@ class ServerTouchResponsePacketEncrypted(private val type: ServerTouchResponsePa
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 01")
-class ClientTouchPacket(val qq: Int, val serverIp: String) : ClientPacket() {
+class ClientTouchPacket(val qq: Long, val serverIp: String) : ClientPacket() {
     @ExperimentalUnsignedTypes
     @Throws(IOException::class)
     override fun encode() {
@@ -108,7 +108,7 @@ class ClientTouchPacket(val qq: Int, val serverIp: String) : ClientPacket() {
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 02")
-class ClientServerRedirectionPacket(private val serverIP: String, private val qq: Int) : ClientPacket() {
+class ClientServerRedirectionPacket(private val serverIP: String, private val qq: Long) : ClientPacket() {
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)

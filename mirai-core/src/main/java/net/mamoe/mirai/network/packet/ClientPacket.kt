@@ -119,13 +119,18 @@ fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutp
     this.write(TEACryptor.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }, key))
 }
 
+@ExperimentalUnsignedTypes
+fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: (ByteArrayDataOutputStream) -> Unit) {
+    this.encryptAndWrite(keyHex.hexToBytes(), encoder)
+}
+
 fun DataOutputStream.encryptAndWrite(cryptor: TEACryptor, encoder: (ByteArrayDataOutputStream) -> Unit) {
     this.write(cryptor.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }))
 }
 
 @ExperimentalUnsignedTypes
 @Throws(IOException::class)
-fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
+fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
     ByteArrayDataOutputStream().let {
         it.writeHex("12 12 12 12")//it.writeRandom(4) todo
         it.writeHex("00 02")
@@ -134,7 +139,7 @@ fun DataOutputStream.writeTLV0006(qq: Int, password: String, loginTime: Int, log
         it.writeHex("00 00 01")
 
         val md5_1 = md5(password);
-        val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toByteArray())
+        val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
         println(md5_1.toUByteArray().toUHexString())
         println(md5_2.toUByteArray().toUHexString())
         it.write(md5_1)
@@ -194,6 +199,17 @@ fun Int.toByteArray(): ByteArray = byteArrayOf(
 )
 
 /**
+ * 255u -> 00 00 00 FF
+ */
+@ExperimentalUnsignedTypes
+fun UInt.toByteArray(): ByteArray = byteArrayOf(
+        (this.shr(24) and 255u).toByte(),
+        (this.shr(16) and 255u).toByte(),
+        (this.shr(8) and 255u).toByte(),
+        (this.shr(0) and 255u).toByte()
+)
+
+/**
  * 255 -> FF 00 00 00
  */
 fun Int.toLByteArray(): ByteArray = byteArrayOf(
@@ -225,7 +241,14 @@ fun DataOutputStream.writeRandom(length: Int) {
     }
 }
 
+@ExperimentalUnsignedTypes
 @Throws(IOException::class)
-fun DataOutputStream.writeQQ(qq: Int) {
-    this.writeInt(qq)
+fun DataOutputStream.writeQQ(qq: Long) {
+    this.write(qq.toUInt().toByteArray())
+}
+
+@ExperimentalUnsignedTypes
+@Throws(IOException::class)
+fun DataOutputStream.writeGroup(groupIdOrGroupNumber: Long) {
+    this.write(groupIdOrGroupNumber.toUInt().toByteArray())
 }

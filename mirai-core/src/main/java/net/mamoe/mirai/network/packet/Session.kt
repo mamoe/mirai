@@ -14,7 +14,7 @@ import java.net.InetAddress
 @ExperimentalUnsignedTypes
 @PacketId("08 28 04 34")
 class ClientSessionRequestPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val serverIp: String,
         private val loginIP: String,
         private val md5_32: ByteArray,

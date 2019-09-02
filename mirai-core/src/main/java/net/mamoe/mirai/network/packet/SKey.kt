@@ -11,7 +11,7 @@ import java.io.DataInputStream
 @ExperimentalUnsignedTypes
 @PacketId("00 1D")
 class ClientSKeyRequestPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode() {
@@ -31,7 +31,7 @@ class ClientSKeyRequestPacket(
 @PacketId("00 1D")
 @ExperimentalUnsignedTypes
 class ClientSKeyRefreshmentRequestPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode() {

@@ -8,7 +8,7 @@ import net.mamoe.mirai.message.defaults.PlainText
  *
  * @author Him188moe
  */
-abstract class Contact(val number: Int) {
+abstract class Contact(val number: Long) {
 
     /**
      * Async

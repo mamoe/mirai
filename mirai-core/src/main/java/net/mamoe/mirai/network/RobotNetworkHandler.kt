@@ -1,6 +1,5 @@
 package net.mamoe.mirai.network
 
-import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
@@ -10,12 +9,8 @@ import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.network.packet.message.ClientSendGroupMessagePacket
 import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
-import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacket
-import net.mamoe.mirai.network.packet.verification.ServerVerificationCodePacketEncrypted
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
-import java.io.ByteArrayInputStream
-import java.io.FileOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
@@ -28,9 +23,7 @@ import java.util.concurrent.TimeUnit
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
-class RobotNetworkHandler(val robot: Robot, val number: Int, private val password: String) {
-
-    private var sequence: Int = 0
+class RobotNetworkHandler(val robot: Robot, val number: Long, private val password: String) {
 
     var socket: DatagramSocket = DatagramSocket((15314 + Math.random() * 100).toInt())
 
@@ -39,33 +32,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
             serverAddress = InetSocketAddress(value, 8000)
             field = value
 
-            socket.close()
-            socket = DatagramSocket((15314 + Math.random() * 100).toInt())
-            socket.connect(this.serverAddress)
-            val zeroByte: Byte = 0
-            Thread {
-                while (true) {
-                    val dp1 = DatagramPacket(ByteArray(2048), 2048)
-                    try {
-                        socket.receive(dp1)
-                    } catch (e: Exception) {
-                        if (e.message == "socket closed") {
-                            return@Thread
-                        }
-                    }
-                    MiraiThreadPool.getInstance().submit {
-                        var i = dp1.data.size - 1;
-                        while (dp1.data[i] == zeroByte) {
-                            --i
-                        }
-                        try {
-                            onPacketReceived(ServerPacket.ofByteArray(dp1.data.copyOfRange(0, i + 1)))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-            }.start()
+            restartSocket()
         }
 
     private lateinit var serverAddress: InetSocketAddress
@@ -78,6 +45,10 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
     private var tlv0105: ByteArray
     private lateinit var _0828_rec_decr_key: ByteArray
 
+    private var verificationCodeSequence: Int = 0//这两个验证码使用
+    private var verificationCodeCache: ByteArray? = null//每次包只发一部分验证码来
+    private var verificationCodeCacheCount: Int = 0//
+    private lateinit var verificationToken: ByteArray
 
     private lateinit var sessionKey: ByteArray//这两个是登录成功后得到的
     private lateinit var sKey: String
@@ -103,6 +74,40 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
     @ExperimentalUnsignedTypes
     private var md5_32: ByteArray = getRandomKey(32)
 
+
+    internal fun touch() {
+        this.sendPacket(ClientTouchPacket(this.number, this.serverIP))
+    }
+
+    private fun restartSocket() {
+        socket.close()
+        socket = DatagramSocket((15314 + Math.random() * 100).toInt())
+        socket.connect(this.serverAddress)
+        val zeroByte: Byte = 0
+        Thread {
+            while (true) {
+                val dp1 = DatagramPacket(ByteArray(2048), 2048)
+                try {
+                    socket.receive(dp1)
+                } catch (e: Exception) {
+                    if (e.message == "socket closed") {
+                        return@Thread
+                    }
+                }
+                MiraiThreadPool.getInstance().submit {
+                    var i = dp1.data.size - 1;
+                    while (dp1.data[i] == zeroByte) {
+                        --i
+                    }
+                    try {
+                        onPacketReceived(ServerPacket.ofByteArray(dp1.data.copyOfRange(0, i + 1)))
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }.start()
+    }
 
     @ExperimentalUnsignedTypes
     internal fun onPacketReceived(packet: ServerPacket) {
@@ -131,20 +136,42 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
                 return
             }
 
-            is ServerLoginResponseVerificationCodePacket -> {
+            is ServerLoginResponseVerificationCodeInitPacket -> {
                 //[token00BA]来源之一: 验证码
                 this.token00BA = packet.token00BA
+                this.verificationCodeCache = packet.verifyCodePart1
 
-                with(MiraiServer.getInstance().parentFolder + "verifyCode.png") {
-                    ByteArrayInputStream(packet.verifyCode).transferTo(FileOutputStream(this))
-                    println("验证码已写入到 " + this.path)
-                }
 
                 if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
-                    this.sequence = 1
-                    sendPacket(ClientLoginVerificationCodePacket(this.number, this.token0825, this.sequence, this.token00BA))
+                    this.verificationCodeSequence = 1
+                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, this.number, this.token0825, this.verificationCodeSequence, this.token00BA))
                 }
 
+            }
+
+            is ServerVerificationCodeRepeatPacket -> {//todo 这个名字正确么
+                this.tgtgtKey = packet.tgtgtKeyUpdate
+                this.token00BA = packet.token00BA
+                sendPacket(ClientLoginResendPacket3105(this.number, this.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
+            }
+
+            is ServerVerificationCodeTransmissionPacket -> {
+                this.verificationCodeSequence = 0
+                this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePart2
+
+                this.verificationToken = packet.verificationToken
+                this.verificationCodeCacheCount = packet.count
+
+                this.token00BA = packet.token00BA
+                this.verificationCodeCache
+
+
+                if (packet.transmissionCompleted) {
+                    this.verificationCodeCache
+                    TODO("验证码好了")
+                } else {
+                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.count, this.number, this.token0825, this.verificationCodeSequence, this.token00BA))
+                }
             }
 
             is ServerLoginResponseSuccessPacket -> {
@@ -190,10 +217,6 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
                 }
             }
 
-            is ServerVerificationCodePacket -> {
-                this.sequence++
-
-            }
 
             is ServerSessionKeyResponsePacket -> {
                 this.sessionKey = packet.sessionKey
@@ -267,7 +290,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Int, private val passwor
 
             is ServerMessageEventPacketRaw -> onPacketReceived(packet.analyze())
 
-            is ServerVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt(this.token00BA))
+            is ServerVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
             is ServerLoginResponseVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
             is ServerLoginResponseResendPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
             is ServerLoginResponseSuccessPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))

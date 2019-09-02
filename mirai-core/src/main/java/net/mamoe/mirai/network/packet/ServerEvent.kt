@@ -39,8 +39,8 @@ class ServerGroupUploadFileEventPacket(input: DataInputStream, packetId: ByteArr
 }
 
 class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
-    var groupNumber: Int = 0
-    var qq: Int = 0
+    var groupNumber: Long = 0
+    var qq: Long = 0
     lateinit var message: String
     lateinit var messageType: MessageType
 
@@ -58,9 +58,10 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
         OTHER,
     }
 
+    @ExperimentalUnsignedTypes
     override fun decode() {
-        groupNumber = this.input.goto(51).readInt()
-        qq = this.input.goto(56).readInt()
+        groupNumber = this.input.goto(51).readInt().toLong()
+        qq = this.input.goto(56).readLong().toUInt().toLong()
         val fontLength = this.input.goto(108).readShort()
         //println(this.input.goto(110 + fontLength).readNBytesAt(2).toUHexString())//always 00 00
 
@@ -142,7 +143,7 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
 }
 
 class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
-    var qq: Int = 0
+    var qq: Long = 0
     lateinit var message: MessageChain
 
 
@@ -153,7 +154,7 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
         println(input.readAllBytes().toUHexString())
         input.goto(0)
 
-        qq = input.readIntAt(0)
+        qq = input.readIntAt(0).toLong()
         val msgLength = input.readShortAt(22)
         val fontLength = input.readShortAt(93 + msgLength)
         val offset = msgLength + fontLength
@@ -164,6 +165,11 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
     }
 
 }
+/*
+3E 03 3F A2 76 E4 B8 DD 00 09 7C 3F 64 5C 2A 60 1F 40 00 A6 00 00 00 2D 00 05 00 02 00 01 00 06 00 04 00 01 2E 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 02 38 03 3E 03 3F A2 76 E4 B8 DD 01 10 9D D6 12 EA BC 07 91 EF DC 29 75 67 A9 1E 00 0B 2F E4 5D 6B A8 F6 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D 6B A8 F6 08 7E 90 CE 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
+3E 03 3F A2 76 E4 B8 DD 00 03 5F 85 64 5C 2A A4 1F 40 00 A6 00 00 00 2D 00 05 00 02 00 01 00 06 00 04 00 01 2E 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 02 38 03 3E 03 3F A2 76 E4 B8 DD 01 10 9D D6 12 EA BC 07 91 EF DC 29 75 67 A9 1E 00 0B 2F E5 5D 6B A9 16 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D 6B A9 17 1B B3 4D D7 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
+
+ */
 
 /*
 
@@ -171,7 +177,7 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
 backup
 
 class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
-    var qq: Int = 0
+    var qq: Long = 0
     lateinit var message: String
 
 

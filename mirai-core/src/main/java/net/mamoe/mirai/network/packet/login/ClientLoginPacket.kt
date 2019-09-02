@@ -18,7 +18,7 @@ import java.io.DataOutputStream
 @ExperimentalUnsignedTypes
 @TestedSuccessfully
 class ClientPasswordSubmissionPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val password: String,
         private val loginTime: Int,
         private val loginIP: String,
@@ -43,17 +43,22 @@ class ClientPasswordSubmissionPacket(
 
 @PacketId("08 36 31 04")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
+class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
+
+@PacketId("08 36 31 05")
+@ExperimentalUnsignedTypes
+class ClientLoginResendPacket3105(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, null)
 
 @PacketId("08 36 31 06")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
+class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @ExperimentalUnsignedTypes
 open class ClientLoginResendPacket internal constructor(
-        val qq: Int,
+        val qq: Long,
         val password: String,
         val loginTime: Int,
         val loginIP: String,
@@ -91,7 +96,7 @@ open class ClientLoginResendPacket internal constructor(
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
-private fun DataOutputStream.writePart1(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv_0006_encr: ByteArray? = null) {
+private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv_0006_encr: ByteArray? = null) {
 
     //this.writeInt(System.currentTimeMillis().toInt())
     this.writeHex("01 12")//tag

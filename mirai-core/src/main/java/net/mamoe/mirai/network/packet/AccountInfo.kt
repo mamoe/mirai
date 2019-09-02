@@ -12,7 +12,7 @@ import java.io.DataInputStream
 @ExperimentalUnsignedTypes
 @PacketId("00 5C")
 class ClientAccountInfoRequestPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode() {
