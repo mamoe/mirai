@@ -47,7 +47,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
 
     private var verificationCodeSequence: Int = 0//这两个验证码使用
     private var verificationCodeCache: ByteArray? = null//每次包只发一部分验证码来
-    private var verificationCodeCacheCount: Int = 0//
+    private var verificationCodeCacheCount: Int = 1//
     private lateinit var verificationToken: ByteArray
 
     private lateinit var sessionKey: ByteArray//这两个是登录成功后得到的
@@ -156,21 +156,23 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
             }
 
             is ServerVerificationCodeTransmissionPacket -> {
-                this.verificationCodeSequence = 0
+                this.verificationCodeSequence++
                 this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePart2
 
                 this.verificationToken = packet.verificationToken
-                this.verificationCodeCacheCount = packet.count
+                this.verificationCodeCacheCount++
 
                 this.token00BA = packet.token00BA
-                this.verificationCodeCache
+
+
+                //todo 看易语言 count 和 sequence 是怎样变化的
 
 
                 if (packet.transmissionCompleted) {
                     this.verificationCodeCache
                     TODO("验证码好了")
                 } else {
-                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.count, this.number, this.token0825, this.verificationCodeSequence, this.token00BA))
+                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(this.verificationCodeCacheCount, this.number, this.token0825, this.verificationCodeSequence, this.token00BA))
                 }
             }
 

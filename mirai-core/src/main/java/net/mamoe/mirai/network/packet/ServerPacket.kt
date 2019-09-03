@@ -55,7 +55,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         359 -> ServerLoginResponseFailedPacket.State.TAKEN_BACK
 
                         //unknown
-                        63 -> throw IllegalArgumentException(bytes.size.toString() + " (Already logged in)")//可能是已经完成登录, 服务器拒绝第二次登录
+                        63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")//可能是已经完成登录, 服务器拒绝第二次登录
                         351 -> throw IllegalArgumentException(bytes.size.toString() + " (Illegal package data)")//包数据有误
 
                         else -> throw IllegalArgumentException(bytes.size.toString())

@@ -1,19 +1,21 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
+import net.mamoe.mirai.util.TestedSuccessfully
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
 
 @ExperimentalUnsignedTypes
 @PacketId("00 BA 31")
-class ClientVerificationCodeTransmissionRequestPacket(//todo 这个包可能有问题.
+class ClientVerificationCodeTransmissionRequestPacket(
         private val count: Int,
         private val qq: Long,
         private val token0825: ByteArray,
         private val verificationSequence: Int,
         private val token00BA: ByteArray
 ) : ClientPacket() {
+    @TestedSuccessfully
     override fun encode() {
         this.writeByte(count)//part of packet id
 
@@ -80,6 +82,7 @@ class ServerVerificationCodeRepeatPacket(input: DataInputStream) : ServerVerific
 
 abstract class ServerVerificationCodePacket(input: DataInputStream) : ServerPacket(input)
 
+@PacketId("00 BA")
 class ServerVerificationCodePacketEncrypted(input: DataInputStream) : ServerPacket(input) {
     override fun decode() {
 
@@ -88,7 +91,7 @@ class ServerVerificationCodePacketEncrypted(input: DataInputStream) : ServerPack
     @ExperimentalUnsignedTypes
     fun decrypt(): ServerVerificationCodePacket {
         this.input goto 14
-        val data = TEACryptor.decrypt(Protocol._00BaKey.hexToBytes(), this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) })
+        val data = TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol._00BaKey.hexToBytes())
         return if (data.size == 95) {
             ServerVerificationCodeRepeatPacket(data.dataInputStream())
         } else {

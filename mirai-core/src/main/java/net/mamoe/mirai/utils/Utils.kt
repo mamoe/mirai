@@ -26,12 +26,14 @@ fun ByteArray.__toUHexString(separator: String = " "): String = this.toUByteArra
 fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 
 @ExperimentalUnsignedTypes
-fun UByteArray.toUHexString(separator: String = " "): String = this.joinToString(separator) {
-    var ret = it.toString(16).toUpperCase()
-    if (ret.length == 1) {
-        ret = "0$ret"
+fun UByteArray.toUHexString(separator: String = " "): String {
+    return this.joinToString(separator) {
+        var ret = it.toString(16).toUpperCase()
+        if (ret.length == 1) {
+            ret = "0$ret"
+        }
+        return@joinToString ret
     }
-    return@joinToString ret
 }
 
 @ExperimentalUnsignedTypes
@@ -53,7 +55,7 @@ fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 fun String.hexToShort(): Short = hexToBytes().let { ((it[1].toInt() shl 8) + it[0]).toShort() }
 
 @ExperimentalUnsignedTypes
-fun String.hexToInt(): Int = hexToBytes().let { ((it[3].toInt() shl 24) + (it[2].toInt() shl 16) + (it[1].toInt() shl 8) + it[0]) }
+fun String.hexToInt(): Int = hexToBytes().let { ((it[0].toInt() shl 24) + (it[1].toInt() shl 16) + (it[2].toInt() shl 8) + it[3]) }
 
 @ExperimentalUnsignedTypes
 fun String.hexToByte(): Byte = hexToBytes()[0]
