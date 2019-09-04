@@ -346,7 +346,6 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
             else -> throw IllegalArgumentException(packet.toString())
         }
-
     }
 
     internal val packetSystem: PacketSystem = PacketSystem()
