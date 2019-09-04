@@ -108,15 +108,15 @@ fun DataOutputStream.writeVarInt(dec: UInt) {
 }
 
 fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, key: ByteArray) {
-    this.write(TEACryptor.encrypt(byteArray, key))
+    this.write(TEA.encrypt(byteArray, key))
 }
 
-fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, cryptor: TEACryptor) {
+fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, cryptor: TEA) {
     this.write(cryptor.encrypt(byteArray))
 }
 
 fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutputStream) -> Unit) {
-    this.write(TEACryptor.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }, key))
+    this.write(TEA.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }, key))
 }
 
 @ExperimentalUnsignedTypes
@@ -124,7 +124,7 @@ fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: (ByteArrayDataOutp
     this.encryptAndWrite(keyHex.hexToBytes(), encoder)
 }
 
-fun DataOutputStream.encryptAndWrite(cryptor: TEACryptor, encoder: (ByteArrayDataOutputStream) -> Unit) {
+fun DataOutputStream.encryptAndWrite(cryptor: TEA, encoder: (ByteArrayDataOutputStream) -> Unit) {
     this.write(cryptor.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }))
 }
 
@@ -132,24 +132,24 @@ fun DataOutputStream.encryptAndWrite(cryptor: TEACryptor, encoder: (ByteArrayDat
 @Throws(IOException::class)
 fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
     ByteArrayDataOutputStream().let {
-        it.writeHex("12 12 12 12")//it.writeRandom(4) todo
+        it.writeRandom(4)
         it.writeHex("00 02")
         it.writeQQ(qq)
-        it.writeHex(Protocol._0825data2)
+        it.writeHex(Protocol.constantData1)
         it.writeHex("00 00 01")
 
-        val md5_1 = md5(password);
-        val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
-        it.write(md5_1)
+        val firstMD5 = md5(password)
+        val secondMD5 = md5(firstMD5 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
+        it.write(firstMD5)
         it.writeInt(loginTime)
-        it.writeByte(0);
+        it.writeByte(0)
         it.writeZero(4 * 3)
         it.writeIP(loginIP)
         it.writeZero(8)
         it.writeHex("00 10")
         it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")
         it.write(tgtgtKey)
-        this.write(TEACryptor.encrypt(it.toByteArray(), md5_2))
+        this.write(TEA.encrypt(it.toByteArray(), secondMD5))
     }
 }
 
@@ -216,7 +216,7 @@ fun Int.toLByteArray(): ByteArray = byteArrayOf(
 )
 
 @ExperimentalUnsignedTypes
-fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator);
+fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator)
 
 internal fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 

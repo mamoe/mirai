@@ -4,7 +4,6 @@ import lombok.Getter;
 import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisableEvent;
 import net.mamoe.mirai.event.events.server.ServerEnableEvent;
-import net.mamoe.mirai.network.RobotNetworkHandler;
 import net.mamoe.mirai.network.packet.login.LoginState;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
@@ -36,7 +35,7 @@ public class MiraiServer {
     @Getter //is running under UNIX
     private boolean unix;
 
-    @Getter//file path
+    @Getter//file pathq
     public File parentFolder;
 
     @Getter
@@ -121,8 +120,7 @@ public class MiraiServer {
         this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
             try {
                 Robot robot = new Robot(section);
-                RobotNetworkHandler robotNetworkHandler = robot.getNetworkHandler();
-                robotNetworkHandler.tryLogin$mirai_core(state -> {
+                robot.network.tryLogin$mirai_core(state -> {
                     if (state == LoginState.SUCCEED) {
                         Robot.instances.add(robot);
                     } else {

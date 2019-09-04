@@ -3,10 +3,7 @@ package net.mamoe.mirai.network.packet
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.getAllDeclaredFields
-import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
 /**
@@ -14,7 +11,9 @@ import java.io.DataInputStream
  */
 abstract class ServerPacket(val input: DataInputStream) : Packet {
 
-    abstract fun decode()
+    open fun decode() {
+
+    }
 
     companion object {
 
@@ -28,23 +27,22 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
 
             return when (val idHex = stream.readInt().toHexString(" ")) {
-                "08 25 31 01" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
-
-                "08 25 31 02" -> ServerTouchResponsePacketEncrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
+                "08 25 31 01" -> ServerTouchResponsePacket.Encrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
+                "08 25 31 02" -> ServerTouchResponsePacket.Encrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
 
                 "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
                     when (bytes.size) {
-                        271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (idHex) {
+                        271, 207 -> return ServerLoginResponseResendPacket.Encrypted(stream, when (idHex) {
                             "08 36 31 03" -> ServerLoginResponseResendPacket.Flag.`08 36 31 03`
                             else -> {
                                 MiraiLogger debug ("ServerLoginResponseResendPacketEncrypted: flag=$idHex"); ServerLoginResponseResendPacket.Flag.OTHER
                             }
                         })
-                        871 -> return ServerLoginResponseVerificationCodePacketEncrypted(stream)
+                        871 -> return ServerLoginResponseVerificationCodeInitPacket.Encrypted(stream)
                     }
 
                     if (bytes.size > 700) {
-                        return ServerLoginResponseSuccessPacketEncrypted(stream)
+                        return ServerLoginResponseSuccessPacket.Encrypted(stream)
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
@@ -63,20 +61,20 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }, stream)
                 }
 
-                "08 28 04 34" -> ServerSessionKeyResponsePacketEncrypted(stream)
+                "08 28 04 34" -> ServerSessionKeyResponsePacket.Encrypted(stream)
 
 
                 else -> when (idHex.substring(0, 5)) {
                     "00 EC" -> ServerLoginSuccessPacket(stream)
-                    "00 1D" -> ServerSKeyResponsePacketEncrypted(stream)
-                    "00 5C" -> ServerAccountInfoResponsePacketEncrypted(stream)
+                    "00 1D" -> ServerSKeyResponsePacket.Encrypted(stream)
+                    "00 5C" -> ServerAccountInfoResponsePacket.Encrypted(stream)
 
                     "00 58" -> ServerHeartbeatResponsePacket(stream)
 
-                    "00 BA" -> ServerVerificationCodePacketEncrypted(stream)
+                    "00 BA" -> ServerVerificationCodePacket.Encrypted(stream)
 
 
-                    "00 CE", "00 17" -> ServerMessageEventPacketRawEncoded(stream, idHex.hexToBytes())
+                    "00 CE", "00 17" -> ServerEventPacket.Raw.Encrypted(stream, idHex.hexToBytes())
 
                     "00 81" -> UnknownServerPacket(stream)
 
@@ -100,6 +98,16 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
             }
         }
         }
+    }
+
+    fun decryptBy(key: ByteArray): DataInputStream {
+        input.goto(14)
+        return DataInputStream(TEA.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, key).inputStream())
+    }
+
+    @ExperimentalUnsignedTypes
+    fun decryptBy(keyHex: String): DataInputStream {
+        return this.decryptBy(keyHex.hexToBytes())
     }
 }
 
@@ -174,3 +182,5 @@ fun <N : Number> DataInputStream.readShortAt(position: N): Short {
     this.goto(position)
     return this.readShort();
 }
+
+fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)

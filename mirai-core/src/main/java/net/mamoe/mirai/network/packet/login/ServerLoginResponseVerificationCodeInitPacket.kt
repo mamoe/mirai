@@ -1,10 +1,11 @@
 package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.network.packet.cutTail
 import net.mamoe.mirai.network.packet.dataInputStream
 import net.mamoe.mirai.network.packet.goto
 import net.mamoe.mirai.util.TestedSuccessfully
-import net.mamoe.mirai.utils.TEACryptor
+import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.hexToUBytes
 import java.io.DataInputStream
 
@@ -32,6 +33,19 @@ class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, priv
 
         this.token00BA = this.input.goto(packetLength - 60).readNBytes(40)
     }
+
+
+    class Encrypted(input: DataInputStream) : ServerPacket(input) {
+        override fun decode() {
+
+        }
+
+        fun decrypt(): ServerLoginResponseVerificationCodeInitPacket {
+            this.input goto 14
+            val data = TEA.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().cutTail(1));
+            return ServerLoginResponseVerificationCodeInitPacket(data.dataInputStream(), data.size)
+        }
+    }
 }
 
 fun main() {
@@ -54,15 +68,3 @@ verify code
 token00ba
 42 E6 18 57 D4 B1 4D AE 51 27 D5 EF A2 38 91 39 15 37 6C 5A FE 75 93 49 DB FC 57 3C 12 3F 26 D9 16 1D 83 45 8B 78 39 D8
  */
-
-class ServerLoginResponseVerificationCodePacketEncrypted(input: DataInputStream) : ServerPacket(input) {
-    override fun decode() {
-
-    }
-
-    fun decrypt(): ServerLoginResponseVerificationCodeInitPacket {
-        this.input goto 14
-        val data = TEACryptor.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) });
-        return ServerLoginResponseVerificationCodeInitPacket(data.dataInputStream(), data.size)
-    }
-}

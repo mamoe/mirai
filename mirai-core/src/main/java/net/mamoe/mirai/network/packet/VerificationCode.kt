@@ -23,11 +23,11 @@ class ClientVerificationCodeTransmissionRequestPacket(
         this.writeByte(count)//part of packet id
 
         this.writeQQ(qq)
-        this.writeHex(Protocol._fixVer)
-        this.writeHex(Protocol._00BaKey)
-        this.encryptAndWrite(Protocol._00BaKey) {
+        this.writeHex(Protocol.fixVer2)
+        this.writeHex(Protocol.key00BA)
+        this.encryptAndWrite(Protocol.key00BA) {
             it.writeHex("00 02 00 00 08 04 01 E0")
-            it.writeHex(Protocol._0825data2)
+            it.writeHex(Protocol.constantData1)
             it.writeHex("00 00 38")
             it.write(token0825)
             it.writeHex("01 03 00 19")
@@ -37,7 +37,7 @@ class ClientVerificationCodeTransmissionRequestPacket(
             it.writeHex("00 28")
             it.write(token00BA)
             it.writeHex("00 10")
-            it.writeHex(Protocol._00BaFixKey)
+            it.writeHex(Protocol.key00BAFix)
         }
     }
 }
@@ -87,22 +87,19 @@ class ServerVerificationCodeRepeatPacket(input: DataInputStream) : ServerVerific
     }
 }
 
-abstract class ServerVerificationCodePacket(input: DataInputStream) : ServerPacket(input)
+abstract class ServerVerificationCodePacket(input: DataInputStream) : ServerPacket(input) {
 
-@PacketId("00 BA")
-class ServerVerificationCodePacketEncrypted(input: DataInputStream) : ServerPacket(input) {
-    override fun decode() {
-
-    }
-
-    @ExperimentalUnsignedTypes
-    fun decrypt(): ServerVerificationCodePacket {
-        this.input goto 14
-        val data = TEACryptor.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol._00BaKey.hexToBytes())
-        return if (data.size == 95) {
-            ServerVerificationCodeRepeatPacket(data.dataInputStream())
-        } else {
-            ServerVerificationCodeTransmissionPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4))
+    @PacketId("00 BA")
+    class Encrypted(input: DataInputStream) : ServerPacket(input) {
+        @ExperimentalUnsignedTypes
+        fun decrypt(): ServerVerificationCodePacket {
+            this.input goto 14
+            val data = TEA.decrypt(this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, Protocol.key00BA.hexToBytes())
+            return if (data.size == 95) {
+                ServerVerificationCodeRepeatPacket(data.dataInputStream())
+            } else {
+                ServerVerificationCodeTransmissionPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4))
+            }
         }
     }
 }

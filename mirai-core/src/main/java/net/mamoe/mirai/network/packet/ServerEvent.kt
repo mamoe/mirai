@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.message.defaults.PlainText
+import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.toUHexString
 import java.io.ByteArrayOutputStream
@@ -9,14 +10,49 @@ import java.io.DataInputStream
 import java.util.zip.GZIPInputStream
 
 /**
+ * Packet id: `00 CE` or `00 17`
+ *
  * @author Him188moe
  */
 open class ServerEventPacket(input: DataInputStream, val packetId: ByteArray, val eventIdentity: ByteArray) : ServerPacket(input) {
+    @PacketId("00 17")
+    class Raw(input: DataInputStream, private val packetId: ByteArray) : ServerPacket(input) {
+        @ExperimentalUnsignedTypes
+        fun distribute(): ServerEventPacket {
+            val eventIdentity = this.input.readNBytes(16)
+            val type = this.input.goto(18).readNBytes(2)
 
-    override fun decode() {
+            return when (type.toUHexString()) {
+                "00 C4" -> {
+                    if (this.input.goto(33).readBoolean()) {
+                        ServerAndroidOnlineEventPacket(this.input, packetId, eventIdentity)
+                    } else {
+                        ServerAndroidOfflineEventPacket(this.input, packetId, eventIdentity)
+                    }
+                }
+                "00 2D" -> ServerGroupUploadFileEventPacket(this.input, packetId, eventIdentity)
 
+                "00 52" -> ServerGroupMessageEventPacket(this.input, packetId, eventIdentity)
+
+                "00 A6" -> ServerFriendMessageEventPacket(this.input, packetId, eventIdentity)
+
+                //"02 10", "00 12" -> ServerUnknownEventPacket(this.input, packetId, eventIdentity)
+
+                else -> UnknownServerEventPacket(this.input, packetId, eventIdentity)
+            }
+        }
+
+        @PacketId("00 17")
+        class Encrypted(input: DataInputStream, private val packetId: ByteArray) : ServerPacket(input) {
+            fun decrypt(sessionKey: ByteArray): Raw = Raw(decryptBy(sessionKey), packetId)
+        }
     }
 }
+
+/**
+ * Unknown event
+ */
+class UnknownServerEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity)
 
 /**
  * Android 客户端上线
@@ -32,7 +68,7 @@ class ServerAndroidOfflineEventPacket(input: DataInputStream, packetId: ByteArra
  * 群文件上传
  */
 class ServerGroupUploadFileEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
-    lateinit var xmlMessage: String
+    private lateinit var xmlMessage: String
 
     override fun decode() {
         xmlMessage = String(this.input.goto(65).readNBytes(this.input.goto(60).readShort().toInt()))
@@ -147,7 +183,6 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
     var qq: Long = 0
     lateinit var message: MessageChain
 
-
     @ExperimentalUnsignedTypes
     override fun decode() {
         //start at Sep1.0:27
@@ -166,6 +201,30 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
     }
 
 }
+
+
+/**
+ * 告知服务器已经收到数据
+ */
+@PacketId("")//随后写入
+@ExperimentalUnsignedTypes
+class ClientMessageResponsePacket(
+        private val qq: Long,
+        private val packetIdFromServer: ByteArray,//4bytes
+        private val sessionKey: ByteArray,
+        private val eventIdentity: ByteArray
+) : ClientPacket() {
+    override fun encode() {
+        this.write(packetIdFromServer)//packet id 4bytes
+
+        this.writeQQ(qq)
+        this.writeHex(Protocol.fixVer2)
+        this.encryptAndWrite(sessionKey) {
+            it.write(eventIdentity)
+        }
+    }
+}
+
 /*
 3E 03 3F A2 76 E4 B8 DD 00 09 7C 3F 64 5C 2A 60 1F 40 00 A6 00 00 00 2D 00 05 00 02 00 01 00 06 00 04 00 01 2E 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 02 38 03 3E 03 3F A2 76 E4 B8 DD 01 10 9D D6 12 EA BC 07 91 EF DC 29 75 67 A9 1E 00 0B 2F E4 5D 6B A8 F6 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D 6B A8 F6 08 7E 90 CE 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
 3E 03 3F A2 76 E4 B8 DD 00 03 5F 85 64 5C 2A A4 1F 40 00 A6 00 00 00 2D 00 05 00 02 00 01 00 06 00 04 00 01 2E 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 02 38 03 3E 03 3F A2 76 E4 B8 DD 01 10 9D D6 12 EA BC 07 91 EF DC 29 75 67 A9 1E 00 0B 2F E5 5D 6B A9 16 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D 6B A9 17 1B B3 4D D7 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00

@@ -8,10 +8,10 @@ import java.util.Random;
 /**
  * @author iweiz https://github.com/iweizime/StepChanger/blob/master/app/src/main/java/me/iweizi/stepchanger/qq/Cryptor.java
  */
-public class TEACryptor {
-    public static final TEACryptor CRYPTOR_SHARE_KEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol.shareKey));
-    public static final TEACryptor CRYPTOR_0825KEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._0825key));
-    public static final TEACryptor CRYPTOR_00BAKEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._00BaKey));
+public class TEA {
+    public static final TEA CRYPTOR_SHARE_KEY = new TEA(Protocol.Companion.hexToBytes(Protocol.shareKey));
+    public static final TEA CRYPTOR_0825KEY = new TEA(Protocol.Companion.hexToBytes(Protocol.key0825));
+    public static final TEA CRYPTOR_00BAKEY = new TEA(Protocol.Companion.hexToBytes(Protocol.key00BA));
 
     private static final long UINT32_MASK = 0xffffffffL;
     private final long[] mKey;
@@ -25,7 +25,7 @@ public class TEACryptor {
     private boolean isFirstBlock;
     private boolean isRand;
 
-    public TEACryptor(byte[] key) {
+    public TEA(byte[] key) {
         mKey = new long[4];
         for (int i = 0; i < 4; i++) {
             mKey[i] = pack(key, i * 4, 4);
@@ -36,11 +36,19 @@ public class TEACryptor {
     }
 
     public static byte[] encrypt(byte[] source, byte[] key) {
-        return new TEACryptor(key).encrypt(source);
+        return new TEA(key).encrypt(source);
+    }
+
+    public static byte[] encrypt(byte[] source, String keyHex) {
+        return encrypt(source, UtilsKt.hexToBytes(keyHex));
     }
 
     public static byte[] decrypt(byte[] source, byte[] key) {
-        return new TEACryptor(key).decrypt(source);
+        return new TEA(key).decrypt(source);
+    }
+
+    public static byte[] decrypt(byte[] source, String keyHex) {
+        return decrypt(source, UtilsKt.hexToBytes(keyHex));
     }
 
     private static long pack(byte[] bytes, int offset, int len) {

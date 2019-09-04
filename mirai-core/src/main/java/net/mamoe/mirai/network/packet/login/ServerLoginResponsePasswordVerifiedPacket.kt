@@ -1,13 +1,9 @@
 package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.ServerPacket
-import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.network.packet.readNBytesAt
-import net.mamoe.mirai.network.packet.readVarString
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.util.TestedSuccessfully
-import net.mamoe.mirai.utils.TEACryptor
-import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
@@ -117,21 +113,14 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
 
         //this.gender = this.input.goto(packetDataLength - 32).readByteAt().toInt()
     }
-}
 
-class ServerLoginResponseSuccessPacketEncrypted(input: DataInputStream) : ServerPacket(input) {
-    override fun decode() {
 
+    class Encrypted(input: DataInputStream) : ServerPacket(input) {
+        @ExperimentalUnsignedTypes
+        fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {
+            input goto 14
+            return ServerLoginResponseSuccessPacket(TEA.decrypt(TEA.decrypt(input.readAllBytes().cutTail(1), Protocol.shareKey), tgtgtKey).dataInputStream());
+        }
     }
 
-    @ExperimentalUnsignedTypes
-    fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {
-        input goto 14
-        var bytes = input.readAllBytes()
-        bytes = bytes.copyOfRange(0, bytes.size - 1)
-        println(bytes.toUByteArray().toUHexString())
-
-        return ServerLoginResponseSuccessPacket(DataInputStream(TEACryptor.decrypt(TEACryptor.decrypt(bytes, Protocol.shareKey.hexToBytes()), tgtgtKey).inputStream()));
-        //TeaDecrypt(取文本中间(data, 43, 取文本长度(data) － 45), m_0828_rec_decr_key)
-    }
 }

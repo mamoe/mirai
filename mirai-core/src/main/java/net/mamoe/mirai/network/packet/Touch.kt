@@ -48,24 +48,13 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
             }
         }
     }
-}
 
-class ServerTouchResponsePacketEncrypted(private val type: ServerTouchResponsePacket.Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
-    override fun decode() {
-
-    }
-
-    @ExperimentalUnsignedTypes
-    fun decrypt(): ServerTouchResponsePacket {
-        input.skip(7)
-        var bytes = input.readAllBytes();
-        bytes = bytes.copyOfRange(0, bytes.size - 1);
-        println(bytes.toUByteArray().toUHexString())
-
-        return ServerTouchResponsePacket(DataInputStream(TEACryptor.decrypt(bytes, when (type) {
-            ServerTouchResponsePacket.Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()
-            ServerTouchResponsePacket.Type.TYPE_08_25_31_01 -> Protocol._0825key.hexToBytes()
-        }).inputStream()));
+    class Encrypted(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
+        @ExperimentalUnsignedTypes
+        fun decrypt(): ServerTouchResponsePacket = ServerTouchResponsePacket(decryptBy(when (type) {
+            Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()
+            Type.TYPE_08_25_31_01 -> Protocol.key0825.hexToBytes()
+        }))
     }
 }
 
@@ -82,13 +71,13 @@ class ClientTouchPacket(val qq: Long, val serverIp: String) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
-        this.writeHex(Protocol._0825key)
+        this.writeHex(Protocol.key0825)
 
-        this.write(TEACryptor.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
+        this.write(TEA.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {
-                this.writeHex(Protocol._0825data0)
-                this.writeHex(Protocol._0825data2)
+                this.writeHex(Protocol.constantData0)
+                this.writeHex(Protocol.constantData1)
                 this.writeQQ(qq)
                 this.writeHex("00 00 00 00 03 09 00 08 00 01")
                 this.writeIP(serverIp);
@@ -116,11 +105,11 @@ class ClientServerRedirectionPacket(private val serverIP: String, private val qq
         this.writeHex(Protocol.redirectionKey)
 
 
-        this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
+        this.write(TEA.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {
-                this.writeHex(Protocol._0825data0)
-                this.writeHex(Protocol._0825data2)
+                this.writeHex(Protocol.constantData0)
+                this.writeHex(Protocol.constantData1)
                 this.writeQQ(qq)
                 this.writeHex("00 01 00 00 03 09 00 0C 00 01")
                 this.writeIP(serverIP)

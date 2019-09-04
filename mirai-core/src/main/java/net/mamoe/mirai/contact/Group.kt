@@ -1,15 +1,16 @@
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.Robot
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.utils.ContactList
 import java.io.Closeable
 
-class Group(number: Long) : Contact(number), Closeable {
+class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
     val groupId = groupNumberToId(number)
     val members = ContactList<QQ>()
 
     override fun sendMessage(message: Message) {
-
+        robot.network.packetSystem.sendGroupMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {

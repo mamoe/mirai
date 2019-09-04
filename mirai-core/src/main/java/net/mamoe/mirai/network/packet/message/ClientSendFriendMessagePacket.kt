@@ -19,7 +19,7 @@ class ClientSendFriendMessagePacket(
     override fun encode() {
         this.writeRandom(2)//part of packet id
         this.writeQQ(robotQQ)
-        this.writeHex(Protocol._fixVer)
+        this.writeHex(Protocol.fixVer2)
 
         this.encryptAndWrite(sessionKey) {
             it.writeQQ(robotQQ)
@@ -58,7 +58,4 @@ class ClientSendFriendMessagePacket(
 }
 
 @PacketId("00 CD")
-class ServerSendFriendMessageResponsePacket(input: DataInputStream) : ServerPacket(input) {
-    override fun decode() {
-    }
-}
+class ServerSendFriendMessageResponsePacket(input: DataInputStream) : ServerPacket(input)

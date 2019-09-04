@@ -4,7 +4,7 @@ import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.util.TestedSuccessfully
 import net.mamoe.mirai.utils.ByteArrayDataOutputStream
-import net.mamoe.mirai.utils.TEACryptor
+import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataOutputStream
@@ -28,10 +28,10 @@ class ClientPasswordSubmissionPacket(
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)
-        this.writeHex(Protocol._0836_622_fix1)
+        this.writeHex(Protocol.passwordSubmissionKey1)
         this.writeHex(Protocol.publicKey)
         this.writeHex("00 00 00 10")
-        this.writeHex(Protocol._0836key1)
+        this.writeHex(Protocol.key0836)
 
         this.encryptAndWrite(Protocol.shareKey.hexToBytes()) {
             it.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
@@ -69,12 +69,12 @@ open class ClientLoginResendPacket internal constructor(
 ) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
-        this.writeHex(Protocol._0836_622_fix1)
+        this.writeHex(Protocol.passwordSubmissionKey1)
         this.writeHex(Protocol.publicKey)
         this.writeHex("00 00 00 10")
-        this.writeHex(Protocol._0836key1)
+        this.writeHex(Protocol.key0836)
 
-        this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
+        this.write(TEA.encrypt(object : ByteArrayDataOutputStream() {
             override fun toByteArray(): ByteArray {
                 this.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv_0006_encr)
 
@@ -115,12 +115,12 @@ private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: I
         this.writeTLV0006(qq, password, loginTime, loginIP, tgtgtKey)
     }
     //fix
-    this.writeHex(Protocol._0836_622_fix2)
+    this.writeHex(Protocol.passwordSubmissionKey2)
     this.writeHex("00 1A")//tag
     this.writeHex("00 40")//length
-    this.write(TEACryptor.encrypt(Protocol._0836_622_fix2.hexToBytes(), tgtgtKey))
-    this.writeHex(Protocol._0825data0)
-    this.writeHex(Protocol._0825data2)
+    this.write(TEA.encrypt(Protocol.passwordSubmissionKey2.hexToBytes(), tgtgtKey))
+    this.writeHex(Protocol.constantData0)
+    this.writeHex(Protocol.constantData1)
     this.writeQQ(qq)
     this.writeZero(4)
 

@@ -2,10 +2,8 @@ package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.ServerPacket
-import net.mamoe.mirai.network.packet.dataInputStream
 import net.mamoe.mirai.network.packet.goto
 import net.mamoe.mirai.util.TestedSuccessfully
-import net.mamoe.mirai.utils.TEACryptor
 import java.io.DataInputStream
 
 /**
@@ -43,20 +41,9 @@ class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : 
             }
         }
     }
-}
 
-class ServerLoginResponseResendPacketEncrypted(input: DataInputStream, private val flag: ServerLoginResponseResendPacket.Flag) : ServerPacket(input) {
-    override fun decode() {
-
-    }
-
-    @TestedSuccessfully
-    fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseResendPacket {
-        //this.input.skip(7)
-        this.input goto 14
-        var data: ByteArray = this.input.readAllBytes()
-        data = TEACryptor.CRYPTOR_SHARE_KEY.decrypt(data.let { it.copyOfRange(0, it.size - 1) });
-        data = TEACryptor.decrypt(data, tgtgtKey)
-        return ServerLoginResponseResendPacket(data.dataInputStream(), flag)
+    class Encrypted(input: DataInputStream, private val flag: Flag) : ServerPacket(input) {
+        @TestedSuccessfully
+        fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseResendPacket = ServerLoginResponseResendPacket(decryptBy(tgtgtKey), flag)
     }
 }

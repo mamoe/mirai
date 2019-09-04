@@ -24,8 +24,4 @@ class ClientHeartbeatPacket(
     }
 }
 
-class ServerHeartbeatResponsePacket(input: DataInputStream) : ServerPacket(input) {
-    override fun decode() {
-
-    }
-}
+class ServerHeartbeatResponsePacket(input: DataInputStream) : ServerPacket(input)

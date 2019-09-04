@@ -2,33 +2,36 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
+import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.login.*
-import net.mamoe.mirai.network.packet.message.ClientSendGroupMessagePacket
 import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.task.MiraiThreadPool
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ClientLoginStatus
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.getGTK
+import net.mamoe.mirai.utils.lazyEncode
 import java.io.Closeable
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
 
-
 /**
  * A RobotNetworkHandler is used to connect with Tencent servers.
  *
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
-internal class RobotNetworkHandler(val robot: Robot, val number: Long, private val password: String) : Closeable {
+@Suppress("EXPERIMENTAL_API_USAGE")//to simplify code
+internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
-    var socket: DatagramSocket = DatagramSocket((15314 + Math.random() * 100).toInt())
+    private var socket: DatagramSocket = DatagramSocket((15314 + Math.random() * 100).toInt())
 
-    var serverIP: String = ""
+    private var serverIP: String = ""
         set(value) {
             serverAddress = InetSocketAddress(value, 8000)
             field = value
@@ -45,7 +48,7 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
     private lateinit var loginIP: String
     private var tgtgtKey: ByteArray? = null
     private var tlv0105: ByteArray
-    private lateinit var _0828_rec_decr_key: ByteArray
+    private lateinit var sessionResponseDecryptionKey: ByteArray
 
     private var verificationCodeSequence: Int = 0//这两个验证码使用
     private var verificationCodeCache: ByteArray? = null//每次包只发一部分验证码来
@@ -82,10 +85,6 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
         }
     }
 
-
-    @ExperimentalUnsignedTypes
-    private var md5_32: ByteArray = getRandomKey(32)
-
     /**
      * Try to login to server
      */
@@ -110,7 +109,7 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
         if (loginHook != null) {
             this.loginHook = loginHook
         }
-        this.sendPacket(ClientTouchPacket(this.number, this.serverIP))
+        this.sendPacket(ClientTouchPacket(this.robot.account.qqNumber, this.serverIP))
     }
 
     private fun restartSocket() {
@@ -151,20 +150,20 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
         packet.decode()
         MiraiLogger info "Packet received: $packet"
         if (packet is ServerEventPacket) {
-            sendPacket(ClientMessageResponsePacket(this.number, packet.packetId, this.sessionKey, packet.eventIdentity))
+            sendPacket(ClientMessageResponsePacket(this.robot.account.qqNumber, packet.packetId, this.sessionKey, packet.eventIdentity))
         }
         when (packet) {
             is ServerTouchResponsePacket -> {
                 if (packet.serverIP != null) {//redirection
                     serverIP = packet.serverIP!!
                     //connect(packet.serverIP!!)
-                    sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, number))
+                    sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, this.robot.account.qqNumber))
                 } else {//password submission
                     this.loginIP = packet.loginIP
                     this.loginTime = packet.loginTime
                     this.token0825 = packet.token0825
                     this.tgtgtKey = packet.tgtgtKey
-                    sendPacket(ClientPasswordSubmissionPacket(this.number, this.password, packet.loginTime, packet.loginIP, packet.tgtgtKey, packet.token0825))
+                    sendPacket(ClientPasswordSubmissionPacket(this.robot.account.qqNumber, this.robot.account.password, packet.loginTime, packet.loginIP, packet.tgtgtKey, packet.token0825))
                 }
             }
 
@@ -182,7 +181,7 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
 
                 if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
                     this.verificationCodeSequence = 1
-                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, this.number, this.token0825, this.verificationCodeSequence, this.token00BA))
+                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, this.robot.account.qqNumber, this.token0825, this.verificationCodeSequence, this.token00BA))
                 }
 
             }
@@ -190,7 +189,7 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
             is ServerVerificationCodeRepeatPacket -> {//todo 这个名字正确么
                 this.tgtgtKey = packet.tgtgtKeyUpdate
                 this.token00BA = packet.token00BA
-                sendPacket(ClientLoginResendPacket3105(this.number, this.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
+                sendPacket(ClientLoginResendPacket3105(this.robot.account.qqNumber, this.robot.account.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
             }
 
             is ServerVerificationCodeTransmissionPacket -> {
@@ -210,26 +209,26 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
                     this.verificationCodeCache
                     TODO("验证码好了")
                 } else {
-                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(this.verificationCodeCacheCount, this.number, this.token0825, this.verificationCodeSequence, this.token00BA))
+                    sendPacket(ClientVerificationCodeTransmissionRequestPacket(this.verificationCodeCacheCount, this.robot.account.qqNumber, this.token0825, this.verificationCodeSequence, this.token00BA))
                 }
             }
 
             is ServerLoginResponseSuccessPacket -> {
-                this._0828_rec_decr_key = packet._0828_rec_decr_key
-                sendPacket(ClientSessionRequestPacket(this.number, this.serverIP, this.loginIP, this.md5_32, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
+                this.sessionResponseDecryptionKey = packet._0828_rec_decr_key
+                sendPacket(ClientSessionRequestPacket(this.robot.account.qqNumber, this.serverIP, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
             }
 
             //是ClientPasswordSubmissionPacket之后服务器回复的
             is ServerLoginResponseResendPacket -> {
-                if (packet.tokenUnknown != null) {
-                    //this.token00BA = packet.token00BA!!
-                    //println("token00BA changed!!! to " + token00BA.toUByteArray())
-                }
+                //if (packet.tokenUnknown != null) {
+                //this.token00BA = packet.token00BA!!
+                //println("token00BA changed!!! to " + token00BA.toUByteArray())
+                //}
                 if (packet.flag == ServerLoginResponseResendPacket.Flag.`08 36 31 03`) {
                     this.tgtgtKey = packet.tgtgtKey
                     sendPacket(ClientLoginResendPacket3104(
-                            this.number,
-                            this.password,
+                            this.robot.account.qqNumber,
+                            this.robot.account.password,
                             this.loginTime,
                             this.loginIP,
                             this.tgtgtKey!!,
@@ -242,8 +241,8 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
                     ))
                 } else {
                     sendPacket(ClientLoginResendPacket3106(
-                            this.number,
-                            this.password,
+                            this.robot.account.qqNumber,
+                            this.robot.account.password,
                             this.loginTime,
                             this.loginIP,
                             this.tgtgtKey!!,
@@ -261,7 +260,7 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
             is ServerSessionKeyResponsePacket -> {
                 this.sessionKey = packet.sessionKey
                 MiraiThreadPool.getInstance().scheduleWithFixedDelay({
-                    sendPacket(ClientHeartbeatPacket(this.number, this.sessionKey))
+                    sendPacket(ClientHeartbeatPacket(this.robot.account.qqNumber, this.sessionKey))
                 }, 90000, 90000, TimeUnit.MILLISECONDS)
                 RobotLoginSucceedEvent(robot).broadcast()
 
@@ -270,24 +269,24 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
                 }, 2, TimeUnit.SECONDS)
 
                 this.tlv0105 = packet.tlv0105
-                sendPacket(ClientLoginStatusPacket(this.number, this.sessionKey, ClientLoginStatus.ONLINE))
+                sendPacket(ClientChangeOnlineStatusPacket(this.robot.account.qqNumber, this.sessionKey, ClientLoginStatus.ONLINE))
             }
 
             is ServerLoginSuccessPacket -> {
                 loginState = LoginState.SUCCEED
-                sendPacket(ClientSKeyRequestPacket(this.number, this.sessionKey))
+                sendPacket(ClientSKeyRequestPacket(this.robot.account.qqNumber, this.sessionKey))
             }
 
             is ServerSKeyResponsePacket -> {
                 this.sKey = packet.sKey
-                this.cookies = "uin=o" + this.number + ";skey=" + this.sKey + ";"
+                this.cookies = "uin=o" + this.robot.account.qqNumber + ";skey=" + this.sKey + ";"
 
                 MiraiThreadPool.getInstance().scheduleWithFixedDelay({
-                    sendPacket(ClientSKeyRefreshmentRequestPacket(this.number, this.sessionKey))
+                    sendPacket(ClientSKeyRefreshmentRequestPacket(this.robot.account.qqNumber, this.sessionKey))
                 }, 1800000, 1800000, TimeUnit.MILLISECONDS)
 
                 this.gtk = getGTK(sKey)
-                sendPacket(ClientAccountInfoRequestPacket(this.number, this.sessionKey))
+                sendPacket(ClientAccountInfoRequestPacket(this.robot.account.qqNumber, this.sessionKey))
             }
 
             is ServerHeartbeatResponsePacket -> {
@@ -304,17 +303,12 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
                     return
                 }
 
-                FriendMessageEvent(this.robot, this.robot.getQQ(packet.qq), packet.message)
+                FriendMessageEvent(this.robot, this.robot.contacts.getQQ(packet.qq), packet.message)
             }
 
             is ServerGroupMessageEventPacket -> {
-                //group message
-                if (packet.message == "牛逼") {
-                    sendPacket(ClientSendGroupMessagePacket(Group.groupNumberToId(packet.groupNumber), this.number, this.sessionKey, "牛逼!"))
-                }
-
-                //todo
-                //GroupMessageEvent(this.robot, this.robot.getGroup(packet.groupNumber), this.robot.getQQ(packet.qq), packet.message)
+                //todo message chain
+                //GroupMessageEvent(this.robot, this.robot.contacts.getGroupByNumber(packet.groupNumber), this.robot.contacts.getQQ(packet.qq), packet.message)
             }
 
             is UnknownServerEventPacket -> {
@@ -329,17 +323,17 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
 
             }
 
-            is ServerMessageEventPacketRaw -> onPacketReceived(packet.analyze())
+            is ServerEventPacket.Raw -> onPacketReceived(packet.distribute())
 
-            is ServerVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
-            is ServerLoginResponseVerificationCodePacketEncrypted -> onPacketReceived(packet.decrypt())
-            is ServerLoginResponseResendPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
-            is ServerLoginResponseSuccessPacketEncrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
-            is ServerSessionKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this._0828_rec_decr_key))
-            is ServerTouchResponsePacketEncrypted -> onPacketReceived(packet.decrypt())
-            is ServerSKeyResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
-            is ServerAccountInfoResponsePacketEncrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
-            is ServerMessageEventPacketRawEncoded -> onPacketReceived(packet.decrypt(this.sessionKey))
+            is ServerVerificationCodePacket.Encrypted -> onPacketReceived(packet.decrypt())
+            is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> onPacketReceived(packet.decrypt())
+            is ServerLoginResponseResendPacket.Encrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
+            is ServerLoginResponseSuccessPacket.Encrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
+            is ServerSessionKeyResponsePacket.Encrypted -> onPacketReceived(packet.decrypt(this.sessionResponseDecryptionKey))
+            is ServerTouchResponsePacket.Encrypted -> onPacketReceived(packet.decrypt())
+            is ServerSKeyResponsePacket.Encrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
+            is ServerAccountInfoResponsePacket.Encrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
+            is ServerEventPacket.Raw.Encrypted -> onPacketReceived(packet.decrypt(this.sessionKey))
 
 
             is ServerSendFriendMessageResponsePacket,
@@ -348,6 +342,21 @@ internal class RobotNetworkHandler(val robot: Robot, val number: Long, private v
             }
 
             else -> throw IllegalArgumentException(packet.toString())
+        }
+
+    }
+
+    internal val packetSystem: PacketSystem = PacketSystem()
+
+    inner class PacketSystem {
+        fun sendFriendMessage(qq: QQ, message: Message) {
+            TODO()
+            //sendPacket(ClientSendFriendMessagePacket(robot.account.qqNumber, qq.number, sessionKey, message))
+        }
+
+        fun sendGroupMessage(group: Group, message: Message): Unit {
+            TODO()
+            //sendPacket(ClientSendGroupMessagePacket(group.groupId, robot.account.qqNumber, sessionKey, message))
         }
 
     }

@@ -5,21 +5,58 @@ import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.QQ;
 import net.mamoe.mirai.network.RobotNetworkHandler;
 import net.mamoe.mirai.utils.ContactList;
+import net.mamoe.mirai.utils.RobotAccount;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
-public class Robot implements Closeable {
+/**
+ * Robot that is the base of the whole program.
+ * It contains a {@link ContactSystem}, which manage contacts such as {@link QQ} and {@link Group}.
+ */
+public final class Robot implements Closeable {
     public static final List<Robot> instances = Collections.synchronizedList(new LinkedList<>());
 
-    private final long qqNumber;
-    private final String password;
-    @Getter
-    private final RobotNetworkHandler networkHandler;
+    public final RobotAccount account;
+
+    public final ContactSystem contacts = new ContactSystem();
+
+    public final RobotNetworkHandler network;
+
+    /**
+     * Robot 联系人管理.
+     *
+     * @see Robot#contacts
+     */
+    public final class ContactSystem {
+        private final ContactList<Group> groups = new ContactList<>();
+        private final ContactList<QQ> qqs = new ContactList<>();
+
+        private ContactSystem() {
+
+        }
+
+        public QQ getQQ(long qqNumber) {
+            if (!this.qqs.containsKey(qqNumber)) {
+                this.qqs.put(qqNumber, new QQ(Robot.this, qqNumber));
+            }
+            return this.qqs.get(qqNumber);
+        }
+
+        public Group getGroupByNumber(long groupNumber) {
+            if (!this.groups.containsKey(groupNumber)) {
+                this.groups.put(groupNumber, new Group(Robot.this, groupNumber));
+            }
+            return groups.get(groupNumber);
+        }
+
+        public Group getGroupById(long groupId) {
+            return getGroupByNumber(Group.Companion.groupIdToNumber(groupId));
+        }
+    }
+
 
     /**
      * Ref list
@@ -27,57 +64,36 @@ public class Robot implements Closeable {
     @Getter
     private final List<String> owners;
 
-    private final ContactList<Group> groups = new ContactList<>();
-    private final ContactList<QQ> qqs = new ContactList<>();
-
-    public void close() {
-        this.networkHandler.close();
-        this.owners.clear();
-        this.groups.values().forEach(Group::close);
-        this.groups.clear();
-        this.qqs.clear();
-    }
-
     public boolean isOwnBy(String ownerName) {
         return owners.contains(ownerName);
     }
 
-    public long getQQNumber() {
-        return qqNumber;
-    }
-
     public Robot(MiraiConfigSection<Object> data) throws Throwable {
         this(
-                data.getLongOrThrow("account", () -> new IllegalArgumentException("account")),
-                data.getStringOrThrow("password", () -> new IllegalArgumentException("password")),
+                new RobotAccount(
+                        data.getLongOrThrow("account", () -> new IllegalArgumentException("account")),
+                        data.getStringOrThrow("password", () -> new IllegalArgumentException("password"))
+                ),
                 data.getAsOrDefault("owners", ArrayList::new)
         );
-
     }
 
-    public Robot(long qqNumber, String password, List<String> owners) {
-        this.qqNumber = qqNumber;
-        this.password = password;
+    public Robot(@NotNull RobotAccount account, @NotNull List<String> owners) {
+        Objects.requireNonNull(account);
+        Objects.requireNonNull(owners);
+        this.account = account;
         this.owners = Collections.unmodifiableList(owners);
-        this.networkHandler = new RobotNetworkHandler(this, this.qqNumber, this.password);
+        this.network = new RobotNetworkHandler(this);
     }
 
-    public QQ getQQ(long qqNumber) {
-        if (!this.qqs.containsKey(qqNumber)) {
-            this.qqs.put(qqNumber, new QQ(qqNumber));
-        }
-        return this.qqs.get(qqNumber);
+
+    public void close() {
+        this.network.close();
+        this.owners.clear();
+        this.contacts.groups.values().forEach(Group::close);
+        this.contacts.groups.clear();
+        this.contacts.qqs.clear();
     }
 
-    public Group getGroup(long groupNumber) {
-        if (!this.groups.containsKey(groupNumber)) {
-            this.groups.put(groupNumber, new Group(groupNumber));
-        }
-        return groups.get(groupNumber);
-    }
-
-    public Group getGroupByGroupId(long groupId) {
-        return getGroup(Group.Companion.groupIdToNumber(groupId));
-    }
 }
 
