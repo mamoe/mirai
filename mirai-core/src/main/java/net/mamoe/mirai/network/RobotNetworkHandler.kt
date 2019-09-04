@@ -118,7 +118,7 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
     private fun restartSocket() {
         socket.close()
         socket = DatagramSocket((15314 + Math.random() * 100).toInt())
-        socket.connect(this.serverAddress).runCatching { }
+        socket.connect(this.serverAddress)
         val zeroByte: Byte = 0
         Thread {
             while (true) {
