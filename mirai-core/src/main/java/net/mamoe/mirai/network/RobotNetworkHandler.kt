@@ -363,19 +363,20 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     }
 
+    /**
+     * Not async
+     */
     @ExperimentalUnsignedTypes
     fun sendPacket(packet: ClientPacket) {
-        MiraiThreadPool.getInstance().submit {
-            try {
-                packet.encode()
-                packet.writeHex(Protocol.tail)
+        try {
+            packet.encode()
+            packet.writeHex(Protocol.tail)
 
-                val data = packet.toByteArray()
-                socket.send(DatagramPacket(data, data.size))
-                MiraiLogger info "Packet sent: $packet"
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
+            val data = packet.toByteArray()
+            socket.send(DatagramPacket(data, data.size))
+            MiraiLogger info "Packet sent: $packet"
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
     }
 
