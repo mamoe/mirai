@@ -1,8 +1,8 @@
 package net.mamoe.mirai.network.packet
 
+import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
+import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
-import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
-import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 

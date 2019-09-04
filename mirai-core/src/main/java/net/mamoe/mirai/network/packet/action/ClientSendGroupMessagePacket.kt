@@ -1,4 +1,4 @@
-package net.mamoe.mirai.network.packet.message
+package net.mamoe.mirai.network.packet.action
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*

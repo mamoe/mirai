@@ -7,9 +7,9 @@ import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
+import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
-import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
-import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.ClientLoginStatus
 import net.mamoe.mirai.utils.MiraiLogger
