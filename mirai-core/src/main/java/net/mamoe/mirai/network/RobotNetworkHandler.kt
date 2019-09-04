@@ -48,6 +48,9 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
     private lateinit var loginIP: String
     private var tgtgtKey: ByteArray? = null
     private var tlv0105: ByteArray
+    /**
+     * 0828_decr_key
+     */
     private lateinit var sessionResponseDecryptionKey: ByteArray
 
     private var verificationCodeSequence: Int = 0//这两个验证码使用
@@ -214,7 +217,7 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
             }
 
             is ServerLoginResponseSuccessPacket -> {
-                this.sessionResponseDecryptionKey = packet._0828_rec_decr_key
+                this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
                 sendPacket(ClientSessionRequestPacket(this.robot.account.qqNumber, this.serverIP, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
             }
 

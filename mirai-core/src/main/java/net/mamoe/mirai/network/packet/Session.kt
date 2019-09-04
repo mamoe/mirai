@@ -62,8 +62,6 @@ class ClientSessionRequestPacket(
 }
 
 /**
- * Dispose_0828
- *
  * @author Him188moe
  */
 class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val dataLength: Int) : ServerPacket(inputStream) {
@@ -106,10 +104,10 @@ class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val d
     }
 
     class Encrypted(inputStream: DataInputStream) : ServerPacket(inputStream) {
-        fun decrypt(_0828_rec_decr_key: ByteArray): ServerSessionKeyResponsePacket {
+        fun decrypt(sessionResponseDecryptionKey: ByteArray): ServerSessionKeyResponsePacket {
             this.input goto 14
             val data = this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }
-            return ServerSessionKeyResponsePacket(TEA.decrypt(data, _0828_rec_decr_key).dataInputStream(), data.size);
+            return ServerSessionKeyResponsePacket(TEA.decrypt(data, sessionResponseDecryptionKey).dataInputStream(), data.size)
         }
     }
 }

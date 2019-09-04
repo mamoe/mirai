@@ -60,7 +60,7 @@ class UnknownServerEventPacket(input: DataInputStream, packetId: ByteArray, even
 class ServerAndroidOnlineEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity)
 
 /**
- * Android 客户端上线
+ * Android 客户端下线
  */
 class ServerAndroidOfflineEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity)
 
