@@ -4,15 +4,12 @@ package net.mamoe.mirai.task;
 public interface MiraiTaskExceptionHandler {
     void onHandle(Throwable e);
 
-    static MiraiTaskExceptionHandler byDefault(){
-        return byPrint();
-    }
-
-    static MiraiTaskExceptionHandler byIgnore(){
-        return a -> {};
-    }
-
-    static MiraiTaskExceptionHandler byPrint(){
+    static MiraiTaskExceptionHandler printing() {
         return Throwable::printStackTrace;
+    }
+
+    static MiraiTaskExceptionHandler ignoring() {
+        return a -> {
+        };
     }
 }

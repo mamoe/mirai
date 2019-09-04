@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.packet.login
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.util.TestedSuccessfully
+import net.mamoe.mirai.utils.TestedSuccessfully
 import java.io.DataInputStream
 
 /**

@@ -6,9 +6,11 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 /**
+ * TEA 加密
+ *
  * @author iweiz https://github.com/iweizime/StepChanger/blob/master/app/src/main/java/me/iweizi/stepchanger/qq/Cryptor.java
  */
-public class TEA {
+public final class TEA {
     public static final TEA CRYPTOR_SHARE_KEY = new TEA(Protocol.Companion.hexToBytes(Protocol.shareKey));
     public static final TEA CRYPTOR_0825KEY = new TEA(Protocol.Companion.hexToBytes(Protocol.key0825));
     public static final TEA CRYPTOR_00BAKEY = new TEA(Protocol.Companion.hexToBytes(Protocol.key00BA));
@@ -23,14 +25,12 @@ public class TEA {
     private int mOutPos;
     private int mPreOutPos;
     private boolean isFirstBlock;
-    private boolean isRand;
 
     public TEA(byte[] key) {
         mKey = new long[4];
         for (int i = 0; i < 4; i++) {
             mKey[i] = pack(key, i * 4, 4);
         }
-        isRand = true;
         mRandom = new Random();
         isFirstBlock = true;
     }
@@ -51,6 +51,7 @@ public class TEA {
         return decrypt(source, UtilsKt.hexToBytes(keyHex));
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static long pack(byte[] bytes, int offset, int len) {
         long result = 0;
         int max_offset = len > 8 ? offset + 8 : offset + len;
@@ -61,11 +62,7 @@ public class TEA {
     }
 
     private int rand() {
-        return isRand ? mRandom.nextInt() : 0xff00ff;
-    }
-
-    public void enableRandom(boolean rand) {
-        isRand = rand;
+        return mRandom.nextInt();
     }
 
     private byte[] encode(byte[] bytes) {
@@ -117,6 +114,7 @@ public class TEA {
         isFirstBlock = false;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean decodeOneBlock(byte[] ciphertext, int offset, int len) {
         for (mIndexPos = 0; mIndexPos < 8; mIndexPos++) {
             if (mOutPos + mIndexPos < len) {
@@ -133,6 +131,7 @@ public class TEA {
 
     }
 
+    @SuppressWarnings("SameParameterValue")
     private byte[] encrypt(byte[] plaintext, int offset, int len) {
         mInBlock = new byte[8];
         mIV = new byte[8];
@@ -183,11 +182,12 @@ public class TEA {
         return mOutput;
     }
 
-    private byte[] decrypt(byte[] ciphertext, int offset, int len) {
+    @SuppressWarnings("SameParameterValue")
+    private byte[] decrypt(byte[] cipherText, int offset, int len) {
         if (len % 8 != 0 || len < 16) {
             throw new IllegalArgumentException("must len % 8 == 0 && len >= 16");
         }
-        mIV = decode(ciphertext, offset);
+        mIV = decode(cipherText, offset);
         mIndexPos = mIV[0] & 7;
         int plen = len - mIndexPos - 10;
         isFirstBlock = true;
@@ -206,7 +206,7 @@ public class TEA {
             }
             if (mIndexPos == 8) {
                 isFirstBlock = false;
-                if (!decodeOneBlock(ciphertext, offset, len)) {
+                if (!decodeOneBlock(cipherText, offset, len)) {
                     throw new RuntimeException("Unable to decode");
                 }
             }
@@ -216,20 +216,20 @@ public class TEA {
             if (mIndexPos < 8) {
                 mOutput[outpos++] = isFirstBlock ?
                         mIV[mIndexPos] :
-                        (byte) (ciphertext[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]);
+                        (byte) (cipherText[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]);
                 ++mIndexPos;
             }
             if (mIndexPos == 8) {
                 mPreOutPos = mOutPos - 8;
                 isFirstBlock = false;
-                if (!decodeOneBlock(ciphertext, offset, len)) {
+                if (!decodeOneBlock(cipherText, offset, len)) {
                     throw new RuntimeException("Unable to decode");
                 }
             }
         }
         for (g = 0; g < 7; g++) {
             if (mIndexPos < 8) {
-                if ((ciphertext[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]) != 0) {
+                if ((cipherText[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]) != 0) {
                     throw new RuntimeException();
                 } else {
                     ++mIndexPos;
@@ -238,7 +238,7 @@ public class TEA {
 
             if (mIndexPos == 8) {
                 mPreOutPos = mOutPos;
-                if (!decodeOneBlock(ciphertext, offset, len)) {
+                if (!decodeOneBlock(cipherText, offset, len)) {
                     throw new RuntimeException("Unable to decode");
                 }
             }

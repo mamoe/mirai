@@ -2,8 +2,8 @@ package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.util.TestedSuccessfully
 import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.TestedSuccessfully
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 

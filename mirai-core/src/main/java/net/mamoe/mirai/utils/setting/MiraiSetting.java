@@ -6,14 +6,14 @@ import org.ini4j.Ini;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Mirai Config
- * Only support {INI} format
- * Support MAP and LIST
- * Thread safe
+ * Thread-safe Mirai Config <br>
+ * Only supports <code>INI</code> format <br>
+ * Supports {@link Map} and {@link List}
  */
 public class MiraiSetting {
 
@@ -42,12 +42,12 @@ public class MiraiSetting {
         }
     }
 
-    public void setSection(String key, MiraiSettingSection section){
+    public synchronized void setSection(String key, MiraiSettingSection section) {
         cacheSection.put(key, section);
     }
 
 
-    public MiraiSettingMapSection getMapSection(String key){
+    public synchronized MiraiSettingMapSection getMapSection(String key) {
         if(!cacheSection.containsKey(key)) {
             MiraiSettingMapSection section = new MiraiSettingMapSection();
             if(ini.containsKey(key)){
@@ -58,7 +58,7 @@ public class MiraiSetting {
         return (MiraiSettingMapSection) cacheSection.get(key);
     }
 
-    public MiraiSettingListSection getListSection(String key){
+    public synchronized MiraiSettingListSection getListSection(String key) {
         if(!cacheSection.containsKey(key)) {
             MiraiSettingListSection section = new MiraiSettingListSection();
             if(ini.containsKey(key)){
@@ -85,7 +85,7 @@ public class MiraiSetting {
         }
     }
 
-    public void clearCache(){
+    public synchronized void clearCache() {
         cacheSection.clear();
     }
 }

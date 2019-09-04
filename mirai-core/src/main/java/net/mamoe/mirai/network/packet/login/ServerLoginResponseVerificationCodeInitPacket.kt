@@ -4,8 +4,8 @@ import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.cutTail
 import net.mamoe.mirai.network.packet.dataInputStream
 import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.util.TestedSuccessfully
 import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.TestedSuccessfully
 import net.mamoe.mirai.utils.hexToUBytes
 import java.io.DataInputStream
 
