@@ -7,18 +7,19 @@ import net.mamoe.mirai.network.RobotNetworkHandler;
 import net.mamoe.mirai.utils.ContactList;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Robot {
+public class Robot implements Closeable {
     public static final List<Robot> instances = Collections.synchronizedList(new LinkedList<>());
 
     private final long qqNumber;
     private final String password;
     @Getter
-    private final RobotNetworkHandler handler;
+    private final RobotNetworkHandler networkHandler;
 
     /**
      * Ref list
@@ -28,6 +29,14 @@ public class Robot {
 
     private final ContactList<Group> groups = new ContactList<>();
     private final ContactList<QQ> qqs = new ContactList<>();
+
+    public void close() {
+        this.networkHandler.close();
+        this.owners.clear();
+        this.groups.values().forEach(Group::close);
+        this.groups.clear();
+        this.qqs.clear();
+    }
 
     public boolean isOwnBy(String ownerName) {
         return owners.contains(ownerName);
@@ -50,7 +59,7 @@ public class Robot {
         this.qqNumber = qqNumber;
         this.password = password;
         this.owners = Collections.unmodifiableList(owners);
-        this.handler = new RobotNetworkHandler(this, this.qqNumber, this.password);
+        this.networkHandler = new RobotNetworkHandler(this, this.qqNumber, this.password);
     }
 
     public QQ getQQ(long qqNumber) {

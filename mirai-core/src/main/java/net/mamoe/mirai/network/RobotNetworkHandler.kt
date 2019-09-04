@@ -11,6 +11,7 @@ import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePac
 import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
+import java.io.Closeable
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
-class RobotNetworkHandler(val robot: Robot, val number: Long, private val password: String) {
+internal class RobotNetworkHandler(val robot: Robot, val number: Long, private val password: String) : Closeable {
 
     var socket: DatagramSocket = DatagramSocket((15314 + Math.random() * 100).toInt())
 
@@ -36,6 +37,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
         }
 
     private lateinit var serverAddress: InetSocketAddress
+    private var closed: Boolean = false
 
     private lateinit var token00BA: ByteArray //这些数据全部是login用的
     private lateinit var token0825: ByteArray
@@ -60,6 +62,16 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
     private var gtk: Int = 0
     private var ignoreMessage: Boolean = false
 
+    private var loginState: LoginState? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                loginHook?.invoke(value)
+            }
+        }
+
+    private var loginHook: ((LoginState) -> Unit)? = null
+
     init {
         tlv0105 = lazyEncode {
             it.writeHex("01 05 00 30")
@@ -74,15 +86,37 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
     @ExperimentalUnsignedTypes
     private var md5_32: ByteArray = getRandomKey(32)
 
+    /**
+     * Try to login to server
+     */
+    internal fun tryLogin(loginHook: ((LoginState) -> Unit)? = null) {
+//"14.116.136.106",
+        tryLogin()
+    }
 
-    internal fun touch() {
+    /**
+     * Try to login to server
+     */
+    private fun tryLogin(serverAddress: String, loginHook: ((LoginState) -> Unit)? = null) {
+
+        touch(serverAddress, loginHook)
+    }
+
+    /**
+     * Start network
+     */
+    private fun touch(serverAddress: String, loginHook: ((LoginState) -> Unit)? = null) {
+        serverIP = serverAddress
+        if (loginHook != null) {
+            this.loginHook = loginHook
+        }
         this.sendPacket(ClientTouchPacket(this.number, this.serverIP))
     }
 
     private fun restartSocket() {
         socket.close()
         socket = DatagramSocket((15314 + Math.random() * 100).toInt())
-        socket.connect(this.serverAddress)
+        socket.connect(this.serverAddress).runCatching { }
         val zeroByte: Byte = 0
         Thread {
             while (true) {
@@ -91,11 +125,14 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
                     socket.receive(dp1)
                 } catch (e: Exception) {
                     if (e.message == "socket closed") {
+                        if (!closed) {
+                            restartSocket()
+                        }
                         return@Thread
                     }
                 }
                 MiraiThreadPool.getInstance().submit {
-                    var i = dp1.data.size - 1;
+                    var i = dp1.data.size - 1
                     while (dp1.data[i] == zeroByte) {
                         --i
                     }
@@ -132,7 +169,8 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
             }
 
             is ServerLoginResponseFailedPacket -> {
-                MiraiLogger error "Login failed: " + packet.state.toString()
+                this.loginState = packet.loginState
+                MiraiLogger error "Login failed: " + packet.loginState.toString()
                 return
             }
 
@@ -157,7 +195,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
 
             is ServerVerificationCodeTransmissionPacket -> {
                 this.verificationCodeSequence++
-                this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePart2
+                this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePartN
 
                 this.verificationToken = packet.verificationToken
                 this.verificationCodeCacheCount++
@@ -236,6 +274,7 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
             }
 
             is ServerLoginSuccessPacket -> {
+                loginState = LoginState.SUCCEED
                 sendPacket(ClientSKeyRequestPacket(this.number, this.sessionKey))
             }
 
@@ -327,5 +366,13 @@ class RobotNetworkHandler(val robot: Robot, val number: Long, private val passwo
                 e.printStackTrace()
             }
         }
+    }
+
+    override fun close() {
+        this.socket.close()
+        this.loginState = null
+        this.loginHook = null
+        this.verificationCodeCache = null
+        this.tgtgtKey = null
     }
 }

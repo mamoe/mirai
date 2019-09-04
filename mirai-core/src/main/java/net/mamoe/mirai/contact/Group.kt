@@ -2,8 +2,9 @@ package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.utils.ContactList
+import java.io.Closeable
 
-class Group(number: Long) : Contact(number) {
+class Group(number: Long) : Contact(number), Closeable {
     val groupId = groupNumberToId(number)
     val members = ContactList<QQ>()
 
@@ -13,6 +14,10 @@ class Group(number: Long) : Contact(number) {
 
     override fun sendXMLMessage(message: String) {
 
+    }
+
+    override fun close() {
+        this.members.clear()
     }
 
     companion object {
@@ -51,11 +56,6 @@ class Group(number: Long) : Contact(number) {
                 }
                 else -> number
             }
-        }
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            groupNumberToId(580266363)
         }
 
         fun groupIdToNumber(id: Long): Long {

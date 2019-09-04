@@ -6,6 +6,9 @@ import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
 
+/**
+ * 客户端请求验证码图片数据的第几部分
+ */
 @ExperimentalUnsignedTypes
 @PacketId("00 BA 31")
 class ClientVerificationCodeTransmissionRequestPacket(
@@ -40,11 +43,13 @@ class ClientVerificationCodeTransmissionRequestPacket(
 }
 
 /**
+ * 服务器发送验证码图片文件一部分过来
+ *
  * @author Him188moe
  */
-class ServerVerificationCodeTransmissionPacket(input: DataInputStream, val dataSize: Int, val packetId: ByteArray) : ServerVerificationCodePacket(input) {
+class ServerVerificationCodeTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerVerificationCodePacket(input) {
 
-    lateinit var verificationCodePart2: ByteArray
+    lateinit var verificationCodePartN: ByteArray
     lateinit var verificationToken: ByteArray//56bytes
     var transmissionCompleted: Boolean = false//验证码是否已经传输完成
     lateinit var token00BA: ByteArray//40 bytes
@@ -55,10 +60,10 @@ class ServerVerificationCodeTransmissionPacket(input: DataInputStream, val dataS
         this.verificationToken = this.input.readNBytesAt(10, 56)
 
         val length = this.input.readShortAt(66)
-        this.verificationCodePart2 = this.input.readNBytes(length)
+        this.verificationCodePartN = this.input.readNBytes(length)
 
         this.input.skip(2)
-        this.transmissionCompleted = this.input.readBoolean()
+        this.transmissionCompleted = this.input.readBoolean().not()
 
         this.token00BA = this.input.readNBytesAt(dataSize - 57, 40)
         this.count = byteArrayOf(0, 0, packetId[2], packetId[3]).toUHexString().hexToInt()
@@ -66,6 +71,8 @@ class ServerVerificationCodeTransmissionPacket(input: DataInputStream, val dataS
 }
 
 /**
+ * 暂不了解意义
+ *
  * @author Him188moe
  */
 class ServerVerificationCodeRepeatPacket(input: DataInputStream) : ServerVerificationCodePacket(input) {

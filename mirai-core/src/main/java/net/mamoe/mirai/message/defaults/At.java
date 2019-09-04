@@ -26,6 +26,7 @@ public final class At extends Message {
 
     @Override
     public String toString() {
-        return null;
+        // TODO: 2019/9/4 At.toString
+        throw new UnsupportedOperationException();
     }
 }

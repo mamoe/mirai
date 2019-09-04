@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.message.defaults.PlainText
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.toUHexString
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -77,7 +78,7 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
             25 -> MessageType.ANONYMOUS
 
             else -> {
-                println("id=$id")
+                MiraiLogger debug ("ServerGroupMessageEventPacket id=$id")
                 MessageType.OTHER
             }
         }

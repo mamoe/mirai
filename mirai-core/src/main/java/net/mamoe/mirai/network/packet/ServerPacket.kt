@@ -3,6 +3,7 @@ package net.mamoe.mirai.network.packet
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.network.packet.message.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.message.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.getAllDeclaredFields
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toUHexString
@@ -36,7 +37,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         271, 207 -> return ServerLoginResponseResendPacketEncrypted(stream, when (idHex) {
                             "08 36 31 03" -> ServerLoginResponseResendPacket.Flag.`08 36 31 03`
                             else -> {
-                                println("flag=$idHex"); ServerLoginResponseResendPacket.Flag.OTHER
+                                MiraiLogger debug ("ServerLoginResponseResendPacketEncrypted: flag=$idHex"); ServerLoginResponseResendPacket.Flag.OTHER
                             }
                         })
                         871 -> return ServerLoginResponseVerificationCodePacketEncrypted(stream)
@@ -47,16 +48,16 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
-                        319 -> ServerLoginResponseFailedPacket.State.WRONG_PASSWORD
-                        135 -> ServerLoginResponseFailedPacket.State.RETYPE_PASSWORD
-                        279 -> ServerLoginResponseFailedPacket.State.BLOCKED
-                        263 -> ServerLoginResponseFailedPacket.State.UNKNOWN_QQ_NUMBER
-                        551, 487 -> ServerLoginResponseFailedPacket.State.DEVICE_LOCK
-                        359 -> ServerLoginResponseFailedPacket.State.TAKEN_BACK
+                        319 -> LoginState.WRONG_PASSWORD
+                        135 -> LoginState.RETYPE_PASSWORD
+                        279 -> LoginState.BLOCKED
+                        263 -> LoginState.UNKNOWN_QQ_NUMBER
+                        551, 487 -> LoginState.DEVICE_LOCK
+                        359 -> LoginState.TAKEN_BACK
 
                         //unknown
-                        63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")//可能是已经完成登录, 服务器拒绝第二次登录
-                        351 -> throw IllegalArgumentException(bytes.size.toString() + " (Illegal package data)")//包数据有误
+                        63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
+                        351 -> throw IllegalArgumentException(bytes.size.toString() + " (Illegal package data or Unknown error)")//包数据有误
 
                         else -> throw IllegalArgumentException(bytes.size.toString())
                     }, stream)
@@ -88,6 +89,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
         }
     }
 
+    @ExperimentalUnsignedTypes
     override fun toString(): String {
         return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->

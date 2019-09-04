@@ -140,8 +140,6 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
 
         val md5_1 = md5(password);
         val md5_2 = md5(md5_1 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
-        println(md5_1.toUByteArray().toUHexString())
-        println(md5_2.toUByteArray().toUHexString())
         it.write(md5_1)
         it.writeInt(loginTime)
         it.writeByte(0);
@@ -151,8 +149,6 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
         it.writeHex("00 10")
         it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")
         it.write(tgtgtKey)
-        println()
-        println(it.toByteArray().toUHexString())
         this.write(TEACryptor.encrypt(it.toByteArray(), md5_2))
     }
 }
