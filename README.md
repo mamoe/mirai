@@ -25,14 +25,15 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 - [x] Network - Touch  
 - [X] Network - Login 
 - [X] Network - Session  
-- [ ] Network - Verification Code **(Woring on)**
+- [ ] Network - Verification Code **(Working on)**
 - [X] Network - Message Receiving  
 - [X] Network - Message Sending  
 - [ ] Network - Events **(Working on)**    
 - [ ] Robot - Friend/group list  
+- [ ] Robot - Actions(joining group, adding friend, etc.)
 - [ ] Message Section **(Working on)**  
 - [ ] Contact  
-- [ ] UI **(Woring on)**
+- [ ] UI **(Working on)**
 
 <br>
 
