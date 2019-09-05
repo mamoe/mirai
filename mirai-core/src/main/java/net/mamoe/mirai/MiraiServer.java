@@ -120,7 +120,7 @@ public class MiraiServer {
         this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
             try {
                 Robot robot = new Robot(section);
-                robot.network.tryLogin$mirai_core(state -> {
+                robot.network.tryLogin$mirai_core((robot1, state) -> {
                     if (state == LoginState.SUCCEED) {
                         Robot.instances.add(robot);
                     } else {

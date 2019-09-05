@@ -3,8 +3,10 @@ package net.mamoe.mirai.network
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
+import net.mamoe.mirai.event.hookWhile
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
@@ -35,7 +37,7 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
     val messageHandler = MessageHandler()
     val actionHandler = ActionHandler()
 
-    private val packetHandlers: Map<KClass<out PacketHandler>, PacketHandler> = mapOf(
+    private val packetHandlers: Map<KClass<out PacketHandler>, PacketHandler> = linkedMapOf(
             DebugHandler::class to debugHandler,
             LoginHandler::class to loginHandler,
             MessageHandler::class to messageHandler,
@@ -63,16 +65,22 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     //private | internal
 
-    internal fun tryLogin(loginHook: ((LoginState) -> Unit)? = null) {
+    /**
+     * 仅当 [LoginState] 非 [LoginState.UNKNOWN] 且非 [LoginState.TIMEOUT] 才会调用 [loginHook].
+     * 如果要输入验证码, 那么会以参数 [LoginState.VERIFICATION_CODE] 调用 [loginHandler], 登录完成后再以 [LoginState.SUCCEED] 调用 [loginHandler]
+     */
+    internal fun tryLogin(loginHook: (Robot.(LoginState) -> Unit)? = null) {
         val ipQueue: LinkedList<String> = LinkedList(Protocol.SERVER_IP)
         fun login(): Boolean {
             val ip = ipQueue.poll()
             return if (ip != null) {
                 this@RobotNetworkHandler.socketHandler.touch(ip) { state ->
-                    if (state == LoginState.UNKNOWN) {
+                    if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
                         login()
                     } else {
-                        loginHook?.invoke(state)
+                        if (loginHook != null) {
+                            robot.loginHook(state)
+                        }
                     }
                 }
                 true
@@ -82,7 +90,12 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
     }
 
     @ExperimentalUnsignedTypes
-    internal fun onPacketReceived(packet: ServerPacket) {
+    internal fun distributePacket(packet: ServerPacket) {
+        packet.decode()
+        if (ServerPacketReceivedEvent(packet).broadcast().isCancelled) {
+            debugHandler.onPacketReceived(packet)
+            return
+        }
         this.packetHandlers.values.forEach {
             it.onPacketReceived(packet)
         }
@@ -90,11 +103,10 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
 
     private inner class SocketHandler : Closeable {
-        private lateinit var socket: DatagramSocket
+        private var socket: DatagramSocket? = null
 
         internal var serverIP: String = ""
             set(value) {
-                serverAddress = InetSocketAddress(value, 8000)
                 field = value
 
                 restartSocket()
@@ -104,36 +116,29 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
         internal var loginState: LoginState? = null
             set(value) {
                 field = value
-                if (value != null && value != LoginState.UNKNOWN) {
+                if (value != null) {
                     loginHook?.invoke(value)
                 }
             }
 
-        private lateinit var serverAddress: InetSocketAddress
-
         private fun restartSocket() {
-
-            socket = DatagramSocket((15314 + Math.random() * 100).toInt())
-            socket.close()
-            socket.connect(this.serverAddress)
+            socket?.close()
+            socket = DatagramSocket(0)
+            socket!!.connect(InetSocketAddress(serverIP, 8000))
             Thread {
-                while (socket.isConnected) {
+                while (socket!!.isConnected) {
                     val packet = DatagramPacket(ByteArray(2048), 2048)
-                    kotlin
-                            .runCatching { socket.receive(packet) }
+                    kotlin.runCatching { socket!!.receive(packet) }
                             .onSuccess {
                                 MiraiThreadPool.getInstance().submit {
                                     try {
-                                        onPacketReceived(ServerPacket.ofByteArray(packet.data.removeZeroTail()))
+                                        distributePacket(ServerPacket.ofByteArray(packet.data.removeZeroTail()))
                                     } catch (e: Exception) {
                                         e.printStackTrace()
                                     }
                                 }
                             }.onFailure {
-                                if (it.message == "socket closed") {
-                                    if (!closed) {
-                                        restartSocket()
-                                    }
+                                if (it.message == "Socket closed" || it.message == "socket closed") {
                                     return@Thread
                                 }
                                 it.printStackTrace()
@@ -147,11 +152,16 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
          * Start network and touch the server
          */
         internal fun touch(serverAddress: String, loginHook: ((LoginState) -> Unit)? = null) {
+            MiraiLogger.info("Connecting server: $serverAddress")
             socketHandler.serverIP = serverAddress
             if (loginHook != null) {
                 this.loginHook = loginHook
             }
             sendPacket(ClientTouchPacket(robot.account.qqNumber, socketHandler.serverIP))
+            waitForPacket(ServerTouchResponsePacket::class, 100) {
+                MiraiLogger.error("  Timeout")
+                loginHook?.invoke(LoginState.TIMEOUT)
+            }
         }
 
         /**
@@ -159,20 +169,46 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
          */
         @ExperimentalUnsignedTypes
         internal fun sendPacket(packet: ClientPacket) {
+            checkNotNull(socket) { "socket closed" }
+
             try {
                 packet.encode()
                 packet.writeHex(Protocol.tail)
 
                 val data = packet.toByteArray()
-                socket.send(DatagramPacket(data, data.size))
+                socket!!.send(DatagramPacket(data, data.size))
                 MiraiLogger info "Packet sent: $packet"
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
         }
 
+        @Suppress("UNCHECKED_CAST")
+        private fun <P : ServerPacket> waitForPacket(packetClass: KClass<P>, timeoutMillis: Long, timeout: () -> Unit) {
+            var got = false
+            ServerPacketReceivedEvent::class.hookWhile {
+                if (packetClass.isInstance(it.packet)) {
+                    got = true
+                    true
+                } else {
+                    false
+                }
+            }
+
+            MiraiThreadPool.getInstance().submit {
+                val startingTime = System.currentTimeMillis()
+                while (!got) {
+                    if (System.currentTimeMillis() - startingTime > timeoutMillis) {
+                        timeout.invoke()
+                        return@submit
+                    }
+                    Thread.sleep(10)
+                }
+            }
+        }
+
         override fun close() {
-            this.socket.close()
+            this.socket?.close()
             this.loginState = null
             this.loginHook = null
         }
@@ -194,7 +230,6 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     inner class DebugHandler : PacketHandler() {
         override fun onPacketReceived(packet: ServerPacket) {
-            packet.decode()
             MiraiLogger info "Packet received: $packet"
             if (packet is ServerEventPacket) {
                 sendPacket(ClientMessageResponsePacket(robot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
@@ -274,6 +309,8 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 }
 
                 is ServerVerificationCodeTransmissionPacket -> {
+                    socketHandler.loginState = LoginState.VERIFICATION_CODE
+
                     this.verificationCodeSequence++
                     this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePartN
 
@@ -371,17 +408,17 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     sendPacket(ClientAccountInfoRequestPacket(robot.account.qqNumber, sessionKey))
                 }
 
-                is ServerEventPacket.Raw -> onPacketReceived(packet.distribute())
+                is ServerEventPacket.Raw -> distributePacket(packet.distribute())
 
-                is ServerVerificationCodePacket.Encrypted -> onPacketReceived(packet.decrypt())
-                is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> onPacketReceived(packet.decrypt())
-                is ServerLoginResponseResendPacket.Encrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
-                is ServerLoginResponseSuccessPacket.Encrypted -> onPacketReceived(packet.decrypt(this.tgtgtKey!!))
-                is ServerSessionKeyResponsePacket.Encrypted -> onPacketReceived(packet.decrypt(this.sessionResponseDecryptionKey))
-                is ServerTouchResponsePacket.Encrypted -> onPacketReceived(packet.decrypt())
-                is ServerSKeyResponsePacket.Encrypted -> onPacketReceived(packet.decrypt(sessionKey))
-                is ServerAccountInfoResponsePacket.Encrypted -> onPacketReceived(packet.decrypt(sessionKey))
-                is ServerEventPacket.Raw.Encrypted -> onPacketReceived(packet.decrypt(sessionKey))
+                is ServerVerificationCodePacket.Encrypted -> distributePacket(packet.decrypt())
+                is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> distributePacket(packet.decrypt())
+                is ServerLoginResponseResendPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey!!))
+                is ServerLoginResponseSuccessPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey!!))
+                is ServerSessionKeyResponsePacket.Encrypted -> distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
+                is ServerTouchResponsePacket.Encrypted -> distributePacket(packet.decrypt())
+                is ServerSKeyResponsePacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
+                is ServerAccountInfoResponsePacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
+                is ServerEventPacket.Raw.Encrypted -> distributePacket(packet.decrypt(sessionKey))
 
 
                 is ServerAccountInfoResponsePacket,

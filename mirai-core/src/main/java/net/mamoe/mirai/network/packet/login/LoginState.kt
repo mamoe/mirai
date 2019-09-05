@@ -13,8 +13,11 @@ enum class LoginState {
     UNKNOWN_QQ_NUMBER,//你输入的帐号不存在
     DEVICE_LOCK,//设备锁
     TAKEN_BACK,//被回收
-    // VERIFICATION_CODE,//需要验证码
+
+
+    VERIFICATION_CODE,//需要验证码
 
 
     UNKNOWN,
+    TIMEOUT,
 }

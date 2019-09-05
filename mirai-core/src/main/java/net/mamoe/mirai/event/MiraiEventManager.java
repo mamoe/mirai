@@ -10,14 +10,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class MiraiEventManager {
-    private MiraiEventManager() {
+    MiraiEventManager() {
 
     }
 
-    private static MiraiEventManager instance = new MiraiEventManager();
-
     public static MiraiEventManager getInstance() {
-        return MiraiEventManager.instance;
+        return EventManager.INSTANCE;
     }
 
     private final ReentrantReadWriteLock hooksLock = new ReentrantReadWriteLock();

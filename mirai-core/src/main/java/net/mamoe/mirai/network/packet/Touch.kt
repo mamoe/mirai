@@ -40,7 +40,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
 
                 loginTime = input.readInt()
                 loginIP = input.readIP()
-                tgtgtKey = getRandomKey(16)
+                tgtgtKey = getRandomByteArray(16)
             }
 
             else -> {

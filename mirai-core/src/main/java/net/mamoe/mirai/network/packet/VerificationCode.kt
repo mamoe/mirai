@@ -82,7 +82,7 @@ class ServerVerificationCodeRepeatPacket(input: DataInputStream) : ServerVerific
     @ExperimentalUnsignedTypes
     override fun decode() {
         token00BA = this.input.readNBytesAt(10, 56)
-        tgtgtKeyUpdate = getRandomKey(16)
+        tgtgtKeyUpdate = getRandomByteArray(16)
     }
 }
 

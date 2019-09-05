@@ -13,13 +13,13 @@ object Protocol {
             add("183.60.56.29")
 
             arrayOf(
-                    "sz2.tencent.com",
                     "sz3.tencent.com",
                     "sz4.tencent.com",
                     "sz5.tencent.com",
                     "sz6.tencent.com",
                     "sz8.tencent.com",
-                    "sz9.tencent.com"
+                    "sz9.tencent.com",
+                    "sz2.tencent.com"
             ).forEach { this.add(InetAddress.getByName(it).hostAddress) }
 
         }

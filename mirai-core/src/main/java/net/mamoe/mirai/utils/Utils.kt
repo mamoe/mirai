@@ -69,7 +69,7 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
 fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().let { t(it); return it.toByteArray() }
 
 @ExperimentalUnsignedTypes
-fun getRandomKey(length: Int): ByteArray {
+fun getRandomByteArray(length: Int): ByteArray {
     val bytes = LinkedList<Byte>()
     repeat(length) { bytes.add((Math.random() * 255).toByte()) }
     return bytes.toByteArray()

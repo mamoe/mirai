@@ -152,10 +152,6 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
     }
 }
 
-fun main() {
-
-}
-
 /*
 @ExperimentalUnsignedTypes
 fun main() {
@@ -164,7 +160,7 @@ fun main() {
 
 @ExperimentalUnsignedTypes
 @TestedSuccessfully
-fun DataOutputStream.writeCRC32() = writeCRC32(getRandomKey(16))
+fun DataOutputStream.writeCRC32() = writeCRC32(getRandomByteArray(16))
 
 
 @ExperimentalUnsignedTypes

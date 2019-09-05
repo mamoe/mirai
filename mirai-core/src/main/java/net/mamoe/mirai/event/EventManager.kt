@@ -3,6 +3,9 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.event.events.MiraiEvent
 import kotlin.reflect.KClass
 
+object EventManager : MiraiEventManager()
+typealias MiraiEventManagerKt = EventManager
+typealias EventMgr = EventManager
 
 fun <C : Class<E>, E : MiraiEvent> C.hookAlways(hook: (E) -> Unit) {
     MiraiEventManager.getInstance().hookAlways(MiraiEventHook<E>(this, hook))

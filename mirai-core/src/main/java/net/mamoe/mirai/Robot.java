@@ -89,7 +89,6 @@ public final class Robot implements Closeable {
 
     public void close() {
         this.network.close();
-        this.owners.clear();
         this.contacts.groups.values().forEach(Group::close);
         this.contacts.groups.clear();
         this.contacts.qqs.clear();

@@ -11,7 +11,7 @@ public abstract class MiraiEvent {
 
     public boolean isCancelled() {
         if (!(this instanceof Cancellable)) {
-            throw new EventException("Event is not Cancellable");
+            return false;
         }
         return this.cancelled;
     }
