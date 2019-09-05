@@ -10,7 +10,7 @@ class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
     val members = ContactList<QQ>()
 
     override fun sendMessage(message: Message) {
-        robot.network.packetSystem.sendGroupMessage(this, message)
+        robot.network.messageHandler.sendGroupMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {

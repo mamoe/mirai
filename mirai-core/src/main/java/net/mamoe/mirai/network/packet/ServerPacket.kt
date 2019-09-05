@@ -53,11 +53,13 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         551, 487 -> LoginState.DEVICE_LOCK
                         359 -> LoginState.TAKEN_BACK
 
+                        else -> LoginState.UNKNOWN
+                        /*
                         //unknown
                         63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
                         351 -> throw IllegalArgumentException(bytes.size.toString() + " (Illegal package data or Unknown error)")//包数据有误
 
-                        else -> throw IllegalArgumentException(bytes.size.toString())
+                        else -> throw IllegalArgumentException(bytes.size.toString())*/
                     }, stream)
                 }
 
@@ -111,17 +113,6 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
     }
 }
 
-
-fun DataInputStream.readUntil(byte: Byte): ByteArray {
-    var buff = byteArrayOf()
-    var b: Byte
-    b = readByte()
-    while (b != byte) {
-        buff += b
-        b = readByte()
-    }
-    return buff
-}
 
 @ExperimentalUnsignedTypes
 fun DataInputStream.readIP(): String {

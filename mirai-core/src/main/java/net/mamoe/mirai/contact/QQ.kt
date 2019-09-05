@@ -12,7 +12,7 @@ import net.mamoe.mirai.message.defaults.At
  */
 class QQ(robot: Robot, number: Long) : Contact(robot, number) {
     override fun sendMessage(message: Message) {
-        robot.network.packetSystem.sendFriendMessage(this, message)
+        robot.network.messageHandler.sendFriendMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {

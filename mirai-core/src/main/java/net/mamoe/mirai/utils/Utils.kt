@@ -79,7 +79,7 @@ operator fun File.plus(child: String): File = File(this, child)
 
 private const val GTK_BASE_VALUE: Int = 5381
 
-fun getGTK(sKey: String): Int {
+internal fun getGTK(sKey: String): Int {
     var value = GTK_BASE_VALUE
     for (c in sKey.toCharArray()) {
         value += (value shl 5) + c.toInt()
@@ -89,7 +89,7 @@ fun getGTK(sKey: String): Int {
     return value
 }
 
-fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
+internal fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
 
 
 /**
@@ -121,4 +121,14 @@ fun Any.getAllDeclaredFields(): List<Field> {
     } while (clazz != Object::javaClass)
 
     return list
+}
+
+private const val ZERO_BYTE: Byte = 0
+
+fun ByteArray.removeZeroTail(): ByteArray {
+    var i = this.size - 1
+    while (this[i] == ZERO_BYTE) {
+        --i
+    }
+    return this.copyOfRange(0, i + 1)
 }

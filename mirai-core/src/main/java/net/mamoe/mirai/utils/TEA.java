@@ -11,9 +11,8 @@ import java.util.Random;
  * @author iweiz https://github.com/iweizime/StepChanger/blob/master/app/src/main/java/me/iweizi/stepchanger/qq/Cryptor.java
  */
 public final class TEA {
-    public static final TEA CRYPTOR_SHARE_KEY = new TEA(Protocol.Companion.hexToBytes(Protocol.shareKey));
-    public static final TEA CRYPTOR_0825KEY = new TEA(Protocol.Companion.hexToBytes(Protocol.key0825));
-    public static final TEA CRYPTOR_00BAKEY = new TEA(Protocol.Companion.hexToBytes(Protocol.key00BA));
+    public static final TEA CRYPTOR_SHARE_KEY = new TEA(Protocol.INSTANCE.hexToBytes(Protocol.shareKey));
+    public static final TEA CRYPTOR_0825KEY = new TEA(Protocol.INSTANCE.hexToBytes(Protocol.key0825));
 
     private static final long UINT32_MASK = 0xffffffffL;
     private final long[] mKey;

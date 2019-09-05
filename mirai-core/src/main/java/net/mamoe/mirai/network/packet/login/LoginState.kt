@@ -14,5 +14,7 @@ enum class LoginState {
     DEVICE_LOCK,//设备锁
     TAKEN_BACK,//被回收
     // VERIFICATION_CODE,//需要验证码
-    // SUCCEED,
+
+
+    UNKNOWN,
 }
