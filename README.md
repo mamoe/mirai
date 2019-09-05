@@ -21,17 +21,19 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 
 ### TODO
 - [x] 事件(Event)模块  
-- [ ] 插件(Plugin)模块 **(Working on)**  
+- [ ] 插件(Plugin)模块 
 - [x] Network - Touch  
 - [X] Network - Login 
 - [X] Network - Session  
-- [ ] Network - Verification Code (Low priority)  
+- [ ] Network - Verification Code **(Working on)**
 - [X] Network - Message Receiving  
 - [X] Network - Message Sending  
 - [ ] Network - Events **(Working on)**    
 - [ ] Robot - Friend/group list  
+- [ ] Robot - Actions(joining group, adding friend, etc.)
 - [ ] Message Section **(Working on)**  
 - [ ] Contact  
+- [ ] UI **(Working on)**
 
 <br>
 
