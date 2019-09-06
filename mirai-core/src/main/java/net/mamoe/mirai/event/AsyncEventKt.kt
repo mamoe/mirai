@@ -9,6 +9,10 @@ fun <E : AsyncEvent> E.broadcastAsync(callback: Consumer<E>): CompletableFuture<
     return MiraiEventManager.getInstance().broadcastEventAsync(this, callback)
 }
 
-fun <E : AsyncEvent> E.broadcastAsync(callback: Runnable): CompletableFuture<out AsyncEvent> {
+fun <E : AsyncEvent> E.broadcastAsync(callback: Runnable): CompletableFuture<E> {
     return MiraiEventManager.getInstance().broadcastEventAsync(this, callback)
+}
+
+fun <E : AsyncEvent> E.broadcastAsyncSmart(): CompletableFuture<E> {
+    return MiraiEventManager.getInstance().broadcastEventAsync(this)
 }

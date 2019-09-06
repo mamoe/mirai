@@ -51,8 +51,6 @@ object Protocol {
     const val key00BA = "C1 9C B8 C8 7B 8C 81 BA 9E 9E 7A 89 E1 7A EC 94"
     const val key00BAFix = "69 20 D1 14 74 F5 B3 93 E4 D5 02 B3 71 1A CD 2A"
 
-    const val encryptKey = "“BA 42 FF 01 CF B4 FF D2 12 F0 6E A7 1B 7C B3 08”"
-
     /**
      * 0836_622_fix2
      */

@@ -8,7 +8,9 @@ import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
 
+@JvmSynthetic
 fun ByteArray.toHexString(): String = toHexString(" ")
+
 fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(separator) {
     var ret = it.toString(16).toUpperCase()
     if (ret.length == 1) {
@@ -20,12 +22,12 @@ fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(s
 @ExperimentalUnsignedTypes
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
-fun ByteArray.__toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
-
 @ExperimentalUnsignedTypes
+@JvmSynthetic
 fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 
 @ExperimentalUnsignedTypes
+@JvmSynthetic
 fun UByteArray.toUHexString(separator: String = " "): String {
     return this.joinToString(separator) {
         var ret = it.toString(16).toUpperCase()
@@ -37,6 +39,7 @@ fun UByteArray.toUHexString(separator: String = " "): String {
 }
 
 @ExperimentalUnsignedTypes
+@JvmSynthetic
 fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 
 @ExperimentalUnsignedTypes
@@ -75,6 +78,7 @@ fun getRandomByteArray(length: Int): ByteArray {
     return bytes.toByteArray()
 }
 
+@JvmSynthetic
 operator fun File.plus(child: String): File = File(this, child)
 
 private const val GTK_BASE_VALUE: Int = 5381
