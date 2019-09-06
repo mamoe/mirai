@@ -14,11 +14,13 @@ import java.security.MessageDigest
 @ExperimentalUnsignedTypes
 abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
     @Getter
-    val packageId: String
+    val idHex: String
+
+    var encoded: Boolean = false
 
     init {
         val annotation = this.javaClass.getAnnotation(PacketId::class.java)
-        packageId = annotation.value
+        idHex = annotation.value
 
         try {
             this.writeHex(Protocol.head)
@@ -32,7 +34,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 
     @Throws(IOException::class)
     fun writePacketId() {
-        this.writeHex(this@ClientPacket.packageId)
+        this.writeHex(this@ClientPacket.idHex)
     }
 
     /**
@@ -42,11 +44,19 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
      * Before sending the packet, a [tail][Protocol.tail] will be added.
      */
     @Throws(IOException::class)
-    abstract fun encode()
+    protected abstract fun encode()
+
+    fun encodePacket() {
+        if (encoded) {
+            return
+        }
+        encode()
+        writeHex(Protocol.tail)
+    }
 
     @Throws(IOException::class)
     fun encodeToByteArray(): ByteArray {
-        encode()
+        encodePacket()
         return toByteArray()
     }
 
@@ -85,24 +95,6 @@ fun DataOutputStream.writeHex(hex: String) {
             continue
         }
         this.writeByte(s.toUByte(16).toByte().toInt())
-    }
-}
-
-@ExperimentalUnsignedTypes
-fun DataOutputStream.writeVarInt(dec: UInt) {
-    /*.判断开始 (n ＜ 256)
-    返回 (取文本右边 (“0” ＋ 取十六进制文本 (n), 2))
-    .判断 (n ≥ 256)
-    hex ＝ 取文本右边 (“0” ＋ 取十六进制文本 (n), 4)
-    返回 (取文本左边 (hex, 2) ＋ “ ” ＋ 取文本右边 (hex, 2))
-    .默认
-    返回 (“”)
-    .判断结束*/
-
-    when {
-        dec < 256u -> this.writeByte(dec.toByte().toInt())//drop other bits
-        dec > 256u -> this.writeShort(dec.toShort().toInt())
-        else -> throw IllegalArgumentException(dec.toString())
     }
 }
 

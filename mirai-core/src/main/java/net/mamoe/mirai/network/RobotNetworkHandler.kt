@@ -5,6 +5,8 @@ package net.mamoe.mirai.network
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
+import net.mamoe.mirai.event.events.network.PacketSentEvent
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
@@ -197,12 +199,17 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
             checkNotNull(socket) { "socket closed" }
 
             try {
-                packet.encode()
-                packet.writeHex(Protocol.tail)
+                packet.encodePacket()
+
+                if (BeforePacketSendEvent(packet).broadcast().isCancelled) {
+                    return
+                }
 
                 val data = packet.toByteArray()
                 socket!!.send(DatagramPacket(data, data.size))
                 MiraiLogger info "Packet sent: $packet"
+
+                PacketSentEvent(packet).broadcast()
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
