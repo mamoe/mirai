@@ -1,21 +1,25 @@
 package net.mamoe.mirai.event;
 
-import net.mamoe.mirai.MiraiServer;
-import net.mamoe.mirai.event.events.MiraiEvent;
-
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * 线程安全的事件管理器.
+ *
+ * @author NaturalHG
+ * @see MiraiEventManagerKt 若你使用 kotlin, 请查看针对 kotlin 的优化实现
+ */
 public class MiraiEventManager {
     MiraiEventManager() {
 
     }
 
     public static MiraiEventManager getInstance() {
-        return EventManager.INSTANCE;
+        return EventManager.INSTANCE;//实例来自 kotlin 的 singleton
     }
 
     private final ReentrantReadWriteLock hooksLock = new ReentrantReadWriteLock();
@@ -115,23 +119,40 @@ public class MiraiEventManager {
     }
 
 
-    public void asyncBroadcastEvent(MiraiEvent event) {
-        this.asyncBroadcastEvent(event, a -> {
-        });
-    }
+    public <E extends AsyncEvent> CompletableFuture<E> broadcastEventAsync(E event) {
+        Objects.requireNonNull(event);
+        if (!(event instanceof MiraiEvent)) {
+            throw new IllegalArgumentException("event must be instanceof MiraiEvent");
+        }
 
-    public <D extends MiraiEvent> void asyncBroadcastEvent(D event, Consumer<D> callback) {
-        MiraiServer.getInstance().getTaskManager().ansycTask(() -> {
-            MiraiEventManager.this.broadcastEvent(event);
+        CompletableFuture<E> future = new CompletableFuture<>();
+        future.completeAsync(() -> {
+            MiraiEventManager.this.broadcastEvent((MiraiEvent) event);
             return event;
-        }, callback);
+        });
+        return future;
+    }
+
+    public <E extends AsyncEvent> CompletableFuture<E> broadcastEventAsync(E event, Consumer<E> callback) {
+        Objects.requireNonNull(event);
+        Objects.requireNonNull(callback);
+        if (!(event instanceof MiraiEvent)) {
+            throw new IllegalArgumentException("event must be instanceof MiraiEvent");
+        }
+
+        CompletableFuture<E> future = new CompletableFuture<>();
+        future.whenComplete((a, b) -> callback.accept(event));
+        future.completeAsync(() -> {
+            MiraiEventManager.this.broadcastEvent((MiraiEvent) event);
+            return event;
+        });
+        return future;
     }
 
 
-    public <D extends MiraiEvent> void asyncBroadcastEvent(D event, Runnable callback) {
-        asyncBroadcastEvent(event, t -> callback.run());
+    public <D extends AsyncEvent> CompletableFuture<D> broadcastEventAsync(D event, Runnable callback) {
+        return broadcastEventAsync(event, t -> callback.run());
     }
-
 }
 
 

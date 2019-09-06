@@ -46,8 +46,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
-                        319 -> LoginState.WRONG_PASSWORD
-                        135 -> LoginState.RETYPE_PASSWORD
+                        319, 135 -> LoginState.WRONG_PASSWORD
+                        //135 -> LoginState.RETYPE_PASSWORD
                         279 -> LoginState.BLOCKED
                         263 -> LoginState.UNKNOWN_QQ_NUMBER
                         551, 487 -> LoginState.DEVICE_LOCK

@@ -1,4 +1,4 @@
-package net.mamoe.mirai.event.events;
+package net.mamoe.mirai.event;
 
 /**
  * @author NaturalHG

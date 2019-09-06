@@ -4,7 +4,6 @@ import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
-
 /**
  * 客户端请求验证码图片数据的第几部分
  */

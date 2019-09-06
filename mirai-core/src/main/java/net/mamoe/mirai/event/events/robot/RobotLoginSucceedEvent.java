@@ -7,5 +7,4 @@ public final class RobotLoginSucceedEvent extends RobotEvent {
     public RobotLoginSucceedEvent(Robot robot) {
         super(robot);
     }
-
 }

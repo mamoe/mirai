@@ -1,5 +1,6 @@
 package net.mamoe.mirai.utils.setting;
 
+import net.mamoe.mirai.plugin.MiraiPluginBase;
 import org.ini4j.Config;
 import org.ini4j.Ini;
 
@@ -15,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Only supports <code>INI</code> format <br>
  * Supports {@link Map} and {@link List}
  */
-public class MiraiSetting {
+public class MiraiSettings {
 
     private File file;
 
@@ -23,14 +24,21 @@ public class MiraiSetting {
 
     private volatile Map<String, MiraiSettingSection> cacheSection = new ConcurrentHashMap<>();
 
-    public MiraiSetting(File file){
+    public MiraiSettings(MiraiPluginBase pluginBase, String filename) {
+        // TODO: 2019/9/6 每个插件独立文件夹存放
+        this(new File(filename));
+    }
+
+    public MiraiSettings(File file) {
         if(!file.getName().contains(".")){
-            file = new File(file.getParent() + file.getName() + ".ini");
+            file = new File(file.getPath() + ".ini");
         }
         this.file = file;
         try {
             if(file.exists()){
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    throw new RuntimeException("cannot create config file " + file);
+                }
             }
             Config config = new Config();
             config.setMultiSection(true);

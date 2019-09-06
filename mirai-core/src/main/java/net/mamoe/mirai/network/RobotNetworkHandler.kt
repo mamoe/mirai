@@ -1,3 +1,5 @@
+@file:JvmMultifileClass
+@file:JvmName("RobotNetworkHandler")
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Robot
@@ -8,6 +10,7 @@ import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.event.hookWhile
 import net.mamoe.mirai.message.Message
+import net.mamoe.mirai.network.RobotNetworkHandler.*
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
@@ -19,17 +22,33 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.reflect.KClass
 
+
 /**
+ * Mirai 的网络处理器, 它处理所有数据包([Packet])的发送和接收.
+ * [RobotNetworkHandler] 是全程异步和线程安全的.
+ *
+ * [RobotNetworkHandler] 由 2 个模块构成:
+ * - [SocketHandler]: 处理数据包底层的发送([ByteArray])
+ * - [PacketHandler]: 制作 [Packet] 并传递给 [SocketHandler] 继续处理; 分析来自服务器的数据包并处理
+ *
+ * 其中, [PacketHandler] 由 4 个子模块构成:
+ * - [DebugHandler] 输出 [Packet.toString]
+ * - [LoginHandler] 处理 touch/login/verification code 相关
+ * - [MessageHandler] 处理消息相关(群消息/好友消息)([ServerEventPacket])
+ * - [ActionHandler] 处理动作相关(踢人/加入群/好友列表等)
+ *
  * A RobotNetworkHandler is used to connect with Tencent servers.
  *
  * @author Him188moe
  */
 @Suppress("EXPERIMENTAL_API_USAGE")//to simplify code
-internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
+class RobotNetworkHandler(private val robot: Robot) : Closeable {
     private val socketHandler: SocketHandler = SocketHandler()
 
     val debugHandler = DebugHandler()
@@ -43,9 +62,6 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
             MessageHandler::class to messageHandler,
             ActionHandler::class to actionHandler
     )
-
-    private var closed: Boolean = false
-
 
     /**
      * Not async
@@ -65,30 +81,49 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     //private | internal
 
+    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(500, TimeUnit.MILLISECONDS)
+
+
     /**
      * 仅当 [LoginState] 非 [LoginState.UNKNOWN] 且非 [LoginState.TIMEOUT] 才会调用 [loginHook].
      * 如果要输入验证码, 那么会以参数 [LoginState.VERIFICATION_CODE] 调用 [loginHandler], 登录完成后再以 [LoginState.SUCCEED] 调用 [loginHandler]
+     *
+     * @param connectingTimeout 连接每个服务器的 timeout
      */
-    internal fun tryLogin(loginHook: (Robot.(LoginState) -> Unit)? = null) {
+    internal fun tryLogin(connectingTimeout: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): CompletableFuture<LoginState> {
         val ipQueue: LinkedList<String> = LinkedList(Protocol.SERVER_IP)
-        fun login(): Boolean {
+        val future = CompletableFuture<LoginState>()
+
+        fun login() {
             val ip = ipQueue.poll()
-            return if (ip != null) {
-                this@RobotNetworkHandler.socketHandler.touch(ip) { state ->
-                    if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
-                        login()
-                    } else {
-                        if (loginHook != null) {
-                            robot.loginHook(state)
+            if (ip != null) {
+                // val future = this@RobotNetworkHandler.socketHandler.touch(ip)
+
+                this@RobotNetworkHandler.socketHandler.touch(ip).runCatching {
+                    this@runCatching.get(connectingTimeout, unit).let { state ->
+                        if (state == LoginState.UNKNOWN) {
+                            login()
+                        } else {
+                            future.complete(state)
                         }
                     }
+                }.onFailure {
+                    when (it) {
+                        is TimeoutException -> login()
+                        else -> throw it
+                    }
                 }
-                true
-            } else false
+            } else {
+                future.complete(LoginState.UNKNOWN)//所有服务器均返回 UNKNOWN
+            }
         }
         login()
+        return future
     }
 
+    /**
+     * 分配收到的数据包
+     */
     @ExperimentalUnsignedTypes
     internal fun distributePacket(packet: ServerPacket) {
         packet.decode()
@@ -112,14 +147,7 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 restartSocket()
             }
 
-        private var loginHook: ((LoginState) -> Unit)? = null
-        internal var loginState: LoginState? = null
-            set(value) {
-                field = value
-                if (value != null) {
-                    loginHook?.invoke(value)
-                }
-            }
+        internal var loginFuture: CompletableFuture<LoginState>? = null
 
         private fun restartSocket() {
             socket?.close()
@@ -151,17 +179,14 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
         /**
          * Start network and touch the server
          */
-        internal fun touch(serverAddress: String, loginHook: ((LoginState) -> Unit)? = null) {
+        internal fun touch(serverAddress: String): CompletableFuture<LoginState> {
             MiraiLogger.info("Connecting server: $serverAddress")
+            this.loginFuture = CompletableFuture()
+
             socketHandler.serverIP = serverAddress
-            if (loginHook != null) {
-                this.loginHook = loginHook
-            }
             sendPacket(ClientTouchPacket(robot.account.qqNumber, socketHandler.serverIP))
-            waitForPacket(ServerTouchResponsePacket::class, 100) {
-                MiraiLogger.error("  Timeout")
-                loginHook?.invoke(LoginState.TIMEOUT)
-            }
+
+            return this.loginFuture!!
         }
 
         /**
@@ -209,8 +234,12 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
         override fun close() {
             this.socket?.close()
-            this.loginState = null
-            this.loginHook = null
+            if (this.loginFuture != null) {
+                if (!this.loginFuture!!.isDone) {
+                    this.loginFuture!!.cancel(true)
+                }
+                this.loginFuture = null
+            }
         }
     }
 
@@ -286,8 +315,7 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 }
 
                 is ServerLoginResponseFailedPacket -> {
-                    socketHandler.loginState = packet.loginState
-                    MiraiLogger error "Login failed: " + packet.loginState.toString()
+                    socketHandler.loginFuture!!.complete(packet.loginState)
                     return
                 }
 
@@ -309,8 +337,6 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 }
 
                 is ServerVerificationCodeTransmissionPacket -> {
-                    socketHandler.loginState = LoginState.VERIFICATION_CODE
-
                     this.verificationCodeSequence++
                     this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePartN
 
@@ -391,7 +417,7 @@ internal class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 }
 
                 is ServerLoginSuccessPacket -> {
-                    socketHandler.loginState = LoginState.SUCCEED
+                    socketHandler.loginFuture!!.complete(LoginState.SUCCEED)
                     sendPacket(ClientSKeyRequestPacket(robot.account.qqNumber, sessionKey))
                 }
 

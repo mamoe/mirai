@@ -1,7 +1,7 @@
 package net.mamoe.mirai.event.events.robot
 
 import net.mamoe.mirai.Robot
-import net.mamoe.mirai.event.events.MiraiEvent
+import net.mamoe.mirai.event.MiraiEvent
 
 /**
  * @author Him188moe
@@ -16,4 +16,3 @@ class RobotMessageReceivedEvent(val robot: Robot, val type: Type, val message: S
         GROUP
     }
 }
-

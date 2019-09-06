@@ -1,7 +1,7 @@
 package net.mamoe.mirai.event.events.robot;
 
 import net.mamoe.mirai.Robot;
-import net.mamoe.mirai.event.events.MiraiEvent;
+import net.mamoe.mirai.event.MiraiEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;

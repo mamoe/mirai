@@ -107,14 +107,16 @@ fun main() {
     qqList.split("\n").forEach {
         GlobalScope.launch {
             val strings = it.split("----")
-            Robot(RobotAccount(strings[0].toLong(), strings[1].let { password ->
+            val robot = Robot(RobotAccount(strings[0].toLong(), strings[1].let { password ->
                 if (password.endsWith(".")) {
                     return@let password.substring(0, password.length - 1)
                 }
                 return@let password
-            }), listOf()).network.tryLogin { state ->
+            }), listOf())
+
+            robot.network.tryLogin().whenComplete { state, _ ->
                 if (!(state == LoginState.BLOCKED || state == LoginState.DEVICE_LOCK || state == LoginState.WRONG_PASSWORD)) {
-                    goodRobotList.add(this)
+                    goodRobotList.add(robot)
                 }
             }
         }

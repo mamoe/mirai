@@ -13,6 +13,21 @@ import java.io.Closeable;
 import java.util.*;
 
 /**
+ * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
+ * Mirai 为多账号设计, 可同时维护多个机器人账号.
+ * <br>
+ * {@link Robot} 由 2 个模块组成.
+ * {@linkplain ContactSystem 联系人管理}: 可通过 {@link Robot#contacts} 访问
+ * {@linkplain RobotNetworkHandler 网络处理器}: 可通过 {@link Robot#network} 访问
+ * <br>
+ * 另外地, 若你需要得到机器人的 QQ 账号, 请访问 {@link Robot#account}
+ * 若你需要得到服务器上所有机器人列表, 请访问 {@link Robot#instances}
+ *
+ * @author Him188moe
+ * @author NatrualHG
+ * @see net.mamoe.mirai.contact.Contact
+ *
+ * <p>
  * Robot that is the base of the whole program.
  * It contains a {@link ContactSystem}, which manage contacts such as {@link QQ} and {@link Group}.
  */

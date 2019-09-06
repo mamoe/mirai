@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
+ * At 一个人的消息.
+ *
  * @author Him188moe
  */
 public final class At extends Message {
