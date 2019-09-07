@@ -29,7 +29,7 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 - [x] 事件(Event)模块  
 - [ ] 插件(Plugin)模块  **(Working on)**
 - [x] Network - Touch  
-- [X] Network - Login 
+- [X] Network - Login
 - [X] Network - Session  
 - [X] Network - Verification Code
 - [X] Network - Message Receiving  
