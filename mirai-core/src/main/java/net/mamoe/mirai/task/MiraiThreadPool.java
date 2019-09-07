@@ -11,7 +11,8 @@ public final class MiraiThreadPool extends ScheduledThreadPoolExecutor implement
     }
 
     MiraiThreadPool() {
-        super(0);
+        super(10);
+
         /*super(0,
                 Integer.MAX_VALUE,
                 60L,
