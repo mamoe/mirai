@@ -1,7 +1,10 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ByteArrayDataOutputStream
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 import java.io.IOException
 
@@ -20,7 +23,6 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
     var loginTime: Int = 0
     lateinit var loginIP: String
     lateinit var token0825: ByteArray
-    lateinit var tgtgtKey: ByteArray
 
     enum class Type {
         TYPE_08_25_31_01,
@@ -41,7 +43,6 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
 
                 loginTime = input.readInt()
                 loginIP = input.readIP()
-                tgtgtKey = getRandomByteArray(16)
             }
 
             else -> {

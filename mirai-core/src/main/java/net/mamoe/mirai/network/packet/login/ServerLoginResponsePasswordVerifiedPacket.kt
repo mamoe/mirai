@@ -1,8 +1,10 @@
 package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.network.packet.goto
+import net.mamoe.mirai.network.packet.readNBytesAt
+import net.mamoe.mirai.network.packet.readVarString
 import net.mamoe.mirai.utils.TestedSuccessfully
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
@@ -53,7 +55,7 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
         @ExperimentalUnsignedTypes
         fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {
             input goto 14
-            return ServerLoginResponseSuccessPacket(TEA.decrypt(TEA.decrypt(input.readAllBytes().cutTail(1), Protocol.shareKey), tgtgtKey).dataInputStream()).setId(this.idHex)
+            return ServerLoginResponseSuccessPacket(this.decryptBy(Protocol.shareKey, tgtgtKey)).setId(this.idHex)
         }
     }
 

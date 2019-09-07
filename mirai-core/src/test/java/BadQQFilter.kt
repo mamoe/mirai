@@ -88,4 +88,3 @@ fun main() {
 
     println(goodRobotList.joinToString("\n") { it.account.qqNumber.toString() + "    " + it.account.password })
 }
-

@@ -22,6 +22,10 @@ class ClientHeartbeatPacket(
             it.writeHex("00 01 00 01")
         }
     }
+
+    override fun getFixedId(): String {
+        return this.idHex + " ?? ??"
+    }
 }
 
 class ServerHeartbeatResponsePacket(input: DataInputStream) : ServerPacket(input)

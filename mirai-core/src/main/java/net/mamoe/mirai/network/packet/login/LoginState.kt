@@ -7,7 +7,7 @@ enum class LoginState {
     /**
      * 登录成功
      */
-    SUCCEED,
+    SUCCESS,
 
     /**
      * 密码错误

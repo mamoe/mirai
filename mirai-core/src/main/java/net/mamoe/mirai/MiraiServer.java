@@ -8,6 +8,8 @@ import net.mamoe.mirai.network.packet.login.LoginState;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
+import net.mamoe.mirai.utils.MiraiLoggerKt;
+import net.mamoe.mirai.utils.RobotAccount;
 import net.mamoe.mirai.utils.config.MiraiConfig;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingListSection;
@@ -16,7 +18,9 @@ import net.mamoe.mirai.utils.setting.MiraiSettings;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author NaturalHG
@@ -174,17 +178,24 @@ public class MiraiServer {
 
         getLogger().info("Initializing [Robot]s");
 
+        try {
+            getAvailableRobot();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        /*
         this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
             getLogger().info("Initializing [Robot] " + section.getString("account"));
             try {
                 Robot robot = new Robot(section);
                 var state = robot.network.tryLogin$mirai_core().get();
                 //robot.network.tryLogin$mirai_core().whenComplete((state, e) -> {
-                if (state == LoginState.SUCCEED) {
+                if (state == LoginState.SUCCESS) {
                     Robot.instances.add(robot);
-                    getLogger().success("    Login Succeed");
+                    getLogger().success("   Login Succeed");
                 } else {
-                    getLogger().error("    Login Failed with error " + state);
+                    getLogger().error("   Login Failed with error " + state);
                     robot.close();
                 }
                 //  }).get();
@@ -194,8 +205,42 @@ public class MiraiServer {
                 getLogger().error("Could not load QQ robots config!");
                 System.exit(1);
             }
-        });
+        });*/
     }
 
 
+    String qqList = "3150499752----1234567890\n" +
+            "3119292829----987654321\n" +
+            "2399148773----12345678910\n" +
+            "3145561616----987654321\n" +
+            "2374150554----12345678910\n" +
+            "2375307394----12345678910\n" +
+            "1531848970----1234567890\n" +
+            "1947293188----a123456789\n" +
+            "1771231721----123456789a\n" +
+            "2401645747----12345678910\n" +
+            "3338427598----987654321\n" +
+            "3055657369----1234567890\n" +
+            "3502771486----987654321\n" +
+            "1515419818----1234567890\n" +
+            "2402273360----12345678910\n" +
+            "3107367848----987654321\n" +
+            "3487109947----123456789a\n" +
+            "3489288352----123456789a\n" +
+            "2385617018----12345678910\n" +
+            "1251003390----123456789a\n";
+
+    private Robot getAvailableRobot() throws ExecutionException, InterruptedException {
+        for (String it : qqList.split("\n")) {
+            var strings = it.split("----");
+            var robot = new Robot(new RobotAccount(Long.parseLong(strings[0]), strings[1]), List.of());
+
+            if (robot.network.tryLogin$mirai_core().get() == LoginState.SUCCESS) {
+                MiraiLoggerKt.success(robot, "Login succeed");
+                return robot;
+            }
+        }
+
+        throw new RuntimeException();
+    }
 }

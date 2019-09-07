@@ -90,7 +90,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     /**
      * 仅当 [LoginState] 非 [LoginState.UNKNOWN] 且非 [LoginState.TIMEOUT] 才会调用 [loginHook].
-     * 如果要输入验证码, 那么会以参数 [LoginState.VERIFICATION_CODE] 调用 [loginHandler], 登录完成后再以 [LoginState.SUCCEED] 调用 [loginHandler]
+     * 如果要输入验证码, 那么会以参数 [LoginState.VERIFICATION_CODE] 调用 [loginHandler], 登录完成后再以 [LoginState.SUCCESS] 调用 [loginHandler]
      *
      * @param touchingTimeoutMillis 连接每个服务器的 timeout
      */
@@ -296,7 +296,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         private lateinit var token0825: ByteArray
         private var loginTime: Int = 0
         private lateinit var loginIP: String
-        private var tgtgtKey: ByteArray? = null
+        private var tgtgtKey: ByteArray = getRandomByteArray(16)
 
         private var tlv0105: ByteArray = lazyEncode {
             it.writeHex("01 05 00 30")
@@ -329,8 +329,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                         this.loginIP = packet.loginIP
                         this.loginTime = packet.loginTime
                         this.token0825 = packet.token0825
-                        this.tgtgtKey = packet.tgtgtKey
-                        sendPacket(ClientPasswordSubmissionPacket(robot.account.qqNumber, robot.account.password, packet.loginTime, packet.loginIP, packet.tgtgtKey, packet.token0825))
+                        sendPacket(ClientPasswordSubmissionPacket(robot.account.qqNumber, robot.account.password, packet.loginTime, packet.loginIP, this.tgtgtKey!!, packet.token0825))
                     }
                 }
 
@@ -367,10 +366,14 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     this.token00BA = packet.token00BA
 
                     if (packet.transmissionCompleted) {
-                        (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.captchaCache!!)
                         robot notice (CharImageUtil.createCharImg(ImageIO.read(this.captchaCache!!.inputStream())))
-                        robot notice ("需要验证码登录")
-                        robot notice ("若看不清请查根目录下 VerificationCode.png")
+                        robot notice ("需要验证码登录, 验证码为 4 字母")
+                        try {
+                            (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.captchaCache!!)
+                            robot notice ("若看不清字符图片, 请查看 Mirai 根目录下 VerificationCode.png")
+                        } catch (e: Exception) {
+                            robot notice "无法写出验证码文件, 请尝试查看以上字符图片"
+                        }
                         robot notice ("若要更换验证码, 请直接回车")
                         val code = Scanner(System.`in`).nextLine()
                         if (code.isEmpty() || code.length != 4) {
@@ -391,40 +394,18 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的
-                is ServerLoginResponseResendPacket -> {
+                is ServerLoginResponseKeyExchangePacket -> {
                     //if (packet.tokenUnknown != null) {
                     //this.token00BA = packet.token00BA!!
                     //println("token00BA changed!!! to " + token00BA.toUByteArray())
                     //}
-                    if (packet.flag == ServerLoginResponseResendPacket.Flag.`08 36 31 03`) {
+                    if (packet.flag == ServerLoginResponseKeyExchangePacket.Flag.`08 36 31 03`) {
                         this.tgtgtKey = packet.tgtgtKey
-                        sendPacket(ClientLoginResendPacket3104(
-                                robot.account.qqNumber,
-                                robot.account.password,
-                                loginTime,
-                                loginIP,
-                                tgtgtKey!!,
-                                token0825,
-                                when (packet.tokenUnknown != null) {
-                                    true -> packet.tokenUnknown!!
-                                    false -> this.token00BA
-                                },
-                                packet._0836_tlv0006_encr
-                        ))
+                        sendPacket(ClientLoginResendPacket3104(robot.account.qqNumber, robot.account.password, loginTime, loginIP, tgtgtKey, token0825, packet.tokenUnknown
+                                ?: this.token00BA, packet.tlv0006))
                     } else {
-                        sendPacket(ClientLoginResendPacket3106(
-                                robot.account.qqNumber,
-                                robot.account.password,
-                                loginTime,
-                                loginIP,
-                                tgtgtKey!!,
-                                token0825,
-                                when (packet.tokenUnknown != null) {
-                                    true -> packet.tokenUnknown!!
-                                    false -> this.token00BA
-                                },
-                                packet._0836_tlv0006_encr
-                        ))
+                        sendPacket(ClientLoginResendPacket3106(robot.account.qqNumber, robot.account.password, loginTime, loginIP, tgtgtKey, token0825, packet.tokenUnknown
+                                ?: token00BA, packet.tlv0006))
                     }
                 }
 
@@ -446,7 +427,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 }
 
                 is ServerLoginSuccessPacket -> {
-                    socketHandler.loginFuture!!.complete(LoginState.SUCCEED)
+                    socketHandler.loginFuture!!.complete(LoginState.SUCCESS)
                     sendPacket(ClientSKeyRequestPacket(robot.account.qqNumber, sessionKey))
                 }
 
@@ -467,8 +448,8 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
                 is ServerVerificationCodePacket.Encrypted -> distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> distributePacket(packet.decrypt())
-                is ServerLoginResponseResendPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey!!))
-                is ServerLoginResponseSuccessPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey!!))
+                is ServerLoginResponseKeyExchangePacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey))
+                is ServerLoginResponseSuccessPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey))
                 is ServerSessionKeyResponsePacket.Encrypted -> distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
                 is ServerTouchResponsePacket.Encrypted -> distributePacket(packet.decrypt())
                 is ServerSKeyResponsePacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
@@ -489,7 +470,6 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
         override fun close() {
             this.captchaCache = null
-            this.tgtgtKey = null
 
             this.heartbeatFuture?.cancel(true)
             this.sKeyRefresherFuture?.cancel(true)

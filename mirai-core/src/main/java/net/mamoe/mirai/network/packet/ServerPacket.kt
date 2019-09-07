@@ -5,7 +5,10 @@ import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.getAllDeclaredFields
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
 /**
@@ -50,11 +53,10 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                 "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
                     when (bytes.size) {
-                        271, 207 -> return ServerLoginResponseResendPacket.Encrypted(stream, when (idHex) {
-                            "08 36 31 03" -> ServerLoginResponseResendPacket.Flag.`08 36 31 03`
-                            else -> {
-                                MiraiLogger debug ("ServerLoginResponseResendPacketEncrypted: flag=$idHex"); ServerLoginResponseResendPacket.Flag.OTHER
-                            }
+                        271, 207 -> return ServerLoginResponseKeyExchangePacket.Encrypted(stream, when (idHex) {
+                            "08 36 31 03" -> ServerLoginResponseKeyExchangePacket.Flag.`08 36 31 03`
+                            else -> ServerLoginResponseKeyExchangePacket.Flag.OTHER
+
                         }).apply { this.idHex = idHex }
                         871 -> return ServerLoginResponseVerificationCodeInitPacket.Encrypted(stream).apply { this.idHex = idHex }
                     }
@@ -132,13 +134,36 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
     }
 
     fun decryptBy(key: ByteArray): DataInputStream {
-        input.goto(14)
-        return DataInputStream(TEA.decrypt(input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }, key).inputStream())
+        return decryptAsByteArray(key).dataInputStream()
     }
 
     @ExperimentalUnsignedTypes
     fun decryptBy(keyHex: String): DataInputStream {
         return this.decryptBy(keyHex.hexToBytes())
+    }
+
+    fun decryptBy(key1: ByteArray, key2: ByteArray): DataInputStream {
+        return TEA.decrypt(this.decryptAsByteArray(key1), key2).dataInputStream();
+    }
+
+    @ExperimentalUnsignedTypes
+    fun decryptBy(key1: String, key2: ByteArray): DataInputStream {
+        return this.decryptBy(key1.hexToBytes(), key2)
+    }
+
+    @ExperimentalUnsignedTypes
+    fun decryptBy(key1: ByteArray, key2: String): DataInputStream {
+        return this.decryptBy(key1, key2.hexToBytes())
+    }
+
+    @ExperimentalUnsignedTypes
+    fun decryptBy(keyHex1: String, keyHex2: String): DataInputStream {
+        return this.decryptBy(keyHex1.hexToBytes(), keyHex2.hexToBytes())
+    }
+
+    private fun decryptAsByteArray(key: ByteArray): ByteArray {
+        input.goto(14)
+        return TEA.decrypt(input.readAllBytes().cutTail(1), key)
     }
 }
 
