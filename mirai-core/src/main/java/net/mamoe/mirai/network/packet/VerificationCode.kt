@@ -49,7 +49,7 @@ class ClientVerificationCodeTransmissionRequestPacket(
 @PacketId("00 BA 32")
 @ExperimentalUnsignedTypes
 class ClientVerificationCodeSubmitPacket(
-        private val packetId: Int,
+        private val packetIdLast: Int,
         private val qq: Long,
         private val token0825: ByteArray,
         private val verificationCode: String,
@@ -60,7 +60,7 @@ class ClientVerificationCodeSubmitPacket(
     }
 
     override fun encode() {
-        this.writeByte(packetId)//part of packet id
+        this.writeByte(packetIdLast)//part of packet id
 
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
@@ -83,6 +83,10 @@ class ClientVerificationCodeSubmitPacket(
             it.writeHex("00 10")
             it.writeHex(Protocol.key00BAFix)
         }
+    }
+
+    override fun getFixedId(): String {
+        return this.idHex + " " + packetIdLast
     }
 }
 
@@ -120,12 +124,12 @@ fun main() {
 @PacketId("00 BA 31")
 @ExperimentalUnsignedTypes
 class ClientVerificationCodeRefreshPacket(
-        private val packetId: Int,
+        private val packetIdLast: Int,
         private val qq: Long,
         private val token0825: ByteArray
 ) : ClientPacket() {
     override fun encode() {
-        this.writeByte(packetId)//part of packet id
+        this.writeByte(packetIdLast)//part of packet id
 
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
@@ -141,19 +145,17 @@ class ClientVerificationCodeRefreshPacket(
             it.writeHex(Protocol.key00BAFix)
         }
     }
+
+    override fun getFixedId(): String {
+        return this.idHex + " " + packetIdLast
+    }
 }
 
 /**
  * 验证码输入错误
  */
 @PacketId("00 BA 32")
-class ServerVerificationCodeWrongPacket(input: DataInputStream, val dataSize: Int, packetId: ByteArray) : ServerVerificationCodeTransmissionPacket(input, dataSize, packetId) {
-
-    override fun decode() {
-        MiraiLogger debug dataSize
-        super.decode()
-    }
-}
+class ServerVerificationCodeWrongPacket(input: DataInputStream, dataSize: Int, packetId: ByteArray) : ServerVerificationCodeTransmissionPacket(input, dataSize, packetId)
 
 /**
  * 服务器发送验证码图片文件一部分过来
@@ -182,6 +184,10 @@ open class ServerVerificationCodeTransmissionPacket(input: DataInputStream, priv
 
         this.token00BA = this.input.readNBytesAt(dataSize - 56 - 2, 40)
         this.packetIdLast = packetId[3].toInt()
+    }
+
+    override fun getFixedId(): String {
+        return this.idHex + " " + packetIdLast
     }
 }
 

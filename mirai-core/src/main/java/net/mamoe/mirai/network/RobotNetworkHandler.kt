@@ -279,7 +279,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     inner class DebugHandler : PacketHandler() {
         override fun onPacketReceived(packet: ServerPacket) {
-            if (!packet.javaClass.name.endsWith("Encrypted")) {
+            if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
                 robot notice "Packet received: $packet"
             }
             if (packet is ServerEventPacket) {
