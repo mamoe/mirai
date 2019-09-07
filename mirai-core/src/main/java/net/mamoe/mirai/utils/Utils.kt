@@ -45,9 +45,6 @@ fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 @ExperimentalUnsignedTypes
 fun Byte.toUHexString(): String = this.toUByte().toString(16)
 
-/**
- * firstly [Protocol.hexToUBytes], secondly [UByteArray.toByteArray]
- */
 @ExperimentalUnsignedTypes
 fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 
@@ -98,8 +95,6 @@ internal fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.va
  * 获取类的所有字段(类成员变量), 包括父类的和私有的. <br></br>
  * 相当于将这个类和它所有父类的 [Class.getDeclaredFields] 都合并成一个 [List] <br></br>
  * 不会排除重名的字段. <br></br>
- *
- * @param clazz class
  *
  * @return field list
  */
