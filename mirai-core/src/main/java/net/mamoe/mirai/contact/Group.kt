@@ -22,6 +22,7 @@ class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
     }
 
     companion object {
+        @JvmStatic
         fun groupNumberToId(number: Long): Long {
             val left: Long = number.toString().let {
                 if (it.length < 6) {
@@ -59,6 +60,7 @@ class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
             }
         }
 
+        @JvmStatic
         fun groupIdToNumber(id: Long): Long {
             var left: Long = id.toString().let {
                 if (it.length < 6) {

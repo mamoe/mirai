@@ -2,6 +2,7 @@
 @file:JvmName("RobotNetworkHandler")
 package net.mamoe.mirai.network
 
+import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
@@ -296,7 +297,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          */
         private lateinit var sessionResponseDecryptionKey: ByteArray
 
-        private var verificationCodeSequence: Int = 0//这两个验证码使用
+        private var verificationCodeSequence: Int = 1//这两个验证码使用
         private var verificationCodeCache: ByteArray? = null//每次包只发一部分验证码来
         private var verificationCodeCacheCount: Int = 1//
         private lateinit var verificationToken: ByteArray
@@ -356,7 +357,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     //todo 看易语言 count 和 sequence 是怎样变化的
 
                     if (packet.transmissionCompleted) {
-                        this.verificationCodeCache
+                        (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.verificationCodeCache!!)
                         TODO("验证码好了")
                     } else {
                         sendPacket(ClientVerificationCodeTransmissionRequestPacket(this.verificationCodeCacheCount, robot.account.qqNumber, this.token0825, this.verificationCodeSequence, this.token00BA))
