@@ -16,6 +16,8 @@ object MiraiLogger {
 
     infix fun notice(o: Any?) = this.print(o.toString(), LoggerTextFormat.LIGHT_BLUE)
 
+    infix fun success(o: Any?) = this.print(o.toString(), LoggerTextFormat.GREEN)
+
     infix fun debug(o: Any?) = this.print(o.toString(), LoggerTextFormat.YELLOW)
 
     infix fun catching(e: Throwable) {

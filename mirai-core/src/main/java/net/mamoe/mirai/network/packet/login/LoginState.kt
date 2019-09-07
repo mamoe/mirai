@@ -43,4 +43,9 @@ enum class LoginState {
      * 未知. 更换服务器或等几分钟再登录可能解决.
      */
     UNKNOWN,
+
+    /**
+     * 超时
+     */
+    TIMEOUT,
 }

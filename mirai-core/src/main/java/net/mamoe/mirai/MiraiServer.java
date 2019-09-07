@@ -183,9 +183,9 @@ public class MiraiServer {
                 //robot.network.tryLogin$mirai_core().whenComplete((state, e) -> {
                 if (state == LoginState.SUCCEED) {
                     Robot.instances.add(robot);
-                    getLogger().info("    Succeed");
+                    getLogger().success("    Login Succeed");
                 } else {
-                    getLogger().error("    Failed with error " + state);
+                    getLogger().error("    Login Failed with error " + state);
                     robot.close();
                 }
                 //  }).get();

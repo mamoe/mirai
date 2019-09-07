@@ -1,7 +1,9 @@
 @file:JvmMultifileClass
 @file:JvmName("RobotNetworkHandler")
+
 package net.mamoe.mirai.network
 
+import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
@@ -27,7 +29,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
+import javax.imageio.ImageIO
 import kotlin.reflect.KClass
 
 
@@ -83,40 +85,32 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     //private | internal
 
-    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(500, TimeUnit.MILLISECONDS)
+    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(200)
 
 
     /**
      * 仅当 [LoginState] 非 [LoginState.UNKNOWN] 且非 [LoginState.TIMEOUT] 才会调用 [loginHook].
      * 如果要输入验证码, 那么会以参数 [LoginState.VERIFICATION_CODE] 调用 [loginHandler], 登录完成后再以 [LoginState.SUCCEED] 调用 [loginHandler]
      *
-     * @param connectingTimeout 连接每个服务器的 timeout
+     * @param touchingTimeoutMillis 连接每个服务器的 timeout
      */
-    internal fun tryLogin(connectingTimeout: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): CompletableFuture<LoginState> {
+    internal fun tryLogin(touchingTimeoutMillis: Long): CompletableFuture<LoginState> {
         val ipQueue: LinkedList<String> = LinkedList(Protocol.SERVER_IP)
         val future = CompletableFuture<LoginState>()
 
         fun login() {
             val ip = ipQueue.poll()
-            if (ip != null) {
-                // val future = this@RobotNetworkHandler.socketHandler.touch(ip)
-
-                this@RobotNetworkHandler.socketHandler.touch(ip).runCatching {
-                    this@runCatching.get(connectingTimeout, unit).let { state ->
-                        if (state == LoginState.UNKNOWN) {
-                            login()
-                        } else {
-                            future.complete(state)
-                        }
-                    }
-                }.onFailure {
-                    when (it) {
-                        is TimeoutException -> login()
-                        else -> throw it
-                    }
-                }
-            } else {
+            if (ip == null) {
                 future.complete(LoginState.UNKNOWN)//所有服务器均返回 UNKNOWN
+                return
+            }
+
+            this@RobotNetworkHandler.socketHandler.touch(ip, touchingTimeoutMillis).get().let { state ->
+                if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
+                    login()
+                } else {
+                    future.complete(state)
+                }
             }
         }
         login()
@@ -181,12 +175,15 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         /**
          * Start network and touch the server
          */
-        internal fun touch(serverAddress: String): CompletableFuture<LoginState> {
+        internal fun touch(serverAddress: String, timeoutMillis: Long): CompletableFuture<LoginState> {
             MiraiLogger.info("Connecting server: $serverAddress")
             this.loginFuture = CompletableFuture()
 
             socketHandler.serverIP = serverAddress
             sendPacket(ClientTouchPacket(robot.account.qqNumber, socketHandler.serverIP))
+            waitForPacket(ServerTouchResponsePacket::class, timeoutMillis) {
+                loginFuture!!.complete(LoginState.TIMEOUT)
+            }
 
             return this.loginFuture!!
         }
@@ -196,7 +193,10 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          */
         @ExperimentalUnsignedTypes
         internal fun sendPacket(packet: ClientPacket) {
-            checkNotNull(socket) { "socket closed" }
+            checkNotNull(socket) { "network closed" }
+            if (socket!!.isClosed) {
+                return
+            }
 
             try {
                 packet.encodePacket()
@@ -296,9 +296,8 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          */
         private lateinit var sessionResponseDecryptionKey: ByteArray
 
-        private var verificationCodeSequence: Int = 0//这两个验证码使用
+        private var verificationCodeSequence: Int = 0
         private var verificationCodeCache: ByteArray? = null//每次包只发一部分验证码来
-        private var verificationCodeCacheCount: Int = 1//
         private lateinit var verificationToken: ByteArray
 
 
@@ -337,18 +336,23 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     }
                 }
 
-                is ServerVerificationCodeRepeatPacket -> {//todo 这个名字正确么
-                    this.tgtgtKey = packet.tgtgtKeyUpdate
+                is ServerVerificationCodeCorrectPacket -> {
+                    this.tgtgtKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
                     sendPacket(ClientLoginResendPacket3105(robot.account.qqNumber, robot.account.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
                 }
 
+
                 is ServerVerificationCodeTransmissionPacket -> {
+                    if (packet is ServerVerificationCodeWrongPacket) {
+                        this.verificationCodeSequence = 0
+                        this.verificationCodeCache = byteArrayOf()
+                    }
+
                     this.verificationCodeSequence++
                     this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePartN
 
                     this.verificationToken = packet.verificationToken
-                    this.verificationCodeCacheCount++
 
                     this.token00BA = packet.token00BA
 
@@ -356,10 +360,11 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     //todo 看易语言 count 和 sequence 是怎样变化的
 
                     if (packet.transmissionCompleted) {
-                        this.verificationCodeCache
+                        (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.verificationCodeCache!!)
+                        println(CharImageUtil.createCharImg(ImageIO.read(this.verificationCodeCache!!.inputStream())))
                         TODO("验证码好了")
                     } else {
-                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(this.verificationCodeCacheCount, robot.account.qqNumber, this.token0825, this.verificationCodeSequence, this.token00BA))
+                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.count + 1, robot.account.qqNumber, this.token0825, this.verificationCodeSequence, this.token00BA))
                     }
                 }
 

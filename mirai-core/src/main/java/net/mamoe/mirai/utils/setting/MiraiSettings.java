@@ -35,7 +35,7 @@ public class MiraiSettings {
         }
         this.file = file;
         try {
-            if(file.exists()){
+            if (!file.exists()) {
                 if (!file.createNewFile()) {
                     throw new RuntimeException("cannot create config file " + file);
                 }
