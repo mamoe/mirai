@@ -44,6 +44,6 @@ class ServerLoginResponseResendPacket(input: DataInputStream, val flag: Flag) : 
 
     class Encrypted(input: DataInputStream, private val flag: Flag) : ServerPacket(input) {
         @TestedSuccessfully
-        fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseResendPacket = ServerLoginResponseResendPacket(decryptBy(tgtgtKey), flag).setId(this.idHex)
+        fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseResendPacket = ServerLoginResponseResendPacket(this.decryptBy(tgtgtKey), flag).setId(this.idHex)
     }
 }

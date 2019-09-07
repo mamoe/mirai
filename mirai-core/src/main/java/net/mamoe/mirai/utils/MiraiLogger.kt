@@ -45,6 +45,8 @@ infix fun Robot.notice(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIG
 
 infix fun Robot.purple(o: Any?) = print(this, o.toString(), LoggerTextFormat.PURPLE)
 
+infix fun Robot.cyanL(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_CYAN)
+
 infix fun Robot.success(o: Any?) = print(this, o.toString(), LoggerTextFormat.GREEN)
 
 infix fun Robot.debug(o: Any?) = print(this, o.toString(), LoggerTextFormat.YELLOW)

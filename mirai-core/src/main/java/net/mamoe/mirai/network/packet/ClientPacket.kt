@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.packet
 
 import lombok.Getter
 import net.mamoe.mirai.network.Protocol
+import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.utils.*
 import java.io.DataOutputStream
 import java.io.IOException
@@ -62,14 +63,15 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 
     open fun getFixedId(): String = when (this.idHex.length) {
         0 -> "__ __ __ __"
-        2 -> this.idHex + " __ __"
-        5 -> this.idHex + " __"
+        2 -> this.idHex + " __ __ __"
+        5 -> this.idHex + " __ __"
+        7 -> this.idHex + " __"
         else -> this.idHex
     }
 
 
     override fun toString(): String {
-        return this.javaClass.simpleName + "(${this.getFixedId()})" + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
+        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "encoded" }.joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
                 null -> null

@@ -219,7 +219,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
                 val data = packet.toByteArray()
                 socket!!.send(DatagramPacket(data, data.size))
-                robot purple "Packet sent:     $packet"
+                robot cyanL "Packet sent:     $packet"
 
                 PacketSentEvent(robot, packet).broadcast()
             } catch (e: Throwable) {
@@ -279,7 +279,9 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     inner class DebugHandler : PacketHandler() {
         override fun onPacketReceived(packet: ServerPacket) {
-            robot notice "Packet received: $packet"
+            if (!packet.javaClass.name.endsWith("Encrypted")) {
+                robot notice "Packet received: $packet"
+            }
             if (packet is ServerEventPacket) {
                 sendPacket(ClientMessageResponsePacket(robot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
             }
@@ -354,10 +356,6 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     }
                 }
 
-                is ServerVerificationCodeUnknownPacket -> {
-                    sendPacket(ClientVerificationCodeRefreshPacket(88, robot.account.qqNumber, token0825))
-                }
-
                 is ServerVerificationCodeTransmissionPacket -> {
                     if (packet is ServerVerificationCodeWrongPacket) {
                         robot error "验证码错误, 请重新输入"
@@ -377,6 +375,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                         val code = Scanner(System.`in`).nextLine()
                         if (code.isEmpty() || code.length != 4) {
                             this.captchaCache = byteArrayOf()
+                            this.captchaSectionId = 1
                             sendPacket(ClientVerificationCodeRefreshPacket(packet.packetIdLast + 1, robot.account.qqNumber, token0825))
                         } else {
                             sendPacket(ClientVerificationCodeSubmitPacket(packet.packetIdLast + 1, robot.account.qqNumber, token0825, code, packet.verificationToken))

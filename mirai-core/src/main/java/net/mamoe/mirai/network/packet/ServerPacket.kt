@@ -1,6 +1,7 @@
 package net.mamoe.mirai.network.packet
 
 import lombok.Getter
+import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
@@ -109,7 +110,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
     @ExperimentalUnsignedTypes
     override fun toString(): String {
-        return this.javaClass.simpleName + "(${this.getFixedId()})" + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
+        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "encoded" }.joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
                 is ByteArray -> value.toUHexString()
@@ -124,8 +125,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
     fun getFixedId(id: String): String = when (id.length) {
         0 -> "__ __ __ __"
-        2 -> "$id __ __"
-        5 -> "$id __"
+        2 -> "$id __ __ __"
+        5 -> "$id __ __"
+        7 -> "$id __"
         else -> id
     }
 

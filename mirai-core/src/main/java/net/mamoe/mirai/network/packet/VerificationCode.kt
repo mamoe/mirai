@@ -210,12 +210,6 @@ class ServerVerificationCodeCorrectPacket(input: DataInputStream) : ServerVerifi
     }
 }
 
-class ServerVerificationCodeUnknownPacket(input: DataInputStream) : ServerVerificationCodePacket(input) {
-    override fun decode() {
-        MiraiLogger.debug(this.input.goto(0).readAllBytes())
-    }
-}
-
 abstract class ServerVerificationCodePacket(input: DataInputStream) : ServerPacket(input) {
 
     @PacketId("00 BA")

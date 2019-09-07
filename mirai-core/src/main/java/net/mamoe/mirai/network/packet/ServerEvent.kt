@@ -223,6 +223,10 @@ class ClientMessageResponsePacket(
             it.write(eventIdentity)
         }
     }
+
+    override fun getFixedId(): String {
+        return packetIdFromServer.toUHexString()
+    }
 }
 
 /*
