@@ -2,7 +2,10 @@ package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ByteArrayDataOutputStream
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.TestedSuccessfully
+import net.mamoe.mirai.utils.hexToBytes
 import java.io.DataOutputStream
 
 /**
@@ -32,7 +35,6 @@ class ClientPasswordSubmissionPacket(
         this.encryptAndWrite(Protocol.shareKey.hexToBytes()) {
             it.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
             it.writePart2()
-            println(it.toByteArray().toUHexString())
         }
     }
 }

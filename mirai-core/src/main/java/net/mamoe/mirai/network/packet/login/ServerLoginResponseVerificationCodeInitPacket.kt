@@ -43,7 +43,7 @@ class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, priv
         fun decrypt(): ServerLoginResponseVerificationCodeInitPacket {
             this.input goto 14
             val data = TEA.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().cutTail(1));
-            return ServerLoginResponseVerificationCodeInitPacket(data.dataInputStream(), data.size)
+            return ServerLoginResponseVerificationCodeInitPacket(data.dataInputStream(), data.size).setId(this.idHex)
         }
     }
 }

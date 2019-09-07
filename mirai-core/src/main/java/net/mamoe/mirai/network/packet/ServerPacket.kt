@@ -1,5 +1,6 @@
 package net.mamoe.mirai.network.packet
 
+import lombok.Getter
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
@@ -10,6 +11,24 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 abstract class ServerPacket(val input: DataInputStream) : Packet {
+    @Getter
+    var idHex: String
+
+    var encoded: Boolean = false
+
+    init {
+        idHex = try {
+            val annotation = this.javaClass.getAnnotation(PacketId::class.java)
+            annotation.value.trim()
+        } catch (e: NullPointerException) {
+            ""
+        }
+    }
+
+    fun <P : ServerPacket> P.setId(idHex: String): P {
+        this.idHex = idHex
+        return this
+    }
 
     open fun decode() {
 
@@ -19,14 +38,12 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
         @ExperimentalUnsignedTypes
         fun ofByteArray(bytes: ByteArray): ServerPacket {
-            //println("Raw received: ${bytes.toUByteArray().toUHexString()}")
-
             val stream = bytes.dataInputStream()
 
             stream.skip(3)
 
-
-            return when (val idHex = stream.readInt().toHexString(" ")) {
+            val idHex = stream.readInt().toUHexString(" ")
+            return when (idHex) {
                 "08 25 31 01" -> ServerTouchResponsePacket.Encrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, stream)
                 "08 25 31 02" -> ServerTouchResponsePacket.Encrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, stream)
 
@@ -37,12 +54,12 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                             else -> {
                                 MiraiLogger debug ("ServerLoginResponseResendPacketEncrypted: flag=$idHex"); ServerLoginResponseResendPacket.Flag.OTHER
                             }
-                        })
-                        871 -> return ServerLoginResponseVerificationCodeInitPacket.Encrypted(stream)
+                        }).apply { this.idHex = idHex }
+                        871 -> return ServerLoginResponseVerificationCodeInitPacket.Encrypted(stream).apply { this.idHex = idHex }
                     }
 
                     if (bytes.size > 700) {
-                        return ServerLoginResponseSuccessPacket.Encrypted(stream)
+                        return ServerLoginResponseSuccessPacket.Encrypted(stream).apply { this.idHex = idHex }
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
@@ -60,7 +77,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         351 -> throw IllegalArgumentException(bytes.size.toString() + " (Illegal package data or Unknown error)")//包数据有误
 
                         else -> throw IllegalArgumentException(bytes.size.toString())*/
-                    }, stream)
+                    }, stream).apply { this.idHex = idHex }
                 }
 
                 "08 28 04 34" -> ServerSessionKeyResponsePacket.Encrypted(stream)
@@ -85,13 +102,14 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     else -> throw IllegalArgumentException(idHex)
                 }
-            }
+            }.apply { this.idHex = idHex }
         }
     }
 
+
     @ExperimentalUnsignedTypes
     override fun toString(): String {
-        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", \n", "{", "}") {
+        return this.javaClass.simpleName + "(${this.getFixedId()})" + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
                 is ByteArray -> value.toUHexString()
@@ -100,6 +118,15 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
             }
         }
         }
+    }
+
+    open fun getFixedId(): String = getFixedId(this.idHex)
+
+    fun getFixedId(id: String): String = when (id.length) {
+        0 -> "__ __ __ __"
+        2 -> "$id __ __"
+        5 -> "$id __"
+        else -> id
     }
 
     fun decryptBy(key: ByteArray): DataInputStream {

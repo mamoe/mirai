@@ -20,7 +20,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 
     init {
         val annotation = this.javaClass.getAnnotation(PacketId::class.java)
-        idHex = annotation.value
+        idHex = annotation.value.trim()
 
         try {
             this.writeHex(Protocol.head)
@@ -60,10 +60,19 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
         return toByteArray()
     }
 
+    open fun getFixedId(): String = when (this.idHex.length) {
+        0 -> "__ __ __ __"
+        2 -> this.idHex + " __ __"
+        5 -> this.idHex + " __"
+        else -> this.idHex
+    }
+
+
     override fun toString(): String {
-        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
+        return this.javaClass.simpleName + "(${this.getFixedId()})" + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
+                null -> null
                 is ByteArray -> value.toUHexString()
                 is UByteArray -> value.toUHexString()
                 else -> value.toString()
@@ -144,12 +153,6 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
     }
 }
 
-/*
-@ExperimentalUnsignedTypes
-fun main() {
-    println(lazyEncode { it.writeTLV0006(1994701021, "D1 A5 C8 BB E1 Q3 CC DD", 131513, "123.123.123.123", "AA BB CC DD EE FF AA BB CC".hexToBytes()) }.toUByteArray().toUHexString())
-}*/
-
 @ExperimentalUnsignedTypes
 @TestedSuccessfully
 fun DataOutputStream.writeCRC32() = writeCRC32(getRandomByteArray(16))
@@ -209,7 +212,7 @@ fun Int.toLByteArray(): ByteArray = byteArrayOf(
 )
 
 @ExperimentalUnsignedTypes
-fun Int.toHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator)
+fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator)
 
 internal fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 

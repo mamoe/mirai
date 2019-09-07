@@ -85,7 +85,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     //private | internal
 
-    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(300)//登录回复非常快, 没必要等太久.
+    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(200)//登录回复非常快, 没必要等太久.
 
 
     /**
@@ -99,6 +99,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         val future = CompletableFuture<LoginState>()
 
         fun login() {
+            this.socketHandler.close()
             val ip = ipQueue.poll()
             if (ip == null) {
                 future.complete(LoginState.UNKNOWN)//所有服务器均返回 UNKNOWN
@@ -122,8 +123,17 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     @ExperimentalUnsignedTypes
     internal fun distributePacket(packet: ServerPacket) {
-        packet.decode()
-        if (ServerPacketReceivedEvent(packet).broadcast().isCancelled) {
+        try {
+            packet.decode()
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+            robot.debug("Packet=$packet")
+            robot.debug("Packet size=" + packet.input.goto(0).readAllBytes().size)
+            robot.debug("Packet data=" + packet.input.goto(0).readAllBytes().toUHexString())
+            return
+        }
+
+        if (ServerPacketReceivedEvent(robot, packet).broadcast().isCancelled) {
             debugHandler.onPacketReceived(packet)
             return
         }
@@ -145,6 +155,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
         internal var loginFuture: CompletableFuture<LoginState>? = null
 
+        @Synchronized
         private fun restartSocket() {
             socket?.close()
             socket = DatagramSocket(0)
@@ -176,18 +187,19 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          * Start network and touch the server
          */
         internal fun touch(serverAddress: String, timeoutMillis: Long): CompletableFuture<LoginState> {
-            MiraiLogger.info("Connecting server: $serverAddress")
+            robot.info("Connecting server: $serverAddress")
             this.loginFuture = CompletableFuture()
 
             socketHandler.serverIP = serverAddress
-            sendPacket(ClientTouchPacket(robot.account.qqNumber, socketHandler.serverIP))
-            waitForPacket(ServerTouchResponsePacket::class, timeoutMillis) {
+            waitForPacket(ServerPacket::class, timeoutMillis) {
                 loginFuture!!.complete(LoginState.TIMEOUT)
             }
+            sendPacket(ClientTouchPacket(robot.account.qqNumber, socketHandler.serverIP))
 
             return this.loginFuture!!
         }
 
+        @Synchronized
         /**
          * Not async
          */
@@ -201,31 +213,32 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
             try {
                 packet.encodePacket()
 
-                if (BeforePacketSendEvent(packet).broadcast().isCancelled) {
+                if (BeforePacketSendEvent(robot, packet).broadcast().isCancelled) {
                     return
                 }
 
                 val data = packet.toByteArray()
                 socket!!.send(DatagramPacket(data, data.size))
-                MiraiLogger info "Packet sent: $packet"
+                robot purple "Packet sent:     $packet"
 
-                PacketSentEvent(packet).broadcast()
+                PacketSentEvent(robot, packet).broadcast()
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
         }
 
         @Suppress("UNCHECKED_CAST")
-        private fun <P : ServerPacket> waitForPacket(packetClass: KClass<P>, timeoutMillis: Long, timeout: () -> Unit) {
+        internal fun <P : ServerPacket> waitForPacket(packetClass: KClass<P>, timeoutMillis: Long, timeout: () -> Unit) {
             var got = false
             ServerPacketReceivedEvent::class.hookWhile {
-                if (packetClass.isInstance(it.packet)) {
+                if (packetClass.isInstance(it.packet) && it.robot == robot) {
                     got = true
                     true
                 } else {
                     false
                 }
             }
+
 
             MiraiThreadPool.getInstance().submit {
                 val startingTime = System.currentTimeMillis()
@@ -266,7 +279,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     inner class DebugHandler : PacketHandler() {
         override fun onPacketReceived(packet: ServerPacket) {
-            MiraiLogger info "Packet received: $packet"
+            robot notice "Packet received: $packet"
             if (packet is ServerEventPacket) {
                 sendPacket(ClientMessageResponsePacket(robot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
             }
@@ -296,8 +309,8 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          */
         private lateinit var sessionResponseDecryptionKey: ByteArray
 
-        private var verificationCodeCacheId: Int = 0
-        private var verificationCodeCache: ByteArray? = byteArrayOf()//每次包只发一部分验证码来
+        private var captchaSectionId: Int = 1
+        private var captchaCache: ByteArray? = byteArrayOf()//每次包只发一部分验证码来
 
 
         private var heartbeatFuture: ScheduledFuture<*>? = null
@@ -324,49 +337,52 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     return
                 }
 
-                is ServerLoginResponseVerificationCodeInitPacket -> {
-                    //[token00BA]来源之一: 验证码
-                    this.token00BA = packet.token00BA
-                    this.verificationCodeCache = packet.verifyCodePart1
-
-                    if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
-                        this.verificationCodeCacheId = 1
-                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, robot.account.qqNumber, this.token0825, this.verificationCodeCacheId, this.token00BA))
-                    }
-                }
-
                 is ServerVerificationCodeCorrectPacket -> {
                     this.tgtgtKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
                     sendPacket(ClientLoginResendPacket3105(robot.account.qqNumber, robot.account.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
                 }
 
+                is ServerLoginResponseVerificationCodeInitPacket -> {
+                    //[token00BA]来源之一: 验证码
+                    this.token00BA = packet.token00BA
+                    this.captchaCache = packet.verifyCodePart1
+
+                    if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
+                        this.captchaSectionId = 1
+                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, robot.account.qqNumber, this.token0825, this.captchaSectionId++, this.token00BA))
+                    }
+                }
+
+                is ServerVerificationCodeUnknownPacket -> {
+                    sendPacket(ClientVerificationCodeRefreshPacket(88, robot.account.qqNumber, token0825))
+                }
 
                 is ServerVerificationCodeTransmissionPacket -> {
                     if (packet is ServerVerificationCodeWrongPacket) {
-                        this.verificationCodeCacheId = 0
-                        this.verificationCodeCache = byteArrayOf()
+                        robot error "验证码错误, 请重新输入"
+                        captchaSectionId = 1
+                        this.captchaCache = byteArrayOf()
                     }
 
-                    this.verificationCodeCacheId++
-                    this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePartN
-
+                    this.captchaCache = this.captchaCache!! + packet.captchaSectionN
                     this.token00BA = packet.token00BA
 
                     if (packet.transmissionCompleted) {
-                        (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.verificationCodeCache!!)
-                        println(CharImageUtil.createCharImg(ImageIO.read(this.verificationCodeCache!!.inputStream())))
-                        println("需要验证码登录")
-                        println("若看不清请查根目录下 VerificationCode.png")
-                        println("若要更换验证码, 请直接回车")
+                        (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.captchaCache!!)
+                        robot notice (CharImageUtil.createCharImg(ImageIO.read(this.captchaCache!!.inputStream())))
+                        robot notice ("需要验证码登录")
+                        robot notice ("若看不清请查根目录下 VerificationCode.png")
+                        robot notice ("若要更换验证码, 请直接回车")
                         val code = Scanner(System.`in`).nextLine()
-                        if (code.isEmpty()) {
-                            sendPacket(ClientVerificationCodeRefreshPacket(robot.account.qqNumber, token0825, packet.verificationSessionId + 1))
+                        if (code.isEmpty() || code.length != 4) {
+                            this.captchaCache = byteArrayOf()
+                            sendPacket(ClientVerificationCodeRefreshPacket(packet.packetIdLast + 1, robot.account.qqNumber, token0825))
                         } else {
-                            sendPacket(ClientVerificationCodeSubmitPacket(robot.account.qqNumber, token0825, packet.verificationSessionId + 1, code, packet.verificationToken))
+                            sendPacket(ClientVerificationCodeSubmitPacket(packet.packetIdLast + 1, robot.account.qqNumber, token0825, code, packet.verificationToken))
                         }
                     } else {
-                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.verificationSessionId + 1, robot.account.qqNumber, this.token0825, this.verificationCodeCacheId, this.token00BA))
+                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.packetIdLast + 1, robot.account.qqNumber, token0825, captchaSectionId++, token00BA))
                     }
                 }
 
@@ -386,10 +402,10 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                         sendPacket(ClientLoginResendPacket3104(
                                 robot.account.qqNumber,
                                 robot.account.password,
-                                this.loginTime,
-                                this.loginIP,
-                                this.tgtgtKey!!,
-                                this.token0825,
+                                loginTime,
+                                loginIP,
+                                tgtgtKey!!,
+                                token0825,
                                 when (packet.tokenUnknown != null) {
                                     true -> packet.tokenUnknown!!
                                     false -> this.token00BA
@@ -400,10 +416,10 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                         sendPacket(ClientLoginResendPacket3106(
                                 robot.account.qqNumber,
                                 robot.account.password,
-                                this.loginTime,
-                                this.loginIP,
-                                this.tgtgtKey!!,
-                                this.token0825,
+                                loginTime,
+                                loginIP,
+                                tgtgtKey!!,
+                                token0825,
                                 when (packet.tokenUnknown != null) {
                                     true -> packet.tokenUnknown!!
                                     false -> this.token00BA
@@ -473,7 +489,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         }
 
         override fun close() {
-            this.verificationCodeCache = null
+            this.captchaCache = null
             this.tgtgtKey = null
 
             this.heartbeatFuture?.cancel(true)

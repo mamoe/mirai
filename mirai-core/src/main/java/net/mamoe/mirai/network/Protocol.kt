@@ -10,10 +10,10 @@ import java.util.stream.Collectors
 object Protocol {
     val SERVER_IP: List<String> = object : ArrayList<String>() {
         init {
-            add("183.60.56.29")
+            //add("183.60.56.29")
 
             arrayOf(
-                    "sz3.tencent.com",
+                    //"sz3.tencent.com",
                     "sz4.tencent.com",
                     "sz5.tencent.com",
                     "sz6.tencent.com",

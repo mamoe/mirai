@@ -53,7 +53,7 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
         @ExperimentalUnsignedTypes
         fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {
             input goto 14
-            return ServerLoginResponseSuccessPacket(TEA.decrypt(TEA.decrypt(input.readAllBytes().cutTail(1), Protocol.shareKey), tgtgtKey).dataInputStream());
+            return ServerLoginResponseSuccessPacket(TEA.decrypt(TEA.decrypt(input.readAllBytes().cutTail(1), Protocol.shareKey), tgtgtKey).dataInputStream()).setId(this.idHex)
         }
     }
 

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -34,11 +35,19 @@ import java.util.*;
 public final class Robot implements Closeable {
     public static final List<Robot> instances = Collections.synchronizedList(new LinkedList<>());
 
+    public final int id = _id.getAndAdd(1);
+    private static final AtomicInteger _id = new AtomicInteger(0);
+
     public final RobotAccount account;
 
     public final ContactSystem contacts = new ContactSystem();
 
     public final RobotNetworkHandler network;
+
+    @Override
+    public String toString() {
+        return String.format("Robot{id=%d,qq=%d}", id, this.account.qqNumber);
+    }
 
     /**
      * Robot 联系人管理.

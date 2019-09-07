@@ -13,8 +13,9 @@ import java.io.IOException
  *
  * @author Him188moe
  */
+@PacketId("08 25 31 0?")
 class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
-    var serverIP: String? = null;
+    var serverIP: String? = null
 
     var loginTime: Int = 0
     lateinit var loginIP: String
@@ -54,7 +55,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
         fun decrypt(): ServerTouchResponsePacket = ServerTouchResponsePacket(decryptBy(when (type) {
             Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()
             Type.TYPE_08_25_31_01 -> Protocol.key0825.hexToBytes()
-        }))
+        })).setId(this.idHex)
     }
 }
 
@@ -83,7 +84,6 @@ class ClientTouchPacket(val qq: Long, val serverIp: String) : ClientPacket() {
                 this.writeIP(serverIp);
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
                 this.writeHex(Protocol.publicKey)
-                println(super.toUByteArray().toUHexString())
                 return super.toByteArray()
             }
         }.toByteArray()))

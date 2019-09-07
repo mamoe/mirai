@@ -42,7 +42,7 @@ class ServerAccountInfoResponsePacket(input: DataInputStream) : ServerPacket(inp
         fun decrypt(sessionKey: ByteArray): ServerAccountInfoResponsePacket {
             this.input goto 14
             val data = this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }
-            return ServerAccountInfoResponsePacket(TEA.decrypt(data, sessionKey).dataInputStream());
+            return ServerAccountInfoResponsePacket(TEA.decrypt(data, sessionKey).dataInputStream()).setId(this.idHex)
         }
     }
 }

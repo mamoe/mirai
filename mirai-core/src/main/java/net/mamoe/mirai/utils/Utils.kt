@@ -60,9 +60,6 @@ fun String.hexToShort(): Short = hexToBytes().let { ((it[1].toInt() shl 8) + it[
 @ExperimentalUnsignedTypes
 fun String.hexToInt(): Int = hexToBytes().let { ((it[0].toInt() shl 24) + (it[1].toInt() shl 16) + (it[2].toInt() shl 8) + it[3]) }
 
-@ExperimentalUnsignedTypes
-fun String.hexToByte(): Byte = hexToBytes()[0]
-
 open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream()) {
     open fun toByteArray(): ByteArray = (out as ByteArrayOutputStream).toByteArray()
     @ExperimentalUnsignedTypes

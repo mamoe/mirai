@@ -58,7 +58,7 @@ class ServerSKeyResponsePacket(input: DataInputStream) : ServerPacket(input) {
         fun decrypt(sessionKey: ByteArray): ServerSKeyResponsePacket {
             this.input goto 14
             val data = this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }
-            return ServerSKeyResponsePacket(TEA.decrypt(data, sessionKey).dataInputStream());
+            return ServerSKeyResponsePacket(TEA.decrypt(data, sessionKey).dataInputStream()).setId(this.idHex)
         }
     }
 }

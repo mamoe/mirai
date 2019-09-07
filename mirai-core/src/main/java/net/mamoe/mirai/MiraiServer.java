@@ -150,7 +150,6 @@ public class MiraiServer {
 
         MiraiConfigSection<Object> section = new MiraiConfigSection<>();
 
-        System.out.println("/");
         Scanner scanner = new Scanner(System.in);
         getLogger().info("Input a " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.GREEN + "for default robotNetworkHandler");
         getLogger().info("输入用于默认机器人的QQ号");

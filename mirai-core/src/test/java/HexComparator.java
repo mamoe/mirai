@@ -51,9 +51,9 @@ public class HexComparator {
         @SuppressWarnings({"unused", "NonAsciiCharacters"})
         private static class TestConsts {
             private static final String 牛逼 = UtilsKt.toUHexString("牛逼".getBytes(), " ");
-            private static final String _1994701021 = ClientPacketKt.toHexString(1994701021, " ");
-            private static final String _1040400290 = ClientPacketKt.toHexString(1040400290, " ");
-            private static final String _580266363 = ClientPacketKt.toHexString(580266363, " ");
+            private static final String _1994701021 = ClientPacketKt.toUHexString(1994701021, " ");
+            private static final String _1040400290 = ClientPacketKt.toUHexString(1040400290, " ");
+            private static final String _580266363 = ClientPacketKt.toUHexString(580266363, " ");
         }
 
         private final List<Match> matches = new LinkedList<>();

@@ -39,12 +39,12 @@ open class ServerEventPacket(input: DataInputStream, val packetId: ByteArray, va
                 //"02 10", "00 12" -> ServerUnknownEventPacket(this.input, packetId, eventIdentity)
 
                 else -> UnknownServerEventPacket(this.input, packetId, eventIdentity)
-            }
+            }.setId(this.idHex)
         }
 
         @PacketId("00 17")
         class Encrypted(input: DataInputStream, private val packetId: ByteArray) : ServerPacket(input) {
-            fun decrypt(sessionKey: ByteArray): Raw = Raw(decryptBy(sessionKey), packetId)
+            fun decrypt(sessionKey: ByteArray): Raw = Raw(decryptBy(sessionKey), packetId).setId(this.idHex)
         }
     }
 }
