@@ -171,11 +171,10 @@ fun DataOutputStream.writeCRC32(key: ByteArray) {
 @ExperimentalUnsignedTypes
 @TestedSuccessfully
 fun DataOutputStream.writeDeviceName(random: Boolean = false) {
-    val deviceName: String
-    if (random) {
-        deviceName = String(getRandomByteArray(10))
+    val deviceName: String = if (random) {
+        String(getRandomByteArray(10))
     } else {
-        deviceName = InetAddress.getLocalHost().hostName
+        InetAddress.getLocalHost().hostName
     }
     this.writeShort(deviceName.length + 2)
     this.writeShort(deviceName.length)

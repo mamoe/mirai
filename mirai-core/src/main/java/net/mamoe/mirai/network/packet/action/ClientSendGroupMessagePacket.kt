@@ -30,7 +30,7 @@ class ClientSendGroupMessagePacket(
             it.writeHex("00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")
             it.writeTime()
             it.writeRandom(4)
-            it.writeHex("00 00 00 00 09 00 86 00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91")
+            it.writeHex("Protocol.messageConst1")
             it.writeZero(2)
 
             //messages

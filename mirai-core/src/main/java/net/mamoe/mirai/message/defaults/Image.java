@@ -11,6 +11,8 @@ import java.net.URL;
  * @author Him188moe
  */
 public final class Image extends Message {
+    private String imageID;
+
     public Image(InputStream inputStream) {
 
     }
@@ -33,11 +35,11 @@ public final class Image extends Message {
      * @param imageID
      */
     public Image(String imageID) {
-
+        this.imageID = imageID;
     }
 
     @Override
     public String toString() {
-        return null;
+        return imageID;
     }
 }

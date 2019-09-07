@@ -21,7 +21,10 @@ public final class Face extends Message {
 
     @Override
     public String toString() {
-        // TODO: 2019/9/1
-        throw new UnsupportedOperationException();
+        if (id == null) {
+            return "[face?]";
+
+        }
+        return String.format("[face%d]", id.getId());
     }
 }

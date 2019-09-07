@@ -50,10 +50,20 @@ public class HexComparator {
 
         @SuppressWarnings({"unused", "NonAsciiCharacters"})
         private static class TestConsts {
-            private static final String 牛逼 = UtilsKt.toUHexString("牛逼".getBytes(), " ");
+            private static final String NIU_BI = UtilsKt.toUHexString("牛逼".getBytes(), " ");
             private static final String _1994701021 = ClientPacketKt.toUHexString(1994701021, " ");
             private static final String _1040400290 = ClientPacketKt.toUHexString(1040400290, " ");
             private static final String _580266363 = ClientPacketKt.toUHexString(580266363, " ");
+
+            private static final String _1040400290_ = "3E 03 3F A2";
+            private static final String _1994701021_ = "76 E4 B8 DD";
+            private static final String _jiahua_ = "B1 89 BE 09";
+
+            private static final String SINGLE_PLAIN_MESSAGE_HEAD = "00 00 01 00 09 01";
+
+            private static final String MESSAGE_TAIL_10404 = "0E  00  07  01  00  04  00  00  00  09 19  00  18  01  00  15  AA  02  12  9A  01  0F  80  01  01  C8  01  00  F0  01  00  F8  01  00  90  02  00".replace("  ", " ");
+            //private static final String MESSAGE_TAIL2_10404 ="".replace("  ", " ");
+
         }
 
         private final List<Match> matches = new LinkedList<>();
@@ -88,7 +98,7 @@ public class HexComparator {
                 return new LinkedList<>();
             }
             return new LinkedList<>() {{
-                int index = 0;
+                int index = -1;
                 while ((index = hex.indexOf(constValue, index + 1)) != -1) {
                     add(new IntRange(index / 3, (index + constValue.length()) / 3));
                 }
@@ -105,18 +115,20 @@ public class HexComparator {
     }
 
     private static void buildConstNameChain(int length, ConstMatcher constMatcher, StringBuilder constNameBuilder) {
+        //System.out.println(constMatcher.matches);
         for (int i = 0; i < length; i++) {
             constNameBuilder.append(" ");
             String match = constMatcher.getMatchedConstName(i / 4);
             if (match != null) {
                 int appendedNameLength = match.length();
                 constNameBuilder.append(match);
-                while (constMatcher.getMatchedConstName(i++ / 4) != null) {
-                    if (appendedNameLength-- <= 0) {
+                while (match.equals(constMatcher.getMatchedConstName(i++ / 4))) {
+                    if (appendedNameLength-- < 0) {
                         constNameBuilder.append(" ");
                     }
                 }
 
+                constNameBuilder.append(" ".repeat(match.length() % 4));
             }
         }
     }
@@ -281,10 +293,10 @@ public class HexComparator {
         System.out.println(HexComparator.compare(
                 //mirai
 
-                "2A 22 96 29 7B 00 40 00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 EC 21 40 06 18 89 54 BC 00 00 00 00 09 00 86 00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 0A 01 00 07 E7 89 9B E9 80 BC 21\n"
+                "2A 22 96 29 7B 00 40 00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 EC 21 40 06 18 89 54 BC Protocol.messageConst1 00 00 01 00 0A 01 00 07 E7 89 9B E9 80 BC 21\n"
                 ,
                 //e
-                "2A 22 96 29 7B 00 3F 00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 5D 6B 8E 1A FE 39 0B FC 00 00 00 00 09 00 86 00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 0A 01 00 07 6D 65 73 73 61 67 65"
+                "2A 22 96 29 7B 00 3F 00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 5D 6B 8E 1A FE 39 0B FC Protocol.messageConst1 00 00 01 00 0A 01 00 07 6D 65 73 73 61 67 65"
         ));
 
 

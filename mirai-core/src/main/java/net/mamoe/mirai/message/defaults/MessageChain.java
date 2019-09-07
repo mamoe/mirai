@@ -29,6 +29,10 @@ public final class MessageChain extends Message {
         list.add(message);
     }
 
+    public MessageChain() {
+    }
+
+
     /**
      * @return An unmodifiable list
      */
@@ -43,6 +47,10 @@ public final class MessageChain extends Message {
     @Override
     public synchronized String toString() {
         return this.list.stream().map(Message::toString).collect(Collectors.joining(""));
+    }
+
+    public synchronized String toDebugString() {
+        return String.format("MessageChain(%s)", this.list.stream().map(Message::toDebugString).collect(Collectors.joining(", ")));
     }
 
     @Override

@@ -5,10 +5,7 @@ import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
-import net.mamoe.mirai.utils.TEA
-import net.mamoe.mirai.utils.getAllDeclaredFields
-import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
 /**
@@ -66,7 +63,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     }
 
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
-                        319, 135 -> LoginState.WRONG_PASSWORD
+                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD
                         //135 -> LoginState.RETYPE_PASSWORD
                         279 -> LoginState.BLOCKED
                         263 -> LoginState.UNKNOWN_QQ_NUMBER
@@ -77,7 +74,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         /*
                         //unknown
                         63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
-                        351 -> throw IllegalArgumentException(bytes.size.toString() + " (Illegal package data or Unknown error)")//包数据有误
+                        351 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
 
                         else -> throw IllegalArgumentException(bytes.size.toString())*/
                     }, stream).apply { this.idHex = idHex }
@@ -183,7 +180,7 @@ fun DataInputStream.readShortVarString(): String {
     return String(this.readNBytes(this.readShort().toInt()))
 }
 
-fun DataInputStream.readVarString(length: Int): String {
+fun DataInputStream.readString(length: Int): String {
     return String(this.readNBytes(length))
 }
 
@@ -208,6 +205,17 @@ fun <N : Number> DataInputStream.readNBytes(length: N): ByteArray {
     return this.readNBytes(length.toInt())
 }
 
+
+fun DataInputStream.readShortVarNumber(): Number {
+    return when (this.readShort().toInt()) {
+        1 -> this.readByte()
+        2 -> this.readShort()
+        4 -> this.readInt()
+        8 -> this.readLong()
+        else -> throw UnsupportedOperationException()
+    }
+}
+
 fun DataInputStream.readNBytesIn(range: IntRange): ByteArray {
     this.goto(range.first)
     return this.readNBytes(range.last - range.first + 1)
@@ -216,6 +224,12 @@ fun DataInputStream.readNBytesIn(range: IntRange): ByteArray {
 fun <N : Number> DataInputStream.readIntAt(position: N): Int {
     this.goto(position)
     return this.readInt();
+}
+
+@ExperimentalUnsignedTypes
+fun <N : Number> DataInputStream.readUIntAt(position: N): UInt {
+    this.goto(position)
+    return this.readNBytes(4).toUInt();
 }
 
 fun <N : Number> DataInputStream.readByteAt(position: N): Byte {

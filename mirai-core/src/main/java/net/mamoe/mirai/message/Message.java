@@ -24,6 +24,10 @@ public abstract class Message {
     @Override
     public abstract String toString();
 
+    public String toDebugString() {
+        return this.getClass().getSimpleName() + String.format("(%s)", this.toString());
+    }
+
     /**
      * 把这个消息连接到另一个消息的头部. 相当于字符串相加
      * <p>
@@ -76,4 +80,5 @@ public abstract class Message {
         this.concat(new At(target));
         return this;
     }
+
 }
