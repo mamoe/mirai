@@ -19,11 +19,11 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 同时也会针对kotlin提供优化的方法调用. 例如对'+'操作符的重载: `String+BufferedImage+QQ.At+Face+URL+String+File` 将会被自动处理为String消息.
 
 ### 抢先体验
-现在你可以使用 Mirai 内置的一些测试qq号体验Mirai, 或登录自己的账号.
+现在你可以使用 Mirai 内置的一些测试qq号体验 Mirai.
 1. Clone
 2. Import as Maven project
 3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
-简略阅读源码便可体验接收和发送消息
+简略阅读源码便可测试接收和发送消息
 
 ### TODO
 - [x] 事件(Event)模块  
