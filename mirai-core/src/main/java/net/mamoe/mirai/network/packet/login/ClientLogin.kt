@@ -99,7 +99,7 @@ private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: I
     this.writeHex("00 38")//length
     this.write(token0825)//length
     this.writeHex("03 0F")//tag
-    this.writeDeviceName()
+    this.writeDeviceName(true)//todo 随机
 
     this.writeHex("00 05 00 06 00 02")
     this.writeQQ(qq)
@@ -115,8 +115,8 @@ private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: I
     this.writeHex("00 1A")//tag
     this.writeHex("00 40")//length
     this.write(TEA.encrypt(Protocol.passwordSubmissionKey2.hexToBytes(), tgtgtKey))
-    this.writeHex(Protocol.constantData0)
     this.writeHex(Protocol.constantData1)
+    this.writeHex(Protocol.constantData2)
     this.writeQQ(qq)
     this.writeZero(4)
 

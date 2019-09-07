@@ -37,11 +37,11 @@ object Protocol {
     /**
      * 0825data1
      */
-    const val constantData0 = "00 18 00 16 00 01 "
+    const val constantData1 = "00 18 00 16 00 01 "
     /**
      * 0825data2
      */
-    const val constantData1 = "00 00 04 53 00 00 00 01 00 00 15 85 "
+    const val constantData2 = "00 00 04 53 00 00 00 01 00 00 15 85 "
     const val key0825 = "A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D"
     const val redirectionKey = "A8 F2 14 5F 58 12 60 AF 07 63 97 D6 76 B2 1A 3B"
     const val publicKey = "02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3"

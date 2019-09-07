@@ -126,7 +126,7 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
         it.writeRandom(4)
         it.writeHex("00 02")
         it.writeQQ(qq)
-        it.writeHex(Protocol.constantData1)
+        it.writeHex(Protocol.constantData2)
         it.writeHex("00 00 01")
 
         val firstMD5 = md5(password)
@@ -163,9 +163,15 @@ fun DataOutputStream.writeCRC32(key: ByteArray) {
     }
 }
 
+@ExperimentalUnsignedTypes
 @TestedSuccessfully
-fun DataOutputStream.writeDeviceName() {
-    val deviceName = InetAddress.getLocalHost().hostName
+fun DataOutputStream.writeDeviceName(random: Boolean = false) {
+    val deviceName: String
+    if (random) {
+        deviceName = String(getRandomByteArray(10))
+    } else {
+        deviceName = InetAddress.getLocalHost().hostName
+    }
     this.writeShort(deviceName.length + 2)
     this.writeShort(deviceName.length)
     this.writeBytes(deviceName)

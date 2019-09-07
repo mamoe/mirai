@@ -76,8 +76,8 @@ class ClientTouchPacket(val qq: Long, val serverIp: String) : ClientPacket() {
         this.write(TEA.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {
-                this.writeHex(Protocol.constantData0)
                 this.writeHex(Protocol.constantData1)
+                this.writeHex(Protocol.constantData2)
                 this.writeQQ(qq)
                 this.writeHex("00 00 00 00 03 09 00 08 00 01")
                 this.writeIP(serverIp);
@@ -108,8 +108,8 @@ class ClientServerRedirectionPacket(private val serverIP: String, private val qq
         this.write(TEA.encrypt(object : ByteArrayDataOutputStream() {
             @Throws(IOException::class)
             override fun toByteArray(): ByteArray {
-                this.writeHex(Protocol.constantData0)
                 this.writeHex(Protocol.constantData1)
+                this.writeHex(Protocol.constantData2)
                 this.writeQQ(qq)
                 this.writeHex("00 01 00 00 03 09 00 0C 00 01")
                 this.writeIP(serverIP)
