@@ -1,10 +1,12 @@
 package net.mamoe.mirai;
 
+import kotlin.jvm.internal.MagicApiIntrinsics;
 import lombok.Getter;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.QQ;
 import net.mamoe.mirai.network.RobotNetworkHandler;
 import net.mamoe.mirai.utils.ContactList;
+import net.mamoe.mirai.utils.config.MiraiConfig;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
 
 import java.util.ArrayList;
@@ -65,5 +67,25 @@ public class Robot {
     public Group getGroupByGroupId(int groupId) {
         return getGroup(Group.Companion.groupIdToNumber(groupId));
     }
+
+    /* Attribute
+     * Attribute will be SAVED and LOAD automatically as long as the QQ account is same
+     * {Attributes} is in the format of Map<String, Object>, keeping thread-safe
+     * {Attributes} is a KEY-VALUE typed Data.
+     * *
+     **/
+
 }
 
+/*
+class RobotAttribute extends MiraiConfigSection<Object>{
+
+    static RobotAttribute load(Robot robot){
+
+    }
+
+    private MiraiConfigSection<Object> data;//late init
+
+}
+
+*/
