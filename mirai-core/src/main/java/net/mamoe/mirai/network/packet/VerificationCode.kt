@@ -1,10 +1,7 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.utils.TEA
-import net.mamoe.mirai.utils.TestedSuccessfully
-import net.mamoe.mirai.utils.getRandomByteArray
-import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
 /**
@@ -44,12 +41,19 @@ class ClientVerificationCodeTransmissionRequestPacket(
 }
 
 /**
+ * 验证码输入错误
+ */
+class ServerVerificationCodeWrongPacket(input: DataInputStream, dataSize: Int, packetId: ByteArray) : ServerVerificationCodeTransmissionPacket(input, dataSize, packetId) {
+
+}
+
+/**
  * 服务器发送验证码图片文件一部分过来
  *
  * @author Him188moe
  */
 @PacketId("00 BA 31")
-class ServerVerificationCodeTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerVerificationCodePacket(input) {
+open class ServerVerificationCodeTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerVerificationCodePacket(input) {
 
     lateinit var verificationCodePartN: ByteArray
     lateinit var verificationToken: ByteArray//56bytes
@@ -62,58 +66,62 @@ class ServerVerificationCodeTransmissionPacket(input: DataInputStream, private v
         this.verificationToken = this.input.readNBytesAt(10, 56)
 
         val length = this.input.readShortAt(66)
+        this.input.skip(2)
         this.verificationCodePartN = this.input.readNBytes(length)
 
-        this.input.skip(2)
-        this.transmissionCompleted = this.input.readBoolean().not()
+        this.input.skip(1)
+        //val byte = this.input.readByte().toInt()
+        val byte = this.input.readByteAt(70 + length).toInt()
+        MiraiLogger.debug("transmissionCompleted=$byte")
+        MiraiLogger.debug("verificationCodePartN=" + this.verificationCodePartN.toUHexString())
+        this.transmissionCompleted = byte == 0
 
         this.token00BA = this.input.readNBytesAt(dataSize - 56, 40)
         this.count = packetId[3].toInt()
     }
 }
 
-/*
+
 fun main() {
-    val data = "13 00 05 01 00 00 01 23 00 38 66 6E 57 FB 30 91 BC 86 32 51 8A E2 2B 78 A1 60 9E 14 1F AD E5 C4 46 94 D0 DB 55 91 54 90 9A 24 38 63 61 9F A0 75 22 98 98 EF 72 D9 43 93 CC 28 63 14 25 3E 68 B0 1C 5B 02 BC AA E7 B5 A9 B6 96 8B 09 6B 2F 60 C3 86 2C 91 DE 75 88 D7 8D 53 68 E4 B5 0D D9 A5 42 7D 1A 3E 9F 0F DC 2F DE F9 79 FA F0 24 31 F2 30 DC 32 92 23 9B 11 F5 EB 1A 88 60 CE 6B 30 48 EA 55 D6 22 7A E4 2D 33 4A F3 9A D7 75 65 0C C5 E4 F8 01 E1 2B 53 0D 42 ED 66 87 19 66 65 C4 C9 30 2D B3 D8 4D 92 3D 4C B6 2D 68 05 08 B4 41 55 99 44 88 4C 6B 2A 2D CB 59 3A 81 7D 47 5B 39 98 C8 61 0F FC 0B 84 EB 09 A6 35 1A 86 A1 62 72 7E B1 48 0C F0 3E 1B 39 48 16 A6 9B 43 8F 38 B1 64 98 64 C1 32 59 61 47 7D CB DB 93 D4 D8 1E 97 CC 1C 38 A6 48 AF 97 0D C2 A3 C5 39 D2 13 76 60 96 18 0A 1C A7 E9 80 40 53 52 98 F8 C5 C2 1B 1D FB AA 42 72 24 36 B2 7A 60 B1 AE 72 4E 88 F7 F2 7B 06 BF B4 5D F2 1F C2 1B 6F 0D 14 82 9C 46 83 90 C2 09 A1 FA 1E D9 E2 AC 64 10 78 7C 0B F6 8A 25 A9 6B 9B 2F 5C C2 74 F3 61 01 7A 93 A9 30 E6 34 64 AD EE B6 2E 5E D8 7B B6 AD 1B D9 18 7F EE 10 86 D9 05 5F 26 54 E5 34 14 E6 33 9E 96 F8 E0 2C FD B9 2B D2 22 1A 84 00 4B EC 74 C1 67 74 48 D8 3D 6A 33 E7 E7 24 2F F4 5F 9B DC 76 6F DC 45 FF EA 11 F8 75 19 AC 28 AA 97 1D 42 F2 3D FE 89 77 14 93 52 17 92 C7 3B BA 01 49 A8 36 93 D8 56 AF 80 B0 F3 0D 0A 84 85 C9 F7 50 FC D2 2B D6 6D 9C 11 DF 63 D1 3F AF 0C C5 84 3A F0 33 8E C3 32 2D A9 A7 52 28 96 8E D2 A5 AA 42 42 AD C8 C2 DA 7A C5 38 D4 9E 82 23 3A 51 B3 07 55 62 D8 84 24 8B DE 2D 5D DE DF 89 15 F5 5D 17 92 E2 00 75 40 22 2C 09 3C A5 7D 85 83 EC 42 99 91 90 51 8D B5 CA 16 F2 4C AB 6C B9 D1 67 FA DC 42 77 B0 62 09 80 AA D5 03 42 D3 37 7D 8C 57 00 87 1B 7C 35 71 98 C6 05 E4 5C 49 D7 2E 02 00 52 AD 96 8A EA 27 23 01 40 F1 54 74 38 1A CE 31 BB 5A 4A B2 32 35 D7 6B 6A 20 F4 3D 3B D1 05 E5 4B 1F FF 93 15 FA 39 B0 CF A0 E9 01 02 B5 40 1E C0 D3 05 A6 40 D8 30 0C ED AE A0 99 54 66 99 D3 3C 9B 64 20 CA 2B 97 3E 50 76 A4 8F 69 02 02 41 D6 02 5F 26 D9 21 B4 A2 D7 48 C4 47 E7 16 6F 58 A8 D3 EC 56 60 02 80 3C 8C 41 B3 30 16 6A 37 05 34 55 A9 23 DE 27 A8 46 9D C1 C3 D2 6A C1 19 38 88 21 57 96 C9 4A 74 E9 88 84 90 E7 E3 B7 40 5F 16 0F 77 48 74 3B DD CC F2 13 93 AE 91 7A 35 62 20 38 AC 92 54 92 49 18 14 6D 9C 7D 99 E9 24 00 9F 4B 32 72 E2 A4 3D 84 A4 EC FC 68 E4 14 5E F2 F1 DA 64 B8 B8 09 AA 35 01 01 00 28 F7 92 C7 EF B1 C5 47 03 5A 45 25 07 95 7A DE 28 21 FA C0 F1 1A 11 71 C7 17 E0 D4 55 A7 30 B9 55 72 1A B4 C7 70 51 DE C2 00 10 E4 46 04 76 5D EB DF 86 1F 04 CB B4 3B B5 CD F8".hexToBytes()
+    val data = "FC 40 C0 57 0F 15 A4 1F 09 32 39 C9 52 05 44 D5 BA C4 78 B8 70 D7 C0 74 91 A4 7E 44 A5 A7 FD D2 E3 A7 10 3E E4 73 D8 13 E2 A2 0B A4 38 9F AB D3 4A D1 01 0E AB 37 11 84 52 08 DC 85 53 7E 75 08 D1 BA 2A 05 76 0F 84 7C A0 70 25 A4 4E E6 C1 9A C9 71 E7 10 48 F0 9D AA 27 87 3C 99 38 5A AE AE C1 58 17 FC A4 C6 9E 25 68 C0 F7 20 04 CA 98 91 1D 88 83 A7 74 D0 05 DD E9 28 57 46 CA 93 A1 F4 C0 83 4E 18 CE 57 0C 4F 1F 96 20 8F 62 4D E5 90 D2 6A AA E5 45 8B A1 B1 97 32 B5 38 97 9D 43 E9 28 65 5D B4 09 73 44 52 DE 2B C3 5B 18 F1 4A 0C 36 CC DE 31 B2 24 19 C2 19 A4 30 A2 8C 87 B2 12 E2 78 9A 52 9C 40 7F 47 0A 40 90 84 69 84 84 86 8B F8 FE 30 8E C3 30 C0 7D 3F 73 38 89 D4 6F 56 91 9B 04 7D 94 25 5E C4 8D EB E2 18 02 CC 8D 98 07 28 0E CE 05 4E 11 25 B9 27 2C E9 3E 49 71 76 E7 BC C2 02 8D D3 85 49 66 BA F0 87 31 C2 93 0D 88 F8 39 04 37 2F 2C 63 F2 55 96 8F 32 D1 CE 51 F0 D4 0A 0C F0 23 3B 63 06 28 80 41 E9 9E E1 CC AE 00 9E 20 6F CB 3C B3 50 D7 02 CC 5A F0 D1 97 C8 DC 3D F8 1B C6 6D A3 1B C3 B6 55 7A B2 44 D5 47 A7 F0 96 46 4C 3B AC 9C 2E E6 58 D1 FF 48 5C A2 30 35 B2 97 89 62 19 42 6A 81 60 C4 DC B6 6D 03 47 75 AD 26 B0 30 67 57 C6 C3 05 3F FB 3A B6 51 C1 4C 24 AC FC AC 94 C7 A7 B8 82 BC E0 64 4C A5 E9 8F 86 85 CA B0 52 F5 13 33 55 D9 18 DA 70 C3 FE 78 D7 68 8D 96 0D A3 76 0F 70 61 46 94 86 61 B4 9F EA 72 0A 72 96 66 F9 B0 DE 32 A2 80 66 8C 6A 5C 4D 13 25 06 94 80 52 A9 00 29 95 05 B0 FB A6 32 60 41 1D 06 9A 1A 36 B8 C0 4C CD BE 82 7D F5 8C 83 6B 2E F0 C4 38 40 33 45 7F B4 AF 57 8E 90 B4 B0 0F 7D A0 F2 A1 DA 6A 5E 2A 14 A7 35 07 0B CB 17 3A 43 A2 71 CE 77 A4 0B A8 6E 50 6A 46 A5 39 40 14 C0 11 BA F0 D7 EF 0A E0 F6 BB 40 3E 89 D1 2A 0E D8 86 22 C8 C0 52 A1 72 40 7A 08 A9 B8 42 39 27 8A 66 5E 2C F3 CB D0 1E 3E CC 42 82 C2 39 A6 E3 EE 02 A8 40 6D E8 98 C0 23 50 5A 1F B3 FE 68 59 84 E4 26 AD A0 64 B2 56 D4 08 56 0A BC AF 15 DD 67 51 CA 20 D5 0F C2 BD 22 E9 BB 0B A3 CB B8 00 98 66 26 C0 6E 73 18 67 F2 78 27 E7 38 F8 F4 51 9E 5B 15 BE E8 13 F3 CC D9 80 B6 E2 D7 F2 DE 91 55 05 0C 58 93 2D 50 56 34 C5 14 4F 7F B8 80 F6 D5 0A 2B 4F 0C 67 20 66 4D 57 17 96 4B CB 25 29 FD 00 42 B6 BA 0F DF".hexToBytes()
     ServerVerificationCodeTransmissionPacket(data.dataInputStream(), data.size, "00 BA 31 01".hexToBytes()).let {
         it.decode()
         println(it)
     }
-
-    ServerVerificationCodeTransmissionPacket{verificationCodePartN=AA E7 B5 A9 B6 96 8B 09 6B 2F 60 C3 86 2C 91 DE 75 88 D7 8D 53 68 E4 B5 0D D9 A5 42 7D 1A 3E 9F 0F DC 2F DE F9 79 FA F0 24 31 F2 30 DC 32 92 23 9B 11 F5 EB 1A 88 60 CE 6B 30 48 EA 55 D6 22 7A E4 2D 33 4A F3 9A D7 75 65 0C C5 E4 F8 01 E1 2B 53 0D 42 ED 66 87 19 66 65 C4 C9 30 2D B3 D8 4D 92 3D 4C B6 2D 68 05 08 B4 41 55 99 44 88 4C 6B 2A 2D CB 59 3A 81 7D 47 5B 39 98 C8 61 0F FC 0B 84 EB 09 A6 35 1A 86 A1 62 72 7E B1 48 0C F0 3E 1B 39 48 16 A6 9B 43 8F 38 B1 64 98 64 C1 32 59 61 47 7D CB DB 93 D4 D8 1E 97 CC 1C 38 A6 48 AF 97 0D C2 A3 C5 39 D2 13 76 60 96 18 0A 1C A7 E9 80 40 53 52 98 F8 C5 C2 1B 1D FB AA 42 72 24 36 B2 7A 60 B1 AE 72 4E 88 F7 F2 7B 06 BF B4 5D F2 1F C2 1B 6F 0D 14 82 9C 46 83 90 C2 09 A1 FA 1E D9 E2 AC 64 10 78 7C 0B F6 8A 25 A9 6B 9B 2F 5C C2 74 F3 61 01 7A 93 A9 30 E6 34 64 AD EE B6 2E 5E D8 7B B6 AD 1B D9 18 7F EE 10 86 D9 05 5F 26 54 E5 34 14 E6 33 9E 96 F8 E0 2C FD B9 2B D2 22 1A 84 00 4B EC 74 C1 67 74 48 D8 3D 6A 33 E7 E7 24 2F F4 5F 9B DC 76 6F DC 45 FF EA 11 F8 75 19 AC 28 AA 97 1D 42 F2 3D FE 89 77 14 93 52 17 92 C7 3B BA 01 49 A8 36 93 D8 56 AF 80 B0 F3 0D 0A 84 85 C9 F7 50 FC D2 2B D6 6D 9C 11 DF 63 D1 3F AF 0C C5 84 3A F0 33 8E C3 32 2D A9 A7 52 28 96 8E D2 A5 AA 42 42 AD C8 C2 DA 7A C5 38 D4 9E 82 23 3A 51 B3 07 55 62 D8 84 24 8B DE 2D 5D DE DF 89 15 F5 5D 17 92 E2 00 75 40 22 2C 09 3C A5 7D 85 83 EC 42 99 91 90 51 8D B5 CA 16 F2 4C AB 6C B9 D1 67 FA DC 42 77 B0 62 09 80 AA D5 03 42 D3 37 7D 8C 57 00 87 1B 7C 35 71 98 C6 05 E4 5C 49 D7 2E 02 00 52 AD 96 8A EA 27 23 01 40 F1 54 74 38 1A CE 31 BB 5A 4A B2 32 35 D7 6B 6A 20 F4 3D 3B D1 05 E5 4B 1F FF 93 15 FA 39 B0 CF A0 E9 01 02 B5 40 1E C0 D3 05 A6 40 D8 30 0C ED AE A0 99 54 66 99 D3 3C 9B 64 20 CA 2B 97 3E 50 76 A4 8F 69 02 02 41 D6 02 5F 26 D9 21 B4 A2 D7 48 C4 47 E7 16 6F 58 A8 D3 EC 56 60 02 80 3C 8C 41 B3 30 16 6A 37 05 34 55 A9 23 DE 27 A8 46 9D C1 C3 D2 6A C1 19 38 88 21 57 96 C9 4A 74 E9 88 84 90 E7 E3 B7 40 5F 16 0F 77 48 74 3B DD CC F2 13 93 AE 91 7A 35 62 20 38 AC 92 54 92 49 18 14 6D 9C 7D 99 E9 24 00 9F 4B 32 72 E2 A4 3D 84 A4 EC FC 68 E4 14 5E F2 F1 DA 64 B8 B8 09 AA 35, verificationToken=66 6E 57 FB 30 91 BC 86 32 51 8A E2 2B 78 A1 60 9E 14 1F AD E5 C4 46 94 D0 DB 55 91 54 90 9A 24 38 63 61 9F A0 75 22 98 98 EF 72 D9 43 93 CC 28 63 14 25 3E 68 B0 1C 5B, transmissionCompleted=true, token00BA=92 C7 EF B1 C5 47 03 5A 45 25 07 95 7A DE 28 21 FA C0 F1 1A 11 71 C7 17 E0 D4 55 A7 30 B9 55 72 1A B4 C7 70 51 DE C2 00, count=12545, dataSize=830, packetId=00 BA 31 01}
-
-}*/
+}
 
 /**
- * 暂不了解意义
+ * 验证码正确
  *
  * @author Him188moe
  */
-class ServerVerificationCodeRepeatPacket(input: DataInputStream) : ServerVerificationCodePacket(input) {
+class ServerVerificationCodeCorrectPacket(input: DataInputStream) : ServerVerificationCodePacket(input) {
 
     lateinit var token00BA: ByteArray//56 bytes
-    lateinit var tgtgtKeyUpdate: ByteArray
 
     @ExperimentalUnsignedTypes
     override fun decode() {
         token00BA = this.input.readNBytesAt(10, 56)
-        tgtgtKeyUpdate = getRandomByteArray(16)
     }
 }
 
 abstract class ServerVerificationCodePacket(input: DataInputStream) : ServerPacket(input) {
 
     @PacketId("00 BA")
-    class Encrypted(input: DataInputStream) : ServerPacket(input) {
+    class Encrypted(input: DataInputStream, val idHex: String) : ServerPacket(input) {
         @ExperimentalUnsignedTypes
         fun decrypt(): ServerVerificationCodePacket {
             this.input goto 14
             val data = TEA.decrypt(this.input.readAllBytes().cutTail(1), Protocol.key00BA.hexToBytes())
-            return if (data.size == 95) {
-                ServerVerificationCodeRepeatPacket(data.dataInputStream())
-            } else {
-                ServerVerificationCodeTransmissionPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4))
+            if (idHex.startsWith("00 BA 32")) {
+                if (data.size == 95) {
+                    ServerVerificationCodeCorrectPacket(data.dataInputStream())
+                } else {
+                    return ServerVerificationCodeWrongPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4))
+                }
             }
+
+            return ServerVerificationCodeTransmissionPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4))
         }
     }
 }
