@@ -36,8 +36,8 @@ class ClientSessionRequestPacket(
                 this.writeHex("01 92 A5 D2 59 00 10 54 2D CF 9B 60 BF BB EC 0D D4 81 CE 36 87 DE 35 02 AE 6D ED DC 00 10 ")
                 this.writeHex(Protocol.fix0836)
                 this.writeHex("00 36 00 12 00 02 00 01 00 00 00 05 00 00 00 00 00 00 00 00 00 00")
-                this.writeHex(Protocol.constantData0)
                 this.writeHex(Protocol.constantData1)
+                this.writeHex(Protocol.constantData2)
                 this.writeQQ(qq)
                 this.writeHex("00 00 00 00 00 1F 00 22 00 01")
                 this.writeHex("1A 68 73 66 E4 BA 79 92 CC C2 D4 EC 14 7C 8B AF 43 B0 62 FB 65 58 A9 EB 37 55 1D 26 13 A8 E5 3D")//device ID

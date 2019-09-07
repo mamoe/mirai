@@ -91,7 +91,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
     @ExperimentalUnsignedTypes
     override fun toString(): String {
-        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", ", "{", "}") {
+        return this.javaClass.simpleName + this.getAllDeclaredFields().joinToString(", \n", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
                 is ByteArray -> value.toUHexString()

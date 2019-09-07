@@ -85,7 +85,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     //private | internal
 
-    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(200)
+    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(300)//登录回复非常快, 没必要等太久.
 
 
     /**
@@ -152,7 +152,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
             Thread {
                 while (socket!!.isConnected) {
                     val packet = DatagramPacket(ByteArray(2048), 2048)
-                    kotlin.runCatching { socket!!.receive(packet) }
+                    kotlin.runCatching { socket?.receive(packet) }
                             .onSuccess {
                                 MiraiThreadPool.getInstance().submit {
                                     try {
@@ -296,9 +296,8 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          */
         private lateinit var sessionResponseDecryptionKey: ByteArray
 
-        private var verificationCodeSequence: Int = 0
-        private var verificationCodeCache: ByteArray? = null//每次包只发一部分验证码来
-        private lateinit var verificationToken: ByteArray
+        private var verificationCodeCacheId: Int = 0
+        private var verificationCodeCache: ByteArray? = byteArrayOf()//每次包只发一部分验证码来
 
 
         private var heartbeatFuture: ScheduledFuture<*>? = null
@@ -321,7 +320,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 }
 
                 is ServerLoginResponseFailedPacket -> {
-                    socketHandler.loginFuture!!.complete(packet.loginState)
+                    socketHandler.loginFuture?.complete(packet.loginState)
                     return
                 }
 
@@ -331,8 +330,8 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     this.verificationCodeCache = packet.verifyCodePart1
 
                     if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
-                        this.verificationCodeSequence = 1
-                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, robot.account.qqNumber, this.token0825, this.verificationCodeSequence, this.token00BA))
+                        this.verificationCodeCacheId = 1
+                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, robot.account.qqNumber, this.token0825, this.verificationCodeCacheId, this.token00BA))
                     }
                 }
 
@@ -345,26 +344,29 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
                 is ServerVerificationCodeTransmissionPacket -> {
                     if (packet is ServerVerificationCodeWrongPacket) {
-                        this.verificationCodeSequence = 0
+                        this.verificationCodeCacheId = 0
                         this.verificationCodeCache = byteArrayOf()
                     }
 
-                    this.verificationCodeSequence++
+                    this.verificationCodeCacheId++
                     this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePartN
 
-                    this.verificationToken = packet.verificationToken
-
                     this.token00BA = packet.token00BA
-
-
-                    //todo 看易语言 count 和 sequence 是怎样变化的
 
                     if (packet.transmissionCompleted) {
                         (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.verificationCodeCache!!)
                         println(CharImageUtil.createCharImg(ImageIO.read(this.verificationCodeCache!!.inputStream())))
-                        TODO("验证码好了")
+                        println("需要验证码登录")
+                        println("若看不清请查根目录下 VerificationCode.png")
+                        println("若要更换验证码, 请直接回车")
+                        val code = Scanner(System.`in`).nextLine()
+                        if (code.isEmpty()) {
+                            sendPacket(ClientVerificationCodeRefreshPacket(robot.account.qqNumber, token0825, packet.verificationSessionId + 1))
+                        } else {
+                            sendPacket(ClientVerificationCodeSubmitPacket(robot.account.qqNumber, token0825, packet.verificationSessionId + 1, code, packet.verificationToken))
+                        }
                     } else {
-                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.count + 1, robot.account.qqNumber, this.token0825, this.verificationCodeSequence, this.token00BA))
+                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.verificationSessionId + 1, robot.account.qqNumber, this.token0825, this.verificationCodeCacheId, this.token00BA))
                     }
                 }
 
