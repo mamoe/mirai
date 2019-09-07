@@ -2,24 +2,25 @@ package net.mamoe.mirai;
 
 import lombok.Getter;
 import net.mamoe.mirai.event.MiraiEventManager;
-import net.mamoe.mirai.event.events.server.ServerDisableEvent;
-import net.mamoe.mirai.event.events.server.ServerEnableEvent;
-import net.mamoe.mirai.network.RobotNetworkHandler;
-import net.mamoe.mirai.network.packet.ClientTouchPacket;
+import net.mamoe.mirai.event.events.server.ServerDisabledEvent;
+import net.mamoe.mirai.event.events.server.ServerEnabledEvent;
+import net.mamoe.mirai.network.packet.login.LoginState;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
 import net.mamoe.mirai.utils.config.MiraiConfig;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
-import net.mamoe.mirai.utils.setting.MiraiSetting;
 import net.mamoe.mirai.utils.setting.MiraiSettingListSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
+import net.mamoe.mirai.utils.setting.MiraiSettings;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Scanner;
 
+/**
+ * @author NaturalHG
+ */
 public class MiraiServer {
     private static MiraiServer instance;
 
@@ -27,17 +28,15 @@ public class MiraiServer {
         return instance;
     }
 
-    //mirai version
     private final static String MIRAI_VERSION = "1.0.0";
 
-    //qq version
     private final static String QQ_VERSION = "4.9.0";
 
 
     @Getter //is running under UNIX
     private boolean unix;
 
-    @Getter//file path
+    @Getter//file pathq
     public File parentFolder;
 
     @Getter
@@ -48,30 +47,30 @@ public class MiraiServer {
     @Getter
     MiraiLogger logger;
 
-    MiraiSetting setting;
+    MiraiSettings settings;
 
     MiraiConfig qqs;
 
 
-    protected MiraiServer() {
+    MiraiServer() {
         instance = this;
-        this.onLoad();
-        this.onEnable();
+        this.onLoaded();
+        this.onEnabled();
     }
 
     private boolean enabled;
 
-    protected void shutdown() {
+    void shutdown() {
         if (this.enabled) {
             getLogger().info("About to shutdown Mirai");
-            this.getEventManager().broadcastEvent(new ServerDisableEvent());
+            this.eventManager.broadcastEventAsync(new ServerDisabledEvent());
             getLogger().info("Data have been saved");
         }
 
     }
 
 
-    private void onLoad() {
+    private void onLoaded() {
         this.parentFolder = new File(System.getProperty("user.dir"));
         this.unix = !System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS");
 
@@ -88,7 +87,7 @@ public class MiraiServer {
         if (!setting.exists()) {
             this.initSetting(setting);
         } else {
-            this.setting = new MiraiSetting(setting);
+            this.settings = new MiraiSettings(setting);
         }
 
         File qqs = new File(this.parentFolder + "/QQ.yml");
@@ -116,65 +115,6 @@ public class MiraiServer {
         });
         */
 
-        getLogger().info("ready to connect");
-
-
-        /*
-        MiraiConfigSection section = new MiraiConfigSection<MiraiConfigSection<String>>(){{
-            put("1",new MiraiConfigSection<>(){{
-                put("1","0");
-            }});
-        }};
-
-        this.qqs.put("test",section);
-        this.qqs.save();
-        */
-
-
-        MiraiConfigSection<MiraiConfigSection> x = this.qqs.getTypedSection("test");
-        //System.out.println(x.getSection("1").getInt("1"));
-
-        /*
-        System.out.println(v);
-
-        System.out.println(v.get("1111"));
-        */
-
-
-        Robot robot = new Robot(1994701021, "xiaoqqq", new LinkedList<>());
-        RobotNetworkHandler robotNetworkHandler = robot.getHandler();
-        try {
-            //System.out.println(Protocol.Companion.getSERVER_IP().get(3));
-            //System.out.println(Protocol.Companion.getSERVER_IP().toString());
-
-            robotNetworkHandler.setServerIP("14.116.136.106");
-            robotNetworkHandler.sendPacket(new ClientTouchPacket(1994701021, "14.116.136.106"));
-            while (true) ;
-            //robotNetworkHandler.connect("14.116.136.106");
-            //robotNetworkHandler.connect(Protocol.Companion.getSERVER_IP().get(2));
-            //robotNetworkHandler.connect("125.39.132.242");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-/*
-        System.out.println("network test");
-        try {
-
-
-            MiraiUDPServer server = new MiraiUDPServer();
-            MiraiUDPClient client = new MiraiUDPClient(InetAddress.getLocalHost(),9999,MiraiNetwork.getAvailablePort());
-            this.getTaskManager().repeatingTask(() -> {
-                byte[] sendInfo = "test test".getBytes(StandardCharsets.UTF_8);
-                try {
-                    client.send(new DatagramPacket(sendInfo,sendInfo.length));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            },300);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     private void initSetting(File setting) {
@@ -187,21 +127,21 @@ public class MiraiServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.setting = new MiraiSetting(setting);
-        MiraiSettingMapSection network = this.setting.getMapSection("network");
+        this.settings = new MiraiSettings(setting);
+        MiraiSettingMapSection network = this.settings.getMapSection("network");
         network.set("enable_proxy", "not supporting yet");
 
-        MiraiSettingListSection proxy = this.setting.getListSection("proxy");
+        MiraiSettingListSection proxy = this.settings.getListSection("proxy");
         proxy.add("1.2.3.4:95");
         proxy.add("1.2.3.4:100");
 
-        MiraiSettingMapSection worker = this.setting.getMapSection("worker");
+        MiraiSettingMapSection worker = this.settings.getMapSection("worker");
         worker.set("core_task_pool_worker_amount", 5);
 
-        MiraiSettingMapSection plugin = this.setting.getMapSection("plugin");
+        MiraiSettingMapSection plugin = this.settings.getMapSection("plugin");
         plugin.set("debug", false);
 
-        this.setting.save();
+        this.settings.save();
         getLogger().info("initialized; changing can be made in setting file: " + setting.toString());
     }
 
@@ -227,11 +167,35 @@ public class MiraiServer {
         getLogger().info("QQ account initialized; changing can be made in Config file: " + qqConfig.toString());
     }
 
-    private void onEnable() {
-        this.eventManager.broadcastEvent(new ServerEnableEvent());
+    private void onEnabled() {
         this.enabled = true;
+        this.eventManager.broadcastEventAsync(new ServerEnabledEvent());
         getLogger().info(LoggerTextFormat.GREEN + "Server enabled; Welcome to Mirai");
         getLogger().info("Mirai Version=" + MiraiServer.MIRAI_VERSION + " QQ Version=" + MiraiServer.QQ_VERSION);
+
+        getLogger().info("Initializing [Robot]s");
+
+        this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
+            getLogger().info("Initializing [Robot] " + section.getString("account"));
+            try {
+                Robot robot = new Robot(section);
+                var state = robot.network.tryLogin$mirai_core().get();
+                //robot.network.tryLogin$mirai_core().whenComplete((state, e) -> {
+                if (state == LoginState.SUCCEED) {
+                    Robot.instances.add(robot);
+                    getLogger().info("    Succeed");
+                } else {
+                    getLogger().error("    Failed with error " + state);
+                    robot.close();
+                }
+                //  }).get();
+
+            } catch (Throwable e) {
+                e.printStackTrace();
+                getLogger().error("Could not load QQ robots config!");
+                System.exit(1);
+            }
+        });
     }
 
 

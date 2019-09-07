@@ -1,3 +1,5 @@
+@file:JvmName("MessageKt")
+
 package net.mamoe.mirai.message
 
 import net.mamoe.mirai.message.defaults.PlainText
@@ -12,4 +14,7 @@ infix operator fun Message.plus(another: Message): Message = this.concat(another
  */
 infix operator fun Message.plus(another: String): Message = this.concat(another)
 
+/**
+ * 连接 [String] 与 [Message]
+ */
 infix fun String.concat(another: Message): Message = PlainText(this).concat(another)

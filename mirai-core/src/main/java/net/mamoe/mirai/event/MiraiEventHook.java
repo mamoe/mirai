@@ -2,20 +2,21 @@ package net.mamoe.mirai.event;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.mamoe.mirai.event.events.Cancellable;
-import net.mamoe.mirai.event.events.MiraiEvent;
 
 import java.io.Closeable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * @author NatrualHG
+ */
 public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
 
     @Getter
     Class<T> eventClass;
 
     @Getter
-    private volatile Consumer<T> handler;
+    protected volatile Consumer<T> handler;
 
     @Getter
     private volatile int priority = 0;
@@ -31,7 +32,7 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
      * return true -> this hook need to be removed
      */
     @Getter
-    private Predicate<T> valid;
+    protected Predicate<T> validChecker;
 
     public MiraiEventHook(Class<T> eventClass) {
         this(eventClass,null);
@@ -58,26 +59,26 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
     }
 
 
-    private MiraiEventHook<T> setValid(Predicate<T> valid) {
-        this.valid = valid;
+    private MiraiEventHook<T> setValidChecker(Predicate<T> validChecker) {
+        this.validChecker = validChecker;
         return this;
     }
 
     public MiraiEventHook<T> setValidUntil(Predicate<T> valid) {
-        return this.setValid(valid);
+        return this.setValidChecker(valid);
     }
 
     public MiraiEventHook<T> setValidWhile(Predicate<T> valid) {
-        return this.setValid(valid.negate());
+        return this.setValidChecker(valid.negate());
     }
 
 
     @SuppressWarnings("unchecked")
     public boolean accept(MiraiEvent event) {
         if(!(event instanceof Cancellable && event.isCancelled() && this.isIgnoreCancelled())){
-             this.getHandler().accept((T) event);
+            this.getHandler().accept((T) event);
         }
-        return this.valid == null || this.valid.test((T) event);
+        return this.validChecker == null || this.validChecker.test((T) event);
     }
 
     /**
@@ -103,6 +104,6 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
     @Override
     public void close(){
         this.handler = null;
-        this.valid = null;
+        this.validChecker = null;
     }
 }

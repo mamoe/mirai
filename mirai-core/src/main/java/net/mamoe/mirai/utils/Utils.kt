@@ -8,7 +8,9 @@ import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
 
+@JvmSynthetic
 fun ByteArray.toHexString(): String = toHexString(" ")
+
 fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(separator) {
     var ret = it.toString(16).toUpperCase()
     if (ret.length == 1) {
@@ -21,18 +23,23 @@ fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(s
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
 @ExperimentalUnsignedTypes
+@JvmSynthetic
 fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 
 @ExperimentalUnsignedTypes
-fun UByteArray.toUHexString(separator: String = " "): String = this.joinToString(separator) {
-    var ret = it.toString(16).toUpperCase()
-    if (ret.length == 1) {
-        ret = "0$ret"
+@JvmSynthetic
+fun UByteArray.toUHexString(separator: String = " "): String {
+    return this.joinToString(separator) {
+        var ret = it.toString(16).toUpperCase()
+        if (ret.length == 1) {
+            ret = "0$ret"
+        }
+        return@joinToString ret
     }
-    return@joinToString ret
 }
 
 @ExperimentalUnsignedTypes
+@JvmSynthetic
 fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 
 @ExperimentalUnsignedTypes
@@ -51,7 +58,7 @@ fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 fun String.hexToShort(): Short = hexToBytes().let { ((it[1].toInt() shl 8) + it[0]).toShort() }
 
 @ExperimentalUnsignedTypes
-fun String.hexToInt(): Int = hexToBytes().let { ((it[3].toInt() shl 24) + (it[2].toInt() shl 16) + (it[1].toInt() shl 8) + it[0]) }
+fun String.hexToInt(): Int = hexToBytes().let { ((it[0].toInt() shl 24) + (it[1].toInt() shl 16) + (it[2].toInt() shl 8) + it[3]) }
 
 @ExperimentalUnsignedTypes
 fun String.hexToByte(): Byte = hexToBytes()[0]
@@ -65,17 +72,18 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
 fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().let { t(it); return it.toByteArray() }
 
 @ExperimentalUnsignedTypes
-fun getRandomKey(length: Int): ByteArray {
+fun getRandomByteArray(length: Int): ByteArray {
     val bytes = LinkedList<Byte>()
     repeat(length) { bytes.add((Math.random() * 255).toByte()) }
     return bytes.toByteArray()
 }
 
+@JvmSynthetic
 operator fun File.plus(child: String): File = File(this, child)
 
 private const val GTK_BASE_VALUE: Int = 5381
 
-fun getGTK(sKey: String): Int {
+internal fun getGTK(sKey: String): Int {
     var value = GTK_BASE_VALUE
     for (c in sKey.toCharArray()) {
         value += (value shl 5) + c.toInt()
@@ -85,7 +93,7 @@ fun getGTK(sKey: String): Int {
     return value
 }
 
-fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
+internal fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
 
 
 /**
@@ -117,4 +125,14 @@ fun Any.getAllDeclaredFields(): List<Field> {
     } while (clazz != Object::javaClass)
 
     return list
+}
+
+private const val ZERO_BYTE: Byte = 0
+
+fun ByteArray.removeZeroTail(): ByteArray {
+    var i = this.size - 1
+    while (this[i] == ZERO_BYTE) {
+        --i
+    }
+    return this.copyOfRange(0, i + 1)
 }

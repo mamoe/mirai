@@ -29,6 +29,9 @@ public final class MessageChain extends Message {
         list.add(message);
     }
 
+    /**
+     * @return An unmodifiable list
+     */
     public List<Message> toList() {
         return List.copyOf(list);
     }

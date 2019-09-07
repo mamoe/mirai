@@ -10,7 +10,7 @@ import java.io.IOException
 @ExperimentalUnsignedTypes
 @PacketId("00 58")
 class ClientHeartbeatPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     @Throws(IOException::class)
@@ -24,8 +24,4 @@ class ClientHeartbeatPacket(
     }
 }
 
-class ServerHeartbeatResponsePacket(input: DataInputStream) : ServerPacket(input) {
-    override fun decode() {
-
-    }
-}
+class ServerHeartbeatResponsePacket(input: DataInputStream) : ServerPacket(input)

@@ -1,14 +1,16 @@
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.Robot
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.defaults.PlainText
 
 /**
  * A contact is a [QQ] or a [Group] for one particular [Robot] instance only.
  *
+ * @param robot Owner [Robot]
  * @author Him188moe
  */
-abstract class Contact(val number: Int) {
+abstract class Contact(val robot: Robot, val number: Long) {
 
     /**
      * Async

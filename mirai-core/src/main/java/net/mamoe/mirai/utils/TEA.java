@@ -6,12 +6,13 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 /**
+ * TEA 加密
+ *
  * @author iweiz https://github.com/iweizime/StepChanger/blob/master/app/src/main/java/me/iweizi/stepchanger/qq/Cryptor.java
  */
-public class TEACryptor {
-    public static final TEACryptor CRYPTOR_SHARE_KEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol.shareKey));
-    public static final TEACryptor CRYPTOR_0825KEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._0825key));
-    public static final TEACryptor CRYPTOR_00BAKEY = new TEACryptor(Protocol.Companion.hexToBytes(Protocol._00BaKey));
+public final class TEA {
+    public static final TEA CRYPTOR_SHARE_KEY = new TEA(Protocol.INSTANCE.hexToBytes(Protocol.shareKey));
+    public static final TEA CRYPTOR_0825KEY = new TEA(Protocol.INSTANCE.hexToBytes(Protocol.key0825));
 
     private static final long UINT32_MASK = 0xffffffffL;
     private final long[] mKey;
@@ -23,26 +24,33 @@ public class TEACryptor {
     private int mOutPos;
     private int mPreOutPos;
     private boolean isFirstBlock;
-    private boolean isRand;
 
-    public TEACryptor(byte[] key) {
+    public TEA(byte[] key) {
         mKey = new long[4];
         for (int i = 0; i < 4; i++) {
             mKey[i] = pack(key, i * 4, 4);
         }
-        isRand = true;
         mRandom = new Random();
         isFirstBlock = true;
     }
 
     public static byte[] encrypt(byte[] source, byte[] key) {
-        return new TEACryptor(key).encrypt(source);
+        return new TEA(key).encrypt(source);
+    }
+
+    public static byte[] encrypt(byte[] source, String keyHex) {
+        return encrypt(source, UtilsKt.hexToBytes(keyHex));
     }
 
     public static byte[] decrypt(byte[] source, byte[] key) {
-        return new TEACryptor(key).decrypt(source);
+        return new TEA(key).decrypt(source);
     }
 
+    public static byte[] decrypt(byte[] source, String keyHex) {
+        return decrypt(source, UtilsKt.hexToBytes(keyHex));
+    }
+
+    @SuppressWarnings("SameParameterValue")
     private static long pack(byte[] bytes, int offset, int len) {
         long result = 0;
         int max_offset = len > 8 ? offset + 8 : offset + len;
@@ -53,11 +61,7 @@ public class TEACryptor {
     }
 
     private int rand() {
-        return isRand ? mRandom.nextInt() : 0xff00ff;
-    }
-
-    public void enableRandom(boolean rand) {
-        isRand = rand;
+        return mRandom.nextInt();
     }
 
     private byte[] encode(byte[] bytes) {
@@ -109,6 +113,7 @@ public class TEACryptor {
         isFirstBlock = false;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean decodeOneBlock(byte[] ciphertext, int offset, int len) {
         for (mIndexPos = 0; mIndexPos < 8; mIndexPos++) {
             if (mOutPos + mIndexPos < len) {
@@ -125,6 +130,7 @@ public class TEACryptor {
 
     }
 
+    @SuppressWarnings("SameParameterValue")
     private byte[] encrypt(byte[] plaintext, int offset, int len) {
         mInBlock = new byte[8];
         mIV = new byte[8];
@@ -175,11 +181,12 @@ public class TEACryptor {
         return mOutput;
     }
 
-    private byte[] decrypt(byte[] ciphertext, int offset, int len) {
+    @SuppressWarnings("SameParameterValue")
+    private byte[] decrypt(byte[] cipherText, int offset, int len) {
         if (len % 8 != 0 || len < 16) {
             throw new IllegalArgumentException("must len % 8 == 0 && len >= 16");
         }
-        mIV = decode(ciphertext, offset);
+        mIV = decode(cipherText, offset);
         mIndexPos = mIV[0] & 7;
         int plen = len - mIndexPos - 10;
         isFirstBlock = true;
@@ -198,7 +205,7 @@ public class TEACryptor {
             }
             if (mIndexPos == 8) {
                 isFirstBlock = false;
-                if (!decodeOneBlock(ciphertext, offset, len)) {
+                if (!decodeOneBlock(cipherText, offset, len)) {
                     throw new RuntimeException("Unable to decode");
                 }
             }
@@ -208,20 +215,20 @@ public class TEACryptor {
             if (mIndexPos < 8) {
                 mOutput[outpos++] = isFirstBlock ?
                         mIV[mIndexPos] :
-                        (byte) (ciphertext[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]);
+                        (byte) (cipherText[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]);
                 ++mIndexPos;
             }
             if (mIndexPos == 8) {
                 mPreOutPos = mOutPos - 8;
                 isFirstBlock = false;
-                if (!decodeOneBlock(ciphertext, offset, len)) {
+                if (!decodeOneBlock(cipherText, offset, len)) {
                     throw new RuntimeException("Unable to decode");
                 }
             }
         }
         for (g = 0; g < 7; g++) {
             if (mIndexPos < 8) {
-                if ((ciphertext[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]) != 0) {
+                if ((cipherText[mPreOutPos + offset + mIndexPos] ^ mIV[mIndexPos]) != 0) {
                     throw new RuntimeException();
                 } else {
                     ++mIndexPos;
@@ -230,7 +237,7 @@ public class TEACryptor {
 
             if (mIndexPos == 8) {
                 mPreOutPos = mOutPos;
-                if (!decodeOneBlock(ciphertext, offset, len)) {
+                if (!decodeOneBlock(cipherText, offset, len)) {
                     throw new RuntimeException("Unable to decode");
                 }
             }

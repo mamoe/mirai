@@ -7,25 +7,28 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
+ * At 一个人的消息.
+ *
  * @author Him188moe
  */
 public final class At extends Message {
-    private final int target;
+    private final long target;
 
     public At(@NotNull QQ target) {
         this(Objects.requireNonNull(target).getNumber());
     }
 
-    public At(int target) {
+    public At(long target) {
         this.target = target;
     }
 
-    public int getTarget() {
+    public long getTarget() {
         return target;
     }
 
     @Override
     public String toString() {
-        return null;
+        // TODO: 2019/9/4 At.toString
+        throw new UnsupportedOperationException();
     }
 }

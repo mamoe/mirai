@@ -2,7 +2,7 @@ package net.mamoe.mirai.task;
 
 
 import net.mamoe.mirai.event.MiraiEventHook;
-import net.mamoe.mirai.event.events.server.ServerDisableEvent;
+import net.mamoe.mirai.event.events.server.ServerDisabledEvent;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -24,7 +24,7 @@ public final class MiraiTaskManager {
         this.pool = new MiraiThreadPool();
 
         MiraiEventHook
-                .onEvent(ServerDisableEvent.class)
+                .onEvent(ServerDisabledEvent.class)
                 .handler(a -> this.pool.close())
                 .mount();
 
@@ -35,7 +35,7 @@ public final class MiraiTaskManager {
      */
 
     public void execute(Runnable runnable) {
-        this.execute(runnable, MiraiTaskExceptionHandler.byDefault());
+        this.execute(runnable, MiraiTaskExceptionHandler.printing());
     }
 
     public void execute(Runnable runnable, MiraiTaskExceptionHandler handler) {
@@ -51,7 +51,7 @@ public final class MiraiTaskManager {
 
 
     public <D> Future<D> submit(Callable<D> callable) {
-        return this.submit(callable, MiraiTaskExceptionHandler.byDefault());
+        return this.submit(callable, MiraiTaskExceptionHandler.printing());
     }
 
     public <D> Future<D> submit(Callable<D> callable, MiraiTaskExceptionHandler handler) {
@@ -69,7 +69,7 @@ public final class MiraiTaskManager {
      * 异步任务
      */
     public <D> void ansycTask(Callable<D> callable, Consumer<D> callback) {
-        this.ansycTask(callable, callback, MiraiTaskExceptionHandler.byDefault());
+        this.ansycTask(callable, callback, MiraiTaskExceptionHandler.printing());
     }
 
     public <D> void ansycTask(Callable<D> callable, Consumer<D> callback, MiraiTaskExceptionHandler handler) {
@@ -87,7 +87,7 @@ public final class MiraiTaskManager {
      */
 
     public void repeatingTask(Runnable runnable, long intervalMillis) {
-        this.repeatingTask(runnable, intervalMillis, MiraiTaskExceptionHandler.byDefault());
+        this.repeatingTask(runnable, intervalMillis, MiraiTaskExceptionHandler.printing());
     }
 
     public void repeatingTask(Runnable runnable, long intervalMillis, MiraiTaskExceptionHandler handler) {
@@ -95,7 +95,7 @@ public final class MiraiTaskManager {
     }
 
     public void repeatingTask(Runnable runnable, long intervalMillis, int times) {
-        this.repeatingTask(runnable, intervalMillis, times, MiraiTaskExceptionHandler.byDefault());
+        this.repeatingTask(runnable, intervalMillis, times, MiraiTaskExceptionHandler.printing());
     }
 
     public void repeatingTask(Runnable runnable, long intervalMillis, int times, MiraiTaskExceptionHandler handler) {

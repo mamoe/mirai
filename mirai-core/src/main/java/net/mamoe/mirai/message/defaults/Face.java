@@ -4,6 +4,8 @@ import net.mamoe.mirai.message.FaceID;
 import net.mamoe.mirai.message.Message;
 
 /**
+ * QQ 自带表情
+ *
  * @author Him188moe
  */
 public final class Face extends Message {

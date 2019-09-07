@@ -2,11 +2,7 @@ package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.util.TestedSuccessfully
-import net.mamoe.mirai.utils.ByteArrayDataOutputStream
-import net.mamoe.mirai.utils.TEACryptor
-import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 import java.io.DataOutputStream
 
 /**
@@ -18,7 +14,7 @@ import java.io.DataOutputStream
 @ExperimentalUnsignedTypes
 @TestedSuccessfully
 class ClientPasswordSubmissionPacket(
-        private val qq: Int,
+        private val qq: Long,
         private val password: String,
         private val loginTime: Int,
         private val loginIP: String,
@@ -28,10 +24,10 @@ class ClientPasswordSubmissionPacket(
     @ExperimentalUnsignedTypes
     override fun encode() {
         this.writeQQ(qq)
-        this.writeHex(Protocol._0836_622_fix1)
+        this.writeHex(Protocol.passwordSubmissionKey1)
         this.writeHex(Protocol.publicKey)
         this.writeHex("00 00 00 10")
-        this.writeHex(Protocol._0836key1)
+        this.writeHex(Protocol.key0836)
 
         this.encryptAndWrite(Protocol.shareKey.hexToBytes()) {
             it.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
@@ -43,17 +39,22 @@ class ClientPasswordSubmissionPacket(
 
 @PacketId("08 36 31 04")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3104(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
+class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
+
+@PacketId("08 36 31 05")
+@ExperimentalUnsignedTypes
+class ClientLoginResendPacket3105(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, null)
 
 @PacketId("08 36 31 06")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3106(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
+class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
 
 @ExperimentalUnsignedTypes
 open class ClientLoginResendPacket internal constructor(
-        val qq: Int,
+        val qq: Long,
         val password: String,
         val loginTime: Int,
         val loginIP: String,
@@ -64,12 +65,12 @@ open class ClientLoginResendPacket internal constructor(
 ) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
-        this.writeHex(Protocol._0836_622_fix1)
+        this.writeHex(Protocol.passwordSubmissionKey1)
         this.writeHex(Protocol.publicKey)
         this.writeHex("00 00 00 10")
-        this.writeHex(Protocol._0836key1)
+        this.writeHex(Protocol.key0836)
 
-        this.write(TEACryptor.encrypt(object : ByteArrayDataOutputStream() {
+        this.write(TEA.encrypt(object : ByteArrayDataOutputStream() {
             override fun toByteArray(): ByteArray {
                 this.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv_0006_encr)
 
@@ -91,7 +92,7 @@ open class ClientLoginResendPacket internal constructor(
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
-private fun DataOutputStream.writePart1(qq: Int, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv_0006_encr: ByteArray? = null) {
+private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv_0006_encr: ByteArray? = null) {
 
     //this.writeInt(System.currentTimeMillis().toInt())
     this.writeHex("01 12")//tag
@@ -110,12 +111,12 @@ private fun DataOutputStream.writePart1(qq: Int, password: String, loginTime: In
         this.writeTLV0006(qq, password, loginTime, loginIP, tgtgtKey)
     }
     //fix
-    this.writeHex(Protocol._0836_622_fix2)
+    this.writeHex(Protocol.passwordSubmissionKey2)
     this.writeHex("00 1A")//tag
     this.writeHex("00 40")//length
-    this.write(TEACryptor.encrypt(Protocol._0836_622_fix2.hexToBytes(), tgtgtKey))
-    this.writeHex(Protocol._0825data0)
-    this.writeHex(Protocol._0825data2)
+    this.write(TEA.encrypt(Protocol.passwordSubmissionKey2.hexToBytes(), tgtgtKey))
+    this.writeHex(Protocol.constantData0)
+    this.writeHex(Protocol.constantData1)
     this.writeQQ(qq)
     this.writeZero(4)
 

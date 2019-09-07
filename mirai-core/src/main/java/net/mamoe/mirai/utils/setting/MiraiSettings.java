@@ -1,21 +1,22 @@
 package net.mamoe.mirai.utils.setting;
 
+import net.mamoe.mirai.plugin.MiraiPluginBase;
 import org.ini4j.Config;
 import org.ini4j.Ini;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Mirai Config
- * Only support {INI} format
- * Support MAP and LIST
- * Thread safe
+ * Thread-safe Mirai Config <br>
+ * Only supports <code>INI</code> format <br>
+ * Supports {@link Map} and {@link List}
  */
-public class MiraiSetting {
+public class MiraiSettings {
 
     private File file;
 
@@ -23,14 +24,21 @@ public class MiraiSetting {
 
     private volatile Map<String, MiraiSettingSection> cacheSection = new ConcurrentHashMap<>();
 
-    public MiraiSetting(File file){
+    public MiraiSettings(MiraiPluginBase pluginBase, String filename) {
+        // TODO: 2019/9/6 每个插件独立文件夹存放
+        this(new File(filename));
+    }
+
+    public MiraiSettings(File file) {
         if(!file.getName().contains(".")){
-            file = new File(file.getParent() + file.getName() + ".ini");
+            file = new File(file.getPath() + ".ini");
         }
         this.file = file;
         try {
             if(file.exists()){
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    throw new RuntimeException("cannot create config file " + file);
+                }
             }
             Config config = new Config();
             config.setMultiSection(true);
@@ -42,12 +50,12 @@ public class MiraiSetting {
         }
     }
 
-    public void setSection(String key, MiraiSettingSection section){
+    public synchronized void setSection(String key, MiraiSettingSection section) {
         cacheSection.put(key, section);
     }
 
 
-    public MiraiSettingMapSection getMapSection(String key){
+    public synchronized MiraiSettingMapSection getMapSection(String key) {
         if(!cacheSection.containsKey(key)) {
             MiraiSettingMapSection section = new MiraiSettingMapSection();
             if(ini.containsKey(key)){
@@ -58,7 +66,7 @@ public class MiraiSetting {
         return (MiraiSettingMapSection) cacheSection.get(key);
     }
 
-    public MiraiSettingListSection getListSection(String key){
+    public synchronized MiraiSettingListSection getListSection(String key) {
         if(!cacheSection.containsKey(key)) {
             MiraiSettingListSection section = new MiraiSettingListSection();
             if(ini.containsKey(key)){
@@ -85,7 +93,7 @@ public class MiraiSetting {
         }
     }
 
-    public void clearCache(){
+    public synchronized void clearCache() {
         cacheSection.clear();
     }
 }
