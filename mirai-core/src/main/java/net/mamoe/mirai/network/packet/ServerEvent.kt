@@ -225,7 +225,7 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
 
                 val id1 = FaceID.ofId(readShortVarNumber().toInt())//可能这个是id, 也可能下面那个
                 this.skip(this.readByte().toLong())
-                val id2 = this.readShortVarNumber()//某id?
+                this.readShortVarNumber()//某id?
                 return Face(id1)
             }
             0x06 -> {
