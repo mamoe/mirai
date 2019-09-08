@@ -36,7 +36,6 @@ public final class Robot implements Closeable {
     public static final List<Robot> instances = Collections.synchronizedList(new LinkedList<>());
 
     public final int id = _id.getAndAdd(1);
-    private static final AtomicInteger _id = new AtomicInteger(0);
 
     public final RobotAccount account;
 
@@ -118,5 +117,12 @@ public final class Robot implements Closeable {
         this.contacts.qqs.clear();
     }
 
+    public void addFriend(long qq) {
+
+    }
+
+    /* PRIVATE */
+
+    private static final AtomicInteger _id = new AtomicInteger(0);
 }
 

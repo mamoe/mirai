@@ -508,7 +508,10 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     //GroupMessageEvent(this.robot, robot.contacts.getGroupByNumber(packet.groupNumber), robot.contacts.getQQ(packet.qq), packet.message)
                 }
 
-                is UnknownServerEventPacket,
+                is UnknownServerEventPacket -> {
+                    //todo
+                }
+
                 is ServerSendFriendMessageResponsePacket,
                 is ServerSendGroupMessageResponsePacket -> {
                     //ignored
@@ -543,6 +546,10 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         internal var gtk: Int = 0
 
         override fun onPacketReceived(packet: ServerPacket) {
+
+        }
+
+        fun addFriend(qqNumber: Long): Unit {
 
         }
 

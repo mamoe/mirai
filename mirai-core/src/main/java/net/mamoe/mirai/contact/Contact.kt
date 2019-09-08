@@ -11,8 +11,7 @@ import net.mamoe.mirai.message.defaults.PlainText
  * @param robot Owner [Robot]
  * @author Him188moe
  */
-abstract class Contact(val robot: Robot, val number: Long) {
-
+abstract class Contact internal constructor(val robot: Robot, val number: Long) {
     /**
      * Async
      */

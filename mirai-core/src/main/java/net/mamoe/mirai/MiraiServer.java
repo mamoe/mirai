@@ -178,13 +178,7 @@ public class MiraiServer {
 
         getLogger().info("Initializing [Robot]s");
 
-        try {
-            getAvailableRobot();
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
-        }
 
-        /*
         this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
             getLogger().info("Initializing [Robot] " + section.getString("account"));
             try {
@@ -205,7 +199,7 @@ public class MiraiServer {
                 getLogger().error("Could not load QQ robots config!");
                 System.exit(1);
             }
-        });*/
+        });
     }
 
 

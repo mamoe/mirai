@@ -13,6 +13,8 @@
         <module>mirai-core</module>
         <module>mirai-native</module>
         <module>mirai-ui</module>
+        <module>mirai-console</module>
+        <module>mirai-api</module>
     </modules>
 
     <repositories>

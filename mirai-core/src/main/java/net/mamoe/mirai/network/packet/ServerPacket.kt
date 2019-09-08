@@ -62,8 +62,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                         return ServerLoginResponseSuccessPacket.Encrypted(stream).apply { this.idHex = idHex }
                     }
 
+                    println(bytes.size)
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
-                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD
+                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD//这四个其中一个也是被冻结
                         //135 -> LoginState.RETYPE_PASSWORD
                         279 -> LoginState.BLOCKED
                         263 -> LoginState.UNKNOWN_QQ_NUMBER
