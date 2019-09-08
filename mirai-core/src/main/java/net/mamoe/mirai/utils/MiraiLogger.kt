@@ -29,6 +29,7 @@ object MiraiLogger {
         this.print(e.cause.toString())*/
     }
 
+    @Synchronized
     private fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
         val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
         kotlin.io.println("$color[Mirai] $s : $value")
@@ -52,12 +53,14 @@ infix fun Robot.success(o: Any?) = print(this, o.toString(), LoggerTextFormat.GR
 infix fun Robot.debug(o: Any?) = print(this, o.toString(), LoggerTextFormat.YELLOW)
 
 
+@Synchronized
 private fun print(robot: Robot, value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
     val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
     kotlin.io.println("$color[Mirai] $s #R${robot.id}: $value")
 }
 
 
+@Synchronized
 private fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
     val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
     kotlin.io.println("$color[Mirai] $s : $value")

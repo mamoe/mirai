@@ -176,8 +176,12 @@ fun DataInputStream.readIP(): String {
     return buff
 }
 
-fun DataInputStream.readShortVarString(): String {
-    return String(this.readNBytes(this.readShort().toInt()))
+fun DataInputStream.readVarString(): String {
+    return String(this.readVarByteArray())
+}
+
+fun DataInputStream.readVarByteArray(): ByteArray {
+    return this.readNBytes(this.readShort().toInt())
 }
 
 fun DataInputStream.readString(length: Int): String {
@@ -206,7 +210,7 @@ fun <N : Number> DataInputStream.readNBytes(length: N): ByteArray {
 }
 
 
-fun DataInputStream.readShortVarNumber(): Number {
+fun DataInputStream.readVarNumber(): Number {
     return when (this.readShort().toInt()) {
         1 -> this.readByte()
         2 -> this.readShort()

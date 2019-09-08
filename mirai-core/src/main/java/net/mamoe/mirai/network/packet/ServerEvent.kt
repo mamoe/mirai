@@ -199,11 +199,10 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
 
         val l1 = input.readShortAt(22)
         input.goto(93 + l1)
-        val l2 = input.readShort()
-        input.readNBytes(l2)//font
+        input.readVarByteArray()//font
         input.skip(2)//2个0x00
         message = input.readSections()
-        println(message.toDebugString())
+        println(message.toObjectString())
 
         /*
         val offset = unknownLength0 + fontLength//57
@@ -218,14 +217,14 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
         val sectionLength = this.readShort().toLong()//sectionLength: short
         this.skip(1)//message和face是 0x01, image是0x06
         return when (messageType) {
-            0x01 -> PlainText(readShortVarString())
+            0x01 -> PlainText(readVarString())
             0x02 -> {
                 //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
                 //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D
 
-                val id1 = FaceID.ofId(readShortVarNumber().toInt())//可能这个是id, 也可能下面那个
+                val id1 = FaceID.ofId(readVarNumber().toInt())//可能这个是id, 也可能下面那个
                 this.skip(this.readByte().toLong())
-                this.readShortVarNumber()//某id?
+                this.readVarNumber()//某id?
                 return Face(id1)
             }
             0x06 -> {

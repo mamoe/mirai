@@ -3,10 +3,14 @@ package net.mamoe.mirai.contact
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.defaults.At
+import net.mamoe.mirai.message.defaults.MessageChain
 
 /**
  * QQ 账号.
  * 注意: 一个 [QQ] 实例并不是独立的, 它属于一个 [Robot].
+ *
+ * Java 获取 qq 号: `qq.getNumber()`
+ * Java 获取所属 robot: `qq.getRobot()`
  *
  * A QQ instance helps you to receive message from or send message to.
  * Notice that, one QQ instance belong to one [Robot], that is, QQ instances from different [Robot] are NOT the same.
@@ -14,7 +18,7 @@ import net.mamoe.mirai.message.defaults.At
  * @author Him188moe
  */
 class QQ(robot: Robot, number: Long) : Contact(robot, number) {
-    override fun sendMessage(message: Message) {
+    override fun sendMessage(message: MessageChain) {
         robot.network.messageHandler.sendFriendMessage(this, message)
     }
 

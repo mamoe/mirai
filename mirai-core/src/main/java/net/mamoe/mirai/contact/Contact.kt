@@ -2,6 +2,7 @@ package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Robot
 import net.mamoe.mirai.message.Message
+import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.message.defaults.PlainText
 
 /**
@@ -15,7 +16,14 @@ abstract class Contact(val robot: Robot, val number: Long) {
     /**
      * Async
      */
-    abstract fun sendMessage(message: Message)
+    abstract fun sendMessage(message: MessageChain)
+
+    fun sendMessage(message: Message) {
+        if (message is MessageChain) {
+            return sendMessage(message)
+        }
+        return sendMessage(message.toChain())
+    }
 
     fun sendMessage(message: String) {
         this.sendMessage(PlainText(message))

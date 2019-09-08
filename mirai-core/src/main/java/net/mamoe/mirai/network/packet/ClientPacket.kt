@@ -230,7 +230,7 @@ fun DataOutputStream.writeZero(count: Int) {
 @Throws(IOException::class)
 fun DataOutputStream.writeRandom(length: Int) {
     repeat(length) {
-        this.writeByte((Math.random() * 255).toInt().toByte().toInt())
+        this.writeByte((Math.random() * 255).toInt())
     }
 }
 
@@ -244,4 +244,13 @@ fun DataOutputStream.writeQQ(qq: Long) {
 @Throws(IOException::class)
 fun DataOutputStream.writeGroup(groupIdOrGroupNumber: Long) {
     this.write(groupIdOrGroupNumber.toUInt().toByteArray())
+}
+
+fun DataOutputStream.writeVarByteArray(byteArray: ByteArray) {
+    this.writeShort(byteArray.size)
+    this.write(byteArray)
+}
+
+fun DataOutputStream.writeVarString(str: String) {
+    this.writeVarByteArray(str.toByteArray())
 }

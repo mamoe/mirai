@@ -12,19 +12,14 @@ import java.util.Objects;
  */
 public final class FriendMessageEvent extends FriendEvent {
     private final MessageChain messageChain;
-    private final String messageString;
 
     public FriendMessageEvent(@NotNull Robot robot, @NotNull QQ sender, @NotNull MessageChain messageChain) {
         super(robot, sender);
         this.messageChain = Objects.requireNonNull(messageChain);
-        this.messageString = messageChain.toString();
     }
 
-    public String getMessageString() {
-        return messageString;
-    }
-
-    public MessageChain getMessageChain() {
+    @NotNull
+    public MessageChain message() {
         return messageChain;
     }
 }
