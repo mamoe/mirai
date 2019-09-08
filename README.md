@@ -5,13 +5,7 @@
   
 项目处于快速开发阶段  
 协议来自网络上开源项目  
-一切开发旨在学习, 请勿用于非法用途    
-
-<br>
-
-A JAVA(+Kotlin) powered open-source project under GPL license<br>
-It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
-The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
+一切开发旨在学习, 请勿用于非法用途
 
 ### 代码结构
 Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).  
@@ -20,15 +14,21 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 即使你完全不了解 Kotlin, 你也可以正常开发.
 
 ### 抢先体验
-现在你可以使用 Mirai 内置的一些测试qq号体验 Mirai.
+现在你可以使用 Mirai 内置的一些测试qq号体验 Mirai, 但我们现在还不建议你使用自己的 qq 号登录
 1. Clone
 2. Import as Maven project
 3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
 
-简略阅读源码便可测试接收和发送消息
-
-Hook 一个事件(Kotlin):
+#### 事件 Hook (Kotlin)
 ![event hook.png](.github/event%20hook.png)
+![AYWVE86P](.github/A%7DYWVE860U%28%25YQD%24R1GB1%5BP.png)
+
+#### 图片测试
+**现在可以接受图片消息**(并解析为消息链):  
+![JsssF](.github/J%5DCE%29IK4BU08%28EO~UVLJ%7B%5BF.png)  
+![](.README_images/68f8fec9.png)
+
+不过我们还正在努力做发送图片
 
 ### TODO
 - [x] 事件(Event)模块  
@@ -58,6 +58,12 @@ Hook 一个事件(Kotlin):
     ...
 ```
 
+
+<br>
+
+A JAVA(+Kotlin) powered open-source project under GPL license<br>
+It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
+The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
 
 ## Usage
 ### Requirements

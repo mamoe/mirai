@@ -62,6 +62,6 @@ fun <C : KClass<E>, E : MiraiEvent> C.hookWhile(hook: (E) -> Boolean) {
 private class MiraiEventHookSimple<E : MiraiEvent>(clazz: Class<E>, val hook: (E) -> Boolean) : MiraiEventHook<E>(clazz) {
     override fun accept(event: MiraiEvent?): Boolean {
         @Suppress("UNCHECKED_CAST")
-        return hook.invoke(event as E)
+        return !hook.invoke(event as E)
     }
 }
