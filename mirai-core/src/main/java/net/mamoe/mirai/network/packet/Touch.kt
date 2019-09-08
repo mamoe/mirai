@@ -16,7 +16,7 @@ import java.io.IOException
  *
  * @author Him188moe
  */
-@PacketId("08 25 31 0?")
+@PacketId("08 25 31 01")
 class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
     var serverIP: String? = null
 

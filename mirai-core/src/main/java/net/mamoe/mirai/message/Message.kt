@@ -15,7 +15,17 @@ import java.util.*
  * 可发送的或从服务器接收的消息.
  * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
- * 在 Kotlin, 使用 [Message] 与使用 [String] 几乎没有什么用法上的区别, 除了
+ * #### 在 Kotlin 使用 [Message]
+ *  这与使用 [String] 的使用非常类似.
+ *
+ *  比较 [Message] 与 [String] (使用 infix [Message.valueEquals]):
+ *  `if(message valueEquals "你好") qq.sendMessage(message)`
+ *
+ *  连接 [Message] 与 [Message], [String], [BufferedImage] (使用 operator [Message.plus]):
+ *  ```
+ *      message = PlainText("Hello ")
+ *      qq.sendMessage(message + "world")
+ *  ```
  *
  * @author Him188moe
  * @see Contact.sendMessage

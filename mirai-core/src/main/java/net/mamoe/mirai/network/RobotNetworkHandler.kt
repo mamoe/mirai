@@ -12,6 +12,7 @@ import net.mamoe.mirai.event.events.network.PacketSentEvent
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
+import net.mamoe.mirai.event.hookAlways
 import net.mamoe.mirai.event.hookWhile
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.defaults.MessageChain
@@ -483,6 +484,16 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
     inner class MessageHandler : PacketHandler() {
         internal var ignoreMessage: Boolean = false
 
+        init {
+            FriendMessageEvent::class.hookAlways {
+                if (it.message() valueEquals "你好") {
+                    it.qq.sendMessage("你好!")
+                } else if (it.message().toString().startsWith("复读")) {
+                    it.qq.sendMessage(it.message())
+                }
+            }
+        }
+
         override fun onPacketReceived(packet: ServerPacket) {
             when (packet) {
                 is ServerGroupUploadFileEventPacket -> {
@@ -494,12 +505,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                         return
                     }
 
-                    val friendMessageEvent = FriendMessageEvent(robot, robot.contacts.getQQ(packet.qq), packet.message)
-                    friendMessageEvent.broadcast()
-
-                    if (friendMessageEvent.message() valueEquals "你好") {
-                        friendMessageEvent.qq.sendMessage("你好")
-                    }
+                    FriendMessageEvent(robot, robot.contacts.getQQ(packet.qq), packet.message).broadcast()
                 }
 
                 is ServerGroupMessageEventPacket -> {

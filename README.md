@@ -24,7 +24,11 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 1. Clone
 2. Import as Maven project
 3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
+
 简略阅读源码便可测试接收和发送消息
+
+Hook 一个事件(Kotlin):
+![event hook.png](.github/event%20hook.png)
 
 ### TODO
 - [x] 事件(Event)模块  

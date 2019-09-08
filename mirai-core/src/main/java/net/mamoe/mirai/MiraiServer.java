@@ -178,7 +178,13 @@ public class MiraiServer {
 
         getLogger().info("Initializing [Robot]s");
 
+        try {
+            getAvailableRobot();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
+        /*
         this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
             getLogger().info("Initializing [Robot] " + section.getString("account"));
             try {
@@ -199,7 +205,7 @@ public class MiraiServer {
                 getLogger().error("Could not load QQ robots config!");
                 System.exit(1);
             }
-        });
+        });*/
     }
 
 
@@ -209,20 +215,9 @@ public class MiraiServer {
             "3145561616----987654321\n" +
             "2374150554----12345678910\n" +
             "2375307394----12345678910\n" +
-            "1531848970----1234567890\n" +
-            "1947293188----a123456789\n" +
-            "1771231721----123456789a\n" +
             "2401645747----12345678910\n" +
-            "3338427598----987654321\n" +
-            "3055657369----1234567890\n" +
-            "3502771486----987654321\n" +
             "1515419818----1234567890\n" +
-            "2402273360----12345678910\n" +
-            "3107367848----987654321\n" +
-            "3487109947----123456789a\n" +
-            "3489288352----123456789a\n" +
-            "2385617018----12345678910\n" +
-            "1251003390----123456789a\n";
+            "3107367848----987654321\n";
 
     private Robot getAvailableRobot() throws ExecutionException, InterruptedException {
         for (String it : qqList.split("\n")) {

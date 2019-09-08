@@ -70,7 +70,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 
 
     override fun toString(): String {
-        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "encoded" }.joinToString(", ", "{", "}") {
+        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "idByteArray" || it.name == "encoded" }.joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
                 null -> null

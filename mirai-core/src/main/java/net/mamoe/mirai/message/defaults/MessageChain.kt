@@ -3,6 +3,7 @@ package net.mamoe.mirai.message.defaults
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageId
 import net.mamoe.mirai.utils.lazyEncode
+import org.intellij.lang.annotations.MagicConstant
 import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -29,6 +30,20 @@ class MessageChain : Message {
 
     fun toList(): List<Message> {
         return list.toList()
+    }
+
+    fun size(): Int {
+        return list.size
+    }
+
+    @Synchronized
+    fun containsType(@MagicConstant(valuesFromClass = MessageId::class) type: Int): Boolean {
+        for (message in list) {
+            if (message.type == type) {
+                return true
+            }
+        }
+        return false
     }
 
     fun stream(): Stream<Message> {
