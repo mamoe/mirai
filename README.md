@@ -7,12 +7,6 @@
 协议来自网络上开源项目  
 一切开发旨在学习, 请勿用于非法用途
 
-### 代码结构
-Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).  
-与插件相关性强(或其他在二次开发中容易接触)的部分尽量使用 Java 完成,
-若使用 Kotlin, 我们会通过 Java interface 实现或 javadoc 帮助未接触过 Kotlin 的开发者.
-即使你完全不了解 Kotlin, 你也可以正常开发.
-
 ### 抢先体验
 现在你可以使用 Mirai 内置的一些测试qq号体验 Mirai, 但我们现在还不建议你使用自己的 qq 号登录
 1. Clone
@@ -30,7 +24,13 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 
 不过我们还正在努力做发送图片
 
-### TODO
+### 代码结构
+Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).  
+与插件相关性强(或其他在二次开发中容易接触)的部分尽量使用 Java 完成,
+若使用 Kotlin, 我们会通过 Java interface 实现或 javadoc 帮助未接触过 Kotlin 的开发者.
+即使你完全不了解 Kotlin, 你也可以正常开发.
+
+## TODO
 - [x] 事件(Event)模块  
 - [ ] 插件(Plugin)模块  **(Working on)**
 - [x] Network - Touch  
