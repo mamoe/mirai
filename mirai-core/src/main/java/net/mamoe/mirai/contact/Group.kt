@@ -1,6 +1,6 @@
 package net.mamoe.mirai.contact
 
-import net.mamoe.mirai.Robot
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group.Companion.groupNumberToId
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.utils.ContactList
@@ -10,18 +10,18 @@ import java.io.Closeable
  * 群
  *
  * Java 获取 groupNumber: `group.getNumber()`
- * Java 获取所属 robot: `group.getRobot()`
+ * Java 获取所属 bot: `group.getBot()`
  * Java 获取群成员列表: `group.getMembers()`
  * Java 获取 groupId: `group.getGroupId()`
  *
  * Java 调用 [groupNumberToId] : `Group.groupNumberToId(number)`
  */
-class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
+class Group(bot: Bot, number: Long) : Contact(bot, number), Closeable {
     val groupId = groupNumberToId(number)
     val members = ContactList<QQ>()
 
     override fun sendMessage(message: MessageChain) {
-        robot.network.messageHandler.sendGroupMessage(this, message)
+        bot.network.messageHandler.sendGroupMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {

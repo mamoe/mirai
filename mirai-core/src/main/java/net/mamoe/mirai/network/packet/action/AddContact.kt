@@ -15,7 +15,7 @@ import java.util.*
 @PacketId("00 A7")
 @ExperimentalUnsignedTypes
 class ClientCanAddFriendPacket(
-        val robot: Long,
+        val bot: Long,
         val qq: Long,
         val sessionKey: ByteArray
 ) : ClientPacket() {
@@ -28,7 +28,7 @@ class ClientCanAddFriendPacket(
     override fun encode() {
         this.write(packetIdLast)//id, 2bytes
 
-        this.writeQQ(robot)
+        this.writeQQ(bot)
         this.writeHex(Protocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
             it.writeQQ(qq)
@@ -79,7 +79,7 @@ class ServerCanAddFriendResponsePacket(input: DataInputStream) : ServerPacket(in
 @PacketId("00 AE")
 @ExperimentalUnsignedTypes
 class ClientAddFriendPacket(
-        val robot: Long,
+        val bot: Long,
         val qq: Long,
         val sessionKey: ByteArray
 ) : ClientPacket() {
@@ -92,7 +92,7 @@ class ClientAddFriendPacket(
     override fun encode() {
         this.write(packetIdLast)//id, 2bytes
 
-        this.writeQQ(robot)
+        this.writeQQ(bot)
         this.writeHex(Protocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
             it.writeHex("01 00 01")

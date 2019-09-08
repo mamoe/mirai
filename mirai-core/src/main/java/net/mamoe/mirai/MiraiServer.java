@@ -6,10 +6,10 @@ import net.mamoe.mirai.event.events.server.ServerDisabledEvent;
 import net.mamoe.mirai.event.events.server.ServerEnabledEvent;
 import net.mamoe.mirai.network.packet.login.LoginState;
 import net.mamoe.mirai.task.MiraiTaskManager;
+import net.mamoe.mirai.utils.BotAccount;
 import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
 import net.mamoe.mirai.utils.MiraiLoggerKt;
-import net.mamoe.mirai.utils.RobotAccount;
 import net.mamoe.mirai.utils.config.MiraiConfig;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingListSection;
@@ -155,7 +155,7 @@ public class MiraiServer {
         MiraiConfigSection<Object> section = new MiraiConfigSection<>();
 
         Scanner scanner = new Scanner(System.in);
-        getLogger().info("Input a " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.GREEN + "for default robotNetworkHandler");
+        getLogger().info("Input a " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.GREEN + "for default botNetworkHandler");
         getLogger().info("输入用于默认机器人的QQ号");
         long qqNumber = scanner.nextLong();
         getLogger().info("Input the password for that QQ account");
@@ -176,33 +176,33 @@ public class MiraiServer {
         getLogger().info(LoggerTextFormat.GREEN + "Server enabled; Welcome to Mirai");
         getLogger().info("Mirai Version=" + MiraiServer.MIRAI_VERSION + " QQ Version=" + MiraiServer.QQ_VERSION);
 
-        getLogger().info("Initializing [Robot]s");
+        getLogger().info("Initializing [Bot]s");
 
         try {
-            getAvailableRobot();
+            getAvailableBot();
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
 
         /*
         this.qqs.keySet().stream().map(key -> this.qqs.getSection(key)).forEach(section -> {
-            getLogger().info("Initializing [Robot] " + section.getString("account"));
+            getLogger().info("Initializing [Bot] " + section.getString("account"));
             try {
-                Robot robot = new Robot(section);
-                var state = robot.network.tryLogin$mirai_core().get();
-                //robot.network.tryLogin$mirai_core().whenComplete((state, e) -> {
+                Bot bot = new Bot(section);
+                var state = bot.network.tryLogin$mirai_core().get();
+                //bot.network.tryLogin$mirai_core().whenComplete((state, e) -> {
                 if (state == LoginState.SUCCESS) {
-                    Robot.instances.add(robot);
+                    Bot.instances.add(bot);
                     getLogger().success("   Login Succeed");
                 } else {
                     getLogger().error("   Login Failed with error " + state);
-                    robot.close();
+                    bot.close();
                 }
                 //  }).get();
 
             } catch (Throwable e) {
                 e.printStackTrace();
-                getLogger().error("Could not load QQ robots config!");
+                getLogger().error("Could not load QQ bots config!");
                 System.exit(1);
             }
         });*/
@@ -219,14 +219,14 @@ public class MiraiServer {
             "1515419818----1234567890\n" +
             "3107367848----987654321\n";
 
-    private Robot getAvailableRobot() throws ExecutionException, InterruptedException {
+    private Bot getAvailableBot() throws ExecutionException, InterruptedException {
         for (String it : qqList.split("\n")) {
             var strings = it.split("----");
-            var robot = new Robot(new RobotAccount(Long.parseLong(strings[0]), strings[1]), List.of());
+            var bot = new Bot(new BotAccount(Long.parseLong(strings[0]), strings[1]), List.of());
 
-            if (robot.network.tryLogin$mirai_core().get() == LoginState.SUCCESS) {
-                MiraiLoggerKt.success(robot, "Login succeed");
-                return robot;
+            if (bot.network.tryLogin$mirai_core().get() == LoginState.SUCCESS) {
+                MiraiLoggerKt.success(bot, "Login succeed");
+                return bot;
             }
         }
 

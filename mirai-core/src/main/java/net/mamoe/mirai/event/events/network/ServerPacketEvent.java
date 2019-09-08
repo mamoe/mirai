@@ -1,14 +1,14 @@
 package net.mamoe.mirai.event.events.network;
 
-import net.mamoe.mirai.Robot;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.network.packet.ServerPacket;
 
 /**
  * @author Him188moe
  */
 public abstract class ServerPacketEvent extends PacketEvent {
-    public ServerPacketEvent(Robot robot, ServerPacket packet) {
-        super(robot, packet);
+    public ServerPacketEvent(Bot bot, ServerPacket packet) {
+        super(bot, packet);
     }
 
     @Override

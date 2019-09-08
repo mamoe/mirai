@@ -1,6 +1,6 @@
 package net.mamoe.mirai.event.events.network;
 
-import net.mamoe.mirai.Robot;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.Cancellable;
 import net.mamoe.mirai.network.packet.ClientPacket;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Him188moe
  */
 public final class BeforePacketSendEvent extends ClientPacketEvent implements Cancellable {
-    public BeforePacketSendEvent(@NotNull Robot robot, @NotNull ClientPacket packet) {
-        super(robot, packet);
+    public BeforePacketSendEvent(@NotNull Bot bot, @NotNull ClientPacket packet) {
+        super(bot, packet);
     }
 }

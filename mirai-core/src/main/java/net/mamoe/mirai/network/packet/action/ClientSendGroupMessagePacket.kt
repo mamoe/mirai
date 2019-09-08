@@ -12,13 +12,13 @@ import java.io.DataInputStream
 @ExperimentalUnsignedTypes
 class ClientSendGroupMessagePacket(
         private val groupId: Long,//不是 number
-        private val robotQQ: Long,
+        private val botQQ: Long,
         private val sessionKey: ByteArray,
         private val message: String
 ) : ClientPacket() {
     override fun encode() {
         this.writeRandom(2)//part of packet id
-        this.writeQQ(robotQQ)
+        this.writeQQ(botQQ)
         this.writeHex(Protocol.fixVer2)
 
         this.encryptAndWrite(sessionKey) {

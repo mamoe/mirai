@@ -12,22 +12,22 @@ import java.io.DataInputStream
 @PacketId("00 CD")
 @ExperimentalUnsignedTypes
 class ClientSendFriendMessagePacket(
-        private val robotQQ: Long,
+        private val botQQ: Long,
         private val targetQQ: Long,
         private val sessionKey: ByteArray,
         private val message: MessageChain
 ) : ClientPacket() {
     override fun encode() {
         this.writeRandom(2)//part of packet id
-        this.writeQQ(robotQQ)
+        this.writeQQ(botQQ)
         this.writeHex(Protocol.fixVer2)
 
         this.encryptAndWrite(sessionKey) {
-            it.writeQQ(robotQQ)
+            it.writeQQ(botQQ)
             it.writeQQ(targetQQ)
             it.writeHex("00 00 00 08 00 01 00 04 00 00 00 00")
             it.writeHex("37 0F")
-            it.writeQQ(robotQQ)
+            it.writeQQ(botQQ)
             it.writeQQ(targetQQ)
             it.write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
             it.writeHex("00 0B")

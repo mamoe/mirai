@@ -40,8 +40,8 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 - [X] Network - Message Receiving  
 - [X] Network - Message Sending  
 - [ ] Network - Events **(Working on)**
-- [ ] Robot - Friend/group list  
-- [ ] Robot - Actions(joining group, adding friend, etc.)
+- [ ] Bot - Friend/group list
+- [ ] Bot - Actions(joining group, adding friend, etc.)
 - [ ] Message Section **(Working on)**  
 - [ ] Contact  
 - [ ] UI

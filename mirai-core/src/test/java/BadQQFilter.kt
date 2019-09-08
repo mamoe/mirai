@@ -1,8 +1,8 @@
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import net.mamoe.mirai.Robot
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.packet.login.LoginState
-import net.mamoe.mirai.utils.RobotAccount
+import net.mamoe.mirai.utils.BotAccount
 import java.util.*
 
 /**
@@ -64,21 +64,21 @@ val qqList = "2535777366----abc123456\n" +
 
 
 fun main() {
-    val goodRobotList = Collections.synchronizedList(mutableListOf<Robot>())
+    val goodBotList = Collections.synchronizedList(mutableListOf<Bot>())
 
     qqList.split("\n").forEach {
         GlobalScope.launch {
             val strings = it.split("----")
-            val robot = Robot(RobotAccount(strings[0].toLong(), strings[1].let { password ->
+            val bot = Bot(BotAccount(strings[0].toLong(), strings[1].let { password ->
                 if (password.endsWith(".")) {
                     return@let password.substring(0, password.length - 1)
                 }
                 return@let password
             }), listOf())
 
-            robot.network.tryLogin().whenComplete { state, _ ->
+            bot.network.tryLogin().whenComplete { state, _ ->
                 if (!(state == LoginState.BLOCKED || state == LoginState.DEVICE_LOCK || state == LoginState.WRONG_PASSWORD)) {
-                    goodRobotList.add(robot)
+                    goodBotList.add(bot)
                 }
             }
         }
@@ -86,5 +86,5 @@ fun main() {
 
     Thread.sleep(9 * 3000)
 
-    println(goodRobotList.joinToString("\n") { it.account.qqNumber.toString() + "    " + it.account.password })
+    println(goodBotList.joinToString("\n") { it.account.qqNumber.toString() + "    " + it.account.password })
 }

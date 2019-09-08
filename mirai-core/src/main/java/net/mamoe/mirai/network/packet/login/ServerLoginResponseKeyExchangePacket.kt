@@ -39,7 +39,7 @@ class ServerLoginResponseKeyExchangePacket(input: DataInputStream, val flag: Fla
 
             Flag.OTHER -> {
                 //do nothing in this packet.
-                //[this.token] will be set in [RobotNetworkHandler]
+                //[this.token] will be set in [BotNetworkHandler]
                 //token
             }
         }
