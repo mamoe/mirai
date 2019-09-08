@@ -30,7 +30,6 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-
     }
 
     @Throws(IOException::class)

@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network.packet
 
-import lombok.Getter
 import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
+import net.mamoe.mirai.network.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
@@ -12,8 +12,10 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 abstract class ServerPacket(val input: DataInputStream) : Packet {
-    @Getter
     var idHex: String
+
+    var idByteArray: ByteArray//fixed 4 size
+
 
     var encoded: Boolean = false
 
@@ -23,6 +25,12 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
             annotation.value.trim()
         } catch (e: NullPointerException) {
             ""
+        }
+
+        idByteArray = if (idHex.isEmpty()) {
+            byteArrayOf(0, 0, 0, 0)
+        } else {
+            idHex.hexToBytes()
         }
     }
 
@@ -100,6 +108,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     "00 CD" -> ServerSendFriendMessageResponsePacket(stream)
                     "00 02" -> ServerSendGroupMessageResponsePacket(stream)
+
+                    "00 A7" -> ServerCanAddFriendResponsePacket(stream)
 
                     else -> throw IllegalArgumentException(idHex)
                 }

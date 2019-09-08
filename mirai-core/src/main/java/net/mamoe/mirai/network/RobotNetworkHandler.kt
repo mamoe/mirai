@@ -17,9 +17,7 @@ import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.network.RobotNetworkHandler.*
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.network.packet.action.ClientSendFriendMessagePacket
-import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
-import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.packet.action.*
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
@@ -31,6 +29,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 import javax.imageio.ImageIO
 import kotlin.reflect.KClass
 
@@ -545,16 +544,87 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
             }
         internal var gtk: Int = 0
 
-        override fun onPacketReceived(packet: ServerPacket) {
+        private val addFriendSessions = Collections.synchronizedCollection(mutableListOf<AddFriendSession>())
 
+        override fun onPacketReceived(packet: ServerPacket) {
+            when (packet) {
+                is ServerCanAddFriendResponsePacket -> {
+                    this.addFriendSessions.forEach {
+                        it.onPacketReceived(packet)
+                    }
+                }
+                else -> {
+                }
+            }
         }
 
-        fun addFriend(qqNumber: Long): Unit {
+        fun addFriend(qqNumber: Long, message: Supplier<String>) {
+            addFriend(qqNumber, lazy { message.get() })
+        }
 
+        @JvmSynthetic
+        fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableFuture<AddFriendResult> {
+            val future = CompletableFuture<AddFriendResult>()
+            val session = AddFriendSession(qqNumber, future, message)
+            addFriendSessions.add(session)
+            session.sendAddRequest();
+            return future
         }
 
         override fun close() {
 
+        }
+
+        private inner class AddFriendSession(
+                private val qq: Long,
+                private val future: CompletableFuture<AddFriendResult>,
+                private val message: Lazy<String>
+        ) : Closeable {
+            lateinit var id: ByteArray
+
+            fun onPacketReceived(packet: ServerPacket) {
+                if (!::id.isInitialized) {
+                    return
+                }
+
+                when (packet) {
+                    is ServerCanAddFriendResponsePacket -> {
+                        if (!(packet.idByteArray[2] == id[0] && packet.idByteArray[3] == id[1])) {
+                            return
+                        }
+
+                        when (packet.state) {
+                            ServerCanAddFriendResponsePacket.State.FAILED -> {
+                                future.complete(AddFriendResult.FAILED)
+                                close()
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.ALREADY_ADDED -> {
+                                future.complete(AddFriendResult.ALREADY_ADDED)
+                                close()
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.REQUIRE_VERIFICATION -> {
+                                sendPacket(ClientAddFriendPacket(robot.account.qqNumber, qq, sessionKey))
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.NOT_REQUIRE_VERIFICATION -> {
+
+                            }
+                        }
+                    }
+
+
+                }
+            }
+
+            fun sendAddRequest() {
+                sendPacket(ClientCanAddFriendPacket(robot.account.qqNumber, qq, sessionKey).also { this.id = it.packetIdLast })
+            }
+
+            override fun close() {
+                addFriendSessions.remove(this)
+            }
         }
     }
 }

@@ -26,10 +26,6 @@ class ClientAccountInfoRequestPacket(
             it.writeByte(0x00)
         }
     }
-
-    override fun getFixedId(): String {
-        return this.idHex + " ?? ??"
-    }
 }
 
 @PacketId("00 5C")
