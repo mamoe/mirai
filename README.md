@@ -23,7 +23,7 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 现在你可以使用 Mirai 内置的一些测试qq号体验 Mirai.
 1. Clone
 2. Import as Maven project
-3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
+3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)  
 简略阅读源码便可测试接收和发送消息
 
 ### TODO
