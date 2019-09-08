@@ -15,8 +15,9 @@ The project is all for <b>learning proposes</b> and still in <b>developing stage
 
 ### 代码结构
 Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).  
-与插件相关性强(或其他在二次开发中容易接触)的部分使用 Java 完成,  
-同时也会针对kotlin提供优化的方法调用. 例如对'+'操作符的重载: `String+BufferedImage+QQ.At+Face+URL+String+File` 将会被自动处理为String消息.
+与插件相关性强(或其他在二次开发中容易接触)的部分尽量使用 Java 完成,
+若使用 Kotlin, 我们会通过 Java interface 实现或 javadoc 帮助未接触过 Kotlin 的开发者.
+即使你完全不了解 Kotlin, 你也可以正常开发.
 
 ### 抢先体验
 现在你可以使用 Mirai 内置的一些测试qq号体验 Mirai.
