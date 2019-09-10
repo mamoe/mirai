@@ -10,6 +10,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
+/**
+ * @author NaturalHG
+ */
 public class MiraiSettingListSection extends Vector<Object> implements MiraiSettingSection {
     private Lock lock = new ReentrantLock();
 

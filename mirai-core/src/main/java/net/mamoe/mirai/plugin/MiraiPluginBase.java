@@ -9,6 +9,8 @@ import net.mamoe.mirai.Bot;
  *
  * @see net.mamoe.mirai.event.MiraiEventManager
  * @see net.mamoe.mirai.event.MiraiEventManagerKt
+ * @author Him188moe
+ * @author NaturalHG
  */
 public abstract class MiraiPluginBase {
 }

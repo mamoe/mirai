@@ -6,6 +6,9 @@ import java.util.*
 
 /**
  * used to replace old logger
+ *
+ * @author Him188moe
+ * @author NaturalHG
  */
 object MiraiLogger {
     infix fun log(o: Any?) = info(o)

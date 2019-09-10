@@ -1,7 +1,10 @@
 package net.mamoe.mirai.utils;
 
 /**
+ * QQ 在线状态
+ *
  * @author Him188moe
+ * @see net.mamoe.mirai.network.packet.login.ClientChangeOnlineStatusPacket
  */
 public enum ClientLoginStatus {
     /**

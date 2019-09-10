@@ -1,6 +1,9 @@
 package net.mamoe.mirai.utils;
 import java.awt.image.BufferedImage;
 
+/**
+ * @author NaturalHG
+ */
 public final class CharImageUtil {
 
     public static String createCharImg(BufferedImage image) {

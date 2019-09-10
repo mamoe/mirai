@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * @author NaturalHG
+ */
 public final class MiraiTaskManager {
 
     private static MiraiTaskManager instance = new MiraiTaskManager();

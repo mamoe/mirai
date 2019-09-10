@@ -1,5 +1,8 @@
 package net.mamoe.mirai.utils;
 
+/**
+ * @author NaturalHG
+ */
 public enum LoggerTextFormat {
     RESET("\33[0m"),
 

@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Thread-safe Mirai Config <br>
  * Only supports <code>INI</code> format <br>
  * Supports {@link Map} and {@link List}
+ *
+ * @author NaturalHG
  */
 public class MiraiSettings {
 

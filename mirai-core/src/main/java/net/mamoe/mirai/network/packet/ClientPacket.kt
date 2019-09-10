@@ -112,10 +112,6 @@ fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, key: ByteArray) {
     this.write(TEA.encrypt(byteArray, key))
 }
 
-fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, cryptor: TEA) {
-    this.write(cryptor.encrypt(byteArray))
-}
-
 fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutputStream) -> Unit) {
     this.write(TEA.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }, key))
 }
@@ -123,10 +119,6 @@ fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutp
 @ExperimentalUnsignedTypes
 fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: (ByteArrayDataOutputStream) -> Unit) {
     this.encryptAndWrite(keyHex.hexToBytes(), encoder)
-}
-
-fun DataOutputStream.encryptAndWrite(cryptor: TEA, encoder: (ByteArrayDataOutputStream) -> Unit) {
-    this.write(cryptor.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }))
 }
 
 @ExperimentalUnsignedTypes

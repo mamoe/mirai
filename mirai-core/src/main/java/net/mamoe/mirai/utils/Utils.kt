@@ -8,6 +8,11 @@ import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
 
+/**
+ * @author Him188moe
+ * @author NaturalHG
+ */
+
 @JvmSynthetic
 fun ByteArray.toHexString(): String = toHexString(" ")
 
@@ -64,6 +69,7 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
     open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray()
 }
 
+@JvmSynthetic
 fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().let { t(it); return it.toByteArray() }
 
 @ExperimentalUnsignedTypes

@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
+/**
+ * @author NaturalHG
+ */
 public class MiraiSettingMapSection extends ConcurrentHashMap<String, Object> implements MiraiSettingSection {
 
     @SuppressWarnings("unchecked")

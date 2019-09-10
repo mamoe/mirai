@@ -1,5 +1,8 @@
 package net.mamoe.mirai.task;
 
+/**
+ * @author NaturalHG
+ */
 @FunctionalInterface
 public interface MiraiTaskExceptionHandler {
     void onHandle(Throwable e);

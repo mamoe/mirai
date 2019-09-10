@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
+/**
+ * @author NaturalHG
+ */
 public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String, T> {
 
     public MiraiConfigSection(){
@@ -148,7 +151,7 @@ public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String
         }
         if(content instanceof Map){
             return new MiraiConfigSection<>(
-                (LinkedHashMap<String, D>) content
+                    (LinkedHashMap<String, D>) content
             );
         }
         return null;

@@ -11,8 +11,10 @@ import java.util.function.Function;
 /**
  * 实现了可以直接被继承的 SynchronizedLinkedListMap<K,V>
  *
- * @param <K>
- * @param <V>
+ * @param <K> the type of key
+ * @param <V> the type of value
+ *
+ * @author NaturalHG
  */
 public class MiraiSynchronizedLinkedListMap<K,V> extends AbstractMap<K,V> {
 

@@ -1,5 +1,8 @@
 package net.mamoe.mirai.utils;
 
+/**
+ * @author NaturalHG
+ */
 public class EventException extends RuntimeException {
     private final Throwable cause;
 

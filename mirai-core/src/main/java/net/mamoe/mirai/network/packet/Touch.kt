@@ -67,7 +67,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
  */
 @ExperimentalUnsignedTypes
 @PacketId("08 25 31 01")
-class ClientTouchPacket(val qq: Long, val serverIp: String) : ClientPacket() {
+class ClientTouchPacket(private val qq: Long, private val serverIp: String) : ClientPacket() {
     @ExperimentalUnsignedTypes
     @Throws(IOException::class)
     override fun encode() {
@@ -75,19 +75,15 @@ class ClientTouchPacket(val qq: Long, val serverIp: String) : ClientPacket() {
         this.writeHex(Protocol.fixVer)
         this.writeHex(Protocol.key0825)
 
-        this.write(TEA.CRYPTOR_0825KEY.encrypt(object : ByteArrayDataOutputStream() {
-            @Throws(IOException::class)
-            override fun toByteArray(): ByteArray {
-                this.writeHex(Protocol.constantData1)
-                this.writeHex(Protocol.constantData2)
-                this.writeQQ(qq)
-                this.writeHex("00 00 00 00 03 09 00 08 00 01")
-                this.writeIP(serverIp);
-                this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
-                this.writeHex(Protocol.publicKey)
-                return super.toByteArray()
-            }
-        }.toByteArray()))
+        this.encryptAndWrite(Protocol.key0825) {
+            it.writeHex(Protocol.constantData1)
+            it.writeHex(Protocol.constantData2)
+            it.writeQQ(qq)
+            it.writeHex("00 00 00 00 03 09 00 08 00 01")
+            it.writeIP(serverIp);
+            it.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
+            it.writeHex(Protocol.publicKey)
+        }
     }
 }
 

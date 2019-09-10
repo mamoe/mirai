@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * @author Him188moe
+ */
 public abstract class BotEvent extends MiraiEvent {
     private final Bot bot;
 

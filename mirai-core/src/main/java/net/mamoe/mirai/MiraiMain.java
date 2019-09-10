@@ -1,12 +1,8 @@
 package net.mamoe.mirai;
 
 
-import net.mamoe.mirai.event.MiraiEventHook;
-import net.mamoe.mirai.event.MiraiEventManager;
-import net.mamoe.mirai.event.events.qq.FriendMessageEvent;
-
 /**
- * @author Him188moe
+ * @author NaturalHG
  */
 public final class MiraiMain {
     private static MiraiServer server;

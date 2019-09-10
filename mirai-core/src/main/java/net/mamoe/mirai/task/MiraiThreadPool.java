@@ -3,6 +3,9 @@ package net.mamoe.mirai.task;
 import java.io.Closeable;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+/**
+ * @author NaturalHG
+ */
 public final class MiraiThreadPool extends ScheduledThreadPoolExecutor implements Closeable {
     private static MiraiThreadPool instance = new MiraiThreadPool();
 

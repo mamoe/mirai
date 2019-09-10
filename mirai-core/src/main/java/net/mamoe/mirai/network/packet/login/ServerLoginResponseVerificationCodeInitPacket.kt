@@ -1,10 +1,9 @@
 package net.mamoe.mirai.network.packet.login
 
+import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.ServerPacket
-import net.mamoe.mirai.network.packet.cutTail
 import net.mamoe.mirai.network.packet.dataInputStream
 import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.TestedSuccessfully
 import net.mamoe.mirai.utils.hexToUBytes
 import java.io.DataInputStream
@@ -40,9 +39,10 @@ class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, priv
 
         }
 
+        @ExperimentalUnsignedTypes
         fun decrypt(): ServerLoginResponseVerificationCodeInitPacket {
             this.input goto 14
-            val data = TEA.CRYPTOR_SHARE_KEY.decrypt(this.input.readAllBytes().cutTail(1));
+            val data = this.decryptBy(Protocol.shareKey).goto(0).readAllBytes()
             return ServerLoginResponseVerificationCodeInitPacket(data.dataInputStream(), data.size).setId(this.idHex)
         }
     }

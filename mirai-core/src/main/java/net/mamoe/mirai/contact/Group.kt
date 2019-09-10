@@ -7,7 +7,11 @@ import net.mamoe.mirai.utils.ContactList
 import java.io.Closeable
 
 /**
- * 群
+ * 群.
+ *
+ * Group ID 与 Group Number 并不是同一个值.
+ * - Group Number([Group.number]) 是通常使用的群号码.(在 QQ 客户端中可见)
+ * - Group ID([Group.groupId]) 是与服务器通讯时使用的 id.(在 QQ 客户端中不可见)
  *
  * Java 获取 groupNumber: `group.getNumber()`
  * Java 获取所属 bot: `group.getBot()`
@@ -15,6 +19,7 @@ import java.io.Closeable
  * Java 获取 groupId: `group.getGroupId()`
  *
  * Java 调用 [groupNumberToId] : `Group.groupNumberToId(number)`
+ * @author Him188moe
  */
 class Group(bot: Bot, number: Long) : Contact(bot, number), Closeable {
     val groupId = groupNumberToId(number)

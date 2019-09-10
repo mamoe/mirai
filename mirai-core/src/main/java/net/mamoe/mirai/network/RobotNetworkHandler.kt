@@ -423,7 +423,7 @@ class BotNetworkHandler(private val bot: Bot) : Closeable {
                     //登录成功后会收到大量上次的消息, 忽略掉
                     MiraiThreadPool.getInstance().schedule({
                         messageHandler.ignoreMessage = false
-                    }, 2, TimeUnit.SECONDS)
+                    }, 3, TimeUnit.SECONDS)
 
                     this.tlv0105 = packet.tlv0105
                     sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, ClientLoginStatus.ONLINE))
@@ -485,7 +485,7 @@ class BotNetworkHandler(private val bot: Bot) : Closeable {
      * 处理消息事件, 承担消息发送任务.
      */
     inner class MessageHandler : PacketHandler() {
-        internal var ignoreMessage: Boolean = false
+        internal var ignoreMessage: Boolean = true
 
         init {
             //todo for test

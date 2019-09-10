@@ -23,6 +23,9 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * Mirai 服务器.
+ * 管理一些基础的事务
+ *
  * @author NaturalHG
  */
 public class MiraiServer {
