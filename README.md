@@ -26,7 +26,7 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 #### 图片测试
 **现在可以接受图片消息**(并解析为消息链):  
 ![JsssF](.github/J%5DCE%29IK4BU08%28EO~UVLJ%7B%5BF.png)  
-![](.README_images/68f8fec9.png)
+![](.github/68f8fec9.png)
 
 不过我们还正在努力做发送图片
 
