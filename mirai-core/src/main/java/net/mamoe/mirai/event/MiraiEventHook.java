@@ -95,6 +95,11 @@ public class MiraiEventHook<T extends MiraiEvent> implements Closeable {
         MiraiEventManager.getInstance().registerHook(this);
     }
 
+    public void mountAlways(){
+        if(this.handler == null)this.handler = a -> {};
+        MiraiEventManager.getInstance().hookAlways(this);
+    }
+
     public void mountOnce(){
         if(this.handler == null)this.handler = a -> {};
         MiraiEventManager.getInstance().hookOnce(this);
