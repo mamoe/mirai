@@ -14,7 +14,22 @@
 3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
 
 #### 事件 Hook (Kotlin)
-![event hook.png](.github/event%20hook.png)
+#####java:
+```
+MiraiEventHook.onEvent(FriendMessageEvent.class)
+       .handler(a -> {
+               if(a.getMessageString().equals("你好")) 
+                       a.getQQ().sendMessage("你好！");
+       })
+       .mountAlways();
+```
+#####kotlin:
+```
+FriendMessageEvent::class.hookAlways{
+    if(it.message() valueEquals "你好")
+          it.qq.sendMessage("你好！")
+}
+```
 ![AYWVE86P](.github/A%7DYWVE860U%28%25YQD%24R1GB1%5BP.png)
 
 #### 图片测试
