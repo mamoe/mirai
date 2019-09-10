@@ -15,7 +15,7 @@
 
 #### 事件 Hook (Kotlin)
 #####java:
-```php
+```
 MiraiEventHook.onEvent(FriendMessageEvent.class)
        .handler(a -> {
                if(a.getMessageString().equals("你好")) 
@@ -24,7 +24,7 @@ MiraiEventHook.onEvent(FriendMessageEvent.class)
        .mountAlways();
 ```
 #####kotlin:
-```php
+```
 FriendMessageEvent::class.hookAlways{
     if(it.message() valueEquals "你好")
           it.qq.sendMessage("你好！")
