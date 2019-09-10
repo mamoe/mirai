@@ -14,7 +14,7 @@
 3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
 
 ### 事件 Hook (Kotlin)
-####java:
+#### java:
 ```
 MiraiEventHook.onEvent(FriendMessageEvent.class)
        .handler(a -> {
@@ -23,7 +23,7 @@ MiraiEventHook.onEvent(FriendMessageEvent.class)
        })
        .mountAlways();
 ```
-####kotlin:
+#### kotlin:
 ```
 FriendMessageEvent::class.hookAlways{
     if(it.message() valueEquals "你好")
