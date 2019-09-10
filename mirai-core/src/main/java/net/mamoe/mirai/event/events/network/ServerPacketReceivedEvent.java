@@ -1,5 +1,6 @@
 package net.mamoe.mirai.event.events.network;
 
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.Cancellable;
 import net.mamoe.mirai.network.packet.ServerPacket;
 import net.mamoe.mirai.network.packet.ServerVerificationCodePacket;
@@ -11,7 +12,7 @@ import net.mamoe.mirai.network.packet.ServerVerificationCodePacket;
  * @author Him188moe
  */
 public final class ServerPacketReceivedEvent extends ServerPacketEvent implements Cancellable {
-    public ServerPacketReceivedEvent(ServerPacket packet) {
-        super(packet);
+    public ServerPacketReceivedEvent(Bot bot, ServerPacket packet) {
+        super(bot, packet);
     }
 }

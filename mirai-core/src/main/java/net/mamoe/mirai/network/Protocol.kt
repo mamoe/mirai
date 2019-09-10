@@ -10,10 +10,10 @@ import java.util.stream.Collectors
 object Protocol {
     val SERVER_IP: List<String> = object : ArrayList<String>() {
         init {
-            add("183.60.56.29")
+            //add("183.60.56.29")
 
             arrayOf(
-                    "sz3.tencent.com",
+                    //"sz3.tencent.com",
                     "sz4.tencent.com",
                     "sz5.tencent.com",
                     "sz6.tencent.com",
@@ -63,6 +63,11 @@ object Protocol {
      * fix_0836_1
      */
     const val key0836 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"
+
+    /**
+     * 发送/接受消息中的一个const
+     */
+    const val friendMessageConst1 = "00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
 
     private val hexToByteArrayCacheMap: MutableMap<Int, ByteArray> = mutableMapOf()
 

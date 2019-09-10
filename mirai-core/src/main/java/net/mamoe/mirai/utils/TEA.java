@@ -17,6 +17,7 @@ public final class TEA {
     private static final long UINT32_MASK = 0xffffffffL;
     private final long[] mKey;
     private final Random mRandom;
+    private final byte[] key;
     private byte[] mOutput;
     private byte[] mInBlock;
     private int mIndexPos;
@@ -26,6 +27,7 @@ public final class TEA {
     private boolean isFirstBlock;
 
     public TEA(byte[] key) {
+        this.key = key;
         mKey = new long[4];
         for (int i = 0; i < 4; i++) {
             mKey[i] = pack(key, i * 4, 4);
@@ -250,6 +252,12 @@ public final class TEA {
     }
 
     public byte[] decrypt(byte[] ciphertext) {
-        return decrypt(ciphertext, 0, ciphertext.length);
+        try {
+            return decrypt(ciphertext, 0, ciphertext.length);
+        } catch (Exception e) {
+            System.out.println("Source: " + UtilsKt.toUHexString(ciphertext, " "));
+            System.out.println("Key: " + UtilsKt.toUHexString(this.key, " "));
+            throw e;
+        }
     }
 }

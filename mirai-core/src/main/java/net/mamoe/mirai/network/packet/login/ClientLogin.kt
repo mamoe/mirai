@@ -2,7 +2,10 @@ package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ByteArrayDataOutputStream
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.TestedSuccessfully
+import net.mamoe.mirai.utils.hexToBytes
 import java.io.DataOutputStream
 
 /**
@@ -32,15 +35,14 @@ class ClientPasswordSubmissionPacket(
         this.encryptAndWrite(Protocol.shareKey.hexToBytes()) {
             it.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
             it.writePart2()
-            println(it.toByteArray().toUHexString())
         }
     }
 }
 
 @PacketId("08 36 31 04")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
-    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
+class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv0006)
 
 @PacketId("08 36 31 05")
 @ExperimentalUnsignedTypes
@@ -49,8 +51,8 @@ class ClientLoginResendPacket3105(qq: Long, password: String, loginTime: Int, lo
 
 @PacketId("08 36 31 06")
 @ExperimentalUnsignedTypes
-class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv_0006_encr: ByteArray? = null)
-    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv_0006_encr)
+class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv0006)
 
 @ExperimentalUnsignedTypes
 open class ClientLoginResendPacket internal constructor(
@@ -61,7 +63,7 @@ open class ClientLoginResendPacket internal constructor(
         val tgtgtKey: ByteArray,
         val token0825: ByteArray,
         val token00BA: ByteArray,
-        val tlv_0006_encr: ByteArray? = null
+        val tlv0006: ByteArray? = null
 ) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
@@ -72,7 +74,7 @@ open class ClientLoginResendPacket internal constructor(
 
         this.write(TEA.encrypt(object : ByteArrayDataOutputStream() {
             override fun toByteArray(): ByteArray {
-                this.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv_0006_encr)
+                this.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv0006)
 
                 this.writeHex("01 10") //tag
                 this.writeHex("00 3C")//length
@@ -92,21 +94,21 @@ open class ClientLoginResendPacket internal constructor(
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
-private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv_0006_encr: ByteArray? = null) {
+private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv0006: ByteArray? = null) {
 
     //this.writeInt(System.currentTimeMillis().toInt())
     this.writeHex("01 12")//tag
     this.writeHex("00 38")//length
     this.write(token0825)//length
     this.writeHex("03 0F")//tag
-    this.writeDeviceName(true)//todo 随机
+    this.writeDeviceName(true)
 
     this.writeHex("00 05 00 06 00 02")
     this.writeQQ(qq)
     this.writeHex("00 06")//tag
     this.writeHex("00 78")//length
-    if (tlv_0006_encr != null) {
-        this.write(tlv_0006_encr)
+    if (tlv0006 != null) {
+        this.write(tlv0006)
     } else {
         this.writeTLV0006(qq, password, loginTime, loginIP, tgtgtKey)
     }

@@ -1,7 +1,10 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ByteArrayDataOutputStream
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 import java.io.IOException
 
@@ -13,13 +16,13 @@ import java.io.IOException
  *
  * @author Him188moe
  */
+@PacketId("08 25 31 01")
 class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
-    var serverIP: String? = null;
+    var serverIP: String? = null
 
     var loginTime: Int = 0
     lateinit var loginIP: String
     lateinit var token0825: ByteArray
-    lateinit var tgtgtKey: ByteArray
 
     enum class Type {
         TYPE_08_25_31_01,
@@ -40,7 +43,6 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
 
                 loginTime = input.readInt()
                 loginIP = input.readIP()
-                tgtgtKey = getRandomByteArray(16)
             }
 
             else -> {
@@ -54,7 +56,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
         fun decrypt(): ServerTouchResponsePacket = ServerTouchResponsePacket(decryptBy(when (type) {
             Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()
             Type.TYPE_08_25_31_01 -> Protocol.key0825.hexToBytes()
-        }))
+        })).setId(this.idHex)
     }
 }
 
@@ -83,7 +85,6 @@ class ClientTouchPacket(val qq: Long, val serverIp: String) : ClientPacket() {
                 this.writeIP(serverIp);
                 this.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
                 this.writeHex(Protocol.publicKey)
-                println(super.toUByteArray().toUHexString())
                 return super.toByteArray()
             }
         }.toByteArray()))

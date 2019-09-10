@@ -17,8 +17,10 @@ class ClientChangeOnlineStatusPacket(
         private val loginStatus: ClientLoginStatus
 
 ) : ClientPacket() {
+
     override fun encode() {
         this.writeRandom(2)//part of packet id
+
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer2)
         this.encryptAndWrite(sessionKey) {

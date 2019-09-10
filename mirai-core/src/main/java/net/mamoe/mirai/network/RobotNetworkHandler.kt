@@ -1,23 +1,23 @@
 @file:JvmMultifileClass
-@file:JvmName("RobotNetworkHandler")
+@file:JvmName("BotNetworkHandler")
 
 package net.mamoe.mirai.network
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.MiraiServer
-import net.mamoe.mirai.Robot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
 import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
 import net.mamoe.mirai.event.events.network.PacketSentEvent
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
-import net.mamoe.mirai.event.events.robot.RobotLoginSucceedEvent
 import net.mamoe.mirai.event.hookWhile
 import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.network.RobotNetworkHandler.*
+import net.mamoe.mirai.message.defaults.MessageChain
+import net.mamoe.mirai.network.BotNetworkHandler.*
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
-import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.packet.action.*
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
@@ -29,15 +29,16 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 import javax.imageio.ImageIO
 import kotlin.reflect.KClass
 
 
 /**
  * Mirai 的网络处理器, 它处理所有数据包([Packet])的发送和接收.
- * [RobotNetworkHandler] 是全程异步和线程安全的.
+ * [BotNetworkHandler] 是全程异步和线程安全的.
  *
- * [RobotNetworkHandler] 由 2 个模块构成:
+ * [BotNetworkHandler] 由 2 个模块构成:
  * - [SocketHandler]: 处理数据包底层的发送([ByteArray])
  * - [PacketHandler]: 制作 [Packet] 并传递给 [SocketHandler] 继续处理; 分析来自服务器的数据包并处理
  *
@@ -47,12 +48,12 @@ import kotlin.reflect.KClass
  * - [MessageHandler] 处理消息相关(群消息/好友消息)([ServerEventPacket])
  * - [ActionHandler] 处理动作相关(踢人/加入群/好友列表等)
  *
- * A RobotNetworkHandler is used to connect with Tencent servers.
+ * A BotNetworkHandler is used to connect with Tencent servers.
  *
  * @author Him188moe
  */
 @Suppress("EXPERIMENTAL_API_USAGE")//to simplify code
-class RobotNetworkHandler(private val robot: Robot) : Closeable {
+class BotNetworkHandler(private val bot: Bot) : Closeable {
     private val socketHandler: SocketHandler = SocketHandler()
 
     val debugHandler = DebugHandler()
@@ -85,27 +86,26 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
     //private | internal
 
-    internal fun tryLogin(): CompletableFuture<LoginState> = this.tryLogin(300)//登录回复非常快, 没必要等太久.
-
-
     /**
      * 仅当 [LoginState] 非 [LoginState.UNKNOWN] 且非 [LoginState.TIMEOUT] 才会调用 [loginHook].
-     * 如果要输入验证码, 那么会以参数 [LoginState.VERIFICATION_CODE] 调用 [loginHandler], 登录完成后再以 [LoginState.SUCCEED] 调用 [loginHandler]
+     * 如果要输入验证码, 那么会以参数 [LoginState.VERIFICATION_CODE] 调用 [loginHandler], 登录完成后再以 [LoginState.SUCCESS] 调用 [loginHandler]
      *
      * @param touchingTimeoutMillis 连接每个服务器的 timeout
      */
-    internal fun tryLogin(touchingTimeoutMillis: Long): CompletableFuture<LoginState> {
+    @JvmOverloads
+    internal fun tryLogin(touchingTimeoutMillis: Long = 200): CompletableFuture<LoginState> {
         val ipQueue: LinkedList<String> = LinkedList(Protocol.SERVER_IP)
         val future = CompletableFuture<LoginState>()
 
         fun login() {
+            this.socketHandler.close()
             val ip = ipQueue.poll()
             if (ip == null) {
                 future.complete(LoginState.UNKNOWN)//所有服务器均返回 UNKNOWN
                 return
             }
 
-            this@RobotNetworkHandler.socketHandler.touch(ip, touchingTimeoutMillis).get().let { state ->
+            this@BotNetworkHandler.socketHandler.touch(ip, touchingTimeoutMillis).get().let { state ->
                 if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
                     login()
                 } else {
@@ -122,8 +122,17 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     @ExperimentalUnsignedTypes
     internal fun distributePacket(packet: ServerPacket) {
-        packet.decode()
-        if (ServerPacketReceivedEvent(packet).broadcast().isCancelled) {
+        try {
+            packet.decode()
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+            bot.debug("Packet=$packet")
+            bot.debug("Packet size=" + packet.input.goto(0).readAllBytes().size)
+            bot.debug("Packet data=" + packet.input.goto(0).readAllBytes().toUHexString())
+            return
+        }
+
+        if (ServerPacketReceivedEvent(bot, packet).broadcast().isCancelled) {
             debugHandler.onPacketReceived(packet)
             return
         }
@@ -145,6 +154,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
 
         internal var loginFuture: CompletableFuture<LoginState>? = null
 
+        @Synchronized
         private fun restartSocket() {
             socket?.close()
             socket = DatagramSocket(0)
@@ -176,14 +186,14 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          * Start network and touch the server
          */
         internal fun touch(serverAddress: String, timeoutMillis: Long): CompletableFuture<LoginState> {
-            MiraiLogger.info("Connecting server: $serverAddress")
+            bot.info("Connecting server: $serverAddress")
             this.loginFuture = CompletableFuture()
 
             socketHandler.serverIP = serverAddress
-            sendPacket(ClientTouchPacket(robot.account.qqNumber, socketHandler.serverIP))
-            waitForPacket(ServerTouchResponsePacket::class, timeoutMillis) {
+            waitForPacket(ServerPacket::class, timeoutMillis) {
                 loginFuture!!.complete(LoginState.TIMEOUT)
             }
+            sendPacket(ClientTouchPacket(bot.account.qqNumber, socketHandler.serverIP))
 
             return this.loginFuture!!
         }
@@ -191,6 +201,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         /**
          * Not async
          */
+        @Synchronized
         @ExperimentalUnsignedTypes
         internal fun sendPacket(packet: ClientPacket) {
             checkNotNull(socket) { "network closed" }
@@ -201,31 +212,32 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
             try {
                 packet.encodePacket()
 
-                if (BeforePacketSendEvent(packet).broadcast().isCancelled) {
+                if (BeforePacketSendEvent(bot, packet).broadcast().isCancelled) {
                     return
                 }
 
                 val data = packet.toByteArray()
                 socket!!.send(DatagramPacket(data, data.size))
-                MiraiLogger info "Packet sent: $packet"
+                bot cyanL "Packet sent:     $packet"
 
-                PacketSentEvent(packet).broadcast()
+                PacketSentEvent(bot, packet).broadcast()
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
         }
 
         @Suppress("UNCHECKED_CAST")
-        private fun <P : ServerPacket> waitForPacket(packetClass: KClass<P>, timeoutMillis: Long, timeout: () -> Unit) {
+        internal fun <P : ServerPacket> waitForPacket(packetClass: KClass<P>, timeoutMillis: Long, timeout: () -> Unit) {
             var got = false
             ServerPacketReceivedEvent::class.hookWhile {
-                if (packetClass.isInstance(it.packet)) {
+                if (packetClass.isInstance(it.packet) && it.bot == bot) {
                     got = true
                     true
                 } else {
                     false
                 }
             }
+
 
             MiraiThreadPool.getInstance().submit {
                 val startingTime = System.currentTimeMillis()
@@ -248,6 +260,10 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                 this.loginFuture = null
             }
         }
+
+        fun isClosed(): Boolean {
+            return this.socket?.isClosed ?: true
+        }
     }
 
 
@@ -266,9 +282,11 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     inner class DebugHandler : PacketHandler() {
         override fun onPacketReceived(packet: ServerPacket) {
-            MiraiLogger info "Packet received: $packet"
+            if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
+                bot notice "Packet received: $packet"
+            }
             if (packet is ServerEventPacket) {
-                sendPacket(ClientMessageResponsePacket(robot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
+                sendPacket(ClientMessageResponsePacket(bot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
             }
         }
     }
@@ -281,7 +299,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         private lateinit var token0825: ByteArray
         private var loginTime: Int = 0
         private lateinit var loginIP: String
-        private var tgtgtKey: ByteArray? = null
+        private var tgtgtKey: ByteArray = getRandomByteArray(16)
 
         private var tlv0105: ByteArray = lazyEncode {
             it.writeHex("01 05 00 30")
@@ -296,8 +314,8 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
          */
         private lateinit var sessionResponseDecryptionKey: ByteArray
 
-        private var verificationCodeCacheId: Int = 0
-        private var verificationCodeCache: ByteArray? = byteArrayOf()//每次包只发一部分验证码来
+        private var captchaSectionId: Int = 1
+        private var captchaCache: ByteArray? = byteArrayOf()//每次包只发一部分验证码来
 
 
         private var heartbeatFuture: ScheduledFuture<*>? = null
@@ -309,13 +327,12 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     if (packet.serverIP != null) {//redirection
                         socketHandler.serverIP = packet.serverIP!!
                         //connect(packet.serverIP!!)
-                        sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, robot.account.qqNumber))
+                        sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, bot.account.qqNumber))
                     } else {//password submission
                         this.loginIP = packet.loginIP
                         this.loginTime = packet.loginTime
                         this.token0825 = packet.token0825
-                        this.tgtgtKey = packet.tgtgtKey
-                        sendPacket(ClientPasswordSubmissionPacket(robot.account.qqNumber, robot.account.password, packet.loginTime, packet.loginIP, packet.tgtgtKey, packet.token0825))
+                        sendPacket(ClientPasswordSubmissionPacket(bot.account.qqNumber, bot.account.password, packet.loginTime, packet.loginIP, this.tgtgtKey, packet.token0825))
                     }
                 }
 
@@ -324,136 +341,117 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                     return
                 }
 
-                is ServerLoginResponseVerificationCodeInitPacket -> {
-                    //[token00BA]来源之一: 验证码
-                    this.token00BA = packet.token00BA
-                    this.verificationCodeCache = packet.verifyCodePart1
-
-                    if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
-                        this.verificationCodeCacheId = 1
-                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, robot.account.qqNumber, this.token0825, this.verificationCodeCacheId, this.token00BA))
-                    }
-                }
-
                 is ServerVerificationCodeCorrectPacket -> {
                     this.tgtgtKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
-                    sendPacket(ClientLoginResendPacket3105(robot.account.qqNumber, robot.account.password, this.loginTime, this.loginIP, this.tgtgtKey!!, this.token0825, this.token00BA))
+                    sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.tgtgtKey, this.token0825, this.token00BA))
                 }
 
+                is ServerLoginResponseVerificationCodeInitPacket -> {
+                    //[token00BA]来源之一: 验证码
+                    this.token00BA = packet.token00BA
+                    this.captchaCache = packet.verifyCodePart1
+
+                    if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
+                        this.captchaSectionId = 1
+                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, bot.account.qqNumber, this.token0825, this.captchaSectionId++, this.token00BA))
+                    }
+                }
 
                 is ServerVerificationCodeTransmissionPacket -> {
                     if (packet is ServerVerificationCodeWrongPacket) {
-                        this.verificationCodeCacheId = 0
-                        this.verificationCodeCache = byteArrayOf()
+                        bot error "验证码错误, 请重新输入"
+                        captchaSectionId = 1
+                        this.captchaCache = byteArrayOf()
                     }
 
-                    this.verificationCodeCacheId++
-                    this.verificationCodeCache = this.verificationCodeCache!! + packet.verificationCodePartN
-
+                    this.captchaCache = this.captchaCache!! + packet.captchaSectionN
                     this.token00BA = packet.token00BA
 
                     if (packet.transmissionCompleted) {
-                        (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.verificationCodeCache!!)
-                        println(CharImageUtil.createCharImg(ImageIO.read(this.verificationCodeCache!!.inputStream())))
-                        println("需要验证码登录")
-                        println("若看不清请查根目录下 VerificationCode.png")
-                        println("若要更换验证码, 请直接回车")
+                        bot notice (CharImageUtil.createCharImg(ImageIO.read(this.captchaCache!!.inputStream())))
+                        bot notice ("需要验证码登录, 验证码为 4 字母")
+                        try {
+                            (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.captchaCache!!)
+                            bot notice ("若看不清字符图片, 请查看 Mirai 根目录下 VerificationCode.png")
+                        } catch (e: Exception) {
+                            bot notice "无法写出验证码文件, 请尝试查看以上字符图片"
+                        }
+                        bot notice ("若要更换验证码, 请直接回车")
                         val code = Scanner(System.`in`).nextLine()
-                        if (code.isEmpty()) {
-                            sendPacket(ClientVerificationCodeRefreshPacket(robot.account.qqNumber, token0825, packet.verificationSessionId + 1))
+                        if (code.isEmpty() || code.length != 4) {
+                            this.captchaCache = byteArrayOf()
+                            this.captchaSectionId = 1
+                            sendPacket(ClientVerificationCodeRefreshPacket(packet.packetIdLast + 1, bot.account.qqNumber, token0825))
                         } else {
-                            sendPacket(ClientVerificationCodeSubmitPacket(robot.account.qqNumber, token0825, packet.verificationSessionId + 1, code, packet.verificationToken))
+                            sendPacket(ClientVerificationCodeSubmitPacket(packet.packetIdLast + 1, bot.account.qqNumber, token0825, code, packet.verificationToken))
                         }
                     } else {
-                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.verificationSessionId + 1, robot.account.qqNumber, this.token0825, this.verificationCodeCacheId, this.token00BA))
+                        sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.packetIdLast + 1, bot.account.qqNumber, token0825, captchaSectionId++, token00BA))
                     }
                 }
 
                 is ServerLoginResponseSuccessPacket -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-                    sendPacket(ClientSessionRequestPacket(robot.account.qqNumber, socketHandler.serverIP, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
+                    sendPacket(ClientSessionRequestPacket(bot.account.qqNumber, socketHandler.serverIP, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的
-                is ServerLoginResponseResendPacket -> {
+                is ServerLoginResponseKeyExchangePacket -> {
                     //if (packet.tokenUnknown != null) {
                     //this.token00BA = packet.token00BA!!
                     //println("token00BA changed!!! to " + token00BA.toUByteArray())
                     //}
-                    if (packet.flag == ServerLoginResponseResendPacket.Flag.`08 36 31 03`) {
+                    if (packet.flag == ServerLoginResponseKeyExchangePacket.Flag.`08 36 31 03`) {
                         this.tgtgtKey = packet.tgtgtKey
-                        sendPacket(ClientLoginResendPacket3104(
-                                robot.account.qqNumber,
-                                robot.account.password,
-                                this.loginTime,
-                                this.loginIP,
-                                this.tgtgtKey!!,
-                                this.token0825,
-                                when (packet.tokenUnknown != null) {
-                                    true -> packet.tokenUnknown!!
-                                    false -> this.token00BA
-                                },
-                                packet._0836_tlv0006_encr
-                        ))
+                        sendPacket(ClientLoginResendPacket3104(bot.account.qqNumber, bot.account.password, loginTime, loginIP, tgtgtKey, token0825, packet.tokenUnknown
+                                ?: this.token00BA, packet.tlv0006))
                     } else {
-                        sendPacket(ClientLoginResendPacket3106(
-                                robot.account.qqNumber,
-                                robot.account.password,
-                                this.loginTime,
-                                this.loginIP,
-                                this.tgtgtKey!!,
-                                this.token0825,
-                                when (packet.tokenUnknown != null) {
-                                    true -> packet.tokenUnknown!!
-                                    false -> this.token00BA
-                                },
-                                packet._0836_tlv0006_encr
-                        ))
+                        sendPacket(ClientLoginResendPacket3106(bot.account.qqNumber, bot.account.password, loginTime, loginIP, tgtgtKey, token0825, packet.tokenUnknown
+                                ?: token00BA, packet.tlv0006))
                     }
                 }
 
                 is ServerSessionKeyResponsePacket -> {
                     sessionKey = packet.sessionKey
                     heartbeatFuture = MiraiThreadPool.getInstance().scheduleWithFixedDelay({
-                        sendPacket(ClientHeartbeatPacket(robot.account.qqNumber, sessionKey))
+                        sendPacket(ClientHeartbeatPacket(bot.account.qqNumber, sessionKey))
                     }, 90000, 90000, TimeUnit.MILLISECONDS)
 
-                    RobotLoginSucceedEvent(robot).broadcast()
+                    BotLoginSucceedEvent(bot).broadcast()
 
                     //登录成功后会收到大量上次的消息, 忽略掉
                     MiraiThreadPool.getInstance().schedule({
-                        (packetHandlers[MessageHandler::class] as MessageHandler).ignoreMessage = false
+                        messageHandler.ignoreMessage = false
                     }, 2, TimeUnit.SECONDS)
 
                     this.tlv0105 = packet.tlv0105
-                    sendPacket(ClientChangeOnlineStatusPacket(robot.account.qqNumber, sessionKey, ClientLoginStatus.ONLINE))
+                    sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, ClientLoginStatus.ONLINE))
                 }
 
                 is ServerLoginSuccessPacket -> {
-                    socketHandler.loginFuture!!.complete(LoginState.SUCCEED)
-                    sendPacket(ClientSKeyRequestPacket(robot.account.qqNumber, sessionKey))
+                    socketHandler.loginFuture!!.complete(LoginState.SUCCESS)
+                    sendPacket(ClientSKeyRequestPacket(bot.account.qqNumber, sessionKey))
                 }
 
                 is ServerSKeyResponsePacket -> {
-                    val actionHandler = packetHandlers[ActionHandler::class] as ActionHandler
                     actionHandler.sKey = packet.sKey
-                    actionHandler.cookies = "uin=o" + robot.account.qqNumber + ";skey=" + actionHandler.sKey + ";"
+                    actionHandler.cookies = "uin=o" + bot.account.qqNumber + ";skey=" + actionHandler.sKey + ";"
 
                     sKeyRefresherFuture = MiraiThreadPool.getInstance().scheduleWithFixedDelay({
-                        sendPacket(ClientSKeyRefreshmentRequestPacket(robot.account.qqNumber, sessionKey))
+                        sendPacket(ClientSKeyRefreshmentRequestPacket(bot.account.qqNumber, sessionKey))
                     }, 1800000, 1800000, TimeUnit.MILLISECONDS)
 
                     actionHandler.gtk = getGTK(actionHandler.sKey)
-                    sendPacket(ClientAccountInfoRequestPacket(robot.account.qqNumber, sessionKey))
+                    sendPacket(ClientAccountInfoRequestPacket(bot.account.qqNumber, sessionKey))
                 }
 
                 is ServerEventPacket.Raw -> distributePacket(packet.distribute())
 
                 is ServerVerificationCodePacket.Encrypted -> distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> distributePacket(packet.decrypt())
-                is ServerLoginResponseResendPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey!!))
-                is ServerLoginResponseSuccessPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey!!))
+                is ServerLoginResponseKeyExchangePacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey))
+                is ServerLoginResponseSuccessPacket.Encrypted -> distributePacket(packet.decrypt(this.tgtgtKey))
                 is ServerSessionKeyResponsePacket.Encrypted -> distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
                 is ServerTouchResponsePacket.Encrypted -> distributePacket(packet.decrypt())
                 is ServerSKeyResponsePacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
@@ -473,8 +471,7 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
         }
 
         override fun close() {
-            this.verificationCodeCache = null
-            this.tgtgtKey = null
+            this.captchaCache = null
 
             this.heartbeatFuture?.cancel(true)
             this.sKeyRefresherFuture?.cancel(true)
@@ -490,6 +487,22 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
     inner class MessageHandler : PacketHandler() {
         internal var ignoreMessage: Boolean = false
 
+        init {
+            //todo for test
+            FriendMessageEvent::class.hookWhile {
+                if (socketHandler.isClosed()) {
+                    return@hookWhile false
+                }
+                if (it.message() valueEquals "你好") {
+                    it.qq.sendMessage("你好!")
+                } else if (it.message().toString().startsWith("复读")) {
+                    it.qq.sendMessage(it.message())
+                }
+
+                return@hookWhile true
+            }
+        }
+
         override fun onPacketReceived(packet: ServerPacket) {
             when (packet) {
                 is ServerGroupUploadFileEventPacket -> {
@@ -501,15 +514,18 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
                         return
                     }
 
-                    FriendMessageEvent(robot, robot.contacts.getQQ(packet.qq), packet.message)
+                    FriendMessageEvent(bot, bot.contacts.getQQ(packet.qq), packet.message).broadcast()
                 }
 
                 is ServerGroupMessageEventPacket -> {
                     //todo message chain
-                    //GroupMessageEvent(this.robot, robot.contacts.getGroupByNumber(packet.groupNumber), robot.contacts.getQQ(packet.qq), packet.message)
+                    //GroupMessageEvent(this.bot, bot.contacts.getGroupByNumber(packet.groupNumber), bot.contacts.getQQ(packet.qq), packet.message)
                 }
 
-                is UnknownServerEventPacket,
+                is UnknownServerEventPacket -> {
+                    //todo
+                }
+
                 is ServerSendFriendMessageResponsePacket,
                 is ServerSendGroupMessageResponsePacket -> {
                     //ignored
@@ -520,14 +536,13 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
             }
         }
 
-        fun sendFriendMessage(qq: QQ, message: Message) {
-            TODO()
-            //sendPacket(ClientSendFriendMessagePacket(robot.account.qqNumber, qq.number, sessionKey, message))
+        fun sendFriendMessage(qq: QQ, message: MessageChain) {
+            sendPacket(ClientSendFriendMessagePacket(bot.account.qqNumber, qq.number, sessionKey, message))
         }
 
         fun sendGroupMessage(group: Group, message: Message): Unit {
             TODO()
-            //sendPacket(ClientSendGroupMessagePacket(group.groupId, robot.account.qqNumber, sessionKey, message))
+            //sendPacket(ClientSendGroupMessagePacket(group.groupId, bot.account.qqNumber, sessionKey, message))
         }
     }
 
@@ -537,15 +552,94 @@ class RobotNetworkHandler(private val robot: Robot) : Closeable {
      */
     inner class ActionHandler : PacketHandler() {
         internal lateinit var cookies: String
-        internal lateinit var sKey: String
+        internal var sKey: String = ""
+            set(value) {
+                field = value
+                gtk = getGTK(value)
+            }
         internal var gtk: Int = 0
 
-        override fun onPacketReceived(packet: ServerPacket) {
+        private val addFriendSessions = Collections.synchronizedCollection(mutableListOf<AddFriendSession>())
 
+        override fun onPacketReceived(packet: ServerPacket) {
+            when (packet) {
+                is ServerCanAddFriendResponsePacket -> {
+                    this.addFriendSessions.forEach {
+                        it.onPacketReceived(packet)
+                    }
+                }
+                else -> {
+                }
+            }
+        }
+
+        fun addFriend(qqNumber: Long, message: Supplier<String>) {
+            addFriend(qqNumber, lazy { message.get() })
+        }
+
+        @JvmSynthetic
+        fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableFuture<AddFriendResult> {
+            val future = CompletableFuture<AddFriendResult>()
+            val session = AddFriendSession(qqNumber, future, message)
+            addFriendSessions.add(session)
+            session.sendAddRequest();
+            return future
         }
 
         override fun close() {
 
+        }
+
+        private inner class AddFriendSession(
+                private val qq: Long,
+                private val future: CompletableFuture<AddFriendResult>,
+                private val message: Lazy<String>
+        ) : Closeable {
+            lateinit var id: ByteArray
+
+            fun onPacketReceived(packet: ServerPacket) {
+                if (!::id.isInitialized) {
+                    return
+                }
+
+                when (packet) {
+                    is ServerCanAddFriendResponsePacket -> {
+                        if (!(packet.idByteArray[2] == id[0] && packet.idByteArray[3] == id[1])) {
+                            return
+                        }
+
+                        when (packet.state) {
+                            ServerCanAddFriendResponsePacket.State.FAILED -> {
+                                future.complete(AddFriendResult.FAILED)
+                                close()
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.ALREADY_ADDED -> {
+                                future.complete(AddFriendResult.ALREADY_ADDED)
+                                close()
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.REQUIRE_VERIFICATION -> {
+                                sendPacket(ClientAddFriendPacket(bot.account.qqNumber, qq, sessionKey))
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.NOT_REQUIRE_VERIFICATION -> {
+
+                            }
+                        }
+                    }
+
+
+                }
+            }
+
+            fun sendAddRequest() {
+                sendPacket(ClientCanAddFriendPacket(bot.account.qqNumber, qq, sessionKey).also { this.id = it.packetIdLast })
+            }
+
+            override fun close() {
+                addFriendSessions.remove(this)
+            }
         }
     }
 }

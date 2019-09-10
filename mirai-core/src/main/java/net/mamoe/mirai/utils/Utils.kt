@@ -45,9 +45,6 @@ fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 @ExperimentalUnsignedTypes
 fun Byte.toUHexString(): String = this.toUByte().toString(16)
 
-/**
- * firstly [Protocol.hexToUBytes], secondly [UByteArray.toByteArray]
- */
 @ExperimentalUnsignedTypes
 fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 
@@ -55,13 +52,11 @@ fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 
 @ExperimentalUnsignedTypes
-fun String.hexToShort(): Short = hexToBytes().let { ((it[1].toInt() shl 8) + it[0]).toShort() }
+fun String.hexToInt(): Int = hexToBytes().toUInt().toInt()
 
 @ExperimentalUnsignedTypes
-fun String.hexToInt(): Int = hexToBytes().let { ((it[0].toInt() shl 24) + (it[1].toInt() shl 16) + (it[2].toInt() shl 8) + it[3]) }
-
-@ExperimentalUnsignedTypes
-fun String.hexToByte(): Byte = hexToBytes()[0]
+fun ByteArray.toUInt(): UInt =
+        this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
 
 open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream()) {
     open fun toByteArray(): ByteArray = (out as ByteArrayOutputStream).toByteArray()
@@ -100,8 +95,6 @@ internal fun getCrc32(key: ByteArray): Int = CRC32().let { it.update(key); it.va
  * 获取类的所有字段(类成员变量), 包括父类的和私有的. <br></br>
  * 相当于将这个类和它所有父类的 [Class.getDeclaredFields] 都合并成一个 [List] <br></br>
  * 不会排除重名的字段. <br></br>
- *
- * @param clazz class
  *
  * @return field list
  */

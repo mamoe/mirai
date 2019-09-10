@@ -1,16 +1,27 @@
 package net.mamoe.mirai.contact
 
-import net.mamoe.mirai.Robot
-import net.mamoe.mirai.message.Message
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Group.Companion.groupNumberToId
+import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.utils.ContactList
 import java.io.Closeable
 
-class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
+/**
+ * 群
+ *
+ * Java 获取 groupNumber: `group.getNumber()`
+ * Java 获取所属 bot: `group.getBot()`
+ * Java 获取群成员列表: `group.getMembers()`
+ * Java 获取 groupId: `group.getGroupId()`
+ *
+ * Java 调用 [groupNumberToId] : `Group.groupNumberToId(number)`
+ */
+class Group(bot: Bot, number: Long) : Contact(bot, number), Closeable {
     val groupId = groupNumberToId(number)
     val members = ContactList<QQ>()
 
-    override fun sendMessage(message: Message) {
-        robot.network.messageHandler.sendGroupMessage(this, message)
+    override fun sendMessage(message: MessageChain) {
+        bot.network.messageHandler.sendGroupMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {
@@ -23,7 +34,7 @@ class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
 
     companion object {
         @JvmStatic
-        fun groupNumberToId(number: Long): Long {
+        fun groupNumberToId(number: Long): Long {//求你别出错
             val left: Long = number.toString().let {
                 if (it.length < 6) {
                     return@groupNumberToId number
@@ -61,7 +72,7 @@ class Group(robot: Robot, number: Long) : Contact(robot, number), Closeable {
         }
 
         @JvmStatic
-        fun groupIdToNumber(id: Long): Long {
+        fun groupIdToNumber(id: Long): Long {//求你别出错
             var left: Long = id.toString().let {
                 if (it.length < 6) {
                     return@groupIdToNumber id

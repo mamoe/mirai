@@ -12,13 +12,13 @@ import java.io.DataInputStream
 @ExperimentalUnsignedTypes
 class ClientSendGroupMessagePacket(
         private val groupId: Long,//不是 number
-        private val robotQQ: Long,
+        private val botQQ: Long,
         private val sessionKey: ByteArray,
         private val message: String
 ) : ClientPacket() {
     override fun encode() {
         this.writeRandom(2)//part of packet id
-        this.writeQQ(robotQQ)
+        this.writeQQ(botQQ)
         this.writeHex(Protocol.fixVer2)
 
         this.encryptAndWrite(sessionKey) {
@@ -30,7 +30,7 @@ class ClientSendGroupMessagePacket(
             it.writeHex("00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")
             it.writeTime()
             it.writeRandom(4)
-            it.writeHex("00 00 00 00 09 00 86 00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91")
+            it.writeHex("Protocol.messageConst1")
             it.writeZero(2)
 
             //messages

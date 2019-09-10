@@ -1,6 +1,6 @@
 package net.mamoe.mirai.event.events.qq;
 
-import net.mamoe.mirai.Robot;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.QQ;
 import net.mamoe.mirai.message.defaults.MessageChain;
 import org.jetbrains.annotations.NotNull;
@@ -12,19 +12,14 @@ import java.util.Objects;
  */
 public final class FriendMessageEvent extends FriendEvent {
     private final MessageChain messageChain;
-    private final String messageString;
 
-    public FriendMessageEvent(@NotNull Robot robot, @NotNull QQ sender, @NotNull MessageChain messageChain) {
-        super(robot, sender);
+    public FriendMessageEvent(@NotNull Bot bot, @NotNull QQ sender, @NotNull MessageChain messageChain) {
+        super(bot, sender);
         this.messageChain = Objects.requireNonNull(messageChain);
-        this.messageString = messageChain.toString();
     }
 
-    public String getMessageString() {
-        return messageString;
-    }
-
-    public MessageChain getMessageChain() {
+    @NotNull
+    public MessageChain message() {
         return messageChain;
     }
 }

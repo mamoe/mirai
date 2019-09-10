@@ -107,7 +107,7 @@ class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val d
         fun decrypt(sessionResponseDecryptionKey: ByteArray): ServerSessionKeyResponsePacket {
             this.input goto 14
             val data = this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }
-            return ServerSessionKeyResponsePacket(TEA.decrypt(data, sessionResponseDecryptionKey).dataInputStream(), data.size)
+            return ServerSessionKeyResponsePacket(TEA.decrypt(data, sessionResponseDecryptionKey).dataInputStream(), data.size).setId(this.idHex)
         }
     }
 }

@@ -1,5 +1,6 @@
 package net.mamoe.mirai.event.events.network;
 
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.network.packet.ClientPacket;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Him188moe
  */
 public final class PacketSentEvent extends ClientPacketEvent {
-    public PacketSentEvent(@NotNull ClientPacket packet) {
-        super(packet);
+    public PacketSentEvent(@NotNull Bot bot, @NotNull ClientPacket packet) {
+        super(bot, packet);
     }
 }
