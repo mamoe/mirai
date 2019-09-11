@@ -55,10 +55,11 @@ class ServerCanAddFriendResponsePacket(input: DataInputStream) : ServerPacket(in
             return
         }
         state = when (data[data.size - 1].toUInt()) {
-            0u -> State.NOT_REQUIRE_VERIFICATION
-            1u -> State.REQUIRE_VERIFICATION
-            99u -> State.ALREADY_ADDED
-            3u, 4u -> State.FAILED
+            0x00u -> State.NOT_REQUIRE_VERIFICATION
+            0x01u -> State.REQUIRE_VERIFICATION
+            0x99u -> State.ALREADY_ADDED
+            0x03u,
+            0x04u -> State.FAILED
             else -> throw IllegalArgumentException(Arrays.toString(data))
         }
     }

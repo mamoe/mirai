@@ -54,10 +54,11 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 - [X] Network - Verification Code
 - [X] Network - Message Receiving  
 - [X] Network - Message Sending  
-- [ ] Network - Events **(Working on)**
+- [ ] Network - Events
 - [ ] Bot - Friend/group list
 - [ ] Bot - Actions(joining group, adding friend, etc.)
-- [ ] Message Section **(Working on)**  
+- [ ] Message Section **(Working on)**
+- [ ] Image uploading **(Working on)**
 - [ ] Contact  
 - [ ] UI
 

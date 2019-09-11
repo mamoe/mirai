@@ -65,7 +65,8 @@ object Protocol {
     const val key0836 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"
 
     /**
-     * 发送/接受消息中的一个const
+     * 发送/接受消息中的一个const (?)
+     * length=15
      */
     const val friendMessageConst1 = "00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
 
