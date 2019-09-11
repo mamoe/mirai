@@ -70,8 +70,9 @@ class ClientGetGroupImageIDPacket(
 
             it.writeHex("60 04")
 
-            it.writeHex("6A 05")
-            it.writeHex("32 36 36 35 36 05")
+            it.writeHex("6A")
+            it.writeHex("05")
+            it.writeHex("32 36 36 35 36 05")//6?
 
             it.writeHex("70 00")
 

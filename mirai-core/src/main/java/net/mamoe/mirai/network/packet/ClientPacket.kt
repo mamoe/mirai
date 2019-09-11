@@ -104,7 +104,7 @@ fun DataOutputStream.writeHex(hex: String) {
         if (s.isEmpty()) {
             continue
         }
-        this.writeByte(s.toUByte(16).toByte().toInt())
+        this.writeByte(s.toUByte(16).toInt())
     }
 }
 
