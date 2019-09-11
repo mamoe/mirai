@@ -2,6 +2,8 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageId
+import net.mamoe.mirai.network.packet.cutTail
+import net.mamoe.mirai.network.packet.md5
 import java.awt.image.BufferedImage
 import java.io.*
 import java.net.URL
@@ -54,4 +56,12 @@ class Image : Message {
         }
         return this.imageID == another.imageID
     }
+
+    companion object {
+        fun getImageID(filename: String): ByteArray = md5(filename).cutTail(1)
+    }
+}
+
+fun main() {
+    println(0xB0)
 }
