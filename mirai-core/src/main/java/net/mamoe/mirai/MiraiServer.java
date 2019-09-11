@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author NaturalHG
  */
-public class MiraiServer {
+public final class MiraiServer {
     private static MiraiServer instance;
 
     public static MiraiServer getInstance() {

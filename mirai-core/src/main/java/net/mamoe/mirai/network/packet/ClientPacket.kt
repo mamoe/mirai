@@ -245,3 +245,13 @@ fun DataOutputStream.writeVarByteArray(byteArray: ByteArray) {
 fun DataOutputStream.writeVarString(str: String) {
     this.writeVarByteArray(str.toByteArray())
 }
+
+fun DataOutputStream.writeVarShort(short: Int) {
+    this.writeByte(0x02)
+    this.writeShort(short)
+}
+
+fun DataOutputStream.writeVarInt(int: Int) {
+    this.writeByte(0x04)
+    this.writeInt(int)
+}

@@ -15,13 +15,13 @@ import java.io.DataOutputStream
  * TODO improve
  */
 @ExperimentalUnsignedTypes
-fun DataOutputStream.writeProtoFixedInt(int: Int) {
-    if (int == 128) {
+fun DataOutputStream.writeProtoFixedInt(int: Long) {
+    if (int == 0xFFL) {
         this.writeShort(0x80_01)//unsigned//1000000010000001
         return
     }
-    this.writeByte(int.rem(128) + 128)
-    this.writeByte(int / 128)
+    this.writeByte((int.rem(0xFF) + 0xFF).toInt())
+    this.writeByte((int / 0xFF).toInt())
 }
 
 /**
@@ -30,9 +30,9 @@ fun DataOutputStream.writeProtoFixedInt(int: Int) {
  * TODO improve
  */
 @ExperimentalUnsignedTypes
-fun DataOutputStream.writeProtoInt(int: Int) {
-    if (int < 128) {
-        this.writeByte(int and 0xFF)//10000000
+fun DataOutputStream.writeProtoInt(int: Long) {
+    if (int < 0xFF) {
+        this.writeByte((int and 0xFF).toInt())//10000000
         return
     }
     this.writeProtoFixedInt(int)
