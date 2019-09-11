@@ -4,7 +4,7 @@
 我们坚持免费与开源  
   
 项目处于快速开发阶段  
-协议来自网络上开源项目  
+部分协议来自网络上开源项目  
 一切开发旨在学习, 请勿用于非法用途
 
 ## 抢先体验
@@ -13,8 +13,8 @@
 2. Import as Maven project
 3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
 
-### 事件 Hook (Kotlin)
-#### java:
+### 事件 Hook
+#### Java:
 ```
 MiraiEventHook.onEvent(FriendMessageEvent.class)
        .handler(a -> {
@@ -23,7 +23,7 @@ MiraiEventHook.onEvent(FriendMessageEvent.class)
        })
        .mountAlways();
 ```
-#### kotlin:
+#### Kotlin:
 ```
 FriendMessageEvent::class.hookAlways{
     if(it.message() valueEquals "你好")
