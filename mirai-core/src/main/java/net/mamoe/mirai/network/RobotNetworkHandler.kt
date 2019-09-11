@@ -301,7 +301,7 @@ class BotNetworkHandler(private val bot: Bot) : Closeable {
         private lateinit var loginIP: String
         private var tgtgtKey: ByteArray = getRandomByteArray(16)
 
-        private var tlv0105: ByteArray = lazyEncode {
+        private var tlv0105: ByteArray = lazyOutput {
             it.writeHex("01 05 00 30")
             it.writeHex("00 01 01 02 00 14 01 01 00 10")
             it.writeRandom(16)

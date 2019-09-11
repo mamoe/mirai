@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.packet.action
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.utils.lazyEncode
+import net.mamoe.mirai.utils.lazyOutput
 import java.io.DataInputStream
 
 /**
@@ -29,7 +29,7 @@ class ClientSendFriendMessagePacket(
             it.writeHex("37 0F")
             it.writeQQ(botQQ)
             it.writeQQ(targetQQ)
-            it.write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
+            it.write(md5(lazyOutput { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
             it.writeHex("00 0B")
             it.writeRandom(2)
             it.writeTime()

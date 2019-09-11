@@ -1,12 +1,14 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.network.Protocol
+import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
+import javax.imageio.ImageIO
 
 /**
  * @author Him188moe
@@ -70,7 +72,7 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
 }
 
 @JvmSynthetic
-fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().let { t(it); return it.toByteArray() }
+fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().also(t).toByteArray()
 
 @ExperimentalUnsignedTypes
 fun getRandomByteArray(length: Int): ByteArray {
@@ -134,4 +136,10 @@ fun ByteArray.removeZeroTail(): ByteArray {
         --i
     }
     return this.copyOfRange(0, i + 1)
+}
+
+fun BufferedImage.toByteArray(formatName: String = "PNG"): ByteArray {
+    return lazyEncode {
+        ImageIO.write(this, formatName, it)
+    }
 }
