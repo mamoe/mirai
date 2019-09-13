@@ -19,6 +19,7 @@ class ClientSendFriendMessagePacket(
 ) : ClientPacket() {
     override fun encode() {
         this.writeRandom(2)//part of packet id
+
         this.writeQQ(botQQ)
         this.writeHex(Protocol.fixVer2)
 
@@ -39,7 +40,6 @@ class ClientSendFriendMessagePacket(
             it.writeHex("00 00 00 00 09 00 86")
             it.writeHex(Protocol.friendMessageConst1)//... 85 E9 BB 91
             it.writeZero(2)
-
 
             it.write(message.toByteArray())
 

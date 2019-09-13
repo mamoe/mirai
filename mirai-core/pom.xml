@@ -18,6 +18,19 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.pcap4j</groupId>
+            <artifactId>pcap4j-core</artifactId>
+            <version>1.8.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pcap4j</groupId>
+            <artifactId>pcap4j-packetfactory-static</artifactId>
+            <version>1.8.2</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>net.mamoe</groupId>
             <artifactId>mirai-api</artifactId>
             <version>1.0</version>

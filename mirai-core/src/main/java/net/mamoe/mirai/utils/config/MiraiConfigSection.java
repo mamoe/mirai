@@ -1,5 +1,6 @@
 package net.mamoe.mirai.utils.config;
 
+import net.mamoe.mirai.utils.MiraiSynchronizedLinkedHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
@@ -10,7 +11,7 @@ import java.util.function.Supplier;
 /**
  * @author NaturalHG
  */
-public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedListMap<String, T> {
+public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedHashMap<String, T> {
 
     public MiraiConfigSection(){
         super();

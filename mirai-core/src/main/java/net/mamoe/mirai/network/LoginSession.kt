@@ -2,7 +2,11 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.handler.DataPacketSocket
+import net.mamoe.mirai.network.handler.TemporaryPacketHandler
+import net.mamoe.mirai.network.packet.ClientPacket
+import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.utils.getGTK
+import java.util.concurrent.CompletableFuture
 
 /**
  * 登录会话. 当登录完成后, 客户端会拿到 sessionKey.
@@ -15,11 +19,80 @@ class LoginSession(
         val sessionKey: ByteArray,
         val socket: DataPacketSocket
 ) {
+
+    /**
+     * Web api 使用
+     */
     lateinit var cookies: String
+
+    /**
+     * Web api 使用
+     */
     var sKey: String = ""
         set(value) {
             field = value
             gtk = getGTK(value)
         }
+
+    /**
+     * Web api 使用
+     */
     var gtk: Int = 0
+
+
+    /**
+     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket]. 仅 Kotlin 使用
+     * 发送成功后, 该方法会等待收到 [ServerPacket] 直到超时.
+     *
+     * 实现方法:
+     * ```kotlin
+     * session.expectPacket<ServerPacketXXX> {
+     *  toSend { ClientPacketXXX(...) }
+     *  expect {//it: ServerPacketXXX
+     *
+     *  }
+     * }
+     * ```
+     *
+     * @param P 期待的包
+     * @param handlerTemporary 处理器.
+     * @return future. 可进行超时处理
+     *
+     * Kotlin DSL: 仅 Kotlin 使用.
+     */
+    @JvmSynthetic
+    inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableFuture<Unit> {
+        val future = CompletableFuture<Unit>()
+        this.bot.network.addHandler(TemporaryPacketHandler(P::class, future, this).also(handlerTemporary))
+        return future
+    }
+
+    /**
+     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket].
+     * 发送成功后, 该方法会等待收到 [ServerPacket] 直到超时.
+     * 由于包名可能过长, 可使用 `DataPacketSocket.expectPacket(PacketProcessor)` 替代.
+     *
+     * 实现方法:
+     * ```kotlin
+     * session.expectPacket<ServerPacketXXX>(ClientPacketXXX(...)) {//it: ServerPacketXXX
+     *
+     * }
+     * ```
+     *
+     * @param P 期待的包
+     * @param toSend 将要发送的包
+     * @param handler 处理期待的包
+     * @return future. 可进行超时处理
+     *
+     * Kotlin DSL: 仅 Kotlin 使用.
+     */
+    @JvmSynthetic
+    inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: (P) -> Unit): CompletableFuture<Unit> {
+        val future = CompletableFuture<Unit>()
+        this.bot.network.addHandler(TemporaryPacketHandler(P::class, future, this).also {
+            it.toSend { toSend }
+            it.expect(handler)
+        })
+        return future
+    }
 }

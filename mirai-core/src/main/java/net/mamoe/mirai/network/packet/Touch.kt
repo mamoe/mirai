@@ -17,7 +17,7 @@ import java.io.IOException
  *
  * @author Him188moe
  */
-@Suppress("EXPERIMENTAL_API_USAGE")
+@Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 @PacketId("08 25 31 01")
 class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
     var serverIP: String? = null
@@ -33,7 +33,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
 
 
     override fun decode() {
-        when (val id = input.readByte().toInt()) {
+        when (val id = input.readByte().toUByte().toInt()) {
             0xFE -> {
                 input.skip(94)
                 serverIP = input.readIP()

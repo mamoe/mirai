@@ -4,6 +4,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.message.defaults.PlainText
+import net.mamoe.mirai.message.defaults.UnsolvedImage
+import net.mamoe.mirai.network.LoginSession
+import java.util.concurrent.CompletableFuture
 
 /**
  * 联系人.
@@ -19,6 +22,13 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
      * Async
      */
     abstract fun sendMessage(message: MessageChain)
+
+    /**
+     * 上传图片
+     */
+    fun uploadImage(session: LoginSession, image: UnsolvedImage): CompletableFuture<Unit> {
+        return image.upload(session, this)
+    }
 
     fun sendMessage(message: Message) {
         if (message is MessageChain) {

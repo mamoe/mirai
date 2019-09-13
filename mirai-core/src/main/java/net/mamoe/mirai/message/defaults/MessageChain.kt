@@ -11,7 +11,7 @@ import java.util.stream.Stream
 class MessageChain : Message {
     override val type: Int = MessageId.CHAIN
 
-    internal val list = LinkedList<Message>()
+    val list: MutableList<Message> = Collections.synchronizedList(LinkedList<Message>())
 
     constructor(head: Message, tail: Message) {
         Objects.requireNonNull(head)
@@ -26,17 +26,16 @@ class MessageChain : Message {
         list.add(message)
     }
 
-    constructor()
-
-    fun toList(): List<Message> {
-        return list.toList()
+    constructor(messages: Collection<Message>) {
+        list.addAll(messages)
     }
+
+    constructor()
 
     fun size(): Int {
         return list.size
     }
 
-    @Synchronized
     fun containsType(@MagicConstant(valuesFromClass = MessageId::class) type: Int): Boolean {
         for (message in list) {
             if (message.type == type) {
@@ -47,21 +46,18 @@ class MessageChain : Message {
     }
 
     fun stream(): Stream<Message> {
-        return ArrayList(list).stream()
+        return list.stream()
     }
 
-    @Synchronized
     override fun toStringImpl(): String {
         return this.list.stream().map { it.toString() }.collect(Collectors.joining(""))
     }
 
-    @Synchronized
     override fun toObjectString(): String {
         return String.format("MessageChain(%s)", this.list.stream().map { it.toObjectString() }.collect(Collectors.joining(", ")))
     }
 
-    @Synchronized
-    override fun concat(tail: Message): Message {
+    override fun concat(tail: Message): MessageChain {
         this.list.add(tail)
         clearToStringCache()
         return this

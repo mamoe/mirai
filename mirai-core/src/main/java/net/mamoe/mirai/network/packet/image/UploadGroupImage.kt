@@ -17,17 +17,16 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 @PacketId("03 88")
-
-class ClientTryGetGroupImageIDPacket(
-        private val bot: Long,
+class ClientTryGetImageIDPacket(
+        private val botNumber: Long,
         private val sessionKey: ByteArray,
-        private val group: Long,
+        private val groupNumberOrQQNumber: Long,//todo 为什么还要有qq number呢? bot不就是了么
         private val image: BufferedImage
 ) : ClientPacket() {
     override fun encode() {
         this.writeRandom(2)
 
-        this.writeQQ(bot)
+        this.writeQQ(botNumber)
         this.writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
 
         val byteArray = image.toByteArray()
@@ -46,10 +45,10 @@ class ClientTryGetGroupImageIDPacket(
             it.writeHex("5A")
 
             it.writeHex("08")
-            it.writeUVarInt(group)
+            it.writeUVarInt(groupNumberOrQQNumber)
 
             it.writeHex("10")
-            it.writeUVarInt(bot)
+            it.writeUVarInt(botNumber)
 
             it.writeHex("18 00")
 
@@ -77,7 +76,7 @@ class ClientTryGetGroupImageIDPacket(
 
             it.writeHex("6A")
             it.writeHex("05")
-            it.writeHex("32 36 36 35 36 05")//6?
+            it.writeHex("32 36 36 35 36")
 
             it.writeHex("70 00")
 
@@ -95,7 +94,9 @@ abstract class ServerTryUploadGroupImageResponsePacket(input: DataInputStream) :
     class Encrypted(input: DataInputStream) : ServerPacket(input) {
         fun decrypt(sessionKey: ByteArray): ServerTryUploadGroupImageResponsePacket {
             val data = this.decryptAsByteArray(sessionKey)
-            if (data.size == 239) {
+            println(data.size)
+            println(data.size)
+            if (data.size == 209) {
                 return ServerTryUploadGroupImageSuccessPacket(data.dataInputStream()).setId(this.idHex)
             }
 

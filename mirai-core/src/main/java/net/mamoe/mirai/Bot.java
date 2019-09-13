@@ -3,6 +3,7 @@ package net.mamoe.mirai;
 import lombok.Getter;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.QQ;
+import net.mamoe.mirai.network.BotNetworkHandler;
 import net.mamoe.mirai.network.BotNetworkHandlerImpl;
 import net.mamoe.mirai.utils.BotAccount;
 import net.mamoe.mirai.utils.ContactList;
@@ -53,7 +54,7 @@ public final class Bot implements Closeable {
 
     public final ContactSystem contacts = new ContactSystem();
 
-    public final BotNetworkHandlerImpl network;
+    public final BotNetworkHandler network;
 
     @Override
     public String toString() {

@@ -2,15 +2,14 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.network.BotNetworkHandlerImpl.BotSocket
 import net.mamoe.mirai.network.BotNetworkHandlerImpl.Login
-import net.mamoe.mirai.network.handler.ActionPacketHandler
-import net.mamoe.mirai.network.handler.DataPacketSocket
-import net.mamoe.mirai.network.handler.MessagePacketHandler
-import net.mamoe.mirai.network.handler.PacketHandler
+import net.mamoe.mirai.network.handler.*
 import net.mamoe.mirai.network.packet.ClientPacket
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.ServerEventPacket
 import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.network.packet.login.LoginState
 import java.io.Closeable
+import java.util.concurrent.CompletableFuture
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.
@@ -51,4 +50,15 @@ interface BotNetworkHandler : Closeable {
      * java 调用方式: `botNetWorkHandler.getAction()`
      */
     var action: ActionPacketHandler
+
+    fun tryLogin(touchingTimeoutMillis: Long = 200): CompletableFuture<LoginState>
+
+    /**
+     * 添加一个临时包处理器
+     *
+     * @see [TemporaryPacketHandler]
+     */
+    fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>)
+
+    override fun close()
 }

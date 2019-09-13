@@ -4,14 +4,20 @@
 
 package net.mamoe.mirai.network.packet
 
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
+import net.mamoe.mirai.event.hookWhile
 import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
+import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 import java.io.EOFException
+import kotlin.reflect.KClass
 
 /**
  * @author Him188moe
@@ -76,7 +82,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     println(bytes.size)
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
-                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD//这四个其中一个也是被冻结
+                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD//这四个其中一个是被冻结
                         //135 -> LoginState.RETYPE_PASSWORD
                         279 -> LoginState.BLOCKED
                         263 -> LoginState.UNKNOWN_QQ_NUMBER
@@ -114,6 +120,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     "00 02" -> ServerSendGroupMessageResponsePacket(stream)
 
                     "00 A7" -> ServerCanAddFriendResponsePacket(stream)
+
+                    "03 88" -> ServerTryUploadGroupImageResponsePacket.Encrypted(stream)
 
                     else -> throw IllegalArgumentException(idHex)
                 }
@@ -223,7 +231,7 @@ fun <N : Number> DataInputStream.readNBytes(length: N): ByteArray {
 }
 
 
-fun DataInputStream.readVarNumber(): Number {
+fun DataInputStream.readLVNumber(): Number {
     return when (this.readShort().toInt()) {
         1 -> this.readByte()
         2 -> this.readShort()
@@ -286,6 +294,32 @@ fun DataInputStream.gotoWhere(matcher: ByteArray): DataInputStream {
             }
         }
     } while (true)
+}
+
+
+@Suppress("UNCHECKED_CAST")
+internal fun <P : ServerPacket> Bot.waitForPacket(packetClass: KClass<P>, timeoutMillis: Long = Long.MAX_VALUE, timeout: () -> Unit = {}) {
+    var got = false
+    ServerPacketReceivedEvent::class.hookWhile {
+        if (packetClass.isInstance(it.packet) && it.bot === this) {
+            got = true
+            true
+        } else {
+            false
+        }
+    }
+
+
+    MiraiThreadPool.getInstance().submit {
+        val startingTime = System.currentTimeMillis()
+        while (!got) {
+            if (System.currentTimeMillis() - startingTime > timeoutMillis) {
+                timeout.invoke()
+                return@submit
+            }
+            Thread.sleep(10)
+        }
+    }
 }
 
 /*

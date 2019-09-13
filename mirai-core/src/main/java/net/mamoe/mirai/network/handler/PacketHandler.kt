@@ -2,9 +2,8 @@ package net.mamoe.mirai.network.handler
 
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.utils.MiraiSynchronizedLinkedList
 import java.io.Closeable
-import java.util.*
-import kotlin.NoSuchElementException
 
 /**
  * 数据包(接受/发送)处理器
@@ -28,7 +27,7 @@ fun PacketHandler.asNode(): PacketHandlerNode<PacketHandler> {
     return PacketHandlerNode(this.javaClass, this)
 }
 
-class PacketHandlerList : LinkedList<PacketHandlerNode<*>>() {
+class PacketHandlerList : MiraiSynchronizedLinkedList<PacketHandlerNode<*>>() {
 
     fun <T : PacketHandler> get(clazz: Class<T>): T {
         this.forEach {

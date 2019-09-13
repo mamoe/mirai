@@ -212,22 +212,29 @@ public final class MiraiServer {
     }
 
 
-    String qqList = "3150499752----1234567890\n" +
-            "3119292829----987654321\n" +
-            "2399148773----12345678910\n" +
-            "3145561616----987654321\n" +
-            "2374150554----12345678910\n" +
-            "2375307394----12345678910\n" +
-            "2401645747----12345678910\n" +
-            "1515419818----1234567890\n" +
-            "3107367848----987654321\n";
+    String qqList =
+            "2573990098----qq123456789\n" +
+                    "3303923865----q123456789\n" +
+                    "3349933294----q123456789\n" +
+                    "3303708824----q123456789\n" +
+                    "3227036647----q123456789\n" +
+                    "3451394431----q123456789\n" +
+                    "3533243484----q123456789\n" +
+                    "3364512686----q123456789\n" +
+                    "3137567463----q123456789\n" +
+                    "3414786399----q123456789\n" +
+                    "3347405939----q123456789\n" +
+                    "3544089622----q123456789\n" +
+                    "3108512993----q123456789\n" +
+                    "2985563549----q123456789\n" +
+                    "3463531892----q123456789\n";
 
     private Bot getAvailableBot() throws ExecutionException, InterruptedException {
         for (String it : qqList.split("\n")) {
             var strings = it.split("----");
             var bot = new Bot(new BotAccount(Long.parseLong(strings[0]), strings[1]), List.of());
 
-            if (bot.network.tryLogin$mirai_core().get() == LoginState.SUCCESS) {
+            if (bot.network.tryLogin(200).get() == LoginState.SUCCESS) {
                 MiraiLoggerKt.success(bot, "Login succeed");
                 return bot;
             }

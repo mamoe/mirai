@@ -2,10 +2,7 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.message.defaults.At
-import net.mamoe.mirai.message.defaults.Image
-import net.mamoe.mirai.message.defaults.MessageChain
-import net.mamoe.mirai.message.defaults.PlainText
+import net.mamoe.mirai.message.defaults.*
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.*
@@ -106,41 +103,22 @@ abstract class Message {
      * @param tail tail
      * @return message connected
      */
-    open fun concat(tail: Message): Message {
+    open fun concat(tail: Message): MessageChain {
         return MessageChain(this, Objects.requireNonNull(tail))
     }
 
-    fun concat(tail: String): Message {
+    fun concat(tail: String): MessageChain {
         return concat(PlainText(tail))
     }
 
 
-    fun withImage(imageId: String): Message {
+    infix fun withImage(imageId: String): MessageChain = this + Image(imageId)
+    fun withImage(filename: String, image: BufferedImage): MessageChain = this + UnsolvedImage(filename, image)
+    infix fun withImage(imageFile: File): MessageChain = this + UnsolvedImage(imageFile)
 
-        // TODO: 2019/9/1
-        return this
-    }
+    infix fun withAt(target: QQ): MessageChain = this + target.at()
+    infix fun withAt(target: Long): MessageChain = this + At(target)
 
-    fun withImage(image: BufferedImage): Message {
-        // TODO: 2019/9/1
-        return this
-
-    }
-
-    fun withImage(image: File): Message {
-        // TODO: 2019/9/1
-        return this
-    }
-
-    fun withAt(target: QQ): Message {
-        this.concat(target.at())
-        return this
-    }
-
-    fun withAt(target: Int): Message {
-        this.concat(At(target.toLong()))
-        return this
-    }
 
     open fun toChain(): MessageChain {
         return MessageChain(this)
@@ -152,22 +130,22 @@ abstract class Message {
     /**
      * 实现使用 '+' 操作符连接 [Message] 与 [Message]
      */
-    infix operator fun plus(another: Message): Message = this.concat(another)
+    infix operator fun plus(another: Message): MessageChain = this.concat(another)
 
     /**
      * 实现使用 '+' 操作符连接 [Message] 与 [String]
      */
-    infix operator fun plus(another: String): Message = this.concat(another)
+    infix operator fun plus(another: String): MessageChain = this.concat(another)
 
     /**
      * 实现使用 '+' 操作符连接 [Message] 与 [Number]
      */
-    infix operator fun plus(another: Number): Message = this.concat(another.toString())
+    infix operator fun plus(another: Number): MessageChain = this.concat(another.toString())
 
     /**
      * 连接 [String] 与 [Message]
      */
-    fun String.concat(another: Message): Message = PlainText(this).concat(another)
+    fun String.concat(another: Message): MessageChain = PlainText(this).concat(another)
 
     override fun hashCode(): Int {
         return javaClass.hashCode()

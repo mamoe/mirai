@@ -217,7 +217,6 @@ fun DataOutputStream.writeQQ(qq: Long) {
     this.write(qq.toUInt().toByteArray())
 }
 
-
 @Throws(IOException::class)
 fun DataOutputStream.writeGroup(groupIdOrGroupNumber: Long) {
     this.write(groupIdOrGroupNumber.toUInt().toByteArray())
@@ -230,4 +229,8 @@ fun DataOutputStream.writeLVByteArray(byteArray: ByteArray) {
 
 fun DataOutputStream.writeLVString(str: String) {
     this.writeLVByteArray(str.toByteArray())
+}
+
+fun DataOutputStream.writeLVHex(hex: String) {
+    this.writeLVByteArray(hex.hexToBytes())
 }

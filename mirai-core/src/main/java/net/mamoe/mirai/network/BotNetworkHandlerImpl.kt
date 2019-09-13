@@ -6,7 +6,6 @@ import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
 import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
 import net.mamoe.mirai.event.events.network.PacketSentEvent
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
-import net.mamoe.mirai.event.hookWhile
 import net.mamoe.mirai.network.handler.*
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.login.*
@@ -21,7 +20,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
-import kotlin.reflect.KClass
 
 /**
  * [BotNetworkHandler] 的内部实现, 该类不会有帮助理解的注解, 请查看 [BotNetworkHandler] 以获取帮助
@@ -40,15 +38,20 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
     val packetHandlers: PacketHandlerList = PacketHandlerList()
 
+    internal val temporaryPacketHandlers = Collections.synchronizedList(mutableListOf<TemporaryPacketHandler<*>>())
+
+    override fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>) {
+        temporaryPacketHandler.send(action.session)
+        temporaryPacketHandlers.add(temporaryPacketHandler)
+    }
 
     //private | internal
     /**
-     * 尝试登录. 多次重复登录
+     * 尝试登录
      *
      * @param touchingTimeoutMillis 连接每个服务器的 timeout
      */
-    @JvmOverloads
-    internal fun tryLogin(touchingTimeoutMillis: Long = 200): CompletableFuture<LoginState> {
+    override fun tryLogin(touchingTimeoutMillis: Long): CompletableFuture<LoginState> {
         val ipQueue: LinkedList<String> = LinkedList(Protocol.SERVER_IP)
         val future = CompletableFuture<LoginState>()
 
@@ -101,6 +104,10 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 return
             }
 
+            temporaryPacketHandlers.removeIf {
+                it.onPacketReceived(action.session, packet)
+            }
+
             //For debug
             kotlin.run {
                 if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
@@ -108,7 +115,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 }
 
                 if (packet is ServerEventPacket) {
-                    sendPacket(ClientMessageResponsePacket(bot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
+                    sendPacket(ClientEventResponsePacket(bot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
                 }
             }
 
@@ -161,6 +168,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
             }.start()
         }
 
+
         /**
          * Start network and touch the server
          */
@@ -173,7 +181,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
             this.loginFuture = CompletableFuture()
 
             serverIP = serverAddress
-            waitForPacket(ServerPacket::class, timeoutMillis) {
+            bot.waitForPacket(ServerPacket::class, timeoutMillis) {
                 loginFuture!!.complete(LoginState.TIMEOUT)
             }
             sendPacket(ClientTouchPacket(bot.account.qqNumber, serverIP))
@@ -209,30 +217,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
             }
         }
 
-        @Suppress("UNCHECKED_CAST")
-        internal fun <P : ServerPacket> waitForPacket(packetClass: KClass<P>, timeoutMillis: Long, timeout: () -> Unit) {
-            var got = false
-            ServerPacketReceivedEvent::class.hookWhile {
-                if (packetClass.isInstance(it.packet) && it.bot === bot) {
-                    got = true
-                    true
-                } else {
-                    false
-                }
-            }
-
-
-            MiraiThreadPool.getInstance().submit {
-                val startingTime = System.currentTimeMillis()
-                while (!got) {
-                    if (System.currentTimeMillis() - startingTime > timeoutMillis) {
-                        timeout.invoke()
-                        return@submit
-                    }
-                    Thread.sleep(10)
-                }
-            }
-        }
+        override fun getOwner(): Bot = this@BotNetworkHandlerImpl.bot
 
         override fun close() {
             this.socket?.close()
