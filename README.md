@@ -1,6 +1,6 @@
 # Mirai
 
-一个以<b>TIM QQ协议</b>驱动的JAVA(+Kotlin) QQ机器人服务端核心  
+一个以<b>TIM QQ协议(非web)</b>驱动的JAVA(+Kotlin) QQ机器人服务端核心  
 我们坚持免费与开源  
   
 项目处于快速开发阶段  
