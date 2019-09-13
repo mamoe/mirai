@@ -12,9 +12,7 @@ import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageSuccessPack
 import net.mamoe.mirai.network.packet.login.ClientChangeOnlineStatusPacket
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.ClientLoginStatus
-import net.mamoe.mirai.utils.ImageNetworkUtils
 import net.mamoe.mirai.utils.getGTK
-import net.mamoe.mirai.utils.toUHexString
 import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.util.*
@@ -26,8 +24,10 @@ import java.util.function.Supplier
 /**
  * 动作: 获取好友列表, 点赞, 踢人等.
  * 处理动作事件, 承担动作任务.
+ *
+ * @author Him188moe
  */
-class ActionHandler(session: LoginSession) : PacketHandler(session) {
+class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     private val addFriendSessions = Collections.synchronizedCollection(mutableListOf<AddFriendSession>())
     private val uploadImageSessions = Collections.synchronizedCollection(mutableListOf<UploadImageSession>())
 
@@ -42,7 +42,7 @@ class ActionHandler(session: LoginSession) : PacketHandler(session) {
                 }
             }
             is ServerTryUploadGroupImageSuccessPacket -> {
-                ImageNetworkUtils.postImage(packet.uKey.toUHexString(), )
+                // ImageNetworkUtils.postImage(packet.uKey.toUHexString(), )
             }
 
             is ServerTryUploadGroupImageFailedPacket -> {
@@ -51,6 +51,7 @@ class ActionHandler(session: LoginSession) : PacketHandler(session) {
 
             is ServerTryUploadGroupImageResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
 
+            is ServerAccountInfoResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
             is ServerAccountInfoResponsePacket -> {
 
             }
@@ -67,6 +68,9 @@ class ActionHandler(session: LoginSession) : PacketHandler(session) {
                 session.gtk = getGTK(session.sKey)
             }
 
+            is ServerEventPacket.Raw.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
+            is ServerEventPacket.Raw -> session.socket.distributePacket(packet.distribute())
+
             else -> {
             }
         }
@@ -82,7 +86,7 @@ class ActionHandler(session: LoginSession) : PacketHandler(session) {
     fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableFuture<AddFriendResult> {
         val future = CompletableFuture<AddFriendResult>()
         val session = AddFriendSession(qqNumber, future, message)
-        uploadImageSessions.add(session)
+        //  uploadImageSessions.add(session)
         session.sendAddRequest();
         return future
     }
@@ -138,7 +142,7 @@ class ActionHandler(session: LoginSession) : PacketHandler(session) {
                         }
 
                         ServerCanAddFriendResponsePacket.State.REQUIRE_VERIFICATION -> {
-                            session.socket.sendPacket(ClientAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey))
+                            //           session.socket.sendPacket(ClientAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey))
                         }
 
                         ServerCanAddFriendResponsePacket.State.NOT_REQUIRE_VERIFICATION -> {
@@ -210,7 +214,7 @@ class ActionHandler(session: LoginSession) : PacketHandler(session) {
         }
 
         override fun close() {
-            uploadImageSessions.remove(this)
+            //         uploadImageSessions.remove(this)
         }
     }
 }

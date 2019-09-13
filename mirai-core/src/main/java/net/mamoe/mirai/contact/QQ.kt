@@ -19,7 +19,7 @@ import net.mamoe.mirai.message.defaults.MessageChain
  */
 class QQ(bot: Bot, number: Long) : Contact(bot, number) {
     override fun sendMessage(message: MessageChain) {
-        bot.network.messageHandler.sendFriendMessage(this, message)
+        bot.network.message.sendFriendMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {

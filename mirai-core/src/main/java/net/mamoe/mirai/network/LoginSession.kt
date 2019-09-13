@@ -5,7 +5,8 @@ import net.mamoe.mirai.network.handler.DataPacketSocket
 import net.mamoe.mirai.utils.getGTK
 
 /**
- * 一次会话. 当登录完成后, 客户端会拿到 sessionKey. 此时建立 session, 开始处理消息等事务
+ * 登录会话. 当登录完成后, 客户端会拿到 sessionKey.
+ * 此时建立 session, 然后开始处理事务.
  *
  * @author Him188moe
  */

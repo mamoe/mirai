@@ -24,8 +24,8 @@ class PacketHandlerNode<T : PacketHandler>(
         val instance: T
 )
 
-infix fun PacketHandler.to(handler: PacketHandler): PacketHandlerNode<PacketHandler> {
-    return PacketHandlerNode(handler.javaClass, handler)
+fun PacketHandler.asNode(): PacketHandlerNode<PacketHandler> {
+    return PacketHandlerNode(this.javaClass, this)
 }
 
 class PacketHandlerList : LinkedList<PacketHandlerNode<*>>() {

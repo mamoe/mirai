@@ -64,6 +64,7 @@ class ClientSessionRequestPacket(
 /**
  * @author Him188moe
  */
+@PacketId("08 28 04 34")
 class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val dataLength: Int) : ServerPacket(inputStream) {
     lateinit var sessionKey: ByteArray
     lateinit var tlv0105: ByteArray

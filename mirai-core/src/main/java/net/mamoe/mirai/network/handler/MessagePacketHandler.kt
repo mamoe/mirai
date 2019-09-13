@@ -14,8 +14,11 @@ import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacke
 
 /**
  * 处理消息事件, 承担消息发送任务.
+ *
+ * @author Him188moe
  */
-class MessageHandler(session: LoginSession) : PacketHandler(session) {
+@Suppress("EXPERIMENTAL_API_USAGE")
+class MessagePacketHandler(session: LoginSession) : PacketHandler(session) {
     internal var ignoreMessage: Boolean = true
 
     init {
@@ -67,7 +70,6 @@ class MessageHandler(session: LoginSession) : PacketHandler(session) {
         }
     }
 
-    @ExperimentalUnsignedTypes
     fun sendFriendMessage(qq: QQ, message: MessageChain) {
         session.socket.sendPacket(ClientSendFriendMessagePacket(session.bot.account.qqNumber, qq.number, session.sessionKey, message))
     }

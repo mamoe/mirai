@@ -8,13 +8,15 @@ import net.mamoe.mirai.utils.notice
 
 /**
  * Kind of [PacketHandler] that prints all packets received in the format of hex byte array.
+ *
+ * @author Him188moe
  */
-sealed class DebugHandler(session: LoginSession) : PacketHandler(session) {
+class DebugPacketHandler(session: LoginSession) : PacketHandler(session) {
 
     @ExperimentalUnsignedTypes
     override fun onPacketReceived(packet: ServerPacket) {
         if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
-            session.bot notice "Packet received: $packet"
+            session.bot.notice("Packet received: $packet")
         }
 
         if (packet is ServerEventPacket) {

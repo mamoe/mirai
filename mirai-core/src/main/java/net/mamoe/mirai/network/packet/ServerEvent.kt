@@ -119,7 +119,7 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
             0x19 -> MessageType.ANONYMOUS
 
             else -> {
-                MiraiLogger debug ("ServerGroupMessageEventPacket id=$id")
+                MiraiLogger.debug("ServerGroupMessageEventPacket id=$id")
                 MessageType.OTHER
             }
         }

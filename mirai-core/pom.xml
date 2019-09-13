@@ -18,6 +18,13 @@
 
     <dependencies>
         <dependency>
+            <groupId>net.mamoe</groupId>
+            <artifactId>mirai-api</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
         </dependency>
