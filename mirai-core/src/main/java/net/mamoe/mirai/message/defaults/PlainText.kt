@@ -2,7 +2,9 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageId
-import net.mamoe.mirai.utils.lazyOutput
+import net.mamoe.mirai.network.packet.writeLVByteArray
+import net.mamoe.mirai.network.packet.writeLVString
+import net.mamoe.mirai.utils.lazyEncode
 
 /**
  * @author Him188moe
@@ -14,12 +16,12 @@ class PlainText(private val text: String) : Message() {
         return text
     }
 
-    override fun toByteArray(): ByteArray = lazyOutput { section ->
+    override fun toByteArray(): ByteArray = lazyEncode { section ->
         section.writeByte(this.type)
 
-        section.writeVarByteArray(lazyOutput { child ->
+        section.writeLVByteArray(lazyEncode { child ->
             child.writeByte(0x01)
-            child.writeVarString(this.text)
+            child.writeLVString(this.text)
         })
     }
 

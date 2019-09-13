@@ -2,7 +2,7 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageId
-import net.mamoe.mirai.utils.lazyOutput
+import net.mamoe.mirai.utils.lazyEncode
 import org.intellij.lang.annotations.MagicConstant
 import java.util.*
 import java.util.stream.Collectors
@@ -71,7 +71,7 @@ class MessageChain : Message {
         return this
     }
 
-    override fun toByteArray(): ByteArray = lazyOutput {
+    override fun toByteArray(): ByteArray = lazyEncode {
         stream().forEach { message ->
             it.write(message.toByteArray())
         }

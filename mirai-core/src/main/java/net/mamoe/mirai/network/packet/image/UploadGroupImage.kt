@@ -4,16 +4,19 @@ import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.utils.toByteArray
 import net.mamoe.mirai.utils.writeUVarInt
 import java.awt.image.BufferedImage
+import java.io.DataInputStream
 
 /**
- * 查询群消息的 image id.
- * That is, 查询服务器上是否有这个图片, 有就返回 id, 没有就需要上传
+ * 请求上传图片. 将发送图片的 md5, size.
+ * 服务器返回以下之一:
+ * - 服务器已经存有这个图片 [ServerTryUploadGroupImageFailedPacket]
+ * - 服务器未存有, 返回一个 key 用于客户端上传 [ServerTryUploadGroupImageSuccessPacket]
  *
  * @author Him188moe
  */
 @PacketId("03 88")
 @ExperimentalUnsignedTypes
-class ClientGetGroupImageIDPacket(
+class ClientTryGetGroupImageIDPacket(
         private val bot: Long,
         private val sessionKey: ByteArray,
         private val group: Long,
@@ -82,6 +85,41 @@ class ClientGetGroupImageIDPacket(
 
             it.writeHex("00")
         }
+    }
+}
+
+abstract class ServerTryUploadGroupImageResponsePacket(input: DataInputStream) : ServerPacket(input) {
+
+    class Encrypted(input: DataInputStream) : ServerPacket(input) {
+        fun decrypt(sessionKey: ByteArray): ServerTryUploadGroupImageResponsePacket {
+            val data = this.decryptAsByteArray(sessionKey)
+            if (data.size == 239) {
+                return ServerTryUploadGroupImageSuccessPacket(data.dataInputStream()).setId(this.idHex)
+            }
+
+            return ServerTryUploadGroupImageFailedPacket(data.dataInputStream())
+        }
+    }
+}
+
+/**
+ * 服务器未存有图片, 返回一个 key 用于客户端上传
+ */
+class ServerTryUploadGroupImageSuccessPacket(input: DataInputStream) : ServerTryUploadGroupImageResponsePacket(input) {
+    lateinit var uKey: ByteArray
+
+    @ExperimentalUnsignedTypes
+    override fun decode() {
+        uKey = this.input.gotoWhere(ubyteArrayOf(0x42u, 0x80u, 0x01u)).readNBytes(128)
+    }
+}
+
+/**
+ * 服务器已经存有这个图片
+ */
+class ServerTryUploadGroupImageFailedPacket(input: DataInputStream) : ServerTryUploadGroupImageResponsePacket(input) {
+    override fun decode() {
+
     }
 }
 

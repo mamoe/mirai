@@ -113,7 +113,7 @@ fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, key: ByteArray) {
 }
 
 fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutputStream) -> Unit) {
-    this.write(TEA.encrypt(ByteArrayDataOutputStream().let { encoder(it); it.toByteArray() }, key))
+    this.write(TEA.encrypt(ByteArrayDataOutputStream().also(encoder).toByteArray(), key))
 }
 
 @ExperimentalUnsignedTypes
@@ -204,7 +204,7 @@ fun Int.toLByteArray(): ByteArray = byteArrayOf(
 )
 
 @ExperimentalUnsignedTypes
-fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUByteArray().toUHexString(separator)
+fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 internal fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 
@@ -237,21 +237,11 @@ fun DataOutputStream.writeGroup(groupIdOrGroupNumber: Long) {
     this.write(groupIdOrGroupNumber.toUInt().toByteArray())
 }
 
-fun DataOutputStream.writeVarByteArray(byteArray: ByteArray) {
+fun DataOutputStream.writeLVByteArray(byteArray: ByteArray) {
     this.writeShort(byteArray.size)
     this.write(byteArray)
 }
 
-fun DataOutputStream.writeVarString(str: String) {
-    this.writeVarByteArray(str.toByteArray())
-}
-
-fun DataOutputStream.writeVarShort(short: Int) {
-    this.writeByte(0x02)
-    this.writeShort(short)
-}
-
-fun DataOutputStream.writeVarInt(int: Int) {
-    this.writeByte(0x04)
-    this.writeInt(int)
+fun DataOutputStream.writeLVString(str: String) {
+    this.writeLVByteArray(str.toByteArray())
 }

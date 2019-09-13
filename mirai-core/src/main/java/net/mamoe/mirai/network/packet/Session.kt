@@ -4,7 +4,7 @@ import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.utils.ByteArrayDataOutputStream
 import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.getRandomByteArray
-import net.mamoe.mirai.utils.lazyOutput
+import net.mamoe.mirai.utils.lazyEncode
 import java.io.DataInputStream
 import java.net.InetAddress
 
@@ -85,7 +85,7 @@ class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val d
             527 -> {
                 input.goto(63)
                 sessionKey = input.readNBytes(16)
-                tlv0105 = lazyOutput {
+                tlv0105 = lazyEncode {
                     it.writeHex("01 05 00 88 00 01 01 02 00 40 02 01 03 3C 01 03 00 00")
                     input.goto(dataLength - 122)
                     it.write(input.readNBytes(56))

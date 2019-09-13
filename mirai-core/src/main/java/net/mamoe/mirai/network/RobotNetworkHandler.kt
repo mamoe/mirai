@@ -18,9 +18,13 @@ import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.network.BotNetworkHandler.*
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.action.*
+import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageFailedPacket
+import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageResponsePacket
+import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageSuccessPacket
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
+import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -301,7 +305,7 @@ class BotNetworkHandler(private val bot: Bot) : Closeable {
         private lateinit var loginIP: String
         private var tgtgtKey: ByteArray = getRandomByteArray(16)
 
-        private var tlv0105: ByteArray = lazyOutput {
+        private var tlv0105: ByteArray = lazyEncode {
             it.writeHex("01 05 00 30")
             it.writeHex("00 01 01 02 00 14 01 01 00 10")
             it.writeRandom(16)
@@ -560,14 +564,24 @@ class BotNetworkHandler(private val bot: Bot) : Closeable {
         internal var gtk: Int = 0
 
         private val addFriendSessions = Collections.synchronizedCollection(mutableListOf<AddFriendSession>())
+        private val uploadImageSessions = Collections.synchronizedCollection(mutableListOf<UploadImageSession>())
 
         override fun onPacketReceived(packet: ServerPacket) {
             when (packet) {
                 is ServerCanAddFriendResponsePacket -> {
-                    this.addFriendSessions.forEach {
+                    this.uploadImageSessions.forEach {
                         it.onPacketReceived(packet)
                     }
                 }
+                is ServerTryUploadGroupImageSuccessPacket -> {
+                    ImageNetworkUtils.postImage(packet.uKey.toUHexString(), )
+                }
+
+                is ServerTryUploadGroupImageFailedPacket -> {
+
+                }
+
+                is ServerTryUploadGroupImageResponsePacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
                 else -> {
                 }
             }
@@ -581,13 +595,65 @@ class BotNetworkHandler(private val bot: Bot) : Closeable {
         fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableFuture<AddFriendResult> {
             val future = CompletableFuture<AddFriendResult>()
             val session = AddFriendSession(qqNumber, future, message)
-            addFriendSessions.add(session)
+            uploadImageSessions.add(session)
             session.sendAddRequest();
             return future
         }
 
         override fun close() {
 
+        }
+
+        private inner class UploadImageSession(
+                private val group: Long,
+                private val future: CompletableFuture<AddFriendResult>,
+                private val image: BufferedImage
+        ) : Closeable {
+            lateinit var id: ByteArray
+
+            fun onPacketReceived(packet: ServerPacket) {
+                if (!::id.isInitialized) {
+                    return
+                }
+
+                when (packet) {
+                    is ServerCanAddFriendResponsePacket -> {
+                        if (!(packet.idByteArray[2] == id[0] && packet.idByteArray[3] == id[1])) {
+                            return
+                        }
+
+                        when (packet.state) {
+                            ServerCanAddFriendResponsePacket.State.FAILED -> {
+                                future.complete(AddFriendResult.FAILED)
+                                close()
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.ALREADY_ADDED -> {
+                                future.complete(AddFriendResult.ALREADY_ADDED)
+                                close()
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.REQUIRE_VERIFICATION -> {
+                                sendPacket(ClientAddFriendPacket(bot.account.qqNumber, qq, sessionKey))
+                            }
+
+                            ServerCanAddFriendResponsePacket.State.NOT_REQUIRE_VERIFICATION -> {
+
+                            }
+                        }
+                    }
+
+
+                }
+            }
+
+            override fun sendRequest() {
+
+            }
+
+            override fun close() {
+                uploadImageSessions.remove(this)
+            }
         }
 
         private inner class AddFriendSession(
@@ -638,7 +704,7 @@ class BotNetworkHandler(private val bot: Bot) : Closeable {
             }
 
             override fun close() {
-                addFriendSessions.remove(this)
+                uploadImageSessions.remove(this)
             }
         }
     }

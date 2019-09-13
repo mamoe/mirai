@@ -111,7 +111,7 @@ class ServerAddGroupResponsePacket(input: DataInputStream) : ServerAddContactRes
 /**
  * 添加好友/群的回复
  */
-open class ServerAddContactResponsePacket(input: DataInputStream) : ServerPacket(input) {
+abstract class ServerAddContactResponsePacket(input: DataInputStream) : ServerPacket(input) {
 
 
     class Raw(input: DataInputStream) : ServerPacket(input) {

@@ -163,7 +163,7 @@ class ServerVerificationCodeWrongPacket(input: DataInputStream, dataSize: Int, p
  * @author Him188moe
  */
 @PacketId("00 BA 31")
-open class ServerVerificationCodeTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerVerificationCodePacket(input) {
+abstract class ServerVerificationCodeTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerVerificationCodePacket(input) {
 
     lateinit var captchaSectionN: ByteArray
     lateinit var verificationToken: ByteArray//56bytes

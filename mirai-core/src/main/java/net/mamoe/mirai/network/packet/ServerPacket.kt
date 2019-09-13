@@ -7,6 +7,7 @@ import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacke
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
+import java.io.EOFException
 
 /**
  * @author Him188moe
@@ -169,7 +170,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
         return this.decryptBy(keyHex1.hexToBytes(), keyHex2.hexToBytes())
     }
 
-    private fun decryptAsByteArray(key: ByteArray): ByteArray {
+    fun decryptAsByteArray(key: ByteArray): ByteArray {
         input.goto(14)
         return TEA.decrypt(input.readAllBytes().cutTail(1), key)
     }
@@ -256,5 +257,48 @@ fun <N : Number> DataInputStream.readShortAt(position: N): Short {
     this.goto(position)
     return this.readShort();
 }
+
+@ExperimentalUnsignedTypes
+@JvmSynthetic
+fun DataInputStream.gotoWhere(matcher: UByteArray): DataInputStream {
+    return this.gotoWhere(matcher.toByteArray())
+}
+
+/**
+ * 去往下一个含这些连续字节的位置
+ */
+@Throws(EOFException::class)
+fun DataInputStream.gotoWhere(matcher: ByteArray): DataInputStream {
+    require(matcher.isNotEmpty())
+
+    loop@
+    do {
+        val byte = this.readByte()
+        if (byte == matcher[0]) {
+            //todo mark here
+            for (i in 1 until matcher.size) {
+                val b = this.readByte()
+                if (b != matcher[i]) {
+                    continue@loop //todo goto mark
+                }
+                return this
+            }
+        }
+    } while (true)
+}
+
+/*
+@Throws(EOFException::class)
+fun DataInputStream.gotoWhere(matcher: ByteArray) {
+    require(matcher.isNotEmpty())
+    do {
+        val byte = this.readByte()
+        if (byte == matcher[0]) {
+            for (i in 1 until matcher.size){
+
+            }
+        }
+    } while (true)
+}*/
 
 fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)

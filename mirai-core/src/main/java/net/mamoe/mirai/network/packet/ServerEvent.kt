@@ -19,7 +19,7 @@ import java.util.zip.GZIPInputStream
  *
  * @author Him188moe
  */
-open class ServerEventPacket(input: DataInputStream, val packetId: ByteArray, val eventIdentity: ByteArray) : ServerPacket(input) {
+abstract class ServerEventPacket(input: DataInputStream, val packetId: ByteArray, val eventIdentity: ByteArray) : ServerPacket(input) {
     @PacketId("00 17")
     class Raw(input: DataInputStream, private val packetId: ByteArray) : ServerPacket(input) {
         @ExperimentalUnsignedTypes
