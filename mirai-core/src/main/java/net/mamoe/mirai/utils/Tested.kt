@@ -5,4 +5,4 @@ package net.mamoe.mirai.utils
  *
  * @author Him188moe
  */
-internal annotation class TestedSuccessfully
+internal annotation class Tested

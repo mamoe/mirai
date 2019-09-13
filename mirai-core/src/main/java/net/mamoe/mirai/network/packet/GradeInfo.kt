@@ -9,7 +9,7 @@ import java.io.DataInputStream
  *
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("00 5C")
 class ClientAccountInfoRequestPacket(
         private val qq: Long,

@@ -4,7 +4,7 @@ import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.PacketId
 import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.utils.TestedSuccessfully
+import net.mamoe.mirai.utils.Tested
 import java.io.DataInputStream
 
 /**
@@ -23,7 +23,7 @@ class ServerLoginResponseKeyExchangePacket(input: DataInputStream, val flag: Fla
     var tokenUnknown: ByteArray? = null
     lateinit var tgtgtKey: ByteArray//16bytes
 
-    @TestedSuccessfully
+    @Tested
     override fun decode() {
         this.input.skip(5)
         tgtgtKey = this.input.readNBytes(16)//22
@@ -46,8 +46,8 @@ class ServerLoginResponseKeyExchangePacket(input: DataInputStream, val flag: Fla
     }
 
     class Encrypted(input: DataInputStream, private val flag: Flag) : ServerPacket(input) {
-        @ExperimentalUnsignedTypes
-        @TestedSuccessfully
+
+        @Tested
         fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseKeyExchangePacket {
             return ServerLoginResponseKeyExchangePacket(this.decryptBy(Protocol.shareKey, tgtgtKey), flag).setId(this.idHex)
         }

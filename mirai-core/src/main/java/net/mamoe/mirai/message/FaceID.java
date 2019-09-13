@@ -4,6 +4,8 @@ package net.mamoe.mirai.message;
  * @author Him188moe
  */
 public enum FaceID {
+    unknown(0xff),
+
     Face_jingya(0),
     Face_piezui(1),
     Face_se(2),

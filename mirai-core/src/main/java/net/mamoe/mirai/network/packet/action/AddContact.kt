@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.packet.action
 
 import net.mamoe.mirai.network.Protocol
@@ -13,7 +15,7 @@ import java.util.*
  * @author Him188moe
  */
 @PacketId("00 A7")
-@ExperimentalUnsignedTypes
+
 class ClientCanAddFriendPacket(
         val bot: Long,
         val qq: Long,
@@ -47,7 +49,7 @@ class ServerCanAddFriendResponsePacket(input: DataInputStream) : ServerPacket(in
         FAILED,
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         val data = input.goto(0).readAllBytes()
         if (data.size == 99) {
@@ -78,7 +80,7 @@ class ServerCanAddFriendResponsePacket(input: DataInputStream) : ServerPacket(in
  * 请求添加好友
  */
 @PacketId("00 AE")
-@ExperimentalUnsignedTypes
+
 class ClientAddFriendPacket(
         val bot: Long,
         val qq: Long,
@@ -111,7 +113,7 @@ class ServerAddGroupResponsePacket(input: DataInputStream) : ServerAddContactRes
 /**
  * 添加好友/群的回复
  */
-open class ServerAddContactResponsePacket(input: DataInputStream) : ServerPacket(input) {
+abstract class ServerAddContactResponsePacket(input: DataInputStream) : ServerPacket(input) {
 
 
     class Raw(input: DataInputStream) : ServerPacket(input) {

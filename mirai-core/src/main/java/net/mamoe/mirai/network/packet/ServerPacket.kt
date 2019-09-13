@@ -1,12 +1,23 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
+//to simplify code
+
 package net.mamoe.mirai.network.packet
 
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
+import net.mamoe.mirai.event.hookWhile
 import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageResponsePacket
 import net.mamoe.mirai.network.packet.login.*
+import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
+import java.io.EOFException
+import kotlin.reflect.KClass
 
 /**
  * @author Him188moe
@@ -45,7 +56,6 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
     companion object {
 
-        @ExperimentalUnsignedTypes
         fun ofByteArray(bytes: ByteArray): ServerPacket {
             val stream = bytes.dataInputStream()
 
@@ -72,7 +82,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     println(bytes.size)
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
-                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD//这四个其中一个也是被冻结
+                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD//这四个其中一个是被冻结
                         //135 -> LoginState.RETYPE_PASSWORD
                         279 -> LoginState.BLOCKED
                         263 -> LoginState.UNKNOWN_QQ_NUMBER
@@ -111,6 +121,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     "00 A7" -> ServerCanAddFriendResponsePacket(stream)
 
+                    "03 88" -> ServerTryUploadGroupImageResponsePacket.Encrypted(stream)
+
                     else -> throw IllegalArgumentException(idHex)
                 }
             }.apply { this.idHex = idHex }
@@ -118,9 +130,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
     }
 
 
-    @ExperimentalUnsignedTypes
     override fun toString(): String {
-        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "encoded" }.joinToString(", ", "{", "}") {
+        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "idByteArray" || it.name == "encoded" }.joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
                 is ByteArray -> value.toUHexString()
@@ -145,38 +156,37 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
         return decryptAsByteArray(key).dataInputStream()
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(keyHex: String): DataInputStream {
         return this.decryptBy(keyHex.hexToBytes())
     }
 
     fun decryptBy(key1: ByteArray, key2: ByteArray): DataInputStream {
-        return TEA.decrypt(this.decryptAsByteArray(key1), key2).dataInputStream();
+        return TEA.decrypt(this.decryptAsByteArray(key1), key2).dataInputStream()
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(key1: String, key2: ByteArray): DataInputStream {
         return this.decryptBy(key1.hexToBytes(), key2)
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(key1: ByteArray, key2: String): DataInputStream {
         return this.decryptBy(key1, key2.hexToBytes())
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(keyHex1: String, keyHex2: String): DataInputStream {
         return this.decryptBy(keyHex1.hexToBytes(), keyHex2.hexToBytes())
     }
 
-    private fun decryptAsByteArray(key: ByteArray): ByteArray {
+    fun decryptAsByteArray(key: ByteArray): ByteArray {
         input.goto(14)
         return TEA.decrypt(input.readAllBytes().cutTail(1), key)
     }
 }
 
 
-@ExperimentalUnsignedTypes
 fun DataInputStream.readIP(): String {
     var buff = ""
     for (i in 0..3) {
@@ -207,7 +217,7 @@ fun ByteArray.dataInputStream(): DataInputStream = DataInputStream(this.inputStr
  */
 infix fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
     this.reset()
-    this.skip(position.toLong());
+    this.skip(position.toLong())
     return this
 }
 
@@ -221,7 +231,7 @@ fun <N : Number> DataInputStream.readNBytes(length: N): ByteArray {
 }
 
 
-fun DataInputStream.readVarNumber(): Number {
+fun DataInputStream.readLVNumber(): Number {
     return when (this.readShort().toInt()) {
         1 -> this.readByte()
         2 -> this.readShort()
@@ -238,23 +248,92 @@ fun DataInputStream.readNBytesIn(range: IntRange): ByteArray {
 
 fun <N : Number> DataInputStream.readIntAt(position: N): Int {
     this.goto(position)
-    return this.readInt();
+    return this.readInt()
 }
 
-@ExperimentalUnsignedTypes
+
 fun <N : Number> DataInputStream.readUIntAt(position: N): UInt {
     this.goto(position)
-    return this.readNBytes(4).toUInt();
+    return this.readNBytes(4).toUInt()
 }
 
 fun <N : Number> DataInputStream.readByteAt(position: N): Byte {
     this.goto(position)
-    return this.readByte();
+    return this.readByte()
 }
 
 fun <N : Number> DataInputStream.readShortAt(position: N): Short {
     this.goto(position)
-    return this.readShort();
+    return this.readShort()
 }
+
+
+@JvmSynthetic
+fun DataInputStream.gotoWhere(matcher: UByteArray): DataInputStream {
+    return this.gotoWhere(matcher.toByteArray())
+}
+
+/**
+ * 去往下一个含这些连续字节的位置
+ */
+@Throws(EOFException::class)
+fun DataInputStream.gotoWhere(matcher: ByteArray): DataInputStream {
+    require(matcher.isNotEmpty())
+
+    loop@
+    do {
+        val byte = this.readByte()
+        if (byte == matcher[0]) {
+            //todo mark here
+            for (i in 1 until matcher.size) {
+                val b = this.readByte()
+                if (b != matcher[i]) {
+                    continue@loop //todo goto mark
+                }
+                return this
+            }
+        }
+    } while (true)
+}
+
+
+@Suppress("UNCHECKED_CAST")
+internal fun <P : ServerPacket> Bot.waitForPacket(packetClass: KClass<P>, timeoutMillis: Long = Long.MAX_VALUE, timeout: () -> Unit = {}) {
+    var got = false
+    ServerPacketReceivedEvent::class.hookWhile {
+        if (packetClass.isInstance(it.packet) && it.bot === this) {
+            got = true
+            true
+        } else {
+            false
+        }
+    }
+
+
+    MiraiThreadPool.getInstance().submit {
+        val startingTime = System.currentTimeMillis()
+        while (!got) {
+            if (System.currentTimeMillis() - startingTime > timeoutMillis) {
+                timeout.invoke()
+                return@submit
+            }
+            Thread.sleep(10)
+        }
+    }
+}
+
+/*
+@Throws(EOFException::class)
+fun DataInputStream.gotoWhere(matcher: ByteArray) {
+    require(matcher.isNotEmpty())
+    do {
+        val byte = this.readByte()
+        if (byte == matcher[0]) {
+            for (i in 1 until matcher.size){
+
+            }
+        }
+    } while (true)
+}*/
 
 fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)

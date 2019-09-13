@@ -1,4 +1,4 @@
-package net.mamoe.mirai.utils.config;
+package net.mamoe.mirai.utils;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,15 +16,15 @@ import java.util.function.Function;
  *
  * @author NaturalHG
  */
-public class MiraiSynchronizedLinkedListMap<K,V> extends AbstractMap<K,V> {
+public class MiraiSynchronizedLinkedHashMap<K, V> extends AbstractMap<K, V> {
 
-    public MiraiSynchronizedLinkedListMap(){
+    public MiraiSynchronizedLinkedHashMap() {
         this.sortedMap = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
     protected final Map<K, V> sortedMap;
 
-    public MiraiSynchronizedLinkedListMap(LinkedHashMap<K,V> map){
+    public MiraiSynchronizedLinkedHashMap(LinkedHashMap<K, V> map) {
         this.sortedMap = Collections.synchronizedMap(map);
     }
 
@@ -155,13 +155,13 @@ public class MiraiSynchronizedLinkedListMap<K,V> extends AbstractMap<K,V> {
         return this.sortedMap.merge(key,value,remappingFunction);
     }
 
-    public boolean equals(MiraiSynchronizedLinkedListMap o) {
+    public boolean equals(MiraiSynchronizedLinkedHashMap o) {
         return this.sortedMap.equals(o.sortedMap);
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof MiraiSynchronizedLinkedListMap?this.equals((MiraiSynchronizedLinkedListMap)o):super.equals(o);
+        return o instanceof MiraiSynchronizedLinkedHashMap ? this.equals((MiraiSynchronizedLinkedHashMap) o) : super.equals(o);
     }
 
 }

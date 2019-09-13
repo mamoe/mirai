@@ -1,9 +1,7 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.utils.ByteArrayDataOutputStream
 import net.mamoe.mirai.utils.TEA
-import net.mamoe.mirai.utils.getRandomByteArray
 import net.mamoe.mirai.utils.lazyEncode
 import java.io.DataInputStream
 import java.net.InetAddress
@@ -11,64 +9,67 @@ import java.net.InetAddress
 /**
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("08 28 04 34")
 class ClientSessionRequestPacket(
         private val qq: Long,
         private val serverIp: String,
         private val token38: ByteArray,
         private val token88: ByteArray,
-        private val encryptionKey: ByteArray,
-        private val tlv0105: ByteArray
+        private val encryptionKey: ByteArray
 ) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex("02 00 00 00 01 2E 01 00 00 68 52 00 30 00 3A")
         this.writeHex("00 38")
         this.write(token38)
-        this.write(TEA.encrypt(object : ByteArrayDataOutputStream() {
-            override fun toByteArray(): ByteArray {
-                this.writeHex("00 07 00 88")
-                this.write(token88)
-                this.writeHex("00 0C 00 16 00 02 00 00 00 00 00 00 00 00 00 00")
-                this.writeIP(serverIp)
-                this.writeHex("1F 40 00 00 00 00 00 15 00 30 00 01")//fix1
-                this.writeHex("01 92 A5 D2 59 00 10 54 2D CF 9B 60 BF BB EC 0D D4 81 CE 36 87 DE 35 02 AE 6D ED DC 00 10 ")
-                this.writeHex(Protocol.fix0836)
-                this.writeHex("00 36 00 12 00 02 00 01 00 00 00 05 00 00 00 00 00 00 00 00 00 00")
-                this.writeHex(Protocol.constantData1)
-                this.writeHex(Protocol.constantData2)
-                this.writeQQ(qq)
-                this.writeHex("00 00 00 00 00 1F 00 22 00 01")
-                this.writeHex("1A 68 73 66 E4 BA 79 92 CC C2 D4 EC 14 7C 8B AF 43 B0 62 FB 65 58 A9 EB 37 55 1D 26 13 A8 E5 3D")//device ID
-                this.write(tlv0105)
-                this.writeHex("01 0B 00 85 00 02")
-                this.writeHex("B9 ED EF D7 CD E5 47 96 7A B5 28 34 CA 93 6B 5C")//fix2
-                this.write(getRandomByteArray(1))
-                this.writeHex("10 00 00 00 00 00 00 00 02")
+        this.encryptAndWrite(encryptionKey) {
+            it.writeHex("00 07 00 88")
+            it.write(token88)
+            it.writeHex("00 0C 00 16 00 02 00 00 00 00 00 00 00 00 00 00")
+            it.writeIP(serverIp)
+            it.writeHex("1F 40 00 00 00 00 00 15 00 30 00 01")//fix1
+            it.writeHex("01 92 A5 D2 59 00 10 54 2D CF 9B 60 BF BB EC 0D D4 81 CE 36 87 DE 35 02 AE 6D ED DC 00 10 ")
+            it.writeHex(Protocol.fix0836)
+            it.writeHex("00 36 00 12 00 02 00 01 00 00 00 05 00 00 00 00 00 00 00 00 00 00")
+            it.writeHex(Protocol.constantData1)
+            it.writeHex(Protocol.constantData2)
+            it.writeQQ(qq)
+            it.writeHex("00 00 00 00 00 1F 00 22 00 01")
+            it.writeHex("1A 68 73 66 E4 BA 79 92 CC C2 D4 EC 14 7C 8B AF 43 B0 62 FB 65 58 A9 EB 37 55 1D 26 13 A8 E5 3D")//device ID
 
-                //fix3
-                this.writeHex("00 63 3E 00 63 02 04 03 06 02 00 04 00 52 D9 00 00 00 00 A9 58 3E 6D 6D 49 AA F6 A6 D9 33 0A E7 7E 36 84 03 01 00 00 68 20 15 8B 00 00 01 02 00 00 03 00 07 DF 00 0A 00 0C 00 01 00 04 00 03 00 04 20 5C 00")
-                this.write(getRandomByteArray(32))//md5 32
-                this.writeHex("68")
+            //tlv0106
+            it.writeHex("01 05 00 30")
+            it.writeHex("00 01 01 02 00 14 01 01 00 10")
+            it.writeRandom(16)
+            it.writeHex("00 14 01 02 00 10")
+            it.writeRandom(16)
 
-                this.writeHex("00 00 00 00 00 2D 00 06 00 01")
-                this.writeIP(InetAddress.getLocalHost().hostAddress)
+            it.writeHex("01 0B 00 85 00 02")
+            it.writeHex("B9 ED EF D7 CD E5 47 96 7A B5 28 34 CA 93 6B 5C")//fix2
+            it.writeRandom(1)
+            it.writeHex("10 00 00 00 00 00 00 00 02")
 
-                return super.toByteArray()
-            }
-        }.toByteArray(), encryptionKey))
+            //fix3
+            it.writeHex("00 63 3E 00 63 02 04 03 06 02 00 04 00 52 D9 00 00 00 00 A9 58 3E 6D 6D 49 AA F6 A6 D9 33 0A E7 7E 36 84 03 01 00 00 68 20 15 8B 00 00 01 02 00 00 03 00 07 DF 00 0A 00 0C 00 01 00 04 00 03 00 04 20 5C 00")
+            it.writeRandom(32)//md5 32
+            it.writeHex("68")
+
+            it.writeHex("00 00 00 00 00 2D 00 06 00 01")
+            it.writeIP(InetAddress.getLocalHost().hostAddress)
+        }
     }
 }
 
 /**
  * @author Him188moe
  */
+@PacketId("08 28 04 34")
 class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val dataLength: Int) : ServerPacket(inputStream) {
     lateinit var sessionKey: ByteArray
     lateinit var tlv0105: ByteArray
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         when (dataLength) {
             407 -> {

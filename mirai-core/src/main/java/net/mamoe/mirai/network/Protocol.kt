@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network
 
 import java.net.InetAddress
@@ -72,7 +74,7 @@ object Protocol {
 
     private val hexToByteArrayCacheMap: MutableMap<Int, ByteArray> = mutableMapOf()
 
-    @ExperimentalUnsignedTypes
+
     fun hexToBytes(hex: String): ByteArray {
         hex.hashCode().let { id ->
             if (hexToByteArrayCacheMap.containsKey(id)) {
@@ -86,7 +88,7 @@ object Protocol {
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     fun hexToUBytes(hex: String): UByteArray = Arrays
             .stream(hex.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
             .map { value -> value.trim { it <= ' ' } }

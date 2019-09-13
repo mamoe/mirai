@@ -1,13 +1,15 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.Tested
+import net.mamoe.mirai.utils.hexToBytes
 import java.io.DataInputStream
 
 /**
  * 客户端请求验证码图片数据的第几部分
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("00 BA 31")
 class ClientVerificationCodeTransmissionRequestPacket(
         private val packetId: Int,
@@ -16,11 +18,8 @@ class ClientVerificationCodeTransmissionRequestPacket(
         private val verificationSequence: Int,
         private val token00BA: ByteArray
 ) : ClientPacket() {
-    @TestedSuccessfully
+    @Tested
     override fun encode() {
-        MiraiLogger debug "packetId=$packetId"
-        MiraiLogger debug "verificationSequence=$verificationSequence"
-
         this.writeByte(packetId)//part of packet id
 
         this.writeQQ(qq)
@@ -47,7 +46,7 @@ class ClientVerificationCodeTransmissionRequestPacket(
  * 提交验证码
  */
 @PacketId("00 BA 32")
-@ExperimentalUnsignedTypes
+
 class ClientVerificationCodeSubmitPacket(
         private val packetIdLast: Int,
         private val qq: Long,
@@ -90,39 +89,11 @@ class ClientVerificationCodeSubmitPacket(
     }
 }
 
-@ExperimentalUnsignedTypes
-fun main() {
-    val token0825 = "6E AF F9 2C 20 2B DE 21 B6 13 6F 26 43 F4 04 7B 1F 88 08 4E 8E BE E5 D1 3F E7 93 DE DD E0 6E 38 65 C7 C7 D3 20 7D AC 73 AD F9 85 F9 CC 2A 2C 26 C6 B1 5B FD 34 3F D4 F2".hexToBytes()
-    val verificationCode = "AAAA"
-    val verificationToken = "84 2D 1D 9D 07 04 34 80 17 9E 3F 58 02 20 9A 1C 22 D0 73 7D 8A 90 1B 2F F8 E6 79 A6 84 2F 98 F5 1E 66 3D 9A 24 59 18 34 42 BD 45 DA E1 22 2D BC 2D 36 80 86 AD 44 C2 94".hexToBytes()
-//00 02 00 00 08 04 01 E0 00 00 04 53 00 00 00 01 00 00 15 85 01 00 38 6E AF F9 2C 20 2B DE 21 B6 13 6F 26 43 F4 04 7B 1F 88 08 4E 8E BE E5 D1 3F E7 93 DE DD E0 6E 38 65 C7 C7 D3 20 7D AC 73 AD F9 85 F9 CC 2A 2C 26 C6 B1 5B FD 34 3F D4 F2 01 03 00 19 02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3 14 00 05 00 00 00 00 00 04 58 51 4E 44 00 38 84 2D 1D 9D 07 04 34 80 17 9E 3F 58 02 20 9A 1C 22 D0 73 7D 8A 90 1B 2F F8 E6 79 A6 84 2F 98 F5 1E 66 3D 9A 24 59 18 34 42 BD 45 DA E1 22 2D BC 2D 36 80 86 AD 44 C2 94 00 10 69 20 D1 14 74 F5 B3 93 E4 D5 02 B3 71 1A CD 2A
-    ByteArrayDataOutputStream().let {
-        it.writeHex("00 02 00 00 08 04 01 E0")
-        it.writeHex(Protocol.constantData2)
-        it.writeHex("01 00 38")
-        it.write(token0825)
-        it.writeHex("01 03")
-
-        it.writeShort(25)
-        it.writeHex(Protocol.publicKey)
-
-        it.writeHex("14 00 05 00 00 00 00 00 04")
-        it.write(verificationCode.substring(0..3).toByteArray())
-        it.writeHex("00 38")
-        it.write(verificationToken)
-
-        it.writeHex("00 10")
-        it.writeHex(Protocol.key00BAFix)
-
-        println(it.toByteArray().toUHexString())
-    }
-}
-
 /**
  * 刷新验证码
  */
 @PacketId("00 BA 31")
-@ExperimentalUnsignedTypes
+
 class ClientVerificationCodeRefreshPacket(
         private val packetIdLast: Int,
         private val qq: Long,
@@ -152,7 +123,7 @@ class ClientVerificationCodeRefreshPacket(
 }
 
 /**
- * 验证码输入错误
+ * 验证码输入错误, 同时也会给一部分验证码
  */
 @PacketId("00 BA 32")
 class ServerVerificationCodeWrongPacket(input: DataInputStream, dataSize: Int, packetId: ByteArray) : ServerVerificationCodeTransmissionPacket(input, dataSize, packetId)
@@ -171,7 +142,7 @@ open class ServerVerificationCodeTransmissionPacket(input: DataInputStream, priv
     lateinit var token00BA: ByteArray//40 bytes
     var packetIdLast: Int = 0
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         this.verificationToken = this.input.readNBytesAt(10, 56)
 
@@ -210,7 +181,7 @@ class ServerVerificationCodeCorrectPacket(input: DataInputStream) : ServerVerifi
 
     lateinit var token00BA: ByteArray//56 bytes
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         token00BA = this.input.readNBytesAt(10, 56)
     }
@@ -220,7 +191,7 @@ abstract class ServerVerificationCodePacket(input: DataInputStream) : ServerPack
 
     @PacketId("00 BA")
     class Encrypted(input: DataInputStream, private val id: String) : ServerPacket(input) {
-        @ExperimentalUnsignedTypes
+
         fun decrypt(): ServerVerificationCodePacket {
             this.input goto 14
             val data = TEA.decrypt(this.input.readAllBytes().cutTail(1), Protocol.key00BA.hexToBytes())

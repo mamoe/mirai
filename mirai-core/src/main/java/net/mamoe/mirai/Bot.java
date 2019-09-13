@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.QQ;
 import net.mamoe.mirai.network.BotNetworkHandler;
+import net.mamoe.mirai.network.BotNetworkHandlerImpl;
 import net.mamoe.mirai.utils.BotAccount;
 import net.mamoe.mirai.utils.ContactList;
 import net.mamoe.mirai.utils.config.MiraiConfigSection;
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <br>
  * {@link Bot} 由 3 个模块组成.
  * {@linkplain ContactSystem 联系人管理}: 可通过 {@link Bot#contacts} 访问
- * {@linkplain BotNetworkHandler 网络处理器}: 可通过 {@link Bot#network} 访问
+ * {@linkplain BotNetworkHandlerImpl 网络处理器}: 可通过 {@link Bot#network} 访问
  * {@linkplain BotAccount 机器人账号信息}: 可通过 {@link Bot#account} 访问
  * <br>
  * 若你需要得到机器人的 QQ 账号, 请访问 {@link Bot#account}
@@ -29,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Bot that is the base of the whole program.
  * It consists of
  * a {@link ContactSystem}, which manage contacts such as {@link QQ} and {@link Group};
- * a {@link BotNetworkHandler}, which manages the connection to the server;
+ * a {@link BotNetworkHandlerImpl}, which manages the connection to the server;
  * a {@link BotAccount}, which stores the account information(e.g. qq number the bot)
  * <br>
  * To get all the QQ contacts, access {@link Bot#account}
@@ -118,7 +119,7 @@ public final class Bot implements Closeable {
         Objects.requireNonNull(owners);
         this.account = account;
         this.owners = Collections.unmodifiableList(owners);
-        this.network = new BotNetworkHandler(this);
+        this.network = new BotNetworkHandlerImpl(this);
     }
 
 

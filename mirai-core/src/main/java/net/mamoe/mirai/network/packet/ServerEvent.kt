@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.message.FaceID
@@ -19,10 +21,10 @@ import java.util.zip.GZIPInputStream
  *
  * @author Him188moe
  */
-open class ServerEventPacket(input: DataInputStream, val packetId: ByteArray, val eventIdentity: ByteArray) : ServerPacket(input) {
+abstract class ServerEventPacket(input: DataInputStream, val packetId: ByteArray, val eventIdentity: ByteArray) : ServerPacket(input) {
     @PacketId("00 17")
     class Raw(input: DataInputStream, private val packetId: ByteArray) : ServerPacket(input) {
-        @ExperimentalUnsignedTypes
+
         fun distribute(): ServerEventPacket {
             val eventIdentity = this.input.readNBytes(16)
             val type = this.input.goto(18).readNBytes(2)
@@ -80,6 +82,7 @@ class ServerGroupUploadFileEventPacket(input: DataInputStream, packetId: ByteArr
     }//todo test
 }
 
+@Suppress("EXPERIMENTAL_API_USAGE")
 class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
     var groupNumber: Long = 0
     var qq: Long = 0
@@ -100,16 +103,17 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
         OTHER,
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
+        println(this.input.goto(0).readAllBytes().toUHexString())
         groupNumber = this.input.goto(51).readInt().toLong()
-        qq = this.input.goto(56).readLong().toUInt().toLong()
+        qq = this.input.goto(56).readLong()
         val fontLength = this.input.goto(108).readShort()
         //println(this.input.goto(110 + fontLength).readNBytesAt(2).toUHexString())//always 00 00
 
         messageType = when (val id = this.input.goto(110 + fontLength + 2).readByte().toInt()) {
             0x13 -> MessageType.NORMAL
-            0xE -> MessageType.XML
+            0x0E -> MessageType.XML
             0x06 -> MessageType.AT
 
 
@@ -119,7 +123,7 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
             0x19 -> MessageType.ANONYMOUS
 
             else -> {
-                MiraiLogger debug ("ServerGroupMessageEventPacket id=$id")
+                MiraiLogger.debug("ServerGroupMessageEventPacket id=$id")
                 MessageType.OTHER
             }
         }
@@ -188,7 +192,7 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
     var qq: Long = 0
     lateinit var message: MessageChain
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         input.goto(0)
         println()
@@ -222,16 +226,16 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
                 //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
                 //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D
 
-                val id1 = FaceID.ofId(readVarNumber().toInt())//可能这个是id, 也可能下面那个
+                val id1 = FaceID.ofId(readLVNumber().toInt())//可能这个是id, 也可能下面那个
                 this.skip(this.readByte().toLong())
-                this.readVarNumber()//某id?
+                this.readLVNumber()//某id?
                 return Face(id1)
             }
             0x06 -> {
                 this.skip(sectionLength - 37 - 1)
                 val imageId = String(this.readNBytes(36))
                 this.skip(1)//0x41
-                return Image(imageId)
+                return Image("{$imageId}.jpg")//todo 如何确定文件后缀??
             }
             else -> null
         }
@@ -291,8 +295,7 @@ B1 89 BE 09 8F 00 1A E5 00 0B 03 A2 09 90 BB 7A 1F 40 00 A6 00 00 00 20 00 05 00
  * 告知服务器已经收到数据
  */
 @PacketId("")//随后写入
-@ExperimentalUnsignedTypes
-class ClientMessageResponsePacket(
+class ClientEventResponsePacket(
         private val qq: Long,
         private val packetIdFromServer: ByteArray,//4bytes
         private val sessionKey: ByteArray,
@@ -329,7 +332,7 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
     lateinit var message: String
 
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         //start at Sep1.0:27
         qq = input.readIntAt(0)

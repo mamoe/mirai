@@ -26,7 +26,7 @@ class Group(bot: Bot, number: Long) : Contact(bot, number), Closeable {
     val members = ContactList<QQ>()
 
     override fun sendMessage(message: MessageChain) {
-        bot.network.messageHandler.sendGroupMessage(this, message)
+        bot.network.message.sendGroupMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {

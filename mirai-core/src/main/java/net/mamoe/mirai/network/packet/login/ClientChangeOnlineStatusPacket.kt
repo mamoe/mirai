@@ -9,7 +9,7 @@ import net.mamoe.mirai.utils.ClientLoginStatus
  *
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("00 EC")
 class ClientChangeOnlineStatusPacket(
         private val qq: Long,
@@ -30,3 +30,5 @@ class ClientChangeOnlineStatusPacket(
         }
     }
 }
+
+

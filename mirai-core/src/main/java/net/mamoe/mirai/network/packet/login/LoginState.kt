@@ -35,11 +35,6 @@ enum class LoginState {
     TAKEN_BACK,
 
     /**
-     * 需要验证码登录
-     */
-    VERIFICATION_CODE,
-
-    /**
      * 未知. 更换服务器或等几分钟再登录可能解决.
      */
     UNKNOWN,

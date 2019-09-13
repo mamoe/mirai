@@ -12,14 +12,14 @@ import net.mamoe.mirai.message.defaults.MessageChain
  * Java 获取 qq 号: `qq.getNumber()`
  * Java 获取所属 bot: `qq.getBot()`
  *
- * A QQ instance helps you to receive message from or send message to.
+ * A QQ instance helps you to receive message from or sendPacket message to.
  * Notice that, one QQ instance belong to one [Bot], that is, QQ instances from different [Bot] are NOT the same.
  *
  * @author Him188moe
  */
 class QQ(bot: Bot, number: Long) : Contact(bot, number) {
     override fun sendMessage(message: MessageChain) {
-        bot.network.messageHandler.sendFriendMessage(this, message)
+        bot.network.message.sendFriendMessage(this, message)
     }
 
     override fun sendXMLMessage(message: String) {
