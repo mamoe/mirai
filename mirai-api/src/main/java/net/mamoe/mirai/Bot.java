@@ -1,15 +1,55 @@
 package net.mamoe.mirai;
 
-import net.mamoe.mirai.utils.BotAccount;
+import lombok.Getter;
 
-import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * @author Him188moe
- */
-public interface Bot extends Closeable {
+public class Bot {
 
-    BotAccount getAccount();
+    @Getter
+    private final long qq;
 
-    // TODO: 2019/9/13 add more
+    public Bot(long qq){
+        this.qq = qq;
+    }
+
+    public String getName(){
+        return "Bot";
+    }
+
+    public List<String> getOwners(){
+        return new ArrayList<>();
+    }
+
+    public List<Long> getFriends(){
+        return new ArrayList<>();
+    }
+
+    public void addFriend(){
+
+    }
+
+    public void deleteFriend(){
+
+    }
+
+    public void sendMessageTo(long qq, String message){
+
+    }
+
+    public List<Long> getGroups(){
+        return new ArrayList<>();
+    }
+
+    public void sendGroupMessage(long group, String message){
+
+    }
+
+    public List<String> getMessageHistory(){
+        return new ArrayList<>();
+    }
+
+
+
 }
