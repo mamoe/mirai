@@ -10,7 +10,7 @@ import java.io.DataInputStream
  *
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("00 1D")
 class ClientSKeyRequestPacket(
         private val qq: Long,
@@ -31,7 +31,7 @@ class ClientSKeyRequestPacket(
  * @author Him188moe
  */
 @PacketId("00 1D")
-@ExperimentalUnsignedTypes
+
 class ClientSKeyRefreshmentRequestPacket(
         private val qq: Long,
         private val sessionKey: ByteArray

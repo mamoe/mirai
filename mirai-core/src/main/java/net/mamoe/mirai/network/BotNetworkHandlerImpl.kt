@@ -185,7 +185,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
          * Not async
          */
         @Synchronized
-        @ExperimentalUnsignedTypes
+
         override fun sendPacket(packet: ClientPacket) {
             checkNotNull(socket) { "network closed" }
             if (socket!!.isClosed) {

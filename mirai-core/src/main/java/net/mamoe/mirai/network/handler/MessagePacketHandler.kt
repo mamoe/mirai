@@ -74,7 +74,7 @@ class MessagePacketHandler(session: LoginSession) : PacketHandler(session) {
         session.socket.sendPacket(ClientSendFriendMessagePacket(session.bot.account.qqNumber, qq.number, session.sessionKey, message))
     }
 
-    fun sendGroupMessage(group: Group, message: Message): Unit {
+    fun sendGroupMessage(group: Group, message: Message) {
         TODO()
         //sendPacket(ClientSendGroupMessagePacket(group.groupId, bot.account.qqNumber, sessionKey, message))
     }

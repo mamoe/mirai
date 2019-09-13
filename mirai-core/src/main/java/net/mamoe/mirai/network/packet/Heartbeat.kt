@@ -7,7 +7,7 @@ import java.io.IOException
 /**
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("00 58")
 class ClientHeartbeatPacket(
         private val qq: Long,

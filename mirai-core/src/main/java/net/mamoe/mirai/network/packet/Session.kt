@@ -2,7 +2,6 @@ package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.utils.TEA
-import net.mamoe.mirai.utils.getRandomByteArray
 import net.mamoe.mirai.utils.lazyEncode
 import java.io.DataInputStream
 import java.net.InetAddress
@@ -10,7 +9,7 @@ import java.net.InetAddress
 /**
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("08 28 04 34")
 class ClientSessionRequestPacket(
         private val qq: Long,
@@ -48,12 +47,12 @@ class ClientSessionRequestPacket(
 
             it.writeHex("01 0B 00 85 00 02")
             it.writeHex("B9 ED EF D7 CD E5 47 96 7A B5 28 34 CA 93 6B 5C")//fix2
-            it.write(getRandomByteArray(1))
+            it.writeRandom(1)
             it.writeHex("10 00 00 00 00 00 00 00 02")
 
             //fix3
             it.writeHex("00 63 3E 00 63 02 04 03 06 02 00 04 00 52 D9 00 00 00 00 A9 58 3E 6D 6D 49 AA F6 A6 D9 33 0A E7 7E 36 84 03 01 00 00 68 20 15 8B 00 00 01 02 00 00 03 00 07 DF 00 0A 00 0C 00 01 00 04 00 03 00 04 20 5C 00")
-            it.write(getRandomByteArray(32))//md5 32
+            it.writeRandom(32)//md5 32
             it.writeHex("68")
 
             it.writeHex("00 00 00 00 00 2D 00 06 00 01")
@@ -70,7 +69,7 @@ class ServerSessionKeyResponsePacket(inputStream: DataInputStream, private val d
     lateinit var sessionKey: ByteArray
     lateinit var tlv0105: ByteArray
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         when (dataLength) {
             407 -> {

@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.packet.image
 
 import net.mamoe.mirai.network.packet.*
@@ -15,7 +17,7 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 @PacketId("03 88")
-@ExperimentalUnsignedTypes
+
 class ClientTryGetGroupImageIDPacket(
         private val bot: Long,
         private val sessionKey: ByteArray,
@@ -108,7 +110,7 @@ abstract class ServerTryUploadGroupImageResponsePacket(input: DataInputStream) :
 class ServerTryUploadGroupImageSuccessPacket(input: DataInputStream) : ServerTryUploadGroupImageResponsePacket(input) {
     lateinit var uKey: ByteArray
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
         uKey = this.input.gotoWhere(ubyteArrayOf(0x42u, 0x80u, 0x01u)).readNBytes(128)
     }

@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.network.Protocol
@@ -26,14 +28,14 @@ fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(s
     return@joinToString ret
 }
 
-@ExperimentalUnsignedTypes
+
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
-@ExperimentalUnsignedTypes
+
 @JvmSynthetic
 fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 
-@ExperimentalUnsignedTypes
+
 @JvmSynthetic
 fun UByteArray.toUHexString(separator: String = " "): String {
     return this.joinToString(separator) {
@@ -45,36 +47,36 @@ fun UByteArray.toUHexString(separator: String = " "): String {
     }
 }
 
-@ExperimentalUnsignedTypes
+
 @JvmSynthetic
 fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 
-@ExperimentalUnsignedTypes
+
 fun Byte.toUHexString(): String = this.toUByte().toString(16)
 
-@ExperimentalUnsignedTypes
+
 fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
 
-@ExperimentalUnsignedTypes
+
 fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
 
-@ExperimentalUnsignedTypes
+
 fun String.hexToInt(): Int = hexToBytes().toUInt().toInt()
 
-@ExperimentalUnsignedTypes
+
 fun ByteArray.toUInt(): UInt =
         this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
 
 open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream()) {
     open fun toByteArray(): ByteArray = (out as ByteArrayOutputStream).toByteArray()
-    @ExperimentalUnsignedTypes
+
     open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray()
 }
 
 @JvmSynthetic
 fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().also(t).toByteArray()
 
-@ExperimentalUnsignedTypes
+
 fun getRandomByteArray(length: Int): ByteArray {
     val bytes = LinkedList<Byte>()
     repeat(length) { bytes.add((Math.random() * 255).toByte()) }

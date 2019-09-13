@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
@@ -5,7 +7,7 @@ import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.goto
 import net.mamoe.mirai.network.packet.readNBytesAt
 import net.mamoe.mirai.network.packet.readString
-import net.mamoe.mirai.utils.TestedSuccessfully
+import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
@@ -21,8 +23,8 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
     lateinit var encryptionKey: ByteArray
 
 
-    @TestedSuccessfully
-    @ExperimentalUnsignedTypes
+    @Tested
+
     override fun decode() {
         this.input.skip(7)//8
         this.encryptionKey = this.input.readNBytes(16)//24
@@ -52,7 +54,7 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
 
 
     class Encrypted(input: DataInputStream) : ServerPacket(input) {
-        @ExperimentalUnsignedTypes
+
         fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {
             input goto 14
             return ServerLoginResponseSuccessPacket(this.decryptBy(Protocol.shareKey, tgtgtKey)).setId(this.idHex)

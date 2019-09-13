@@ -16,7 +16,7 @@ interface DataPacketSocket : Closeable {
 
     fun distributePacket(packet: ServerPacket)
 
-    @ExperimentalUnsignedTypes
+
     fun sendPacket(packet: ClientPacket)
 
     fun isClosed(): Boolean

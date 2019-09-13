@@ -1,4 +1,5 @@
 @file:JvmName("Varint")
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.utils
 
@@ -21,7 +22,7 @@ fun encodeZigZag32(signedInt: Int): Long {
     return (signedInt shl 1 xor (signedInt shr 31)).toLong()
 }
 
-@ExperimentalUnsignedTypes
+
 @JvmSynthetic
 fun decodeZigZag32(uint: UInt): Int {
     return decodeZigZag32(uint.toLong())
@@ -39,25 +40,25 @@ fun decodeZigZag64(signedLong: Long): Long {
     return signedLong.ushr(1) xor -(signedLong and 1)
 }
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataInputStream.readVarInt(): Int {
     return decodeZigZag32(this.readUnsignedVarInt())
 }
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataInputStream.readUnsignedVarInt(): UInt {
     return read(this, 5).toUInt()
 }
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataInputStream.readVarLong(): Long {
     return decodeZigZag64(readUnsignedVarLong().toLong())
 }
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataInputStream.readUnsignedVarLong(): ULong {
     return read(this, 10).toULong()
@@ -68,7 +69,7 @@ fun DataOutputStream.writeVarInt(signedInt: Int) {
     this.writeUVarInt(encodeZigZag32(signedInt))
 }
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataOutputStream.writeUVarInt(uint: UInt) {
     return writeUVarInt(uint.toLong())

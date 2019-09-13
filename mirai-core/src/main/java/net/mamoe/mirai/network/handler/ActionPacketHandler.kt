@@ -31,7 +31,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
 
     private var sKeyRefresherFuture: ScheduledFuture<*>? = null
 
-    @ExperimentalUnsignedTypes
+
     override fun onPacketReceived(packet: ServerPacket) {
         when (packet) {
             is ServerCanAddFriendResponsePacket -> {
@@ -74,12 +74,12 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
         }
     }
 
-    @ExperimentalUnsignedTypes
+
     fun addFriend(qqNumber: Long, message: Supplier<String>) {
         addFriend(qqNumber, lazy { message.get() })
     }
 
-    @ExperimentalUnsignedTypes
+
     @JvmSynthetic
     fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableFuture<AddFriendResult> {
         val future = CompletableFuture<AddFriendResult>()
@@ -89,12 +89,12 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
         return future
     }
 
-    @ExperimentalUnsignedTypes
+
     fun requestSKey() {
         session.socket.sendPacket(ClientSKeyRequestPacket(session.bot.account.qqNumber, session.sessionKey))
     }
 
-    @ExperimentalUnsignedTypes
+
     fun requestAccountInfo() {
         session.socket.sendPacket(ClientAccountInfoRequestPacket(session.bot.account.qqNumber, session.sessionKey))
     }
@@ -111,7 +111,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     ) : Closeable {
         lateinit var id: ByteArray
 
-        @ExperimentalUnsignedTypes
+
         fun onPacketReceived(packet: ServerPacket) {
             if (!::id.isInitialized) {
                 return
@@ -164,7 +164,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     ) : Closeable {
         lateinit var id: ByteArray
 
-        @ExperimentalUnsignedTypes
+
         fun onPacketReceived(packet: ServerPacket) {
             if (!::id.isInitialized) {
                 return
@@ -201,7 +201,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
             }
         }
 
-        @ExperimentalUnsignedTypes
+
         fun sendAddRequest() {
             session.socket.sendPacket(ClientCanAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey).also { this.id = it.packetIdLast })
         }

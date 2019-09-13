@@ -4,7 +4,7 @@ import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.utils.ByteArrayDataOutputStream
 import net.mamoe.mirai.utils.TEA
-import net.mamoe.mirai.utils.TestedSuccessfully
+import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.hexToBytes
 import java.io.DataOutputStream
 
@@ -14,8 +14,8 @@ import java.io.DataOutputStream
  * @author Him188moe
  */
 @PacketId("08 36 31 03")
-@ExperimentalUnsignedTypes
-@TestedSuccessfully
+
+@Tested
 class ClientPasswordSubmissionPacket(
         private val qq: Long,
         private val password: String,
@@ -24,7 +24,7 @@ class ClientPasswordSubmissionPacket(
         private val tgtgtKey: ByteArray,
         private val token0825: ByteArray
 ) : ClientPacket() {
-    @ExperimentalUnsignedTypes
+
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol.passwordSubmissionKey1)
@@ -40,21 +40,21 @@ class ClientPasswordSubmissionPacket(
 }
 
 @PacketId("08 36 31 04")
-@ExperimentalUnsignedTypes
+
 class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv0006)
 
 @PacketId("08 36 31 05")
-@ExperimentalUnsignedTypes
+
 class ClientLoginResendPacket3105(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, null)
 
 @PacketId("08 36 31 06")
-@ExperimentalUnsignedTypes
+
 class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv0006)
 
-@ExperimentalUnsignedTypes
+
 open class ClientLoginResendPacket internal constructor(
         val qq: Long,
         val password: String,
@@ -93,7 +93,7 @@ open class ClientLoginResendPacket internal constructor(
 /**
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv0006: ByteArray? = null) {
 
     //this.writeInt(System.currentTimeMillis().toInt())
@@ -130,7 +130,7 @@ private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: I
     this.writeHex("60 C9 5D A7 45 70 04 7F 21 7D 84 50 5C 66 A5 C6")//key
 }
 
-@ExperimentalUnsignedTypes
+
 private fun DataOutputStream.writePart2() {
 
     this.writeHex("03 12")//tag

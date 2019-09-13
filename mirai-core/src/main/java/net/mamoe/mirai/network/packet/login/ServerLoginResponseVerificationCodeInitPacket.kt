@@ -1,10 +1,12 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.packet.login
 
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.dataInputStream
 import net.mamoe.mirai.network.packet.goto
-import net.mamoe.mirai.utils.TestedSuccessfully
+import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.hexToUBytes
 import java.io.DataInputStream
 
@@ -20,8 +22,8 @@ class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, priv
     var unknownBoolean: Boolean? = null
 
 
-    @TestedSuccessfully
-    @ExperimentalUnsignedTypes
+    @Tested
+
     override fun decode() {
         val verifyCodeLength = this.input.goto(78).readShort()//2bytes
         this.verifyCodePart1 = this.input.readNBytes(verifyCodeLength.toInt())
@@ -39,7 +41,7 @@ class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, priv
 
         }
 
-        @ExperimentalUnsignedTypes
+
         fun decrypt(): ServerLoginResponseVerificationCodeInitPacket {
             this.input goto 14
             val data = this.decryptBy(Protocol.shareKey).goto(0).readAllBytes()

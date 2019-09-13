@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.packet
 
 import lombok.Getter
@@ -12,12 +14,12 @@ import java.security.MessageDigest
 /**
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
     @Getter
     val idHex: String
 
-    var encoded: Boolean = false
+    private var encoded: Boolean = false
 
     init {
         val annotation = this.javaClass.getAnnotation(PacketId::class.java)
@@ -84,7 +86,6 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
 }
 
 
-@ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeIP(ip: String) {
     for (s in ip.trim().split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
@@ -97,10 +98,9 @@ fun DataOutputStream.writeTime() {
     this.writeInt(System.currentTimeMillis().toInt())
 }
 
-@ExperimentalUnsignedTypes
 @Throws(IOException::class)
-fun DataOutputStream.writeHex(hex: String) {
-    for (s in hex.trim().split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+fun DataOutputStream.writeHex(uHex: String) {
+    for (s in uHex.trim().split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
         if (s.isEmpty()) {
             continue
         }
@@ -116,12 +116,10 @@ fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutp
     this.write(TEA.encrypt(ByteArrayDataOutputStream().also(encoder).toByteArray(), key))
 }
 
-@ExperimentalUnsignedTypes
 fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: (ByteArrayDataOutputStream) -> Unit) {
     this.encryptAndWrite(keyHex.hexToBytes(), encoder)
 }
 
-@ExperimentalUnsignedTypes
 @Throws(IOException::class)
 fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
     ByteArrayDataOutputStream().let {
@@ -146,12 +144,10 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
     }
 }
 
-@ExperimentalUnsignedTypes
-@TestedSuccessfully
+@Tested
 fun DataOutputStream.writeCRC32() = writeCRC32(getRandomByteArray(16))
 
 
-@ExperimentalUnsignedTypes
 fun DataOutputStream.writeCRC32(key: ByteArray) {
     key.let {
         write(it)//key
@@ -159,8 +155,8 @@ fun DataOutputStream.writeCRC32(key: ByteArray) {
     }
 }
 
-@ExperimentalUnsignedTypes
-@TestedSuccessfully
+
+@Tested
 fun DataOutputStream.writeDeviceName(random: Boolean = false) {
     val deviceName: String = if (random) {
         String(getRandomByteArray(10))
@@ -185,7 +181,7 @@ fun Int.toByteArray(): ByteArray = byteArrayOf(
 /**
  * 255u -> 00 00 00 FF
  */
-@ExperimentalUnsignedTypes
+
 fun UInt.toByteArray(): ByteArray = byteArrayOf(
         (this.shr(24) and 255u).toByte(),
         (this.shr(16) and 255u).toByte(),
@@ -193,24 +189,14 @@ fun UInt.toByteArray(): ByteArray = byteArrayOf(
         (this.shr(0) and 255u).toByte()
 )
 
-/**
- * 255 -> FF 00 00 00
- */
-fun Int.toLByteArray(): ByteArray = byteArrayOf(
-        (this.ushr(0) and 0xFF).toByte(),
-        (this.ushr(8) and 0xFF).toByte(),
-        (this.ushr(16) and 0xFF).toByte(),
-        (this.ushr(24) and 0xFF).toByte()
-)
 
-@ExperimentalUnsignedTypes
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 internal fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 
 internal fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataOutputStream.writeZero(count: Int) {
     repeat(count) {
@@ -225,13 +211,13 @@ fun DataOutputStream.writeRandom(length: Int) {
     }
 }
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataOutputStream.writeQQ(qq: Long) {
     this.write(qq.toUInt().toByteArray())
 }
 
-@ExperimentalUnsignedTypes
+
 @Throws(IOException::class)
 fun DataOutputStream.writeGroup(groupIdOrGroupNumber: Long) {
     this.write(groupIdOrGroupNumber.toUInt().toByteArray())

@@ -9,7 +9,7 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 @PacketId("00 02")
-@ExperimentalUnsignedTypes
+
 class ClientSendGroupMessagePacket(
         private val groupId: Long,//不是 number
         private val botQQ: Long,

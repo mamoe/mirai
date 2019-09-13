@@ -1,6 +1,7 @@
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.Protocol
+import net.mamoe.mirai.network.packet.login.ClientPasswordSubmissionPacket
 import net.mamoe.mirai.utils.ByteArrayDataOutputStream
 import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.hexToBytes
@@ -11,11 +12,12 @@ import java.io.IOException
 /**
  * A packet received when logging in, used to redirect server address
  *
- * @see net.mamoe.mirai.network.packet.client.login.ClientServerRedirectionPacket
- * @see net.mamoe.mirai.network.packet.client.login.ClientPasswordSubmissionPacket
+ * @see ClientServerRedirectionPacket
+ * @see ClientPasswordSubmissionPacket
  *
  * @author Him188moe
  */
+@Suppress("EXPERIMENTAL_API_USAGE")
 @PacketId("08 25 31 01")
 class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inputStream) {
     var serverIP: String? = null
@@ -29,9 +31,9 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
         TYPE_08_25_31_02,
     }
 
-    @ExperimentalUnsignedTypes
+
     override fun decode() {
-        when (val id = input.readByte().toUByte().toInt()) {
+        when (val id = input.readByte().toInt()) {
             0xFE -> {
                 input.skip(94)
                 serverIP = input.readIP()
@@ -52,7 +54,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
     }
 
     class Encrypted(private val type: Type, inputStream: DataInputStream) : ServerPacket(inputStream) {
-        @ExperimentalUnsignedTypes
+
         fun decrypt(): ServerTouchResponsePacket = ServerTouchResponsePacket(decryptBy(when (type) {
             Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()
             Type.TYPE_08_25_31_01 -> Protocol.key0825.hexToBytes()
@@ -65,10 +67,10 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
  *
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("08 25 31 01")
 class ClientTouchPacket(private val qq: Long, private val serverIp: String) : ClientPacket() {
-    @ExperimentalUnsignedTypes
+
     @Throws(IOException::class)
     override fun encode() {
         this.writeQQ(qq)
@@ -80,7 +82,7 @@ class ClientTouchPacket(private val qq: Long, private val serverIp: String) : Cl
             it.writeHex(Protocol.constantData2)
             it.writeQQ(qq)
             it.writeHex("00 00 00 00 03 09 00 08 00 01")
-            it.writeIP(serverIp);
+            it.writeIP(serverIp)
             it.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
             it.writeHex(Protocol.publicKey)
         }
@@ -92,10 +94,10 @@ class ClientTouchPacket(private val qq: Long, private val serverIp: String) : Cl
  *
  * @author Him188moe
  */
-@ExperimentalUnsignedTypes
+
 @PacketId("08 25 31 02")
 class ClientServerRedirectionPacket(private val serverIP: String, private val qq: Long) : ClientPacket() {
-    @ExperimentalUnsignedTypes
+
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
