@@ -1,6 +1,8 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.network.packet.goto
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -11,20 +13,20 @@ import java.util.*
  * @author NaturalHG
  */
 object MiraiLogger {
-    infix fun log(o: Any?) = info(o)
-    infix fun println(o: Any?) = info(o)
-    infix fun info(o: Any?) = this.print(o.toString(), LoggerTextFormat.RESET)
+    fun log(o: Any?) = info(o)
+    fun println(o: Any?) = info(o)
+    fun info(o: Any?) = this.print(o.toString(), LoggerTextFormat.RESET)
 
 
-    infix fun error(o: Any?) = this.print(o.toString(), LoggerTextFormat.RED)
+    fun error(o: Any?) = this.print(o.toString(), LoggerTextFormat.RED)
 
-    infix fun notice(o: Any?) = this.print(o.toString(), LoggerTextFormat.LIGHT_BLUE)
+    fun notice(o: Any?) = this.print(o.toString(), LoggerTextFormat.LIGHT_BLUE)
 
-    infix fun success(o: Any?) = this.print(o.toString(), LoggerTextFormat.GREEN)
+    fun success(o: Any?) = this.print(o.toString(), LoggerTextFormat.GREEN)
 
-    infix fun debug(o: Any?) = this.print(o.toString(), LoggerTextFormat.YELLOW)
+    fun debug(o: Any?) = this.print(o.toString(), LoggerTextFormat.YELLOW)
 
-    infix fun catching(e: Throwable) {
+    fun catching(e: Throwable) {
         e.printStackTrace()
         /*
         this.print(e.message)
@@ -39,21 +41,26 @@ object MiraiLogger {
     }
 }
 
-infix fun Bot.log(o: Any?) = info(o)
-infix fun Bot.println(o: Any?) = info(o)
-infix fun Bot.info(o: Any?) = print(this, o.toString(), LoggerTextFormat.RESET)
+fun Bot.log(o: Any?) = info(o)
+fun Bot.println(o: Any?) = info(o)
+fun Bot.info(o: Any?) = print(this, o.toString(), LoggerTextFormat.RESET)
 
-infix fun Bot.error(o: Any?) = print(this, o.toString(), LoggerTextFormat.RED)
+fun Bot.error(o: Any?) = print(this, o.toString(), LoggerTextFormat.RED)
 
-infix fun Bot.notice(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_BLUE)
+fun Bot.notice(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_BLUE)
 
-infix fun Bot.purple(o: Any?) = print(this, o.toString(), LoggerTextFormat.PURPLE)
+fun Bot.purple(o: Any?) = print(this, o.toString(), LoggerTextFormat.PURPLE)
 
-infix fun Bot.cyanL(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_CYAN)
+fun Bot.cyanL(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_CYAN)
+fun Bot.success(o: Any?) = print(this, o.toString(), LoggerTextFormat.GREEN)
 
-infix fun Bot.success(o: Any?) = print(this, o.toString(), LoggerTextFormat.GREEN)
+fun Bot.debug(o: Any?) = print(this, o.toString(), LoggerTextFormat.YELLOW)
 
-infix fun Bot.debug(o: Any?) = print(this, o.toString(), LoggerTextFormat.YELLOW)
+fun Bot.debugPacket(packet: ServerPacket) {
+    debug("Packet=$packet")
+    debug("Packet size=" + packet.input.goto(0).readAllBytes().size)
+    debug("Packet data=" + packet.input.goto(0).readAllBytes().toUHexString())
+}
 
 
 @Synchronized

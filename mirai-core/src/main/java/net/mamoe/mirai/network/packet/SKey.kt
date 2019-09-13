@@ -6,6 +6,8 @@ import java.io.DataInputStream
 
 
 /**
+ * SKey 用于 http api
+ *
  * @author Him188moe
  */
 @ExperimentalUnsignedTypes
