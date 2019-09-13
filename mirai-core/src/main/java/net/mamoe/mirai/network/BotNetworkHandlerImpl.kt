@@ -259,14 +259,6 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
         private lateinit var loginIP: String
         private var tgtgtKey: ByteArray = getRandomByteArray(16)
 
-        private var tlv0105: ByteArray = lazyEncode {
-            it.writeHex("01 05 00 30")
-            it.writeHex("00 01 01 02 00 14 01 01 00 10")
-            it.writeRandom(16)
-            it.writeHex("00 14 01 02 00 10")
-            it.writeRandom(16)
-        }
-
         /**
          * 0828_decr_key
          */
@@ -350,7 +342,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
                 is ServerLoginResponseSuccessPacket -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-                    socket.sendPacket(ClientSessionRequestPacket(bot.account.qqNumber, socket.serverIP, packet.token38, packet.token88, packet.encryptionKey, this.tlv0105))
+                    socket.sendPacket(ClientSessionRequestPacket(bot.account.qqNumber, socket.serverIP, packet.token38, packet.token88, packet.encryptionKey))
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的
@@ -374,8 +366,6 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                     heartbeatFuture = MiraiThreadPool.getInstance().scheduleWithFixedDelay({
                         socket.sendPacket(ClientHeartbeatPacket(bot.account.qqNumber, sessionKey))
                     }, 90000, 90000, TimeUnit.MILLISECONDS)
-
-                    this.tlv0105 = packet.tlv0105
 
                     socket.loginFuture!!.complete(LoginState.SUCCESS)
 
