@@ -1,3 +1,7 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
+//to simplify code
+
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
@@ -46,7 +50,6 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
     companion object {
 
-        @ExperimentalUnsignedTypes
         fun ofByteArray(bytes: ByteArray): ServerPacket {
             val stream = bytes.dataInputStream()
 
@@ -119,9 +122,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
     }
 
 
-    @ExperimentalUnsignedTypes
     override fun toString(): String {
-        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "encoded" }.joinToString(", ", "{", "}") {
+        return adjustName(this.javaClass.simpleName + "(${this.getFixedId()})") + this.getAllDeclaredFields().filterNot { it.name == "idHex" || it.name == "idByteArray" || it.name == "encoded" }.joinToString(", ", "{", "}") {
             it.trySetAccessible(); it.name + "=" + it.get(this).let { value ->
             when (value) {
                 is ByteArray -> value.toUHexString()
@@ -146,26 +148,26 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
         return decryptAsByteArray(key).dataInputStream()
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(keyHex: String): DataInputStream {
         return this.decryptBy(keyHex.hexToBytes())
     }
 
     fun decryptBy(key1: ByteArray, key2: ByteArray): DataInputStream {
-        return TEA.decrypt(this.decryptAsByteArray(key1), key2).dataInputStream();
+        return TEA.decrypt(this.decryptAsByteArray(key1), key2).dataInputStream()
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(key1: String, key2: ByteArray): DataInputStream {
         return this.decryptBy(key1.hexToBytes(), key2)
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(key1: ByteArray, key2: String): DataInputStream {
         return this.decryptBy(key1, key2.hexToBytes())
     }
 
-    @ExperimentalUnsignedTypes
+
     fun decryptBy(keyHex1: String, keyHex2: String): DataInputStream {
         return this.decryptBy(keyHex1.hexToBytes(), keyHex2.hexToBytes())
     }
@@ -177,7 +179,6 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 }
 
 
-@ExperimentalUnsignedTypes
 fun DataInputStream.readIP(): String {
     var buff = ""
     for (i in 0..3) {
@@ -208,7 +209,7 @@ fun ByteArray.dataInputStream(): DataInputStream = DataInputStream(this.inputStr
  */
 infix fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
     this.reset()
-    this.skip(position.toLong());
+    this.skip(position.toLong())
     return this
 }
 
@@ -239,26 +240,26 @@ fun DataInputStream.readNBytesIn(range: IntRange): ByteArray {
 
 fun <N : Number> DataInputStream.readIntAt(position: N): Int {
     this.goto(position)
-    return this.readInt();
+    return this.readInt()
 }
 
-@ExperimentalUnsignedTypes
+
 fun <N : Number> DataInputStream.readUIntAt(position: N): UInt {
     this.goto(position)
-    return this.readNBytes(4).toUInt();
+    return this.readNBytes(4).toUInt()
 }
 
 fun <N : Number> DataInputStream.readByteAt(position: N): Byte {
     this.goto(position)
-    return this.readByte();
+    return this.readByte()
 }
 
 fun <N : Number> DataInputStream.readShortAt(position: N): Short {
     this.goto(position)
-    return this.readShort();
+    return this.readShort()
 }
 
-@ExperimentalUnsignedTypes
+
 @JvmSynthetic
 fun DataInputStream.gotoWhere(matcher: UByteArray): DataInputStream {
     return this.gotoWhere(matcher.toByteArray())

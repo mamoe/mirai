@@ -2,7 +2,10 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.network.BotNetworkHandlerImpl.BotSocket
 import net.mamoe.mirai.network.BotNetworkHandlerImpl.Login
-import net.mamoe.mirai.network.handler.*
+import net.mamoe.mirai.network.handler.ActionPacketHandler
+import net.mamoe.mirai.network.handler.DataPacketSocket
+import net.mamoe.mirai.network.handler.MessagePacketHandler
+import net.mamoe.mirai.network.handler.PacketHandler
 import net.mamoe.mirai.network.packet.ClientPacket
 import net.mamoe.mirai.network.packet.Packet
 import net.mamoe.mirai.network.packet.ServerEventPacket
@@ -34,13 +37,6 @@ interface BotNetworkHandler : Closeable {
      * java 调用方式: `botNetWorkHandler.getSocket()`
      */
     val socket: DataPacketSocket
-
-    /**
-     * Debug 包处理器. 仅输出包的信息. 调试阶段使用
-     *
-     * java 调用方式: `botNetWorkHandler.getDebug()`
-     */
-    var debug: DebugPacketHandler
 
     /**
      * 消息处理. 如发送好友消息, 接受群消息并触发事件

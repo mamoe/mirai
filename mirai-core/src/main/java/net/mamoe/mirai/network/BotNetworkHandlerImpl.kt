@@ -35,7 +35,6 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
     lateinit var login: Login
 
-    override lateinit var debug: DebugPacketHandler
     override lateinit var message: MessagePacketHandler
     override lateinit var action: ActionPacketHandler
 
@@ -75,11 +74,9 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
     private fun onLoggedIn(sessionKey: ByteArray) {
         val session = LoginSession(bot, sessionKey, socket)
-        debug = DebugPacketHandler(session)
         message = MessagePacketHandler(session)
         action = ActionPacketHandler(session)
 
-        packetHandlers.add(debug.asNode())
         packetHandlers.add(message.asNode())
         packetHandlers.add(action.asNode())
     }
@@ -104,8 +101,18 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 return
             }
 
+            //For debug
+            kotlin.run {
+                if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
+                    bot.notice("Packet received: $packet")
+                }
+
+                if (packet is ServerEventPacket) {
+                    sendPacket(ClientMessageResponsePacket(bot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
+                }
+            }
+
             if (ServerPacketReceivedEvent(bot, packet).broadcast().isCancelled) {
-                debug.onPacketReceived(packet)
                 return
             }
 
@@ -368,6 +375,14 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                         socket.sendPacket(ClientHeartbeatPacket(bot.account.qqNumber, sessionKey))
                     }, 90000, 90000, TimeUnit.MILLISECONDS)
 
+                    this.tlv0105 = packet.tlv0105
+
+                    socket.loginFuture!!.complete(LoginState.SUCCESS)
+
+                    login.changeOnlineStatus(ClientLoginStatus.ONLINE)
+                }
+
+                is ServerLoginSuccessPacket -> {
                     BotLoginSucceedEvent(bot).broadcast()
 
                     //登录成功后会收到大量上次的消息, 忽略掉
@@ -375,9 +390,6 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                         message.ignoreMessage = false
                     }, 3, TimeUnit.SECONDS)
 
-                    this.tlv0105 = packet.tlv0105
-
-                    socket.loginFuture!!.complete(LoginState.SUCCESS)
 
                     onLoggedIn(sessionKey)
                 }
@@ -391,7 +403,6 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 is ServerTouchResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt())
 
 
-                is ServerLoginSuccessPacket,
                 is ServerHeartbeatResponsePacket,
                 is UnknownServerPacket -> {
                     //ignored
@@ -400,6 +411,10 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
                 }
             }
+        }
+
+        fun changeOnlineStatus(status: ClientLoginStatus) {
+            socket.sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, status))
         }
 
         override fun close() {

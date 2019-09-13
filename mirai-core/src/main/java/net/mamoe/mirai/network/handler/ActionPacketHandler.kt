@@ -9,9 +9,7 @@ import net.mamoe.mirai.network.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageFailedPacket
 import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageResponsePacket
 import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageSuccessPacket
-import net.mamoe.mirai.network.packet.login.ClientChangeOnlineStatusPacket
 import net.mamoe.mirai.task.MiraiThreadPool
-import net.mamoe.mirai.utils.ClientLoginStatus
 import net.mamoe.mirai.utils.getGTK
 import java.awt.image.BufferedImage
 import java.io.Closeable
@@ -94,11 +92,6 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     @ExperimentalUnsignedTypes
     fun requestSKey() {
         session.socket.sendPacket(ClientSKeyRequestPacket(session.bot.account.qqNumber, session.sessionKey))
-    }
-
-    @ExperimentalUnsignedTypes
-    fun changeOnlineStatus(status: ClientLoginStatus) {
-        session.socket.sendPacket(ClientChangeOnlineStatusPacket(session.bot.account.qqNumber, session.sessionKey, status))
     }
 
     @ExperimentalUnsignedTypes
