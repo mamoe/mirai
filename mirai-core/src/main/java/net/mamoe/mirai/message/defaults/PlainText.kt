@@ -2,8 +2,10 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageId
+import net.mamoe.mirai.network.packet.readLVString
 import net.mamoe.mirai.network.packet.writeLVByteArray
 import net.mamoe.mirai.network.packet.writeLVString
+import net.mamoe.mirai.utils.lazyDecode
 import net.mamoe.mirai.utils.lazyEncode
 
 /**
@@ -30,5 +32,12 @@ class PlainText(private val text: String) : Message() {
             return false
         }
         return this.text == another.text
+    }
+
+    companion object {
+        fun ofByteArray(data: ByteArray): PlainText = lazyDecode(data) {
+            it.skip(1)
+            PlainText(it.readLVString())
+        }
     }
 }

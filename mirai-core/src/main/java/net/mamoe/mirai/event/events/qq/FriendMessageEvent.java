@@ -11,15 +11,15 @@ import java.util.Objects;
  * @author Him188moe
  */
 public final class FriendMessageEvent extends FriendEvent {
-    private final MessageChain messageChain;
+    public final MessageChain message;
 
-    public FriendMessageEvent(@NotNull Bot bot, @NotNull QQ sender, @NotNull MessageChain messageChain) {
+    public FriendMessageEvent(@NotNull Bot bot, @NotNull QQ sender, @NotNull MessageChain message) {
         super(bot, sender);
-        this.messageChain = Objects.requireNonNull(messageChain);
+        this.message = Objects.requireNonNull(message);
     }
 
     @NotNull
     public MessageChain message() {
-        return messageChain;
+        return message;
     }
 }

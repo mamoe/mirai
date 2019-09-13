@@ -3,9 +3,9 @@ package net.mamoe.mirai.message.defaults
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.packet.image.ClientTryGetImageIDPacket
-import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageFailedPacket
-import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageResponsePacket
-import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageSuccessPacket
+import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDFailedPacket
+import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDResponsePacket
+import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDSuccessPacket
 import net.mamoe.mirai.network.packet.md5
 import net.mamoe.mirai.utils.ImageNetworkUtils
 import net.mamoe.mirai.utils.toByteArray
@@ -27,16 +27,16 @@ class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImage
     constructor(url: URL) : this(File(url.file))
 
     fun upload(session: LoginSession, contact: Contact): CompletableFuture<Unit> {
-        return session.expectPacket<ServerTryUploadGroupImageResponsePacket> {
-            toSend { ClientTryGetImageIDPacket(session.bot.account.qqNumber, session.sessionKey, session.bot.account.qqNumber, image) }
+        return session.expectPacket<ServerTryGetImageIDResponsePacket> {
+            toSend { ClientTryGetImageIDPacket(session.bot.account.qqNumber, session.sessionKey, contact.number, image) }
 
             expect {
                 when (it) {
-                    is ServerTryUploadGroupImageFailedPacket -> {
+                    is ServerTryGetImageIDFailedPacket -> {
                         //已经存在于服务器了
                     }
 
-                    is ServerTryUploadGroupImageSuccessPacket -> {
+                    is ServerTryGetImageIDSuccessPacket -> {
                         val data = image.toByteArray()
                         if (!ImageNetworkUtils.postImage(it.uKey.toUHexString(), data.size, session.bot.account.qqNumber, contact.number, data)) {
                             throw RuntimeException("cannot upload image")
@@ -56,8 +56,8 @@ class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImage
             return "{" + md5.copyOfRange(0, 4).toUHexString("") + "-"
                     .plus(md5.copyOfRange(4, 6).toUHexString("")) + "-"
                     .plus(md5.copyOfRange(6, 8).toUHexString("")) + "-"
-                    .plus(md5.copyOfRange(8, 12).toUHexString("")) + "-"
-                    .plus(md5.copyOfRange(12, 16).toUHexString("")) + "}." + if (filename.endsWith(".jpeg")) "jpg" else filename.substringAfter(".", "jpg")
+                    .plus(md5.copyOfRange(8, 10).toUHexString("")) + "-"
+                    .plus(md5.copyOfRange(10, 16).toUHexString("")) + "}." + if (filename.endsWith(".jpeg")) "jpg" else filename.substringAfter(".", "jpg")
         }
     }
 }

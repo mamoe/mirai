@@ -10,13 +10,13 @@ package net.mamoe.mirai.message
  */
 object MessageId {
 
-    const val AT: Int = 0x00//todo 不知道是多少
+    const val AT: Int = 0x06
 
-    const val FACE: Int = 0x00//todo 不知道是多少
+    const val FACE: Int = 0x02
 
     const val TEXT: Int = 0x01
 
-    const val IMAGE: Int = 0x06
+    const val IMAGE: Int = 0x03
 
     const val CHAIN: Int = 0xff//仅用于 equals. Packet 中不存在 Chain 概念
 }

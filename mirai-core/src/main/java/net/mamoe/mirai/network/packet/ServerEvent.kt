@@ -2,19 +2,17 @@
 
 package net.mamoe.mirai.network.packet
 
-import net.mamoe.mirai.message.FaceID
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.defaults.Face
 import net.mamoe.mirai.message.defaults.Image
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.message.defaults.PlainText
 import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.lazyDecode
 import net.mamoe.mirai.utils.toUHexString
-import java.io.ByteArrayOutputStream
+import net.mamoe.mirai.utils.toUInt
 import java.io.DataInputStream
-import java.util.zip.GZIPInputStream
 
 /**
  * Packet id: `00 CE` or `00 17`
@@ -59,7 +57,12 @@ abstract class ServerEventPacket(input: DataInputStream, val packetId: ByteArray
 /**
  * Unknown event
  */
-class UnknownServerEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity)
+class UnknownServerEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
+    override fun decode() {
+        super.decode()
+        println("UnknownServerEventPacket data: " + this.input.goto(0).readAllBytes().toUHexString())
+    }
+}
 
 /**
  * Android 客户端上线
@@ -86,8 +89,8 @@ class ServerGroupUploadFileEventPacket(input: DataInputStream, packetId: ByteArr
 class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
     var groupNumber: Long = 0
     var qq: Long = 0
-    lateinit var message: String
-    lateinit var messageType: MessageType
+    lateinit var senderName: String
+    lateinit var message: MessageChain
 
     enum class MessageType {
         NORMAL,
@@ -107,10 +110,29 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
     override fun decode() {
         println(this.input.goto(0).readAllBytes().toUHexString())
         groupNumber = this.input.goto(51).readInt().toLong()
-        qq = this.input.goto(56).readLong()
-        val fontLength = this.input.goto(108).readShort()
-        //println(this.input.goto(110 + fontLength).readNBytesAt(2).toUHexString())//always 00 00
+        qq = this.input.goto(56).readNBytes(4).toUInt().toLong()
 
+        this.input.goto(108)
+        this.input.readLVByteArray()
+        input.skip(2)//2个0x00
+        message = input.readSections()
+
+        val map = input.readTLVMap(true)
+        if (map.containsKey(18)) {
+            this.senderName = lazyDecode(map.getValue(18)) {
+                val tlv = it.readTLVMap(true)
+                tlv.printTLVMap()
+
+                when {
+                    tlv.containsKey(0x01) -> String(tlv.getValue(0x01))
+                    tlv.containsKey(0x02) -> String(tlv.getValue(0x02))
+                    else -> "null"
+                }
+            }
+        }
+
+
+        /*
         messageType = when (val id = this.input.goto(110 + fontLength + 2).readByte().toInt()) {
             0x13 -> MessageType.NORMAL
             0x0E -> MessageType.XML
@@ -126,9 +148,9 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
                 MiraiLogger.debug("ServerGroupMessageEventPacket id=$id")
                 MessageType.OTHER
             }
-        }
+        }*/
 
-
+/*
         when (messageType) {
             MessageType.NORMAL -> {
                 val gzippedMessage = this.input.goto(110 + fontLength + 16).readNBytes(this.input.goto(110 + fontLength + 3).readShort().toInt() - 11)
@@ -184,9 +206,25 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
                     }
                 }*/
             }
-        }
+        }*/
     }
 }
+
+fun main() {
+    println(String("E7 BE A4".hexToBytes()))
+
+
+    println(".".toByteArray().toUByteArray().toUHexString())
+    //长文本 22 96 29 7B B4 DF 94 AA 00 01 9F 8E 09 18 85 5B 1F 40 00 52 00 00 00 1B 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 0C 00 05 00 01 00 01 01 22 96 29 7B 01 3E 03 3F A2 00 03 7E F3 5D 7B 97 57 00 00 F3 32 00 B8 00 01 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 5D 7B 97 56 7F D0 53 BB 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 12 01 00 0F E9 95 BF E6 96 87 E6 9C AC E6 B6 88 E6 81 AF 0E 00 0E 01 00 04 00 00 00 09 07 00 04 00 00 00 01 19 00 35 01 00 32 AA 02 2F 50 03 60 00 68 00 9A 01 26 08 09 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 05 00 04 00 00 00 01 08 00 04 00 00 00 01 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
+    val packet = ServerGroupMessageEventPacket(("" +
+            "22 96 29 7B B4 DF 94 AA 00 09 8F 37 0A 65 07 2E 1F 40 00 52 00 00 00 1B 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 0C 00 05 00 01 00 01 01 22 96 29 7B 01 3E 03 3F A2 00 03 7F 67 5D 7B AE D7 00 00 F3 36 02 E7 00 02 02 00 1B 10 00 00 00 00 4D 53 47 00 00 00 00 00 5D 7B AE D6 F4 91 87 BE 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 CB 02 00 2A 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 04 00 04 83 81 3B E2 05 00 04 B8 8B 33 79 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 00 41 16 00 04 00 00 00 34 18 00 04 00 00 03 73 FF 00 5C 15 36 20 39 32 6B 41 31 43 38 33 38 31 33 62 65 32 62 38 38 62 33 33 37 39 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 41 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 77 02 00 2A 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 04 00 04 83 81 3B E2 05 00 04 B8 8B 33 79 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 00 41 16 00 04 00 00 00 34 18 00 04 00 00 03 73 FF 00 08 15 37 20 20 38 41 41 41 02 00 14 01 00 01 AF 0B 00 08 00 01 00 04 52 CC F5 D0 FF 00 02 14 F0 03 00 CE 02 00 2A 7B 31 46 42 34 43 32 35 45 2D 42 34 46 45 2D 31 32 45 34 2D 46 33 42 42 2D 38 31 39 31 33 37 42 44 39 39 30 39 7D 2E 6A 70 67 04 00 04 B8 27 4B C6 05 00 04 79 5C B1 A3 06 00 04 00 00 00 50 07 00 01 41 08 00 00 09 00 01 01 0B 00 00 14 00 04 03 00 00 00 15 00 04 00 00 00 4E 16 00 04 00 00 00 23 18 00 04 00 00 02 A2 FF 00 5F 15 36 20 39 35 6B 44 31 41 62 38 32 37 34 62 63 36 37 39 35 63 62 31 61 33 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 31 46 42 34 43 32 35 45 2D 42 34 46 45 2D 31 32 45 34 2D 46 33 42 42 2D 38 31 39 31 33 37 42 44 39 39 30 39 7D 2E 6A 70 67 41 42 43 41 0E 00 07 01 00 04 00 00 00 09 19 00 38 01 00 35 AA 02 32 50 03 60 00 68 00 9A 01 29 08 09 20 BF 02 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08 05 00 04 00 00 00 01 08 00 04 00 00 00 01" +
+            "").hexToBytes().dataInputStream(), byteArrayOf(), byteArrayOf())
+    packet.decode()
+    println(packet)
+}
+
+//牛逼[图片]牛逼[图片] 22 96 29 7B B4 DF 94 AA 00 08 74 A4 09 18 8D CC 1F 40 00 52 00 00 00 1B 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 0C 00 05 00 01 00 01 01 22 96 29 7B 01 3E 03 3F A2 00 03 7F 64 5D 7B AC BD 00 00 F3 36 02 03 00 02 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 5D 7B AC BD 12 73 DB A2 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 CB 02 00 2A 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 04 00 04 B4 52 77 F1 05 00 04 BC EB 03 B7 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 00 41 16 00 04 00 00 00 34 18 00 04 00 00 03 73 FF 00 5C 15 36 20 39 32 6B 41 31 43 62 34 35 32 37 37 66 31 62 63 65 62 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 41 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 77 02 00 2A 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 04 00 04 B4 52 77 F1 05 00 04 BC EB 03 B7 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 00 41 16 00 04 00 00 00 34 18 00 04 00 00 03 73 FF 00 08 15 37 20 20 38 41 41 41 0E 00 0E 01 00 04 00 00 00 09 07 00 04 00 00 00 01 19 00 35 01 00 32 AA 02 2F 50 03 60 00 68 00 9A 01 26 08 09 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 05 00 04 00 00 00 01 08 00 04 00 00 00 01 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
+//牛逼[图片]牛逼 22 96 29 7B B4 DF 94 AA 00 0B C1 0A 09 18 89 93 1F 40 00 52 00 00 00 1B 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 0C 00 05 00 01 00 01 01 22 96 29 7B 01 3E 03 3F A2 00 03 7E F5 5D 7B 97 E7 00 00 F3 32 01 8D 00 02 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 5D 7B 97 E6 FA BE 7F DC 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 CF 02 00 2A 7B 39 44 32 44 45 39 31 41 2D 33 39 38 39 2D 39 35 35 43 2D 44 35 42 34 2D 37 46 41 32 37 38 39 37 38 36 30 39 7D 2E 6A 70 67 04 00 04 97 15 7F 03 05 00 04 79 5C B1 A3 06 00 04 00 00 00 50 07 00 01 41 08 00 00 09 00 01 01 0B 00 00 14 00 04 03 00 00 00 15 00 04 00 00 00 3C 16 00 04 00 00 00 40 18 00 04 00 00 03 CC FF 00 60 15 36 20 39 36 6B 45 31 41 39 37 31 35 37 66 30 33 37 39 35 63 62 31 61 33 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 39 44 32 44 45 39 31 41 2D 33 39 38 39 2D 39 35 35 43 2D 44 35 42 34 2D 37 46 41 32 37 38 39 37 38 36 30 39 7D 2E 6A 70 67 31 32 31 32 41 01 00 09 01 00 06 E7 89 9B E9 80 BC 0E 00 0E 01 00 04 00 00 00 09 07 00 04 00 00 00 01 19 00 35 01 00 32 AA 02 2F 50 03 60 00 68 00 9A 01 26 08 09 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 05 00 04 00 00 00 01 08 00 04 00 00 00 01 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
 
 class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray, eventIdentity: ByteArray) : ServerEventPacket(input, packetId, eventIdentity) {
     var qq: Long = 0
@@ -195,18 +233,22 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
 
     override fun decode() {
         input.goto(0)
-        println()
-        println(input.readAllBytes().toUHexString())
+        println("ServerFriendMessageEventPacket.input=" + input.readAllBytes().toUHexString())
         input.goto(0)
 
         qq = input.readUIntAt(0).toLong()
 
         val l1 = input.readShortAt(22)
         input.goto(93 + l1)
-        input.readVarByteArray()//font
+        input.readLVByteArray()//font
         input.skip(2)//2个0x00
         message = input.readSections()
-        println(message.toObjectString())
+
+        val map: Map<Int, ByteArray> = input.readTLVMap(true)
+        println(map[18])
+
+        //todo 后面有昵称可读
+        //19 00 38 01 00 35 AA 02 32 50 03 60 00 68 00 9A 01 29 08 09 20 BF 02 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08 05 00 04 00 00 00 01 08 00 04 00 00 00 01
 
         /*
         val offset = unknownLength0 + fontLength//57
@@ -215,50 +257,64 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
             input.goto(103 + offset).readString(length.toInt())
         }))*/
     }
+}
 
-    private fun DataInputStream.readSection(): Message? {
-        val messageType = this.readByte().toInt()
-        val sectionLength = this.readShort().toLong()//sectionLength: short
-        this.skip(1)//message和face是 0x01, image是0x06
-        return when (messageType) {
-            0x01 -> PlainText(readVarString())
-            0x02 -> {
-                //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
-                //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D
+private fun DataInputStream.readSection(): Message? {
+    val messageType = this.readByte().toInt()
+    val sectionLength = this.readShort().toLong()//sectionLength: short
+    val sectionData = this.readNBytes(sectionLength)
+    return when (messageType) {
+        0x01 -> PlainText.ofByteArray(sectionData)
+        0x02 -> Face.ofByteArray(sectionData)
+        0x03 -> Image.ofByteArray0x03(sectionData)
+        0x06 -> Image.ofByteArray0x06(sectionData)
 
-                val id1 = FaceID.ofId(readLVNumber().toInt())//可能这个是id, 也可能下面那个
-                this.skip(this.readByte().toLong())
-                this.readLVNumber()//某id?
-                return Face(id1)
-            }
-            0x06 -> {
-                this.skip(sectionLength - 37 - 1)
-                val imageId = String(this.readNBytes(36))
-                this.skip(1)//0x41
-                return Image("{$imageId}.jpg")//todo 如何确定文件后缀??
-            }
-            else -> null
+
+        0x19 -> {//长文本
+            val value = readLVByteArray()
+            PlainText(String(value))
+
+            // PlainText(String(GZip.uncompress( value)))
         }
 
+
+        0x14 -> {//长文本
+            val value = readLVByteArray()
+            println(value.size)
+            println(value.toUHexString())
+            this.skip(7)//几个TLV
+            return PlainText(String(value))
+        }
+
+        0x0E -> {//可能是结尾标志?
+            //null
+            null
+        }
+
+        else -> {
+            println("未知的messageType=0x${messageType.toByte().toUHexString()}")
+            println("后文=${this.readAllBytes().toUHexString()}")
+            null
+        }
     }
 
-    private fun DataInputStream.readSections(): MessageChain {
-        val chain = MessageChain()
-        var got: Message? = null
-        do {
-            if (got != null) {
-                chain.concat(got)
-            }
-            got = this.readSection()
-        } while (got != null)
-        return chain
-    }
 }
 
-fun main() {
-    println(String("16  20  20  39  39  31  30  20  38  38  31  43  42  20  20  20  20  20  20  31  37  36  32  65  42  39  45  32  37  32  31  43  39  36  44  37  39  41  38  32  31  36  45  30  41  44  34  30  42  35  39  35  39  31  38  36  2E  6A  70  67  66  2F  65  64  33  39  30  66  38  34  2D  34  66  38  37  2D  34  36  64  63  2D  62  33  38  35  2D  34  35  35  36  62  35  31  30  61  61  35  33  41".replace("  ", " ").hexToBytes()))
-    println(".jpg".toByteArray().size)
+private fun DataInputStream.readSections(): MessageChain {
+    val chain = MessageChain()
+    var got: Message? = null
+    do {
+        if (got != null) {
+            chain.concat(got)
+        }
+        if (this.available() == 0) {
+            return chain
+        }
+        got = this.readSection()
+    } while (got != null)
+    return chain
 }
+
 /*
 
 牛逼   (10404

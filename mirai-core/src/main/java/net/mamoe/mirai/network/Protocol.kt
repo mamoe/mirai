@@ -70,7 +70,7 @@ object Protocol {
      * 发送/接受消息中的一个const (?)
      * length=15
      */
-    const val friendMessageConst1 = "00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
+    const val messageConst1 = "00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
 
     private val hexToByteArrayCacheMap: MutableMap<Int, ByteArray> = mutableMapOf()
 

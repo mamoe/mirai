@@ -6,9 +6,9 @@ import net.mamoe.mirai.network.packet.action.AddFriendResult
 import net.mamoe.mirai.network.packet.action.ClientAddFriendPacket
 import net.mamoe.mirai.network.packet.action.ClientCanAddFriendPacket
 import net.mamoe.mirai.network.packet.action.ServerCanAddFriendResponsePacket
-import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageFailedPacket
-import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageResponsePacket
-import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageSuccessPacket
+import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDFailedPacket
+import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDResponsePacket
+import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDSuccessPacket
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.getGTK
 import java.awt.image.BufferedImage
@@ -39,15 +39,15 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
                     it.onPacketReceived(packet)
                 }
             }
-            is ServerTryUploadGroupImageSuccessPacket -> {
+            is ServerTryGetImageIDSuccessPacket -> {
                 // ImageNetworkUtils.postImage(packet.uKey.toUHexString(), )
             }
 
-            is ServerTryUploadGroupImageFailedPacket -> {
+            is ServerTryGetImageIDFailedPacket -> {
 
             }
 
-            is ServerTryUploadGroupImageResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
+            is ServerTryGetImageIDResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
 
             is ServerAccountInfoResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
             is ServerAccountInfoResponsePacket -> {

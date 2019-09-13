@@ -74,7 +74,7 @@ abstract class Message {
     /**
      * 比较两个 Message 的内容是否相等. 如:
      * - [PlainText] 比较 [PlainText.text]
-     * - [Image] 比较 [Image.imageID]
+     * - [Image] 比较 [Image.imageId]
      */
     abstract infix fun valueEquals(another: Message): Boolean
 

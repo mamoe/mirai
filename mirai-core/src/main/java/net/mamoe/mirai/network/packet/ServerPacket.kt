@@ -11,7 +11,7 @@ import net.mamoe.mirai.network.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.packet.action.ServerSendGroupMessageResponsePacket
-import net.mamoe.mirai.network.packet.image.ServerTryUploadGroupImageResponsePacket
+import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDResponsePacket
 import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
@@ -82,7 +82,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     println(bytes.size)
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
-                        63, 319, 135, 351 -> LoginState.WRONG_PASSWORD//这四个其中一个是被冻结
+                        135 -> LoginState.UNKNOWN//账号已经在另一台电脑登录??
+
+                        63, 319, 351 -> LoginState.WRONG_PASSWORD//63不是密码错误, 应该是登录过频繁
                         //135 -> LoginState.RETYPE_PASSWORD
                         279 -> LoginState.BLOCKED
                         263 -> LoginState.UNKNOWN_QQ_NUMBER
@@ -121,9 +123,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     "00 A7" -> ServerCanAddFriendResponsePacket(stream)
 
-                    "03 88" -> ServerTryUploadGroupImageResponsePacket.Encrypted(stream)
+                    "03 88" -> ServerTryGetImageIDResponsePacket.Encrypted(stream)
 
-                    else -> throw IllegalArgumentException(idHex)
+                    else -> UnknownServerPacket(stream)
                 }
             }.apply { this.idHex = idHex }
         }
@@ -197,15 +199,48 @@ fun DataInputStream.readIP(): String {
     return buff
 }
 
-fun DataInputStream.readVarString(): String {
-    return String(this.readVarByteArray())
+fun DataInputStream.readLVString(): String {
+    return String(this.readLVByteArray())
 }
 
-fun DataInputStream.readVarByteArray(): ByteArray {
+fun DataInputStream.readLVByteArray(): ByteArray {
     return this.readNBytes(this.readShort().toInt())
 }
 
-fun DataInputStream.readString(length: Int): String {
+fun DataInputStream.readTLVMap(expectingEOF: Boolean = false): Map<Int, ByteArray> {
+    val map = mutableMapOf<Int, ByteArray>()
+    var type: Int
+
+    try {
+        type = readUnsignedByte()
+    } catch (e: EOFException) {
+        if (expectingEOF) {
+            return map
+        }
+        throw e
+    }
+
+    while (type != 0xff) {
+        map[type] = this.readLVByteArray()
+
+        try {
+            type = readUnsignedByte()
+        } catch (e: EOFException) {
+            if (expectingEOF) {
+                return map
+            }
+            throw e
+        }
+    }
+    return map
+}
+
+fun Map<Int, ByteArray>.printTLVMap() {
+    println(this.mapValues { (_, value) -> value.toUHexString() })
+}
+
+
+fun DataInputStream.readString(length: Number): String {
     return String(this.readNBytes(length))
 }
 
@@ -290,8 +325,8 @@ fun DataInputStream.gotoWhere(matcher: ByteArray): DataInputStream {
                 if (b != matcher[i]) {
                     continue@loop //todo goto mark
                 }
-                return this
             }
+            return this
         }
     } while (true)
 }
@@ -337,3 +372,5 @@ fun DataInputStream.gotoWhere(matcher: ByteArray) {
 }*/
 
 fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)
+
+fun ByteArray.getRight(length: Int): ByteArray = this.copyOfRange(this.size - length, this.size)

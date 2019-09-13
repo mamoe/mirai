@@ -10,7 +10,7 @@ import java.util.Objects;
  * @author Him188moe
  */
 public abstract class BotEvent extends MiraiEvent {
-    private final Bot bot;
+    public final Bot bot;
 
     public BotEvent(@NotNull Bot bot) {
         this.bot = Objects.requireNonNull(bot);

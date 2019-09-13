@@ -58,6 +58,9 @@ public class HexComparator {
             private static final String _1040400290_ = "3E 03 3F A2";
             private static final String _1994701021_ = "76 E4 B8 DD";
             private static final String _jiahua_ = "B1 89 BE 09";
+            private static final String _Him188moe_ = UtilsKt.toUHexString("Him188moe".getBytes(), " ");
+            private static final String 发图片 = UtilsKt.toUHexString("发图片".getBytes(), " ");
+            private static final String 群 = UtilsKt.toUHexString("发图片".getBytes(), " ");
 
             private static final String SINGLE_PLAIN_MESSAGE_HEAD = "00 00 01 00 09 01";
 

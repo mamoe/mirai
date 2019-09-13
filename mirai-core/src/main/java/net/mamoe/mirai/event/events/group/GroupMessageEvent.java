@@ -10,25 +10,25 @@ import org.jetbrains.annotations.NotNull;
  * @author Him188moe
  */
 public final class GroupMessageEvent extends GroupEvent {
-    private final QQ sender;
-    private final MessageChain messageChain;
-    private final String messageString;
+    public final QQ sender;
+    public final MessageChain chain;
+    public final String message;
 
-    public GroupMessageEvent(@NotNull Bot bot, @NotNull Group group, @NotNull QQ sender, @NotNull MessageChain messageChain) {
+    public GroupMessageEvent(@NotNull Bot bot, @NotNull Group group, @NotNull QQ sender, @NotNull MessageChain chain) {
         super(bot, group);
         this.sender = sender;
-        this.messageChain = messageChain;
-        this.messageString = messageChain.toString();
+        this.chain = chain;
+        this.message = chain.toString();
     }
 
     @NotNull
-    public MessageChain getMessageChain() {
-        return messageChain;
+    public MessageChain getChain() {
+        return chain;
     }
 
     @NotNull
-    public String getMessageString() {
-        return messageString;
+    public String getMessage() {
+        return message;
     }
 
     @NotNull
