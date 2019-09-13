@@ -42,6 +42,14 @@ public class Bot {
         return new ArrayList<>();
     }
 
+    public void addGroup(){
+
+    }
+
+    public void quitGroup(){
+
+    }
+
     public void sendGroupMessage(long group, String message){
 
     }

@@ -18,6 +18,20 @@ import java.util.List;
  *         for only using                , you should refer to Mirai-API
  */
 public class MiraiAPI {
+
+    public static void startMirai(String[] args){
+        MiraiMain.main(args);
+    }
+
+    public static void closeMirai(){
+        MiraiServer.getInstance().shutdown();
+    }
+
+    public static void restartMirai(String[] args){
+        MiraiServer.getInstance().shutdown();
+        MiraiMain.main(args);
+    }
+
     public static String getMiraiVersion(){
         return MiraiServer.MIRAI_VERSION;
     }
