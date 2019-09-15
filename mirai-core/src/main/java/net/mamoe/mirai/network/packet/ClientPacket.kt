@@ -122,26 +122,32 @@ fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: (ByteArrayDataOutp
 
 @Throws(IOException::class)
 fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
-    ByteArrayDataOutputStream().let {
+    val firstMD5 = md5(password)
+    val secondMD5 = md5(firstMD5 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
+
+    this.encryptAndWrite(secondMD5) {
         it.writeRandom(4)
         it.writeHex("00 02")
         it.writeQQ(qq)
         it.writeHex(Protocol.constantData2)
         it.writeHex("00 00 01")
 
-        val firstMD5 = md5(password)
-        val secondMD5 = md5(firstMD5 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
         it.write(firstMD5)
         it.writeInt(loginTime)
         it.writeByte(0)
         it.writeZero(4 * 3)
         it.writeIP(loginIP)
         it.writeZero(8)
-        it.writeHex("00 10")
-        it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")
+        it.writeHex("00 10")//这两个hex是passwordSubmissionTLV2的末尾
+        it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")//16
         it.write(tgtgtKey)
-        this.write(TEA.encrypt(it.toByteArray(), secondMD5))
     }
+}
+
+fun main() {
+    println(lazyEncode {
+        it.writeTLV0006(1040400290, "asdHim188moe", System.currentTimeMillis().toInt(), "123.123.123.123", getRandomByteArray(56))
+    }.size)
 }
 
 @Tested

@@ -292,6 +292,10 @@ fun <N : Number> DataInputStream.readUIntAt(position: N): UInt {
     return this.readNBytes(4).toUInt()
 }
 
+fun DataInputStream.readUInt(): UInt {
+    return this.readNBytes(4).toUInt()
+}
+
 fun <N : Number> DataInputStream.readByteAt(position: N): Byte {
     this.goto(position)
     return this.readByte()

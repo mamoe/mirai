@@ -244,10 +244,9 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
         input.skip(2)//2个0x00
         message = input.readSections()
 
-        val map: Map<Int, ByteArray> = input.readTLVMap(true)
-        println(map[18])
+        val map: Map<Int, ByteArray> = input.readTLVMap(true).withDefault { byteArrayOf() }
+        println(map.getValue(18))
 
-        //todo 后面有昵称可读
         //19 00 38 01 00 35 AA 02 32 50 03 60 00 68 00 9A 01 29 08 09 20 BF 02 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08 05 00 04 00 00 00 01 08 00 04 00 00 00 01
 
         /*
@@ -272,6 +271,7 @@ private fun DataInputStream.readSection(): Message? {
 
         0x19 -> {//长文本
             val value = readLVByteArray()
+            //todo 未知压缩算法
             PlainText(String(value))
 
             // PlainText(String(GZip.uncompress( value)))
@@ -282,11 +282,12 @@ private fun DataInputStream.readSection(): Message? {
             val value = readLVByteArray()
             println(value.size)
             println(value.toUHexString())
+            //todo 未知压缩算法
             this.skip(7)//几个TLV
             return PlainText(String(value))
         }
 
-        0x0E -> {//可能是结尾标志?
+        0x0E -> {
             //null
             null
         }

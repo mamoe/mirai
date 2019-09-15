@@ -239,10 +239,10 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
      */
     inner class Login : Closeable {
         private lateinit var token00BA: ByteArray
-        private lateinit var token0825: ByteArray
+        private lateinit var token0825: ByteArray//56
         private var loginTime: Int = 0
         private lateinit var loginIP: String
-        private var tgtgtKey: ByteArray = getRandomByteArray(16)
+        private var randomTgtgtKey: ByteArray = getRandomByteArray(16)
 
         /**
          * 0828_decr_key
@@ -266,7 +266,8 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                         this.loginIP = packet.loginIP
                         this.loginTime = packet.loginTime
                         this.token0825 = packet.token0825
-                        socket.sendPacket(ClientPasswordSubmissionPacket(bot.account.qqNumber, bot.account.password, packet.loginTime, packet.loginIP, this.tgtgtKey, packet.token0825))
+                        println("token0825=" + this.token0825.toUHexString())
+                        socket.sendPacket(ClientPasswordSubmissionPacket(bot.account.qqNumber, bot.account.password, packet.loginTime, packet.loginIP, this.randomTgtgtKey, packet.token0825))
                     }
                 }
 
@@ -276,9 +277,9 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 }
 
                 is ServerVerificationCodeCorrectPacket -> {
-                    this.tgtgtKey = getRandomByteArray(16)
+                    this.randomTgtgtKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
-                    socket.sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.tgtgtKey, this.token0825, this.token00BA))
+                    socket.sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.randomTgtgtKey, this.token0825, this.token00BA))
                 }
 
                 is ServerLoginResponseVerificationCodeInitPacket -> {
@@ -337,11 +338,11 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                     //println("token00BA changed!!! to " + token00BA.toUByteArray())
                     //}
                     if (packet.flag == ServerLoginResponseKeyExchangePacket.Flag.`08 36 31 03`) {
-                        this.tgtgtKey = packet.tgtgtKey
-                        socket.sendPacket(ClientLoginResendPacket3104(bot.account.qqNumber, bot.account.password, loginTime, loginIP, tgtgtKey, token0825, packet.tokenUnknown
+                        this.randomTgtgtKey = packet.tgtgtKey
+                        socket.sendPacket(ClientLoginResendPacket3104(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomTgtgtKey, token0825, packet.tokenUnknown
                                 ?: this.token00BA, packet.tlv0006))
                     } else {
-                        socket.sendPacket(ClientLoginResendPacket3106(bot.account.qqNumber, bot.account.password, loginTime, loginIP, tgtgtKey, token0825, packet.tokenUnknown
+                        socket.sendPacket(ClientLoginResendPacket3106(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomTgtgtKey, token0825, packet.tokenUnknown
                                 ?: token00BA, packet.tlv0006))
                     }
                 }
@@ -372,8 +373,8 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
                 is ServerVerificationCodePacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
-                is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.tgtgtKey))
-                is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.tgtgtKey))
+                is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
+                is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
                 is ServerSessionKeyResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
                 is ServerTouchResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt())
 

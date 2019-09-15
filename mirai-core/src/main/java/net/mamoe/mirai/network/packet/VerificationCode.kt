@@ -72,15 +72,15 @@ class ClientVerificationCodeSubmitPacket(
             it.writeHex("01 03")
 
             it.writeShort(25)
-            it.writeHex(Protocol.publicKey)
+            it.writeHex(Protocol.publicKey)//25
 
             it.writeHex("14 00 05 00 00 00 00 00 04")
             it.write(verificationCode.toUpperCase().toByteArray())
             it.writeHex("00 38")
             it.write(verificationToken)
 
-            it.writeHex("00 10")
-            it.writeHex(Protocol.key00BAFix)
+            it.writeShort(16)
+            it.writeHex(Protocol.key00BAFix)//16
         }
     }
 
