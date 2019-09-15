@@ -3,12 +3,14 @@ package net.mamoe.mirai.utils.setting;
 import net.mamoe.mirai.plugin.MiraiPluginBase;
 import org.ini4j.Config;
 import org.ini4j.Ini;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -31,16 +33,15 @@ public class MiraiSettings {
         this(new File(filename));
     }
 
-    public MiraiSettings(File file) {
-        if(!file.getName().contains(".")){
+    public MiraiSettings(@NotNull File file) {
+        Objects.requireNonNull(file);
+        if (!file.getName().contains(".")) {
             file = new File(file.getPath() + ".ini");
         }
         this.file = file;
         try {
-            if (!file.exists()) {
-                if (!file.createNewFile()) {
-                    throw new RuntimeException("cannot create config file " + file);
-                }
+            if (!file.exists() && !file.createNewFile()) {
+                throw new RuntimeException("cannot create config file " + file);
             }
             Config config = new Config();
             config.setMultiSection(true);
@@ -58,9 +59,9 @@ public class MiraiSettings {
 
 
     public synchronized MiraiSettingMapSection getMapSection(String key) {
-        if(!cacheSection.containsKey(key)) {
+        if (!cacheSection.containsKey(key)) {
             MiraiSettingMapSection section = new MiraiSettingMapSection();
-            if(ini.containsKey(key)){
+            if (ini.containsKey(key)) {
                 section.putAll(ini.get(key));
             }
             cacheSection.put(key, section);
@@ -69,9 +70,9 @@ public class MiraiSettings {
     }
 
     public synchronized MiraiSettingListSection getListSection(String key) {
-        if(!cacheSection.containsKey(key)) {
+        if (!cacheSection.containsKey(key)) {
             MiraiSettingListSection section = new MiraiSettingListSection();
-            if(ini.containsKey(key)){
+            if (ini.containsKey(key)) {
                 section.addAll(ini.get(key).values());
             }
             cacheSection.put(key, section);
@@ -80,10 +81,10 @@ public class MiraiSettings {
     }
 
 
-    public synchronized void save(){
-        cacheSection.forEach((k,a) -> {
-            if(!ini.containsKey(k)) {
-                ini.put(k,"",new HashMap<>());
+    public synchronized void save() {
+        cacheSection.forEach((k, a) -> {
+            if (!ini.containsKey(k)) {
+                ini.put(k, "", new HashMap<>());
             }
             a.saveAsSection(ini.get(k));
         });
