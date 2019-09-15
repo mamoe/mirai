@@ -35,9 +35,9 @@ public final class MiraiServer {
         return instance;
     }
 
-    private final static String MIRAI_VERSION = "1.0.0";
+    public final static String MIRAI_VERSION = "1.0.0";
 
-    private final static String QQ_VERSION = "4.9.0";
+    public final static String QQ_VERSION = "4.9.0";
 
 
     @Getter //is running under UNIX
