@@ -9,13 +9,6 @@
 部分协议来自网络上开源项目  
 一切开发旨在学习，请勿用于非法用途  
 
-<br>
-
-A JAVA(+Kotlin) powered open-source project under GPL license<br>
-It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
-The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
-
-
 ## 抢先体验  
 核心框架结构已经开发完毕，一些核心功能也测试完成。  
 仅需几分钟就可以测试 Mirai.  
@@ -85,6 +78,14 @@ FriendMessageEvent::class.hookAlways{
     to be continued
     ...
 ```
+
+# Mirai
+
+<br>
+
+A JAVA(+Kotlin) powered open-source project under GPL license<br>
+It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
+The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
 
 # Usage
 ## Requirements
