@@ -2,6 +2,9 @@
 
 package net.mamoe.mirai.network
 
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.lazyDecode
+import net.mamoe.mirai.utils.readUnsignedVarInt
 import java.net.InetAddress
 import java.util.*
 import java.util.stream.Collectors
@@ -44,10 +47,28 @@ object Protocol {
      * 0825data2
      */
     const val constantData2 = "00 00 04 53 00 00 00 01 00 00 15 85 "
-    const val key0825 = "A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D"
-    const val redirectionKey = "A8 F2 14 5F 58 12 60 AF 07 63 97 D6 76 B2 1A 3B"
-    const val publicKey = "02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3"
-    const val shareKey = "1A E9 7F 7D C9 73 75 98 AC 02 E0 80 5F A9 C6 AF"
+
+    /**
+     * 0825 key
+     *
+     * Touch 发出时写入, 并用于加密, 接受 touch response 时解密.
+     */
+    const val touchKey = "A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D"//16
+
+    /**
+     * Redirection 发出时写入, 并用于加密, 接受 Redirection response 时解密.
+     */
+    const val redirectionKey = "A8 F2 14 5F 58 12 60 AF 07 63 97 D6 76 B2 1A 3B"//16
+
+    /**
+     *
+     */
+    const val publicKey = "02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3"//25
+
+    /**
+     * 没有任何地方写入了这个 key
+     */
+    const val shareKey = "1A E9 7F 7D C9 73 75 98 AC 02 E0 80 5F A9 C6 AF"//16
     const val fix0836 = "06 A9 12 97 B7 F8 76 25 AF AF D3 EA B4 C8 BC E7 "
 
     const val key00BA = "C1 9C B8 C8 7B 8C 81 BA 9E 9E 7A 89 E1 7A EC 94"
@@ -56,21 +77,28 @@ object Protocol {
     /**
      * 0836_622_fix2
      */
-    const val passwordSubmissionKey2 = "00 15 00 30 00 01 01 27 9B C7 F5 00 10 65 03 FD 8B 00 00 00 00 00 00 00 00 00 00 00 00 02 90 49 55 33 00 10 15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B";
+    const val passwordSubmissionTLV2 = "00 15 00 30 00 01 01 27 9B C7 F5 00 10 65 03 FD 8B 00 00 00 00 00 00 00 00 00 00 00 00 02 90 49 55 33 00 10 15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B";
     /**
      * 0836_622_fix1
      */
-    const val passwordSubmissionKey1 = "03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03 00 19";
+    const val passwordSubmissionTLV1 = "03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03"//19
+    //               最新版              03 00 00 00 01 2E 01 00 00 69 35 00 00 00 00 00 02 01 03
+    //               第一版 1.0.2        03 00 00 00 01 2E 01 00 00 68 13 00 00 00 00 00 02 01 03
+    //                  1.0.4           03 00 00 00 01 2E 01 00 00 68 27 00 00 00 00 00 02 01 03
+    //                1.1               03 00 00 00 01 2E 01 00 00 68 3F 00 00 00 00 00 02 01 03
+    //                 1.2              03 00 00 00 01 2E 01 00 00 68 44 00 00 00 00 00 02 01 03
     /**
      * fix_0836_1
+     *
+     * LoginResend 和 PasswordSubmission 时写入, 但随后都使用 shareKey 加密, 收到回复也是用的 share key
      */
-    const val key0836 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"
+    const val key0836 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"//16
 
     /**
      * 发送/接受消息中的一个const (?)
      * length=15
      */
-    const val friendMessageConst1 = "00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
+    const val messageConst1 = "00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
 
     private val hexToByteArrayCacheMap: MutableMap<Int, ByteArray> = mutableMapOf()
 
@@ -95,4 +123,11 @@ object Protocol {
             .map { s -> s.toUByte(16) }
             .collect(Collectors.toList()).toUByteArray()
 
+}
+
+fun main() {
+    lazyDecode("03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03".hexToBytes()) {
+        it.skip(7)
+        println(it.readUnsignedVarInt())
+    }
 }

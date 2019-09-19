@@ -3,6 +3,7 @@ package net.mamoe.mirai.network.packet.action
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.network.Protocol
 import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.utils.lazyEncode
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
@@ -11,8 +12,8 @@ import java.io.DataInputStream
  */
 @PacketId("00 02")
 class ClientSendGroupMessagePacket(
-        private val groupId: Long,//不是 number
         private val botQQ: Long,
+        private val groupId: Long,//不是 number
         private val sessionKey: ByteArray,
         private val message: MessageChain
 ) : ClientPacket() {
@@ -26,18 +27,19 @@ class ClientSendGroupMessagePacket(
             it.writeByte(0x2A)
             it.writeGroup(groupId)
 
-            it.writeShort(50 + bytes.size)
-            it.writeHex("00 01 01")
-            it.writeHex("00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")
+            it.writeLVByteArray(lazyEncode { child ->
+                child.writeHex("00 01 01")
+                child.writeHex("00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")
 
-            it.writeTime()
-            it.writeRandom(4)
-            it.writeHex("00 00 00 00 09 00 86")
-            it.writeHex(Protocol.friendMessageConst1)
-            it.writeZero(2)
+                child.writeTime()
+                child.writeRandom(4)
+                child.writeHex("00 00 00 00 09 00 86")
+                child.writeHex(Protocol.messageConst1)
+                child.writeZero(2)
 
-            //messages
-            it.write(bytes)
+                //messages
+                child.write(bytes)
+            })
             /*it.writeByte(0x01)
             it.writeShort(bytes.size + 3)
             it.writeByte(0x01)

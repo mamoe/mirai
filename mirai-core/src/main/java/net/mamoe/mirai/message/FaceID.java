@@ -166,7 +166,7 @@ public enum FaceID {
                 return value;
             }
         }
-        return null;
+        return FaceID.unknown;
     }
 
 

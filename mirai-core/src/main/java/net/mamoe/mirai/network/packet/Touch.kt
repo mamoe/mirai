@@ -24,7 +24,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
 
     var loginTime: Int = 0
     lateinit var loginIP: String
-    lateinit var token0825: ByteArray
+    lateinit var token0825: ByteArray//56
 
     enum class Type {
         TYPE_08_25_31_01,
@@ -57,7 +57,7 @@ class ServerTouchResponsePacket(inputStream: DataInputStream) : ServerPacket(inp
 
         fun decrypt(): ServerTouchResponsePacket = ServerTouchResponsePacket(decryptBy(when (type) {
             Type.TYPE_08_25_31_02 -> Protocol.redirectionKey.hexToBytes()
-            Type.TYPE_08_25_31_01 -> Protocol.key0825.hexToBytes()
+            Type.TYPE_08_25_31_01 -> Protocol.touchKey.hexToBytes()
         })).setId(this.idHex)
     }
 }
@@ -75,9 +75,9 @@ class ClientTouchPacket(private val qq: Long, private val serverIp: String) : Cl
     override fun encode() {
         this.writeQQ(qq)
         this.writeHex(Protocol.fixVer)
-        this.writeHex(Protocol.key0825)
+        this.writeHex(Protocol.touchKey)
 
-        this.encryptAndWrite(Protocol.key0825) {
+        this.encryptAndWrite(Protocol.touchKey) {
             it.writeHex(Protocol.constantData1)
             it.writeHex(Protocol.constantData2)
             it.writeQQ(qq)
@@ -94,7 +94,6 @@ class ClientTouchPacket(private val qq: Long, private val serverIp: String) : Cl
  *
  * @author Him188moe
  */
-
 @PacketId("08 25 31 02")
 class ClientServerRedirectionPacket(private val serverIP: String, private val qq: Long) : ClientPacket() {
 

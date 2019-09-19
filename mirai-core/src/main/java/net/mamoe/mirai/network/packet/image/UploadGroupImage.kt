@@ -11,8 +11,8 @@ import java.io.DataInputStream
 /**
  * 请求上传图片. 将发送图片的 md5, size.
  * 服务器返回以下之一:
- * - 服务器已经存有这个图片 [ServerTryUploadGroupImageFailedPacket]
- * - 服务器未存有, 返回一个 key 用于客户端上传 [ServerTryUploadGroupImageSuccessPacket]
+ * - 服务器已经存有这个图片 [ServerTryGetImageIDFailedPacket]
+ * - 服务器未存有, 返回一个 key 用于客户端上传 [ServerTryGetImageIDSuccessPacket]
  *
  * @author Him188moe
  */
@@ -20,7 +20,7 @@ import java.io.DataInputStream
 class ClientTryGetImageIDPacket(
         private val botNumber: Long,
         private val sessionKey: ByteArray,
-        private val groupNumberOrQQNumber: Long,//todo 为什么还要有qq number呢? bot不就是了么
+        private val groupNumberOrQQNumber: Long,
         private val image: BufferedImage
 ) : ClientPacket() {
     override fun encode() {
@@ -89,18 +89,18 @@ class ClientTryGetImageIDPacket(
     }
 }
 
-abstract class ServerTryUploadGroupImageResponsePacket(input: DataInputStream) : ServerPacket(input) {
+abstract class ServerTryGetImageIDResponsePacket(input: DataInputStream) : ServerPacket(input) {
 
     class Encrypted(input: DataInputStream) : ServerPacket(input) {
-        fun decrypt(sessionKey: ByteArray): ServerTryUploadGroupImageResponsePacket {
+        fun decrypt(sessionKey: ByteArray): ServerTryGetImageIDResponsePacket {
             val data = this.decryptAsByteArray(sessionKey)
             println(data.size)
             println(data.size)
             if (data.size == 209) {
-                return ServerTryUploadGroupImageSuccessPacket(data.dataInputStream()).setId(this.idHex)
+                return ServerTryGetImageIDSuccessPacket(data.dataInputStream()).setId(this.idHex)
             }
 
-            return ServerTryUploadGroupImageFailedPacket(data.dataInputStream())
+            return ServerTryGetImageIDFailedPacket(data.dataInputStream())
         }
     }
 }
@@ -108,25 +108,21 @@ abstract class ServerTryUploadGroupImageResponsePacket(input: DataInputStream) :
 /**
  * 服务器未存有图片, 返回一个 key 用于客户端上传
  */
-class ServerTryUploadGroupImageSuccessPacket(input: DataInputStream) : ServerTryUploadGroupImageResponsePacket(input) {
+class ServerTryGetImageIDSuccessPacket(input: DataInputStream) : ServerTryGetImageIDResponsePacket(input) {
     lateinit var uKey: ByteArray
 
 
     override fun decode() {
-        uKey = this.input.gotoWhere(ubyteArrayOf(0x42u, 0x80u, 0x01u)).readNBytes(128)
+        this.input.gotoWhere(ubyteArrayOf(0x42u, 0x80u, 0x01u))
+        uKey = this.input.readNBytes(128)
     }
 }
 
 /**
  * 服务器已经存有这个图片
  */
-class ServerTryUploadGroupImageFailedPacket(input: DataInputStream) : ServerTryUploadGroupImageResponsePacket(input) {
+class ServerTryGetImageIDFailedPacket(input: DataInputStream) : ServerTryGetImageIDResponsePacket(input) {
     override fun decode() {
 
     }
-}
-
-fun main() {
-
-    println(0xff)
 }

@@ -11,15 +11,15 @@ import java.util.Objects;
  * @author Him188moe
  */
 public abstract class FriendEvent extends BotEvent {
-    private final QQ qq;
+    public final QQ sender;
 
-    public FriendEvent(@NotNull Bot bot, @NotNull QQ qq) {
+    public FriendEvent(@NotNull Bot bot, @NotNull QQ sender) {
         super(bot);
-        this.qq = Objects.requireNonNull(qq);
+        this.sender = Objects.requireNonNull(sender);
     }
 
     @NotNull
-    public QQ getQQ() {
-        return qq;
+    public QQ getSender() {
+        return sender;
     }
 }

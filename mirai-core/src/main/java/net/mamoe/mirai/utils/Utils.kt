@@ -3,14 +3,19 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.network.Protocol
+import net.mamoe.mirai.network.packet.dataInputStream
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.lang.reflect.Field
 import java.util.*
 import java.util.zip.CRC32
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
+
 
 /**
  * @author Him188moe
@@ -76,6 +81,12 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
 @JvmSynthetic
 fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().also(t).toByteArray()
 
+@JvmSynthetic
+fun <T> lazyDecode(byteArray: ByteArray, t: (DataInputStream) -> T): T = byteArray.dataInputStream().let(t)
+
+fun DataInputStream.skip(n: Number) {
+    this.skip(n.toLong())
+}
 
 fun getRandomByteArray(length: Int): ByteArray {
     val bytes = LinkedList<Byte>()
@@ -143,5 +154,16 @@ fun ByteArray.removeZeroTail(): ByteArray {
 fun BufferedImage.toByteArray(formatName: String = "PNG"): ByteArray {
     return lazyEncode {
         ImageIO.write(this, formatName, it)
+    }
+}
+
+object GZip {
+    fun uncompress(bytes: ByteArray): ByteArray = lazyEncode {
+        GZIPInputStream(bytes.inputStream()).transferTo(it)
+    }
+
+    fun compress(bytes: ByteArray): ByteArray = ByteArrayOutputStream().let {
+        GZIPOutputStream(it).write(bytes)
+        return it.toByteArray()
     }
 }

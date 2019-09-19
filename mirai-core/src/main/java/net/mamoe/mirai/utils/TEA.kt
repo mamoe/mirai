@@ -233,8 +233,8 @@ object TEA {
             try {
                 return decrypt(data, 0, data.size)!!
             } catch (e: Exception) {
-                println("Source: " + data.toUHexString(" "))
-                println("Key: " + key.toUHexString(" "))
+                //println("Source: " + data.toUHexString(" "))
+                // println("Key: " + key.toUHexString(" "))
                 throw e
             }
         }
