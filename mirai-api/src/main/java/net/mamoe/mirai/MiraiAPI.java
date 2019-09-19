@@ -56,4 +56,8 @@ public class MiraiAPI {
         return new Bot(qq);
     }
 
+    public static void addBot(long qq, String password){
+
+    }
+
 }

@@ -1,21 +1,20 @@
 # Mirai
 
 一个以<b>TIM QQ协议(非web)</b>驱动的JAVA(+Kotlin) QQ机器人服务端核心  
-我们坚持免费与开源  
+采用服务端-插件模式运行，同时提供独立的协议层库  
+**我们承诺项目的所有模块均开源**  
   
-项目处于快速开发阶段  
+项目处于开发阶段，学生无法每日大量更新。  
+项目还有很多未完善的地方, 欢迎任何的代码贡献, 或是 issue.   
 部分协议来自网络上开源项目  
-一切开发旨在学习, 请勿用于非法用途
+一切开发旨在学习，请勿用于非法用途  
 
-<br>
+## 抢先体验  
+核心框架结构已经开发完毕，一些核心功能也测试完成。  
+仅需几分钟就可以测试 Mirai.  
+现在你可以登录小号来测试 Mirai.  
+即使测试消息时未发现冻结情况，我们也无法100%保证账号冻结不会发生。
 
-A JAVA(+Kotlin) powered open-source project under GPL license<br>
-It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
-The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
-
-
-## 抢先体验
-现在你可以使用 Mirai 内置的一些测试qq号体验 Mirai, 但我们现在还不建议你使用自己的 qq 号登录
 1. Clone
 2. Import as Maven project
 3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
@@ -44,13 +43,11 @@ FriendMessageEvent::class.hookAlways{
 ![JsssF](.github/J%5DCE%29IK4BU08%28EO~UVLJ%7B%5BF.png)  
 ![](.github/68f8fec9.png)
 
-不过我们还正在努力做发送图片
+发送图片已经完成，但我们还在开发上传图片至服务器。  
+现在你可以通过发送一张图片给机器人账号，再让机器人账号发送这张图片。你可以查看 [Image](src/main/java/net/mamoe/mirai/message/Image.kt)
 
-## 代码结构
-Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).  
-与插件相关性强(或其他在二次开发中容易接触)的部分尽量使用 Java 完成,
-若使用 Kotlin, 我们会通过 Java interface 实现或 javadoc 帮助未接触过 Kotlin 的开发者.
-即使你完全不了解 Kotlin, 你也可以正常开发.
+## 语言使用说明
+我们使用 Kotlin，但我们也会保留对 Java 和 Java开发者的支持。
 
 # TODO
 - [x] 事件(Event)模块  
@@ -64,10 +61,11 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
 - [ ] Network - Events
 - [ ] Bot - Friend/group list
 - [ ] Bot - Actions(joining group, adding friend, etc.)
-- [ ] Message Section **(Working on)**
+- [x] Message Section
 - [ ] Image uploading **(Working on)**
 - [ ] Contact  
 - [ ] UI
+- [ ] Console
 
 <br>
 
@@ -80,6 +78,14 @@ Network部分使用 Kotlin 完成(因为kt有对 unsigned byte 的支持).
     to be continued
     ...
 ```
+
+# Mirai
+
+<br>
+
+A JAVA(+Kotlin) powered open-source project under GPL license<br>
+It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
+The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
 
 # Usage
 ## Requirements

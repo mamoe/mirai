@@ -154,23 +154,8 @@ public final class MiraiServer {
 
     private void initQQConfig(File qqConfig) {
         this.qqs = new MiraiConfig(qqConfig);
-
-        MiraiConfigSection<Object> section = new MiraiConfigSection<>();
-
-        Scanner scanner = new Scanner(System.in);
-        getLogger().info("Input a " + LoggerTextFormat.RED + " QQ number " + LoggerTextFormat.GREEN + "for default botNetworkHandler");
-        getLogger().info("输入用于默认机器人的QQ号");
-        long qqNumber = scanner.nextLong();
-        getLogger().info("Input the password for that QQ account");
-        getLogger().info("输入该QQ号的密码");
-        String qqPassword = scanner.next();
-
-        section.put("password", qqPassword);
-        section.put("owner", "default");
-
-        this.qqs.put(String.valueOf(qqNumber), section);
-        this.qqs.save();
         getLogger().info("QQ account initialized; changing can be made in Config file: " + qqConfig.toString());
+        getLogger().info("QQ 账户管理初始化完毕");
     }
 
     private void onEnabled() {
