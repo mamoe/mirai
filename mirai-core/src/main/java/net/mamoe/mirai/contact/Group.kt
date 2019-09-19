@@ -29,7 +29,7 @@ class Group(bot: Bot, number: Long) : Contact(bot, number), Closeable {
         bot.network.message.sendGroupMessage(this, message)
     }
 
-    override fun sendXMLMessage(message: String) {
+    override suspend fun sendXMLMessage(message: String) {
 
     }
 

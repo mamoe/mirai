@@ -18,9 +18,6 @@ import java.util.concurrent.CompletableFuture
  * @author Him188moe
  */
 abstract class Contact internal constructor(val bot: Bot, val number: Long) {
-    /**
-     * Async
-     */
     abstract suspend fun sendMessage(message: MessageChain)
 
     /**
@@ -44,5 +41,5 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
     /**
      * Async
      */
-    abstract fun sendXMLMessage(message: String)
+    abstract suspend fun sendXMLMessage(message: String)
 }

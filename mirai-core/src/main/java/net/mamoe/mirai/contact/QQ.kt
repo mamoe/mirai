@@ -22,7 +22,7 @@ class QQ(bot: Bot, number: Long) : Contact(bot, number) {
         bot.network.message.sendFriendMessage(this, message)
     }
 
-    override fun sendXMLMessage(message: String) {
+    override suspend fun sendXMLMessage(message: String) {
 
     }
 
