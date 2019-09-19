@@ -25,7 +25,7 @@ class Group(bot: Bot, number: Long) : Contact(bot, number), Closeable {
     val groupId = groupNumberToId(number)
     val members = ContactList<QQ>()
 
-    override fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain) {
         bot.network.message.sendGroupMessage(this, message)
     }
 

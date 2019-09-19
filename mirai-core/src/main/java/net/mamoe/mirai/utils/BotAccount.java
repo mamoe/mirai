@@ -6,8 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class BotAccount {
-
     public final long qqNumber;
-    private final String password;
-
+    public final String password;
 }

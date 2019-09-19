@@ -18,7 +18,7 @@ import net.mamoe.mirai.message.defaults.MessageChain
  * @author Him188moe
  */
 class QQ(bot: Bot, number: Long) : Contact(bot, number) {
-    override fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain) {
         bot.network.message.sendFriendMessage(this, message)
     }
 

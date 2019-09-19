@@ -11,7 +11,7 @@ import java.io.Closeable
 abstract class PacketHandler(
         val session: LoginSession
 ) : Closeable {
-    abstract fun onPacketReceived(packet: ServerPacket)
+    abstract suspend fun onPacketReceived(packet: ServerPacket)
 
     override fun close() {
 

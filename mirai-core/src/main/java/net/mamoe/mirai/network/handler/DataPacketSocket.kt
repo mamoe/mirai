@@ -6,9 +6,7 @@ import net.mamoe.mirai.network.BotNetworkHandlerImpl
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.packet.ClientPacket
 import net.mamoe.mirai.network.packet.ServerPacket
-import net.mamoe.mirai.task.MiraiThreadPool
 import java.io.Closeable
-import java.util.concurrent.Future
 
 /**
  * 网络接口.
@@ -23,7 +21,7 @@ interface DataPacketSocket : Closeable {
     /**
      * 分发数据包给 [PacketHandler]
      */
-    fun distributePacket(packet: ServerPacket)
+    suspend fun distributePacket(packet: ServerPacket)
 
     /**
      * 发送一个数据包(非异步).
@@ -32,20 +30,7 @@ interface DataPacketSocket : Closeable {
      *
      * @see [LoginSession.expectPacket] kotlin DSL
      */
-    fun sendPacket(packet: ClientPacket)
-
-    /**
-     * 发送一个数据包(异步).
-     *
-     * 可通过 hook 事件 [ServerPacketReceivedEvent] 来获取服务器返回.
-     *
-     * @see [LoginSession.expectPacket] kotlin DSL
-     */
-    fun sendPacketAsync(packet: ClientPacket): Future<*> {
-        return MiraiThreadPool.getInstance().submit {
-            sendPacket(packet)
-        }
-    }
+    suspend fun sendPacket(packet: ClientPacket)
 
     fun isClosed(): Boolean
 
