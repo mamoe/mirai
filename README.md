@@ -1,4 +1,5 @@
 # Mirai
+[![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai)
 
 一个以<b>TIM QQ协议(非web)</b>驱动的JAVA(+Kotlin) QQ机器人服务端核心  
 采用服务端-插件模式运行，同时提供独立的协议层库  
