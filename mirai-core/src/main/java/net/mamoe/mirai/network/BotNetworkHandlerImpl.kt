@@ -117,8 +117,10 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
                     bot.notice("Packet received: $packet")
                 }
+            }
 
-                if (packet is ServerEventPacket) {
+            if (packet is ServerEventPacket) {
+                NetworkScope.launch {
                     sendPacket(ClientEventResponsePacket(bot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
                 }
             }
@@ -127,10 +129,18 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 return
             }
 
-            login.onPacketReceived(packet)
-            packetHandlers.forEach {
-                it.instance.onPacketReceived(packet)
-            }
+            withContext(NetworkScope.coroutineContext) {
+                launch {
+                    login.onPacketReceived(packet)
+                }
+
+
+                packetHandlers.forEach {
+                    launch {
+                        it.instance.onPacketReceived(packet)
+                    }
+                }
+            }//awaits all coroutines launched in this block
         }
 
         private var socket: DatagramSocket? = null

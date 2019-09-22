@@ -26,7 +26,7 @@ class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImage
     constructor(imageFile: File) : this(imageFile.name, ImageIO.read(imageFile))
     constructor(url: URL) : this(File(url.file))
 
-    suspend fun upload(session: LoginSession, contact: Contact): CompletableFuture<Unit> {//todo be suspend
+    fun upload(session: LoginSession, contact: Contact): CompletableFuture<Unit> {
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
             toSend { ClientTryGetImageIDPacket(session.bot.account.qqNumber, session.sessionKey, contact.number, image) }
 

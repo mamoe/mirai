@@ -23,7 +23,7 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
     /**
      * 上传图片
      */
-    suspend fun uploadImage(session: LoginSession, image: UnsolvedImage): CompletableFuture<Unit> {
+    fun uploadImage(session: LoginSession, image: UnsolvedImage): CompletableFuture<Unit> {
         return image.upload(session, this)
     }
 
