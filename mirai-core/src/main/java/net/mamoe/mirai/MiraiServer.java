@@ -11,7 +11,6 @@ import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
 import net.mamoe.mirai.utils.MiraiLoggerKt;
 import net.mamoe.mirai.utils.config.MiraiConfig;
-import net.mamoe.mirai.utils.config.MiraiConfigSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingListSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
 import net.mamoe.mirai.utils.setting.MiraiSettings;
@@ -19,7 +18,6 @@ import net.mamoe.mirai.utils.setting.MiraiSettings;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -91,6 +89,7 @@ public final class MiraiServer {
         File setting = new File(this.parentFolder + "/Mirai.ini");
         getLogger().info("Selecting setting from " + LoggerTextFormat.GREEN + setting);
 
+        /*
         if (!setting.exists()) {
             this.initSetting(setting);
         } else {
@@ -106,7 +105,7 @@ public final class MiraiServer {
         }
         if (this.qqs.isEmpty()) {
             this.initQQConfig(qqs);
-        }
+        }*/
 
         /*
         MiraiSettingMapSection qqs = this.setting.getMapSection("qq");
