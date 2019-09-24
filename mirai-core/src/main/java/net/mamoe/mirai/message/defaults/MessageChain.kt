@@ -11,6 +11,9 @@ import java.util.stream.Stream
 class MessageChain : Message {
     override val type: Int = MessageId.CHAIN
 
+    /**
+     * Elements will not be instances of [MessageChain]
+     */
     val list: MutableList<Message> = Collections.synchronizedList(LinkedList<Message>())
 
     constructor(head: Message, tail: Message) {
@@ -58,6 +61,10 @@ class MessageChain : Message {
     }
 
     override fun concat(tail: Message): MessageChain {
+        if (tail is MessageChain) {
+            tail.list.forEach { child -> this.concat(child) }
+            return this
+        }
         this.list.add(tail)
         clearToStringCache()
         return this

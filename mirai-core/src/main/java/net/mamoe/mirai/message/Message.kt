@@ -104,6 +104,12 @@ abstract class Message {
      * @return message connected
      */
     open fun concat(tail: Message): MessageChain {
+        if (tail is MessageChain) {
+            return MessageChain(this).let {
+                tail.list.forEach { child -> it.concat(child) }
+                it
+            }
+        }
         return MessageChain(this, Objects.requireNonNull(tail))
     }
 
