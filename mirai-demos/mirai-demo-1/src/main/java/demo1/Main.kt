@@ -34,10 +34,10 @@ fun main() {
         when {
             it.message eq "你好" -> it.sender.sendMessage("你好!")
 
-            "复读" in it.message -> it.sender.sendMessage(it.message())
+            "复读" in it.message -> it.sender.sendMessage(it.message)
 
             "发群" in it.message -> {
-                it.message().list.toMutableList().let { messages ->
+                it.message.list.toMutableList().let { messages ->
                     messages.removeAt(0)
                     Group(bot, 580266363).sendMessage(messages)
                 }
@@ -53,13 +53,13 @@ fun main() {
                      image.upload(session, it.sender).get()
                  })*/
 
-            it.message eq "发图片2" -> it.sender.sendMessage(PlainText("test") + Image("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"))
+            it.message eq "发图片2" -> it.reply(PlainText("test") + Image("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"))
         }
     }
 
     GroupMessageEvent::class.hookAlways {
         when {
-            it.message.contains("复读") -> it.group.sendMessage(it.chain)
+            it.message.contains("复读") -> it.reply(it.message)
         }
     }
 }
