@@ -74,7 +74,7 @@ fun main() {
                     return@let password.substring(0, password.length - 1)
                 }
                 return@let password
-            }), listOf())
+            }))
 
             bot.network.tryLogin().whenComplete { state, _ ->
                 if (!(state == LoginState.BLOCKED || state == LoginState.DEVICE_LOCK || state == LoginState.WRONG_PASSWORD)) {

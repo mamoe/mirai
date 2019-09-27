@@ -15,8 +15,8 @@ import java.util.*
  * #### 在 Kotlin 使用 [Message]
  *  这与使用 [String] 的使用非常类似.
  *
- *  比较 [Message] 与 [String] (使用 infix [Message.valueEquals]):
- *  `if(message valueEquals "你好") qq.sendMessage(message)`
+ *  比较 [Message] 与 [String] (使用 infix [Message.eq]):
+ *  `if(message eq "你好") qq.sendMessage(message)`
  *
  *  连接 [Message] 与 [Message], [String], [BufferedImage] (使用 operator [Message.plus]):
  *  ```
@@ -28,7 +28,7 @@ import java.util.*
  * @see Contact.sendMessage
  */
 abstract class Message {
-    internal abstract val type: Int
+    internal abstract val type: MessageKey
 
     private var toStringCache: String? = null
     private val cacheLock = object : Any() {}
@@ -76,12 +76,17 @@ abstract class Message {
      * - [PlainText] 比较 [PlainText.text]
      * - [Image] 比较 [Image.imageId]
      */
-    abstract infix fun valueEquals(another: Message): Boolean
+    abstract infix fun eq(another: Message): Boolean
 
     /**
      * 将这个消息的 [toString] 与 [another] 比较
      */
-    infix fun valueEquals(another: String): Boolean = this.toString() == another
+    infix fun eq(another: String): Boolean = this.toString() == another
+
+    /**
+     * 判断 [sub] 是否存在于本消息中
+     */
+    abstract operator fun contains(sub: String): Boolean
 
     /**
      * 把这个消息连接到另一个消息的头部. 相当于字符串相加

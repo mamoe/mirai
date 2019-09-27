@@ -2,7 +2,6 @@ package net.mamoe.mirai.network
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
 import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
 import net.mamoe.mirai.event.events.network.PacketSentEvent
@@ -13,6 +12,7 @@ import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
 import java.io.Closeable
+import java.io.File
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
@@ -160,23 +160,23 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
             socket?.close()
             socket = DatagramSocket(0)
             socket!!.connect(InetSocketAddress(serverIP, 8000))
-            Thread {
-                while (socket!!.isConnected) {
+            GlobalScope.launch {
+                while (socket?.isConnected == true) {
                     val packet = DatagramPacket(ByteArray(2048), 2048)
                     kotlin.runCatching { socket?.receive(packet) }
                             .onSuccess {
-                                GlobalScope.launch {
+                                NetworkScope.launch {
                                     distributePacket(ServerPacket.ofByteArray(packet.data.removeZeroTail()))
                                 }
                             }.onFailure {
                                 if (it.message == "Socket closed" || it.message == "socket closed") {
-                                    return@Thread
+                                    return@launch
                                 }
                                 it.printStackTrace()
                             }
 
                 }
-            }.start()
+            }
         }
 
 
@@ -323,11 +323,12 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                         }
                         bot.notice("需要验证码登录, 验证码为 4 字母")
                         try {
-                            (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.captchaCache!!)
-                            bot.notice("若看不清字符图片, 请查看 Mirai 根目录下 VerificationCode.png")
+                            File(System.getProperty("user.dir") + "/temp/Captcha.png").writeBytes(this.captchaCache!!)
+                            bot.notice("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
                         } catch (e: Exception) {
                             bot.notice("无法写出验证码文件, 请尝试查看以上字符图片")
                         }
+                        this.captchaCache = null
                         bot.notice("若要更换验证码, 请直接回车")
                         val code = Scanner(System.`in`).nextLine()
                         if (code.isEmpty() || code.length != 4) {

@@ -2,7 +2,7 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.FaceID
 import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.message.MessageId
+import net.mamoe.mirai.message.MessageKey
 import net.mamoe.mirai.network.packet.readLVNumber
 import net.mamoe.mirai.network.packet.writeHex
 import net.mamoe.mirai.network.packet.writeLVByteArray
@@ -15,14 +15,16 @@ import net.mamoe.mirai.utils.lazyEncode
  * @author Him188moe
  */
 class Face(val id: FaceID) : Message() {
-    override val type: Int = MessageId.FACE
+    companion object Key : MessageKey(0x02)
+
+    override val type: MessageKey = Key
 
     override fun toStringImpl(): String {
         return String.format("[face%d]", id.id)
     }
 
     override fun toByteArray(): ByteArray = lazyEncode { section ->
-        section.writeByte(this.type)
+        section.writeByte(this.type.intValue)
 
         section.writeLVByteArray(lazyEncode { child ->
             child.writeShort(1)
@@ -37,14 +39,16 @@ class Face(val id: FaceID) : Message() {
     }
 
 
-    override fun valueEquals(another: Message): Boolean {
+    override fun eq(another: Message): Boolean {
         if (another !is Face) {
             return false
         }
         return this.id == another.id
     }
 
-    companion object {
+    override operator fun contains(sub: String): Boolean = false
+
+    internal object PacketHelper {
         fun ofByteArray(data: ByteArray): Face = lazyDecode(data) {
             //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
             //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D

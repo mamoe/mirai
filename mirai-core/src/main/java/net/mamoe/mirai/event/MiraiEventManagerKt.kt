@@ -3,6 +3,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
 import kotlin.reflect.KClass
 
 /**
@@ -19,7 +20,7 @@ object EventManager : MiraiEventManager()
 /**
  * 每次事件触发时都会调用 hook
  */
-fun <C : Class<E>, E : MiraiEvent> C.hookAlways(hook: suspend (E) -> Unit) {
+fun <C : Class<E>, E : MiraiEvent> C.hookAlways(bot: Bot? = null, hook: suspend (E) -> Unit) {
     MiraiEventManager.getInstance().hookAlways(MiraiEventHook<E>(this) {
         runBlocking {
             hook(it)
@@ -30,7 +31,8 @@ fun <C : Class<E>, E : MiraiEvent> C.hookAlways(hook: suspend (E) -> Unit) {
 /**
  * 当下一次事件触发时调用 hook
  */
-fun <C : Class<E>, E : MiraiEvent> C.hookOnce(hook: suspend (E) -> Unit) {
+fun <C : Class<E>, E : MiraiEvent> C.hookOnce(bot: Bot? = null, hook: suspend (E) -> Unit) {
+    //todo bot 限制 实现. 或重写 hook
     MiraiEventManager.getInstance().hookOnce(MiraiEventHook<E>(this) {
         runBlocking {
             hook(it)
@@ -41,30 +43,32 @@ fun <C : Class<E>, E : MiraiEvent> C.hookOnce(hook: suspend (E) -> Unit) {
 /**
  * 每次事件触发时都会调用 hook, 直到 hook 返回 false 时停止 hook
  */
-fun <C : Class<E>, E : MiraiEvent> C.hookWhile(hook: suspend (E) -> Boolean) {
+fun <C : Class<E>, E : MiraiEvent> C.hookWhile(bot: Bot? = null, hook: suspend (E) -> Boolean) {
     MiraiEventManager.getInstance().hookAlways(MiraiEventHookSimple(this, hook))
 }
 
 
 /**
  * 每次事件触发时都会调用 hook
+ *
+ * @param bot 指定仅限于某个 [Bot] 的事件.
  */
-fun <C : KClass<E>, E : MiraiEvent> C.hookAlways(hook: suspend (E) -> Unit) {
-    this.java.hookAlways(hook)
+fun <C : KClass<E>, E : MiraiEvent> C.hookAlways(bot: Bot? = null, hook: suspend (E) -> Unit) {
+    this.java.hookAlways(bot, hook)
 }
 
 /**
  * 当下一次事件触发时调用 hook
  */
-fun <C : KClass<E>, E : MiraiEvent> C.hookOnce(hook: suspend (E) -> Unit) {
-    this.java.hookOnce(hook)
+fun <C : KClass<E>, E : MiraiEvent> C.hookOnce(bot: Bot? = null, hook: suspend (E) -> Unit) {
+    this.java.hookOnce(bot, hook)
 }
 
 /**
  * 每次事件触发时都会调用 hook, 直到 hook 返回 false 时停止 hook
  */
-fun <C : KClass<E>, E : MiraiEvent> C.hookWhile(hook: suspend (E) -> Boolean) {
-    this.java.hookWhile(hook)
+fun <C : KClass<E>, E : MiraiEvent> C.hookWhile(bot: Bot? = null, hook: suspend (E) -> Boolean) {
+    this.java.hookWhile(bot, hook)
 }
 
 

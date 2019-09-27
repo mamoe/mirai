@@ -22,6 +22,14 @@
             <version>1.0</version>
             <scope>compile</scope>
         </dependency>
+
+
+        <dependency>
+            <groupId>net.mamoe</groupId>
+            <artifactId>mirai-console</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

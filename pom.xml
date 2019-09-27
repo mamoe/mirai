@@ -14,6 +14,7 @@
         <module>mirai-ui</module>
         <module>mirai-console</module>
         <module>mirai-api</module>
+        <module>mirai-demos</module>
     </modules>
 
     <repositories>

@@ -38,6 +38,10 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
         this.sendMessage(PlainText(message))
     }
 
+    suspend fun sendMessage(message: List<Message>) {
+        this.sendMessage(MessageChain(message))
+    }
+
     /**
      * Async
      */

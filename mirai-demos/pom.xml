@@ -10,12 +10,15 @@
         <version>1.0</version>
     </parent>
 
-    <artifactId>mirai-console</artifactId>
+    <artifactId>mirai-demos</artifactId>
     <version>1.0</version>
+
+    <modules>
+        <module>mirai-demo-1</module>
+    </modules>
 
 
     <dependencies>
-
         <dependency>
             <groupId>net.mamoe</groupId>
             <artifactId>mirai-core</artifactId>
@@ -23,21 +26,4 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>/src/main/resources</directory>
-
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-            </resource>
-        </resources>
-
-        <plugins>
-
-        </plugins>
-    </build>
-
 </project>

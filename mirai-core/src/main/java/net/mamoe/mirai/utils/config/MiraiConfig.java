@@ -1,7 +1,6 @@
 package net.mamoe.mirai.utils.config;
 
 import kotlin.io.FilesKt;
-import net.mamoe.mirai.MiraiServer;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -24,10 +23,6 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
 
     private final File root;
 
-    public MiraiConfig(@NotNull String configName) {
-        this(new File(MiraiServer.getInstance().getParentFolder(), Objects.requireNonNull(configName)));
-    }
-
     public MiraiConfig(@NotNull File file) {
         super(parse(Objects.requireNonNull(file)));
         this.root = file;
@@ -47,9 +42,10 @@ public class MiraiConfig extends MiraiConfigSection<Object> {
 
     @SuppressWarnings("unchecked")
     private static LinkedHashMap<String,Object> parse(File file) {
+        /*
         if (!file.toURI().getPath().contains(MiraiServer.getInstance().getParentFolder().getPath())) {
             file = new File(MiraiServer.getInstance().getParentFolder().getPath(), file.getName());
-        }
+        }*/
         if (!file.exists()) {
             try {
                 if (!file.createNewFile()) {
