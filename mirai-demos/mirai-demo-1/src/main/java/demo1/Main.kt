@@ -32,7 +32,7 @@ fun main() {
         val firstImage = it.message[Image]
 
         when {
-            it.message eq "你好" -> it.sender.sendMessage("你好!")
+            it.message eq "你好" -> it.reply("你好!")
 
             "复读" in it.message -> it.sender.sendMessage(it.message)
 
