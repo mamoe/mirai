@@ -25,16 +25,16 @@
 ```
 MiraiEventHook.onEvent(FriendMessageEvent.class)
        .handler(a -> {
-               if(a.getMessageString().equals("你好")) 
-                       a.getQQ().sendMessage("你好！");
+               if(a.message.eq("你好")) 
+                       a.getSender().sendMessage("你好！");
        })
        .mountAlways();
 ```
 #### Kotlin:
 ```
 FriendMessageEvent::class.hookAlways{
-    if(it.message() valueEquals "你好")
-          it.qq.sendMessage("你好！")
+    if(it.message eq "你好")
+          it.reply("你好！")
 }
 ```
 ![AYWVE86P](.github/A%7DYWVE860U%28%25YQD%24R1GB1%5BP.png)
