@@ -12,14 +12,14 @@ import net.mamoe.mirai.message.defaults.MessageChain
 class GroupMessageEvent(bot: Bot, group: Group, val sender: QQ, val message: MessageChain) : GroupEvent(bot, group) {
 
     @JvmSynthetic
-    suspend fun reply(message: Message) = group.sendMessage(message)
+    suspend inline fun reply(message: Message) = group.sendMessage(message)
 
     @JvmSynthetic
-    suspend fun reply(message: String) = group.sendMessage(message)
+    suspend inline fun reply(message: String) = group.sendMessage(message)
 
     @JvmSynthetic
-    suspend fun reply(message: List<Message>) = group.sendMessage(message)
+    suspend inline fun reply(message: List<Message>) = group.sendMessage(message)
 
     @JvmSynthetic
-    suspend fun reply(message: MessageChain) = group.sendMessage(message)
+    suspend inline fun reply(message: MessageChain) = group.sendMessage(message)
 }
