@@ -290,7 +290,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                     return
                 }
 
-                is ServerVerificationCodeCorrectPacket -> {
+                is ServerCaptchaCorrectPacket -> {
                     this.randomTgtgtKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
                     socket.sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.randomTgtgtKey, this.token0825, this.token00BA))
@@ -307,8 +307,8 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                     }
                 }
 
-                is ServerVerificationCodeTransmissionPacket -> {
-                    if (packet is ServerVerificationCodeWrongPacket) {
+                is ServerCaptchaTransmissionPacket -> {
+                    if (packet is ServerCaptchaWrongPacket) {
                         bot.error("验证码错误, 请重新输入")
                         captchaSectionId = 1
                         this.captchaCache = byteArrayOf()
@@ -390,7 +390,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 }
 
 
-                is ServerVerificationCodePacket.Encrypted -> socket.distributePacket(packet.decrypt())
+                is ServerCatchaPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
                 is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
