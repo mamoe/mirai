@@ -380,10 +380,11 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 is ServerLoginSuccessPacket -> {
                     BotLoginSucceedEvent(bot).broadcast()
 
-                    //登录成功后会收到大量上次的消息, 忽略掉
-                    MiraiThreadPool.getInstance().schedule({
+                    //登录成功后会收到大量上次的消息, 忽略掉 todo 优化
+                    GlobalScope.launch {
+                        delay(3000)
                         message.ignoreMessage = false
-                    }, 3, TimeUnit.SECONDS)
+                    }
 
 
                     onLoggedIn(sessionKey)
