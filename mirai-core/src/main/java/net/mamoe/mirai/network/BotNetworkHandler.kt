@@ -6,7 +6,6 @@ import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocket
 import net.mamoe.mirai.network.protocol.tim.handler.MessagePacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
-import net.mamoe.mirai.network.protocol.tim.internal.handler.*
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
@@ -46,14 +45,14 @@ interface BotNetworkHandler : Closeable {
      *
      * java 调用方式: `botNetWorkHandler.getMessage()`
      */
-    var message: MessagePacketHandler
+    val message: MessagePacketHandler
 
     /**
      * 动作处理. 如发送好友请求, 处理别人发来的好友请求等
      *
      * java 调用方式: `botNetWorkHandler.getAction()`
      */
-    var action: ActionPacketHandler
+    val action: ActionPacketHandler
 
     fun tryLogin(touchingTimeoutMillis: Long = 200): CompletableFuture<LoginState>
 

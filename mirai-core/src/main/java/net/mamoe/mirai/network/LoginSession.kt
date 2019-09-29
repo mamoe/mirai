@@ -42,13 +42,12 @@ class LoginSession(
 
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket].
-     * 发送成功后, 该方法会等待收到 [ServerPacket] 直到超时.
      *
      * 实现方法:
      * ```kotlin
      * session.expectPacket<ServerPacketXXX> {
      *  toSend { ClientPacketXXX(...) }
-     *  expect {//it: ServerPacketXXX
+     *  onExpect {//it: ServerPacketXXX
      *
      *  }
      * }
@@ -57,8 +56,6 @@ class LoginSession(
      * @param P 期待的包
      * @param handlerTemporary 处理器.
      * @return future. 可进行超时处理
-     *
-     * Kotlin DSL: 仅 Kotlin 使用.
      */
     @JvmSynthetic
     inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableFuture<Unit> {
@@ -83,15 +80,13 @@ class LoginSession(
      * @param toSend 将要发送的包
      * @param handler 处理期待的包
      * @return future. 可进行超时处理
-     *
-     * Kotlin DSL: 仅 Kotlin 使用.
      */
     @JvmSynthetic
-    inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: (P) -> Unit): CompletableFuture<Unit> {
+    inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: suspend (P) -> Unit): CompletableFuture<Unit> {
         val future = CompletableFuture<Unit>()
         this.bot.network.addHandler(TemporaryPacketHandler(P::class, future, this).also {
-            it.toSend { toSend }
-            it.expect(handler)
+            it.toSend(toSend)
+            it.onExpect(handler)
         })
         return future
     }

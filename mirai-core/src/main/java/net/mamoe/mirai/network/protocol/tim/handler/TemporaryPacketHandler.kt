@@ -8,6 +8,14 @@ import kotlin.reflect.KClass
 
 /**
  * 临时数据包处理器
+ * ```kotlin
+ * session.addHandler<ClientTouchResponsePacket>{
+ *   toSend { ClientTouchPacket() }
+ *   onExpect {//it: ClientTouchResponsePacket
+ *      //do sth.
+ *   }
+ * }
+ * ```
  *
  * @see LoginSession.expectPacket
  */
@@ -18,7 +26,7 @@ open class TemporaryPacketHandler<P : ServerPacket>(
 ) {
     private lateinit var toSend: ClientPacket
 
-    private lateinit var expect: (P) -> Unit
+    private lateinit var expect: suspend (P) -> Unit
 
 
     lateinit var session: LoginSession//无需覆盖
@@ -27,8 +35,12 @@ open class TemporaryPacketHandler<P : ServerPacket>(
         this.toSend = packet()
     }
 
+    fun toSend(packet: ClientPacket) {
+        this.toSend = packet
+    }
 
-    fun expect(handler: (P) -> Unit) {
+
+    fun onExpect(handler: suspend (P) -> Unit) {
         this.expect = handler
     }
 
@@ -37,7 +49,7 @@ open class TemporaryPacketHandler<P : ServerPacket>(
         session.socket.sendPacket(toSend)
     }
 
-    fun onPacketReceived(session: LoginSession, packet: ServerPacket): Boolean {
+    suspend fun onPacketReceived(session: LoginSession, packet: ServerPacket): Boolean {
         if (expectationClass.isInstance(packet) && session === this.fromSession) {
             @Suppress("UNCHECKED_CAST")
             expect(packet as P)

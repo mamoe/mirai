@@ -10,7 +10,6 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.NetworkScope
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.internal.handler.*
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.task.MiraiThreadPool

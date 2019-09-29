@@ -1,5 +1,7 @@
 package net.mamoe.mirai.message.defaults
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.protocol.tim.packet.image.ClientTryGetImageIDPacket
@@ -30,7 +32,7 @@ class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImage
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
             toSend { ClientTryGetImageIDPacket(session.bot.account.qqNumber, session.sessionKey, contact.number, image) }
 
-            expect {
+            onExpect {
                 when (it) {
                     is ServerTryGetImageIDFailedPacket -> {
                         //已经存在于服务器了
@@ -38,8 +40,10 @@ class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImage
 
                     is ServerTryGetImageIDSuccessPacket -> {
                         val data = image.toByteArray()
-                        if (!ImageNetworkUtils.postImage(it.uKey.toUHexString(), data.size, session.bot.account.qqNumber, contact.number, data)) {
-                            throw RuntimeException("cannot upload image")
+                        withContext(Dispatchers.IO) {
+                            if (!ImageNetworkUtils.postImage(it.uKey.toUHexString(), data.size, session.bot.account.qqNumber, contact.number, data)) {
+                                throw RuntimeException("cannot upload image")
+                            }
                         }
                     }
                 }
