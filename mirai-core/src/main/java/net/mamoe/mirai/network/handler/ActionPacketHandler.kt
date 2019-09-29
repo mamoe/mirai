@@ -1,5 +1,6 @@
 package net.mamoe.mirai.network.handler
 
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.network.packet.action.AddFriendResult
@@ -32,7 +33,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     private var sKeyRefresherFuture: ScheduledFuture<*>? = null
 
 
-    override fun onPacketReceived(packet: ServerPacket) {
+    override suspend fun onPacketReceived(packet: ServerPacket) {
         when (packet) {
             is ServerCanAddFriendResponsePacket -> {
                 this.uploadImageSessions.forEach {
@@ -60,7 +61,9 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
                 session.cookies = "uin=o" + session.bot.account.qqNumber + ";skey=" + session.sKey + ";"
 
                 sKeyRefresherFuture = MiraiThreadPool.getInstance().scheduleWithFixedDelay({
-                    session.socket.sendPacket(ClientSKeyRefreshmentRequestPacket(session.bot.account.qqNumber, session.sessionKey))
+                    runBlocking {
+                        session.socket.sendPacket(ClientSKeyRefreshmentRequestPacket(session.bot.account.qqNumber, session.sessionKey))
+                    }
                 }, 1800000, 1800000, TimeUnit.MILLISECONDS)
 
                 session.gtk = getGTK(session.sKey)
@@ -75,13 +78,13 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     }
 
 
-    fun addFriend(qqNumber: Long, message: Supplier<String>) {
+    suspend fun addFriend(qqNumber: Long, message: Supplier<String>) {
         addFriend(qqNumber, lazy { message.get() })
     }
 
 
     @JvmSynthetic
-    fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableFuture<AddFriendResult> {
+    suspend fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableFuture<AddFriendResult> {
         val future = CompletableFuture<AddFriendResult>()
         val session = AddFriendSession(qqNumber, future, message)
         //  uploadImageSessions.add(session)
@@ -90,12 +93,12 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     }
 
 
-    fun requestSKey() {
+    suspend fun requestSKey() {
         session.socket.sendPacket(ClientSKeyRequestPacket(session.bot.account.qqNumber, session.sessionKey))
     }
 
 
-    fun requestAccountInfo() {
+    suspend fun requestAccountInfo() {
         session.socket.sendPacket(ClientAccountInfoRequestPacket(session.bot.account.qqNumber, session.sessionKey))
     }
 
@@ -165,7 +168,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
         lateinit var id: ByteArray
 
 
-        fun onPacketReceived(packet: ServerPacket) {
+        suspend fun onPacketReceived(packet: ServerPacket) {
             if (!::id.isInitialized) {
                 return
             }
@@ -202,7 +205,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
         }
 
 
-        fun sendAddRequest() {
+        suspend fun sendAddRequest() {
             session.socket.sendPacket(ClientCanAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey).also { this.id = it.packetIdLast })
         }
 

@@ -19,13 +19,13 @@ import javax.imageio.ImageIO
 /**
  * 不确定是否存在于服务器的 [Image].
  * 必须在发送之前 [UnsolvedImage.upload] 或 [Contact.uploadImage], 否则会发送失败.
-x *
+ *
+ * @suppress todo 重新设计
  * @author Him188moe
  */
 class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImageId(filename)) {
     constructor(imageFile: File) : this(imageFile.name, ImageIO.read(imageFile))
     constructor(url: URL) : this(File(url.file))
-
     fun upload(session: LoginSession, contact: Contact): CompletableFuture<Unit> {
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
             toSend { ClientTryGetImageIDPacket(session.bot.account.qqNumber, session.sessionKey, contact.number, image) }

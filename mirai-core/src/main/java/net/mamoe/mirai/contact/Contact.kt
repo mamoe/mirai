@@ -18,10 +18,7 @@ import java.util.concurrent.CompletableFuture
  * @author Him188moe
  */
 abstract class Contact internal constructor(val bot: Bot, val number: Long) {
-    /**
-     * Async
-     */
-    abstract fun sendMessage(message: MessageChain)
+    abstract suspend fun sendMessage(message: MessageChain)
 
     /**
      * 上传图片
@@ -30,19 +27,23 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
         return image.upload(session, this)
     }
 
-    fun sendMessage(message: Message) {
+    suspend fun sendMessage(message: Message) {
         if (message is MessageChain) {
             return sendMessage(message)
         }
         return sendMessage(message.toChain())
     }
 
-    fun sendMessage(message: String) {
+    suspend fun sendMessage(message: String) {
         this.sendMessage(PlainText(message))
+    }
+
+    suspend fun sendMessage(message: List<Message>) {
+        this.sendMessage(MessageChain(message))
     }
 
     /**
      * Async
      */
-    abstract fun sendXMLMessage(message: String)
+    abstract suspend fun sendXMLMessage(message: String)
 }

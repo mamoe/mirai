@@ -2,6 +2,7 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageId
+import net.mamoe.mirai.message.MessageKey
 import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.utils.lazyDecode
 import net.mamoe.mirai.utils.lazyEncode
@@ -16,8 +17,10 @@ import net.mamoe.mirai.utils.toUHexString
  *
  * @author Him188moe
  */
-open class Image internal constructor(val imageId: String) : Message() {
-    override val type: Int = MessageId.IMAGE
+open class Image(val imageId: String) : Message() {
+    companion object Key : MessageKey(0x03)
+
+    override val type: MessageKey = Key
 
     override fun toStringImpl(): String {
         return imageId
@@ -43,7 +46,7 @@ open class Image internal constructor(val imageId: String) : Message() {
         })
     }
 
-    override fun valueEquals(another: Message): Boolean {
+    override fun eq(another: Message): Boolean {
         if (another is Image) {
             return this.imageId == another.imageId
         }
@@ -51,7 +54,9 @@ open class Image internal constructor(val imageId: String) : Message() {
         return false
     }
 
-    companion object {
+    override operator fun contains(sub: String): Boolean = false //No string can be contained in a image
+
+    internal object PacketHelper {
         @JvmStatic
         fun ofByteArray0x06(data: ByteArray): Image = lazyDecode(data) {
             it.skip(1)

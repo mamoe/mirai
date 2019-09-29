@@ -11,15 +11,12 @@ import net.mamoe.mirai.utils.LoggerTextFormat;
 import net.mamoe.mirai.utils.MiraiLogger;
 import net.mamoe.mirai.utils.MiraiLoggerKt;
 import net.mamoe.mirai.utils.config.MiraiConfig;
-import net.mamoe.mirai.utils.config.MiraiConfigSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingListSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
 import net.mamoe.mirai.utils.setting.MiraiSettings;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -91,6 +88,7 @@ public final class MiraiServer {
         File setting = new File(this.parentFolder + "/Mirai.ini");
         getLogger().info("Selecting setting from " + LoggerTextFormat.GREEN + setting);
 
+        /*
         if (!setting.exists()) {
             this.initSetting(setting);
         } else {
@@ -106,7 +104,7 @@ public final class MiraiServer {
         }
         if (this.qqs.isEmpty()) {
             this.initQQConfig(qqs);
-        }
+        }*/
 
         /*
         MiraiSettingMapSection qqs = this.setting.getMapSection("qq");
@@ -198,12 +196,12 @@ public final class MiraiServer {
 
 
     String qqList =
-            "3034551466----zxcvbnm\n";
+            "1683921395----bb22222\n";
 
     private Bot getAvailableBot() throws ExecutionException, InterruptedException {
         for (String it : qqList.split("\n")) {
             var strings = it.split("----");
-            var bot = new Bot(new BotAccount(Long.parseLong(strings[0]), strings[1]), List.of());
+            var bot = new Bot(new BotAccount(Long.parseLong(strings[0]), strings[1]));
 
             if (bot.network.tryLogin(200).get() == LoginState.SUCCESS) {
                 MiraiLoggerKt.success(bot, "Login succeed");

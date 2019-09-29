@@ -40,7 +40,7 @@ object Main {
         println("-------------------------------------------")
         exitProcess(0)*/
 
-        var jpcap: JpcapCaptor? = null
+        val jpcap: JpcapCaptor?
         val caplen = 4096
         val promiscCheck = true
 

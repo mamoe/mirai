@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network
 
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.MiraiServer
 import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
 import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
 import net.mamoe.mirai.event.events.network.PacketSentEvent
@@ -12,6 +12,7 @@ import net.mamoe.mirai.network.packet.login.*
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
 import java.io.Closeable
+import java.io.File
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
@@ -40,8 +41,11 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
     internal val temporaryPacketHandlers = Collections.synchronizedList(mutableListOf<TemporaryPacketHandler<*>>())
 
+
     override fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>) {
-        temporaryPacketHandler.send(action.session)
+        runBlocking {
+            temporaryPacketHandler.send(action.session)
+        }
         temporaryPacketHandlers.add(temporaryPacketHandler)
     }
 
@@ -95,7 +99,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
 
     internal inner class BotSocket : Closeable, DataPacketSocket {
-        override fun distributePacket(packet: ServerPacket) {
+        override suspend fun distributePacket(packet: ServerPacket) {
             try {
                 packet.decode()
             } catch (e: java.lang.Exception) {
@@ -113,8 +117,11 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
                     bot.notice("Packet received: $packet")
                 }
+            }
 
-                if (packet is ServerEventPacket) {
+            if (packet is ServerEventPacket) {
+                //no need to sync acknowledgement packets
+                NetworkScope.launch {
                     sendPacket(ClientEventResponsePacket(bot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
                 }
             }
@@ -123,10 +130,18 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 return
             }
 
-            login.onPacketReceived(packet)
-            packetHandlers.forEach {
-                it.instance.onPacketReceived(packet)
-            }
+            withContext(NetworkScope.coroutineContext) {
+                launch {
+                    login.onPacketReceived(packet)
+                }
+
+
+                packetHandlers.forEach {
+                    launch {
+                        it.instance.onPacketReceived(packet)
+                    }
+                }
+            }//awaits all coroutines launched in this block
         }
 
         private var socket: DatagramSocket? = null
@@ -145,27 +160,23 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
             socket?.close()
             socket = DatagramSocket(0)
             socket!!.connect(InetSocketAddress(serverIP, 8000))
-            Thread {
-                while (socket!!.isConnected) {
+            GlobalScope.launch {
+                while (socket?.isConnected == true) {
                     val packet = DatagramPacket(ByteArray(2048), 2048)
                     kotlin.runCatching { socket?.receive(packet) }
                             .onSuccess {
-                                MiraiThreadPool.getInstance().submit {
-                                    try {
-                                        distributePacket(ServerPacket.ofByteArray(packet.data.removeZeroTail()))
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
+                                NetworkScope.launch {
+                                    distributePacket(ServerPacket.ofByteArray(packet.data.removeZeroTail()))
                                 }
                             }.onFailure {
                                 if (it.message == "Socket closed" || it.message == "socket closed") {
-                                    return@Thread
+                                    return@launch
                                 }
                                 it.printStackTrace()
                             }
 
                 }
-            }.start()
+            }
         }
 
 
@@ -184,7 +195,9 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
             bot.waitForPacket(ServerPacket::class, timeoutMillis) {
                 loginFuture!!.complete(LoginState.TIMEOUT)
             }
-            sendPacket(ClientTouchPacket(bot.account.qqNumber, serverIP))
+            runBlocking {
+                sendPacket(ClientTouchPacket(bot.account.qqNumber, serverIP))
+            }
 
             return this.loginFuture!!
         }
@@ -193,8 +206,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
          * Not async
          */
         @Synchronized
-
-        override fun sendPacket(packet: ClientPacket) {
+        override suspend fun sendPacket(packet: ClientPacket) {
             checkNotNull(socket) { "network closed" }
             if (socket!!.isClosed) {
                 return
@@ -208,7 +220,9 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 }
 
                 val data = packet.toByteArray()
-                socket!!.send(DatagramPacket(data, data.size))
+                withContext(Dispatchers.IO) {
+                    socket!!.send(DatagramPacket(data, data.size))
+                }
                 bot.cyanL("Packet sent:     $packet")
 
                 PacketSentEvent(bot, packet).broadcast()
@@ -255,7 +269,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
         private var heartbeatFuture: ScheduledFuture<*>? = null
 
 
-        fun onPacketReceived(packet: ServerPacket) {
+        suspend fun onPacketReceived(packet: ServerPacket) {
             when (packet) {
                 is ServerTouchResponsePacket -> {
                     if (packet.serverIP != null) {//redirection
@@ -276,7 +290,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                     return
                 }
 
-                is ServerVerificationCodeCorrectPacket -> {
+                is ServerCaptchaCorrectPacket -> {
                     this.randomTgtgtKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
                     socket.sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.randomTgtgtKey, this.token0825, this.token00BA))
@@ -293,8 +307,8 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                     }
                 }
 
-                is ServerVerificationCodeTransmissionPacket -> {
-                    if (packet is ServerVerificationCodeWrongPacket) {
+                is ServerCaptchaTransmissionPacket -> {
+                    if (packet is ServerCaptchaWrongPacket) {
                         bot.error("验证码错误, 请重新输入")
                         captchaSectionId = 1
                         this.captchaCache = byteArrayOf()
@@ -304,14 +318,17 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                     this.token00BA = packet.token00BA
 
                     if (packet.transmissionCompleted) {
-                        bot.notice(CharImageUtil.createCharImg(ImageIO.read(this.captchaCache!!.inputStream())))
+                        withContext(Dispatchers.IO) {
+                            bot.notice(CharImageUtil.createCharImg(ImageIO.read(captchaCache!!.inputStream())))
+                        }
                         bot.notice("需要验证码登录, 验证码为 4 字母")
                         try {
-                            (MiraiServer.getInstance().parentFolder + "VerificationCode.png").writeBytes(this.captchaCache!!)
-                            bot.notice("若看不清字符图片, 请查看 Mirai 根目录下 VerificationCode.png")
+                            File(System.getProperty("user.dir") + "/temp/Captcha.png").writeBytes(this.captchaCache!!)
+                            bot.notice("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
                         } catch (e: Exception) {
                             bot.notice("无法写出验证码文件, 请尝试查看以上字符图片")
                         }
+                        this.captchaCache = null
                         bot.notice("若要更换验证码, 请直接回车")
                         val code = Scanner(System.`in`).nextLine()
                         if (code.isEmpty() || code.length != 4) {
@@ -350,7 +367,9 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 is ServerSessionKeyResponsePacket -> {
                     sessionKey = packet.sessionKey
                     heartbeatFuture = MiraiThreadPool.getInstance().scheduleWithFixedDelay({
-                        socket.sendPacket(ClientHeartbeatPacket(bot.account.qqNumber, sessionKey))
+                        runBlocking {
+                            socket.sendPacket(ClientHeartbeatPacket(bot.account.qqNumber, sessionKey))
+                        }
                     }, 90000, 90000, TimeUnit.MILLISECONDS)
 
                     socket.loginFuture!!.complete(LoginState.SUCCESS)
@@ -361,17 +380,18 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 is ServerLoginSuccessPacket -> {
                     BotLoginSucceedEvent(bot).broadcast()
 
-                    //登录成功后会收到大量上次的消息, 忽略掉
-                    MiraiThreadPool.getInstance().schedule({
+                    //登录成功后会收到大量上次的消息, 忽略掉 todo 优化
+                    GlobalScope.launch {
+                        delay(3000)
                         message.ignoreMessage = false
-                    }, 3, TimeUnit.SECONDS)
+                    }
 
 
                     onLoggedIn(sessionKey)
                 }
 
 
-                is ServerVerificationCodePacket.Encrypted -> socket.distributePacket(packet.decrypt())
+                is ServerCatchaPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
                 is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
@@ -390,7 +410,9 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
         }
 
         fun changeOnlineStatus(status: ClientLoginStatus) {
-            socket.sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, status))
+            NetworkScope.launch {
+                socket.sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, status))
+            }
         }
 
         override fun close() {

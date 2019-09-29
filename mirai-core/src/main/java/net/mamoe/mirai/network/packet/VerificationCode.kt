@@ -126,7 +126,7 @@ class ClientVerificationCodeRefreshPacket(
  * 验证码输入错误, 同时也会给一部分验证码
  */
 @PacketId("00 BA 32")
-class ServerVerificationCodeWrongPacket(input: DataInputStream, dataSize: Int, packetId: ByteArray) : ServerVerificationCodeTransmissionPacket(input, dataSize, packetId)
+class ServerCaptchaWrongPacket(input: DataInputStream, dataSize: Int, packetId: ByteArray) : ServerCaptchaTransmissionPacket(input, dataSize, packetId)
 
 /**
  * 服务器发送验证码图片文件一部分过来
@@ -134,7 +134,7 @@ class ServerVerificationCodeWrongPacket(input: DataInputStream, dataSize: Int, p
  * @author Him188moe
  */
 @PacketId("00 BA 31")
-open class ServerVerificationCodeTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerVerificationCodePacket(input) {
+open class ServerCaptchaTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerCatchaPacket(input) {
 
     lateinit var captchaSectionN: ByteArray
     lateinit var verificationToken: ByteArray//56bytes
@@ -177,7 +177,7 @@ fun main() {
  * @author Him188moe
  */
 @PacketId("00 BA 32")
-class ServerVerificationCodeCorrectPacket(input: DataInputStream) : ServerVerificationCodePacket(input) {
+class ServerCaptchaCorrectPacket(input: DataInputStream) : ServerCatchaPacket(input) {
 
     lateinit var token00BA: ByteArray//56 bytes
 
@@ -187,24 +187,24 @@ class ServerVerificationCodeCorrectPacket(input: DataInputStream) : ServerVerifi
     }
 }
 
-abstract class ServerVerificationCodePacket(input: DataInputStream) : ServerPacket(input) {
+abstract class ServerCatchaPacket(input: DataInputStream) : ServerPacket(input) {
 
     @PacketId("00 BA")
     class Encrypted(input: DataInputStream, private val id: String) : ServerPacket(input) {
 
-        fun decrypt(): ServerVerificationCodePacket {
+        fun decrypt(): ServerCatchaPacket {
             this.input goto 14
             val data = TEA.decrypt(this.input.readAllBytes().cutTail(1), Protocol.key00BA.hexToBytes())
             if (id.startsWith("00 BA 32")) {
                 return when (data.size) {
                     66,
-                    95 -> ServerVerificationCodeCorrectPacket(data.dataInputStream())
+                    95 -> ServerCaptchaCorrectPacket(data.dataInputStream())
                     //66 -> ServerVerificationCodeUnknownPacket(data.dataInputStream())
-                    else -> return ServerVerificationCodeWrongPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4))
+                    else -> return ServerCaptchaWrongPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4))
                 }.setId(this.idHex)
             }
 
-            return ServerVerificationCodeTransmissionPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4)).setId(this.idHex)
+            return ServerCaptchaTransmissionPacket(data.dataInputStream(), data.size, this.input.readNBytesAt(3, 4)).setId(this.idHex)
         }
 
         override fun getFixedId(): String = this.getFixedId(id)

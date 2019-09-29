@@ -32,7 +32,7 @@ open class TemporaryPacketHandler<P : ServerPacket>(
         this.expect = handler
     }
 
-    fun send(session: LoginSession) {
+    suspend fun send(session: LoginSession) {
         this.session = session
         session.socket.sendPacket(toSend)
     }

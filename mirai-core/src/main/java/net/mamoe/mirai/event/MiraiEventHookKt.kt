@@ -1,5 +1,6 @@
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.runBlocking
 import java.util.function.Consumer
 import java.util.function.Predicate
 
@@ -7,12 +8,20 @@ import java.util.function.Predicate
  * @author Him188moe
  */
 class MiraiEventHookKt<E : MiraiEvent>(eventClass: Class<E>) : MiraiEventHook<E>(eventClass) {
-    fun onEvent(handler: (E) -> Unit) {
-        this@MiraiEventHookKt.handler = Consumer(handler)
+    fun onEvent(handler: suspend (E) -> Unit) {
+        this@MiraiEventHookKt.handler = Consumer {
+            runBlocking {
+                handler(it)
+            }
+        }
     }
 
-    fun validChecker(predicate: (E) -> Boolean) {
-        this@MiraiEventHookKt.validChecker = Predicate(predicate)
+    fun validChecker(predicate: suspend (E) -> Boolean) {//todo 把 mirai event 变为 suspend, 而不是在这里 run blocking
+        this@MiraiEventHookKt.validChecker = Predicate {
+            runBlocking {
+                predicate(it)
+            }
+        }
     }
 }
 

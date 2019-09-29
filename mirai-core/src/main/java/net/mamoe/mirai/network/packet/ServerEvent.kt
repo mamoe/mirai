@@ -263,10 +263,10 @@ private fun DataInputStream.readSection(): Message? {
     val sectionLength = this.readShort().toLong()//sectionLength: short
     val sectionData = this.readNBytes(sectionLength)
     return when (messageType) {
-        0x01 -> PlainText.ofByteArray(sectionData)
-        0x02 -> Face.ofByteArray(sectionData)
-        0x03 -> Image.ofByteArray0x03(sectionData)
-        0x06 -> Image.ofByteArray0x06(sectionData)
+        0x01 -> PlainText.PacketHelper.ofByteArray(sectionData)
+        0x02 -> Face.PacketHelper.ofByteArray(sectionData)
+        0x03 -> Image.PacketHelper.ofByteArray0x03(sectionData)
+        0x06 -> Image.PacketHelper.ofByteArray0x06(sectionData)
 
 
         0x19 -> {//长文本

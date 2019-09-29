@@ -1,17 +1,18 @@
 package net.mamoe.mirai;
 
-import lombok.Getter;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.QQ;
 import net.mamoe.mirai.network.BotNetworkHandler;
 import net.mamoe.mirai.network.BotNetworkHandlerImpl;
 import net.mamoe.mirai.utils.BotAccount;
 import net.mamoe.mirai.utils.ContactList;
-import net.mamoe.mirai.utils.config.MiraiConfigSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -58,7 +59,7 @@ public final class Bot implements Closeable {
 
     @Override
     public String toString() {
-        return String.format("Bot{id=%d,qq=%d}", id, this.account.qqNumber);
+        return String.format("Bot{id=%d,qq=%d}", id, this.account.getQqNumber());
     }
 
     /**
@@ -93,32 +94,9 @@ public final class Bot implements Closeable {
         }
     }
 
-
-    /**
-     * Ref list
-     */
-    @Getter
-    private final List<String> owners;
-
-    public boolean isOwnBy(String ownerName) {
-        return owners.contains(ownerName);
-    }
-
-    public Bot(MiraiConfigSection<Object> data) throws Throwable {
-        this(
-                new BotAccount(
-                        data.getLongOrThrow("account", () -> new IllegalArgumentException("account")),
-                        data.getStringOrThrow("password", () -> new IllegalArgumentException("password"))
-                ),
-                data.getAsOrDefault("owners", ArrayList::new)
-        );
-    }
-
-    public Bot(@NotNull BotAccount account, @NotNull List<String> owners) {
+    public Bot(@NotNull BotAccount account) {
         Objects.requireNonNull(account);
-        Objects.requireNonNull(owners);
         this.account = account;
-        this.owners = Collections.unmodifiableList(owners);
         this.network = new BotNetworkHandlerImpl(this);
     }
 
