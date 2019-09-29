@@ -1,7 +1,5 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-//to simplify code
-
 package net.mamoe.mirai.network.packet
 
 import net.mamoe.mirai.Bot
