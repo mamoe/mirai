@@ -1,6 +1,7 @@
 package net.mamoe.mirai.message;
 
 /**
+ * @author LamGC
  * @author Him188moe
  */
 public enum FaceID {

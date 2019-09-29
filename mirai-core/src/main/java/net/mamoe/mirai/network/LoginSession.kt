@@ -41,7 +41,7 @@ class LoginSession(
 
 
     /**
-     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket]. 仅 Kotlin 使用
+     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket].
      * 发送成功后, 该方法会等待收到 [ServerPacket] 直到超时.
      *
      * 实现方法:

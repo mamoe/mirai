@@ -4,6 +4,8 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.events.group.GroupMessageEvent
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
+import net.mamoe.mirai.getGroupByNumber
+import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.packet.ServerFriendMessageEventPacket
@@ -33,7 +35,7 @@ class MessagePacketHandler(session: LoginSession) : PacketHandler(session) {
             is ServerFriendMessageEventPacket -> {
                 if (ignoreMessage) return
 
-                FriendMessageEvent(session.bot, session.bot.contacts.getQQ(packet.qq), packet.message).broadcast()
+                FriendMessageEvent(session.bot, session.bot.getQQ(packet.qq), packet.message).broadcast()
             }
 
             is ServerGroupMessageEventPacket -> {
@@ -41,7 +43,7 @@ class MessagePacketHandler(session: LoginSession) : PacketHandler(session) {
 
                 if (packet.qq == session.bot.account.qqNumber) return
 
-                GroupMessageEvent(session.bot, session.bot.contacts.getGroupByNumber(packet.groupNumber), session.bot.contacts.getQQ(packet.qq), packet.message).broadcast()
+                GroupMessageEvent(session.bot, session.bot.getGroupByNumber(packet.groupNumber), session.bot.getQQ(packet.qq), packet.message).broadcast()
             }
 
             is ServerSendFriendMessageResponsePacket,
