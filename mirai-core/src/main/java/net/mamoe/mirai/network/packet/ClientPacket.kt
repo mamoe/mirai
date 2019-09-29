@@ -144,12 +144,6 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
     }
 }
 
-fun main() {
-    println(lazyEncode {
-        it.writeTLV0006(1040400290, "asdHim188moe", System.currentTimeMillis().toInt(), "123.123.123.123", getRandomByteArray(56))
-    }.size)
-}
-
 @Tested
 fun DataOutputStream.writeCRC32() = writeCRC32(getRandomByteArray(16))
 
