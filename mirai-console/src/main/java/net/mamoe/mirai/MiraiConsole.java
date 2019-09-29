@@ -13,4 +13,7 @@ public class MiraiConsole {
     }
 
 
+    public void log(Object o){
+        System.out.println(o);
+    }
 }
