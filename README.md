@@ -18,7 +18,7 @@
 
 1. Clone
 2. Import as Maven project
-3. Run [MiraiMain](mirai-core/src/main/java/net/mamoe/mirai/MiraiMain.java#L7)
+3. Run demo[Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L16)
 
 ### 事件 Hook
 #### Java:
@@ -45,7 +45,7 @@ FriendMessageEvent::class.hookAlways{
 ![](.github/68f8fec9.png)
 
 发送图片已经完成，但我们还在开发上传图片至服务器。  
-现在你可以通过发送一张图片给机器人账号，再让机器人账号发送这张图片。你可以查看 [Image](src/main/java/net/mamoe/mirai/message/Image.kt)
+现在你可以通过发送一张图片给机器人账号，再让机器人账号发送这张图片。你可以查看 [Image.kt](mirai-core/src/main/java/net/mamoe/mirai/message/defaults/Image.kt#L20-L93)
 
 ## 语言使用说明
 我们使用 Kotlin，但我们也会保留对 Java 和 Java开发者的支持。
