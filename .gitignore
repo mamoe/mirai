@@ -11,8 +11,9 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
+*.jar
+!/mirai-core/lib/jpcap.jar
 *.nar
 *.ear
 *.zip
