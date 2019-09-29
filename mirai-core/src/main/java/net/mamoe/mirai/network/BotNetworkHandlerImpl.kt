@@ -287,6 +287,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
 
                 is ServerLoginResponseFailedPacket -> {
                     socket.loginFuture?.complete(packet.loginState)
+                    bot.close()
                     return
                 }
 

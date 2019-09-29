@@ -1,10 +1,12 @@
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * 筛选掉无法登录(冻结/设备锁/UNKNOWN)的 qq
@@ -64,28 +66,36 @@ val qqList = "2535777366----abc123456\n" +
         "2534037598----abc123456\n"
 
 
-fun main() {
+suspend fun main() {
     val goodBotList = Collections.synchronizedList(mutableListOf<Bot>())
 
-    qqList.split("\n").forEach {
-        GlobalScope.launch {
-            val strings = it.split("----")
-            val bot = Bot(BotAccount(strings[0].toLong(), strings[1].let { password ->
-                if (password.endsWith(".")) {
-                    return@let password.substring(0, password.length - 1)
-                }
-                return@let password
-            }), Console())
+    withContext(Dispatchers.Default) {
+        qqList.split("\n")
+                .filterNot { it.isEmpty() }
+                .map { it.split("----") }
+                .map { Pair(it[0].toLong(), it[1]) }
+                .forEach { (qq, password) ->
+                    launch {
+                        val bot = Bot(
+                                BotAccount(
+                                        qq,
+                                        if (password.endsWith(".")) password.substring(0, password.length - 1) else password
+                                ),
+                                Console()
+                        )
 
-            bot.network.tryLogin().whenComplete { state, _ ->
-                if (!(state == LoginState.BLOCKED || state == LoginState.DEVICE_LOCK || state == LoginState.WRONG_PASSWORD)) {
-                    goodBotList.add(bot)
+                        withContext(Dispatchers.IO) {
+                            bot.network.tryLogin().get(3, TimeUnit.MILLISECONDS)
+                        }.let { state ->
+                            if (!(state == LoginState.BLOCKED || state == LoginState.DEVICE_LOCK || state == LoginState.WRONG_PASSWORD)) {
+                                goodBotList.add(bot)
+                            } else {
+
+                            }
+                        }
+                    }
                 }
-            }
-        }
     }
-
-    Thread.sleep(9 * 3000)
 
     println(goodBotList.joinToString("\n") { it.account.qqNumber.toString() + "    " + it.account.password })
 }

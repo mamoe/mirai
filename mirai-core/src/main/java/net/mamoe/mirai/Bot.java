@@ -116,10 +116,6 @@ public final class Bot implements Closeable {
         this.contacts.qqs.clear();
     }
 
-    public void addFriend(long qq) {
-
-    }
-
     /* PRIVATE */
 
     private static final AtomicInteger _id = new AtomicInteger(0);

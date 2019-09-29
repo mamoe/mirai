@@ -18,7 +18,7 @@ object Protocol {
             //add("183.60.56.29")
 
             arrayOf(
-                    //"sz3.tencent.com",
+                    "sz3.tencent.com",
                     "sz4.tencent.com",
                     "sz5.tencent.com",
                     "sz6.tencent.com",

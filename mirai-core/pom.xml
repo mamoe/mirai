@@ -27,19 +27,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.pcap4j</groupId>
-            <artifactId>pcap4j-core</artifactId>
-            <version>1.8.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.pcap4j</groupId>
-            <artifactId>pcap4j-packetfactory-static</artifactId>
-            <version>1.8.2</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
         </dependency>
@@ -92,13 +79,6 @@
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <scope>compile</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -113,19 +93,6 @@
         </resources>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>net.mamoe.mirai.MiraiMain</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

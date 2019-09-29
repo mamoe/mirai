@@ -1,6 +1,5 @@
 package net.mamoe.mirai;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +30,6 @@ public class MiraiAPI {
     public static void restartMirai(String[] args){
         MiraiServer.getInstance().shutdown();
         MiraiMain.main(args);
-    }
-
-    public static void setLogger(PrintStream stream){
-        MiraiServer.getInstance().getLogger().setOutPutStream(stream);
     }
 
     public static String getMiraiVersion(){
