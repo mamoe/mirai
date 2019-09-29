@@ -1,13 +1,17 @@
 package net.mamoe.mirai.network
 
-import net.mamoe.mirai.network.BotNetworkHandlerImpl.BotSocket
-import net.mamoe.mirai.network.BotNetworkHandlerImpl.Login
-import net.mamoe.mirai.network.handler.*
-import net.mamoe.mirai.network.packet.ClientPacket
-import net.mamoe.mirai.network.packet.Packet
-import net.mamoe.mirai.network.packet.ServerEventPacket
-import net.mamoe.mirai.network.packet.ServerPacket
-import net.mamoe.mirai.network.packet.login.LoginState
+import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocket
+import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.Login
+import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
+import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocket
+import net.mamoe.mirai.network.protocol.tim.handler.MessagePacketHandler
+import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
+import net.mamoe.mirai.network.protocol.tim.internal.handler.*
+import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import java.io.Closeable
 import java.util.concurrent.CompletableFuture
 

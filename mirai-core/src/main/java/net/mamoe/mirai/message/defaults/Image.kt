@@ -3,7 +3,7 @@ package net.mamoe.mirai.message.defaults
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageId
 import net.mamoe.mirai.message.MessageKey
-import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.lazyDecode
 import net.mamoe.mirai.utils.lazyEncode
 import net.mamoe.mirai.utils.skip

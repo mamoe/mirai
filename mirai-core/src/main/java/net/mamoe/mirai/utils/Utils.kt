@@ -2,8 +2,8 @@
 
 package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.dataInputStream
+import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.dataInputStream
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -60,10 +60,10 @@ fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 fun Byte.toUHexString(): String = this.toUByte().toString(16)
 
 
-fun String.hexToBytes(): ByteArray = Protocol.hexToBytes(this)
+fun String.hexToBytes(): ByteArray = TIMProtocol.hexToBytes(this)
 
 
-fun String.hexToUBytes(): UByteArray = Protocol.hexToUBytes(this)
+fun String.hexToUBytes(): UByteArray = TIMProtocol.hexToUBytes(this)
 
 
 fun String.hexToInt(): Int = hexToBytes().toUInt().toInt()

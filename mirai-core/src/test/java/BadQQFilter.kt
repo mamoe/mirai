@@ -2,7 +2,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.packet.login.LoginState
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import java.util.*

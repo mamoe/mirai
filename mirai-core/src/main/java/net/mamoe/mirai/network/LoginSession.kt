@@ -1,10 +1,10 @@
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.handler.DataPacketSocket
-import net.mamoe.mirai.network.handler.TemporaryPacketHandler
-import net.mamoe.mirai.network.packet.ClientPacket
-import net.mamoe.mirai.network.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocket
+import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
+import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.getGTK
 import java.util.concurrent.CompletableFuture
 

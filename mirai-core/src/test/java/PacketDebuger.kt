@@ -3,12 +3,12 @@
 import jpcap.JpcapCaptor
 import jpcap.packet.IPPacket
 import jpcap.packet.UDPPacket
-import net.mamoe.mirai.network.Protocol
-import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.network.packet.login.ServerLoginResponseFailedPacket
-import net.mamoe.mirai.network.packet.login.ServerLoginResponseKeyExchangePacket
-import net.mamoe.mirai.network.packet.login.ServerLoginResponseSuccessPacket
-import net.mamoe.mirai.network.packet.login.ServerLoginResponseVerificationCodeInitPacket
+import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseFailedPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseKeyExchangePacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseSuccessPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseVerificationCodeInitPacket
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
@@ -153,17 +153,17 @@ object Main {
                 }
 
                 "08 36" -> {
-                    println("tim的 passwordSubmissionKey1 = " + it.readNBytes(Protocol.passwordSubmissionTLV1.hexToBytes().size).toUHexString())
+                    println("tim的 passwordSubmissionKey1 = " + it.readNBytes(TIMProtocol.passwordSubmissionTLV1.hexToBytes().size).toUHexString())
                     //it.skipHex(Protocol.passwordSubmissionKey1)
                     println(it.readNBytes(2).toUHexString())
-                    println("tim的 publicKey = " + it.readNBytes(Protocol.publicKey.hexToBytes().size).toUHexString())
+                    println("tim的 publicKey = " + it.readNBytes(TIMProtocol.publicKey.hexToBytes().size).toUHexString())
                     println(it.readNBytes(2).toUHexString())
                     println("tim的 key0836=" + it.readLVByteArray().toUHexString())
                     //it.skipHex(Protocol.key0836)
                     val encrypted = it.readAllBytes()
                     println(encrypted.size)
                     println(encrypted.toUHexString())
-                    val tlv0006data = lazyDecode(encrypted.decryptBy(Protocol.shareKey)) { section ->
+                    val tlv0006data = lazyDecode(encrypted.decryptBy(TIMProtocol.shareKey)) { section ->
                         section.skip(2 + 2 + 56 + 2)
                         section.skip(section.readShort())//device name
                         section.skip(6 + 4 + 2 + 2)
@@ -173,7 +173,7 @@ object Main {
                     }
                     lazyDecode(tlv0006data) { tlv0006 ->
                         tlv0006.skip(4 + 2 + 4)
-                        tlv0006.skipHex(Protocol.constantData2)
+                        tlv0006.skipHex(TIMProtocol.constantData2)
                         tlv0006.skip(3)
                         tlv0006.skip(16 + 4 + 1 + 4 * 3 + 4 + 8 + 2)
                         tlv0006.skipHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")

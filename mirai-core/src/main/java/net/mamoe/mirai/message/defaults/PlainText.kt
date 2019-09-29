@@ -2,9 +2,9 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageKey
-import net.mamoe.mirai.network.packet.readLVString
-import net.mamoe.mirai.network.packet.writeLVByteArray
-import net.mamoe.mirai.network.packet.writeLVString
+import net.mamoe.mirai.network.protocol.tim.packet.readLVString
+import net.mamoe.mirai.network.protocol.tim.packet.writeLVByteArray
+import net.mamoe.mirai.network.protocol.tim.packet.writeLVString
 import net.mamoe.mirai.utils.lazyDecode
 import net.mamoe.mirai.utils.lazyEncode
 

@@ -7,7 +7,7 @@ import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.hookAlways
 import net.mamoe.mirai.message.defaults.Image
 import net.mamoe.mirai.message.defaults.PlainText
-import net.mamoe.mirai.network.packet.login.LoginState
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 
@@ -45,13 +45,13 @@ fun main() {
             }
 
             /*it.message eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
-                    image.upload(session, Group(session.bot, 580266363)).get()
+                    image.upload(session, Group(session.bot, 580266363)).of()
                 })*/
 
             it.message eq "发图片群2" -> Group(bot, 580266363).sendMessage(Image("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"))
 
             /* it.message eq "发图片" -> sendFriendMessage(it.sender, PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
-                     image.upload(session, it.sender).get()
+                     image.upload(session, it.sender).of()
                  })*/
             it.message eq "发图片2" -> it.reply(PlainText("test") + Image("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"))
         }

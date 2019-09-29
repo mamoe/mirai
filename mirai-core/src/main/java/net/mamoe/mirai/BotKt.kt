@@ -2,7 +2,7 @@ package net.mamoe.mirai
 
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.network.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 
 /**
  * The mirror of functions in inner classes of [Bot]

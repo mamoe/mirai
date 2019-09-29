@@ -3,9 +3,9 @@ package net.mamoe.mirai.message.defaults
 import net.mamoe.mirai.message.FaceID
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageKey
-import net.mamoe.mirai.network.packet.readLVNumber
-import net.mamoe.mirai.network.packet.writeHex
-import net.mamoe.mirai.network.packet.writeLVByteArray
+import net.mamoe.mirai.network.protocol.tim.packet.readLVNumber
+import net.mamoe.mirai.network.protocol.tim.packet.writeHex
+import net.mamoe.mirai.network.protocol.tim.packet.writeLVByteArray
 import net.mamoe.mirai.utils.lazyDecode
 import net.mamoe.mirai.utils.lazyEncode
 

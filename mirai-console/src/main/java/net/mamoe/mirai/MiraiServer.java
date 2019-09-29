@@ -4,7 +4,7 @@ import lombok.Getter;
 import net.mamoe.mirai.event.MiraiEventManager;
 import net.mamoe.mirai.event.events.server.ServerDisabledEvent;
 import net.mamoe.mirai.event.events.server.ServerEnabledEvent;
-import net.mamoe.mirai.network.packet.login.LoginState;
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState;
 import net.mamoe.mirai.task.MiraiTaskManager;
 import net.mamoe.mirai.utils.*;
 import net.mamoe.mirai.utils.config.MiraiConfig;
@@ -172,7 +172,7 @@ public final class MiraiServer {
             getLogger().info("Initializing [Bot] " + section.getString("account"));
             try {
                 Bot bot = new Bot(section);
-                var state = bot.network.tryLogin$mirai_core().get();
+                var state = bot.network.tryLogin$mirai_core().of();
                 //bot.network.tryLogin$mirai_core().whenComplete((state, e) -> {
                 if (state == LoginState.SUCCESS) {
                     Bot.instances.add(bot);
@@ -181,7 +181,7 @@ public final class MiraiServer {
                     getLogger().error("   Login Failed with error " + state);
                     bot.close();
                 }
-                //  }).get();
+                //  }).of();
 
             } catch (Throwable e) {
                 e.printStackTrace();

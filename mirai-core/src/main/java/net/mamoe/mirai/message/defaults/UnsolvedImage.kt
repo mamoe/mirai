@@ -2,11 +2,11 @@ package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.network.LoginSession
-import net.mamoe.mirai.network.packet.image.ClientTryGetImageIDPacket
-import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDFailedPacket
-import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDResponsePacket
-import net.mamoe.mirai.network.packet.image.ServerTryGetImageIDSuccessPacket
-import net.mamoe.mirai.network.packet.md5
+import net.mamoe.mirai.network.protocol.tim.packet.image.ClientTryGetImageIDPacket
+import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDFailedPacket
+import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDSuccessPacket
+import net.mamoe.mirai.network.protocol.tim.packet.md5
 import net.mamoe.mirai.utils.ImageNetworkUtils
 import net.mamoe.mirai.utils.toByteArray
 import net.mamoe.mirai.utils.toUHexString

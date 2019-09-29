@@ -2,8 +2,8 @@ import kotlin.ranges.IntRange;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-import net.mamoe.mirai.network.Protocol;
-import net.mamoe.mirai.network.packet.ClientPacketKt;
+import net.mamoe.mirai.network.protocol.tim.TIMProtocol;
+import net.mamoe.mirai.network.protocol.tim.packet.ClientPacketKt;
 import net.mamoe.mirai.utils.UtilsKt;
 
 import java.awt.*;
@@ -44,7 +44,7 @@ public class HexComparator {
 
     private static class ConstMatcher {
         private static final List<Field> CONST_FIELDS = new LinkedList<>() {{
-            List.of(Protocol.class).forEach(aClass -> Arrays.stream(aClass.getDeclaredFields()).peek(this::add).forEach(Field::trySetAccessible));
+            List.of(TIMProtocol.class).forEach(aClass -> Arrays.stream(aClass.getDeclaredFields()).peek(this::add).forEach(Field::trySetAccessible));
             List.of(TestConsts.class).forEach(aClass -> Arrays.stream(aClass.getDeclaredFields()).peek(this::add).forEach(Field::trySetAccessible));
         }};
 

@@ -1,8 +1,8 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.packet.ServerPacket
-import net.mamoe.mirai.network.packet.goto
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.goto
 import java.text.SimpleDateFormat
 import java.util.*
 
