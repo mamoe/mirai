@@ -111,8 +111,12 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 return
             }
 
-            temporaryPacketHandlers.removeIf {
-                it.onPacketReceived(action.session, packet)
+            with(temporaryPacketHandlers.iterator()) {
+                while (hasNext()) {
+                    if (next().onPacketReceived(action.session, packet)) {
+                        remove()
+                    }
+                }
             }
 
             //For debug
