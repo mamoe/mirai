@@ -3,6 +3,8 @@ package net.mamoe.mirai;
 
 import lombok.Getter;
 
+import java.io.PrintStream;
+
 /**
  * @author NaturalHG
  */

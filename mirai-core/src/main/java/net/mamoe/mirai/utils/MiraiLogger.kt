@@ -3,6 +3,7 @@ package net.mamoe.mirai.utils
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.packet.ServerPacket
 import net.mamoe.mirai.network.packet.goto
+import java.io.PrintStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -13,6 +14,12 @@ import java.util.*
  * @author NaturalHG
  */
 object MiraiLogger {
+    var stream:PrintStream = System.out
+
+    fun setOutPutStream(stream: PrintStream) {
+        this.stream = stream
+    }
+
     fun log(o: Any?) = info(o)
     fun println(o: Any?) = info(o)
     fun info(o: Any?) = this.print(o.toString(), LoggerTextFormat.RESET)
@@ -28,16 +35,17 @@ object MiraiLogger {
 
     fun catching(e: Throwable) {
         e.printStackTrace()
-        /*
+        /**
         this.print(e.message)
         this.print(e.localizedMessage)
-        this.print(e.cause.toString())*/
+        this.print(e.cause.toString())
+        */
     }
 
     @Synchronized
     private fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
         val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
-        kotlin.io.println("$color[Mirai] $s : $value")
+        stream.println("$color[Mirai] $s : $value")
     }
 }
 
