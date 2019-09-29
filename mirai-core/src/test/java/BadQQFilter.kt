@@ -3,6 +3,7 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
+import net.mamoe.mirai.utils.Console
 import java.util.*
 
 /**
@@ -74,7 +75,7 @@ fun main() {
                     return@let password.substring(0, password.length - 1)
                 }
                 return@let password
-            }))
+            }), Console())
 
             bot.network.tryLogin().whenComplete { state, _ ->
                 if (!(state == LoginState.BLOCKED || state == LoginState.DEVICE_LOCK || state == LoginState.WRONG_PASSWORD)) {

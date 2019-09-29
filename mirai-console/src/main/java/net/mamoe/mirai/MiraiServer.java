@@ -6,10 +6,7 @@ import net.mamoe.mirai.event.events.server.ServerDisabledEvent;
 import net.mamoe.mirai.event.events.server.ServerEnabledEvent;
 import net.mamoe.mirai.network.packet.login.LoginState;
 import net.mamoe.mirai.task.MiraiTaskManager;
-import net.mamoe.mirai.utils.BotAccount;
-import net.mamoe.mirai.utils.LoggerTextFormat;
-import net.mamoe.mirai.utils.MiraiLogger;
-import net.mamoe.mirai.utils.MiraiLoggerKt;
+import net.mamoe.mirai.utils.*;
 import net.mamoe.mirai.utils.config.MiraiConfig;
 import net.mamoe.mirai.utils.setting.MiraiSettingListSection;
 import net.mamoe.mirai.utils.setting.MiraiSettingMapSection;
@@ -78,7 +75,7 @@ public final class MiraiServer {
         this.parentFolder = new File(System.getProperty("user.dir"));
         this.unix = !System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS");
 
-        this.logger = MiraiLogger.INSTANCE;
+        this.logger = MiraiLogger.Companion;
         this.eventManager = MiraiEventManager.getInstance();
         this.taskManager = MiraiTaskManager.getInstance();
 
@@ -201,7 +198,7 @@ public final class MiraiServer {
     private Bot getAvailableBot() throws ExecutionException, InterruptedException {
         for (String it : qqList.split("\n")) {
             var strings = it.split("----");
-            var bot = new Bot(new BotAccount(Long.parseLong(strings[0]), strings[1]));
+            var bot = new Bot(new BotAccount(Long.parseLong(strings[0]), strings[1]), new Console());
 
             if (bot.network.tryLogin(200).get() == LoginState.SUCCESS) {
                 MiraiLoggerKt.success(bot, "Login succeed");

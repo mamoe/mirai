@@ -223,7 +223,7 @@ internal class BotNetworkHandlerImpl(private val bot: Bot) : BotNetworkHandler {
                 withContext(Dispatchers.IO) {
                     socket!!.send(DatagramPacket(data, data.size))
                 }
-                bot.cyanL("Packet sent:     $packet")
+                bot.cyan("Packet sent:     $packet")
 
                 PacketSentEvent(bot, packet).broadcast()
             } catch (e: Throwable) {

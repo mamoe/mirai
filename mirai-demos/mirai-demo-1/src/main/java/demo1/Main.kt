@@ -9,6 +9,7 @@ import net.mamoe.mirai.message.defaults.Image
 import net.mamoe.mirai.message.defaults.PlainText
 import net.mamoe.mirai.network.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
+import net.mamoe.mirai.utils.Console
 
 /**
  * @author Him188moe
@@ -17,7 +18,7 @@ fun main() {
     val bot = Bot(BotAccount(
             qqNumber = 1683921395,
             password = "bb22222"
-    ))
+    ), Console())
 
     bot.network.tryLogin().get().let {
         check(it == LoginState.SUCCESS) { "Login failed: " + it.name }

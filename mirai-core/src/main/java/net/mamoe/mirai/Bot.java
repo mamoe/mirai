@@ -6,6 +6,7 @@ import net.mamoe.mirai.network.BotNetworkHandler;
 import net.mamoe.mirai.network.BotNetworkHandlerImpl;
 import net.mamoe.mirai.utils.BotAccount;
 import net.mamoe.mirai.utils.ContactList;
+import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
@@ -57,6 +58,8 @@ public final class Bot implements Closeable {
 
     public final BotNetworkHandler network;
 
+    public final MiraiLogger logger;
+
     @Override
     public String toString() {
         return String.format("Bot{id=%d,qq=%d}", id, this.account.getQqNumber());
@@ -94,9 +97,14 @@ public final class Bot implements Closeable {
         }
     }
 
-    public Bot(@NotNull BotAccount account) {
+    public Bot(@NotNull BotAccount account, @NotNull MiraiLogger logger) {
         Objects.requireNonNull(account);
+
         this.account = account;
+
+        this.logger = Objects.requireNonNull(logger);
+        this.logger.setIdentity("Bot" + this.id + "(" + this.account.getQqNumber() + ")");
+
         this.network = new BotNetworkHandlerImpl(this);
     }
 
