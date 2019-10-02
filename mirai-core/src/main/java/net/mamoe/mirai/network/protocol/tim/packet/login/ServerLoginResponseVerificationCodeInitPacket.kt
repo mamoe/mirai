@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.hexToUBytes
 import java.io.DataInputStream
 
 /**
- * 收到这个包意味着需要验证码登录, 并且能得到验证码图片文件的一半
+ * 收到这个包意味着需要验证码登录, 并且能得到验证码图片文件的一部分
  *
  * @author Him188moe
  */
@@ -23,7 +23,6 @@ class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, priv
 
 
     @Tested
-
     override fun decode() {
         val verifyCodeLength = this.input.goto(78).readShort()//2bytes
         this.verifyCodePart1 = this.input.readNBytes(verifyCodeLength.toInt())
@@ -40,7 +39,6 @@ class ServerLoginResponseVerificationCodeInitPacket(input: DataInputStream, priv
         override fun decode() {
 
         }
-
 
         fun decrypt(): ServerLoginResponseVerificationCodeInitPacket {
             this.input goto 14

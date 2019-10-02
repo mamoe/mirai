@@ -10,7 +10,6 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 @PacketId("00 CD")
-
 class ClientSendFriendMessagePacket(
         private val botQQ: Long,
         private val targetQQ: Long,

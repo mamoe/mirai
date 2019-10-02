@@ -15,7 +15,6 @@ import java.util.*
  * @author Him188moe
  */
 @PacketId("00 A7")
-
 class ClientCanAddFriendPacket(
         val bot: Long,
         val qq: Long,
@@ -80,7 +79,6 @@ class ServerCanAddFriendResponsePacket(input: DataInputStream) : ServerPacket(in
  * 请求添加好友
  */
 @PacketId("00 AE")
-
 class ClientAddFriendPacket(
         val bot: Long,
         val qq: Long,

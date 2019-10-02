@@ -4,7 +4,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.group.GroupMessageEvent
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
-import net.mamoe.mirai.event.hookAlways
+import net.mamoe.mirai.event.subscribeAll
+import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.event.subscribeUntilFalse
 import net.mamoe.mirai.message.defaults.Image
 import net.mamoe.mirai.message.defaults.PlainText
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
@@ -14,18 +16,29 @@ import net.mamoe.mirai.utils.Console
 /**
  * @author Him188moe
  */
-fun main() {
+suspend fun main() {
     val bot = Bot(BotAccount(
             qqNumber = 1683921395,
             password = "bb22222"
     ), Console())
 
-    bot.network.tryLogin().get().let {
+    bot.network.tryLogin().await().let {
         check(it == LoginState.SUCCESS) { "Login failed: " + it.name }
     }
 
+
+    //DSL 监听
+    FriendMessageEvent.subscribeAll {
+        always {
+            //获取第一个纯文本消息
+            val firstText = it.message[PlainText]
+
+        }
+    }
+
+
     //监听事件:
-    FriendMessageEvent::class.hookAlways {
+    FriendMessageEvent.subscribeAlways {
         //获取第一个纯文本消息
         val firstText = it.message[PlainText]
 
@@ -57,9 +70,27 @@ fun main() {
         }
     }
 
-    GroupMessageEvent::class.hookAlways {
+    GroupMessageEvent::class.subscribeAlways {
         when {
             it.message.contains("复读") -> it.reply(it.message)
+        }
+    }
+}
+
+
+/**
+ * 实现功能:
+ * 对机器人说 "记笔记", 机器人记录之后的所有消息.
+ * 对机器人说 "停止", 机器人停止
+ */
+fun demo2() {
+    FriendMessageEvent.subscribeAlways { event ->
+        if (event.message eq "记笔记") {
+            FriendMessageEvent.subscribeUntilFalse {
+                it.reply("你发送了 ${it.message}")
+
+                it.message eq "停止"
+            }
         }
     }
 }

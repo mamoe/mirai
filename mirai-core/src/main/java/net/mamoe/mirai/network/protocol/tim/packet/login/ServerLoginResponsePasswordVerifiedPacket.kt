@@ -55,9 +55,9 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
 
     class Encrypted(input: DataInputStream) : ServerPacket(input) {
 
-        fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseSuccessPacket {
+        fun decrypt(privateKey: ByteArray): ServerLoginResponseSuccessPacket {
             input goto 14
-            return ServerLoginResponseSuccessPacket(this.decryptBy(TIMProtocol.shareKey, tgtgtKey)).setId(this.idHex)
+            return ServerLoginResponseSuccessPacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).setId(this.idHex)
         }
     }
 

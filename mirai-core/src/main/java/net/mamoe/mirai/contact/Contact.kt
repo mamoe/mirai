@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture
  * @author Him188moe
  */
 abstract class Contact internal constructor(val bot: Bot, val number: Long) {
+
     abstract suspend fun sendMessage(message: MessageChain)
 
     /**

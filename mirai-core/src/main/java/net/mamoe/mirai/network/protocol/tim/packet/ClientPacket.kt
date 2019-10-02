@@ -121,7 +121,7 @@ fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: (ByteArrayDataOutp
 }
 
 @Throws(IOException::class)
-fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray) {
+fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray) {
     val firstMD5 = md5(password)
     val secondMD5 = md5(firstMD5 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
 
@@ -140,7 +140,7 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
         it.writeZero(8)
         it.writeHex("00 10")//这两个hex是passwordSubmissionTLV2的末尾
         it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")//16
-        it.write(tgtgtKey)
+        it.write(privateKey)
     }
 }
 

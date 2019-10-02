@@ -4,7 +4,7 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
-import net.mamoe.mirai.event.hookWhile
+import net.mamoe.mirai.event.subscribeWhileTrue
 import net.mamoe.mirai.network.protocol.tim.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
@@ -337,7 +337,7 @@ fun DataInputStream.gotoWhere(matcher: ByteArray): DataInputStream {
 @Suppress("UNCHECKED_CAST")
 internal fun <P : ServerPacket> Bot.waitForPacket(packetClass: KClass<P>, timeoutMillis: Long = Long.MAX_VALUE, timeout: () -> Unit = {}) {
     var got = false
-    ServerPacketReceivedEvent::class.hookWhile {
+    ServerPacketReceivedEvent::class.subscribeWhileTrue {
         if (packetClass.isInstance(it.packet) && it.bot === this) {
             got = true
             true

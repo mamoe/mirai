@@ -1,9 +1,5 @@
 package net.mamoe.mirai.task;
 
-
-import net.mamoe.mirai.event.MiraiEventHook;
-import net.mamoe.mirai.event.events.server.ServerDisabledEvent;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,12 +21,6 @@ public final class MiraiTaskManager {
 
     private MiraiTaskManager() {
         this.pool = new MiraiThreadPool();
-
-        MiraiEventHook
-                .onEvent(ServerDisabledEvent.class)
-                .handler(a -> this.pool.close())
-                .mount();
-
     }
 
     /**

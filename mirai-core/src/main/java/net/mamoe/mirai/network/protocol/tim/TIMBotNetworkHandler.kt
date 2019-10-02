@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.protocol.tim
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
 import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
 import net.mamoe.mirai.event.events.network.PacketSentEvent
@@ -58,9 +59,9 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
      *
      * @param touchingTimeoutMillis 连接每个服务器的 timeout
      */
-    override fun tryLogin(touchingTimeoutMillis: Long): CompletableFuture<LoginState> {
+    override fun tryLogin(touchingTimeoutMillis: Long): CompletableDeferred<LoginState> {
         val ipQueue: LinkedList<String> = LinkedList(TIMProtocol.SERVER_IP)
-        val future = CompletableFuture<LoginState>()
+        val future = CompletableDeferred<LoginState>()
 
         fun login() {
             this.socket.close()
@@ -133,7 +134,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 }
             }
 
-            if (ServerPacketReceivedEvent(bot, packet).broadcast().isCancelled) {
+            if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled) {
                 return
             }
 
@@ -222,7 +223,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             try {
                 packet.encodePacket()
 
-                if (BeforePacketSendEvent(bot, packet).broadcast().isCancelled) {
+                if (BeforePacketSendEvent(bot, packet).broadcast().cancelled) {
                     return
                 }
 
@@ -263,7 +264,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         private lateinit var token0825: ByteArray//56
         private var loginTime: Int = 0
         private lateinit var loginIP: String
-        private var randomTgtgtKey: ByteArray = getRandomByteArray(16)
+        private var randomprivateKey: ByteArray = getRandomByteArray(16)
 
         /**
          * 0828_decr_key
@@ -288,7 +289,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                         this.loginTime = packet.loginTime
                         this.token0825 = packet.token0825
                         println("token0825=" + this.token0825.toUHexString())
-                        socket.sendPacket(ClientPasswordSubmissionPacket(bot.account.qqNumber, bot.account.password, packet.loginTime, packet.loginIP, this.randomTgtgtKey, packet.token0825))
+                        socket.sendPacket(ClientPasswordSubmissionPacket(bot.account.qqNumber, bot.account.password, packet.loginTime, packet.loginIP, this.randomprivateKey, packet.token0825))
                     }
                 }
 
@@ -299,9 +300,9 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 }
 
                 is ServerCaptchaCorrectPacket -> {
-                    this.randomTgtgtKey = getRandomByteArray(16)
+                    this.randomprivateKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
-                    socket.sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.randomTgtgtKey, this.token0825, this.token00BA))
+                    socket.sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.randomprivateKey, this.token0825, this.token00BA))
                 }
 
                 is ServerLoginResponseVerificationCodeInitPacket -> {
@@ -309,7 +310,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                     this.token00BA = packet.token00BA
                     this.captchaCache = packet.verifyCodePart1
 
-                    if (packet.unknownBoolean != null && packet.unknownBoolean!!) {
+                    if (packet.unknownBoolean == true) {
                         this.captchaSectionId = 1
                         socket.sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, bot.account.qqNumber, this.token0825, this.captchaSectionId++, this.token00BA))
                     }
@@ -326,6 +327,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                     this.token00BA = packet.token00BA
 
                     if (packet.transmissionCompleted) {
+                        //todo 验证码多样化处理
                         withContext(Dispatchers.IO) {
                             bot.notice(CharImageUtil.createCharImg(ImageIO.read(captchaCache!!.inputStream())))
                         }
@@ -363,11 +365,11 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                     //println("token00BA changed!!! to " + token00BA.toUByteArray())
                     //}
                     if (packet.flag == ServerLoginResponseKeyExchangePacket.Flag.`08 36 31 03`) {
-                        this.randomTgtgtKey = packet.tgtgtKey
-                        socket.sendPacket(ClientLoginResendPacket3104(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomTgtgtKey, token0825, packet.tokenUnknown
+                        this.randomprivateKey = packet.privateKey
+                        socket.sendPacket(ClientLoginResendPacket3104(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomprivateKey, token0825, packet.tokenUnknown
                                 ?: this.token00BA, packet.tlv0006))
                     } else {
-                        socket.sendPacket(ClientLoginResendPacket3106(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomTgtgtKey, token0825, packet.tokenUnknown
+                        socket.sendPacket(ClientLoginResendPacket3106(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomprivateKey, token0825, packet.tokenUnknown
                                 ?: token00BA, packet.tlv0006))
                     }
                 }
@@ -389,7 +391,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                     BotLoginSucceedEvent(bot).broadcast()
 
                     //登录成功后会收到大量上次的消息, 忽略掉 todo 优化
-                    GlobalScope.launch {
+                    NetworkScope.launch {
                         delay(3000)
                         message.ignoreMessage = false
                     }
@@ -401,8 +403,8 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
                 is ServerCatchaPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
-                is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
-                is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomTgtgtKey))
+                is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomprivateKey))
+                is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomprivateKey))
                 is ServerSessionKeyResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
                 is ServerTouchResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt())
 
@@ -417,10 +419,8 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             }
         }
 
-        fun changeOnlineStatus(status: ClientLoginStatus) {
-            NetworkScope.launch {
-                socket.sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, status))
-            }
+        suspend fun changeOnlineStatus(status: ClientLoginStatus) {
+            socket.sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, status))
         }
 
         override fun close() {

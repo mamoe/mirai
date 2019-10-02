@@ -1,12 +1,12 @@
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 /**
  * 筛选掉无法登录(冻结/设备锁/UNKNOWN)的 qq
@@ -85,7 +85,9 @@ suspend fun main() {
                         )
 
                         withContext(Dispatchers.IO) {
-                            bot.network.tryLogin().get(3, TimeUnit.MILLISECONDS)
+                            withTimeout(3000) {
+                                bot.network.tryLogin().await()
+                            }
                         }.let { state ->
                             if (!(state == LoginState.BLOCKED || state == LoginState.DEVICE_LOCK || state == LoginState.WRONG_PASSWORD)) {
                                 goodBotList.add(bot)

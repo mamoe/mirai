@@ -15,6 +15,7 @@
 
     <modules>
         <module>mirai-demo-1</module>
+        <module>mirai-demo-event</module>
     </modules>
 
 

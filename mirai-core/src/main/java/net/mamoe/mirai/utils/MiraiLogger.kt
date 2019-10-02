@@ -6,12 +6,11 @@ import net.mamoe.mirai.network.protocol.tim.packet.goto
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 /**
  * @author Him188moe
  */
 interface MiraiLogger {
-    companion object : Console("[TOP Level]")
+    companion object : MiraiLogger by defaultLogger()
 
     var identity: String
 
@@ -30,6 +29,8 @@ interface MiraiLogger {
 
     fun blue(any: Any?)
 }
+
+private fun defaultLogger(): MiraiLogger = Console("[TOP Level]")
 
 val DEBUGGING: Boolean by lazy {
     //avoid inspections
@@ -70,7 +71,7 @@ fun Bot.notice(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_BLUE)
 fun Bot.purple(o: Any?) = print(this, o.toString(), LoggerTextFormat.PURPLE)
 
 fun Bot.cyan(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_CYAN)
-fun Bot.success(o: Any?) = print(this, o.toString(), LoggerTextFormat.GREEN)
+fun Bot.green(o: Any?) = print(this, o.toString(), LoggerTextFormat.GREEN)
 
 fun Bot.debug(o: Any?) = print(this, o.toString(), LoggerTextFormat.YELLOW)
 

@@ -3,7 +3,7 @@
 
 一个以<b>TIM QQ协议(非web)</b>驱动的QQ机器人服务端核心   
 采用服务端-插件模式运行，同时提供独立的协议层库  
-**我们承诺项目的所有模块均开源**  
+项目的所有模块均开源
   
 项目处于开发阶段，学生无法每日大量更新。  
 项目还有很多未完善的地方, 欢迎任何的代码贡献, 或是 issue.   
@@ -22,19 +22,12 @@
 
 ### 事件 Hook
 #### Java:
-```
-MiraiEventHook.onEvent(FriendMessageEvent.class)
-       .handler(a -> {
-               if(a.message.eq("你好")) 
-                       a.getSender().sendMessage("你好！");
-       })
-       .mountAlways();
-```
+暂不支持
 #### Kotlin:
-```
-FriendMessageEvent::class.hookAlways{
-    if(it.message eq "你好")
-          it.reply("你好！")
+```kotlin
+FriendMessageEvent.subscribeAlways{
+  if(it.message eq "你好")
+     it.reply("你好！")
 }
 ```
 ![AYWVE86P](.github/A%7DYWVE860U%28%25YQD%24R1GB1%5BP.png)

@@ -1,5 +1,6 @@
 package net.mamoe.mirai.network
 
+import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocket
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.Login
 import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
@@ -12,7 +13,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import java.io.Closeable
-import java.util.concurrent.CompletableFuture
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.
@@ -54,7 +54,7 @@ interface BotNetworkHandler : Closeable {
      */
     val action: ActionPacketHandler
 
-    fun tryLogin(touchingTimeoutMillis: Long = 200): CompletableFuture<LoginState>
+    fun tryLogin(touchingTimeoutMillis: Long = 200): CompletableDeferred<LoginState>
 
     /**
      * 添加一个临时包处理器

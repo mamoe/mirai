@@ -18,7 +18,7 @@ import java.io.DataInputStream
  * @author Him188moe
  */
 object Main {
-    val localIp = "192.168.3.10"
+    const val localIp = "192.168.3.10"
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -99,12 +99,12 @@ object Main {
                 println("login failed")
             }
 
-            is ServerLoginResponseKeyExchangePacket.Encrypted -> packetReceived(packet.decrypt(tgtgtKey))
+            is ServerLoginResponseKeyExchangePacket.Encrypted -> packetReceived(packet.decrypt(privateKey))
             is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> packetReceived(packet.decrypt())
-            is ServerLoginResponseSuccessPacket.Encrypted -> packetReceived(packet.decrypt(tgtgtKey))
+            is ServerLoginResponseSuccessPacket.Encrypted -> packetReceived(packet.decrypt(privateKey))
 
             is ServerLoginResponseKeyExchangePacket -> {
-                tgtgtKey = packet.tgtgtKey
+                privateKey = packet.privateKey
                 //then 31 04 or 31 06
             }
 
@@ -133,7 +133,7 @@ object Main {
     lateinit var token0825: ByteArray//56
     var loginTime: Int = 0
     lateinit var loginIp: String
-    lateinit var tgtgtKey: ByteArray//16
+    lateinit var privateKey: ByteArray//16
     lateinit var sessionKey: ByteArray
 
     lateinit var sessionResponseDecryptionKey: ByteArray
@@ -177,9 +177,9 @@ object Main {
                         tlv0006.skip(3)
                         tlv0006.skip(16 + 4 + 1 + 4 * 3 + 4 + 8 + 2)
                         tlv0006.skipHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")
-                        tgtgtKey = tlv0006.readNBytes(16)
+                        privateKey = tlv0006.readNBytes(16)
                     }
-                    println("Got tgtgtKey=" + tgtgtKey.toUHexString())
+                    println("Got privateKey=" + privateKey.toUHexString())
 
                     //then receive
                 }

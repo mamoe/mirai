@@ -19,7 +19,7 @@ class ClientPasswordSubmissionPacket(
         private val password: String,
         private val loginTime: Int,
         private val loginIP: String,
-        private val tgtgtKey: ByteArray,//16 random by client
+        private val privateKey: ByteArray,//16 random by client
         private val token0825: ByteArray//56 from server
 ) : ClientPacket() {
 
@@ -34,37 +34,34 @@ class ClientPasswordSubmissionPacket(
         this.writeHex(TIMProtocol.key0836)
 
         this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
-            it.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825)
+            it.writePart1(qq, password, loginTime, loginIP, privateKey, token0825)
             it.writePart2()
         }
     }
 }
 
 @PacketId("08 36 31 04")
-
-class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
-    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv0006)
+class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, tlv0006)
 
 @PacketId("08 36 31 05")
-
-class ClientLoginResendPacket3105(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray)
-    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, null)
+class ClientLoginResendPacket3105(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, token00BA: ByteArray)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, null)
 
 @PacketId("08 36 31 06")
-
-class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
-    : ClientLoginResendPacket(qq, password, loginTime, loginIP, tgtgtKey, token0825, token00BA, tlv0006)
+class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
+    : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, tlv0006)
 
 
 open class ClientLoginResendPacket internal constructor(
-        val qq: Long,
-        val password: String,
-        val loginTime: Int,
-        val loginIP: String,
-        val tgtgtKey: ByteArray,
-        val token0825: ByteArray,
-        val token00BA: ByteArray,
-        val tlv0006: ByteArray? = null
+        private val qq: Long,
+        private val password: String,
+        private val loginTime: Int,
+        private val loginIP: String,
+        private val privateKey: ByteArray,
+        private val token0825: ByteArray,
+        private val token00BA: ByteArray,
+        private val tlv0006: ByteArray? = null
 ) : ClientPacket() {
     override fun encode() {
         this.writeQQ(qq)
@@ -77,7 +74,7 @@ open class ClientLoginResendPacket internal constructor(
         this.writeHex(TIMProtocol.key0836)//16
 
         this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
-            it.writePart1(qq, password, loginTime, loginIP, tgtgtKey, token0825, tlv0006)
+            it.writePart1(qq, password, loginTime, loginIP, privateKey, token0825, tlv0006)
 
             it.writeHex("01 10") //tag
             it.writeHex("00 3C")//length
@@ -94,8 +91,7 @@ open class ClientLoginResendPacket internal constructor(
 /**
  * @author Him188moe
  */
-
-private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: Int, loginIP: String, tgtgtKey: ByteArray, token0825: ByteArray, tlv0006: ByteArray? = null) {
+private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, tlv0006: ByteArray? = null) {
 
     //this.writeInt(System.currentTimeMillis().toInt())
     this.writeHex("01 12")//tag
@@ -111,13 +107,13 @@ private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: I
     if (tlv0006 != null) {
         this.write(tlv0006)
     } else {
-        this.writeTLV0006(qq, password, loginTime, loginIP, tgtgtKey)
+        this.writeTLV0006(qq, password, loginTime, loginIP, privateKey)
     }
     //fix
     this.writeHex(TIMProtocol.passwordSubmissionTLV2)
     this.writeHex("00 1A")//tag
     this.writeHex("00 40")//length
-    this.write(TEA.encrypt(TIMProtocol.passwordSubmissionTLV2.hexToBytes(), tgtgtKey))
+    this.write(TEA.encrypt(TIMProtocol.passwordSubmissionTLV2.hexToBytes(), privateKey))
     this.writeHex(TIMProtocol.constantData1)
     this.writeHex(TIMProtocol.constantData2)
     this.writeQQ(qq)

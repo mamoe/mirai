@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.protocol.tim.handler
 
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.group.GroupMessageEvent
 import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.getGroupByNumber

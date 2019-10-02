@@ -8,7 +8,7 @@ import net.mamoe.mirai.utils.Tested
 import java.io.DataInputStream
 
 /**
- * 服务器进行加密后返回 tgtgtKey
+ * 服务器进行加密后返回 privateKey
  *
  * @author NaturalHG
  */
@@ -21,12 +21,12 @@ class ServerLoginResponseKeyExchangePacket(input: DataInputStream, val flag: Fla
 
     lateinit var tlv0006: ByteArray;//120bytes
     var tokenUnknown: ByteArray? = null
-    lateinit var tgtgtKey: ByteArray//16bytes
+    lateinit var privateKey: ByteArray//16bytes
 
     @Tested
     override fun decode() {
         this.input.skip(5)
-        tgtgtKey = this.input.readNBytes(16)//22
+        privateKey = this.input.readNBytes(16)//22
         //this.input.skip(2)//25
         this.input.goto(25)
         tlv0006 = this.input.readNBytes(120)
@@ -48,8 +48,8 @@ class ServerLoginResponseKeyExchangePacket(input: DataInputStream, val flag: Fla
     class Encrypted(input: DataInputStream, private val flag: Flag) : ServerPacket(input) {
 
         @Tested
-        fun decrypt(tgtgtKey: ByteArray): ServerLoginResponseKeyExchangePacket {
-            return ServerLoginResponseKeyExchangePacket(this.decryptBy(TIMProtocol.shareKey, tgtgtKey), flag).setId(this.idHex)
+        fun decrypt(privateKey: ByteArray): ServerLoginResponseKeyExchangePacket {
+            return ServerLoginResponseKeyExchangePacket(this.decryptBy(TIMProtocol.shareKey, privateKey), flag).setId(this.idHex)
         }
     }
 }
