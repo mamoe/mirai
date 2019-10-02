@@ -17,10 +17,6 @@ internal object PacketNameFormatter {
             return name
         }
 
-        return StringBuilder().apply {
-            repeat(longestNameLength - name.length) {
-                this.append(" ")
-            }
-        }.toString() + name
+        return " ".repeat(longestNameLength - name.length) + name
     }
 }
