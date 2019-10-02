@@ -3,9 +3,7 @@ package net.mamoe.mirai.network.protocol.tim.packet
 /**
  * @author Him188moe
  */
-interface Packet {
-
-}
+interface Packet
 
 
 object PacketNameFormatter {

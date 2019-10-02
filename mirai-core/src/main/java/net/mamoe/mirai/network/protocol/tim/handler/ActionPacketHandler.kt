@@ -2,7 +2,10 @@ package net.mamoe.mirai.network.protocol.tim.handler
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.network.LoginSession
-import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.ClientAccountInfoRequestPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerAccountInfoResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.AddFriendResult
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientAddFriendPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientCanAddFriendPacket
@@ -10,6 +13,9 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResp
 import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDFailedPacket
 import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDSuccessPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRequestPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.ServerSKeyResponsePacket
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.getGTK
 import java.awt.image.BufferedImage

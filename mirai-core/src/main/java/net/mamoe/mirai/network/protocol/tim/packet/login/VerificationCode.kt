@@ -1,6 +1,7 @@
-package net.mamoe.mirai.network.protocol.tim.packet
+package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.hexToBytes
@@ -51,11 +52,11 @@ class ClientVerificationCodeSubmitPacket(
         private val packetIdLast: Int,
         private val qq: Long,
         private val token0825: ByteArray,
-        private val verificationCode: String,
+        private val captcha: String,
         private val verificationToken: ByteArray
 ) : ClientPacket() {
     init {
-        require(verificationCode.length == 4) { "verificationCode.length must == 4" }
+        require(captcha.length == 4) { "captcha.length must == 4" }
     }
 
     override fun encode() {
@@ -75,7 +76,7 @@ class ClientVerificationCodeSubmitPacket(
             it.writeHex(TIMProtocol.publicKey)//25
 
             it.writeHex("14 00 05 00 00 00 00 00 04")
-            it.write(verificationCode.toUpperCase().toByteArray())
+            it.write(captcha.toUpperCase().toByteArray())
             it.writeHex("00 38")
             it.write(verificationToken)
 

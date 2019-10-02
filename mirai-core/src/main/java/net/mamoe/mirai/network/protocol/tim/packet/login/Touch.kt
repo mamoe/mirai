@@ -1,7 +1,7 @@
-package net.mamoe.mirai.network.protocol.tim.packet
+package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.login.ClientPasswordSubmissionPacket
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.ByteArrayDataOutputStream
 import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.hexToBytes

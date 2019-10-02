@@ -192,9 +192,9 @@ fun UInt.toByteArray(): ByteArray = byteArrayOf(
 
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
-internal fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
+fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray())
 
-internal fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
+fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
 
 @Throws(IOException::class)
