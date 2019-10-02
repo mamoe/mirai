@@ -5,10 +5,7 @@ import jpcap.packet.IPPacket
 import jpcap.packet.UDPPacket
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseFailedPacket
-import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseKeyExchangePacket
-import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseSuccessPacket
-import net.mamoe.mirai.network.protocol.tim.packet.login.ServerLoginResponseVerificationCodeInitPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 

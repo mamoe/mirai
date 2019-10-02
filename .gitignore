@@ -13,7 +13,7 @@
 # Package Files #
 *.war
 *.jar
-!/mirai-core/lib/jpcap.jar
+!/mirai-debug/lib/jpcap.jar
 *.nar
 *.ear
 *.zip
