@@ -6,7 +6,7 @@ package net.mamoe.mirai.network.protocol.tim.packet
 interface Packet
 
 
-object PacketNameFormatter {
+internal object PacketNameFormatter {
     @JvmSynthetic
     private var longestNameLength: Int = 43
 
