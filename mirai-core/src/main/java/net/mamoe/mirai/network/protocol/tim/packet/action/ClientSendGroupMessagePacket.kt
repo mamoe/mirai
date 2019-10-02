@@ -24,10 +24,10 @@ class ClientSendGroupMessagePacket(
 
         this.encryptAndWrite(sessionKey) {
             val bytes = message.toByteArray()
-            it.writeByte(0x2A)
-            it.writeGroup(groupId)
+            writeByte(0x2A)
+            writeGroup(groupId)
 
-            it.writeLVByteArray(lazyEncode { child ->
+            writeLVByteArray(lazyEncode { child ->
                 child.writeHex("00 01 01")
                 child.writeHex("00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")
 
@@ -46,7 +46,7 @@ class ClientSendGroupMessagePacket(
             it.writeShort(bytes.size)
             it.write(bytes)*/
 
-            println(it.toByteArray().toUHexString())
+            println(toByteArray().toUHexString())
         }
     }
 }

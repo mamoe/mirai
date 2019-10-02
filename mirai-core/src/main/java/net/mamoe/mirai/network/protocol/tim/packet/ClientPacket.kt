@@ -112,11 +112,11 @@ fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, key: ByteArray) {
     this.write(TEA.encrypt(byteArray, key))
 }
 
-fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: (ByteArrayDataOutputStream) -> Unit) {
+fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: ByteArrayDataOutputStream.() -> Unit) {
     this.write(TEA.encrypt(ByteArrayDataOutputStream().also(encoder).toByteArray(), key))
 }
 
-fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: (ByteArrayDataOutputStream) -> Unit) {
+fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: ByteArrayDataOutputStream.() -> Unit) {
     this.encryptAndWrite(keyHex.hexToBytes(), encoder)
 }
 
@@ -126,21 +126,21 @@ fun DataOutputStream.writeTLV0006(qq: Long, password: String, loginTime: Int, lo
     val secondMD5 = md5(firstMD5 + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray())
 
     this.encryptAndWrite(secondMD5) {
-        it.writeRandom(4)
-        it.writeHex("00 02")
-        it.writeQQ(qq)
-        it.writeHex(TIMProtocol.constantData2)
-        it.writeHex("00 00 01")
+        writeRandom(4)
+        writeHex("00 02")
+        writeQQ(qq)
+        writeHex(TIMProtocol.constantData2)
+        writeHex("00 00 01")
 
-        it.write(firstMD5)
-        it.writeInt(loginTime)
-        it.writeByte(0)
-        it.writeZero(4 * 3)
-        it.writeIP(loginIP)
-        it.writeZero(8)
-        it.writeHex("00 10")//这两个hex是passwordSubmissionTLV2的末尾
-        it.writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")//16
-        it.write(privateKey)
+        write(firstMD5)
+        writeInt(loginTime)
+        writeByte(0)
+        writeZero(4 * 3)
+        writeIP(loginIP)
+        writeZero(8)
+        writeHex("00 10")//这两个hex是passwordSubmissionTLV2的末尾
+        writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")//16
+        write(privateKey)
     }
 }
 

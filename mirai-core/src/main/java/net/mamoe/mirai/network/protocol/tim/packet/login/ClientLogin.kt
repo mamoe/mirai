@@ -34,8 +34,8 @@ class ClientPasswordSubmissionPacket(
         this.writeHex(TIMProtocol.key0836)
 
         this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
-            it.writePart1(qq, password, loginTime, loginIP, privateKey, token0825)
-            it.writePart2()
+            writePart1(qq, password, loginTime, loginIP, privateKey, token0825)
+            writePart2()
         }
     }
 }
@@ -74,15 +74,15 @@ open class ClientLoginResendPacket internal constructor(
         this.writeHex(TIMProtocol.key0836)//16
 
         this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
-            it.writePart1(qq, password, loginTime, loginIP, privateKey, token0825, tlv0006)
+            writePart1(qq, password, loginTime, loginIP, privateKey, token0825, tlv0006)
 
-            it.writeHex("01 10") //tag
-            it.writeHex("00 3C")//length
-            it.writeHex("00 01")//tag
-            it.writeHex("00 38")//length
-            it.write(token00BA)//value
+            writeHex("01 10") //tag
+            writeHex("00 3C")//length
+            writeHex("00 01")//tag
+            writeHex("00 38")//length
+            write(token00BA)//value
 
-            it.writePart2()
+            writePart2()
         }
     }
 }

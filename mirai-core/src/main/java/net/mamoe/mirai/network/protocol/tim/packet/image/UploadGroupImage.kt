@@ -31,60 +31,60 @@ class ClientTryGetImageIDPacket(
 
         val byteArray = image.toByteArray()
         this.encryptAndWrite(sessionKey) {
-            it.writeZero(3)
+            writeZero(3)
 
-            it.writeHex("07 00")
+            writeHex("07 00")
 
-            it.writeZero(2)
+            writeZero(2)
 
-            it.writeHex("5E")
-            it.writeHex("08")
-            it.writeHex("01 12 03 98 01 01 10 01")
+            writeHex("5E")
+            writeHex("08")
+            writeHex("01 12 03 98 01 01 10 01")
 
-            it.writeHex("1A")
-            it.writeHex("5A")
+            writeHex("1A")
+            writeHex("5A")
 
-            it.writeHex("08")
-            it.writeUVarInt(groupNumberOrQQNumber)
+            writeHex("08")
+            writeUVarInt(groupNumberOrQQNumber)
 
-            it.writeHex("10")
-            it.writeUVarInt(botNumber)
+            writeHex("10")
+            writeUVarInt(botNumber)
 
-            it.writeHex("18 00")
+            writeHex("18 00")
 
-            it.writeHex("22")
-            it.writeHex("10")
-            it.write(md5(byteArray))
+            writeHex("22")
+            writeHex("10")
+            write(md5(byteArray))
 
-            it.writeHex("28")
-            it.writeUVarInt(byteArray.size.toUInt())
+            writeHex("28")
+            writeUVarInt(byteArray.size.toUInt())
 
-            it.writeHex("32")
-            it.writeHex("1A")
-            it.writeHex("37 00 4D 00 32 00 25 00 4C 00 31 00 56 00 32 00 7B 00 39 00 30 00 29 00 52 00")
+            writeHex("32")
+            writeHex("1A")
+            writeHex("37 00 4D 00 32 00 25 00 4C 00 31 00 56 00 32 00 7B 00 39 00 30 00 29 00 52 00")
 
-            it.writeHex("38 01")
+            writeHex("38 01")
 
-            it.writeHex("48 01")
+            writeHex("48 01")
 
-            it.writeHex("50")
-            it.writeUVarInt(image.width.toUInt())
-            it.writeHex("58")
-            it.writeUVarInt(image.height.toUInt())
+            writeHex("50")
+            writeUVarInt(image.width.toUInt())
+            writeHex("58")
+            writeUVarInt(image.height.toUInt())
 
-            it.writeHex("60 04")
+            writeHex("60 04")
 
-            it.writeHex("6A")
-            it.writeHex("05")
-            it.writeHex("32 36 36 35 36")
+            writeHex("6A")
+            writeHex("05")
+            writeHex("32 36 36 35 36")
 
-            it.writeHex("70 00")
+            writeHex("70 00")
 
-            it.writeHex("78 03")
+            writeHex("78 03")
 
-            it.writeHex("80 01")
+            writeHex("80 01")
 
-            it.writeHex("00")
+            writeHex("00")
         }
     }
 }

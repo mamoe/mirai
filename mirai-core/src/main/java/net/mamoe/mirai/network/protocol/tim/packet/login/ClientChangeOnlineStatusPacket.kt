@@ -24,9 +24,9 @@ class ClientChangeOnlineStatusPacket(
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
-            it.writeHex("01 00")
-            it.writeByte(loginStatus.id)
-            it.writeHex("00 01 00 01 00 04 00 00 00 00")
+            writeHex("01 00")
+            writeByte(loginStatus.id)
+            writeHex("00 01 00 01 00 04 00 00 00 00")
         }
     }
 }

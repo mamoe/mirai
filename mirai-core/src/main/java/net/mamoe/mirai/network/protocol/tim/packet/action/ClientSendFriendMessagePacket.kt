@@ -23,24 +23,24 @@ class ClientSendFriendMessagePacket(
         this.writeHex(TIMProtocol.fixVer2)
 
         this.encryptAndWrite(sessionKey) {
-            it.writeQQ(botQQ)
-            it.writeQQ(targetQQ)
-            it.writeHex("00 00 00 08 00 01 00 04 00 00 00 00")
-            it.writeHex("37 0F")
-            it.writeQQ(botQQ)
-            it.writeQQ(targetQQ)
-            it.write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
-            it.writeHex("00 0B")
-            it.writeRandom(2)
-            it.writeTime()
-            it.writeHex("00 00 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00")
-            it.writeTime()
-            it.writeRandom(4)
-            it.writeHex("00 00 00 00 09 00 86")
-            it.writeHex(TIMProtocol.messageConst1)//... 85 E9 BB 91
-            it.writeZero(2)
+            writeQQ(botQQ)
+            writeQQ(targetQQ)
+            writeHex("00 00 00 08 00 01 00 04 00 00 00 00")
+            writeHex("37 0F")
+            writeQQ(botQQ)
+            writeQQ(targetQQ)
+            write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
+            writeHex("00 0B")
+            writeRandom(2)
+            writeTime()
+            writeHex("00 00 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00")
+            writeTime()
+            writeRandom(4)
+            writeHex("00 00 00 00 09 00 86")
+            writeHex(TIMProtocol.messageConst1)//... 85 E9 BB 91
+            writeZero(2)
 
-            it.write(message.toByteArray())
+            write(message.toByteArray())
 
             /*
                 //Plain text

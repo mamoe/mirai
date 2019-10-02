@@ -32,7 +32,7 @@ class ClientCanAddFriendPacket(
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
-            it.writeQQ(qq)
+            writeQQ(qq)
         }
     }
 }
@@ -96,8 +96,8 @@ class ClientAddFriendPacket(
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
-            it.writeHex("01 00 01")
-            it.writeQQ(qq)
+            writeHex("01 00 01")
+            writeQQ(qq)
         }
     }
 

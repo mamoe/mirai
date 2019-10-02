@@ -78,13 +78,13 @@ class ClientTouchPacket(private val qq: Long, private val serverIp: String) : Cl
         this.writeHex(TIMProtocol.touchKey)
 
         this.encryptAndWrite(TIMProtocol.touchKey) {
-            it.writeHex(TIMProtocol.constantData1)
-            it.writeHex(TIMProtocol.constantData2)
-            it.writeQQ(qq)
-            it.writeHex("00 00 00 00 03 09 00 08 00 01")
-            it.writeIP(serverIp)
-            it.writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
-            it.writeHex(TIMProtocol.publicKey)
+            writeHex(TIMProtocol.constantData1)
+            writeHex(TIMProtocol.constantData2)
+            writeQQ(qq)
+            writeHex("00 00 00 00 03 09 00 08 00 01")
+            writeIP(serverIp)
+            writeHex("00 02 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 02 00 19")
+            writeHex(TIMProtocol.publicKey)
         }
     }
 }

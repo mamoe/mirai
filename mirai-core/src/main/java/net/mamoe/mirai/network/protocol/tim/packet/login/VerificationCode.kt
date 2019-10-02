@@ -27,18 +27,18 @@ class ClientVerificationCodeTransmissionRequestPacket(
         this.writeHex(TIMProtocol.fixVer)
         this.writeHex(TIMProtocol.key00BA)
         this.encryptAndWrite(TIMProtocol.key00BA) {
-            it.writeHex("00 02 00 00 08 04 01 E0")
-            it.writeHex(TIMProtocol.constantData2)
-            it.writeHex("00 00 38")
-            it.write(token0825)
-            it.writeHex("01 03 00 19")
-            it.writeHex(TIMProtocol.publicKey)
-            it.writeHex("13 00 05 00 00 00 00")
-            it.writeByte(verificationSequence)
-            it.writeHex("00 28")
-            it.write(token00BA)
-            it.writeHex("00 10")
-            it.writeHex(TIMProtocol.key00BAFix)
+            writeHex("00 02 00 00 08 04 01 E0")
+            writeHex(TIMProtocol.constantData2)
+            writeHex("00 00 38")
+            write(token0825)
+            writeHex("01 03 00 19")
+            writeHex(TIMProtocol.publicKey)
+            writeHex("13 00 05 00 00 00 00")
+            writeByte(verificationSequence)
+            writeHex("00 28")
+            write(token00BA)
+            writeHex("00 10")
+            writeHex(TIMProtocol.key00BAFix)
         }
     }
 }
@@ -66,22 +66,22 @@ class ClientVerificationCodeSubmitPacket(
         this.writeHex(TIMProtocol.fixVer)
         this.writeHex(TIMProtocol.key00BA)
         this.encryptAndWrite(TIMProtocol.key00BA) {
-            it.writeHex("00 02 00 00 08 04 01 E0")
-            it.writeHex(TIMProtocol.constantData2)
-            it.writeHex("01 00 38")
-            it.write(token0825)
-            it.writeHex("01 03")
+            writeHex("00 02 00 00 08 04 01 E0")
+            writeHex(TIMProtocol.constantData2)
+            writeHex("01 00 38")
+            write(token0825)
+            writeHex("01 03")
 
-            it.writeShort(25)
-            it.writeHex(TIMProtocol.publicKey)//25
+            writeShort(25)
+            writeHex(TIMProtocol.publicKey)//25
 
-            it.writeHex("14 00 05 00 00 00 00 00 04")
-            it.write(captcha.toUpperCase().toByteArray())
-            it.writeHex("00 38")
-            it.write(verificationToken)
+            writeHex("14 00 05 00 00 00 00 00 04")
+            write(captcha.toUpperCase().toByteArray())
+            writeHex("00 38")
+            write(verificationToken)
 
-            it.writeShort(16)
-            it.writeHex(TIMProtocol.key00BAFix)//16
+            writeShort(16)
+            writeHex(TIMProtocol.key00BAFix)//16
         }
     }
 
@@ -107,14 +107,14 @@ class ClientVerificationCodeRefreshPacket(
         this.writeHex(TIMProtocol.fixVer)
         this.writeHex(TIMProtocol.key00BA)
         this.encryptAndWrite(TIMProtocol.key00BA) {
-            it.writeHex("00 02 00 00 08 04 01 E0")
-            it.writeHex(TIMProtocol.constantData2)
-            it.writeHex("00 00 38")
-            it.write(token0825)
-            it.writeHex("01 03 00 19")
-            it.writeHex(TIMProtocol.publicKey)
-            it.writeHex("13 00 05 00 00 00 00 00 00 00 00 10")
-            it.writeHex(TIMProtocol.key00BAFix)
+            writeHex("00 02 00 00 08 04 01 E0")
+            writeHex(TIMProtocol.constantData2)
+            writeHex("00 00 38")
+            write(token0825)
+            writeHex("01 03 00 19")
+            writeHex(TIMProtocol.publicKey)
+            writeHex("13 00 05 00 00 00 00 00 00 00 00 10")
+            writeHex(TIMProtocol.key00BAFix)
         }
     }
 

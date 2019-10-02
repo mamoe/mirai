@@ -19,7 +19,7 @@ class ClientHeartbeatPacket(
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer)
         this.encryptAndWrite(sessionKey) {
-            it.writeHex("00 01 00 01")
+            writeHex("00 01 00 01")
         }
     }
 }

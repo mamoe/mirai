@@ -21,9 +21,9 @@ class ClientAccountInfoRequestPacket(
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
-            it.writeByte(0x88)
-            it.writeQQ(qq)
-            it.writeByte(0x00)
+            writeByte(0x88)
+            writeQQ(qq)
+            writeByte(0x00)
         }
     }
 }

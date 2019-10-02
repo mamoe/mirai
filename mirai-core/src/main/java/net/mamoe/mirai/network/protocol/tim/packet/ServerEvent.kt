@@ -364,7 +364,7 @@ class ClientEventResponsePacket(
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
-            it.write(eventIdentity)
+            write(eventIdentity)
         }
     }
 
