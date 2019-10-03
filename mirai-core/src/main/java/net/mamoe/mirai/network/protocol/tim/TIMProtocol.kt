@@ -78,7 +78,7 @@ object TIMProtocol {
     /**
      * 0836_622_fix2
      */
-    const val passwordSubmissionTLV2 = "00 15 00 30 00 01 01 27 9B C7 F5 00 10 65 03 FD 8B 00 00 00 00 00 00 00 00 00 00 00 00 02 90 49 55 33 00 10 15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B";
+    const val passwordSubmissionTLV2 = "00 15 00 30 00 01 01 27 9B C7 F5 00 10 65 03 FD 8B 00 00 00 00 00 00 00 00 00 00 00 00 02 90 49 55 33 00 10 15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B"
     /**
      * 0836_622_fix1
      */
@@ -110,7 +110,7 @@ object TIMProtocol {
                 return hexToByteArrayCacheMap[id]!!.clone()
             } else {
                 hexToUBytes(hex).toByteArray().let {
-                    hexToByteArrayCacheMap[id] = it.clone();
+                    hexToByteArrayCacheMap[id] = it.clone()
                     return it
                 }
             }
