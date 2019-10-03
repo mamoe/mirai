@@ -1,18 +1,13 @@
-package net.mamoe.mirai.network.protocol.tim.packet;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package net.mamoe.mirai.network.protocol.tim.packet
 
 /**
  * @author Him188moe
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface PacketId {
-    /**
-     * 获取用于识别的包 ID
-     */
-    String value();
-}
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
+annotation class PacketId(
+        /**
+         * 用于识别的包 ID
+         */
+        val value: String
+)

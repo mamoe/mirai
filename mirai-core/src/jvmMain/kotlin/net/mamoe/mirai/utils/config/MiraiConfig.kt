@@ -22,7 +22,7 @@ class MiraiConfig(private val root: File) : MiraiConfigSection<Any>(parse(Object
         val dumperOptions = DumperOptions()
         dumperOptions.defaultFlowStyle = DumperOptions.FlowStyle.BLOCK
         val yaml = Yaml(dumperOptions)
-        val content = yaml.dump(this.sortedMap)
+        val content = yaml.dump(this)
         try {
             ByteArrayInputStream(content.toByteArray()).transferTo(FileOutputStream(this.root))
         } catch (e: IOException) {

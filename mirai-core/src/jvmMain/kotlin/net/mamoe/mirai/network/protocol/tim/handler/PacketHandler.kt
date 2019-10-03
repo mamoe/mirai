@@ -2,7 +2,6 @@ package net.mamoe.mirai.network.protocol.tim.handler
 
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.utils.MiraiSynchronizedLinkedList
 import java.io.Closeable
 
 /**
@@ -27,7 +26,7 @@ fun PacketHandler.asNode(): PacketHandlerNode<PacketHandler> {
     return PacketHandlerNode(this.javaClass, this)
 }
 
-class PacketHandlerList : MiraiSynchronizedLinkedList<PacketHandlerNode<*>>() {
+class PacketHandlerList : MutableList<PacketHandlerNode<*>> by mutableListOf() {
 
     fun <T : PacketHandler> get(clazz: Class<T>): T {
         this.forEach {

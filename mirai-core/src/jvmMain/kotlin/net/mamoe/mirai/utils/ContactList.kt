@@ -5,4 +5,4 @@ import net.mamoe.mirai.contact.Contact
 /**
  * @author Him188moe
  */
-class ContactList<C : Contact> : MiraiSynchronizedLinkedHashMap<Long, C>()
+class ContactList<C : Contact> : MutableMap<Long, C> by mutableMapOf()

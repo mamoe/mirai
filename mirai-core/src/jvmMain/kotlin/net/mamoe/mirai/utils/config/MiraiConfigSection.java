@@ -1,7 +1,5 @@
 package net.mamoe.mirai.utils.config;
 
-import net.mamoe.mirai.utils.MiraiSynchronizedLinkedHashMap;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -10,7 +8,7 @@ import java.util.function.Supplier;
 /**
  * @author NaturalHG
  */
-public class MiraiConfigSection<T> extends MiraiSynchronizedLinkedHashMap<String, T> {
+public class MiraiConfigSection<T> extends LinkedHashMap<String, T> {
 
     public MiraiConfigSection(){
         super();
