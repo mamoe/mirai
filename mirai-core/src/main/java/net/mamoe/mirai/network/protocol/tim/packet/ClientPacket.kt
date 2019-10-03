@@ -113,7 +113,7 @@ fun DataOutputStream.encryptAndWrite(byteArray: ByteArray, key: ByteArray) {
 }
 
 fun DataOutputStream.encryptAndWrite(key: ByteArray, encoder: ByteArrayDataOutputStream.() -> Unit) {
-    this.write(TEA.encrypt(ByteArrayDataOutputStream().also(encoder).toByteArray(), key))
+    this.write(TEA.encrypt(ByteArrayDataOutputStream().apply(encoder).use { it.toByteArray() }, key))
 }
 
 fun DataOutputStream.encryptAndWrite(keyHex: String, encoder: ByteArrayDataOutputStream.() -> Unit) {
