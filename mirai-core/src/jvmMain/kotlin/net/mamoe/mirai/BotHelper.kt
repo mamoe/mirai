@@ -27,7 +27,7 @@ val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 //NetworkHandler
 suspend fun Bot.sendPacket(packet: ClientPacket) = this.network.socket.sendPacket(packet)
 
-suspend fun Bot.login(touchingTimeoutMillis: Long = 200): LoginState = this.network.tryLogin()
+suspend fun Bot.login(touchingTimeoutMillis: Long = 200): LoginState = this.network.login()
 
 //BotAccount
 

@@ -145,8 +145,8 @@ object MiraiServer {
             getLogger().info("Initializing [Bot] " + section.getString("account"));
             try {
                 Bot bot = new Bot(section);
-                var state = bot.network.tryLogin$mirai_core().of();
-                //bot.network.tryLogin$mirai_core().whenComplete((state, e) -> {
+                var state = bot.network.login$mirai_core().of();
+                //bot.network.login$mirai_core().whenComplete((state, e) -> {
                 if (state == LoginState.SUCCESS) {
                     Bot.instances.add(bot);
                     getLogger().green("   Login Succeed");
@@ -175,7 +175,7 @@ object MiraiServer {
                 val strings = it.split("----").dropLastWhile { it.isEmpty() }.toTypedArray()
                 val bot = Bot(BotAccount(strings[0].toLong(), strings[1]), Console())
 
-                if (runBlocking { bot.network.tryLogin(200) } === LoginState.SUCCESS) {
+                if (runBlocking { bot.network.login(200) } === LoginState.SUCCESS) {
                     bot.green("Login succeed")
                     return bot
                 }

@@ -48,7 +48,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         temporaryPacketHandlers.add(temporaryPacketHandler)
     }
 
-    override suspend fun tryLogin(touchingTimeoutMillis: Long): LoginState {
+    override suspend fun login(touchingTimeoutMillis: Long): LoginState {
         return loginInternal(touchingTimeoutMillis, LinkedList(TIMProtocol.SERVER_IP))
     }
 

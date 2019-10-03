@@ -13,6 +13,8 @@ import net.mamoe.mirai.message.defaults.PlainText
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
+import net.mamoe.mirai.utils.MiraiLogger
+import kotlin.system.exitProcess
 
 /**
  * @author Him188moe
@@ -24,7 +26,10 @@ suspend fun main() {
     ), Console())
 
     bot.login().let {
-        check(it == LoginState.SUCCESS) { "Login failed: " + it.name }
+        if(it != LoginState.SUCCESS) {
+            MiraiLogger.error("Login failed: " + it.name)
+            exitProcess(0)
+        }
     }
 
 

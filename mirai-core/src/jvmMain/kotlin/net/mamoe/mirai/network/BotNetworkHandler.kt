@@ -58,7 +58,7 @@ interface BotNetworkHandler {
      *
      * @param touchingTimeoutMillis 连接每个服务器的 timeout
      */
-    suspend fun tryLogin(touchingTimeoutMillis: Long = 200): LoginState
+    suspend fun login(touchingTimeoutMillis: Long = 200): LoginState
 
     /**
      * 添加一个临时包处理器
