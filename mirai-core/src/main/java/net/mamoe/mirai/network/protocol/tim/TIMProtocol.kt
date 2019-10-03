@@ -10,8 +10,6 @@ import java.util.*
 import java.util.stream.Collectors
 
 
-typealias TIM = TIMProtocol
-
 /**
  * @author Him188moe
  */
@@ -126,11 +124,11 @@ object TIMProtocol {
             .map { s -> s.toUByte(16) }
             .collect(Collectors.toList()).toUByteArray()
 
-}
-
-fun main() {
-    lazyDecode("03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03".hexToBytes()) {
-        it.skip(7)
-        println(it.readUnsignedVarInt())
+    @JvmStatic
+    fun main(args: Array<String>) {
+        lazyDecode("03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03".hexToBytes()) {
+            it.skip(7)
+            println(it.readUnsignedVarInt())
+        }
     }
 }

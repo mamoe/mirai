@@ -7,6 +7,7 @@ import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.hexToBytes
 import java.io.DataOutputStream
 
+
 /**
  * Password submission (0836_622)
  *
@@ -53,7 +54,7 @@ class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, lo
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, tlv0006)
 
 
-open class ClientLoginResendPacket internal constructor(
+open class ClientLoginResendPacket constructor(
         private val qq: Long,
         private val password: String,
         private val loginTime: Int,
