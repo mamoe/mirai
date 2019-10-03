@@ -1,0 +1,28 @@
+buildscript {
+    ext.kotlin_version = '1.3.50'
+
+    repositories {
+        jcenter()
+        google()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    group = "net.mamoe"
+    version = "1.0"
+
+    repositories {
+        jcenter()
+        mavenCentral()
+        google()
+        maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
+        maven { url "http://repo.maven.apache.org/maven2" }
+    }
+
+    apply from: rootProject.file('dependencies.gradle')
+}
+

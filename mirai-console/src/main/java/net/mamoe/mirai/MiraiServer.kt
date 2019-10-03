@@ -1,9 +1,7 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.runBlocking
-import lombok.Getter
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
-import net.mamoe.mirai.task.MiraiTaskManager
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.config.MiraiConfig
 import net.mamoe.mirai.utils.setting.MiraiSettings
@@ -22,22 +20,11 @@ import java.util.concurrent.ExecutionException
  * @author NaturalHG
  */
 object MiraiServer {
-    const val MIRAI_VERSION = "1.0.0"
-
-    const val QQ_VERSION = "4.9.0"
-
-    @Getter //is running under UNIX
     var isUnix: Boolean = false
         private set
 
-    @Getter
     var parentFolder: File = File(System.getProperty("user.dir"))
 
-    @Getter
-    var taskManager: MiraiTaskManager
-        internal set
-
-    @Getter
     var logger: MiraiLogger
         internal set
 
@@ -52,9 +39,8 @@ object MiraiServer {
         this.isUnix = !System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS")
 
         this.logger = MiraiLogger
-        this.taskManager = MiraiTaskManager.getInstance()
 
-        logger.info("About to run Mirai (" + MiraiServer.MIRAI_VERSION + ") under " + if (isUnix) "unix" else "windows")
+        logger.info("About to run Mirai (" + Mirai.VERSION + ") under " + if (isUnix) "unix" else "windows")
         logger.info("Loading data under " + LoggerTextFormat.GREEN + this.parentFolder)
 
         val setting = this.parentFolder + "/Mirai.ini"
@@ -117,17 +103,17 @@ object MiraiServer {
 
         this.settings = MiraiSettings(setting)
         val network = this.settings.getMapSection("network")
-        network.set("enable_proxy", "not supporting yet")
+        network["enable_proxy"] = "not supporting yet"
 
         val proxy = this.settings.getListSection("proxy")
         proxy.add("1.2.3.4:95")
         proxy.add("1.2.3.4:100")
 
         val worker = this.settings.getMapSection("worker")
-        worker.set("core_task_pool_worker_amount", 5)
+        worker["core_task_pool_worker_amount"] = 5
 
         val plugin = this.settings.getMapSection("plugin")
-        plugin.set("debug", false)
+        plugin["debug"] = false
 
         this.settings.save()
         logger.info("initialized; changing can be made in setting file: $setting")
@@ -142,7 +128,7 @@ object MiraiServer {
     private fun reload() {
         this.enabled = true
         MiraiLogger.info(LoggerTextFormat.GREEN.toString() + "Server enabled; Welcome to Mirai")
-        MiraiLogger.info("Mirai Version=" + MiraiServer.MIRAI_VERSION + " QQ Version=" + MiraiServer.QQ_VERSION)
+        MiraiLogger.info("Mirai Version=" + Mirai.VERSION)
 
         MiraiLogger.info("Initializing [Bot]s")
 
@@ -189,7 +175,7 @@ object MiraiServer {
                 val strings = it.split("----").dropLastWhile { it.isEmpty() }.toTypedArray()
                 val bot = Bot(BotAccount(strings[0].toLong(), strings[1]), Console())
 
-                if (runBlocking { bot.network.tryLogin(200).await() } === LoginState.SUCCESS) {
+                if (runBlocking { bot.network.tryLogin(200) } === LoginState.SUCCESS) {
                     bot.green("Login succeed")
                     return bot
                 }

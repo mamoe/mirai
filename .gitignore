@@ -12,8 +12,6 @@
 
 # Package Files #
 *.war
-*.jar
-!/mirai-debug/lib/jpcap.jar
 *.nar
 *.ear
 *.zip
@@ -23,6 +21,8 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+target/
+build/
 
 .idea/
 *.iml
@@ -32,3 +32,6 @@ mirai.iml
 /.idea/*
 
 /test
+
+
+.gradle/

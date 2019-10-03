@@ -1,0 +1,18 @@
+apply plugin: "kotlin"
+apply plugin: "application"
+apply plugin: "java"
+
+dependencies {
+    compile project(':mirai-core')
+
+    compile rootProject.ext.kotlinCommon
+    compile rootProject.ext.kotlinJvm
+    compile rootProject.ext.reflect
+    compile rootProject.ext.coroutine
+}
+
+sourceCompatibility = "11"
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}

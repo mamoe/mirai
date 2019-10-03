@@ -23,7 +23,7 @@ suspend fun main() {
             password = "bb22222"
     ), Console())
 
-    bot.login().await().let {
+    bot.login().let {
         check(it == LoginState.SUCCESS) { "Login failed: " + it.name }
     }
 

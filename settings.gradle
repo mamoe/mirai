@@ -1,0 +1,15 @@
+rootProject.name = 'mirai'
+include(':mirai-core')
+include(':mirai-console')
+include(':mirai-api')
+include(':mirai-demos:mirai-demo-1')
+include(':mirai-demos')
+include(':mirai-debug')
+project(':mirai-demos:mirai-demo-1').projectDir = file('mirai-demos/mirai-demo-1')
+
+
+def kotlinVersion = "1.3.50"
+def coroutinesVersion = "1.3.0-M2"
+
+def kotlinStandardLib = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+def kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"

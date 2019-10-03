@@ -1,0 +1,15 @@
+apply plugin: "kotlin"
+apply plugin: "java"
+
+dependencies {
+    implementation project(':mirai-core')
+    compile 'com.google.protobuf:protobuf-java:3.5.0'
+    compile files('./lib/jpcap.jar')
+
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-M2'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.3.50'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}

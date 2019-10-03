@@ -1,0 +1,7 @@
+apply plugin: "kotlin"
+apply plugin: "java"
+
+dependencies {
+    implementation project(':mirai-core')
+    implementation project(':mirai-console')
+}
