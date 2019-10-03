@@ -403,7 +403,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 }
 
 
-                is ServerCatchaPacket.Encrypted -> socket.distributePacket(packet.decrypt())
+                is ServerCaptchaPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomprivateKey))
                 is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomprivateKey))

@@ -109,7 +109,7 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
 
                     "00 58" -> ServerHeartbeatResponsePacket(stream)
 
-                    "00 BA" -> ServerCatchaPacket.Encrypted(stream, idHex)
+                    "00 BA" -> ServerCaptchaPacket.Encrypted(stream, idHex)
 
 
                     "00 CE", "00 17" -> ServerEventPacket.Raw.Encrypted(stream, idHex.hexToBytes())

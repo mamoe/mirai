@@ -10,7 +10,6 @@ import java.io.DataInputStream
 /**
  * 客户端请求验证码图片数据的第几部分
  */
-
 @PacketId("00 BA 31")
 class ClientVerificationCodeTransmissionRequestPacket(
         private val packetId: Int,
@@ -47,7 +46,6 @@ class ClientVerificationCodeTransmissionRequestPacket(
  * 提交验证码
  */
 @PacketId("00 BA 32")
-
 class ClientVerificationCodeSubmitPacket(
         private val packetIdLast: Int,
         private val qq: Long,
@@ -94,7 +92,6 @@ class ClientVerificationCodeSubmitPacket(
  * 刷新验证码
  */
 @PacketId("00 BA 31")
-
 class ClientVerificationCodeRefreshPacket(
         private val packetIdLast: Int,
         private val qq: Long,
@@ -135,7 +132,7 @@ class ServerCaptchaWrongPacket(input: DataInputStream, dataSize: Int, packetId: 
  * @author Him188moe
  */
 @PacketId("00 BA 31")
-open class ServerCaptchaTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerCatchaPacket(input) {
+open class ServerCaptchaTransmissionPacket(input: DataInputStream, private val dataSize: Int, private val packetId: ByteArray) : ServerCaptchaPacket(input) {
 
     lateinit var captchaSectionN: ByteArray
     lateinit var verificationToken: ByteArray//56bytes
@@ -178,7 +175,7 @@ fun main() {
  * @author Him188moe
  */
 @PacketId("00 BA 32")
-class ServerCaptchaCorrectPacket(input: DataInputStream) : ServerCatchaPacket(input) {
+class ServerCaptchaCorrectPacket(input: DataInputStream) : ServerCaptchaPacket(input) {
 
     lateinit var token00BA: ByteArray//56 bytes
 
@@ -188,12 +185,12 @@ class ServerCaptchaCorrectPacket(input: DataInputStream) : ServerCatchaPacket(in
     }
 }
 
-abstract class ServerCatchaPacket(input: DataInputStream) : ServerPacket(input) {
+abstract class ServerCaptchaPacket(input: DataInputStream) : ServerPacket(input) {
 
     @PacketId("00 BA")
     class Encrypted(input: DataInputStream, private val id: String) : ServerPacket(input) {
 
-        fun decrypt(): ServerCatchaPacket {
+        fun decrypt(): ServerCaptchaPacket {
             this.input goto 14
             val data = TEA.decrypt(this.input.readAllBytes().cutTail(1), TIMProtocol.key00BA.hexToBytes())
             if (id.startsWith("00 BA 32")) {
