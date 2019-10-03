@@ -333,7 +333,9 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                         }
                         bot.notice("需要验证码登录, 验证码为 4 字母")
                         try {
-                            File(System.getProperty("user.dir") + "/temp/Captcha.png").writeBytes(this.captchaCache!!)
+                            File(System.getProperty("user.dir") + "/temp/Captcha.png")
+                                    .also { withContext(Dispatchers.IO) { it.createNewFile() } }
+                                    .writeBytes(this.captchaCache!!)
                             bot.notice("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
                         } catch (e: Exception) {
                             bot.notice("无法写出验证码文件, 请尝试查看以上字符图片")

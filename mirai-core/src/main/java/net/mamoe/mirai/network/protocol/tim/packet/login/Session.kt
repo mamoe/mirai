@@ -31,7 +31,7 @@ class ClientSessionRequestPacket(
             writeIP(serverIp)
             writeHex("1F 40 00 00 00 00 00 15 00 30 00 01")//fix1
             writeHex("01 92 A5 D2 59 00 10 54 2D CF 9B 60 BF BB EC 0D D4 81 CE 36 87 DE 35 02 AE 6D ED DC 00 10 ")
-            writeHex(TIMProtocol.fix0836)
+            writeHex("06 A9 12 97 B7 F8 76 25 AF AF D3 EA B4 C8 BC E7")//fix0836
             writeHex("00 36 00 12 00 02 00 01 00 00 00 05 00 00 00 00 00 00 00 00 00 00")
             writeHex(TIMProtocol.constantData1)
             writeHex(TIMProtocol.constantData2)
@@ -57,7 +57,7 @@ class ClientSessionRequestPacket(
             writeHex("68")
 
             writeHex("00 00 00 00 00 2D 00 06 00 01")
-            writeIP(InetAddress.getLocalHost().hostAddress)
+            writeIP(InetAddress.getLocalHost().hostAddress)//todo  random to avoid being banned?
         }
     }
 }

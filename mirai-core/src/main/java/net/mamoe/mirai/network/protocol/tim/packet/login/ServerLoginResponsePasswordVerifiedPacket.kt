@@ -24,7 +24,6 @@ class ServerLoginResponseSuccessPacket(input: DataInputStream) : ServerPacket(in
 
 
     @Tested
-
     override fun decode() {
         this.input.skip(7)//8
         this.encryptionKey = this.input.readNBytes(16)//24

@@ -70,7 +70,6 @@ object TIMProtocol {
      * 没有任何地方写入了这个 key
      */
     const val shareKey = "1A E9 7F 7D C9 73 75 98 AC 02 E0 80 5F A9 C6 AF"//16
-    const val fix0836 = "06 A9 12 97 B7 F8 76 25 AF AF D3 EA B4 C8 BC E7 "
 
     const val key00BA = "C1 9C B8 C8 7B 8C 81 BA 9E 9E 7A 89 E1 7A EC 94"
     const val key00BAFix = "69 20 D1 14 74 F5 B3 93 E4 D5 02 B3 71 1A CD 2A"
