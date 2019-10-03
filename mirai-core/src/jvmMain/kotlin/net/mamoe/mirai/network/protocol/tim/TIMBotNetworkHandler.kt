@@ -1,6 +1,8 @@
 package net.mamoe.mirai.network.protocol.tim
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
@@ -48,20 +50,20 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         temporaryPacketHandlers.add(temporaryPacketHandler)
     }
 
-    override suspend fun login(touchingTimeoutMillis: Long): LoginState {
-        return loginInternal(touchingTimeoutMillis, LinkedList(TIMProtocol.SERVER_IP))
+    override suspend fun login(): LoginState {
+        return loginInternal(LinkedList(TIMProtocol.SERVER_IP))
     }
 
-    private suspend fun loginInternal(touchingTimeoutMillis: Long, ipQueue: LinkedList<String>): LoginState {
+    private suspend fun loginInternal(ipQueue: LinkedList<String>): LoginState {
         this.socket.close()
         val ip = ipQueue.poll() ?: return LoginState.UNKNOWN//所有服务器均返回 UNKNOWN
 
-        return this.socket.touch(ip, touchingTimeoutMillis).await().let { state ->
-            if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
-                loginInternal(touchingTimeoutMillis, ipQueue)//超时或未知, 重试连接下一个服务器
-            } else {
+        return socket.touch(ip).let { state ->
+            //if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
+            //    loginInternal(ipQueue)//超时或未知, 重试连接下一个服务器
+            //} else {
                 state
-            }
+            // }
         }
     }
 
@@ -121,14 +123,14 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 return
             }
 
-            withContext(NetworkScope.coroutineContext) {
-                launch {
+            withContext(NetworkScope.coroutineContext + CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+                launch(this.coroutineContext) {
                     loginHandler.onPacketReceived(packet)
                 }
 
 
                 packetHandlers.forEach {
-                    launch {
+                    launch(this.coroutineContext) {
                         it.instance.onPacketReceived(packet)
                     }
                 }
@@ -151,10 +153,10 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             socket?.close()
             socket = DatagramSocket(0)
             socket!!.connect(InetSocketAddress(serverIP, 8000))
-            GlobalScope.launch {
+            NetworkScope.launch {
                 while (socket?.isConnected == true) {
                     val packet = DatagramPacket(ByteArray(2048), 2048)
-                    kotlin.runCatching { socket?.receive(packet) }
+                    kotlin.runCatching { withContext(Dispatchers.IO) { socket?.receive(packet) } }
                             .onSuccess {
                                 NetworkScope.launch {
                                     distributePacket(ServerPacket.ofByteArray(packet.data.removeZeroTail()))
@@ -174,8 +176,9 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         /**
          * Start network and touch the server
          */
-        fun touch(serverAddress: String, timeoutMillis: Long): CompletableDeferred<LoginState> {
+        internal suspend fun touch(serverAddress: String): LoginState {
             bot.info("Connecting server: $serverAddress")
+            restartSocket()
             if (this@TIMBotNetworkHandler::loginHandler.isInitialized) {
                 loginHandler.close()
             }
@@ -183,19 +186,16 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             this.loginResult = CompletableDeferred()
 
             serverIP = serverAddress
-            bot.waitForPacket(ServerPacket::class, timeoutMillis) {
-                loginResult!!.complete(LoginState.TIMEOUT)
-            }
-            runBlocking {
-                sendPacket(ClientTouchPacket(bot.account.qqNumber, serverIP))
-            }
+            //bot.waitForPacket(ServerTouchResponsePacket::class, timeoutMillis) {
+            //    loginResult?.complete(LoginState.TIMEOUT)
+            //}
+            sendPacket(ClientTouchPacket(bot.account.qqNumber, serverIP))
 
-            return this.loginResult!!
+            return withContext(Dispatchers.IO) {
+                loginResult!!.await()
+            }
         }
 
-        /**
-         * Not async
-         */
         @Synchronized
         override suspend fun sendPacket(packet: ClientPacket) {
             checkNotNull(socket) { "network closed" }
@@ -238,6 +238,10 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         override fun isClosed(): Boolean {
             return this.socket?.isClosed ?: true
         }
+    }
+
+    companion object {
+        val captchaLock = Mutex()
     }
 
     /**
@@ -312,21 +316,24 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
                     if (packet.transmissionCompleted) {
                         //todo 验证码多样化处理
-                        withContext(Dispatchers.IO) {
-                            bot.notice(CharImageUtil.createCharImg(ImageIO.read(captchaCache!!.inputStream())))
+
+                        val code = captchaLock.withLock {
+                            withContext(Dispatchers.IO) {
+                                bot.notice(ImageIO.read(captchaCache!!.inputStream()).createCharImg())
+                            }
+                            bot.notice("需要验证码登录, 验证码为 4 字母")
+                            try {
+                                File(System.getProperty("user.dir") + "/temp/Captcha.png")
+                                        .also { withContext(Dispatchers.IO) { it.createNewFile() } }
+                                        .writeBytes(this.captchaCache!!)
+                                bot.notice("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
+                            } catch (e: Exception) {
+                                bot.notice("无法写出验证码文件, 请尝试查看以上字符图片")
+                            }
+                            this.captchaCache = null
+                            bot.notice("若要更换验证码, 请直接回车")
+                            Scanner(System.`in`).nextLine()
                         }
-                        bot.notice("需要验证码登录, 验证码为 4 字母")
-                        try {
-                            File(System.getProperty("user.dir") + "/temp/Captcha.png")
-                                    .also { withContext(Dispatchers.IO) { it.createNewFile() } }
-                                    .writeBytes(this.captchaCache!!)
-                            bot.notice("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
-                        } catch (e: Exception) {
-                            bot.notice("无法写出验证码文件, 请尝试查看以上字符图片")
-                        }
-                        this.captchaCache = null
-                        bot.notice("若要更换验证码, 请直接回车")
-                        val code = Scanner(System.`in`).nextLine()
                         if (code.isEmpty() || code.length != 4) {
                             this.captchaCache = byteArrayOf()
                             this.captchaSectionId = 1

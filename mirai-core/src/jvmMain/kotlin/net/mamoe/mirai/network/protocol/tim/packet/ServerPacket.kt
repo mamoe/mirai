@@ -2,8 +2,10 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
+import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeWhileTrue
 import net.mamoe.mirai.network.protocol.tim.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
@@ -337,42 +339,19 @@ fun DataInputStream.gotoWhere(matcher: ByteArray): DataInputStream {
 @Suppress("UNCHECKED_CAST")
 internal fun <P : ServerPacket> Bot.waitForPacket(packetClass: KClass<P>, timeoutMillis: Long = Long.MAX_VALUE, timeout: () -> Unit = {}) {
     var got = false
-    ServerPacketReceivedEvent::class.subscribeWhileTrue {
+    ServerPacketReceivedEvent.subscribeWhileTrue {
         if (packetClass.isInstance(it.packet) && it.bot === this) {
             got = true
-            true
-        } else {
             false
+        } else {
+            true
         }
     }
 
-
-    MiraiThreadPool.instance.submit {
-        val startingTime = System.currentTimeMillis()
-        while (!got) {
-            if (System.currentTimeMillis() - startingTime > timeoutMillis) {
-                timeout.invoke()
-                return@submit
-            }
-            Thread.sleep(10)
+    GlobalScope.launch(Dispatchers.Unconfined) {
+        delay(timeoutMillis)
+        if (!got) {
+            timeout.invoke()
         }
     }
 }
-
-/*
-@Throws(EOFException::class)
-fun DataInputStream.gotoWhere(matcher: ByteArray) {
-    require(matcher.isNotEmpty())
-    do {
-        val byte = this.readByte()
-        if (byte == matcher[0]) {
-            for (i in 1 until matcher.size){
-
-            }
-        }
-    } while (true)
-}*/
-
-fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)
-
-fun ByteArray.getRight(length: Int): ByteArray = this.copyOfRange(this.size - length, this.size)

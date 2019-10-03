@@ -29,6 +29,8 @@ kotlin {
 
             }
         }
+        jvmTest {
+        }
 
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
@@ -36,7 +38,7 @@ kotlin {
     }
 }
 
-compileKotlinJvm{
+compileKotlinJvm {
 
 }
 

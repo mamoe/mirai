@@ -168,3 +168,8 @@ object GZip {
         return it.toByteArray()
     }
 }
+
+
+fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)
+
+fun ByteArray.getRight(length: Int): ByteArray = this.copyOfRange(this.size - length, this.size)

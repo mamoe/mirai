@@ -33,7 +33,7 @@ interface MiraiLogger {
 /**
  * 由 mirai-console 或 mirai-web 等模块实现
  */
-lateinit var defaultLogger: () -> MiraiLogger
+var defaultLogger: () -> MiraiLogger = { Console() }
 
 val DEBUGGING: Boolean by lazy {
     //avoid inspections
