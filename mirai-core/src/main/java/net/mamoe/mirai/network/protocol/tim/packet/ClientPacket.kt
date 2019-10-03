@@ -149,10 +149,8 @@ fun DataOutputStream.writeCRC32() = writeCRC32(getRandomByteArray(16))
 
 
 fun DataOutputStream.writeCRC32(key: ByteArray) {
-    key.let {
-        write(it)//key
-        writeInt(getCrc32(it))
-    }
+    write(key)//key
+    writeInt(getCrc32(key))
 }
 
 
