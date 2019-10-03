@@ -2,8 +2,6 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.ByteArrayDataOutputStream
-import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
@@ -103,18 +101,14 @@ class ClientServerRedirectionPacket(private val serverIP: String, private val qq
         this.writeHex(TIMProtocol.redirectionKey)
 
 
-        this.write(TEA.encrypt(object : ByteArrayDataOutputStream() {
-            @Throws(IOException::class)
-            override fun toByteArray(): ByteArray {
-                this.writeHex(TIMProtocol.constantData1)
-                this.writeHex(TIMProtocol.constantData2)
-                this.writeQQ(qq)
-                this.writeHex("00 01 00 00 03 09 00 0C 00 01")
-                this.writeIP(serverIP)
-                this.writeHex("01 6F A1 58 22 01 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 03 00 19")
-                this.writeHex(TIMProtocol.publicKey)
-                return super.toByteArray()
-            }
-        }.toByteArray(), TIMProtocol.redirectionKey.hexToBytes()))
+        this.encryptAndWrite(TIMProtocol.redirectionKey) {
+            this.writeHex(TIMProtocol.constantData1)
+            this.writeHex(TIMProtocol.constantData2)
+            this.writeQQ(qq)
+            this.writeHex("00 01 00 00 03 09 00 0C 00 01")
+            this.writeIP(serverIP)
+            this.writeHex("01 6F A1 58 22 01 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 03 00 19")
+            this.writeHex(TIMProtocol.publicKey)
+        }
     }
 }
