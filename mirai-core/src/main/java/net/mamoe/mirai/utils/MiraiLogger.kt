@@ -30,7 +30,10 @@ interface MiraiLogger {
     fun blue(any: Any?)
 }
 
-private fun defaultLogger(): MiraiLogger = Console("[TOP Level]")
+/**
+ * 由 mirai-console 或 mirai-web 等模块实现
+ */
+lateinit var defaultLogger: () -> MiraiLogger
 
 val DEBUGGING: Boolean by lazy {
     //avoid inspections
