@@ -176,7 +176,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
          */
         fun touch(serverAddress: String, timeoutMillis: Long): CompletableDeferred<LoginState> {
             bot.info("Connecting server: $serverAddress")
-            if (this@TIMBotNetworkHandler::login.isInitialized) {
+            if (this@TIMBotNetworkHandler::loginHandler.isInitialized) {
                 loginHandler.close()
             }
             loginHandler = LoginHandler()
