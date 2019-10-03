@@ -1,8 +1,7 @@
 package net.mamoe.mirai.network
 
-import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocket
-import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.Login
+import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
 import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocket
 import net.mamoe.mirai.network.protocol.tim.handler.MessagePacketHandler
@@ -23,7 +22,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
  *
  * 其中, [PacketHandler] 由 4 个子模块构成:
  * - [DebugPacketHandler] 输出 [Packet.toString]
- * - [Login] 处理 touch/login/verification code 相关
+ * - [LoginHandler] 处理 touch/login/verification code 相关
  * - [MessagePacketHandler] 处理消息相关(群消息/好友消息)([ServerEventPacket])
  * - [ActionPacketHandler] 处理动作相关(踢人/加入群/好友列表等)
  *

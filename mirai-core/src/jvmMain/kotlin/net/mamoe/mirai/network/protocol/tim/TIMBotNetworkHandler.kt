@@ -31,7 +31,7 @@ import javax.imageio.ImageIO
 internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
     override val socket: BotSocket = BotSocket()
 
-    lateinit var login: Login
+    lateinit var loginHandler: LoginHandler
 
     override lateinit var message: MessagePacketHandler
     override lateinit var action: ActionPacketHandler
@@ -123,7 +123,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
             withContext(NetworkScope.coroutineContext) {
                 launch {
-                    login.onPacketReceived(packet)
+                    loginHandler.onPacketReceived(packet)
                 }
 
 
@@ -177,9 +177,9 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         fun touch(serverAddress: String, timeoutMillis: Long): CompletableDeferred<LoginState> {
             bot.info("Connecting server: $serverAddress")
             if (this@TIMBotNetworkHandler::login.isInitialized) {
-                login.close()
+                loginHandler.close()
             }
-            login = Login()
+            loginHandler = LoginHandler()
             this.loginResult = CompletableDeferred()
 
             serverIP = serverAddress
@@ -243,7 +243,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
     /**
      * 处理登录过程
      */
-    inner class Login {
+    inner class LoginHandler {
         private lateinit var token00BA: ByteArray
         private lateinit var token0825: ByteArray//56
         private var loginTime: Int = 0
@@ -370,7 +370,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
                     socket.loginResult!!.complete(LoginState.SUCCESS)
 
-                    login.changeOnlineStatus(ClientLoginStatus.ONLINE)
+                    loginHandler.changeOnlineStatus(ClientLoginStatus.ONLINE)
                 }
 
                 is ServerLoginSuccessPacket -> {
