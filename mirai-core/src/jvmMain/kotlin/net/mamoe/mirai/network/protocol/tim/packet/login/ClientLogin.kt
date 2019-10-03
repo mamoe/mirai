@@ -99,7 +99,7 @@ private fun DataOutputStream.writePart1(qq: Long, password: String, loginTime: I
     this.writeHex("00 38")//length
     this.write(token0825)//length
     this.writeHex("03 0F")//tag
-    this.writeDeviceName(true)
+    this.writeDeviceName(false)
 
     this.writeHex("00 05 00 06 00 02")
     this.writeQQ(qq)
