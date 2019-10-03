@@ -1,8 +1,10 @@
 package net.mamoe.mirai
 
+import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import net.mamoe.mirai.utils.ContactList
 
 /**
@@ -24,10 +26,9 @@ val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 
 
 //NetworkHandler
-suspend fun Bot.sendPacket(packet: ClientPacket) {
-    this.network.socket.sendPacket(packet)
-}
+suspend fun Bot.sendPacket(packet: ClientPacket) = this.network.socket.sendPacket(packet)
 
+fun Bot.login(touchingTimeoutMillis: Long = 200): CompletableDeferred<LoginState> = this.network.tryLogin()
 
 //BotAccount
 

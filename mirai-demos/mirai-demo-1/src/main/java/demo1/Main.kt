@@ -7,6 +7,7 @@ import net.mamoe.mirai.event.events.qq.FriendMessageEvent
 import net.mamoe.mirai.event.subscribeAll
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeUntilFalse
+import net.mamoe.mirai.login
 import net.mamoe.mirai.message.defaults.Image
 import net.mamoe.mirai.message.defaults.PlainText
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
@@ -22,7 +23,7 @@ suspend fun main() {
             password = "bb22222"
     ), Console())
 
-    bot.network.tryLogin().await().let {
+    bot.login().await().let {
         check(it == LoginState.SUCCESS) { "Login failed: " + it.name }
     }
 

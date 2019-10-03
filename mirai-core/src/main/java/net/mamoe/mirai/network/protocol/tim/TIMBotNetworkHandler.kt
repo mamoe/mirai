@@ -53,12 +53,6 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         temporaryPacketHandlers.add(temporaryPacketHandler)
     }
 
-    //private | internal
-    /**
-     * 尝试登录
-     *
-     * @param touchingTimeoutMillis 连接每个服务器的 timeout
-     */
     override fun tryLogin(touchingTimeoutMillis: Long): CompletableDeferred<LoginState> {
         val ipQueue: LinkedList<String> = LinkedList(TIMProtocol.SERVER_IP)
         val future = CompletableDeferred<LoginState>()
@@ -83,6 +77,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         return future
     }
 
+    //private | internal
     private fun onLoggedIn(sessionKey: ByteArray) {
         val session = LoginSession(bot, sessionKey, socket)
         message = MessagePacketHandler(session)

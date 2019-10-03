@@ -54,6 +54,11 @@ interface BotNetworkHandler : Closeable {
      */
     val action: ActionPacketHandler
 
+    /**
+     * 尝试登录
+     *
+     * @param touchingTimeoutMillis 连接每个服务器的 timeout
+     */
     fun tryLogin(touchingTimeoutMillis: Long = 200): CompletableDeferred<LoginState>
 
     /**
