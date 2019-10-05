@@ -1,8 +1,8 @@
 package net.mamoe.mirai.utils
 
-import java.awt.*
+import java.awt.Image
 import java.awt.image.BufferedImage
-import java.util.ArrayList
+import java.util.*
 import java.util.concurrent.Callable
 import kotlin.math.max
 import kotlin.math.min
@@ -22,7 +22,7 @@ class CharImageConverter @JvmOverloads constructor(
         /*
          * resize Image
          * */
-        val newHeight = (this.image!!.getHeight() * (width.toDouble() / this.image!!.getWidth())).toInt()
+        val newHeight = (this.image!!.height * (width.toDouble() / this.image!!.width)).toInt()
         val tmp = image!!.getScaledInstance(width, newHeight, Image.SCALE_SMOOTH)
         val dimg = BufferedImage(width, newHeight, BufferedImage.TYPE_INT_ARGB)
         val g2d = dimg.createGraphics()
@@ -33,14 +33,14 @@ class CharImageConverter @JvmOverloads constructor(
 
         val builder = StringBuilder()
 
-        val lines = ArrayList<StringBuilder>(this.image!!.getHeight())
+        val lines = ArrayList<StringBuilder>(this.image!!.height)
 
         var minXPos = this.width
         var maxXPos = 0
 
-        for (y in 0 until image!!.getHeight()) {
+        for (y in 0 until image!!.height) {
             val builderLine = StringBuilder()
-            for (x in 0 until image!!.getWidth()) {
+            for (x in 0 until image!!.width) {
                 val gray = gray(image!!.getRGB(x, y))
                 if (grayCompare(gray, background)) {
                     builderLine.append(" ")
