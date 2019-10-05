@@ -2,9 +2,9 @@
 
 package net.mamoe.mirai.network.protocol.tim
 
+import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.lazyDecode
-import net.mamoe.mirai.utils.readUnsignedVarInt
+import net.mamoe.mirai.utils.toUHexString
 import java.net.InetAddress
 import java.util.*
 import java.util.stream.Collectors
@@ -67,6 +67,18 @@ object TIMProtocol {
     const val publicKey = "02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3"//25
 
     /**
+     * fix_0836_1
+     *
+     * LoginResend 和 PasswordSubmission 时写入, 但随后都使用 shareKey 加密, 收到回复也是用的 share key
+     */
+    const val key0836 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"//16
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(TEA.decrypt(publicKey.hexToBytes(), key0836).toUHexString())
+    }
+
+    /**
      * 没有任何地方写入了这个 key
      */
     const val shareKey = "1A E9 7F 7D C9 73 75 98 AC 02 E0 80 5F A9 C6 AF"//16
@@ -87,12 +99,6 @@ object TIMProtocol {
     //                  1.0.4           03 00 00 00 01 2E 01 00 00 68 27 00 00 00 00 00 02 01 03
     //                1.1               03 00 00 00 01 2E 01 00 00 68 3F 00 00 00 00 00 02 01 03
     //                 1.2              03 00 00 00 01 2E 01 00 00 68 44 00 00 00 00 00 02 01 03
-    /**
-     * fix_0836_1
-     *
-     * LoginResend 和 PasswordSubmission 时写入, 但随后都使用 shareKey 加密, 收到回复也是用的 share key
-     */
-    const val key0836 = "EF 4A 36 6A 16 A8 E6 3D 2E EA BD 1F 98 C1 3C DA"//16
 
     /**
      * 发送/接受消息中的一个const (?)
@@ -122,12 +128,4 @@ object TIMProtocol {
             .map { value -> value.trim { it <= ' ' } }
             .map { s -> s.toUByte(16) }
             .collect(Collectors.toList()).toUByteArray()
-
-    @JvmStatic
-    fun main(args: Array<String>) {
-        lazyDecode("03 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 01 01 03".hexToBytes()) {
-            it.skip(7)
-            println(it.readUnsignedVarInt())
-        }
-    }
 }

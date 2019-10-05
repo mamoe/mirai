@@ -34,6 +34,7 @@ class ClientPasswordSubmissionPacket(
         this.writeHex("00 00 00 10")
         this.writeHex(TIMProtocol.key0836)
 
+        //TODO shareKey 极大可能为 publicKey, key0836 计算得到
         this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
             writePart1(qq, password, loginTime, loginIP, privateKey, token0825)
             writePart2()
