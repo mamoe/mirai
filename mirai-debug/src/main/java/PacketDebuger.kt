@@ -10,7 +10,7 @@ import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
 /**
- * 模拟登录并抓取到 session key
+ * 抓包分析器
  *
  * @author Him188moe
  */
@@ -74,12 +74,18 @@ object Main {
 
 
     /**
-     * 从 TIM 内存中读取.
+     * 可从 TIM 内存中读取
      *
      * 方法:
-     * 在 Common.dll 中搜索
+     * 1. x32dbg 附加 TIM
+     * 2. `符号` 中找到 common.dll
+     * 3. 搜索函数 `oi_symmetry_encrypt2` (TEA 加密函数)
+     * 4. 双击跳转
+     * 5. 断点并在TIM发送消息以触发
+     * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
+     * 7. 从 eax 开始的 16个 bytes 便是 `sessionKey`
      */
-    const val sessionKey: String = "70 BD 1E 12 20 C1 25 12 A0 F8 4F 0D C0 A0 97 0E"
+    val sessionKey: ByteArray = "48 C0 11 42 2D FD 8F 36 6E BA BF FD D3 AA B7 AE".hexToBytes()
 
     fun dataReceived(data: ByteArray) {
         packetReceived(ServerPacket.ofByteArray(data))
@@ -88,7 +94,6 @@ object Main {
     fun packetReceived(packet: ServerPacket) {
         when (packet) {
             is ServerEventPacket.Raw.Encrypted -> {
-                val sessionKey = "8B 45 10 0F 10 00 66 0F 38 00 05 20 39 18 64 0F".hexToBytes()
                 println("! ServerEventPacket.Raw.Encrypted")
                 packetReceived(packet.decrypt(sessionKey))
                 println("! decrypt succeed")
@@ -112,21 +117,12 @@ object Main {
                         //it.readShort()
                         //println(it.readUInt())
                         println(it.readNBytes(TIMProtocol.fixVer2.hexToBytes().size + 1 + 5 - 3 + 1).toUHexString())
-                        it.readAllBytes().let {
-                            println("解密")
-                            println(it.size)
-                            println(it.toUHexString())
-                            println(it.decryptBy(sessionKey).toUHexString())
-                        }
+                        val messageData = it.readAllBytes().decryptBy(sessionKey)
                     }
                 }
             }
         }
     }
-
-    private fun ByteArray.decryptBy(key: ByteArray): ByteArray = TEA.decrypt(this, key)
-
-    private fun ByteArray.decryptBy(key: String): ByteArray = TEA.decrypt(this, key)
 
 
     private fun DataInputStream.skipHex(uHex: String) {
