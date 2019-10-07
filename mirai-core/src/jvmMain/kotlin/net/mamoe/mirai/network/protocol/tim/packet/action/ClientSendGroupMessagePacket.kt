@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.lazyEncode
+import net.mamoe.mirai.utils.dataEncode
 import net.mamoe.mirai.utils.toUHexString
 import java.io.DataInputStream
 
@@ -27,7 +27,7 @@ class ClientSendGroupMessagePacket(
             writeByte(0x2A)
             writeGroup(groupId)
 
-            writeLVByteArray(lazyEncode { child ->
+            writeLVByteArray(dataEncode { child ->
                 child.writeHex("00 01 01")
                 child.writeHex("00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")
 

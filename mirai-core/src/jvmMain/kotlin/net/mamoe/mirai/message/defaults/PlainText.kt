@@ -5,8 +5,8 @@ import net.mamoe.mirai.message.MessageKey
 import net.mamoe.mirai.network.protocol.tim.packet.readLVString
 import net.mamoe.mirai.network.protocol.tim.packet.writeLVByteArray
 import net.mamoe.mirai.network.protocol.tim.packet.writeLVString
-import net.mamoe.mirai.utils.lazyDecode
-import net.mamoe.mirai.utils.lazyEncode
+import net.mamoe.mirai.utils.dataDecode
+import net.mamoe.mirai.utils.dataEncode
 
 /**
  * @author Him188moe
@@ -20,10 +20,10 @@ class PlainText(private val text: String) : Message() {
         return text
     }
 
-    override fun toByteArray(): ByteArray = lazyEncode { section ->
+    override fun toByteArray(): ByteArray = dataEncode { section ->
         section.writeByte(this.type.intValue)
 
-        section.writeLVByteArray(lazyEncode { child ->
+        section.writeLVByteArray(dataEncode { child ->
             child.writeByte(0x01)
             child.writeLVString(this.text)
         })
@@ -40,7 +40,7 @@ class PlainText(private val text: String) : Message() {
 
     internal object PacketHelper {
         @JvmStatic
-        fun ofByteArray(data: ByteArray): PlainText = lazyDecode(data) {
+        fun ofByteArray(data: ByteArray): PlainText = dataDecode(data) {
             it.skip(1)
             PlainText(it.readLVString())
         }

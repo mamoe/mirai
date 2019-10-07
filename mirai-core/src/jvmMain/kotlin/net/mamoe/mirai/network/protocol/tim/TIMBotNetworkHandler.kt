@@ -55,7 +55,8 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         return loginInternal(LinkedList(TIMProtocol.SERVER_IP))
     }
 
-    private suspend fun loginInternal(ipQueue: LinkedList<String>): LoginState {
+    //嵌套进 login 会导致 kotlin internal CompilationException
+    suspend fun loginInternal(ipQueue: LinkedList<String>): LoginState {
         this.socket.close()
         val ip = ipQueue.poll() ?: return LoginState.UNKNOWN//所有服务器均返回 UNKNOWN
 

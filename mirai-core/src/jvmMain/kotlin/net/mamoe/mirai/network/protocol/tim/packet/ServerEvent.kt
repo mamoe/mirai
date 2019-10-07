@@ -8,8 +8,8 @@ import net.mamoe.mirai.message.defaults.Image
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.message.defaults.PlainText
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.utils.dataDecode
 import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.lazyDecode
 import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.toUInt
 import java.io.DataInputStream
@@ -139,7 +139,7 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
 
         val map = input.readTLVMap(true)
         if (map.containsKey(18)) {
-            this.senderName = lazyDecode(map.getValue(18)) {
+            this.senderName = dataDecode(map.getValue(18)) {
                 val tlv = it.readTLVMap(true)
                 tlv.printTLVMap()
 
@@ -385,7 +385,7 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
 
 
 
-    override fun decode() {
+    override fun dataDecode() {
         //start at Sep1.0:27
         qq = input.readIntAt(0)
         val msgLength = input.readShortAt(22)

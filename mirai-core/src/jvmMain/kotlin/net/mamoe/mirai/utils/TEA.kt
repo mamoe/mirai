@@ -183,7 +183,7 @@ object TEA {
                 if (mIndexPos == 8) {
                     isFirstBlock = false
                     if (!decodeOneBlock(cipherText, offset, len)) {
-                        throw RuntimeException("Unable to decode")
+                        throw RuntimeException("Unable to dataDecode")
                     }
                 }
             }
@@ -201,7 +201,7 @@ object TEA {
                     mPreOutPos = mOutPos - 8
                     isFirstBlock = false
                     if (!decodeOneBlock(cipherText, offset, len)) {
-                        throw RuntimeException("Unable to decode")
+                        throw RuntimeException("Unable to dataDecode")
                     }
                 }
                 plen--
@@ -219,7 +219,7 @@ object TEA {
                 if (mIndexPos == 8) {
                     mPreOutPos = mOutPos
                     if (!decodeOneBlock(cipherText, offset, len)) {
-                        throw RuntimeException("Unable to decode")
+                        throw RuntimeException("Unable to dataDecode")
                     }
                 }
                 g++

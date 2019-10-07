@@ -3,8 +3,8 @@ package net.mamoe.mirai.message.defaults
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageKey
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.lazyDecode
-import net.mamoe.mirai.utils.lazyEncode
+import net.mamoe.mirai.utils.dataDecode
+import net.mamoe.mirai.utils.dataEncode
 import net.mamoe.mirai.utils.skip
 import net.mamoe.mirai.utils.toUHexString
 
@@ -25,10 +25,10 @@ open class Image(val imageId: String) : Message() {
         return imageId
     }
 
-    override fun toByteArray(): ByteArray = lazyEncode { section ->
+    override fun toByteArray(): ByteArray = dataEncode { section ->
         section.writeByte(intValue)
 
-        section.writeLVByteArray(lazyEncode { child ->
+        section.writeLVByteArray(dataEncode { child ->
             child.writeByte(0x02)
             child.writeLVString(this.imageId)
             child.writeHex("04 00 " +
@@ -57,7 +57,7 @@ open class Image(val imageId: String) : Message() {
 
     internal object PacketHelper {
         @JvmStatic
-        fun ofByteArray0x06(data: ByteArray): Image = lazyDecode(data) {
+        fun ofByteArray0x06(data: ByteArray): Image = dataDecode(data) {
             it.skip(1)
             println("好友的图片")
             println(data.toUHexString())
@@ -67,17 +67,17 @@ open class Image(val imageId: String) : Message() {
             val imageId = String(it.readNBytes(36))
             println(imageId)
             it.skip(1)//0x41
-            return@lazyDecode Image("{$imageId}.$suffix")
+            return@dataDecode Image("{$imageId}.$suffix")
         }
 
         @JvmStatic
-        fun ofByteArray0x03(data: ByteArray): Image = lazyDecode(data) {
+        fun ofByteArray0x03(data: ByteArray): Image = dataDecode(data) {
             it.skip(1)
-            return@lazyDecode Image(String(it.readLVByteArray()))
+            return@dataDecode Image(String(it.readLVByteArray()))
             /*
             println(String(it.readLVByteArray()))
             it.readTLVMap()
-            return@lazyDecode Image(String(it.readLVByteArray().cutTail(5).getRight(42)))
+            return@dataDecode Image(String(it.readLVByteArray().cutTail(5).getRight(42)))
             /
             it.skip(data.size - 47)
             val imageId = String(it.readNBytes(42))
@@ -86,7 +86,7 @@ open class Image(val imageId: String) : Message() {
             it.skip(1)//0x43
             it.skip(1)//0x41
 
-            return@lazyDecode Image(imageId)*/
+            return@dataDecode Image(imageId)*/
         }
     }
 }

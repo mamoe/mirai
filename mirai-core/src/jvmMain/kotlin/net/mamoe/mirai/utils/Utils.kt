@@ -78,9 +78,11 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
     open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray()
 }
 
-fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().also(t).toByteArray()
+fun dataEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().also(t).toByteArray()
 
-fun <T> lazyDecode(byteArray: ByteArray, t: (DataInputStream) -> T): T = byteArray.dataInputStream().let(t)
+fun <R> dataDecode(byteArray: ByteArray, t: (DataInputStream) -> R): R = byteArray.dataInputStream().let(t)
+
+fun <R> ByteArray.decode(t: (DataInputStream) -> R): R = this.dataInputStream().let(t)
 
 fun DataInputStream.skip(n: Number) {
     this.skip(n.toLong())
@@ -149,13 +151,13 @@ fun ByteArray.removeZeroTail(): ByteArray {
 }
 
 fun BufferedImage.toByteArray(formatName: String = "PNG"): ByteArray {
-    return lazyEncode {
+    return dataEncode {
         ImageIO.write(this, formatName, it)
     }
 }
 
 object GZip {
-    fun uncompress(bytes: ByteArray): ByteArray = lazyEncode {
+    fun uncompress(bytes: ByteArray): ByteArray = dataEncode {
         GZIPInputStream(bytes.inputStream()).transferTo(it)
     }
 

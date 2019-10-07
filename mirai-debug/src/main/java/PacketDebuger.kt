@@ -4,8 +4,8 @@ import jpcap.JpcapCaptor
 import jpcap.packet.IPPacket
 import jpcap.packet.UDPPacket
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.login.*
+import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 
@@ -72,52 +72,21 @@ object Main {
         }
     }
 
-    fun dataReceived(data: ByteArray) {
-        if (!debugStarted) {
-            return
-        }
 
+    /**
+     * 从 TIM 内存中读取.
+     *
+     * 方法:
+     * 在 Common.dll 中搜索
+     */
+    const val sessionKey: String = "70 BD 1E 12 20 C1 25 12 A0 F8 4F 0D C0 A0 97 0E"
+
+    fun dataReceived(data: ByteArray) {
         packetReceived(ServerPacket.ofByteArray(data))
     }
 
     fun packetReceived(packet: ServerPacket) {
         when (packet) {
-            is ServerTouchResponsePacket.Encrypted -> packetReceived(packet.decrypt())
-            is ServerTouchResponsePacket -> {
-                if (packet.serverIP == null) {
-                    loginTime = packet.loginTime
-                    loginIp = packet.loginIP
-                    token0825 = packet.token0825
-                }
-
-                //then send 08 36 31 03
-            }
-
-            is ServerLoginResponseFailedPacket -> {
-                println("login failed")
-            }
-
-            is ServerLoginResponseKeyExchangePacket.Encrypted -> packetReceived(packet.decrypt(privateKey))
-            is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> packetReceived(packet.decrypt())
-            is ServerLoginResponseSuccessPacket.Encrypted -> packetReceived(packet.decrypt(privateKey))
-
-            is ServerLoginResponseKeyExchangePacket -> {
-                privateKey = packet.privateKey
-                //then 31 04 or 31 06
-            }
-
-            is ServerLoginResponseSuccessPacket -> {
-                sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-            }
-
-            is ServerSessionKeyResponsePacket.Encrypted -> packetReceived(packet.decrypt(sessionResponseDecryptionKey))
-
-            is ServerSessionKeyResponsePacket -> {
-                sessionKey = packet.sessionKey
-                println("Got sessionKey=" + sessionKey.toUHexString())
-            }
-
-
             is ServerEventPacket.Raw.Encrypted -> {
                 val sessionKey = "8B 45 10 0F 10 00 66 0F 38 00 05 20 39 18 64 0F".hexToBytes()
                 println("! ServerEventPacket.Raw.Encrypted")
@@ -130,37 +99,16 @@ object Main {
         }
     }
 
-    @Volatile
-    private var debugStarted = true
-
-    private const val qq: Int = 1994701021
-    private const val password: String = "xiaoqqq"
-
-    lateinit var token0825: ByteArray//56
-    var loginTime: Int = 0
-    lateinit var loginIp: String
-    lateinit var privateKey: ByteArray//16
-    lateinit var sessionKey: ByteArray
-
-    lateinit var sessionResponseDecryptionKey: ByteArray
 
     fun dataSent(data: ByteArray) {
-        //println("Sent:     " + data.toUByteArray().toUHexString())
-
-        lazyDecode(data.cutTail(1)) {
-            it.skip(3)
-            val idHex = it.readNBytes(4).toUHexString()
+        data.cutTail(1).decode { base ->
+            base.skip(3)
+            val idHex = base.readNBytes(4).toUHexString()
             println("发出包$idHex")
             when (idHex.substring(0, 5)) {
-                "08 25" -> {
-                    debugStarted = true
-                    println("Detected touch, debug start!!")
-                }
-
                 "00 CD" -> {
                     println("好友消息发出: ")
-                    val sessionKey = "70 BD 1E 12 20 C1 25 12 A0 F8 4F 0D C0 A0 97 0E".hexToBytes()
-                    lazyDecode(data) {
+                    dataDecode(data) {
                         //it.readShort()
                         //println(it.readUInt())
                         println(it.readNBytes(TIMProtocol.fixVer2.hexToBytes().size + 1 + 5 - 3 + 1).toUHexString())
@@ -171,41 +119,6 @@ object Main {
                             println(it.decryptBy(sessionKey).toUHexString())
                         }
                     }
-                }
-
-                "08 36" -> {
-                    println(data.toUHexString())
-                    println("tim的 passwordSubmissionKey1 = " + it.readNBytes(TIMProtocol.passwordSubmissionTLV1.hexToBytes().size).toUHexString())
-                    //it.skipHex(Protocol.passwordSubmissionKey1)
-                    println(it.readNBytes(2).toUHexString())
-                    println("tim的 publicKey = " + it.readNBytes(TIMProtocol.publicKey.hexToBytes().size).toUHexString())
-                    println(it.readNBytes(2).toUHexString())
-                    println("tim的 key0836=" + it.readLVByteArray().toUHexString())
-                    //it.skipHex(Protocol.key0836)
-                    val encrypted = it.readAllBytes()
-                    println(encrypted.size)
-                    println(encrypted.toUHexString())
-                    val tlv0006data = lazyDecode(encrypted.decryptBy(TIMProtocol.shareKey)) { section ->
-                        section.skip(2 + 2 + 56 + 2)
-                        section.skip(section.readShort())//device name
-                        section.skip(6 + 4 + 2 + 2)
-
-                        //tlv0006, encrypted by pwd md5
-                        section.readNBytes(160).decryptBy(lazyEncode { md5(md5(password) + "00 00 00 00".hexToBytes() + qq.toUInt().toByteArray()) })
-                    }
-                    lazyDecode(tlv0006data) { tlv0006 ->
-                        tlv0006.skip(4 + 2 + 4)
-                        tlv0006.skipHex(TIMProtocol.constantData2)
-                        tlv0006.skip(3)
-                        tlv0006.skip(16 + 4 + 1 + 4 * 3 + 4 + 8 + 2)
-                        tlv0006.skipHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")
-                        privateKey = tlv0006.readNBytes(16)
-                    }
-                    println("Got privateKey=" + privateKey.toUHexString())
-
-                    //then receive
-                }
-                else -> {
                 }
             }
         }
@@ -220,15 +133,6 @@ object Main {
         this.skip(uHex.hexToBytes().size.toLong())
     }
 }
-
-val shareKeyFromCS = "60 42 3B 51 C3 B1 F6 0F 67 E8 9C 00 F0 A7 BD A3"
-
-fun main() {
-    val data = "2C 3C 4A 0D 14 D3 C4 8D FA 99 58 02 87 04 47 66 F9 F9 4F DF B8 01 1E C6 2A 52 3E 83 B0 96 4C 1C 3C D0 1C A0 D6 58 3C D0 2B 6B 33 1E 37 0A 6E C3 49 CE 57 B0 70 41 88 C1 3B A3 61 72 5E 3C 65 EC B1 2E EC 25 0E 1B 66 7A C4 28 F7 1D 53 15 56 99 BB 18 90 ED E6 13 97 19 FE 42 DB D1 16 E3 21 77 6E 90 B8 E2 5A 6D C3 AE FF 5C 63 98 AE 42 B0 AB 96 0B 08 D8 DA E0 D3 BD 17 E4 7B 76 1C 16 17 DC".hexToBytes()
-    println(TEA.decrypt(data, "9A 45 7B D4 54 EF 7C E7 86 F5 20 EF 27 BE CF C1".hexToBytes()).toUHexString())
-    //succeed
-}
-
 
 /*
 00 19

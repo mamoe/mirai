@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.lazyEncode
+import net.mamoe.mirai.utils.dataEncode
 import java.io.DataInputStream
 
 /**
@@ -29,7 +29,7 @@ class ClientSendFriendMessagePacket(
             writeHex("37 0F")//TIM最新: 38 03
             writeQQ(botQQ)
             writeQQ(targetQQ)
-            write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
+            write(md5(dataEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
             writeHex("00 0B")
             writeRandom(2)
             writeTime()
