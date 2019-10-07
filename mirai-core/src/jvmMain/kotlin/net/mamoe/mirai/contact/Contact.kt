@@ -7,7 +7,6 @@ import net.mamoe.mirai.message.defaults.MessageChain
 import net.mamoe.mirai.message.defaults.PlainText
 import net.mamoe.mirai.message.defaults.UnsolvedImage
 import net.mamoe.mirai.network.LoginSession
-import java.util.concurrent.CompletableFuture
 
 /**
  * 联系人.
@@ -25,7 +24,7 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
     /**
      * 上传图片
      */
-    fun uploadImage(session: LoginSession, image: UnsolvedImage): CompletableDeferred<Unit> {
+    suspend fun uploadImage(session: LoginSession, image: UnsolvedImage): CompletableDeferred<Unit> {
         return image.upload(session, this)
     }
 

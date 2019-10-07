@@ -62,7 +62,7 @@ interface BotNetworkHandler {
      *
      * @see [TemporaryPacketHandler]
      */
-    fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>)
+    suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>)
 
     fun close()
 }

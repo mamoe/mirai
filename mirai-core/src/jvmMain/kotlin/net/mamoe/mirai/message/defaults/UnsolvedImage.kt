@@ -16,7 +16,6 @@ import net.mamoe.mirai.utils.toUHexString
 import java.awt.image.BufferedImage
 import java.io.File
 import java.net.URL
-import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 
 /**
@@ -29,7 +28,8 @@ import javax.imageio.ImageIO
 class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImageId(filename)) {
     constructor(imageFile: File) : this(imageFile.name, ImageIO.read(imageFile))
     constructor(url: URL) : this(File(url.file))
-    fun upload(session: LoginSession, contact: Contact): CompletableDeferred<Unit> {
+
+    suspend fun upload(session: LoginSession, contact: Contact): CompletableDeferred<Unit> {
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
             toSend { ClientTryGetImageIDPacket(session.bot.account.qqNumber, session.sessionKey, contact.number, image) }
 

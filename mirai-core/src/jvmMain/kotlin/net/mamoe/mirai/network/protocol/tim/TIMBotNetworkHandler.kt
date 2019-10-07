@@ -46,10 +46,8 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
     internal val temporaryPacketHandlers = Collections.synchronizedList(mutableListOf<TemporaryPacketHandler<*>>())
 
 
-    override fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>) {
-        runBlocking {
-            temporaryPacketHandler.send(action.session)
-        }
+    override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>) {
+        temporaryPacketHandler.send(action.session)
         temporaryPacketHandlers.add(temporaryPacketHandler)
     }
 

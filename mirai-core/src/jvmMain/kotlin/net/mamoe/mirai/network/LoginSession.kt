@@ -58,7 +58,7 @@ class LoginSession(
      * @return future. 可进行超时处理
      */
     @JvmSynthetic
-    inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableDeferred<Unit> {
+    suspend inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableDeferred<Unit> {
         val deferred = CompletableDeferred<Unit>()
         this.bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this).also(handlerTemporary))
         return deferred
@@ -82,7 +82,7 @@ class LoginSession(
      * @return future. 可进行超时处理
      */
     @JvmSynthetic
-    inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: suspend (P) -> Unit): CompletableDeferred<Unit> {
+    suspend inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: suspend (P) -> Unit): CompletableDeferred<Unit> {
         val deferred = CompletableDeferred<Unit>()
         this.bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this).also {
             it.toSend(toSend)
