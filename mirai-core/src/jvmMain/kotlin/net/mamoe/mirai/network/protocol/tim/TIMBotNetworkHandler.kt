@@ -388,7 +388,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
                     socket.loginResult.complete(LoginState.SUCCESS)
 
-                    loginHandler.changeOnlineStatus(ClientLoginStatus.ONLINE)
+                    loginHandler.changeOnlineStatus(ClientLoginStatus.ONLINE)//required
                 }
 
                 is ServerLoginSuccessPacket -> {
