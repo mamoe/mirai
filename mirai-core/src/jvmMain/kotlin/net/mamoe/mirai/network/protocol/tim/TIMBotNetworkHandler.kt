@@ -116,7 +116,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             if (packet is ServerEventPacket) {
                 //no need to sync acknowledgement packets
                 NetworkScope.launch {
-                    sendPacket(ClientEventResponsePacket(bot.account.qqNumber, packet.packetId, sessionKey, packet.eventIdentity))
+                    sendPacket(packet.ResponsePacket(bot.account.qqNumber, sessionKey))
                 }
             }
 
