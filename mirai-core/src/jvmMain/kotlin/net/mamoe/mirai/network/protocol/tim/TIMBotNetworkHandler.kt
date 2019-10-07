@@ -209,7 +209,6 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             }
         }
 
-        @Synchronized
         override suspend fun sendPacket(packet: ClientPacket) {
             checkNotNull(socket) { "network closed" }
             if (socket!!.isClosed) {
