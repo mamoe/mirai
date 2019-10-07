@@ -30,5 +30,4 @@ suspend fun Bot.sendPacket(packet: ClientPacket) = this.network.socket.sendPacke
 suspend fun Bot.login(): LoginState = this.network.login()
 
 //BotAccount
-
-fun Bot.getBotQQ(): Long = this.account.qqNumber
+val Bot.qqNumber: Long get() = this.account.qqNumber
