@@ -162,7 +162,7 @@ object TEA {
         }
 
         fun decrypt(cipherText: ByteArray, offset: Int, len: Int): ByteArray? {
-            require(!(len % 8 != 0 || len < 16)) { "must len % 8 == 0 && len >= 16" }
+            require(!(len % 8 != 0 || len < 16)) { "data must len % 8 == 0 && len >= 16" }
             mIV = decode(cipherText, offset)
             mIndexPos = (mIV[0] and 7).toInt()
             var plen = len - mIndexPos - 10

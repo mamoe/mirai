@@ -40,6 +40,7 @@ object TIMProtocol {
      * _fixVer
      */
     const val fixVer2 = "02 00 00 00 01 01 01 00 00 68 20"
+    //                   02 38 03 00 CD 48 68 3E 03 3F A2 02 00 00 00
     /**
      * 0825data1
      */
@@ -81,7 +82,8 @@ object TIMProtocol {
     /**
      * 没有任何地方写入了这个 key
      */
-    const val shareKey = "1A E9 7F 7D C9 73 75 98 AC 02 E0 80 5F A9 C6 AF"//16
+    //const val shareKey = "5B 6C 91 55 D9 92 F5 A7 99 85 37 76 3D 0F 08 B7"//16
+    const val shareKey = "1A E9 7F 7D C9 73 75 98 AC 02 E0 80 5F A9 C6 AF"//16//original
 
     const val key00BA = "C1 9C B8 C8 7B 8C 81 BA 9E 9E 7A 89 E1 7A EC 94"
     const val key00BAFix = "69 20 D1 14 74 F5 B3 93 E4 D5 02 B3 71 1A CD 2A"

@@ -15,7 +15,6 @@ import java.util.zip.CRC32
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
-import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -23,7 +22,7 @@ import kotlin.jvm.JvmSynthetic
  * @author NaturalHG
  */
 
-@JvmSynthetic
+//@JvmSynthetic
 fun ByteArray.toHexString(): String = toHexString(" ")
 
 fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(separator) {
@@ -38,11 +37,11 @@ fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(s
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
 
-@JvmSynthetic
+//@JvmSynthetic
 fun ByteArray.toUHexString(): String = this.toUByteArray().toUHexString()
 
 
-@JvmSynthetic
+//@JvmSynthetic
 fun UByteArray.toUHexString(separator: String = " "): String {
     return this.joinToString(separator) {
         var ret = it.toString(16).toUpperCase()
@@ -54,7 +53,7 @@ fun UByteArray.toUHexString(separator: String = " "): String {
 }
 
 
-@JvmSynthetic
+//@JvmSynthetic
 fun UByteArray.toUHexString(): String = this.toUHexString(" ")
 
 
@@ -79,10 +78,8 @@ open class ByteArrayDataOutputStream : DataOutputStream(ByteArrayOutputStream())
     open fun toUByteArray(): UByteArray = (out as ByteArrayOutputStream).toByteArray().toUByteArray()
 }
 
-@JvmSynthetic
 fun lazyEncode(t: (ByteArrayDataOutputStream) -> Unit): ByteArray = ByteArrayDataOutputStream().also(t).toByteArray()
 
-@JvmSynthetic
 fun <T> lazyDecode(byteArray: ByteArray, t: (DataInputStream) -> T): T = byteArray.dataInputStream().let(t)
 
 fun DataInputStream.skip(n: Number) {
@@ -95,7 +92,6 @@ fun getRandomByteArray(length: Int): ByteArray {
     return bytes.toByteArray()
 }
 
-@JvmSynthetic
 operator fun File.plus(child: String): File = File(this, child)
 
 private const val GTK_BASE_VALUE: Int = 5381

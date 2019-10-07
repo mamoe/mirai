@@ -4,11 +4,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
 import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
 import net.mamoe.mirai.event.events.network.PacketSentEvent
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
+import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.NetworkScope
@@ -62,7 +64,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             //if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
             //    loginInternal(ipQueue)//超时或未知, 重试连接下一个服务器
             //} else {
-                state
+            state
             // }
         }
     }
@@ -146,7 +148,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 restartSocket()
             }
 
-        internal var loginResult: CompletableDeferred<LoginState>? = null
+        internal lateinit var loginResult: CompletableDeferred<LoginState>
 
         @Synchronized
         private fun restartSocket() {
@@ -172,10 +174,6 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             }
         }
 
-
-        /**
-         * Start network and touch the server
-         */
         internal suspend fun touch(serverAddress: String): LoginState {
             bot.info("Connecting server: $serverAddress")
             restartSocket()
@@ -189,10 +187,24 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             //bot.waitForPacket(ServerTouchResponsePacket::class, timeoutMillis) {
             //    loginResult?.complete(LoginState.TIMEOUT)
             //}
+            var received = false
+            ServerPacketReceivedEvent.subscribe {
+                if (it.packet is ServerTouchResponsePacket && it.bot === bot) {
+                    received = true
+                    ListeningStatus.STOPPED
+                } else
+                    ListeningStatus.LISTENING
+            }
+            NetworkScope.launch {
+                delay(2000)
+                if (!received) {
+                    loginResult.complete(LoginState.TIMEOUT)
+                }
+            }
             sendPacket(ClientTouchPacket(bot.account.qqNumber, serverIP))
 
             return withContext(Dispatchers.IO) {
-                loginResult!!.await()
+                loginResult.await()
             }
         }
 
@@ -227,11 +239,10 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
         override fun close() {
             this.socket?.close()
-            if (this.loginResult != null) {
-                if (!this.loginResult!!.isCompleted) {
-                    this.loginResult!!.cancel(CancellationException("socket closed"))
+            if (this::loginResult.isInitialized) {
+                if (!this.loginResult.isCompleted && !this.loginResult.isCancelled) {
+                    this.loginResult.cancel(CancellationException("socket closed"))
                 }
-                this.loginResult = null
             }
         }
 
@@ -282,7 +293,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 }
 
                 is ServerLoginResponseFailedPacket -> {
-                    socket.loginResult?.complete(packet.loginState)
+                    socket.loginResult.complete(packet.loginState)
                     bot.close()
                     return
                 }
@@ -375,7 +386,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                         socket.sendPacket(ClientHeartbeatPacket(bot.account.qqNumber, sessionKey))
                     }
 
-                    socket.loginResult!!.complete(LoginState.SUCCESS)
+                    socket.loginResult.complete(LoginState.SUCCESS)
 
                     loginHandler.changeOnlineStatus(ClientLoginStatus.ONLINE)
                 }

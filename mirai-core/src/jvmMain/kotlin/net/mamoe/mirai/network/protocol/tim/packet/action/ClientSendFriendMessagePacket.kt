@@ -26,14 +26,16 @@ class ClientSendFriendMessagePacket(
             writeQQ(botQQ)
             writeQQ(targetQQ)
             writeHex("00 00 00 08 00 01 00 04 00 00 00 00")
-            writeHex("37 0F")
+            writeHex("37 0F")//TIM最新: 38 03
             writeQQ(botQQ)
             writeQQ(targetQQ)
             write(md5(lazyEncode { md5Key -> md5Key.writeQQ(targetQQ); md5Key.write(sessionKey) }))
             writeHex("00 0B")
             writeRandom(2)
             writeTime()
-            writeHex("00 00 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00")
+            writeHex("00 00" +
+                    "00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00")
+            //01  1D  00  00  00  00  01  00  00  00  01  4D  53  47  00  00  00  00  00
             writeTime()
             writeRandom(4)
             writeHex("00 00 00 00 09 00 86")
@@ -54,5 +56,9 @@ class ClientSendFriendMessagePacket(
     }
 }
 
+
+fun main() {
+
+}
 @PacketId("00 CD")
 class ServerSendFriendMessageResponsePacket(input: DataInputStream) : ServerPacket(input)

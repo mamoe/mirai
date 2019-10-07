@@ -2,10 +2,12 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
-import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeWhileTrue
 import net.mamoe.mirai.network.protocol.tim.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
@@ -13,7 +15,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessag
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendGroupMessageResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
-import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 import java.io.EOFException
@@ -84,9 +85,9 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
                     return ServerLoginResponseFailedPacket(when (bytes.size) {
                         135 -> LoginState.UNKNOWN//账号已经在另一台电脑登录??
 
-                        63, 319, 351 -> LoginState.WRONG_PASSWORD//63不是密码错误, 应该是登录过频繁
+                        319, 351 -> LoginState.WRONG_PASSWORD
                         //135 -> LoginState.RETYPE_PASSWORD
-                        279 -> LoginState.BLOCKED
+                        63, 279 -> LoginState.BLOCKED
                         263 -> LoginState.UNKNOWN_QQ_NUMBER
                         551, 487 -> LoginState.DEVICE_LOCK
                         359 -> LoginState.TAKEN_BACK
@@ -306,8 +307,8 @@ fun <N : Number> DataInputStream.readShortAt(position: N): Short {
     return this.readShort()
 }
 
-
-@JvmSynthetic
+//添加@JvmSynthetic 导致 idea 无法检查这个文件的错误
+//@JvmSynthetic
 fun DataInputStream.gotoWhere(matcher: UByteArray): DataInputStream {
     return this.gotoWhere(matcher.toByteArray())
 }

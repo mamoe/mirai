@@ -20,9 +20,9 @@ import kotlin.system.exitProcess
  * @author Him188moe
  */
 suspend fun main() {
-    val bot = Bot(BotAccount(
-            qqNumber = 1683921395,
-            password = "bb22222"
+    val bot = Bot(BotAccount(//填写你的账号
+            qqNumber = 1994701021,
+            password = "xiaoqqq"
     ), Console())
 
     bot.login().let {
