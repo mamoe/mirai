@@ -423,6 +423,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             }
         }
 
+        @Suppress("MemberVisibilityCanBePrivate")
         suspend fun changeOnlineStatus(status: ClientLoginStatus) {
             socket.sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, status))
         }

@@ -14,23 +14,21 @@ import java.util.stream.Collectors
  * @author Him188moe
  */
 object TIMProtocol {
-    val SERVER_IP: List<String> = object : ArrayList<String>() {
-        init {
-            //add("183.60.56.29")
+    val SERVER_IP: List<String> by lazy {
+        //add("183.60.56.29")
+        val list = mutableListOf<String>()
+        arrayOf(
+                "sz3.tencent.com",
+                "sz4.tencent.com",
+                "sz5.tencent.com",
+                "sz6.tencent.com",
+                "sz8.tencent.com",
+                "sz9.tencent.com",
+                "sz2.tencent.com"
+        ).forEach { list.add(InetAddress.getByName(it).hostAddress) }
 
-            arrayOf(
-                    "sz3.tencent.com",
-                    "sz4.tencent.com",
-                    "sz5.tencent.com",
-                    "sz6.tencent.com",
-                    "sz8.tencent.com",
-                    "sz9.tencent.com",
-                    "sz2.tencent.com"
-            ).forEach { this.add(InetAddress.getByName(it).hostAddress) }
-
-        }
+        list.toList()
     }
-        get() = Collections.unmodifiableList(field)
 
     const val head = "02"
     const val ver = "37 13"
