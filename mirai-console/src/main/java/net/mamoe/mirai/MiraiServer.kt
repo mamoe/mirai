@@ -175,7 +175,7 @@ object MiraiServer {
                 val strings = it.split("----").dropLastWhile { it.isEmpty() }.toTypedArray()
                 val bot = Bot(BotAccount(strings[0].toLong(), strings[1]), Console())
 
-                if (runBlocking { bot.network.login(200) } === LoginState.SUCCESS) {
+                if (runBlocking { bot.login() } === LoginState.SUCCESS) {
                     bot.green("Login succeed")
                     return bot
                 }

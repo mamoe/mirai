@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
@@ -25,7 +27,7 @@ class ClientChangeOnlineStatusPacket(
         this.writeHex(TIMProtocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
             writeHex("01 00")
-            writeByte(loginStatus.id)
+            writeByte(loginStatus.id.toInt())
             writeHex("00 01 00 01 00 04 00 00 00 00")
         }
     }
