@@ -23,6 +23,7 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 
 /**
@@ -61,11 +62,11 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         val ip = ipQueue.poll() ?: return LoginState.UNKNOWN//所有服务器均返回 UNKNOWN
 
         return socket.touch(ip).let { state ->
-            //if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
-            //    loginInternal(ipQueue)//超时或未知, 重试连接下一个服务器
-            //} else {
-            state
-            // }
+            if (state == LoginState.UNKNOWN || state == LoginState.TIMEOUT) {
+                loginInternal(ipQueue)//超时或未知, 重试连接下一个服务器
+            } else {
+                state
+            }
         }
     }
 
@@ -187,17 +188,17 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             //bot.waitForPacket(ServerTouchResponsePacket::class, timeoutMillis) {
             //    loginResult?.complete(LoginState.TIMEOUT)
             //}
-            var received = false
+            val received = AtomicBoolean(false)
             ServerPacketReceivedEvent.subscribe {
                 if (it.packet is ServerTouchResponsePacket && it.bot === bot) {
-                    received = true
+                    received.set(true)
                     ListeningStatus.STOPPED
                 } else
                     ListeningStatus.LISTENING
             }
             NetworkScope.launch {
                 delay(2000)
-                if (!received) {
+                if (!received.get()) {
                     loginResult.complete(LoginState.TIMEOUT)
                 }
             }
