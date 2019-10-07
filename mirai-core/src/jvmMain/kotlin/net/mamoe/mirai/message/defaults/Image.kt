@@ -1,7 +1,6 @@
 package net.mamoe.mirai.message.defaults
 
 import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.message.MessageId
 import net.mamoe.mirai.message.MessageKey
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.lazyDecode
@@ -27,7 +26,7 @@ open class Image(val imageId: String) : Message() {
     }
 
     override fun toByteArray(): ByteArray = lazyEncode { section ->
-        section.writeByte(MessageId.IMAGE)
+        section.writeByte(intValue)
 
         section.writeLVByteArray(lazyEncode { child ->
             child.writeByte(0x02)
