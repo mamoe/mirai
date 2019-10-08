@@ -22,7 +22,11 @@ open class Image(val imageId: String) : Message() {
     override val type: MessageKey = Key
 
     override fun toStringImpl(): String {
-        return imageId
+        return "[$imageId]"
+    }
+
+    override fun toObjectString(): String {
+        return "Image[$imageId]"
     }
 
     override fun toByteArray(): ByteArray = dataEncode { section ->
@@ -55,7 +59,7 @@ open class Image(val imageId: String) : Message() {
 
     override operator fun contains(sub: String): Boolean = false //No string can be contained in a image
 
-    internal object PacketHelper {
+    object PacketHelper {
         @JvmStatic
         fun ofByteArray0x06(data: ByteArray): Image = dataDecode(data) {
             it.skip(1)

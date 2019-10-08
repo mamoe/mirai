@@ -20,7 +20,11 @@ class Face(val id: FaceID) : Message() {
     override val type: MessageKey = Key
 
     override fun toStringImpl(): String {
-        return String.format("[face%d]", id.id)
+        return "[face${id.id}]"
+    }
+
+    override fun toObjectString(): String {
+        return "Face[$id]"
     }
 
     override fun toByteArray(): ByteArray = dataEncode { section ->
@@ -48,7 +52,7 @@ class Face(val id: FaceID) : Message() {
 
     override operator fun contains(sub: String): Boolean = false
 
-    internal object PacketHelper {
+    object PacketHelper {
         fun ofByteArray(data: ByteArray): Face = dataDecode(data) {
             //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
             //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D
