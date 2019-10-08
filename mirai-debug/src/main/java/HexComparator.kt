@@ -67,6 +67,12 @@ object HexComparator {
                     .replace("  ", " ")
         }
 
+        @Suppress("SpellCheckingInspection")
+        object PacketIds {
+            val heartbeat = "00 58"
+            val friendmsg = "00 CD"
+        }
+
         init {
             CONST_FIELDS.forEach { field ->
                 for (match in match(hex, field)) {
@@ -89,7 +95,8 @@ object HexComparator {
         companion object {
             private val CONST_FIELDS: List<Field> = listOf(
                     TestConsts::class.java,
-                    TIMProtocol::class.java
+                    TIMProtocol::class.java,
+                    PacketIds::class.java
             ).map { it.declaredFields }.flatMap { fields ->
                 fields.map { field ->
                     field.trySetAccessible()
