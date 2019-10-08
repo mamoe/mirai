@@ -21,8 +21,6 @@
 3. Run demo[Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L22)
 
 ### 事件 Hook
-#### Java:
-暂不支持
 #### Kotlin:
 ```kotlin
 FriendMessageEvent.subscribeAlways{
@@ -39,9 +37,6 @@ FriendMessageEvent.subscribeAlways{
 
 发送图片已经完成，但我们还在开发上传图片至服务器。  
 现在你可以通过发送一张图片给机器人账号，再让机器人账号发送这张图片。你可以查看 [Image.kt](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/message/defaults/Image.kt#L20-L93)
-
-## 语言使用说明
-我们使用 Kotlin，但我们也会保留对 Java 和 Java开发者的支持。
 
 # TODO
 - [x] 事件(Event)模块  
