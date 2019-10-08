@@ -4,5 +4,5 @@ apply plugin: "java"
 dependencies {
     compile project(":mirai-core")
     compile rootProject.ext.coroutine
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.3.50'
+    compile rootProject.ext.kotlinJvm
 }
