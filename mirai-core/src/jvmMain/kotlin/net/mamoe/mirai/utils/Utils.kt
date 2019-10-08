@@ -84,6 +84,11 @@ fun <R> dataDecode(byteArray: ByteArray, t: (DataInputStream) -> R): R = byteArr
 
 fun <R> ByteArray.decode(t: (DataInputStream) -> R): R = this.dataInputStream().let(t)
 
+fun ByteArray.decryptBy(key: ByteArray): ByteArray = TEA.decrypt(this, key)
+
+fun ByteArray.decryptBy(key: String): ByteArray = TEA.decrypt(this, key)
+
+
 fun DataInputStream.skip(n: Number) {
     this.skip(n.toLong())
 }

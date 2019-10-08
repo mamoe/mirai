@@ -34,11 +34,22 @@ class ClientSendFriendMessagePacket(
             writeRandom(2)
             writeTime()
             writeHex("00 00" +
-                    "00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00")
-            //01  1D  00  00  00  00  01  00  00  00  01  4D  53  47  00  00  00  00  00
+                    "00 00 00 00")
+
+            //消息过多要分包发送
+            //如果只有一个
+            writeByte(0x01)
+            writeByte(0)//第几个包
+            writeByte(0)
+            //如果大于一个,
+            //writeByte(0x02)//数量
+            //writeByte(0)//第几个包
+            //writeByte(0x91)//why?
+
+            writeHex("00 01 4D 53 47 00 00 00 00 00")
             writeTime()
             writeRandom(4)
-            writeHex("00 00 00 00 09 00 86")
+            writeHex("00 00 00 00 09 00 86")//TIM最新 0C 00 86
             writeHex(TIMProtocol.messageConst1)//... 85 E9 BB 91
             writeZero(2)
 
@@ -56,9 +67,5 @@ class ClientSendFriendMessagePacket(
     }
 }
 
-
-fun main() {
-
-}
 @PacketId("00 CD")
 class ServerSendFriendMessageResponsePacket(input: DataInputStream) : ServerPacket(input)

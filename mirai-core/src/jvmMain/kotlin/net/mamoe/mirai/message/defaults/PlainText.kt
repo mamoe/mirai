@@ -38,7 +38,7 @@ class PlainText(private val text: String) : Message() {
 
     override operator fun contains(sub: String): Boolean = this.toString().contains(sub)
 
-    internal object PacketHelper {
+    object PacketHelper {
         @JvmStatic
         fun ofByteArray(data: ByteArray): PlainText = dataDecode(data) {
             it.skip(1)

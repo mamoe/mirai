@@ -69,7 +69,6 @@ fun DataOutputStream.writeVarInt(signedInt: Int) {
     this.writeUVarInt(encodeZigZag32(signedInt))
 }
 
-
 @Throws(IOException::class)
 fun DataOutputStream.writeUVarInt(uint: UInt) {
     return writeUVarInt(uint.toLong())

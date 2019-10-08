@@ -2,11 +2,8 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.message.defaults.Face
-import net.mamoe.mirai.message.defaults.Image
 import net.mamoe.mirai.message.defaults.MessageChain
-import net.mamoe.mirai.message.defaults.PlainText
+import net.mamoe.mirai.message.defaults.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.dataDecode
 import net.mamoe.mirai.utils.hexToBytes
@@ -49,7 +46,7 @@ abstract class ServerEventPacket(input: DataInputStream, val packetId: ByteArray
 
         @PacketId("00 17")
         class Encrypted(input: DataInputStream, private val packetId: ByteArray) : ServerPacket(input) {
-            fun decrypt(sessionKey: ByteArray): Raw = Raw(decryptBy(sessionKey), packetId).setId(this.idHex)
+            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey), packetId).setId(this.idHex)
         }
     }
 
@@ -135,7 +132,7 @@ class ServerGroupMessageEventPacket(input: DataInputStream, packetId: ByteArray,
         this.input.goto(108)
         this.input.readLVByteArray()
         input.skip(2)//2个0x00
-        message = input.readSections()
+        message = input.readMessageChain()
 
         val map = input.readTLVMap(true)
         if (map.containsKey(18)) {
@@ -262,7 +259,7 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
         input.goto(93 + l1)
         input.readLVByteArray()//font
         input.skip(2)//2个0x00
-        message = input.readSections()
+        message = input.readMessageChain()
 
         val map: Map<Int, ByteArray> = input.readTLVMap(true).withDefault { byteArrayOf() }
         println(map.getValue(18))
@@ -276,64 +273,6 @@ class ServerFriendMessageEventPacket(input: DataInputStream, packetId: ByteArray
             input.goto(103 + offset).readString(length.toInt())
         }))*/
     }
-}
-
-private fun DataInputStream.readSection(): Message? {
-    val messageType = this.readByte().toInt()
-    val sectionLength = this.readShort().toLong()//sectionLength: short
-    val sectionData = this.readNBytes(sectionLength)
-    return when (messageType) {
-        0x01 -> PlainText.PacketHelper.ofByteArray(sectionData)
-        0x02 -> Face.PacketHelper.ofByteArray(sectionData)
-        0x03 -> Image.PacketHelper.ofByteArray0x03(sectionData)
-        0x06 -> Image.PacketHelper.ofByteArray0x06(sectionData)
-
-
-        0x19 -> {//长文本
-            val value = readLVByteArray()
-            //todo 未知压缩算法
-            PlainText(String(value))
-
-            // PlainText(String(GZip.uncompress( value)))
-        }
-
-
-        0x14 -> {//长文本
-            val value = readLVByteArray()
-            println(value.size)
-            println(value.toUHexString())
-            //todo 未知压缩算法
-            this.skip(7)//几个TLV
-            return PlainText(String(value))
-        }
-
-        0x0E -> {
-            //null
-            null
-        }
-
-        else -> {
-            println("未知的messageType=0x${messageType.toByte().toUHexString()}")
-            println("后文=${this.readAllBytes().toUHexString()}")
-            null
-        }
-    }
-
-}
-
-private fun DataInputStream.readSections(): MessageChain {
-    val chain = MessageChain()
-    var got: Message? = null
-    do {
-        if (got != null) {
-            chain.concat(got)
-        }
-        if (this.available() == 0) {
-            return chain
-        }
-        got = this.readSection()
-    } while (got != null)
-    return chain
 }
 
 /*
