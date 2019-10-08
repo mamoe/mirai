@@ -2,7 +2,7 @@ apply plugin: "kotlin"
 apply plugin: "java"
 
 dependencies {
-    implementation project(":mirai-core")
+    compile project(":mirai-core")
     compile rootProject.ext.coroutine
     compile 'org.jetbrains.kotlin:kotlin-stdlib:1.3.50'
 }
