@@ -16,9 +16,10 @@
 现在你可以登录小号来测试 Mirai.  
 即使测试消息时未发现冻结情况，我们也无法100%保证账号冻结不会发生。
 
+目前还没有写构建，请使用 IDE 运行单个 main 函数。
 1. Clone
-2. Import as Maven project
-3. Run demo[Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L22)
+2. Import as Gradle project
+3. Run demo [Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L22)
 
 ### 事件 Hook
 #### Kotlin:
