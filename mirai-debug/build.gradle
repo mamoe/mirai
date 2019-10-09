@@ -7,8 +7,6 @@ dependencies {
 
     compile rootProject.ext.coroutineCommon
     compile rootProject.ext.kotlinJvm
-
-    compile group: 'com.google.protobuf', name: 'protobuf-java', version: rootProject.ext.protobuf_version
 }
 
 tasks.withType(JavaCompile) {
