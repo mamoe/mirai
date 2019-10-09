@@ -1,8 +1,5 @@
 package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.goto
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -60,36 +57,4 @@ open class Console(
 
         println("$color$identity $s : $value")
     }
-}
-
-fun Bot.log(o: Any?) = info(o)
-fun Bot.println(o: Any?) = info(o)
-fun Bot.info(o: Any?) = print(this, o.toString(), LoggerTextFormat.RESET)
-
-fun Bot.error(o: Any?) = print(this, o.toString(), LoggerTextFormat.RED)
-
-fun Bot.notice(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_BLUE)
-
-fun Bot.purple(o: Any?) = print(this, o.toString(), LoggerTextFormat.PURPLE)
-
-fun Bot.cyan(o: Any?) = print(this, o.toString(), LoggerTextFormat.LIGHT_CYAN)
-fun Bot.green(o: Any?) = print(this, o.toString(), LoggerTextFormat.GREEN)
-
-fun Bot.debug(o: Any?) = print(this, o.toString(), LoggerTextFormat.YELLOW)
-
-fun Bot.debugPacket(packet: ServerPacket) {
-    debug("Packet=$packet")
-    debug("Packet size=" + packet.input.goto(0).readAllBytes().size)
-    debug("Packet data=" + packet.input.goto(0).readAllBytes().toUHexString())
-}
-
-
-private fun print(bot: Bot, value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
-    val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
-    kotlin.io.println("$color[Mirai] $s #R${bot.id}: $value")
-}
-
-private fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
-    val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
-    kotlin.io.println("$color[Mirai] $s : $value")
 }
