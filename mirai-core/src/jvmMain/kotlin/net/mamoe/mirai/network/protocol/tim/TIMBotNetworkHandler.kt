@@ -124,19 +124,11 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled) {
                 return
             }
-
-            withContext(CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
-                launch(this.coroutineContext) {
-                    loginHandler.onPacketReceived(packet)
-                }
-
-
-                packetHandlers.forEach {
-                    launch(this.coroutineContext) {
-                        it.instance.onPacketReceived(packet)
-                    }
-                }
-            }//awaits all coroutines launched in this block
+            
+            loginHandler.onPacketReceived(packet)
+            packetHandlers.forEach {
+                it.instance.onPacketReceived(packet)
+            }
         }
 
         private var socket: DatagramSocket? = null
