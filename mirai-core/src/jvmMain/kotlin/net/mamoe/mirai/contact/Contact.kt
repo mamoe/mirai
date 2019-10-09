@@ -1,9 +1,10 @@
 package net.mamoe.mirai.contact
 
-import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.message.*
-import net.mamoe.mirai.network.LoginSession
+import net.mamoe.mirai.message.Message
+import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.message.PlainText
+import net.mamoe.mirai.message.toChain
 
 /**
  * 联系人.
@@ -17,13 +18,6 @@ import net.mamoe.mirai.network.LoginSession
 abstract class Contact internal constructor(val bot: Bot, val number: Long) {
 
     abstract suspend fun sendMessage(message: MessageChain)
-
-    /**
-     * 上传图片
-     */
-    suspend fun uploadImage(session: LoginSession, image: UnsolvedImage): CompletableDeferred<Unit> {
-        return image.upload(session, this)
-    }
 
     suspend fun sendMessage(message: Message) {
         if (message is MessageChain) {

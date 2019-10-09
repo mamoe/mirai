@@ -55,7 +55,6 @@ class LoginSession(
      *
      * @param P 期待的包
      * @param handlerTemporary 处理器.
-     * @return future. 可进行超时处理
      */
     @JvmSynthetic
     suspend inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableDeferred<Unit> {
@@ -79,7 +78,6 @@ class LoginSession(
      * @param P 期待的包
      * @param toSend 将要发送的包
      * @param handler 处理期待的包
-     * @return future. 可进行超时处理
      */
     @JvmSynthetic
     suspend inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: suspend (P) -> Unit): CompletableDeferred<Unit> {

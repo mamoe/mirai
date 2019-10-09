@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package net.mamoe.mirai
 
 import net.mamoe.mirai.contact.Group
@@ -64,10 +66,10 @@ fun Bot.debugPacket(packet: ServerPacket) {
 
 private fun print(bot: Bot, value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
     val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
-    kotlin.io.println("$color[Mirai] $s #R${bot.id}: $value")
+    println("$color[Mirai] $s #R${bot.id}: $value")
 }
 
 private fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
     val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
-    kotlin.io.println("$color[Mirai] $s : $value")
+    println("$color[Mirai] $s : $value")
 }

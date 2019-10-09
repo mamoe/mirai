@@ -125,7 +125,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 return
             }
 
-            withContext(NetworkScope.coroutineContext + CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            withContext(CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
                 launch(this.coroutineContext) {
                     loginHandler.onPacketReceived(packet)
                 }

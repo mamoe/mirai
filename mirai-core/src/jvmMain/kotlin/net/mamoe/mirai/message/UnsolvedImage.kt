@@ -10,6 +10,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDFail
 import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDSuccessPacket
 import net.mamoe.mirai.network.protocol.tim.packet.md5
+import net.mamoe.mirai.qqNumber
 import net.mamoe.mirai.utils.ImageNetworkUtils
 import net.mamoe.mirai.utils.toByteArray
 import net.mamoe.mirai.utils.toUHexString
@@ -31,7 +32,7 @@ class UnsolvedImage(private val filename: String, val image: BufferedImage) {
 
     suspend fun upload(session: LoginSession, contact: Contact): CompletableDeferred<Unit> {
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
-            toSend { ClientTryGetImageIDPacket(session.bot.account.qqNumber, session.sessionKey, contact.number, image) }
+            toSend { ClientTryGetImageIDPacket(session.bot.qqNumber, session.sessionKey, contact.number, image) }
 
             onExpect {
                 when (it) {
@@ -42,7 +43,7 @@ class UnsolvedImage(private val filename: String, val image: BufferedImage) {
                     is ServerTryGetImageIDSuccessPacket -> {
                         val data = image.toByteArray()
                         withContext(Dispatchers.IO) {
-                            if (!ImageNetworkUtils.postImage(it.uKey.toUHexString(), data.size, session.bot.account.qqNumber, contact.number, data)) {
+                            if (!ImageNetworkUtils.postImage(it.uKey.toUHexString(), data.size, session.bot.qqNumber, contact.number, data)) {
                                 throw RuntimeException("cannot upload image")
                             }
                         }
