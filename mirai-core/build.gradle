@@ -30,7 +30,7 @@ kotlin {
                 implementation 'org.jsoup:jsoup:1.12.1'
                 implementation 'org.ini4j:ini4j:0.5.2'
 
-                implementation project(":mirai-protocol-timpc")
+         
             }
         }
         jvmTest {
