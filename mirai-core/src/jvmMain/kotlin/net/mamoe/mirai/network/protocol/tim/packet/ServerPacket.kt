@@ -7,7 +7,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
+import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.event.subscribeWhileTrue
 import net.mamoe.mirai.network.protocol.tim.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket

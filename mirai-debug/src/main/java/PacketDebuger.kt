@@ -85,7 +85,7 @@ object Main {
      * 4. 双击跳转
      * 5. 断点并在TIM发送消息以触发
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
-     * 7. 从 eax 开始的 16个 bytes 便是 `sessionKey`
+     * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
     val sessionKey: ByteArray = "48 C0 11 42 2D FD 8F 36 6E BA BF FD D3 AA B7 AE".hexToBytes()
 

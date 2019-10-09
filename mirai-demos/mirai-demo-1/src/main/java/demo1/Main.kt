@@ -2,8 +2,8 @@ package demo1
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.event.events.group.GroupMessageEvent
-import net.mamoe.mirai.event.events.qq.FriendMessageEvent
+import net.mamoe.mirai.event.events.FriendMessageEvent
+import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.subscribeAll
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeUntilFalse

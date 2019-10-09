@@ -6,10 +6,10 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.bot.BotLoginSucceedEvent
-import net.mamoe.mirai.event.events.network.BeforePacketSendEvent
-import net.mamoe.mirai.event.events.network.PacketSentEvent
-import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
+import net.mamoe.mirai.event.events.BeforePacketSendEvent
+import net.mamoe.mirai.event.events.BotLoginSucceedEvent
+import net.mamoe.mirai.event.events.PacketSentEvent
+import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginSession

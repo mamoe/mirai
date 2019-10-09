@@ -1,9 +1,9 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.network.ServerPacketReceivedEvent
-import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
+import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.network.LoginSession
+import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 

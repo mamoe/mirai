@@ -41,7 +41,7 @@ abstract class ClientPacket : ByteArrayDataOutputStream(), Packet {
      * Encode this packet.
      *
      *
-     * Before sending the packet, a [tail][TIMProtocol.tail] will be added.
+     * Before sending the packet, a [tail][TIMProtocol.tail] is added.
      */
     @Throws(IOException::class)
     protected abstract fun encode()

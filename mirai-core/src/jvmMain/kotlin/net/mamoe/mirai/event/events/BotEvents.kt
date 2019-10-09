@@ -1,4 +1,4 @@
-package net.mamoe.mirai.event.events.bot
+package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Event
