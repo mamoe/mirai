@@ -2,10 +2,8 @@ package net.mamoe.mirai.utils.setting
 
 
 import org.ini4j.Profile
-
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.stream.Collectors
 import kotlin.streams.toList
 
 
@@ -19,6 +17,7 @@ class MiraiSettingMapSection : ConcurrentHashMap<String, Any>(), MiraiSettingSec
             return defaultValue
         }
         return if (super.containsKey(key)) {
+            @Suppress("UNCHECKED_CAST")
             super.get(key) as T
         } else defaultValue
     }
@@ -26,10 +25,6 @@ class MiraiSettingMapSection : ConcurrentHashMap<String, Any>(), MiraiSettingSec
 
     operator fun set(key: String, value: Any) {
         this[key] = value
-    }
-
-    override fun remove(key: String) {
-        super.remove(key)
     }
 
     fun getInt(key: String): Int {

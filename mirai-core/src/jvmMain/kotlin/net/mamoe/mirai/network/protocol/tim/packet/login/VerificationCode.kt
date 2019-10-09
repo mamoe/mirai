@@ -2,10 +2,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.TEA
 import net.mamoe.mirai.utils.Tested
-import net.mamoe.mirai.utils.cutTail
-import net.mamoe.mirai.utils.hexToBytes
 import java.io.DataInputStream
 
 /**
@@ -192,8 +189,7 @@ abstract class ServerCaptchaPacket(input: DataInputStream) : ServerPacket(input)
     class Encrypted(input: DataInputStream, private val id: String) : ServerPacket(input) {
 
         fun decrypt(): ServerCaptchaPacket {
-            this.input goto 14
-            val data = TEA.decrypt(this.input.readAllBytes().cutTail(1), TIMProtocol.key00BA.hexToBytes())
+            val data = this.decryptAsByteArray(TIMProtocol.key00BA)
             if (id.startsWith("00 BA 32")) {
                 return when (data.size) {
                     66,

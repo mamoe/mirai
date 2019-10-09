@@ -50,8 +50,6 @@ object TIMProtocol {
     const val constantData2 = "00 00 04 53 00 00 00 01 00 00 15 85 "
 
     /**
-     * 0825 key
-     *
      * Touch 发出时写入, 并用于加密, 接受 touch response 时解密.
      */
     const val touchKey = "A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D"//16
@@ -62,12 +60,12 @@ object TIMProtocol {
     const val redirectionKey = "A8 F2 14 5F 58 12 60 AF 07 63 97 D6 76 B2 1A 3B"//16
 
     /**
-     *
+     * 并非常量. 设置为常量是为了让 [shareKey] 为常量
      */
     const val publicKey = "02 6D 28 41 D2 A5 6F D2 FC 3E 2A 1F 03 75 DE 6E 28 8F A8 19 3E 5F 16 49 D3"//25
 
     /**
-     * fix_0836_1
+     * 并非常量. 设置为常量是为了让 [shareKey] 为常量
      *
      * LoginResend 和 PasswordSubmission 时写入, 但随后都使用 shareKey 加密, 收到回复也是用的 share key
      */
@@ -79,7 +77,7 @@ object TIMProtocol {
     }
 
     /**
-     * 没有任何地方写入了这个 key
+     * 并非常量. 是 publicKey 与 key0836 的算法计算结果
      */
     //const val shareKey = "5B 6C 91 55 D9 92 F5 A7 99 85 37 76 3D 0F 08 B7"//16
     const val shareKey = "1A E9 7F 7D C9 73 75 98 AC 02 E0 80 5F A9 C6 AF"//16//original

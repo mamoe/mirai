@@ -179,6 +179,8 @@ abstract class ServerPacket(val input: DataInputStream) : Packet {
         input.goto(14)
         return TEA.decrypt(input.readAllBytes().cutTail(1), key)
     }
+
+    fun decryptAsByteArray(keyHex: String): ByteArray = this.decryptAsByteArray(keyHex.hexToBytes())
 }
 
 
@@ -243,7 +245,7 @@ fun ByteArray.dataInputStream(): DataInputStream = DataInputStream(this.inputStr
 /**
  * Reset and skip(position)
  */
-infix fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
+fun <N : Number> DataInputStream.goto(position: N): DataInputStream {
     this.reset()
     this.skip(position.toLong())
     return this

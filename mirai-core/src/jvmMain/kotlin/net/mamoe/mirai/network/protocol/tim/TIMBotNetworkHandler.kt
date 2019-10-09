@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.protocol.tim
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.mamoe.mirai.Bot
+import net.mamoe.mirai.*
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforePacketSendEvent
@@ -56,7 +56,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
     }
 
     //嵌套进 login 会导致 kotlin internal CompilationException
-    suspend fun loginInternal(ipQueue: LinkedList<String>): LoginState {
+    private suspend fun loginInternal(ipQueue: LinkedList<String>): LoginState {
         this.socket.close()
         val ip = ipQueue.poll() ?: return LoginState.UNKNOWN//所有服务器均返回 UNKNOWN
 
