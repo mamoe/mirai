@@ -1,7 +1,6 @@
 package net.mamoe.mirai.network.protocol.tim.packet
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.utils.TEA
 import java.io.DataInputStream
 
 /**
@@ -39,10 +38,6 @@ class ServerAccountInfoResponsePacket(input: DataInputStream) : ServerPacket(inp
 
     @PacketId("00 5C")
     class Encrypted(inputStream: DataInputStream) : ServerPacket(inputStream) {
-        fun decrypt(sessionKey: ByteArray): ServerAccountInfoResponsePacket {
-            this.input goto 14
-            val data = this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }
-            return ServerAccountInfoResponsePacket(TEA.decrypt(data, sessionKey).dataInputStream()).setId(this.idHex)
-        }
+        fun decrypt(sessionKey: ByteArray): ServerAccountInfoResponsePacket = ServerAccountInfoResponsePacket(this.decryptBy(sessionKey)).setId(this.idHex)
     }
 }

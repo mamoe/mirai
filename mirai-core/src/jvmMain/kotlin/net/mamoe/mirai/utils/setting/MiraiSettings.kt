@@ -14,13 +14,12 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author NaturalHG
  */
-class MiraiSettings
+class MiraiSettings(file: File)
 /*
     public MiraiSettings(MiraiPluginBase pluginBase, String filename) {
         // TODO: 2019/9/6 每个插件独立文件夹存放
         this(new File(filename));
-    }*/
-(file: File) {
+    }*/ {
 
     private val file: File
 
@@ -29,14 +28,10 @@ class MiraiSettings
     private val cacheSection = ConcurrentHashMap<String, MiraiSettingSection>()
 
     init {
-        var file = file
-        Objects.requireNonNull(file)
-        if (!file.name.contains(".")) {
-            file = File(file.path + ".ini")
-        }
-        this.file = file
-        if (!file.exists() && !file.createNewFile()) {
-            throw RuntimeException("cannot create config file $file")
+        val f = file.takeIf { it.name.contains(".") } ?: File(file.path + ".ini")
+        this.file = f
+        if (!f.exists() && !f.createNewFile()) {
+            throw RuntimeException("cannot create config file $f")
         }
         val config = Config()
         config.isMultiSection = true

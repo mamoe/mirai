@@ -2,7 +2,6 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.TEA
 import java.io.DataInputStream
 
 
@@ -58,10 +57,6 @@ class ServerSKeyResponsePacket(input: DataInputStream) : ServerPacket(input) {
 
 
     class Encrypted(inputStream: DataInputStream) : ServerPacket(inputStream) {
-        fun decrypt(sessionKey: ByteArray): ServerSKeyResponsePacket {
-            this.input goto 14
-            val data = this.input.readAllBytes().let { it.copyOfRange(0, it.size - 1) }
-            return ServerSKeyResponsePacket(TEA.decrypt(data, sessionKey).dataInputStream()).setId(this.idHex)
-        }
+        fun decrypt(sessionKey: ByteArray): ServerSKeyResponsePacket = ServerSKeyResponsePacket(this.decryptBy(sessionKey)).setId(this.idHex)
     }
 }
