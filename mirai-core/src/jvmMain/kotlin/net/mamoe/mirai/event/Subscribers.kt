@@ -10,6 +10,8 @@ enum class ListeningStatus {
     STOPPED
 }
 
+/* KClass 的扩展方法 */
+
 @Synchronized
 fun <E : Event> KClass<E>.subscribe(handler: suspend (E) -> ListeningStatus) = this.listeners.add(Handler(handler))
 
@@ -27,6 +29,25 @@ fun <E : Event, T> KClass<E>.subscribeWhile(valueIfContinue: T, listener: suspen
 fun <E : Event> KClass<E>.subscribeWhileFalse(listener: suspend (E) -> Boolean) = subscribeWhile(false, listener)
 fun <E : Event> KClass<E>.subscribeWhileTrue(listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
 fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
+
+/* 顶层方法 */
+
+inline fun <reified E : Event> subscribe(noinline handler: suspend (E) -> ListeningStatus) = E::class.subscribe(handler)
+
+inline fun <reified E : Event> subscribeAlways(noinline listener: suspend (E) -> Unit) = E::class.subscribeAlways(listener)
+
+inline fun <reified E : Event> subscribeOnce(noinline listener: suspend (E) -> Unit) = E::class.subscribeOnce(listener)
+
+inline fun <reified E : Event, T> subscribeUntil(valueIfStop: T, noinline listener: suspend (E) -> T) = E::class.subscribeUntil(valueIfStop, listener)
+inline fun <reified E : Event> subscribeUntilFalse(noinline listener: suspend (E) -> Boolean) = E::class.subscribeUntilFalse(listener)
+inline fun <reified E : Event> subscribeUntilTrue(noinline listener: suspend (E) -> Boolean) = E::class.subscribeUntilTrue(listener)
+inline fun <reified E : Event> subscribeUntilNull(noinline listener: suspend (E) -> Any?) = E::class.subscribeUntilNull(listener)
+
+
+inline fun <reified E : Event, T> subscribeWhile(valueIfContinue: T, noinline listener: suspend (E) -> T) = E::class.subscribeWhile(valueIfContinue, listener)
+inline fun <reified E : Event> subscribeWhileFalse(noinline listener: suspend (E) -> Boolean) = E::class.subscribeWhileFalse(listener)
+inline fun <reified E : Event> subscribeWhileTrue(noinline listener: suspend (E) -> Boolean) = E::class.subscribeWhileTrue(listener)
+inline fun <reified E : Event> subscribeWhileNull(noinline listener: suspend (E) -> Any?) = E::class.subscribeWhileNull(listener)
 
 
 /**

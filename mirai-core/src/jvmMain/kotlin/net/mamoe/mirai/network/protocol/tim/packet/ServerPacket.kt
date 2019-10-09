@@ -2,13 +2,6 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
-import net.mamoe.mirai.event.subscribeWhileTrue
 import net.mamoe.mirai.network.protocol.tim.packet.PacketNameFormatter.adjustName
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
@@ -18,7 +11,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.utils.*
 import java.io.DataInputStream
 import java.io.EOFException
-import kotlin.reflect.KClass
 
 /**
  * @author Him188moe
@@ -334,25 +326,4 @@ fun DataInputStream.gotoWhere(matcher: ByteArray): DataInputStream {
             return this
         }
     } while (true)
-}
-
-
-@Suppress("UNCHECKED_CAST")
-internal fun <P : ServerPacket> Bot.waitForPacket(packetClass: KClass<P>, timeoutMillis: Long = Long.MAX_VALUE, timeout: () -> Unit = {}) {
-    var got = false
-    ServerPacketReceivedEvent.subscribeWhileTrue {
-        if (packetClass.isInstance(it.packet) && it.bot === this) {
-            got = true
-            false
-        } else {
-            true
-        }
-    }
-
-    GlobalScope.launch(Dispatchers.Unconfined) {
-        delay(timeoutMillis)
-        if (!got) {
-            timeout.invoke()
-        }
-    }
 }

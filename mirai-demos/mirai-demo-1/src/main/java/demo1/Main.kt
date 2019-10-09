@@ -33,18 +33,8 @@ suspend fun main() {
     }
 
 
-    //DSL 监听
-    FriendMessageEvent.subscribeAll {
-        always {
-            //获取第一个纯文本消息
-            val firstText = it.message[PlainText]
-
-        }
-    }
-
-
-    //监听事件:
-    FriendMessageEvent.subscribeAlways {
+    //提供泛型以监听事件
+    subscribeAlways<FriendMessageEvent> {
         //获取第一个纯文本消息
         val firstText = it.message[PlainText]
 
@@ -76,9 +66,20 @@ suspend fun main() {
         }
     }
 
+    //通过 KClass 扩展方式监听事件
     GroupMessageEvent::class.subscribeAlways {
         when {
             it.message.contains("复读") -> it.reply(it.message)
+        }
+    }
+
+
+    //DSL 监听
+    FriendMessageEvent::class.subscribeAll {
+        always {
+            //获取第一个纯文本消息
+            val firstText = it.message[PlainText]
+
         }
     }
 }
@@ -90,9 +91,9 @@ suspend fun main() {
  * 对机器人说 "停止", 机器人停止
  */
 fun demo2() {
-    FriendMessageEvent.subscribeAlways { event ->
+    subscribeAlways<FriendMessageEvent> { event ->
         if (event.message eq "记笔记") {
-            FriendMessageEvent.subscribeUntilFalse {
+            FriendMessageEvent::class.subscribeUntilFalse {
                 it.reply("你发送了 ${it.message}")
 
                 it.message eq "停止"

@@ -188,7 +188,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             //    loginResult?.complete(LoginState.TIMEOUT)
             //}
             val received = AtomicBoolean(false)
-            ServerPacketReceivedEvent.subscribe {
+            ServerPacketReceivedEvent::class.subscribe {
                 if (it.packet is ServerTouchResponsePacket && it.bot === bot) {
                     received.set(true)
                     ListeningStatus.STOPPED

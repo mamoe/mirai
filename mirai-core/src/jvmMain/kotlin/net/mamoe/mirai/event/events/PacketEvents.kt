@@ -5,7 +5,6 @@ import net.mamoe.mirai.event.Cancellable
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import kotlin.reflect.KClass
 
 /* Abstract */
 
@@ -22,22 +21,16 @@ sealed class ClientPacketEvent<out P : ClientPacket>(bot: Bot, packet: P) : Pack
 /**
  * 包已发送. 不可被取消
  */
-class PacketSentEvent<P : ClientPacket>(bot: Bot, packet: P) : ClientPacketEvent<P>(bot, packet) {
-    companion object : KClass<PacketSentEvent<*>> by PacketSentEvent::class
-}
+class PacketSentEvent<P : ClientPacket>(bot: Bot, packet: P) : ClientPacketEvent<P>(bot, packet)
 
 /**
  * 包发送前. 可被取消
  */
-class BeforePacketSendEvent<P : ClientPacket>(bot: Bot, packet: P) : ClientPacketEvent<P>(bot, packet), Cancellable {
-    companion object : KClass<BeforePacketSendEvent<*>> by BeforePacketSendEvent::class
-}
+class BeforePacketSendEvent<P : ClientPacket>(bot: Bot, packet: P) : ClientPacketEvent<P>(bot, packet), Cancellable
 
 
 /* Server to Client */
 
 sealed class ServerPacketEvent<out P : ServerPacket>(bot: Bot, packet: P) : PacketEvent<P>(bot, packet)
 
-class ServerPacketReceivedEvent(bot: Bot, packet: ServerPacket) : ServerPacketEvent<ServerPacket>(bot, packet) {
-    companion object : KClass<ServerPacketReceivedEvent> by ServerPacketReceivedEvent::class
-}
+class ServerPacketReceivedEvent(bot: Bot, packet: ServerPacket) : ServerPacketEvent<ServerPacket>(bot, packet)
