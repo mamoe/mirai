@@ -1,7 +1,16 @@
 package net.mamoe.mirai.event.internal
 
+import kotlinx.coroutines.delay
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.ListeningStatus
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
+import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.dataInputStream
+import net.mamoe.mirai.utils.BotAccount
+import net.mamoe.mirai.utils.Console
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
@@ -10,7 +19,6 @@ import kotlin.reflect.full.allSuperclasses
  *
  * @author Him188moe
  */
-
 internal fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<E>) = this.listeners.add(listener)
 
 /**
@@ -36,16 +44,16 @@ internal val <E : Event> KClass<E>.listeners: EventListeners<E> get() = EventLis
 internal class EventListeners<E : Event> : MutableList<Listener<E>> by mutableListOf()
 
 internal object EventListenerManger {
-    private val REGISTRIES: MutableMap<KClass<out Event>, EventListeners<out Event>> = mutableMapOf()
+    private val registries: MutableMap<KClass<out Event>, EventListeners<out Event>> = mutableMapOf()
 
     @Suppress("UNCHECKED_CAST")
     internal fun <E : Event> get(clazz: KClass<E>): EventListeners<E> {
         synchronized(clazz) {
-            if (REGISTRIES.containsKey(clazz)) {
-                return REGISTRIES[clazz] as EventListeners<E>
+            if (registries.containsKey(clazz)) {
+                return registries[clazz] as EventListeners<E>
             } else {
                 EventListeners<E>().let {
-                    REGISTRIES[clazz] = it
+                    registries[clazz] = it
                     return it
                 }
             }
@@ -64,13 +72,25 @@ internal suspend fun <E : Event> E.broadcastInternal(): E {
         }
     }
 
-    callListeners(this::class.listeners as EventListeners<E>)
+    callListeners(this::class.listeners as EventListeners<in E>)
     this::class.allSuperclasses.forEach {
         //println("super: " + it.simpleName)
+        //todo multi platform
         if (Event::class.java.isAssignableFrom(it.java)) {
             callListeners((it as KClass<out Event>).listeners as EventListeners<in E>)
         }
     }
 
     return this
+}
+
+suspend fun main() {
+    ServerPacketReceivedEvent::class.subscribeAlways {
+        println("got it")
+    }
+
+    println(ServerPacketReceivedEvent::class.listeners.size)
+
+    ServerPacketReceivedEvent(Bot(BotAccount(1, ""), Console()), object : ServerPacket(byteArrayOf().dataInputStream()) {}).broadcast()
+    delay(1000)
 }
