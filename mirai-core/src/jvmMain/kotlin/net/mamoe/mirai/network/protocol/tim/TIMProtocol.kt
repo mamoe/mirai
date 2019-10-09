@@ -14,7 +14,7 @@ import java.util.stream.Collectors
  * @author Him188moe
  */
 object TIMProtocol {
-    val SERVER_IP: List<String> by lazy {
+    val SERVER_IP: List<String> = {
         //add("183.60.56.29")
         val list = mutableListOf<String>()
         arrayOf(
@@ -28,7 +28,7 @@ object TIMProtocol {
         ).forEach { list.add(InetAddress.getByName(it).hostAddress) }
 
         list.toList()
-    }
+    }()
 
     const val head = "02"
     const val ver = "37 13"
@@ -40,13 +40,8 @@ object TIMProtocol {
     const val fixVer2 = "02 00 00 00 01 01 01 00 00 68 20"
     //                   02 38 03 00 CD 48 68 3E 03 3F A2 02 00 00 00
     //                   02 00 00 00 01 2E 01 00 00 69 35
-    /**
-     * 0825data1
-     */
+
     const val constantData1 = "00 18 00 16 00 01 "
-    /**
-     * 0825data2
-     */
     const val constantData2 = "00 00 04 53 00 00 00 01 00 00 15 85 "
 
     /**

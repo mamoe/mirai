@@ -8,7 +8,7 @@ import java.io.DataInputStream
 import java.io.IOException
 
 /**
- * A packet received when logging in, used to redirect server address
+ * The packet received when logging in, used to redirect server address
  *
  * @see ClientServerRedirectionPacket
  * @see ClientPasswordSubmissionPacket
