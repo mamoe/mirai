@@ -4,7 +4,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.message.defaults.MessageChain
+import net.mamoe.mirai.message.MessageChain
 
 /**
  * @author Him188moe

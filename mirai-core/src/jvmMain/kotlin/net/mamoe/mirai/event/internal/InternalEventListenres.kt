@@ -13,6 +13,7 @@ import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.isSuperclassOf
 
 /**
  * 监听和广播实现
@@ -75,8 +76,8 @@ internal suspend fun <E : Event> E.broadcastInternal(): E {
     callListeners(this::class.listeners as EventListeners<in E>)
     this::class.allSuperclasses.forEach {
         //println("super: " + it.simpleName)
-        //todo multi platform
-        if (Event::class.java.isAssignableFrom(it.java)) {
+
+        if (Event::class.isSuperclassOf(it)) {
             callListeners((it as KClass<out Event>).listeners as EventListeners<in E>)
         }
     }

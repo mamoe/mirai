@@ -192,30 +192,28 @@ fun md5(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.to
 
 fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
-
-@Throws(IOException::class)
 fun DataOutputStream.writeZero(count: Int) {
     repeat(count) {
         this.writeByte(0)
     }
 }
 
-@Throws(IOException::class)
 fun DataOutputStream.writeRandom(length: Int) {
     repeat(length) {
         this.writeByte((Math.random() * 255).toInt())
     }
 }
 
-
-@Throws(IOException::class)
 fun DataOutputStream.writeQQ(qq: Long) {
     this.write(qq.toUInt().toByteArray())
 }
 
-@Throws(IOException::class)
 fun DataOutputStream.writeGroup(groupIdOrGroupNumber: Long) {
     this.write(groupIdOrGroupNumber.toUInt().toByteArray())
+}
+
+fun DataOutputStream.writeUByte(uByte: UByte) {
+    this.write(uByte.toInt())
 }
 
 fun DataOutputStream.writeLVByteArray(byteArray: ByteArray) {

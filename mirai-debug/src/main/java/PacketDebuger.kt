@@ -3,7 +3,7 @@
 import jpcap.JpcapCaptor
 import jpcap.packet.IPPacket
 import jpcap.packet.UDPPacket
-import net.mamoe.mirai.message.defaults.readMessageChain
+import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
@@ -151,7 +151,7 @@ object Main {
                                         + 1
                         )
                         val chain = it.readMessageChain()
-                        println(chain.toObjectString())
+                        println(chain)
                     }
                 }
 

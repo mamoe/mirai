@@ -1,10 +1,10 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.message.defaults.*
 import java.awt.image.BufferedImage
-import java.io.File
 import java.util.*
 
 
@@ -24,150 +24,109 @@ import java.util.*
  *      qq.sendMessage(message + "world")
  *  ```
  *
- * @author Him188moe
+ *  但注意: 不能 `String + Message`. 只能 `Message + String`
+ *
  * @see Contact.sendMessage
  */
-abstract class Message {
-    internal abstract val type: MessageKey
+sealed class Message {
+    /**
+     * 易读的 [String] 值
+     * 如:
+     * ```
+     * [@123456789]
+     * [face123]
+     * ```
+     */
+    abstract val stringValue: String
 
-    private var toStringCache: String? = null
-    private val cacheLock = object : Any() {}
+    final override fun toString(): String = stringValue
 
-    internal abstract fun toStringImpl(): String
+    infix fun eq(other: Message): Boolean = this == other
 
     /**
-     * 得到用户层的文本消息. 如:
-     * - [PlainText] 得到 消息内容
-     * - [Image] 得到 "{ID}.png"
-     * - [At] 得到 "[@qq]"
+     * 将 [stringValue] 与 [other] 比较
      */
-    final override fun toString(): String {
-        synchronized(cacheLock) {
-            if (toStringCache != null) {
-                return toStringCache!!
-            }
+    infix fun eq(other: String): Boolean = this.stringValue == other
 
-            this.toStringCache = toStringImpl()
-            return toStringCache!!
-        }
-    }
-
-    internal fun clearToStringCache() {
-        synchronized(cacheLock) {
-            toStringCache = null
-        }
-    }
-
-    /**
-     * 得到类似 "PlainText(内容)", "Image(ID)"
-     */
-    open fun toObjectString(): String {
-        return this.javaClass.simpleName + String.format("(%s)", this.toString())
-    }
-
-    /**
-     * 转换为数据包使用的 byte array
-     */
-    abstract fun toByteArray(): ByteArray
-
-
-    /**
-     * 比较两个 Message 的内容是否相等. 如:
-     * - [PlainText] 比较 [PlainText.text]
-     * - [Image] 比较 [Image.imageId]
-     */
-    abstract infix fun eq(another: Message): Boolean
-
-    /**
-     * 将这个消息的 [toString] 与 [another] 比较
-     */
-    infix fun eq(another: String): Boolean = this.toString() == another
-
-    /**
-     * 判断 [sub] 是否存在于本消息中
-     */
     abstract operator fun contains(sub: String): Boolean
 
     /**
-     * 把这个消息连接到另一个消息的头部. 相当于字符串相加
-     *
-     *
-     * Connects this Message to the head of another Message.
-     * That is, another message becomes the tail of this message.
-     * This method does similar to [String.concat]
-     *
-     *
-     * E.g.:
-     * PlainText a = new PlainText("Hello ");
-     * PlainText b = new PlainText("world");
-     * PlainText c = a.concat(b);
-     *
-     *
-     * the text of c is "Hello world"
-     *
-     * @param tail tail
-     * @return message connected
+     * 把这个消息连接到另一个消息的头部. 类似于字符串相加
      */
-    open fun concat(tail: Message): MessageChain {
-        if (tail is MessageChain) {
-            return MessageChain(this).let {
-                tail.list.forEach { child -> it.concat(child) }
-                it
-            }
-        }
-        return MessageChain(this, Objects.requireNonNull(tail))
-    }
+    open fun concat(tail: Message): MessageChain =
+            if (tail is MessageChain) MessageChain(this).also { tail.list.forEach { child -> it.concat(child) } }
+            else MessageChain(this, Objects.requireNonNull(tail))
 
-    fun concat(tail: String): MessageChain {
-        return concat(PlainText(tail))
-    }
-
-
-    infix fun withImage(imageId: String): MessageChain = this + Image(imageId)
-    fun withImage(filename: String, image: BufferedImage): MessageChain = this + UnsolvedImage(filename, image)
-    infix fun withImage(imageFile: File): MessageChain = this + UnsolvedImage(imageFile)
-
-    infix fun withAt(target: QQ): MessageChain = this + target.at()
-    infix fun withAt(target: Long): MessageChain = this + At(target)
-
-
-    open fun toChain(): MessageChain {
-        return MessageChain(this)
-    }
-
-
-    /* For Kotlin */
-
-    /**
-     * 实现使用 '+' 操作符连接 [Message] 与 [Message]
-     */
     infix operator fun plus(another: Message): MessageChain = this.concat(another)
+    infix operator fun plus(another: String): MessageChain = this.concat(another.toMessage())
+    infix operator fun plus(another: Number): MessageChain = this.concat(another.toString().toMessage())
+}
+
+data class PlainText(override val stringValue: String) : Message() {
+    override operator fun contains(sub: String): Boolean = this.stringValue.contains(sub)
+}
+
+/**
+ * 图片消息.
+ * 由接收消息时构建, 可直接发送
+ *
+ * @param imageId 类似 `{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg`. 群的是大写id, 好友的是小写id
+ */
+data class Image(val imageId: String) : Message() {
+    override val stringValue: String = "[$imageId]"
+    override operator fun contains(sub: String): Boolean = false //No string can be contained in a image
+}
+
+/**
+ * At 一个人
+ */
+data class At(val target: Long) : Message() {
+    constructor(target: QQ) : this(target.number)
+
+    override val stringValue: String = "[@$target]"
+    override operator fun contains(sub: String): Boolean = false
+}
+
+/**
+ * QQ 自带表情
+ */
+data class Face(val id: FaceID) : Message() {
+    override val stringValue: String = "[face${id.id}]"
+    override operator fun contains(sub: String): Boolean = false
+}
+
+data class MessageChain(
+        /**
+         * Elements will not be instances of [MessageChain]
+         */
+        val list: MutableList<Message>
+) : Message(), Iterable<Message> {
+    constructor() : this(mutableListOf())
+    constructor(vararg messages: Message) : this(mutableListOf(*messages))
+    constructor(messages: Iterable<Message>) : this(messages.toMutableList())
+
+    val size: Int = list.size
+
+    override val stringValue: String get() = this.list.joinToString("") { it.stringValue }
+
+    override fun iterator(): Iterator<Message> = this.list.iterator()
 
     /**
-     * 实现使用 '+' 操作符连接 [Message] 与 [String]
+     * 获取第一个 [M] 类型的实例
+     * @throws [NoSuchElementException] 如果找不到该类型的实例
      */
-    infix operator fun plus(another: String): MessageChain = this.concat(another)
+    inline fun <reified M : Message> first(): Message = this.list.first { M::class.isInstance(it) }
 
     /**
-     * 实现使用 '+' 操作符连接 [Message] 与 [Number]
+     * 获取第一个 [M] 类型的实例
      */
-    infix operator fun plus(another: Number): MessageChain = this.concat(another.toString())
+    inline fun <reified M : Message> firstOrNull(): Message? = this.list.firstOrNull { M::class.isInstance(it) }
 
-    /**
-     * 连接 [String] 与 [Message]
-     */
-    fun String.concat(another: Message): MessageChain = PlainText(this).concat(another)
+    override operator fun contains(sub: String): Boolean = list.any { it.contains(sub) }
 
-    override fun hashCode(): Int {
-        return javaClass.hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Message) return false
-
-        if (type != other.type) return false
-
-        return this.toString() == other.toString()
+    override fun concat(tail: Message): MessageChain {
+        if (tail is MessageChain) tail.list.forEach { child -> this.concat(child) }
+        else this.list.add(tail)
+        return this
     }
 }

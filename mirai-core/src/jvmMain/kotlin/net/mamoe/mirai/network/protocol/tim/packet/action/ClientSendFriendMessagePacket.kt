@@ -1,6 +1,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import net.mamoe.mirai.message.defaults.MessageChain
+import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.message.internal.toByteArray
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.dataEncode

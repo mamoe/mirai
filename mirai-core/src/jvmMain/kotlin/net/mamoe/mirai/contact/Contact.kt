@@ -2,10 +2,7 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.message.defaults.MessageChain
-import net.mamoe.mirai.message.defaults.PlainText
-import net.mamoe.mirai.message.defaults.UnsolvedImage
+import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.LoginSession
 
 /**
@@ -43,8 +40,5 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
         this.sendMessage(MessageChain(message))
     }
 
-    /**
-     * Async
-     */
     abstract suspend fun sendXMLMessage(message: String)
 }

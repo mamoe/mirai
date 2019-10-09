@@ -2,7 +2,7 @@ package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group.Companion.groupNumberToId
-import net.mamoe.mirai.message.defaults.MessageChain
+import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.utils.ContactList
 import java.io.Closeable
 

@@ -2,8 +2,8 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import net.mamoe.mirai.message.defaults.MessageChain
-import net.mamoe.mirai.message.defaults.readMessageChain
+import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.dataDecode
 import net.mamoe.mirai.utils.hexToBytes

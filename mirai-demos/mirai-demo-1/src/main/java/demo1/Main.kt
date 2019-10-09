@@ -8,8 +8,8 @@ import net.mamoe.mirai.event.subscribeAll
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeUntilFalse
 import net.mamoe.mirai.login
-import net.mamoe.mirai.message.defaults.Image
-import net.mamoe.mirai.message.defaults.PlainText
+import net.mamoe.mirai.message.Image
+import net.mamoe.mirai.message.PlainText
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
@@ -26,7 +26,7 @@ suspend fun main() {
     ), Console())
 
     bot.login().let {
-        if(it != LoginState.SUCCESS) {
+        if (it != LoginState.SUCCESS) {
             MiraiLogger.error("Login failed: " + it.name)
             exitProcess(0)
         }
@@ -36,10 +36,10 @@ suspend fun main() {
     //提供泛型以监听事件
     subscribeAlways<FriendMessageEvent> {
         //获取第一个纯文本消息
-        val firstText = it.message[PlainText]
+        val firstText = it.message.first<PlainText>()
 
         //获取第一个图片
-        val firstImage = it.message[Image]
+        val firstImage = it.message.first<Image>()
 
         when {
             it.message eq "你好" -> it.reply("你好!")
@@ -78,7 +78,7 @@ suspend fun main() {
     FriendMessageEvent::class.subscribeAll {
         always {
             //获取第一个纯文本消息
-            val firstText = it.message[PlainText]
+            val firstText = it.message.first<PlainText>()
 
         }
     }

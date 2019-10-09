@@ -2,7 +2,6 @@ package net.mamoe.mirai.message
 
 /**
  * @author LamGC
- * @author Him188moe
  */
 @Suppress("EnumEntryName", "unused", "SpellCheckingInspection")
 enum class FaceID constructor(val id: Int) {

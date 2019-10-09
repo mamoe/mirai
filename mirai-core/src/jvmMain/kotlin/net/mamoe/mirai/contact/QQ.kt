@@ -1,9 +1,9 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.message.At
 import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.message.defaults.At
-import net.mamoe.mirai.message.defaults.MessageChain
+import net.mamoe.mirai.message.MessageChain
 
 /**
  * QQ 账号.

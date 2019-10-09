@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.event.internal.Handler

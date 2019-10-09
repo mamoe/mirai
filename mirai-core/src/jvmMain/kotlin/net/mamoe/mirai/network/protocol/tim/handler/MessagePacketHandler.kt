@@ -7,7 +7,7 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.getGroupByNumber
 import net.mamoe.mirai.getQQ
-import net.mamoe.mirai.message.defaults.MessageChain
+import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.protocol.tim.packet.ServerFriendMessageEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerGroupMessageEventPacket

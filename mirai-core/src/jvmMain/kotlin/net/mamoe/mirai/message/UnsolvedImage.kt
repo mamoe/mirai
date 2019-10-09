@@ -1,4 +1,4 @@
-package net.mamoe.mirai.message.defaults
+package net.mamoe.mirai.message
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,7 @@ import javax.imageio.ImageIO
  * @suppress todo 重新设计
  * @author Him188moe
  */
-class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImageId(filename)) {
+class UnsolvedImage(private val filename: String, val image: BufferedImage) {
     constructor(imageFile: File) : this(imageFile.name, ImageIO.read(imageFile))
     constructor(url: URL) : this(File(url.file))
 
@@ -50,6 +50,10 @@ class UnsolvedImage(filename: String, val image: BufferedImage) : Image(getImage
                 }
             }
         }
+    }
+
+    fun toImage(): Image {
+        return Image(getImageId(filename))
     }
 
     companion object {
