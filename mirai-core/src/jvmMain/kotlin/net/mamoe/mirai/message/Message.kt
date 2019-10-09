@@ -4,9 +4,6 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
-import java.awt.image.BufferedImage
-import java.util.*
-
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -18,7 +15,7 @@ import java.util.*
  *  比较 [Message] 与 [String] (使用 infix [Message.eq]):
  *  `if(message eq "你好") qq.sendMessage(message)`
  *
- *  连接 [Message] 与 [Message], [String], [BufferedImage] (使用 operator [Message.plus]):
+ *  连接 [Message] 与 [Message], [String], (使用 operator [Message.plus]):
  *  ```
  *      message = PlainText("Hello ")
  *      qq.sendMessage(message + "world")
@@ -55,7 +52,7 @@ sealed class Message {
      */
     open fun concat(tail: Message): MessageChain =
             if (tail is MessageChain) MessageChain(this).also { tail.list.forEach { child -> it.concat(child) } }
-            else MessageChain(this, Objects.requireNonNull(tail))
+            else MessageChain(this, tail)
 
     infix operator fun plus(another: Message): MessageChain = this.concat(another)
     infix operator fun plus(another: String): MessageChain = this.concat(another.toMessage())
