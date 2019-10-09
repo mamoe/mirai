@@ -55,7 +55,6 @@ open class Console(
         }
     }
 
-    @Synchronized
     fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.YELLOW) {
         val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
 
@@ -85,13 +84,11 @@ fun Bot.debugPacket(packet: ServerPacket) {
 }
 
 
-@Synchronized
 private fun print(bot: Bot, value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
     val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
     kotlin.io.println("$color[Mirai] $s #R${bot.id}: $value")
 }
 
-@Synchronized
 private fun print(value: String?, color: LoggerTextFormat = LoggerTextFormat.WHITE) {
     val s = SimpleDateFormat("MM-dd HH:mm:ss").format(Date())
     kotlin.io.println("$color[Mirai] $s : $value")
