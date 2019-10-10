@@ -26,8 +26,8 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
         return sendMessage(message.toChain())
     }
 
-    suspend fun sendMessage(message: String) {
-        this.sendMessage(PlainText(message))
+    suspend fun sendMessage(plain: String) {
+        this.sendMessage(PlainText(plain))
     }
 
     suspend fun sendMessage(message: List<Message>) {

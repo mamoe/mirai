@@ -58,7 +58,7 @@ fun Bot.green(o: Any?) = print(this, o.toString(), LoggerTextFormat.GREEN)
 
 fun Bot.debug(o: Any?) = print(this, o.toString(), LoggerTextFormat.YELLOW)
 
-fun Bot.debugPacket(packet: ServerPacket) {
+fun Bot.printPacketDebugging(packet: ServerPacket) {
     debug("Packet=$packet")
     debug("Packet size=" + packet.input.goto(0).readAllBytes().size)
     debug("Packet data=" + packet.input.goto(0).readAllBytes().toUHexString())

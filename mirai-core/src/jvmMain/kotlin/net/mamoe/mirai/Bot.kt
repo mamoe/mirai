@@ -8,9 +8,6 @@ import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.ContactList
 import net.mamoe.mirai.utils.MiraiLogger
-import java.io.Closeable
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -40,9 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author NatrualHG
  * @see net.mamoe.mirai.contact.Contact
  */
-class Bot(val account: BotAccount, val logger: MiraiLogger) : Closeable {
-
-    val id = createdBotsCount.getAndAdd(1)
+class Bot(val account: BotAccount, val logger: MiraiLogger) {
+    val id = nextId()
 
     val contacts = ContactSystem()
 
@@ -88,7 +84,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : Closeable {
         }
     }
 
-    override fun close() {
+    fun close() {
         this.network.close()
         this.contacts.groups.values.forEach { it.close() }
         this.contacts.groups.clear()
@@ -96,8 +92,10 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : Closeable {
     }
 
     companion object {
-        val instances: MutableList<Bot> = Collections.synchronizedList(LinkedList())
+        val instances: MutableList<Bot> = mutableListOf()
 
-        private val createdBotsCount = AtomicInteger(0)
+        private var id = 0
+        private val idLock = Any()
+        fun nextId(): Int = synchronized(idLock) { id++ }
     }
 }

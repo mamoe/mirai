@@ -42,6 +42,9 @@ class ClientPasswordSubmissionPacket(
     }
 }
 
+//实际上这些包性质都是一样的. 31 04 仅是一个序列 id, 可随机
+//但为简化处理, 特固定这个 id
+
 @PacketId("08 36 31 04")
 class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, tlv0006: ByteArray? = null)
     : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, tlv0006)

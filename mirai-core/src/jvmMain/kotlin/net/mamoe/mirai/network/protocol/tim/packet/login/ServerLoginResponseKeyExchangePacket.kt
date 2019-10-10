@@ -19,14 +19,14 @@ class ServerLoginResponseKeyExchangePacket(input: DataInputStream, val flag: Fla
         OTHER,
     }
 
-    lateinit var tlv0006: ByteArray;//120bytes
+    lateinit var tlv0006: ByteArray//120bytes
     var tokenUnknown: ByteArray? = null
-    lateinit var privateKey: ByteArray//16bytes
+    lateinit var privateKeyUpdate: ByteArray//16bytes
 
     @Tested
     override fun decode() {
         this.input.skip(5)
-        privateKey = this.input.readNBytes(16)//22
+        privateKeyUpdate = this.input.readNBytes(16)//22
         //this.input.skip(2)//25
         this.input.goto(25)
         tlv0006 = this.input.readNBytes(120)
