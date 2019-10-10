@@ -2,6 +2,9 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.event.internal.broadcastInternal
 
 /**
@@ -50,4 +53,6 @@ interface Cancellable {
  */
 @Synchronized
 @Suppress("UNCHECKED_CAST")
-suspend fun <E : Event> E.broadcast(): E = this.broadcastInternal()
+suspend fun <E : Event> E.broadcast(): E = withContext(EventScope.coroutineContext) { this@broadcast.broadcastInternal() }
+
+object EventScope : CoroutineScope by CoroutineScope(Dispatchers.Default)//todo may change
