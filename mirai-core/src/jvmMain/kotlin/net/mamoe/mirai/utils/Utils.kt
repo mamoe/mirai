@@ -15,6 +15,8 @@ import java.util.zip.CRC32
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 
 /**
@@ -93,11 +95,7 @@ fun DataInputStream.skip(n: Number) {
     this.skip(n.toLong())
 }
 
-fun getRandomByteArray(length: Int): ByteArray {
-    val bytes = LinkedList<Byte>()
-    repeat(length) { bytes.add((Math.random() * 255).toByte()) }
-    return bytes.toByteArray()
-}
+fun getRandomByteArray(length: Int): ByteArray = List(length) { Random.Default.nextInt(0..255).toByte() }.toByteArray()
 
 operator fun File.plus(child: String): File = File(this, child)
 
