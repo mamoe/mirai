@@ -14,5 +14,16 @@ ext {
     coroutineJs = "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version"
 
     // reflect
-    reflect = "org.jetbrains.kotlin:kotlin-reflect:$coroutine_version"
+    reflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    // atomicfu
+    atomicfu_version = "0.13.1"
+    atomicFUCommon = "org.jetbrains.kotlinx:atomicfu-common:$atomicfu_version"
+
+
+    kotlinx_io_version = "0.1.15"
+    kotlinxIOJvm = "org.jetbrains.kotlinx:kotlinx-io-jvm:$kotlinx_io_version"
+    kotlinxIOCommon = "org.jetbrains.kotlinx:kotlinx-io:$kotlinx_io_version"
+    kotlinxIOJS = "org.jetbrains.kotlinx:kotlinx-io-js:$kotlinx_io_version"
+
 }

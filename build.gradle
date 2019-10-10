@@ -6,8 +6,11 @@ buildscript {
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
     }
 
+    apply from: rootProject.file('dependencies.gradle')
+
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfu_version"
     }
 }
 

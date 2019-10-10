@@ -1,3 +1,4 @@
+apply plugin: 'kotlinx-atomicfu'
 apply plugin: "kotlin-multiplatform"
 
 kotlin {
@@ -14,6 +15,9 @@ kotlin {
                 implementation rootProject.ext.reflect
                 implementation rootProject.ext.coroutine
                 implementation rootProject.ext.kotlinJvm
+
+                implementation rootProject.ext.atomicFUCommon
+                implementation rootProject.ext.kotlinxIOCommon
             }
         }
         jvmMain {
@@ -24,12 +28,11 @@ kotlin {
                 implementation rootProject.ext.reflect
                 implementation rootProject.ext.coroutine
 
+                implementation rootProject.ext.kotlinxIOJvm
 
                 implementation 'org.yaml:snakeyaml:1.18'
                 implementation 'org.jsoup:jsoup:1.12.1'
                 implementation 'org.ini4j:ini4j:0.5.2'
-
-         
             }
         }
         jvmTest {
@@ -43,10 +46,6 @@ kotlin {
 
 compileKotlinJvm {
 
-}
-
-configurations {
-    compileClasspath
 }
 
 /*
