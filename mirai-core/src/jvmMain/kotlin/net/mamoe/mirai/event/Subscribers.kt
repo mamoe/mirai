@@ -61,6 +61,15 @@ fun <E : Event> KClass<E>.subscribeAll(listeners: ListenerBuilder<E>.() -> Unit)
 }
 
 /**
+ * 监听一个事件. 可同时进行多种方式的监听
+ * @see ListenerBuilder
+ */
+inline fun <reified E : Event> subscribeAll(noinline listeners: ListenerBuilder<E>.() -> Unit) {
+    ListenerBuilder<E> { this.subscribeInternal(it) }.apply(listeners)
+}
+
+
+/**
  * 监听构建器. 可同时进行多种方式的监听
  *
  * ```kotlin
