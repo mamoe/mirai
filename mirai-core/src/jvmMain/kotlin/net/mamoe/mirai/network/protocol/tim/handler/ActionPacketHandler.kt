@@ -19,7 +19,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.ServerSKeyResponsePacke
 import net.mamoe.mirai.task.MiraiThreadPool
 import net.mamoe.mirai.utils.getGTK
 import java.awt.image.BufferedImage
-import java.io.Closeable
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledFuture
@@ -94,7 +93,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
         val future = CompletableFuture<AddFriendResult>()
         val session = AddFriendSession(qqNumber, future, message)
         //  uploadImageSessions.add(session)
-        session.sendAddRequest();
+        session.sendAddRequest()
         return future
     }
 
@@ -117,7 +116,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
             private val group: Long,
             private val future: CompletableFuture<AddFriendResult>,
             private val image: BufferedImage
-    ) : Closeable {
+    ) {
         lateinit var id: ByteArray
 
 
@@ -161,7 +160,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
 
         }
 
-        override fun close() {
+        fun close() {
             uploadImageSessions.remove(this)
         }
     }
@@ -170,7 +169,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
             private val qq: Long,
             private val future: CompletableFuture<AddFriendResult>,
             private val message: Lazy<String>
-    ) : Closeable {
+    ) {
         lateinit var id: ByteArray
 
 
@@ -215,7 +214,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
             session.socket.sendPacket(ClientCanAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey).also { this.id = it.packetIdLast })
         }
 
-        override fun close() {
+        fun close() {
             //         uploadImageSessions.remove(this)
         }
     }

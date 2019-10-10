@@ -2,17 +2,16 @@ package net.mamoe.mirai.network.protocol.tim.handler
 
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import java.io.Closeable
 
 /**
  * 数据包(接受/发送)处理器
  */
 abstract class PacketHandler(
         val session: LoginSession
-) : Closeable {
+) {
     abstract suspend fun onPacketReceived(packet: ServerPacket)
 
-    override fun close() {
+    open fun close() {
 
     }
 }

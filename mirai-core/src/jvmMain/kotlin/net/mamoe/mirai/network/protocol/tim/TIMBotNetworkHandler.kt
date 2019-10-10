@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.*
+import net.mamoe.mirai.event.EventScope
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforePacketSendEvent
@@ -93,31 +94,32 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         override suspend fun distributePacket(packet: ServerPacket) {
             try {
                 packet.decode()
-            } catch (e: java.lang.Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
-                bot.debugPacket(packet)
+                bot.printPacketDebugging(packet)
                 return
             }
 
+            //removeIf is not inline
             with(temporaryPacketHandlers.iterator()) {
                 while (hasNext()) {
                     if (next().onPacketReceived(action.session, packet)) {
                         remove()
                     }
                 }
-            }
+            };
 
             //For debug
-            kotlin.run {
+            {
                 if (!packet.javaClass.name.endsWith("Encrypted") && !packet.javaClass.name.endsWith("Raw")) {
                     bot.notice("Packet received: $packet")
                 }
-            }
+            }()
 
             if (packet is ServerEventPacket) {
                 //no need to sync acknowledgement packets
                 NetworkScope.launch {
-                    sendPacket(packet.ResponsePacket(bot.account.qqNumber, sessionKey))
+                    sendPacket(packet.ResponsePacket(bot.qqNumber, sessionKey))
                 }
             }
 
@@ -201,39 +203,35 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                     loginResult.complete(LoginState.TIMEOUT)
                 }
             }
-            sendPacket(ClientTouchPacket(bot.account.qqNumber, serverIP))
+            sendPacket(ClientTouchPacket(bot.qqNumber, serverIP))
 
-            return withContext(Dispatchers.IO) {
-                loginResult.await()
-            }
+            return withContext(Dispatchers.IO) { loginResult.await() }
         }
 
-        override suspend fun sendPacket(packet: ClientPacket) {
+        override suspend fun sendPacket(packet: ClientPacket) = withContext(NetworkScope.coroutineContext) {
             checkNotNull(socket) { "network closed" }
             if (socket!!.isClosed) {
-                return
+                return@withContext
             }
 
-            try {
-                packet.encodePacket()
+            packet.encodePacket()
 
-                if (BeforePacketSendEvent(bot, packet).broadcast().cancelled) {
-                    return
-                }
-
-                val data = packet.toByteArray()
-                withContext(Dispatchers.IO) {
-                    socket!!.send(DatagramPacket(data, data.size))
-                }
-                bot.cyan("Packet sent:     $packet")
-
-                PacketSentEvent(bot, packet).broadcast()
-            } catch (e: Throwable) {
-                e.printStackTrace()
+            if (BeforePacketSendEvent(bot, packet).broadcast().cancelled) {
+                return@withContext
             }
+
+            val data = packet.toByteArray()
+            withContext(Dispatchers.IO) {
+                socket!!.send(DatagramPacket(data, data.size))
+            }
+            bot.cyan("Packet sent:     $packet")
+
+            EventScope.launch { PacketSentEvent(bot, packet).broadcast() }
+
+            Unit
         }
 
-        override fun getOwner(): Bot = this@TIMBotNetworkHandler.bot
+        override val owner: Bot get() = this@TIMBotNetworkHandler.bot
 
 
         override fun close() {
@@ -245,9 +243,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
             }
         }
 
-        override fun isClosed(): Boolean {
-            return this.socket?.isClosed ?: true
-        }
+        override fun isClosed(): Boolean = this.socket?.isClosed ?: true
     }
 
     companion object {
@@ -262,7 +258,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
         private lateinit var token0825: ByteArray//56
         private var loginTime: Int = 0
         private lateinit var loginIP: String
-        private var randomprivateKey: ByteArray = getRandomByteArray(16)
+        private var privateKey: ByteArray = getRandomByteArray(16)
 
         /**
          * 0828_decr_key
@@ -281,13 +277,13 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                     if (packet.serverIP != null) {//redirection
                         socket.serverIP = packet.serverIP!!
                         //connect(packet.serverIP!!)
-                        socket.sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, bot.account.qqNumber))
+                        socket.sendPacket(ClientServerRedirectionPacket(packet.serverIP!!, bot.qqNumber))
                     } else {//password submission
                         this.loginIP = packet.loginIP
                         this.loginTime = packet.loginTime
                         this.token0825 = packet.token0825
                         println("token0825=" + this.token0825.toUHexString())
-                        socket.sendPacket(ClientPasswordSubmissionPacket(bot.account.qqNumber, bot.account.password, packet.loginTime, packet.loginIP, this.randomprivateKey, packet.token0825))
+                        socket.sendPacket(ClientPasswordSubmissionPacket(bot.qqNumber, bot.account.password, packet.loginTime, packet.loginIP, this.privateKey, packet.token0825))
                     }
                 }
 
@@ -298,9 +294,9 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                 }
 
                 is ServerCaptchaCorrectPacket -> {
-                    this.randomprivateKey = getRandomByteArray(16)
+                    this.privateKey = getRandomByteArray(16)
                     this.token00BA = packet.token00BA
-                    socket.sendPacket(ClientLoginResendPacket3105(bot.account.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.randomprivateKey, this.token0825, this.token00BA))
+                    socket.sendPacket(ClientLoginResendPacket3105(bot.qqNumber, bot.account.password, this.loginTime, this.loginIP, this.privateKey, this.token0825, this.token00BA))
                 }
 
                 is ServerLoginResponseVerificationCodeInitPacket -> {
@@ -310,7 +306,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
                     if (packet.unknownBoolean == true) {
                         this.captchaSectionId = 1
-                        socket.sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, bot.account.qqNumber, this.token0825, this.captchaSectionId++, this.token00BA))
+                        socket.sendPacket(ClientVerificationCodeTransmissionRequestPacket(1, bot.qqNumber, this.token0825, this.captchaSectionId++, this.token00BA))
                     }
                 }
 
@@ -347,18 +343,18 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                         if (code.isEmpty() || code.length != 4) {
                             this.captchaCache = byteArrayOf()
                             this.captchaSectionId = 1
-                            socket.sendPacket(ClientVerificationCodeRefreshPacket(packet.packetIdLast + 1, bot.account.qqNumber, token0825))
+                            socket.sendPacket(ClientVerificationCodeRefreshPacket(packet.packetIdLast + 1, bot.qqNumber, token0825))
                         } else {
-                            socket.sendPacket(ClientVerificationCodeSubmitPacket(packet.packetIdLast + 1, bot.account.qqNumber, token0825, code, packet.verificationToken))
+                            socket.sendPacket(ClientVerificationCodeSubmitPacket(packet.packetIdLast + 1, bot.qqNumber, token0825, code, packet.verificationToken))
                         }
                     } else {
-                        socket.sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.packetIdLast + 1, bot.account.qqNumber, token0825, captchaSectionId++, token00BA))
+                        socket.sendPacket(ClientVerificationCodeTransmissionRequestPacket(packet.packetIdLast + 1, bot.qqNumber, token0825, captchaSectionId++, token00BA))
                     }
                 }
 
                 is ServerLoginResponseSuccessPacket -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-                    socket.sendPacket(ClientSessionRequestPacket(bot.account.qqNumber, socket.serverIP, packet.token38, packet.token88, packet.encryptionKey))
+                    socket.sendPacket(ClientSessionRequestPacket(bot.qqNumber, socket.serverIP, packet.token38, packet.token88, packet.encryptionKey))
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的
@@ -368,11 +364,11 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
                     //println("token00BA changed!!! to " + token00BA.toUByteArray())
                     //}
                     if (packet.flag == ServerLoginResponseKeyExchangePacket.Flag.`08 36 31 03`) {
-                        this.randomprivateKey = packet.privateKey
-                        socket.sendPacket(ClientLoginResendPacket3104(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomprivateKey, token0825, packet.tokenUnknown
+                        this.privateKey = packet.privateKeyUpdate
+                        socket.sendPacket(ClientLoginResendPacket3104(bot.qqNumber, bot.account.password, loginTime, loginIP, privateKey, token0825, packet.tokenUnknown
                                 ?: this.token00BA, packet.tlv0006))
                     } else {
-                        socket.sendPacket(ClientLoginResendPacket3106(bot.account.qqNumber, bot.account.password, loginTime, loginIP, randomprivateKey, token0825, packet.tokenUnknown
+                        socket.sendPacket(ClientLoginResendPacket3106(bot.qqNumber, bot.account.password, loginTime, loginIP, privateKey, token0825, packet.tokenUnknown
                                 ?: token00BA, packet.tlv0006))
                     }
                 }
@@ -382,7 +378,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
                     heartbeatJob = NetworkScope.launch {
                         delay(90000)
-                        socket.sendPacket(ClientHeartbeatPacket(bot.account.qqNumber, sessionKey))
+                        socket.sendPacket(ClientHeartbeatPacket(bot.qqNumber, sessionKey))
                     }
 
                     socket.loginResult.complete(LoginState.SUCCESS)
@@ -406,8 +402,8 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
                 is ServerCaptchaPacket.Encrypted -> socket.distributePacket(packet.decrypt())
                 is ServerLoginResponseVerificationCodeInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
-                is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomprivateKey))
-                is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.randomprivateKey))
+                is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.privateKey))
+                is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.privateKey))
                 is ServerSessionKeyResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
                 is ServerTouchResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt())
 
@@ -424,7 +420,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler {
 
         @Suppress("MemberVisibilityCanBePrivate")
         suspend fun changeOnlineStatus(status: ClientLoginStatus) {
-            socket.sendPacket(ClientChangeOnlineStatusPacket(bot.account.qqNumber, sessionKey, status))
+            socket.sendPacket(ClientChangeOnlineStatusPacket(bot.qqNumber, sessionKey, status))
         }
 
         fun close() {

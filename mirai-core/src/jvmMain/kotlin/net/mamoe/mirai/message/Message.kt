@@ -23,7 +23,12 @@ import net.mamoe.mirai.contact.QQ
  *
  *  但注意: 不能 `String + Message`. 只能 `Message + String`
  *
- * @see Contact.sendMessage
+ * @see PlainText 纯文本
+ * @see Image 图片
+ * @see Face 表情
+ * @see MessageChain 消息链(即 `List<Message>`)
+ *
+ * @see Contact.sendMessage 发送消息
  */
 sealed class Message {
     /**
@@ -45,7 +50,7 @@ sealed class Message {
      */
     infix fun eq(other: String): Boolean = this.stringValue == other
 
-    abstract operator fun contains(sub: String): Boolean
+    open operator fun contains(sub: String): Boolean = false
 
     /**
      * 把这个消息连接到另一个消息的头部. 类似于字符串相加
@@ -59,9 +64,13 @@ sealed class Message {
     infix operator fun plus(another: Number): MessageChain = this.concat(another.toString().toMessage())
 }
 
+// ==================================== PlainText ====================================
+
 data class PlainText(override val stringValue: String) : Message() {
     override operator fun contains(sub: String): Boolean = this.stringValue.contains(sub)
 }
+
+// ==================================== Image ====================================
 
 /**
  * 图片消息.
@@ -71,26 +80,29 @@ data class PlainText(override val stringValue: String) : Message() {
  */
 data class Image(val imageId: String) : Message() {
     override val stringValue: String = "[$imageId]"
-    override operator fun contains(sub: String): Boolean = false //No string can be contained in a image
 }
+
+// ==================================== At ====================================
 
 /**
  * At 一个人
  */
-data class At(val target: Long) : Message() {
+data class At(val targetQQ: Long) : Message() {
     constructor(target: QQ) : this(target.number)
 
-    override val stringValue: String = "[@$target]"
-    override operator fun contains(sub: String): Boolean = false
+    override val stringValue: String = "[@$targetQQ]"
 }
+
+// ==================================== Face ====================================
 
 /**
  * QQ 自带表情
  */
 data class Face(val id: FaceID) : Message() {
     override val stringValue: String = "[face${id.id}]"
-    override operator fun contains(sub: String): Boolean = false
 }
+
+// ==================================== MessageChain ====================================
 
 data class MessageChain(
         /**

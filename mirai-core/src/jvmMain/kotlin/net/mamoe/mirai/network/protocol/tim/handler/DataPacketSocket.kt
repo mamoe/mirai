@@ -15,7 +15,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
  * @author Him188moe
  */
 interface DataPacketSocket {
-    fun getOwner(): Bot
+    val owner: Bot
 
     /**
      * 分发数据包给 [PacketHandler]
