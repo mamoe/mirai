@@ -22,12 +22,12 @@ Mirai 的所有模块均开源
 3. Run demo main [Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L22)
 
 ### 事件
-#### Kotlin:
+#### Kotlin
 这里只演示进行不终止地监听。
 ##### Top-level reified
 多数情况下这是最好的方式。
 ```kotlin
-inline fun <reified E: Event> subscribeAlways(handler: E -> Unit)
+inline fun <reified E: Event> subscribeAlways(handler: (E) -> Unit)
 
 subscribeAlways<FriendMessageEvent>{
   //it: MessageChain
@@ -57,7 +57,7 @@ subscribe<FriendMessageEvent>{
 ```kotlin
 fun <E : Event> KClass<E>.subscribeAlways(listener: suspend (E) -> Unit)
 
-FriendMessageEvent：：class.subscribeAlways{
+FriendMessageEvent::class.subscribeAlways{
   if(it.message eq "你好")
      it.reply("你好！")
 }
@@ -71,7 +71,7 @@ FriendMessageEvent：：class.subscribeAlways{
 ![](.github/68f8fec9.png)
 
 发送图片已经完成，但我们还在开发上传图片至服务器。  
-现在你可以通过发送一张图片给机器人账号，再让机器人账号发送这张图片。你可以查看 [Image.kt](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/message/defaults/Image.kt#L20-L93)
+现在你可以通过发送一张图片给机器人账号，再让机器人账号发送这张图片。你可以查看 [Image.kt](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/message/Message.kt#L81)
 
 # TODO
 - [x] 事件(Event)模块  
@@ -103,25 +103,3 @@ FriendMessageEvent：：class.subscribeAlways{
     to be continued
     ...
 ```
-
-# Mirai
-
-<br>
-
-A JAVA(+Kotlin) powered open-source project under GPL license<br>
-It use protocols from <i>TIM QQ</i>, that is, it won't be affected by the close of <i>Smart QQ</i><br>
-The project is all for <b>learning proposes</b> and still in <b>developing stage</b><br>
-
-# Usage
-## Requirements
-- Java 11 or higher
-- Kotlin 1.3 or higher
-## Plugin Development
-``` text
-    to be continued
-    ...
-```
-
-
-
-
