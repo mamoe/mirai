@@ -1,9 +1,9 @@
 # Mirai
 [![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai)
 
-一个以<b>TIM QQ协议(非web)</b>驱动的QQ机器人服务端核心   
-采用服务端-插件模式运行，同时提供独立的协议层库  
-项目的所有模块均开源
+一个以 **TIM QQ协议(非web)** 驱动的QQ机器人服务端核心   
+采用服务端-插件模式运行，同时提供独立的核心库  
+Mirai 的所有模块均开源
   
 项目处于开发阶段，学生无法每日大量更新。  
 项目还有很多未完善的地方, 欢迎任何的代码贡献, 或是 issue.   
@@ -19,20 +19,54 @@
 目前还没有写构建，请使用 IDE 运行单个 main 函数。
 1. Clone
 2. Import as Gradle project
-3. Run demo [Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L22)
+3. Run demo main [Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L22)
 
-### 事件 Hook
+### 事件
 #### Kotlin:
+这里只演示进行不终止地监听。
+##### Top-level reified
+多数情况下这是最好的方式。
 ```kotlin
-FriendMessageEvent.subscribeAlways{
+inline fun <reified E: Event> subscribeAlways(handler: E -> Unit)
+
+subscribeAlways<FriendMessageEvent>{
+  //it: MessageChain
+}
+```
+
+##### DSL
+查看更多: [ListenerBuilder](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/event/Subscribers.kt#L69)  
+```kotlin
+inline fun <reified E: Event> subscribeAll(builder: ListenerBuilder.() -> Unit)
+
+subscribe<FriendMessageEvent>{
+  always{
+    //it: MessageChain
+    //coroutineContext: EventScope.coroutineContext
+  }
+  //可同时开始多个监听。
+  always{
+    //it: MessageChain
+    //coroutineContext: EventScope.coroutineContext
+  }
+}
+```
+
+##### KClass extension
+更推荐使用 Top-level reified
+```kotlin
+fun <E : Event> KClass<E>.subscribeAlways(listener: suspend (E) -> Unit)
+
+FriendMessageEvent：：class.subscribeAlways{
   if(it.message eq "你好")
      it.reply("你好！")
 }
 ```
+
 ![AYWVE86P](.github/A%7DYWVE860U%28%25YQD%24R1GB1%5BP.png)
 
 ### 图片测试
-**现在可以接受图片消息**(并解析为消息链):  
+**现在可以接收图片消息**(并解析为消息链):  
 ![JsssF](.github/J%5DCE%29IK4BU08%28EO~UVLJ%7B%5BF.png)  
 ![](.github/68f8fec9.png)
 
@@ -41,7 +75,7 @@ FriendMessageEvent.subscribeAlways{
 
 # TODO
 - [x] 事件(Event)模块  
-- [ ] 插件(Plugin)模块  **(Working on)**
+- [ ] 插件(Plugin)模块
 - [x] Network - Touch  
 - [X] Network - Login
 - [X] Network - Session  
@@ -52,7 +86,7 @@ FriendMessageEvent.subscribeAlways{
 - [ ] Bot - Friend/group list
 - [ ] Bot - Actions(joining group, adding friend, etc.)
 - [x] Message Section
-- [ ] Image uploading **(Working on)**
+- [ ] Image uploading
 - [ ] Contact  
 - [ ] UI
 - [ ] Console
@@ -61,8 +95,9 @@ FriendMessageEvent.subscribeAlways{
 
 # 使用方法
 ## 要求
-- Java 11 或更高
-- Kotlin 1.3 或更高
+- Kotlin 1.3+
+### JVM
+- Java 11
 ## 插件开发
 ``` text
     to be continued
