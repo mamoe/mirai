@@ -1,45 +1,47 @@
 package demo1
 
+import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.subscribeAll
 import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.event.subscribeOnce
 import net.mamoe.mirai.event.subscribeUntilFalse
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.PlainText
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.system.exitProcess
 
-/**
- * @author Him188moe
- */
 suspend fun main() {
     val bot = Bot(BotAccount(//填写你的账号
-            qqNumber = 1994701121,
-            password = "xiaoqqq"
+            qqNumber = 1994701021,
+            password = "asdhim188666"
     ), Console())
 
-    bot.login().let {
-        if (it != LoginState.SUCCESS) {
-            MiraiLogger.error("Login failed: " + it.name)
+    bot.login {
+        touchTimeoutMillis = 2000
+        randomDeviceName = true
+    }.let {
+        if (it != LoginResult.SUCCESS) {
+            MiraiLogger.logError("Login failed: " + it.name)
             exitProcess(0)
         }
     }
 
 
     //提供泛型以监听事件
-    subscribeAlways<FriendMessageEvent> {
-        //获取第一个纯文本消息
+    subscribeOnce<FriendMessageEvent> {
+        //获取第一个纯文本消息, 获取不到会抛出 NoSuchElementException
         val firstText = it.message.first<PlainText>()
 
         //获取第一个图片
-        val firstImage = it.message.first<Image>()
+        val firstImage = it.message.firstOrNull<Image>()
 
         when {
             it.message eq "你好" -> it.reply("你好!")
@@ -53,13 +55,13 @@ suspend fun main() {
                 }
             }
 
-            /*it.message eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
+            /*it.event eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
                     image.upload(session, Group(session.bot, 580266363)).of()
                 })*/
 
             it.message eq "发图片群2" -> Group(bot, 580266363).sendMessage(Image("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"))
 
-            /* it.message eq "发图片" -> sendFriendMessage(it.sender, PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
+            /* it.event eq "发图片" -> sendFriendMessage(it.sender, PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
                      image.upload(session, it.sender).of()
                  })*/
             it.message eq "发图片2" -> it.reply(PlainText("test") + Image("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"))
@@ -82,6 +84,9 @@ suspend fun main() {
 
         }
     }
+
+    //由于使用的是协程, main函数执行完后就会结束程序.
+    delay(Long.MAX_VALUE)//永远等待, 以测试事件
 }
 
 

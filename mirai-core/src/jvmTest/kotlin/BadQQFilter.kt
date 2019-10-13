@@ -1,11 +1,10 @@
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.login
-import net.mamoe.mirai.network.NetworkScope
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginState
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import java.util.*
@@ -36,7 +35,7 @@ const val qqList = "" +
 suspend fun main() {
     val goodBotList = Collections.synchronizedList(mutableListOf<Bot>())
 
-    withContext(NetworkScope.coroutineContext) {
+    withContext(GlobalScope.coroutineContext) {
         qqList.split("\n")
                 .filterNot { it.isEmpty() }
                 .map { it.split("----") }
@@ -54,7 +53,7 @@ suspend fun main() {
                         withContext(Dispatchers.IO) {
                             bot.login()
                         }.let { state ->
-                            if (state == LoginState.SUCCESS) {
+                            if (state == LoginResult.SUCCESS) {
                                 goodBotList.add(bot)
                             }
                         }

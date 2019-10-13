@@ -1,5 +1,7 @@
 package net.mamoe.mirai.utils
 
+import kotlinx.io.core.IoBuffer
+import kotlinx.io.core.readBytes
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.experimental.and
@@ -10,10 +12,10 @@ import kotlin.experimental.xor
  *
  * @author iweiz https://github.com/iweizime/StepChanger/blob/master/app/src/main/java/me/iweizi/stepchanger/qq/Cryptor.java
  */
-object TEA {
+actual object TEA {
     private const val UINT32_MASK = 0xffffffffL
 
-    private fun doOption(data: ByteArray, key: ByteArray, encrypt: Boolean): ByteArray {
+    internal actual fun doOption(data: ByteArray, key: ByteArray, encrypt: Boolean): ByteArray {
         val mRandom = Random()
         lateinit var mOutput: ByteArray
         lateinit var mInBlock: ByteArray
@@ -162,7 +164,7 @@ object TEA {
         }
 
         fun decrypt(cipherText: ByteArray, offset: Int, len: Int): ByteArray? {
-            require(!(len % 8 != 0 || len < 16)) { "data must len % 8 == 0 && len >= 16" }
+            require(!(len % 8 != 0 || len < 16)) { "data must len % 8 == 0 && len >= 16 but given $len" }
             mIV = decode(cipherText, offset)
             mIndexPos = (mIV[0] and 7).toInt()
             var plen = len - mIndexPos - 10
@@ -240,20 +242,23 @@ object TEA {
         }
     }
 
-    fun encrypt(source: ByteArray, key: ByteArray): ByteArray {
+    @JvmStatic
+    actual fun encrypt(source: ByteArray, key: ByteArray): ByteArray {
         return doOption(source, key, true)
     }
 
-    @Suppress("unused")
-    fun encrypt(source: ByteArray, keyHex: String): ByteArray {
-        return encrypt(source, keyHex.hexToBytes())
-    }
-
-    fun decrypt(source: ByteArray, key: ByteArray): ByteArray {
+    @JvmStatic
+    actual fun decrypt(source: ByteArray, key: ByteArray): ByteArray {
         return doOption(source, key, false)
     }
 
-    fun decrypt(source: ByteArray, keyHex: String): ByteArray {
+    @JvmStatic
+    actual fun decrypt(source: ByteArray, key: IoBuffer): ByteArray {
+        return doOption(source, key.readBytes(), false)
+    }
+
+    @JvmStatic
+    actual fun decrypt(source: ByteArray, keyHex: String): ByteArray {
         return decrypt(source, keyHex.hexToBytes())
     }
 

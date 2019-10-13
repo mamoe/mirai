@@ -1,7 +1,6 @@
 @file:Suppress("ObjectPropertyName", "unused", "NonAsciiCharacters", "MayBeConstant")
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.toUHexString
 import net.mamoe.mirai.utils.toUHexString
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
@@ -244,6 +243,41 @@ object HexComparator {
                 .toString()
 
 
+    }
+
+    fun colorize(hex1s: String): String {
+        val builder = StringBuilder()
+
+        val hex1 = hex1s.trim { it <= ' ' }.replace("\n", "").split(" ").dropLastWhile { it.isEmpty() }.toTypedArray()
+        val constMatcher1 = ConstMatcher(hex1s)
+
+        val numberLine = StringBuilder()
+        val hex1ConstName = StringBuilder()
+        val hex1b = StringBuilder()
+
+        buildConstNameChain(hex1s.length, constMatcher1, hex1ConstName)
+
+        for (i in hex1.indices) {
+            var h1: String? = null
+
+            val matchedConstName = constMatcher1.getMatchedConstName(i)
+            if (matchedConstName != null) {
+                h1 = BLUE + hex1[i]
+            }
+
+            if (h1 == null) {
+                h1 = hex1[i]
+                h1 = GREEN + h1
+            }
+            numberLine.append(UNKNOWN).append(getFixedNumber(i)).append(" ")
+            hex1b.append(" ").append(h1).append(" ")
+        }
+
+        return builder.append("\n")
+                .append(numberLine).append("\n")
+                .append(hex1ConstName).append("\n")
+                .append(hex1b).append("\n")
+                .toString()
     }
 
 

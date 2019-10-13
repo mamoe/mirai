@@ -1,8 +1,11 @@
 package net.mamoe.mirai.utils
 
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import javax.imageio.ImageIO
 
 /**
  * @author NaturalHG
@@ -29,3 +32,6 @@ object ImageNetworkUtils {
         return conn.responseCode == 200
     }
 }
+
+
+fun BufferedImage.toByteArray(): ByteArray = ByteArrayOutputStream().use { ImageIO.write(this, "JPG", it); it.toByteArray() }

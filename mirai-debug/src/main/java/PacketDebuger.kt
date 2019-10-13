@@ -3,6 +3,8 @@
 import jpcap.JpcapCaptor
 import jpcap.packet.IPPacket
 import jpcap.packet.UDPPacket
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
@@ -93,7 +95,7 @@ object Main {
         //println("--------------")
         //println("接收数据包")
         //println("raw packet = " + data.toUHexString())
-        packetReceived(ServerPacket.ofByteArray(data))
+        packetReceived(data.read { this.parseServerPacket(data.size) })
     }
 
     fun packetReceived(packet: ServerPacket) {
@@ -106,8 +108,8 @@ object Main {
 
             is UnknownServerEventPacket -> {
                 println("--------------")
-                println("未知事件ID=" + packet.packetId.toUHexString())
-                println("未知事件: " + packet.input.readAllBytes().toUHexString())
+                println("未知事件ID=" + packet.idHex)
+                println("未知事件: " + packet.input.readBytes().toUHexString())
             }
 
             is ServerEventPacket -> {
@@ -124,41 +126,41 @@ object Main {
         }
     }
 
-    fun dataSent(rawPacket: ByteArray) = rawPacket.cutTail(1).decode { packet ->
+    fun dataSent(rawPacket: ByteArray) = rawPacket.cutTail(1).read {
         println("---------------------------")
-        packet.skip(3)//head
-        val idHex = packet.readNBytes(4).toUHexString()
+        discardExact(3)//head
+        val idHex = readBytes(4).toUHexString()
         println("发出包ID = $idHex")
-        packet.skip(TIMProtocol.fixVer2.hexToBytes().size + 1 + 5 - 3 + 1)
+        discardExact(TIMProtocol.fixVer2.hexToBytes().size + 1 + 5 - 3 + 1)
 
-        val encryptedBody = packet.readAllBytes()
+        val encryptedBody = readRemainingBytes()
         println("body = ${encryptedBody.toUHexString()}")
 
-        encryptedBody.decode { data ->
+        encryptedBody.read {
 
             when (idHex.substring(0, 5)) {
                 "00 CD" -> {
                     println("好友消息")
 
-                    val raw = data.readAllBytes()
+                    val raw = readRemainingBytes()
                     println("解密前数据: " + raw.toUHexString())
                     val messageData = raw.decryptBy(sessionKey)
                     println("解密结果: " + messageData.toUHexString())
                     println("尝试解消息")
-                    messageData.decode {
-                        it.skip(
+                    messageData.read {
+                        discardExact(
                                 4 + 4 + 12 + 2 + 4 + 4 + 16 + 2 + 2 + 4 + 2 + 16 + 4 + 4 + 7 + 15 + 2
                                         + 1
                         )
-                        val chain = it.readMessageChain()
+                        val chain = readMessageChain()
                         println(chain)
                     }
                 }
 
                 "03 88" -> {
                     println("上传图片-获取图片ID")
-                    data.skip(8)
-                    val body = data.readAllBytes().decryptBy(sessionKey)
+                    discardExact(8)
+                    val body = readRemainingBytes().decryptBy(sessionKey)
                     println(body.toUHexString())
                 }
             }

@@ -5,13 +5,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.network.LoginSession
-import net.mamoe.mirai.network.protocol.tim.packet.image.ClientTryGetImageIDPacket
-import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDFailedPacket
-import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.image.ServerTryGetImageIDSuccessPacket
-import net.mamoe.mirai.network.protocol.tim.packet.md5
+import net.mamoe.mirai.network.protocol.tim.packet.ClientTryGetImageIDPacketJvm
+import net.mamoe.mirai.network.protocol.tim.packet.ServerTryGetImageIDFailedPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerTryGetImageIDResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerTryGetImageIDSuccessPacket
 import net.mamoe.mirai.qqNumber
 import net.mamoe.mirai.utils.ImageNetworkUtils
+import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toByteArray
 import net.mamoe.mirai.utils.toUHexString
 import java.awt.image.BufferedImage
@@ -32,7 +32,7 @@ class UnsolvedImage(private val filename: String, val image: BufferedImage) {
 
     suspend fun upload(session: LoginSession, contact: Contact): CompletableDeferred<Unit> {
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
-            toSend { ClientTryGetImageIDPacket(session.bot.qqNumber, session.sessionKey, contact.number, image) }
+            toSend { ClientTryGetImageIDPacketJvm(session.bot.qqNumber, session.sessionKey, contact.number, image) }
 
             onExpect {
                 when (it) {
