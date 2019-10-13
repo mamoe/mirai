@@ -3,6 +3,7 @@ package net.mamoe.mirai.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group.Companion.groupNumberToId
 import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
 import net.mamoe.mirai.utils.ContactList
 import kotlin.jvm.JvmStatic
 
@@ -28,7 +29,7 @@ class Group(bot: Bot, number: Long) : Contact(bot, number) {
         get() = throw UnsupportedOperationException("Not yet supported")
 
     override suspend fun sendMessage(message: MessageChain) {
-        bot.network.event.sendGroupMessage(this, message)
+        bot.network[EventPacketHandler].sendGroupMessage(this, message)
     }
 
     override suspend fun sendXMLMessage(message: String) {

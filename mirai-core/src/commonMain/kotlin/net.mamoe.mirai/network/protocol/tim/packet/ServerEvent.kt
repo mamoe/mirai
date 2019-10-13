@@ -14,7 +14,7 @@ data class EventPacketIdentity(
         val to: UInt,//对于好友消息, 这个是bot
         internal val uniqueId: IoBuffer//8
 ) {
-    override fun toString(): String = "EPI(from=$from, to=$to)"
+    override fun toString(): String = "(from=$from, to=$to)"
 }
 
 fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = with(identity) {
@@ -28,11 +28,8 @@ fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = 
  *
  * @author Him188moe
  */
-abstract class ServerEventPacket(input: ByteReadPacket, packetId: ByteArray, val eventIdentity: EventPacketIdentity) : ServerPacket(input) {
-    override val idByteArray: ByteArray = packetId
-    override var idHex: String = packetId.toUHexString()
-
-    class Raw(input: ByteReadPacket, private val packetId: ByteArray) : ServerPacket(input) {
+abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: EventPacketIdentity) : ServerPacket(input) {
+    class Raw(input: ByteReadPacket) : ServerPacket(input) {
 
         fun distribute(): ServerEventPacket = with(input) {
             val eventIdentity = EventPacketIdentity(
@@ -46,25 +43,36 @@ abstract class ServerEventPacket(input: ByteReadPacket, packetId: ByteArray, val
                 "00 C4" -> {
                     discardExact(13)
                     if (readBoolean()) {
-                        ServerAndroidOnlineEventPacket(input, packetId, eventIdentity)
+                        ServerAndroidOfflineEventPacket(input, eventIdentity)
                     } else {
-                        ServerAndroidOfflineEventPacket(input, packetId, eventIdentity)
+                        ServerAndroidOnlineEventPacket(input, eventIdentity)
                     }
                 }
-                "00 2D" -> ServerGroupUploadFileEventPacket(input, packetId, eventIdentity)
+                "00 2D" -> ServerGroupUploadFileEventPacket(input, eventIdentity)
 
-                "00 52" -> ServerGroupMessageEventPacket(input, packetId, eventIdentity)
+                "00 52" -> ServerGroupMessageEventPacket(input, eventIdentity)
 
-                "00 A6" -> ServerFriendMessageEventPacket(input, packetId, eventIdentity)
+                "00 A6" -> ServerFriendMessageEventPacket(input.debugPrint("好友消息事件"), eventIdentity)
 
-                //"02 10", "00 12" -> ServerUnknownEventPacket(input, packetId, eventIdentity)
 
-                else -> UnknownServerEventPacket(input, packetId, eventIdentity)
+                //00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 16 00 00 00 37 08 02 1A 12 08 95 02 10 90 04 40 98 E1 8C ED 05 48 AF 96 C3 A4 03 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 1A 29 08 00 10 05 18 98 E1 8C ED 05 20 01 28 FF FF FF FF 0F 32 15 E5 AF B9 E6 96 B9 E6 AD A3 E5 9C A8 E8 BE 93 E5 85 A5 2E 2E 2E
+                "02 10" -> {
+                    discardExact(19)
+                    if (readUByte().toUInt() == 0x37u) ServerFriendTypingStartedPacket(input, eventIdentity)
+                    else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)
+                }
+
+                //"02 10", "00 12" -> ServerUnknownEventPacket(input, eventIdentity)
+
+                else -> {
+                    MiraiLogger.logDebug("UnknownEvent type = ${type.toUHexString()}")
+                    UnknownServerEventPacket(input, eventIdentity)
+                }
             }.setId(idHex)
         }
 
-        class Encrypted(input: ByteReadPacket, private val packetId: ByteArray) : ServerPacket(input) {
-            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey), packetId).setId(this.idHex)
+        class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
+            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey)).setId(this.idHex)
         }
     }
 
@@ -90,26 +98,45 @@ abstract class ServerEventPacket(input: ByteReadPacket, packetId: ByteArray, val
 /**
  * Unknown event
  */
-class UnknownServerEventPacket(input: ByteReadPacket, packetId: ByteArray, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, packetId, eventIdentity) {
+class UnknownServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
     override fun decode() {
-        println("UnknownServerEventPacket data: " + this.input.readBytes().toUHexString())
+        MiraiLogger.logDebug("UnknownServerEventPacket data: " + this.input.readBytes().toUHexString())
     }
 }
+
+
+sealed class ServerFriendTypingPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
+    val qq get() = eventIdentity.from
+
+}
+
+/**
+ * 对方正在输入
+ */
+class ServerFriendTypingStartedPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerFriendTypingPacket(input, eventIdentity)
+
+/**
+ * 对方取消了输入
+ */
+class ServerFriendTypingCanceledPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerFriendTypingPacket(input, eventIdentity)
+
+
 
 /**
  * Android 客户端上线
  */
-class ServerAndroidOnlineEventPacket(input: ByteReadPacket, packetId: ByteArray, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, packetId, eventIdentity)
+class ServerAndroidOnlineEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity)
 
 /**
  * Android 客户端下线
  */
-class ServerAndroidOfflineEventPacket(input: ByteReadPacket, packetId: ByteArray, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, packetId, eventIdentity)
+class ServerAndroidOfflineEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity)
+
 
 /**
  * 群文件上传
  */
-class ServerGroupUploadFileEventPacket(input: ByteReadPacket, packetId: ByteArray, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, packetId, eventIdentity) {
+class ServerGroupUploadFileEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
     private lateinit var xmlMessage: String
 
     override fun decode() {
@@ -121,7 +148,7 @@ class ServerGroupUploadFileEventPacket(input: ByteReadPacket, packetId: ByteArra
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE")
-class ServerGroupMessageEventPacket(input: ByteReadPacket, packetId: ByteArray, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, packetId, eventIdentity) {
+class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
     var groupNumber: UInt by Delegates.notNull()
     var qq: UInt by Delegates.notNull()
     lateinit var senderName: String
@@ -140,10 +167,11 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, packetId: ByteArray, 
 
         val map = readTLVMap(true)
         map.printTLVMap("父map")
-        if (map.containsKey(0x18)) {
-            senderName = map.getValue(0x18).read {
+        if (map.containsKey(18)) {
+            senderName = map.getValue(18).read {
                 val tlv = readTLVMap(true)
                 tlv.printTLVMap("子map")
+                //群主的18: 05 00 04 00 00 00 03 08 00 04 00 00 00 04 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
 
                 when {
                     tlv.containsKey(0x01) -> String(tlv.getValue(0x01))
@@ -155,28 +183,48 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, packetId: ByteArray, 
     }
 }
 
-//牛逼[图片]牛逼[图片] 22 96 29 7B B4 DF 94 AA 00 08 74 A4 09 18 8D CC 1F 40 00 52 00 00 00 1B 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 0C 00 05 00 01 00 01 01 22 96 29 7B 01 3E 03 3F A2 00 03 7F 64 5D 7B AC BD 00 00 F3 36 02 03 00 02 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 5D 7B AC BD 12 73 DB A2 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 CB 02 00 2A 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 04 00 04 B4 52 77 F1 05 00 04 BC EB 03 B7 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 00 41 16 00 04 00 00 00 34 18 00 04 00 00 03 73 FF 00 5C 15 36 20 39 32 6B 41 31 43 62 34 35 32 37 37 66 31 62 63 65 62 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 41 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 77 02 00 2A 7B 37 41 41 34 42 33 41 41 2D 38 43 33 43 2D 30 46 34 35 2D 32 44 39 42 2D 37 46 33 30 32 41 30 41 43 45 41 41 7D 2E 6A 70 67 04 00 04 B4 52 77 F1 05 00 04 BC EB 03 B7 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 00 41 16 00 04 00 00 00 34 18 00 04 00 00 03 73 FF 00 08 15 37 20 20 38 41 41 41 0E 00 0E 01 00 04 00 00 00 09 07 00 04 00 00 00 01 19 00 35 01 00 32 AA 02 2F 50 03 60 00 68 00 9A 01 26 08 09 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 05 00 04 00 00 00 01 08 00 04 00 00 00 01 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
-//牛逼[图片]牛逼 22 96 29 7B B4 DF 94 AA 00 0B C1 0A 09 18 89 93 1F 40 00 52 00 00 00 1B 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 0C 00 05 00 01 00 01 01 22 96 29 7B 01 3E 03 3F A2 00 03 7E F5 5D 7B 97 E7 00 00 F3 32 01 8D 00 02 01 00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00 5D 7B 97 E6 FA BE 7F DC 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E7 89 9B E9 80 BC 03 00 CF 02 00 2A 7B 39 44 32 44 45 39 31 41 2D 33 39 38 39 2D 39 35 35 43 2D 44 35 42 34 2D 37 46 41 32 37 38 39 37 38 36 30 39 7D 2E 6A 70 67 04 00 04 97 15 7F 03 05 00 04 79 5C B1 A3 06 00 04 00 00 00 50 07 00 01 41 08 00 00 09 00 01 01 0B 00 00 14 00 04 03 00 00 00 15 00 04 00 00 00 3C 16 00 04 00 00 00 40 18 00 04 00 00 03 CC FF 00 60 15 36 20 39 36 6B 45 31 41 39 37 31 35 37 66 30 33 37 39 35 63 62 31 61 33 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 39 44 32 44 45 39 31 41 2D 33 39 38 39 2D 39 35 35 43 2D 44 35 42 34 2D 37 46 41 32 37 38 39 37 38 36 30 39 7D 2E 6A 70 67 31 32 31 32 41 01 00 09 01 00 06 E7 89 9B E9 80 BC 0E 00 0E 01 00 04 00 00 00 09 07 00 04 00 00 00 01 19 00 35 01 00 32 AA 02 2F 50 03 60 00 68 00 9A 01 26 08 09 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 05 00 04 00 00 00 01 08 00 04 00 00 00 01 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
+//
+//以前的消息: 00 00 00 25 00 08 00 02 00 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 01 38 03 3E 03 3F A2 76 E4 B8 DD 58 2C 60 86 35 3A 30 B3 C7 63 4A 80 E7 CD 5B 64 00 0B 78 16 5D A3 0A FD 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D A3 0A FD AB 77 16 02 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 04 01 00 01 36 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
+//刚刚的消息: 00 00 00 2D 00 05 00 02 00 01 00 06 00 04 00 01 2E 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 01 38 03 3E 03 3F A2 76 E4 B8 DD 11 F4 B2 F2 1A E7 1F C4 F1 3F 23 FB 74 80 42 64 00 0B 78 1A 5D A3 26 C1 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D A3 26 C1 AA 34 08 42 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E4 BD A0 E5 A5 BD 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
 
-class ServerFriendMessageEventPacket(input: ByteReadPacket, packetId: ByteArray, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, packetId, eventIdentity) {
-    val group: UInt get() = eventIdentity.from
-    val qq: UInt get() = eventIdentity.to
+fun main() {
+    println("08 02 1A 12 08 95 02 10 90 04 40 D6 DE 8C ED 05 48 CF B5 90 D6 02 08 DD F1 92 B7 07 10 DD F1 92 B7 07 1A 14 08 00 10 05 18 D6 DE 8C ED 05 20 02 28 FF FF FF FF 0F 32 00".hexToBytes().stringOf())
+}
+
+fun main2() {
+    val data = "00 00 00 20 00 05 00 02 00 06 00 06 00 04 00 01 01 07 00 09 00 06 03 E9 20 02 EB 94 00 0A 00 04 01 00 00 00 0C 17 76 E4 B8 DD 76 E4 B8 DD 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0B A6 D2 5D A3 2A 3F 00 00 5D A3 2A 3F 01 00 00 00 00 4D 53 47 00 00 00 00 00 5D A3 2A 3F 0C 8A 59 3D 00 00 00 00 0A 00 86 02 00 06 E5 AE 8B E4 BD 93 00 00 01 00 06 01 00 03 31 32 33 19 00 1F 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 0E 00 0E 01 00 04 00 00 00 00 0A 00 04 00 00 00 00".hexToBytes()
+    val packet = ServerFriendMessageEventPacket(data.toReadPacket(), EventPacketIdentity(0u, 0u, IoBuffer.Empty))
+    packet.decode()
+    println(packet)
+}
+
+class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
+    val qq: UInt get() = eventIdentity.from
+
+    /**
+     * 是否是在这次登录之前的消息, 即消息记录
+     */
+    var isPrevious: Boolean = false
 
     lateinit var message: MessageChain
 
-    //00 00 00 25 00 08 00 02 00 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 01 38 03 3E 03 3F A2 76 E4 B8 DD E7 86 74 F2 64 55 AD 9A EB 2F B9 DF F1 7F 8C 28 00 0B 78 14 5D A2 F5 CB 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D A2 F5 CA 9D 26 CB 5E 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E4 BD A0 E5 A5 BD 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
+    //来自自己发送给自己
+    //00 00 00 20 00 05 00 02 00 06 00 06 00 04 00 01 01 07 00 09 00 06 03 E9 20 02 EB 94 00 0A 00 04 01 00 00 00 0C 17 76 E4 B8 DD 76 E4 B8 DD 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0B A6 D2 5D A3 2A 3F 00 00 5D A3 2A 3F 01 00 00 00 00 4D 53 47 00 00 00 00 00 5D A3 2A 3F 0C 8A 59 3D 00 00 00 00 0A 00 86 02 00 06 E5 AE 8B E4 BD 93 00 00 01 00 06 01 00 03 31 32 33 19 00 1F 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 0E 00 0E 01 00 04 00 00 00 00 0A 00 04 00 00 00 00
 
     override fun decode() = with(input) {
         input.discardExact(2)
         val l1 = readShort()
-        discardExact(l1.toInt())
+        discardExact(1)//0x00
+        isPrevious = readByte().toInt() == 0x08
+        discardExact(l1.toInt() - 2)
         discardExact(69)
         readLVByteArray()//font
         discardExact(2)//2个0x00
         message = readMessageChain()
 
         val map: Map<Int, ByteArray> = readTLVMap(true).withDefault { byteArrayOf() }
-        println("map.getValue(18)=" + map.getValue(18))
+        map.printTLVMap("readTLVMap")
+        //println("map.getValue(18)=" + map.getValue(18).toUHexString())
 
         //19 00 38 01 00 35 AA 02 32 50 03 60 00 68 00 9A 01 29 08 09 20 BF 02 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08 05 00 04 00 00 00 01 08 00 04 00 00 00 01
 
@@ -232,7 +280,7 @@ B1 89 BE 09 8F 00 1A E5 00 0B 03 A2 09 90 BB 7A 1F 40 00 A6 00 00 00 20 00 05 00
 
 backup
 
-class ServerFriendMessageEventPacket(input: ByteReadPacket, packetId: ByteArray, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, packetId, eventIdentity) {
+class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
     var qq: Long = 0
     lateinit var event: String
 

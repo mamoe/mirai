@@ -86,7 +86,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {//TODO 优化
             "00 BA" -> ServerCaptchaPacket.Encrypted(this, idHex)
 
 
-            "00 CE", "00 17" -> ServerEventPacket.Raw.Encrypted(this, idHex.hexToBytes())
+            "00 CE", "00 17" -> ServerEventPacket.Raw.Encrypted(this)
 
             "00 81" -> ServerFieldOnlineStatusChangedPacket.Encrypted(this)
 
@@ -102,7 +102,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {//TODO 优化
     }.setId(idHex)
 }
 
-fun ByteReadPacket.readIP(): String = buildString(4 + 3) {
+fun Input.readIP(): String = buildString(4 + 3) {
     repeat(4) {
         val byte = readUByte()
         this.append(byte.toString())
@@ -110,11 +110,11 @@ fun ByteReadPacket.readIP(): String = buildString(4 + 3) {
     }
 }
 
-fun ByteReadPacket.readLVString(): String = String(this.readLVByteArray())
+fun Input.readLVString(): String = String(this.readLVByteArray())
 
-fun ByteReadPacket.readLVByteArray(): ByteArray = this.readBytes(this.readShort().toInt())
+fun Input.readLVByteArray(): ByteArray = this.readBytes(this.readShort().toInt())
 
-fun ByteReadPacket.readTLVMap(expectingEOF: Boolean = false): Map<Int, ByteArray> {
+fun Input.readTLVMap(expectingEOF: Boolean = false): Map<Int, ByteArray> {
     val map = mutableMapOf<Int, ByteArray>()
     var type: UByte
 
@@ -144,11 +144,11 @@ fun ByteReadPacket.readTLVMap(expectingEOF: Boolean = false): Map<Int, ByteArray
 
 fun Map<Int, ByteArray>.printTLVMap(name: String) = debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() })
 
-fun ByteReadPacket.readString(length: Number): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: Number): String = String(this.readBytes(length.toInt()))
 
 private const val TRUE_BYTE_VALUE: Byte = 1
-fun ByteReadPacket.readBoolean(): Boolean = this.readByte() == TRUE_BYTE_VALUE
-fun ByteReadPacket.readLVNumber(): Number {
+fun Input.readBoolean(): Boolean = this.readByte() == TRUE_BYTE_VALUE
+fun Input.readLVNumber(): Number {
     return when (this.readShort().toInt()) {
         1 -> this.readByte()
         2 -> this.readShort()
@@ -161,7 +161,7 @@ fun ByteReadPacket.readLVNumber(): Number {
 //添加@JvmSynthetic 导致 idea 无法检查这个文件的错误
 //@JvmSynthetic
 @Deprecated("Low efficiency", ReplaceWith(""))
-fun ByteReadPacket.gotoWhere(matcher: UByteArray): ByteReadPacket {
+fun <I : Input> I.gotoWhere(matcher: UByteArray): I {
     return this.gotoWhere(matcher.toByteArray())
 }
 
@@ -169,7 +169,7 @@ fun ByteReadPacket.gotoWhere(matcher: UByteArray): ByteReadPacket {
  * 去往下一个含这些连续字节的位置
  */
 @Deprecated("Low efficiency", ReplaceWith(""))
-fun ByteReadPacket.gotoWhere(matcher: ByteArray): ByteReadPacket {
+fun <I : Input> I.gotoWhere(matcher: ByteArray): I {
     require(matcher.isNotEmpty())
 
     loop@

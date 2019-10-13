@@ -7,8 +7,10 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.ContactList
+import net.mamoe.mirai.utils.LoginConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
@@ -44,7 +46,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
 
     val contacts = ContactSystem()
 
-    val network: BotNetworkHandler<*> = TIMBotNetworkHandler(this)
+    var network: BotNetworkHandler<*> = TIMBotNetworkHandler(this)
 
     init {
         instances.add(this)
@@ -53,6 +55,17 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
     }
 
     override fun toString(): String = "Bot{id=$id,qq=${account.qqNumber}}"
+
+    /**
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler.NetworkScope] 下的协程.
+     * 然后重新启动并尝试登录
+     */
+    suspend fun reinitializeNetworkHandler(configuration: LoginConfiguration): LoginResult {
+        logger.logPurple("Reinitializing BotNetworkHandler")
+        network.close()
+        network = TIMBotNetworkHandler(this)
+        return network.login(configuration)
+    }
 
     /**
      * Bot 联系人管理.

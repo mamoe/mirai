@@ -12,3 +12,5 @@ expect class MiraiDatagramChannel(serverHost: String, serverPort: Short) : Close
 }
 
 expect class ClosedChannelException : IOException
+
+expect class SendPacketInternalException(cause: Throwable?) : Exception

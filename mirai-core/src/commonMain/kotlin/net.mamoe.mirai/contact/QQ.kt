@@ -4,6 +4,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.At
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
 
 /**
  * QQ 账号.
@@ -19,7 +20,7 @@ import net.mamoe.mirai.message.MessageChain
  */
 class QQ(bot: Bot, number: Long) : Contact(bot, number) {
     override suspend fun sendMessage(message: MessageChain) {
-        bot.network.event.sendFriendMessage(this, message)
+        bot.network[EventPacketHandler].sendFriendMessage(this, message)
     }
 
     override suspend fun sendXMLMessage(message: String) {

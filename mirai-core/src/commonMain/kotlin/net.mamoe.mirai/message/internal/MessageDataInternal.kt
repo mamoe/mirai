@@ -6,7 +6,7 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.utils.*
 
-internal fun ByteArray.parseMessageFace(): Face = read {
+internal fun IoBuffer.parseMessageFace(): Face {
     //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
     //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D
     discardExact(1)
@@ -14,30 +14,30 @@ internal fun ByteArray.parseMessageFace(): Face = read {
     val id1 = FaceID.ofId(readLVNumber().toInt().toUByte())//可能这个是id, 也可能下面那个
     discardExact(readByte().toLong())
     readLVNumber()//某id?
-    return@read Face(id1)
+    return Face(id1)
 }
 
-internal fun ByteArray.parsePlainText(): PlainText = read {
+internal fun IoBuffer.parsePlainText(): PlainText {
     discardExact(1)
-    PlainText(readLVString())
+    return PlainText(readLVString())
 }
 
-internal fun ByteArray.parseMessageImage0x06(): Image = read {
+internal fun IoBuffer.parseMessageImage0x06(): Image {
     discardExact(1)
-    MiraiLogger.logDebug("好友的图片")
-    MiraiLogger.logDebug(this@parseMessageImage0x06.toUHexString())
+    this.debugPrint("好友的图片")
+    //MiraiLogger.logDebug(this.toUHexString())
     val filenameLength = readShort()
     val suffix = readString(filenameLength).substringAfter(".")
-    discardExact(this@parseMessageImage0x06.size - 37 - 1 - filenameLength - 2)
+    discardExact(this@parseMessageImage0x06.readRemaining - 37 - 1 - filenameLength - 2)
     val imageId = readString(36)
     MiraiLogger.logDebug(imageId)
     discardExact(1)//0x41
-    return@read Image("{$imageId}.$suffix")
+    return Image("{$imageId}.$suffix")
 }
 
-internal fun ByteArray.parseMessageImage0x03(): Image = read {
+internal fun IoBuffer.parseMessageImage0x03(): Image {
     discardExact(1)
-    return@read Image(String(readLVByteArray()))
+    return Image(String(readLVByteArray()))
     /*
     println(String(readLVByteArray()))
     readTLVMap()
@@ -53,14 +53,14 @@ internal fun ByteArray.parseMessageImage0x03(): Image = read {
     return Image(imageId)*/
 }
 
-internal fun ByteArray.parseMessageChain(): MessageChain = read {
-    readMessageChain()
+internal fun ByteReadPacket.parseMessageChain(): MessageChain {
+    return readMessageChain()
 }
 
 internal fun ByteReadPacket.readMessage(): Message? {
     val messageType = this.readByte().toInt()
     val sectionLength = this.readShort().toLong()//sectionLength: short
-    val sectionData = this.readBytes(sectionLength.toInt())//use buffer instead
+    val sectionData = this.readIoBuffer(sectionLength.toInt())//use buffer instead
     return when (messageType) {
         0x01 -> sectionData.parsePlainText()
         0x02 -> sectionData.parseMessageFace()
@@ -68,7 +68,12 @@ internal fun ByteReadPacket.readMessage(): Message? {
         0x06 -> sectionData.parseMessageImage0x06()
 
 
-        0x19 -> {//长文本
+        0x19 -> {//未知, 可能是长文本?
+            //bot手机自己跟自己发消息会出这个
+            //sectionData: 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00
+            sectionData.readBytes().debugPrint("sectionData")
+            return PlainText("[UNKNOWN(${this.readBytes().toUHexString()})]")
+            println()
             val value = readLVByteArray()
             //todo 未知压缩算法
             PlainText(String(value))
@@ -87,7 +92,6 @@ internal fun ByteReadPacket.readMessage(): Message? {
         }
 
         0x0E -> {
-            //null
             null
         }
 
@@ -102,16 +106,11 @@ internal fun ByteReadPacket.readMessage(): Message? {
 
 fun ByteReadPacket.readMessageChain(): MessageChain {
     val chain = MessageChain()
-    var got: Message? = null
     do {
-        if (got != null) {
-            chain.concat(got)
-        }
         if (this.remaining == 0L) {
             return chain
         }
-        got = this.readMessage()
-    } while (got != null)
+    } while (this.readMessage().takeIf { it != null }?.let { chain.concat(it) } != null)
     return chain
 }
 

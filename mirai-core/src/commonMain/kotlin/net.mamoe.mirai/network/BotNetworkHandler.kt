@@ -45,22 +45,14 @@ interface BotNetworkHandler<Socket : DataPacketSocket> : Closeable {
     var socket: Socket
 
     /**
-     * 事件处理. 如发送好友消息, 接受群消息并触发事件
+     * 得到 [PacketHandler].
+     * `get(EventPacketHandler)` 返回 [EventPacketHandler]
+     * `get(ActionPacketHandler)` 返回 [ActionPacketHandler]
      */
-    val event: EventPacketHandler
+    operator fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T
 
     /**
-     * 动作处理. 如发送好友请求, 处理别人发来的好友请求等
-     */
-    val action: ActionPacketHandler
-
-    /**
-     * [PacketHandler] 列表
-     */
-    val packetHandlers: PacketHandlerList
-
-    /**
-     * 尝试登录. 将会依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果
+     * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果
      */
     suspend fun login(configuration: LoginConfiguration): LoginResult
 

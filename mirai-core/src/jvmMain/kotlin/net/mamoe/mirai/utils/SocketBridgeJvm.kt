@@ -14,7 +14,15 @@ actual class MiraiDatagramChannel actual constructor(serverHost: String, serverP
     private val channel: DatagramChannel = DatagramChannel.open().connect(serverAddress)
 
     actual suspend fun read(buffer: IoBuffer) = withContext(Dispatchers.IO) { (channel as ReadableByteChannel).read(buffer) }
-    actual suspend fun send(buffer: IoBuffer) = withContext(Dispatchers.IO) { buffer.readDirect { channel.send(it, serverAddress) } }
+    actual suspend fun send(buffer: IoBuffer) = withContext(Dispatchers.IO) {
+        buffer.readDirect {
+            try {
+                channel.send(it, serverAddress)
+            } catch (e: Exception) {
+                throw SendPacketInternalException(e)
+            }
+        }
+    }
 
     override fun close() {
         channel.close()
@@ -24,3 +32,5 @@ actual class MiraiDatagramChannel actual constructor(serverHost: String, serverP
 }
 
 actual typealias ClosedChannelException = java.nio.channels.ClosedChannelException
+
+actual class SendPacketInternalException actual constructor(cause: Throwable?) : Exception(cause)

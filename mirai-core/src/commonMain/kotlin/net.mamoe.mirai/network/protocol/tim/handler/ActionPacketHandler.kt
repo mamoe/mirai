@@ -23,6 +23,8 @@ import net.mamoe.mirai.utils.hexToBytes
  * @author Him188moe
  */
 class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
+    companion object Key : PacketHandler.Key<ActionPacketHandler>
+
     private val addFriendSessions = mutableListOf<AddFriendSession>()
     private val uploadImageSessions = mutableListOf<UploadImageSession>()
 

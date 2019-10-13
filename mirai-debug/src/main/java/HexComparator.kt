@@ -20,13 +20,9 @@ import kotlin.math.max
 object HexComparator {
 
     private val RED = "\u001b[31m"
-
     private val GREEN = "\u001b[33m"
-
     private val UNKNOWN = "\u001b[30m"
-
     private val BLUE = "\u001b[34m"
-
 
     private val clipboardString: String?
         get() {
@@ -44,7 +40,6 @@ object HexComparator {
         }
 
     class ConstMatcher constructor(hex: String) {
-
         private val matches = LinkedList<Match>()
 
         object TestConsts {
@@ -59,6 +54,7 @@ object HexComparator {
             val _Him188moe_ = "Him188moe".toByteArray().toUHexString()
             val 发图片 = "发图片".toByteArray().toUHexString()
             val 群 = "群".toByteArray().toUHexString()
+            val 你好 = "你好".toByteArray().toUHexString()
 
             val SINGLE_PLAIN_MESSAGE_HEAD = "00 00 01 00 09 01"
 
@@ -69,7 +65,8 @@ object HexComparator {
         @Suppress("SpellCheckingInspection")
         object PacketIds {
             val heartbeat = "00 58"
-            val friendmsg = "00 CD"
+            val friendmsgsend = "00 CD"
+            val friendmsgevent = "00 CE"
         }
 
         init {
@@ -103,7 +100,6 @@ object HexComparator {
                 }
             }
         }
-
 
         private fun match(hex: String, field: Field): List<IntRange> {
             val constValue: String
@@ -293,6 +289,10 @@ object HexComparator {
 }
 
 fun main() {
+//    println(HexComparator.colorize("00 00 00 25 00 08 00 02 00 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 01 38 03 3E 03 3F A2 76 E4 B8 DD E7 86 74 F2 64 55 AD 9A EB 2F B9 DF F1 7F 8C 28 00 0B 78 14 5D A2 F5 CB 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D A2 F5 CA 9D 26 CB 5E 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E4 BD A0 E5 A5 BD 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00"))
+
+
+
     val scanner = Scanner(System.`in`)
     while (true) {
         println("Hex1: ")

@@ -12,6 +12,8 @@ abstract class PacketHandler(
 ) {
     abstract suspend fun onPacketReceived(packet: ServerPacket)
 
+    interface Key<T : PacketHandler>
+
     open fun close() {
 
     }
@@ -19,15 +21,18 @@ abstract class PacketHandler(
 
 class PacketHandlerNode<T : PacketHandler>(
         val clazz: KClass<T>,
-        val instance: T
+        val instance: T,
+        val key: PacketHandler.Key<T>
 )
 
-fun <T : PacketHandler> T.asNode(): PacketHandlerNode<T> {
+fun <T : PacketHandler> T.asNode(key: PacketHandler.Key<T>): PacketHandlerNode<T> {
     @Suppress("UNCHECKED_CAST")
-    return PacketHandlerNode(this::class as KClass<T>, this)
+    return PacketHandlerNode(this::class as KClass<T>, this, key)
 }
 
-class PacketHandlerList : MutableList<PacketHandlerNode<*>> by mutableListOf() {
+open class PacketHandlerList : MutableList<PacketHandlerNode<*>> by mutableListOf() {
+    @Suppress("UNCHECKED_CAST")
+    operator fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T = this.first { it.key === key }.instance as T
 
     operator fun <T : PacketHandler> get(clazz: KClass<T>): T {
         this.forEach {

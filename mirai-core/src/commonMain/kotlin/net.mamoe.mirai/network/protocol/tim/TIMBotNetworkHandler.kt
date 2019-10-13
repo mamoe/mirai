@@ -24,24 +24,19 @@ import net.mamoe.mirai.utils.*
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocket> {
+internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocket>, PacketHandlerList() {
     override val NetworkScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
     override lateinit var socket: BotSocket
-
-    override lateinit var event: EventPacketHandler
-
-    override lateinit var action: ActionPacketHandler
-
-    override val packetHandlers: PacketHandlerList = PacketHandlerList()
 
     internal val temporaryPacketHandlers = mutableListOf<TemporaryPacketHandler<*>>()
 
     private var heartbeatJob: Job? = null
 
+
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>) {
         temporaryPacketHandlers.add(temporaryPacketHandler)
-        temporaryPacketHandler.send(action.session)
+        temporaryPacketHandler.send(this[ActionPacketHandler].session)
     }
 
     override suspend fun login(configuration: LoginConfiguration): LoginResult {
@@ -68,13 +63,11 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
 
     //private | internal
     private fun onLoggedIn(sessionKey: ByteArray) {
-        require(packetHandlers.size == 0) { "Already logged in" }
+        require(size == 0) { "Already logged in" }
         val session = LoginSession(bot, sessionKey, socket, NetworkScope)
-        event = EventPacketHandler(session)
-        action = ActionPacketHandler(session)
 
-        packetHandlers.add(event.asNode())
-        packetHandlers.add(action.asNode())
+        add(EventPacketHandler(session).asNode(EventPacketHandler))
+        add(ActionPacketHandler(session).asNode(ActionPacketHandler))
     }
 
     private lateinit var sessionKey: ByteArray
@@ -89,7 +82,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
             this.loginResult.cancel(CancellationException("socket closed"))
         }
 
-        this.packetHandlers.forEach {
+        this.forEach {
             it.instance.close()
         }
 
@@ -177,21 +170,14 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
 
             packet.use {
                 //coz removeIf is not inline
-                with(temporaryPacketHandlers.iterator()) {
-                    while (hasNext()) {
-                        if (next().onPacketReceived(action.session, packet)) {
-                            remove()
-                        }
-                    }
-                };
+                temporaryPacketHandlers.removeIfInlined {
+                    it.onPacketReceived(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)
+                }
 
-                //For logDebug
-                {
-                    val name = packet::class.simpleName
-                    if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
-                        bot.cyan("Packet received: $packet")
-                    }
-                }()
+                val name = packet::class.simpleName
+                if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
+                    bot.cyan("Packet received: $packet")
+                }
 
                 if (packet is ServerEventPacket) {
                     //no need to sync acknowledgement packets
@@ -205,7 +191,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
                 }
 
                 loginHandler.onPacketReceived(packet)
-                packetHandlers.forEach {
+                this@TIMBotNetworkHandler.forEach {
                     it.instance.onPacketReceived(packet)
                 }
             }
@@ -223,7 +209,11 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
                 try {
                     build.readAvailable(buffer)
                     channel.send(buffer)//JVM: withContext(IO)
-                } catch (e: Exception) {
+                } catch (e: SendPacketInternalException) {
+                    bot.logger.logError("Caught SendPacketInternalException: ${e.cause?.message}")
+                    bot.reinitializeNetworkHandler(configuration)
+                    return@withContext
+                } catch (e: Throwable) {
                     e.log()
                     return@withContext
                 } finally {
@@ -379,7 +369,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
                     //登录成功后会收到大量上次的消息, 忽略掉 todo 优化
                     NetworkScope.launch {
                         delay(3000)
-                        event.ignoreMessage = false
+                        this@TIMBotNetworkHandler[EventPacketHandler].ignoreMessage = false
                     }
 
                     onLoggedIn(sessionKey)

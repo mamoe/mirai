@@ -18,12 +18,12 @@ class ClientSendFriendMessagePacket(
         private val message: MessageChain
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeRandom(2)
+        writeRandom(2)
 
-        this.writeQQ(botQQ)
-        this.writeHex(TIMProtocol.fixVer2)
+        writeQQ(botQQ)
+        writeHex(TIMProtocol.fixVer2)
 
-        this.encryptAndWrite(sessionKey) {
+        encryptAndWrite(sessionKey) {
             writeQQ(botQQ)
             writeQQ(targetQQ)
             writeHex("00 00 00 08 00 01 00 04 00 00 00 00")

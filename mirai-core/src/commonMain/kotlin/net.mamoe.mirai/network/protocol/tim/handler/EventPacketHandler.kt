@@ -24,6 +24,9 @@ import net.mamoe.mirai.utils.MiraiLogger
  */
 @Suppress("EXPERIMENTAL_API_USAGE")
 class EventPacketHandler(session: LoginSession) : PacketHandler(session) {
+    companion object Key : PacketHandler.Key<EventPacketHandler>
+
+
     internal var ignoreMessage: Boolean = true
 
     override suspend fun onPacketReceived(packet: ServerPacket): Unit = with(session) {
@@ -54,6 +57,16 @@ class EventPacketHandler(session: LoginSession) : PacketHandler(session) {
             is ServerFieldOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
             is ServerFieldOnlineStatusChangedPacket -> {
                 MiraiLogger.logInfo("${packet.qq.toLong()} 登录状态改变为 ${packet.status}")
+                //TODO
+            }
+
+            is ServerFriendTypingStartedPacket -> {
+                MiraiLogger.logInfo("${packet.qq.toLong()} 正在输入")
+                //TODO
+            }
+
+            is ServerFriendTypingCanceledPacket -> {
+                MiraiLogger.logInfo("${packet.qq.toLong()} 取消了输入")
                 //TODO
             }
 
