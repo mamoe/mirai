@@ -70,6 +70,9 @@ class EventPacketHandler(session: LoginSession) : PacketHandler(session) {
                 //TODO
             }
 
+            is IgnoredServerEventPacket -> {
+
+            }
             else -> {
                 //ignored
             }

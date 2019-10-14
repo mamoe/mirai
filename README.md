@@ -1,12 +1,11 @@
 # Mirai
 [![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai)
 
-一个以 **TIM QQ协议(非web)** 驱动的QQ机器人服务端核心   
-采用服务端-插件模式运行，同时提供独立的核心库  
+一个以 **TIM PC协议(非web)** 驱动的跨平台QQ机器人服务端核心, 虽然目前仅支持 JVM  
+采用服务端-插件模式运行，同时提供独立的跨平台核心库.  
 Mirai 的所有模块均开源
   
-项目处于开发阶段，学生无法每日大量更新。  
-项目还有很多未完善的地方, 欢迎任何的代码贡献, 或是 issue.   
+项目处于开发阶段, 还有很多未完善的地方. 欢迎任何的代码贡献, 或是 issue.  
 部分协议来自网络上开源项目  
 **一切开发旨在学习，请勿用于非法用途**
 
@@ -22,7 +21,8 @@ Mirai 的所有模块均开源
 3. Run demo main [Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo1/Main.kt#L22)
 
 ### 事件
-#### Kotlin
+
+#### 使用 Kotlin
 这里只演示进行不终止地监听。
 ##### Top-level reified
 多数情况下这是最好的方式。
@@ -35,7 +35,7 @@ subscribeAlways<FriendMessageEvent>{
 ```
 
 ##### DSL
-查看更多: [ListenerBuilder](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/event/Subscribers.kt#L69)  
+查看更多: [ListenerBuilder](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Subscribers.kt#L87)
 ```kotlin
 inline fun <reified E: Event> subscribeAll(builder: ListenerBuilder.() -> Unit)
 
@@ -66,38 +66,25 @@ FriendMessageEvent::class.subscribeAlways{
 ![AYWVE86P](.github/A%7DYWVE860U%28%25YQD%24R1GB1%5BP.png)
 
 ### 图片测试
-**现在可以接收图片消息**(并解析为消息链):  
+现在可以接收图片消息(并解析为消息链):  
 ![JsssF](.github/J%5DCE%29IK4BU08%28EO~UVLJ%7B%5BF.png)  
 ![](.github/68f8fec9.png)
 
 发送图片已经完成，但我们还在开发上传图片至服务器。  
-现在你可以通过发送一张图片给机器人账号，再让机器人账号发送这张图片。你可以查看 [Image.kt](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/message/Message.kt#L81)
+机器人可以转发图片消息.详情查看 [Image.kt](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/Message.kt#L81)
 
-# TODO
-- [x] 事件(Event)模块  
-- [ ] 插件(Plugin)模块
-- [x] Network - Touch  
-- [X] Network - Login
-- [X] Network - Session  
-- [X] Network - Verification Code
-- [X] Network - Message Receiving  
-- [X] Network - Message Sending  
-- [ ] Network - Events
-- [ ] Bot - Friend/group list
-- [ ] Bot - Actions(joining group, adding friend, etc.)
-- [x] Message Section
-- [ ] Image uploading
-- [ ] Contact  
-- [ ] UI
-- [ ] Console
+# 现已支持
+- 发送好友/群消息(2019/10/14)
+- 接收好友/群消息, 消息链解析(2019/10/14)
+- 好友在线状态改变(2019/10/14)
 
 <br>
 
 # 使用方法
 ## 要求
 - Kotlin 1.3+
-### JVM
-- Java 11
+### 用于 JVM 平台
+- Java 8
 ## 插件开发
 ``` text
     to be continued

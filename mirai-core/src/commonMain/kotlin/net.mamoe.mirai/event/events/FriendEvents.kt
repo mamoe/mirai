@@ -18,7 +18,5 @@ class FriendMessageEvent(bot: Bot, sender: QQ, val message: MessageChain) : Frie
 
     suspend inline fun reply(message: String) = sender.sendMessage(message)
 
-    suspend inline fun reply(message: List<Message>) = sender.sendMessage(message)
-
     suspend inline fun reply(message: MessageChain) = sender.sendMessage(message)//shortcut
 }

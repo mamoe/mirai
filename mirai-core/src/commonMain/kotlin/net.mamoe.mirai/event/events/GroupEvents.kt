@@ -15,7 +15,5 @@ class GroupMessageEvent(bot: Bot, group: Group, val sender: QQ, val message: Mes
 
     suspend inline fun reply(message: String) = group.sendMessage(message)
 
-    suspend inline fun reply(message: List<Message>) = group.sendMessage(message)
-
     suspend inline fun reply(message: MessageChain) = group.sendMessage(message)
 }

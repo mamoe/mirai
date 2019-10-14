@@ -49,10 +49,7 @@ suspend fun main() {
             "复读" in it.message -> it.sender.sendMessage(it.message)
 
             "发群" in it.message -> {
-                it.message.list.toMutableList().let { messages ->
-                    messages.removeAt(0)
-                    Group(bot, 580266363).sendMessage(messages)
-                }
+
             }
 
             /*it.event eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->

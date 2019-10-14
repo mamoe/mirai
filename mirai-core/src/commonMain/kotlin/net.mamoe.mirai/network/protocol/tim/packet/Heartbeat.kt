@@ -8,7 +8,7 @@ import net.mamoe.mirai.utils.*
 
 @PacketId("00 58")
 class ClientHeartbeatPacket(
-        private val qq: Long,
+        private val bot: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override val idHex: String by lazy {
@@ -16,7 +16,7 @@ class ClientHeartbeatPacket(
     }
 
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(qq)
+        this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer)
         this.encryptAndWrite(sessionKey) {
             writeHex("00 01 00 01")

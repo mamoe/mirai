@@ -70,7 +70,10 @@ internal fun ByteReadPacket.readMessage(): Message? {
 
         0x19 -> {//未知, 可能是长文本?
             //bot手机自己跟自己发消息会出这个
+            //似乎手机发消息就会有这个?
             //sectionData: 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00
+            //             01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00
+            return null
             sectionData.readBytes().debugPrint("sectionData")
             return PlainText("[UNKNOWN(${this.readBytes().toUHexString()})]")
             println()

@@ -72,3 +72,8 @@ interface BotNetworkHandler<Socket : DataPacketSocket> : Closeable {
         NetworkScope.cancel("handler closed", HandlerClosedException())
     }
 }
+
+/**
+ * [BotNetworkHandler] closed
+ */
+class HandlerClosedException : Exception()

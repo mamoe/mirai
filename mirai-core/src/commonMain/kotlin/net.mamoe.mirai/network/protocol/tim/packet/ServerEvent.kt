@@ -9,6 +9,9 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.*
 import kotlin.properties.Delegates
 
+/**
+ * 事件的识别 ID. 在 [事件确认包][ServerEventPacket.ResponsePacket] 中被使用.
+ */
 data class EventPacketIdentity(
         val from: UInt,//对于好友消息, 这个是发送人
         val to: UInt,//对于好友消息, 这个是bot
@@ -37,8 +40,9 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                     to = readUInt(),
                     uniqueId = readIoBuffer(8)
             )
-            readBytes(2).takeIf { it[0].toUInt() != 0x1Fu && it[1].toUInt() != 0x40u }?.debugPrint("type前面2个byte")
+            discardExact(2)
             val type = readBytes(2)
+            //DebugLogger.logPurple("unknown2Byte+byte = ${unknown2Byte.toUHexString()} ${type.toUHexString()}")
             return when (type.toUHexString()) {
                 "00 C4" -> {
                     discardExact(13)
@@ -56,11 +60,17 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 
 
                 //00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 16 00 00 00 37 08 02 1A 12 08 95 02 10 90 04 40 98 E1 8C ED 05 48 AF 96 C3 A4 03 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 1A 29 08 00 10 05 18 98 E1 8C ED 05 20 01 28 FF FF FF FF 0F 32 15 E5 AF B9 E6 96 B9 E6 AD A3 E5 9C A8 E8 BE 93 E5 85 A5 2E 2E 2E
+                //00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 07 00 00 00
                 "02 10" -> {
                     discardExact(19)
+                    println(readUByte().toUInt())
+
+                    //todo 错了. 可能是 00 79 才是.
+                    return@with ServerFriendTypingCanceledPacket(input, eventIdentity)
                     if (readUByte().toUInt() == 0x37u) ServerFriendTypingStartedPacket(input, eventIdentity)
                     else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)
                 }
+                "00 79" -> IgnoredServerEventPacket(type, input, eventIdentity)
 
                 //"02 10", "00 12" -> ServerUnknownEventPacket(input, eventIdentity)
 
@@ -96,6 +106,12 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 }
 
 /**
+ * 忽略的事件.
+ * 如 00 79: 总是与 01 12 一起发生, 但 00 79 却没多大意义
+ */
+class IgnoredServerEventPacket(val eventId: ByteArray/*2*/, input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity)
+
+/**
  * Unknown event
  */
 class UnknownServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
@@ -119,7 +135,6 @@ class ServerFriendTypingStartedPacket(input: ByteReadPacket, eventIdentity: Even
  * 对方取消了输入
  */
 class ServerFriendTypingCanceledPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerFriendTypingPacket(input, eventIdentity)
-
 
 
 /**

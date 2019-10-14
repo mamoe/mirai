@@ -7,15 +7,11 @@ import net.mamoe.mirai.message.PlainText
 import net.mamoe.mirai.message.toChain
 
 /**
- * 联系人.
+ * 联系人平台基础. 包含所有平台通用的函数等.
  *
- * A contact is a [QQ] or a [Group] for one particular [Bot] instance only.
- *
- * @param bot the Owner [Bot]
- * @param number the id number of this contact
  * @author Him188moe
  */
-abstract class Contact internal constructor(val bot: Bot, val number: Long) {
+abstract class PlatformContactBase internal constructor(val bot: Bot, val number: Long) {
 
     abstract suspend fun sendMessage(message: MessageChain)
 
@@ -26,13 +22,15 @@ abstract class Contact internal constructor(val bot: Bot, val number: Long) {
         return sendMessage(message.toChain())
     }
 
-    suspend fun sendMessage(plain: String) {
-        this.sendMessage(PlainText(plain))
-    }
+    suspend fun sendMessage(plain: String) = this.sendMessage(PlainText(plain))
 
-    suspend fun sendMessage(message: List<Message>) {
-        this.sendMessage(MessageChain(message))
-    }
 
     abstract suspend fun sendXMLMessage(message: String)
 }
+
+/**
+ * 所有的 [QQ], [Group] 都继承自这个类.
+ * 在不同平台可能有不同的实现.
+ * 如在 JVM, suspend 调用不便, [Contact] 中有简化调用的 `blocking`() 和 `async`
+ */
+expect sealed class Contact(bot: Bot, number: Long) : PlatformContactBase

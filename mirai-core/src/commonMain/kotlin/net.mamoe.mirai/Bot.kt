@@ -5,6 +5,7 @@ import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot.ContactSystem
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.groupIdToNumber
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
