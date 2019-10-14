@@ -30,7 +30,7 @@ Mirai 的所有模块均开源
 inline fun <reified E: Event> subscribeAlways(handler: (E) -> Unit)
 
 subscribeAlways<FriendMessageEvent>{
-  //it: MessageChain
+  //it: FriendMessageEvent
 }
 ```
 
@@ -41,25 +41,14 @@ inline fun <reified E: Event> subscribeAll(builder: ListenerBuilder.() -> Unit)
 
 subscribe<FriendMessageEvent>{
   always{
-    //it: MessageChain
+    //it: FriendMessageEvent
     //coroutineContext: EventScope.coroutineContext
   }
   //可同时开始多个监听。
   always{
-    //it: MessageChain
+    //it: FriendMessageEvent
     //coroutineContext: EventScope.coroutineContext
   }
-}
-```
-
-##### KClass extension
-更推荐使用 Top-level reified
-```kotlin
-fun <E : Event> KClass<E>.subscribeAlways(listener: suspend (E) -> Unit)
-
-FriendMessageEvent::class.subscribeAlways{
-  if(it.message eq "你好")
-     it.reply("你好！")
 }
 ```
 

@@ -7,7 +7,7 @@ import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.utils.MiraiDatagramChannel
+import net.mamoe.mirai.utils.PlatformDatagramChannel
 
 /**
  * 网络接口.
@@ -24,7 +24,7 @@ interface DataPacketSocket : Closeable {
     /**
      * UDP 通道
      */
-    val channel: MiraiDatagramChannel
+    val channel: PlatformDatagramChannel
 
     /**
      * 是否开启

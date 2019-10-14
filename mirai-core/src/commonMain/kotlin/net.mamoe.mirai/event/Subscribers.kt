@@ -3,35 +3,13 @@
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.event.internal.Handler
-import net.mamoe.mirai.event.internal.listeners
 import net.mamoe.mirai.event.internal.subscribeInternal
-import kotlin.jvm.Synchronized
 import kotlin.reflect.KClass
 
 enum class ListeningStatus {
     LISTENING,
     STOPPED
 }
-
-/* KClass 的扩展方法 */
-
-@Synchronized
-fun <E : Event> KClass<E>.subscribe(handler: suspend (E) -> ListeningStatus) = this.listeners.add(Handler(handler))
-
-fun <E : Event> KClass<E>.subscribeAlways(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.LISTENING })
-
-fun <E : Event> KClass<E>.subscribeOnce(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.STOPPED })
-
-fun <E : Event, T> KClass<E>.subscribeUntil(valueIfStop: T, listener: suspend (E) -> T) = subscribeInternal(Handler { if (listener(it) === valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
-fun <E : Event> KClass<E>.subscribeUntilFalse(listener: suspend (E) -> Boolean) = subscribeUntil(false, listener)
-fun <E : Event> KClass<E>.subscribeUntilTrue(listener: suspend (E) -> Boolean) = subscribeUntil(true, listener)
-fun <E : Event> KClass<E>.subscribeUntilNull(listener: suspend (E) -> Any?) = subscribeUntil(null, listener)
-
-
-fun <E : Event, T> KClass<E>.subscribeWhile(valueIfContinue: T, listener: suspend (E) -> T) = subscribeInternal(Handler { if (listener(it) !== valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
-fun <E : Event> KClass<E>.subscribeWhileFalse(listener: suspend (E) -> Boolean) = subscribeWhile(false, listener)
-fun <E : Event> KClass<E>.subscribeWhileTrue(listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
-fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
 
 /* 顶层方法 */
 
@@ -52,6 +30,26 @@ inline fun <reified E : Event> subscribeWhileFalse(noinline listener: suspend (E
 inline fun <reified E : Event> subscribeWhileTrue(noinline listener: suspend (E) -> Boolean) = E::class.subscribeWhileTrue(listener)
 inline fun <reified E : Event> subscribeWhileNull(noinline listener: suspend (E) -> Any?) = E::class.subscribeWhileNull(listener)
 
+/* KClass 的扩展方法, 不推荐 */
+
+fun <E : Event> KClass<E>.subscribe(handler: suspend (E) -> ListeningStatus) = this.subscribeInternal(Handler(handler))
+
+fun <E : Event> KClass<E>.subscribeAlways(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.LISTENING })
+
+fun <E : Event> KClass<E>.subscribeOnce(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.STOPPED })
+
+fun <E : Event, T> KClass<E>.subscribeUntil(valueIfStop: T, listener: suspend (E) -> T) = subscribeInternal(Handler { if (listener(it) === valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
+fun <E : Event> KClass<E>.subscribeUntilFalse(listener: suspend (E) -> Boolean) = subscribeUntil(false, listener)
+fun <E : Event> KClass<E>.subscribeUntilTrue(listener: suspend (E) -> Boolean) = subscribeUntil(true, listener)
+fun <E : Event> KClass<E>.subscribeUntilNull(listener: suspend (E) -> Any?) = subscribeUntil(null, listener)
+
+
+fun <E : Event, T> KClass<E>.subscribeWhile(valueIfContinue: T, listener: suspend (E) -> T) = subscribeInternal(Handler { if (listener(it) !== valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
+fun <E : Event> KClass<E>.subscribeWhileFalse(listener: suspend (E) -> Boolean) = subscribeWhile(false, listener)
+fun <E : Event> KClass<E>.subscribeWhileTrue(listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
+fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
+
+/* ListenerBuilder DSL */
 
 /**
  * 监听一个事件. 可同时进行多种方式的监听

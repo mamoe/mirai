@@ -10,7 +10,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.LoginConfiguration
-import net.mamoe.mirai.utils.MiraiDatagramChannel
+import net.mamoe.mirai.utils.PlatformDatagramChannel
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.
@@ -33,7 +33,7 @@ interface BotNetworkHandler<Socket : DataPacketSocket> : Closeable {
      * 所有 [BotNetworkHandler] 的协程均启动在此作用域下.
      *
      * [BotNetworkHandler] 的协程包含:
-     * - UDP 包接收: [MiraiDatagramChannel.read]
+     * - UDP 包接收: [PlatformDatagramChannel.read]
      * - 心跳 Job [ClientHeartbeatPacket]
      * - SKey 刷新 [ClientSKeyRefreshmentRequestPacket]
      * - 所有数据包处理和发送

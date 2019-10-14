@@ -24,7 +24,7 @@ import net.mamoe.mirai.utils.*
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocket>, PacketHandlerList() {
+internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocket>, PacketHandlerList() {
     override val NetworkScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
     override lateinit var socket: BotSocket
@@ -92,7 +92,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
     override suspend fun sendPacket(packet: ClientPacket) = socket.sendPacket(packet)
 
     internal inner class BotSocket(override val serverIp: String, val configuration: LoginConfiguration) : DataPacketSocket {
-        override val channel: MiraiDatagramChannel = MiraiDatagramChannel(serverIp, 8000)
+        override val channel: PlatformDatagramChannel = PlatformDatagramChannel(serverIp, 8000)
 
         override val isOpen: Boolean get() = channel.isOpen
 
@@ -104,7 +104,7 @@ internal class TIMBotNetworkHandler(private val bot: Bot) : BotNetworkHandler<TI
 
                 try {
                     channel.read(buffer)//JVM: withContext(IO)
-                } catch (e: ClosedChannelException) {
+                } catch (e: ReadPacketInternalException) {
 
                 } catch (e: Exception) {
                     e.log()

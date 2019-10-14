@@ -4,6 +4,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.ListeningStatus
+import net.mamoe.mirai.utils.removeIfInlined
 import kotlin.reflect.KClass
 
 /**
@@ -11,7 +12,7 @@ import kotlin.reflect.KClass
  *
  * @author Him188moe
  */
-internal fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<E>) = this.listeners.add(listener)
+internal fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<E>) = this.listeners.add(listener)//TODO lock or sth else
 
 /**
  * 事件监听器
@@ -19,7 +20,6 @@ internal fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<E>) = th
  * @author Him188moe
  */
 internal interface Listener<in E : Event> {
-
     suspend fun onEvent(event: E): ListeningStatus
 }
 
@@ -58,12 +58,7 @@ internal object EventListenerManger {
 @Suppress("UNCHECKED_CAST")
 internal suspend fun <E : Event> E.broadcastInternal(): E {
     suspend fun callListeners(listeners: EventListeners<in E>) = listeners.lock.withLock {
-        val iterator = listeners.iterator()
-        while (iterator.hasNext()) {
-            if (iterator.next().onEvent(this) == ListeningStatus.STOPPED) {
-                iterator.remove()
-            }
-        }
+        listeners.removeIfInlined { it.onEvent(this) == ListeningStatus.STOPPED }
     }
 
     callListeners(this::class.listeners as EventListeners<in E>)
