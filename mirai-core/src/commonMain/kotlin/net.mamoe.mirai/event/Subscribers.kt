@@ -11,7 +11,8 @@ enum class ListeningStatus {
     STOPPED
 }
 
-/* 顶层方法 */
+
+// region 顶层方法
 
 inline fun <reified E : Event> subscribe(noinline handler: suspend (E) -> ListeningStatus) = E::class.subscribe(handler)
 
@@ -30,7 +31,10 @@ inline fun <reified E : Event> subscribeWhileFalse(noinline listener: suspend (E
 inline fun <reified E : Event> subscribeWhileTrue(noinline listener: suspend (E) -> Boolean) = E::class.subscribeWhileTrue(listener)
 inline fun <reified E : Event> subscribeWhileNull(noinline listener: suspend (E) -> Any?) = E::class.subscribeWhileNull(listener)
 
-/* KClass 的扩展方法, 不推荐 */
+// endregion
+
+
+// region KClass 的扩展方法 (不推荐)
 
 fun <E : Event> KClass<E>.subscribe(handler: suspend (E) -> ListeningStatus) = this.subscribeInternal(Handler(handler))
 
@@ -49,7 +53,9 @@ fun <E : Event> KClass<E>.subscribeWhileFalse(listener: suspend (E) -> Boolean) 
 fun <E : Event> KClass<E>.subscribeWhileTrue(listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
 fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
 
-/* ListenerBuilder DSL */
+// endregion
+
+// region ListenerBuilder DSL
 
 /**
  * 监听一个事件. 可同时进行多种方式的监听
@@ -105,3 +111,5 @@ inline class ListenerBuilder<out E : Event>(
 
     fun once(block: suspend (E) -> Unit) = handler { block(it); ListeningStatus.STOPPED }
 }
+
+// endregion

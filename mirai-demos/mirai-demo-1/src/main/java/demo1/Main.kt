@@ -20,8 +20,8 @@ import kotlin.system.exitProcess
 
 suspend fun main() {
     val bot = Bot(BotAccount(//填写你的账号
-            qqNumber = 1994701021,
-            password = "asdhim188666"
+            qqNumber = 1994701121,
+            password = "abcdefg"
     ), Console())
 
     bot.login {
@@ -65,7 +65,7 @@ suspend fun main() {
         }
     }
 
-    //通过 KClass 扩展方式监听事件
+    //通过 KClass 扩展方式监听事件(不推荐)
     GroupMessageEvent::class.subscribeAlways {
         when {
             it.message.contains("复读") -> it.reply(it.message)
@@ -74,13 +74,15 @@ suspend fun main() {
 
 
     //DSL 监听
-    FriendMessageEvent::class.subscribeAll {
+    subscribeAll<FriendMessageEvent> {
         always {
             //获取第一个纯文本消息
             val firstText = it.message.first<PlainText>()
 
         }
     }
+
+    demo2()
 
     //由于使用的是协程, main函数执行完后就会结束程序.
     delay(Long.MAX_VALUE)//永远等待, 以测试事件
