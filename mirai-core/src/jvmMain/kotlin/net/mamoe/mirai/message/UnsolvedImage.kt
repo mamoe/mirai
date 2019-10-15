@@ -1,6 +1,6 @@
 package net.mamoe.mirai.message
 
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
@@ -30,7 +30,7 @@ class UnsolvedImage(private val filename: String, val image: BufferedImage) {
     constructor(imageFile: File) : this(imageFile.name, ImageIO.read(imageFile))
     constructor(url: URL) : this(File(url.file))
 
-    suspend fun upload(session: LoginSession, contact: Contact): CompletableDeferred<Unit> {
+    suspend fun upload(session: LoginSession, contact: Contact): CompletableJob {
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
             toSend { ClientTryGetImageIDPacketJvm(session.bot.qqNumber, session.sessionKey, contact.number, image) }
 

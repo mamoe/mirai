@@ -1,6 +1,6 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CompletableJob
 import net.mamoe.mirai.network.LoginSession
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  */
 class TemporaryPacketHandler<P : ServerPacket>(
         private val expectationClass: KClass<P>,
-        private val deferred: CompletableDeferred<Unit>,
+        private val deferred: CompletableJob,
         private val fromSession: LoginSession
 ) {
     private lateinit var toSend: ClientPacket
@@ -49,11 +49,12 @@ class TemporaryPacketHandler<P : ServerPacket>(
         session.socket.sendPacket(toSend)
     }
 
-    suspend fun onPacketReceived(session: LoginSession, packet: ServerPacket): Boolean {
+    suspend fun shouldRemove(session: LoginSession, packet: ServerPacket): Boolean {
         if (expectationClass.isInstance(packet) && session === this.fromSession) {
-            @Suppress("UNCHECKED_CAST")
-            expect(packet as P)
-            deferred.complete(Unit)
+            kotlin.runCatching {
+                @Suppress("UNCHECKED_CAST")
+                expect(packet as P)
+            }.onFailure { deferred.completeExceptionally(it) }.onSuccess { deferred.complete() }
             return true
         }
         return false

@@ -1,13 +1,15 @@
 package net.mamoe.mirai.network
 
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocket
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.getGTK
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -62,10 +64,10 @@ class LoginSession(
      * @param handlerTemporary 处理器.
      */
     //@JvmSynthetic
-    suspend inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableDeferred<Unit> {
-        val deferred = CompletableDeferred<Unit>()
-        this.bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this).also(handlerTemporary))
-        return deferred
+    suspend inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableJob {
+        val job = coroutineContext[Job].takeIf { it != null }?.let { Job(it) } ?: Job()
+        this.bot.network.addHandler(TemporaryPacketHandler(P::class, job, this).also(handlerTemporary))
+        return job
     }
 
     /**
@@ -85,13 +87,13 @@ class LoginSession(
      * @param handler 处理期待的包
      */
     @JvmSynthetic
-    suspend inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: suspend (P) -> Unit): CompletableDeferred<Unit> {
-        val deferred = CompletableDeferred<Unit>()
-        this.bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this).also {
+    suspend inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: suspend (P) -> Unit): CompletableJob {
+        val job = coroutineContext[Job].takeIf { it != null }?.let { Job(it) } ?: Job()
+        this.bot.network.addHandler(TemporaryPacketHandler(P::class, job, this).also {
             it.toSend(toSend)
             it.onExpect(handler)
         })
-        return deferred
+        return job
     }
 }
 
