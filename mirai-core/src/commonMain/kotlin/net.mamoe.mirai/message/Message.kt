@@ -111,7 +111,7 @@ data class MessageChain(
         val list: MutableList<Message>
 ) : Message(), Iterable<Message> {
     constructor() : this(mutableListOf())
-    constructor(vararg messages: Message) : this(mutableListOf(*messages))
+    constructor(vararg messages: Message) : this(messages.toMutableList())
     constructor(messages: Iterable<Message>) : this(messages.toMutableList())
 
     val size: Int = list.size

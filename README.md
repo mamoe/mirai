@@ -69,9 +69,9 @@ subscribe<FriendMessageEvent>{
 
 ## 使用方法
 ### 要求
-- Kotlin 1.3+
+  - Kotlin 1.3+
 #### 用于 JVM 平台
-- Java 8
+ - Java 8
 ## 插件开发
 ``` text
     to be continued
