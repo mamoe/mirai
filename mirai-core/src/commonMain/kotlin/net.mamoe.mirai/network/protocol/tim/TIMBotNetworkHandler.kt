@@ -1,6 +1,8 @@
 package net.mamoe.mirai.network.protocol.tim
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.event.EventScope
@@ -30,12 +32,15 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     override lateinit var socket: BotSocket
 
     internal val temporaryPacketHandlers = mutableListOf<TemporaryPacketHandler<*>>()
+    private val handlersLock = Mutex()
 
     private var heartbeatJob: Job? = null
 
 
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>) {
-        temporaryPacketHandlers.add(temporaryPacketHandler)
+        handlersLock.withLock {
+            temporaryPacketHandlers.add(temporaryPacketHandler)
+        }
         temporaryPacketHandler.send(this[ActionPacketHandler].session)
     }
 
@@ -170,8 +175,10 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
             packet.use {
                 //coz removeIf is not inline
-                temporaryPacketHandlers.removeIfInlined {
-                    it.onPacketReceived(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)
+                handlersLock.withLock {
+                    temporaryPacketHandlers.removeIfInlined {
+                        it.onPacketReceived(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)
+                    }
                 }
 
                 val name = packet::class.simpleName
