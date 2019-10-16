@@ -30,7 +30,7 @@ import net.mamoe.mirai.contact.QQ
  *
  * @see Contact.sendMessage 发送消息
  */
-sealed class Message {
+sealed class Message {//todo 使用 inline class 以减少 obj 创建. 在连接时才创建一个 linked 对象
     /**
      * 易读的 [String] 值
      * 如:
@@ -53,7 +53,21 @@ sealed class Message {
     open operator fun contains(sub: String): Boolean = false
 
     /**
-     * 把这个消息连接到另一个消息的头部. 类似于字符串相加
+     * 把这个消息连接到另一个消息的头部. 类似于字符串相加.
+     *
+     * 例:
+     * ```kotlin
+     * val a = PlainText("Hello ")
+     * val b = PlainText("world!")
+     * val c:MessageChain = a + b;
+     * println(c)// "Hello world!"
+     * ```
+     *
+     * ```kotlin
+     * val d = PlainText("world!")
+     * val e = c + d;//PlainText + MessageChain
+     * println(c)// "Hello world!"
+     * ```
      */
     open fun concat(tail: Message): MessageChain =
             if (tail is MessageChain) MessageChain(this).also { tail.forEach { child -> it.concat(child) } }
@@ -102,11 +116,19 @@ data class Face(val id: FaceID) : Message() {
     override val stringValue: String = "[face${id.id}]"
 }
 
+
 // ==================================== MessageChain ====================================
 /**
- * 消息链. 即 MutableList<Message>
+ * 消息链. 即 MutableList<Message>.
+ * 它是一个特殊的 [Message], 实现 [MutableList] 接口, 但将所有的接口调用都转到内部维护的另一个 [MutableList], [delegate]
+ *
+ * 有关 [MessageChain] 的创建和连接:
+ * - 当任意两个不是 [MessageChain] 的 [Message] 相连接后, 将会产生一个 [MessageChain].
+ * - 若两个 [MessageChain] 连接, 后一个将会被添加到第一个内.
+ * - 若一个 [MessageChain] 与一个其他 [Message] 连接, [Message] 将会被添加入 [MessageChain].
+ * - 若一个 [Message] 与一个 [MessageChain] 连接, 将会创建一个新的 [MessageChain], 并顺序添加连接时的参数.
  */
-data class MessageChain(
+data class MessageChain constructor(//todo 优化: 不构造 list. 而是在每个 Message 内写 head 和 tail 来连接.
         /**
          * Elements will not be instances of [MessageChain]
          */
