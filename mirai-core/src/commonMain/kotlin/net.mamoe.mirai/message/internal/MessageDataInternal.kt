@@ -118,7 +118,7 @@ fun ByteReadPacket.readMessageChain(): MessageChain {
 }
 
 fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
-    this@toPacket.list.forEach { message ->
+    this@toPacket.forEach { message ->
         writePacket(with(message) {
             when (this) {
                 is Face -> buildPacket {

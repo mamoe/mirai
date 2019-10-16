@@ -9,6 +9,9 @@ import kotlinx.io.core.readBytes
 import net.mamoe.mirai.utils.*
 
 
+/**
+ * 来自服务器的数据包
+ */
 abstract class ServerPacket(val input: ByteReadPacket) : Packet(), Closeable {
     override var idHex: String = EMPTY_ID_HEX
         get() {

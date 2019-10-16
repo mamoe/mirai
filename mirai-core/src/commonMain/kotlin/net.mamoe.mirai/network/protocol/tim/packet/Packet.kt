@@ -5,6 +5,9 @@ package net.mamoe.mirai.network.protocol.tim.packet
 import net.mamoe.mirai.utils.hexToUBytes
 
 
+/**
+ * 数据包
+ */
 abstract class Packet {
     open val idHex: String by lazy {
         this::class.annotations.filterIsInstance<PacketId>().firstOrNull()?.value?.trim() ?: ""
