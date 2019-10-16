@@ -56,7 +56,7 @@ sealed class Message {
      * 把这个消息连接到另一个消息的头部. 类似于字符串相加
      */
     open fun concat(tail: Message): MessageChain =
-            if (tail is MessageChain) MessageChain(this).also { tail.list.forEach { child -> it.concat(child) } }
+            if (tail is MessageChain) MessageChain(this).also { tail.forEach { child -> it.concat(child) } }
             else MessageChain(this, tail)
 
     infix operator fun plus(another: Message): MessageChain = this.concat(another)
@@ -103,39 +103,73 @@ data class Face(val id: FaceID) : Message() {
 }
 
 // ==================================== MessageChain ====================================
-
+/**
+ * 消息链. 即 MutableList<Message>
+ */
 data class MessageChain(
         /**
          * Elements will not be instances of [MessageChain]
          */
-        val list: MutableList<Message>
-) : Message(), Iterable<Message> {
+        private val delegate: MutableList<Message>
+) : Message(), MutableList<Message> {
     constructor() : this(mutableListOf())
     constructor(vararg messages: Message) : this(messages.toMutableList())
     constructor(messages: Iterable<Message>) : this(messages.toMutableList())
 
-    val size: Int = list.size
+    // region Message override
+    override val stringValue: String get() = this.delegate.joinToString("") { it.stringValue }
 
-    override val stringValue: String get() = this.list.joinToString("") { it.stringValue }
-
-    override fun iterator(): Iterator<Message> = this.list.iterator()
+    override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
+    override fun concat(tail: Message): MessageChain {
+        if (tail is MessageChain) tail.delegate.forEach { child -> this.concat(child) }
+        else this.delegate.add(tail)
+        return this
+    }
+    // endregion
 
     /**
      * 获取第一个 [M] 类型的实例
      * @throws [NoSuchElementException] 如果找不到该类型的实例
      */
-    inline fun <reified M : Message> first(): Message = this.list.first { M::class.isInstance(it) }
+    inline fun <reified M : Message> first(): Message = this.first { M::class.isInstance(it) }
 
     /**
      * 获取第一个 [M] 类型的实例
      */
-    inline fun <reified M : Message> firstOrNull(): Message? = this.list.firstOrNull { M::class.isInstance(it) }
+    inline fun <reified M : Message> firstOrNull(): Message? = this.firstOrNull { M::class.isInstance(it) }
 
-    override operator fun contains(sub: String): Boolean = list.any { it.contains(sub) }
 
-    override fun concat(tail: Message): MessageChain {
-        if (tail is MessageChain) tail.list.forEach { child -> this.concat(child) }
-        else this.list.add(tail)
-        return this
+    operator fun plusAssign(message: Message) {
+        this.concat(message)
     }
+
+    operator fun plusAssign(plain: String) {
+        this.concat(plain.toMessage())
+    }
+
+
+    // region MutableList override
+    override fun containsAll(elements: Collection<Message>): Boolean = delegate.containsAll(elements)
+
+    override operator fun get(index: Int): Message = delegate[index]
+    override fun indexOf(element: Message): Int = delegate.indexOf(element)
+    override fun isEmpty(): Boolean = delegate.isEmpty()
+    override fun lastIndexOf(element: Message): Int = delegate.lastIndexOf(element)
+    override fun add(element: Message): Boolean = delegate.add(element)
+    override fun add(index: Int, element: Message) = delegate.add(index, element)
+    override fun addAll(index: Int, elements: Collection<Message>): Boolean = delegate.addAll(index, elements)
+    override fun addAll(elements: Collection<Message>): Boolean = delegate.addAll(elements)
+    override fun clear() = delegate.clear()
+    override fun listIterator(): MutableListIterator<Message> = delegate.listIterator()
+    override fun listIterator(index: Int): MutableListIterator<Message> = delegate.listIterator(index)
+    override fun remove(element: Message): Boolean = delegate.remove(element)
+    override fun removeAll(elements: Collection<Message>): Boolean = delegate.removeAll(elements)
+    override fun removeAt(index: Int): Message = delegate.removeAt(index)
+    override fun retainAll(elements: Collection<Message>): Boolean = delegate.retainAll(elements)
+    override fun set(index: Int, element: Message): Message = delegate.set(index, element)
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> = delegate.subList(fromIndex, toIndex)
+    override fun iterator(): MutableIterator<Message> = this.delegate.iterator()
+    override operator fun contains(element: Message): Boolean = delegate.contains(element)
+    override val size: Int = delegate.size
+    // endregion
 }
