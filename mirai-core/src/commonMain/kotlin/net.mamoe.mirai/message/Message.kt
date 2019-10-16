@@ -76,10 +76,10 @@ data class PlainText(override val stringValue: String) : Message() {
  * 图片消息.
  * 由接收消息时构建, 可直接发送
  *
- * @param imageId 类似 `{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg`. 群的是大写id, 好友的是小写id
+ * @param id 类似 `{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg`. 群的是大写id, 好友的是小写id
  */
-data class Image(val imageId: String) : Message() {
-    override val stringValue: String = "[$imageId]"
+data class Image(val id: String) : Message() {
+    override val stringValue: String = "[$id]"
 }
 
 // ==================================== At ====================================
@@ -168,7 +168,7 @@ data class MessageChain(
     override fun retainAll(elements: Collection<Message>): Boolean = delegate.retainAll(elements)
     override fun set(index: Int, element: Message): Message = delegate.set(index, element)
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> = delegate.subList(fromIndex, toIndex)
-    override fun iterator(): MutableIterator<Message> = this.delegate.iterator()
+    override fun iterator(): MutableIterator<Message> = delegate.iterator()
     override operator fun contains(element: Message): Boolean = delegate.contains(element)
     override val size: Int = delegate.size
     // endregion

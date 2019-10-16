@@ -143,7 +143,7 @@ fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
 
                     writeLVPacket {
                         writeByte(0x02)
-                        writeLVString(imageId)
+                        writeLVString(id)
                         writeHex("04 00 " +
                                 "04 9B 53 B0 08 " +
                                 "05 00 " +
@@ -153,7 +153,7 @@ fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
                                 "07 00 " +
                                 "01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 11 00 00 00 15 00 04 00 00 02 BC 16 00 04 00 00 02 BC 18 00 04 00 00 7D 5E FF 00 5C 15 36 20 39 32 6B 41 31 43 39 62 35 33 62 30 30 38 64 39 38 61 35 61 37 30 20")
                         writeHex("20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20")
-                        writeStringUtf8(imageId)
+                        writeStringUtf8(id)
                         writeByte(0x41)
                     }
                 }
