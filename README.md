@@ -1,5 +1,5 @@
 # Mirai
-[![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai)
+[![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
 
 一个以 **TIM PC协议(非web)** 驱动的跨平台QQ机器人服务端核心, 虽然目前仅支持 JVM  
 采用服务端-插件模式运行，同时提供独立的跨平台核心库.  
