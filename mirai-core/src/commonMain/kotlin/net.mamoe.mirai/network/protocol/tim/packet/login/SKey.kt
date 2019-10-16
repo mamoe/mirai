@@ -1,27 +1,22 @@
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.setId
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.*
 
 /**
  * SKey 用于 http api
  */
-@PacketId("00 1D")
+@PacketId(0x00_1Du)
 class ClientSKeyRequestPacket(
         private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
-    override val idHex: String by lazy {
-        super.idHex + " " + getRandomByteArray(2).toUHexString()
-    }
-
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(qq)
         writeHex(TIMProtocol.fixVer2)
@@ -31,15 +26,11 @@ class ClientSKeyRequestPacket(
     }
 }
 
-@PacketId("00 1D")
+@PacketId(0x00_1Du)
 class ClientSKeyRefreshmentRequestPacket(
         private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
-    override val idHex: String by lazy {
-        super.idHex + " " + getRandomByteArray(2).toUHexString()
-    }
-
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
         this.encryptAndWrite(sessionKey) {
@@ -48,6 +39,7 @@ class ClientSKeyRefreshmentRequestPacket(
     }
 }
 
+@PacketId(0x00_1Du)
 class ServerSKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     lateinit var sKey: String
 
@@ -57,7 +49,8 @@ class ServerSKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
         MiraiLogger.logDebug("SKey=$sKey")
     }
 
-    class Encrypted(inputStream: ByteReadPacket) : ServerPacket(inputStream) {
-        fun decrypt(sessionKey: ByteArray): ServerSKeyResponsePacket = ServerSKeyResponsePacket(this.decryptBy(sessionKey)).setId(this.idHex)
+    @PacketId(0x00_1Du)
+    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
+        fun decrypt(sessionKey: ByteArray): ServerSKeyResponsePacket = ServerSKeyResponsePacket(this.decryptBy(sessionKey)).applySequence(sequenceId)
     }
 }

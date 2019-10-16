@@ -1,6 +1,7 @@
 package demo1
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.FriendMessageEvent
@@ -16,12 +17,14 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import net.mamoe.mirai.utils.MiraiLogger
+import kotlin.coroutines.coroutineContext
 import kotlin.system.exitProcess
+import kotlin.system.measureTimeMillis
 
 suspend fun main() {
     val bot = Bot(BotAccount(//填写你的账号
-            qqNumber = 1994701121,
-            password = "abcdefg"
+            qqNumber = 2903772581,
+            password = "zxc123456"
     ), Console())
 
     bot.login {
@@ -30,10 +33,9 @@ suspend fun main() {
     }.let {
         if (it != LoginResult.SUCCESS) {
             MiraiLogger.logError("Login failed: " + it.name)
-            exitProcess(0)
+            bot.close()
         }
     }
-
 
     //提供泛型以监听事件
     subscribeOnce<FriendMessageEvent> {
@@ -97,7 +99,7 @@ suspend fun main() {
 fun demo2() {
     subscribeAlways<FriendMessageEvent> { event ->
         if (event.message eq "记笔记") {
-            FriendMessageEvent::class.subscribeUntilFalse {
+            subscribeUntilFalse<FriendMessageEvent> {
                 it.reply("你发送了 ${it.message}")
 
                 it.message eq "停止"

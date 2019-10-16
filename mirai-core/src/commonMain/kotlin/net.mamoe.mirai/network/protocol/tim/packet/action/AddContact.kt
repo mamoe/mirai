@@ -2,14 +2,9 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.readBytes
+import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.setId
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.*
 
 /**
@@ -17,59 +12,69 @@ import net.mamoe.mirai.utils.*
  *
  * @author Him188moe
  */
-@PacketId("00 A7")
+@PacketId(0x00_A7u)
 class ClientCanAddFriendPacket(
         val bot: Long,
         val qq: Long,
         val sessionKey: ByteArray
 ) : ClientPacket() {
-    override val idHex: String by lazy {
-        super.idHex + " " + getRandomByteArray(2).toUHexString()
-    }
-
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(bot)
-        this.writeHex(TIMProtocol.fixVer2)
-        this.encryptAndWrite(sessionKey) {
+        writeQQ(bot)
+        writeHex(TIMProtocol.fixVer2)
+        encryptAndWrite(sessionKey) {
             writeQQ(qq)
         }
     }
 }
 
-@PacketId("00 A7")
+@PacketId(0x00_A7u)
 class ServerCanAddFriendResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     lateinit var state: State
 
     enum class State {
+        /**
+         * 已经添加
+         */
         ALREADY_ADDED,
+        /**
+         * 需要验证信息
+         */
         REQUIRE_VERIFICATION,
+        /**
+         * 不需要验证信息
+         */
         NOT_REQUIRE_VERIFICATION,
+
+        /**
+         * 对方拒绝添加
+         */
         FAILED,
     }
 
 
-    override fun decode() {
-        input.readBytes()
-        val data = input.readRemainingBytes()
-        if (data.size == 99) {
+    override fun decode() = with(input) {
+        //需要验证信息 00 23 24 8B 00 01
+
+        if (input.remaining > 20) {//todo check
             state = State.ALREADY_ADDED
             return
         }
-        state = when (data[data.size - 1].toUInt()) {
+        discardExact(4)//对方qq号
+        state = when (val state = readUShort().toUInt()) {
             0x00u -> State.NOT_REQUIRE_VERIFICATION
-            0x01u -> State.REQUIRE_VERIFICATION
+            0x01u -> State.REQUIRE_VERIFICATION//需要验证信息
             0x99u -> State.ALREADY_ADDED
+
             0x03u,
             0x04u -> State.FAILED
-            else -> throw IllegalArgumentException(data.contentToString())
+            else -> throw IllegalStateException(state.toString())
         }
     }
 
-
-    @PacketId("00 A7")
-    class Encrypted(inputStream: ByteReadPacket) : ServerPacket(inputStream) {
+    @PacketId(0x00_A7u)
+    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         fun decrypt(sessionKey: ByteArray): ServerCanAddFriendResponsePacket {
-            return ServerCanAddFriendResponsePacket(this.decryptBy(sessionKey)).setId(this.idHex)
+            return ServerCanAddFriendResponsePacket(decryptBy(sessionKey)).applySequence(sequenceId)
         }
     }
 }
@@ -78,16 +83,12 @@ class ServerCanAddFriendResponsePacket(input: ByteReadPacket) : ServerPacket(inp
 /**
  * 请求添加好友
  */
-@PacketId("00 AE")
+@PacketId(0x00_AEu)
 class ClientAddFriendPacket(
         val bot: Long,
         val qq: Long,
         val sessionKey: ByteArray
 ) : ClientPacket() {
-    override val idHex: String by lazy {
-        super.idHex + " " + getRandomByteArray(2).toUHexString()
-    }
-
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer2)
@@ -109,7 +110,6 @@ class ServerAddGroupResponsePacket(input: ByteReadPacket) : ServerAddContactResp
  */
 abstract class ServerAddContactResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
 
-
     class Raw(input: ByteReadPacket) : ServerPacket(input) {
 
         override fun decode() {
@@ -122,7 +122,7 @@ abstract class ServerAddContactResponsePacket(input: ByteReadPacket) : ServerPac
         }
 
         class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey))
+            fun decrypt(sessionKey: ByteArray): Raw = Raw(decryptBy(sessionKey))
         }
     }
 

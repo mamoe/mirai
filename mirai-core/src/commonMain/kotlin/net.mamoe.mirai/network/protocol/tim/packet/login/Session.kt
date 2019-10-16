@@ -1,14 +1,13 @@
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.setId
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.*
 
-@PacketId("08 28 04 34")
+@PacketId(0x08_28u)
 class ClientSessionRequestPacket(
         private val qq: Long,
         private val serverIp: String,
@@ -60,8 +59,8 @@ class ClientSessionRequestPacket(
 }
 
 
-@PacketId("08 28 04 34")
-class ServerSessionKeyResponsePacket(inputStream: ByteReadPacket) : ServerPacket(inputStream) {
+@PacketId(0x08_28u)
+class ServerSessionKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     lateinit var sessionKey: ByteArray
     lateinit var tlv0105: ByteReadPacket
 
@@ -109,8 +108,9 @@ Discarded(11) =41 01 00 02 03 3C 01 03 00 00 86
 
     }
 
-    class Encrypted(inputStream: ByteReadPacket) : ServerPacket(inputStream) {
+    @PacketId(0x08_28u)
+    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         fun decrypt(sessionResponseDecryptionKey: IoBuffer): ServerSessionKeyResponsePacket =
-                ServerSessionKeyResponsePacket(this.decryptBy(sessionResponseDecryptionKey)).setId(this.idHex)
+                ServerSessionKeyResponsePacket(decryptBy(sessionResponseDecryptionKey)).applySequence(sequenceId)
     }
 }

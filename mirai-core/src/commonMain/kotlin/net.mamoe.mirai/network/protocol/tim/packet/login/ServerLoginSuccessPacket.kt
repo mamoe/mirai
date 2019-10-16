@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.ByteReadPacket
@@ -9,5 +11,5 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
  *
  * @author Him188moe
  */
-@PacketId("00 EC")
+@PacketId(0x00_ECu)
 class ServerLoginSuccessPacket(input: ByteReadPacket) : ServerPacket(input)

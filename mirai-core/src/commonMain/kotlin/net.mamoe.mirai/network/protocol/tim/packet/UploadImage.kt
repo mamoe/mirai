@@ -25,7 +25,7 @@ abstract class ServerTryGetImageIDResponsePacket(input: ByteReadPacket) : Server
             println(data.size)
             println(data.size)
             if (data.size == 209) {
-                return ServerTryGetImageIDSuccessPacket(data.toReadPacket()).setId(this.idHex)
+                return ServerTryGetImageIDSuccessPacket(data.toReadPacket()).applySequence(sequenceId)
             }
 
             return ServerTryGetImageIDFailedPacket(data.toReadPacket())

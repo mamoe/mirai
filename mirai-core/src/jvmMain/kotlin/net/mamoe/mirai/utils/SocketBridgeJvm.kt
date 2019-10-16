@@ -17,7 +17,7 @@ actual class PlatformDatagramChannel actual constructor(serverHost: String, serv
     actual suspend fun read(buffer: IoBuffer) = withContext(Dispatchers.IO) {
         try {
             (channel as ReadableByteChannel).read(buffer)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             throw ReadPacketInternalException(e)
         }
     }
@@ -26,7 +26,7 @@ actual class PlatformDatagramChannel actual constructor(serverHost: String, serv
         buffer.readDirect {
             try {
                 channel.send(it, serverAddress)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 throw SendPacketInternalException(e)
             }
         }

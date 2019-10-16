@@ -4,6 +4,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import kotlin.random.Random
 import kotlin.random.nextInt
 

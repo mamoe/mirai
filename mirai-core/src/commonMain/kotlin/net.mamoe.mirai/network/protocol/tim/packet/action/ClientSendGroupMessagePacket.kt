@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.BytePacketBuilder
@@ -11,7 +13,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.*
 
 
-@PacketId("00 02")
+@PacketId(0x00_02u)
 class ClientSendGroupMessagePacket(
         private val botQQ: Long,
         private val groupId: Long,//不是 number
@@ -19,7 +21,6 @@ class ClientSendGroupMessagePacket(
         private val message: MessageChain
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeRandom(2)
         this.writeQQ(botQQ)
         this.writeHex(TIMProtocol.fixVer2)
 
@@ -48,5 +49,5 @@ class ClientSendGroupMessagePacket(
     }
 }
 
-@PacketId("00 02")
+@PacketId(0x00_02u)
 class ServerSendGroupMessageResponsePacket(input: ByteReadPacket) : ServerPacket(input)

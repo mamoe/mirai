@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.protocol.tim.handler
 
 import kotlinx.coroutines.CompletableDeferred
@@ -15,6 +17,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ServerSKeyResponsePacket
 import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.hexToBytes
+import kotlin.properties.Delegates
 
 /**
  * 动作: 获取好友列表, 点赞, 踢人等.
@@ -107,17 +110,16 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
             private val future: CompletableDeferred<AddFriendResult>
             //private val image: BufferedImage
     ) {
-        lateinit var id: ByteArray
-
+        var id: UShort = UninitializedPacketId
 
         fun onPacketReceived(packet: ServerPacket) {
-            if (!::id.isInitialized) {
+            if (id == UninitializedPacketId) {
                 return
             }
 
             when (packet) {
                 is ServerCanAddFriendResponsePacket -> {
-                    if (!(packet.idByteArray[2] == id[0] && packet.idByteArray[3] == id[1])) {
+                    if (packet.id != id) {
                         return
                     }
 
@@ -160,17 +162,17 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
             private val future: CompletableDeferred<AddFriendResult>,
             private val message: Lazy<String>
     ) {
-        lateinit var id: ByteArray
+        var id: UShort = UninitializedPacketId
 
 
         suspend fun onPacketReceived(packet: ServerPacket) {
-            if (!::id.isInitialized) {
+            if (id == UninitializedPacketId) {
                 return
             }
 
             when (packet) {
                 is ServerCanAddFriendResponsePacket -> {
-                    if (!(packet.idByteArray.contentEquals(id))) {
+                    if (packet.id != id) {
                         return
                     }
 
@@ -201,7 +203,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
 
 
         suspend fun sendAddRequest() {
-            session.socket.sendPacket(ClientCanAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey).also { this.id = it.idHex.hexToBytes() })
+            session.socket.sendPacket(ClientCanAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey))
         }
 
         fun close() {
@@ -209,3 +211,5 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
         }
     }
 }
+
+private val UninitializedPacketId: UShort = 0u

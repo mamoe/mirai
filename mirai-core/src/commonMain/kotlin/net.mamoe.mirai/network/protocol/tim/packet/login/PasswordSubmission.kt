@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.BytePacketBuilder
@@ -10,64 +12,22 @@ import net.mamoe.mirai.utils.*
 
 
 /**
- * Password submission (0836_622)
+ * 提交密码
  */
-@PacketId("08 36 31 03")
-@Tested
-class ClientPasswordSubmissionPacket(
-        private val qq: Long,
-        private val password: String,
-        private val loginTime: Int,
-        private val loginIP: String,
-        private val privateKey: ByteArray,//16 random by client
-        private val token0825: ByteArray,//56 from server
-        private val randomDeviceName: Boolean
-) : ClientPacket() {
-
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(qq)
-        this.writeHex(TIMProtocol.passwordSubmissionTLV1)
-
-        this.writeShort(25)
-        this.writeHex(TIMProtocol.publicKey)//25
-
-        this.writeHex("00 00 00 10")
-        this.writeHex(TIMProtocol.key0836)
-
-        //TODO shareKey 极大可能为 publicKey, key0836 计算得到
-        this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
-            writePart1(qq, password, loginTime, loginIP, privateKey, token0825, randomDeviceName)
-            writePart2()
-        }
-    }
-}
-
-//实际上这些包性质都是一样的. 31 04 仅是一个序列 id, 可随机
-//但为简化处理, 特固定这个 id
-
-@PacketId("08 36 31 04")
-class ClientLoginResendPacket3104(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, randomDeviceName: Boolean, tlv0006: IoBuffer? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, randomDeviceName, tlv0006)
-
-@PacketId("08 36 31 05")
-class ClientLoginResendPacket3105(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, randomDeviceName: Boolean, tlv0006: IoBuffer? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, randomDeviceName, tlv0006)
-
-@PacketId("08 36 31 06")
-class ClientLoginResendPacket3106(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray, token0825: ByteArray, token00BA: ByteArray, randomDeviceName: Boolean, tlv0006: IoBuffer? = null) : ClientLoginResendPacket(qq, password, loginTime, loginIP, privateKey, token0825, token00BA, randomDeviceName, tlv0006)
-
-
-open class ClientLoginResendPacket constructor(
-        private val qq: Long,
+@PacketId(0x08_36u)
+class ClientPasswordSubmissionPacket constructor(
+        private val bot: Long,
         private val password: String,
         private val loginTime: Int,
         private val loginIP: String,
         private val privateKey: ByteArray,
         private val token0825: ByteArray,
-        private val token00BA: ByteArray,
+        private val token00BA: ByteArray? = null,//
         private val randomDeviceName: Boolean = false,
         private val tlv0006: IoBuffer? = null
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(qq)
+        this.writeQQ(bot)
         this.writeHex(TIMProtocol.passwordSubmissionTLV1)
 
         this.writeShort(25)
@@ -76,15 +36,18 @@ open class ClientLoginResendPacket constructor(
         this.writeHex("00 00 00 10")//=16
         this.writeHex(TIMProtocol.key0836)//16
 
+        //TODO shareKey 极大可能为 publicKey, key0836 计算得到
         this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
-            writePart1(qq, password, loginTime, loginIP, privateKey, token0825, randomDeviceName, tlv0006)
+            writePart1(bot, password, loginTime, loginIP, privateKey, token0825, randomDeviceName, tlv0006)
 
-            writeHex("01 10")
-            writeHex("00 3C")
-            writeHex("00 01")
+            if (token00BA != null) {
+                writeHex("01 10")
+                writeHex("00 3C")
+                writeHex("00 01")
 
-            writeHex("00 38")
-            writeFully(token00BA)
+                writeHex("00 38")
+                writeFully(token00BA)
+            }
 
             writePart2()
         }

@@ -25,6 +25,10 @@ internal object PacketNameFormatter {
 
 private object IgnoreIdList : List<String> by listOf(
         "idHex",
+        "id",
+        "packetId",
+        "sequenceIdInternal",
+        "sequenceId",
         "fixedId",
         "idByteArray",
         "encoded",
@@ -36,8 +40,7 @@ private object IgnoreIdList : List<String> by listOf(
         "UninitializedByteReadPacket"
 )
 
-@UseExperimental(DangerousInternalIoApi::class)
-internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjustName(this::class.simpleName + "(${this.fixedId})") + this::class.java.allDeclaredFields
+internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjustName(this::class.simpleName + "(${this.idHexString})") + this::class.java.allDeclaredFields
         .filterNot { it.name in IgnoreIdList || "delegate" in it.name || "$" in it.name }
         .joinToString(", ", "{", "}") {
             it.isAccessible = true

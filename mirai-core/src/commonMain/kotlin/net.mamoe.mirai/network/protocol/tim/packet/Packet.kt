@@ -1,31 +1,25 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import net.mamoe.mirai.utils.hexToUBytes
-
+import kotlinx.io.core.Closeable
+import net.mamoe.mirai.utils.toUHexString
 
 /**
- * 数据包
+ * 数据包.
  */
-abstract class Packet {
-    open val idHex: String by lazy {
-        this::class.annotations.filterIsInstance<PacketId>().firstOrNull()?.value?.trim() ?: ""
-    }
+abstract class Packet : Closeable {
+    /**
+     * 2 Ubyte
+     */
+    open val id: UShort = (this::class.annotations.firstOrNull { it is PacketId } as? PacketId)?.value ?: error("Annotation PacketId not found")
 
-    open val fixedId: String by lazy {
-        when (this.idHex.length) {
-            0 -> "__ __ __ __"
-            2 -> this.idHex + " __ __ __"
-            5 -> this.idHex + " __ __"
-            7 -> this.idHex + " __"
-            else -> this.idHex
-        }
-    }
+    /**
+     * 包序列 id. 唯一
+     */
+    abstract val sequenceId: UShort
 
-    open val idByteArray: ByteArray by lazy {
-        idHex.hexToUBytes().toByteArray()
-    }
+    val idHexString: String get() = (id.toInt().shl(16) or sequenceId.toInt()).toUHexString()
 }
 
 internal expect fun Packet.packetToString(): String

@@ -65,7 +65,7 @@ object Main {
                         try {
                             dataSent(pk.data)
                             println()
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             e.printStackTrace()
                         }
                     }
@@ -89,12 +89,20 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "48 C0 11 42 2D FD 8F 36 6E BA BF FD D3 AA B7 AE".hexToBytes()
+    val sessionKey: ByteArray = "9E A6 16 46 FF 15 FB 73 2F 31 0D 7E CB C4 E6 49".hexToBytes()
 
     fun dataReceived(data: ByteArray) {
-        //println("--------------")
-        //println("接收数据包")
-        //println("raw packet = " + data.toUHexString())
+        println("--------------")
+        println("接收数据包")
+        //println("raw = " + data.toUHexString())
+        data.read {
+            discardExact(3)
+            val idHex = readInt().toUHexString(" ")
+            discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00. 但更可能是应该 discard 8
+            println("id=$idHex")
+            println("解密body=${this.readRemainingBytes().cutTail(1).decryptBy(sessionKey).toUHexString()}")
+        }
+
         packetReceived(data.read { this.parseServerPacket(data.size) })
     }
 
@@ -108,7 +116,7 @@ object Main {
 
             is UnknownServerEventPacket -> {
                 println("--------------")
-                println("未知事件ID=" + packet.idHex)
+                println("未知事件ID=" + packet.idHexString)
                 println("未知事件: " + packet.input.readBytes().toUHexString())
             }
 
@@ -134,7 +142,7 @@ object Main {
         discardExact(TIMProtocol.fixVer2.hexToBytes().size + 1 + 5 - 3 + 1)
 
         val encryptedBody = readRemainingBytes()
-        println("body = ${encryptedBody.toUHexString()}")
+        println("解密body = ${encryptedBody.decryptBy(sessionKey).toUHexString()}")
 
         encryptedBody.read {
 
@@ -168,3 +176,8 @@ object Main {
 
     }
 }
+
+fun main() {
+    println("00 01 00 23 24 8B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 4E 22 4E 25 4E 26 4E 27 4E 29 4E 2A 4E 2B 4E 2D 4E 2E 4E 2F 4E 30 4E 31 4E 33 4E 35 4E 36 4E 37 4E 38 4E 3F 4E 40 4E 41 4E 42 4E 43 4E 45 4E 49 4E 4B 4E 4F 4E 54 4E 5B 52 0B 52 0F 5D C2 5D C8 65 97 69 9D 69 A9 9D A5 A4 91 A4 93 A4 94 A4 9C A4 B5".hexToBytes().stringOf())
+}
+

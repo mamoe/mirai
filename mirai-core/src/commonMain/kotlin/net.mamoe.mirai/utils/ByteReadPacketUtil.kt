@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.utils
 
@@ -22,30 +22,24 @@ fun ByteReadPacket.readIoBuffer(
 fun ByteReadPacket.readIoBuffer(n: Number) = this.readIoBuffer(n.toInt())
 
 //必须消耗完 packet
-fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {//TODO 优化
+fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
     discardExact(3)
 
-    val idHex = readInt().toUHexString(" ")
+    val id = readUShort()
+    val sequenceId = readUShort()
 
     discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00. 但更可能是应该 discard 8
-    return when (idHex) {
-        "08 25 31 01" -> ServerTouchResponsePacket.Encrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_01, this)
-        "08 25 31 02" -> ServerTouchResponsePacket.Encrypted(ServerTouchResponsePacket.Type.TYPE_08_25_31_02, this)
-
-        "08 36 31 03", "08 36 31 04", "08 36 31 05", "08 36 31 06" -> {
+    return when (id.toUInt()) {
+        0x08_25u -> ServerTouchResponsePacket.Encrypted(this)
+        0x08_36u -> {
             when (size) {
-                271, 207 -> return ServerLoginResponseKeyExchangePacket.Encrypted(this, when (idHex) {
-                    "08 36 31 03" -> ServerLoginResponseKeyExchangePacket.Flag.`08 36 31 03`
-                    else -> ServerLoginResponseKeyExchangePacket.Flag.OTHER
-                }).setId(idHex)
-                871 -> return ServerLoginResponseVerificationCodeInitPacket.Encrypted(this).setId(idHex)
+                271, 207 -> return ServerLoginResponseKeyExchangePacket.Encrypted(this).applySequence(sequenceId)
+                871 -> return ServerLoginResponseCaptchaInitPacket.Encrypted(this).applySequence(sequenceId)
             }
 
-            if (size > 700) {
-                return ServerLoginResponseSuccessPacket.Encrypted(this).setId(idHex)
-            }
+            if (size > 700) return ServerLoginResponseSuccessPacket.Encrypted(this).applySequence(sequenceId)
 
-            println(size)
+            println("登录包size=$size")
             return ServerLoginResponseFailedPacket(when (size) {
                 135 -> {//包数据错误. 目前怀疑是 tlv0006
                     this.readRemainingBytes().cutTail(1).decryptBy(TIMProtocol.shareKey).read {
@@ -58,9 +52,9 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {//TODO 优化
 
                 319, 351 -> LoginResult.WRONG_PASSWORD
                 //135 -> LoginState.RETYPE_PASSWORD
-                63, 279 -> LoginResult.BLOCKED
+                63 -> LoginResult.BLOCKED
                 263 -> LoginResult.UNKNOWN_QQ_NUMBER
-                551, 487 -> LoginResult.DEVICE_LOCK
+                279, 495, 551, 487 -> LoginResult.DEVICE_LOCK
                 343, 359 -> LoginResult.TAKEN_BACK
 
                 else -> LoginResult.UNKNOWN
@@ -70,36 +64,24 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {//TODO 优化
                 351 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown logError)")
 
                 else -> throw IllegalArgumentException(bytes.size.toString())*/
-            }, this).setId(idHex)
+            }, this).applySequence(sequenceId)
         }
+        0x08_28u -> ServerSessionKeyResponsePacket.Encrypted(this)
 
-        "08 28 04 34" -> ServerSessionKeyResponsePacket.Encrypted(this)
+        0x00_EC_u -> ServerSKeyResponsePacket(this)
+        0x00_1D_u -> ServerSKeyResponsePacket.Encrypted(this)
+        0x00_5C_u -> ServerAccountInfoResponsePacket.Encrypted(this)
+        0x00_58_u -> ServerHeartbeatResponsePacket(this)
+        0x00_BA_u -> ServerCaptchaPacket.Encrypted(this)
+        0x00_CE_u, 0x00_17_u -> ServerEventPacket.Raw.Encrypted(this)
+        0x00_81_u -> ServerFieldOnlineStatusChangedPacket.Encrypted(this)
+        0x00_CD_u -> ServerSendFriendMessageResponsePacket(this)
+        0x00_02_u -> ServerSendGroupMessageResponsePacket(this)
+        0x00_A7_u -> ServerCanAddFriendResponsePacket(this)
+        0x03_88_u -> ServerTryGetImageIDResponsePacket.Encrypted(this)
 
-
-        else -> when (idHex.substring(0, 5)) {
-            "00 EC" -> ServerLoginSuccessPacket(this)
-            "00 1D" -> ServerSKeyResponsePacket.Encrypted(this)
-            "00 5C" -> ServerAccountInfoResponsePacket.Encrypted(this)
-
-            "00 58" -> ServerHeartbeatResponsePacket(this)
-
-            "00 BA" -> ServerCaptchaPacket.Encrypted(this, idHex)
-
-
-            "00 CE", "00 17" -> ServerEventPacket.Raw.Encrypted(this)
-
-            "00 81" -> ServerFieldOnlineStatusChangedPacket.Encrypted(this)
-
-            "00 CD" -> ServerSendFriendMessageResponsePacket(this)
-            "00 02" -> ServerSendGroupMessageResponsePacket(this)
-
-            "00 A7" -> ServerCanAddFriendResponsePacket(this)
-
-            "03 88" -> ServerTryGetImageIDResponsePacket.Encrypted(this)
-
-            else -> UnknownServerPacket.Encrypted(this)
-        }
-    }.setId(idHex)
+        else -> UnknownServerPacket.Encrypted(this, id, sequenceId)
+    }.applyId(id).applySequence(sequenceId)
 }
 
 fun Input.readIP(): String = buildString(4 + 3) {

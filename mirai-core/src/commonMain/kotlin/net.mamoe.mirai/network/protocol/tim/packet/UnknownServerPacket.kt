@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.ByteReadPacket
@@ -7,18 +9,26 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.toUHexString
 
 
-class UnknownServerPacket(input: ByteReadPacket) : ServerPacket(input) {
+class UnknownServerPacket(
+        input: ByteReadPacket,
+        override var id: UShort,
+        override var sequenceId: UShort
+) : ServerPacket(input) {
     override fun decode() {
         val raw = this.input.readBytes()
         MiraiLogger.logDebug("UnknownServerPacket data: " + raw.toUHexString())
     }
 
-
-    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(sessionKey: ByteArray): UnknownServerPacket = UnknownServerPacket(this.decryptBy(sessionKey)).setId(this.idHex)
+    class Encrypted(
+            input: ByteReadPacket,
+            override var id: UShort,
+            override var sequenceId: UShort
+    ) : ServerPacket(input) {
+        fun decrypt(sessionKey: ByteArray): UnknownServerPacket = UnknownServerPacket(this.decryptBy(sessionKey), this.id, this.sequenceId)
     }
 
     override fun toString(): String {
+        @Suppress("RemoveRedundantQualifierName")
         return LoggerTextFormat.LIGHT_RED.toString() + super.toString()
     }
 }

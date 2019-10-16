@@ -1,17 +1,17 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.setId
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.*
 import kotlin.properties.Delegates
 
+@PacketId(0x08_36u)
 sealed class ServerLoginResponsePacket(input: ByteReadPacket) : ServerPacket(input)
 
+@PacketId(0x08_36u)
 class ServerLoginResponseFailedPacket(val loginResult: LoginResult, input: ByteReadPacket) : ServerLoginResponsePacket(input)
 
 /**
@@ -19,15 +19,11 @@ class ServerLoginResponseFailedPacket(val loginResult: LoginResult, input: ByteR
  *
  * @author NaturalHG
  */
-@PacketId("08 36 31 03")
-class ServerLoginResponseKeyExchangePacket(input: ByteReadPacket, val flag: Flag) : ServerLoginResponsePacket(input) {
-    enum class Flag {
-        `08 36 31 03`,
-        OTHER,
-    }
-
+@PacketId(0x08_36u)
+class ServerLoginResponseKeyExchangePacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
     lateinit var tlv0006: IoBuffer//120bytes
     var tokenUnknown: ByteArray? = null
+
     lateinit var privateKeyUpdate: ByteArray//16bytes
 
     @Tested
@@ -37,24 +33,19 @@ class ServerLoginResponseKeyExchangePacket(input: ByteReadPacket, val flag: Flag
         this.input.discardExact(4)//00 06 00 78
         tlv0006 = this.input.readIoBuffer(0x78)
 
-        when (flag) {
-            Flag.`08 36 31 03` -> {//TODO 在解析时分类而不是在这里
-                this.input.discardExact(8)//01 10 00 3C 00 01 00 38
-                tokenUnknown = this.input.readBytes(56)
-                //println(tokenUnknown!!.toUHexString())
-            }
-
-            Flag.OTHER -> {
-                //do nothing in this packet.
-                //[this.token] will be set in [BotNetworkHandler]
-                //token
-            }
+        //todo 这边原本会判断是否 `08 36 31 03`, 是才会进行下列2行读取.
+        try {
+            this.input.discardExact(8)//01 10 00 3C 00 01 00 38
+            tokenUnknown = this.input.readBytes(56)
+        } catch (e: EOFException) {
+            //什么都不做. 因为有的包就是没有这个数据.
         }
     }
 
-    class Encrypted(input: ByteReadPacket, private val flag: Flag) : ServerPacket(input) {
+    @PacketId(0x08_36u)
+    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         @Tested
-        fun decrypt(privateKey: ByteArray): ServerLoginResponseKeyExchangePacket = ServerLoginResponseKeyExchangePacket(this.decryptBy(TIMProtocol.shareKey, privateKey), flag).setId(this.idHex)
+        fun decrypt(privateKey: ByteArray): ServerLoginResponseKeyExchangePacket = ServerLoginResponseKeyExchangePacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
     }
 }
 
@@ -66,6 +57,7 @@ enum class Gender(val id: Boolean) {
 /**
  * @author NaturalHG
  */
+@PacketId(0x08_36u)
 class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
     lateinit var sessionResponseDecryptionKey: IoBuffer//16 bytes|
 
@@ -87,12 +79,15 @@ class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginRespo
 
         discardExact(60)//00 20 01 60 C5 A1 39 7A 12 8E BC 34 C3 56 70 E3 1A ED 20 67 ED A9 DB 06 C1 70 81 3C 01 69 0D FF 63 DA 00 00 01 03 00 14 00 01 00 10 60 C9 5D A7 45 70 04 7F 21 7D 84 50 5C 66 A5 C6
 
-        discardExact(when (val flag = readBytes(2).toUHexString()) {
-            "01 07" -> 0
-            "00 33" -> 28
-            "01 10" -> 64
-            else -> throw IllegalStateException(flag)
-        })
+        discardExact(when (readUByte().toUInt()) {
+            0x00u -> if (readUByte().toUInt() == 0x33u) 28 else null
+            0x01u -> when (readUByte().toUInt()) {
+                0x07u -> 0
+                0x10u -> 64
+                else -> null
+            }
+            else -> null
+        } ?: error("Unknown length flag"))
 
         discardExact(23 + 3)//01 D3 00 01 00 16 00 00 00 01 00 00 00 64 00 00 0D DE 00 09 3A 80 00
 
@@ -117,8 +112,9 @@ class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginRespo
         gender = if (readBoolean()) Gender.FEMALE else Gender.MALE
     }
 
+    @PacketId(0x08_36u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(privateKey: ByteArray): ServerLoginResponseSuccessPacket = ServerLoginResponseSuccessPacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).setId(this.idHex)
+        fun decrypt(privateKey: ByteArray): ServerLoginResponseSuccessPacket = ServerLoginResponseSuccessPacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
     }
 
 }
@@ -128,7 +124,8 @@ class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginRespo
  *
  * @author Him188moe
  */
-class ServerLoginResponseVerificationCodeInitPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
+@PacketId(0x08_36u)
+class ServerLoginResponseCaptchaInitPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
 
     lateinit var verifyCodePart1: IoBuffer
     lateinit var token00BA: ByteArray
@@ -151,7 +148,8 @@ class ServerLoginResponseVerificationCodeInitPacket(input: ByteReadPacket) : Ser
     }
 
 
+    @PacketId(0x08_36u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(): ServerLoginResponseVerificationCodeInitPacket = ServerLoginResponseVerificationCodeInitPacket(this.decryptAsByteArray(TIMProtocol.shareKey).toReadPacket()).setId(this.idHex)
+        fun decrypt(): ServerLoginResponseCaptchaInitPacket = ServerLoginResponseCaptchaInitPacket(decryptAsByteArray(TIMProtocol.shareKey).toReadPacket()).applySequence(sequenceId)
     }
 }

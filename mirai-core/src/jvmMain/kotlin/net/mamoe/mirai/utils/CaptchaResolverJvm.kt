@@ -27,10 +27,10 @@ internal actual suspend fun solveCaptcha(captchaBuffer: IoBuffer): String? = cap
     MiraiLogger.logCyan("需要验证码登录, 验证码为 4 字母")
     try {
         File(System.getProperty("user.dir") + "/temp/Captcha.png")
-                .also { withContext(Dispatchers.IO) { it.createNewFile(); it.writeBytes(captcha) } }
+                .let { withContext(Dispatchers.IO) { it.createNewFile(); it.writeBytes(captcha) } }
         MiraiLogger.logCyan("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
     } catch (e: Exception) {
-        MiraiLogger.logCyan("无法写出验证码文件, 请尝试查看以上字符图片")
+        MiraiLogger.logCyan("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
     }
     MiraiLogger.logCyan("若要更换验证码, 请直接回车")
     readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
@@ -44,15 +44,11 @@ private val captchaLock = Mutex()
  */
 @JvmOverloads
 internal fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
-    /*
-     * resize Image
-     * */
     val newHeight = (this.height * (outputWidth.toDouble() / this.width)).toInt()
     val tmp = this.getScaledInstance(outputWidth, newHeight, Image.SCALE_SMOOTH)
     val image = BufferedImage(outputWidth, newHeight, BufferedImage.TYPE_INT_ARGB)
     val g2d = image.createGraphics()
     g2d.drawImage(tmp, 0, 0, null)
-
     fun gray(rgb: Int): Int {
         val r = rgb and 0xff0000 shr 16
         val g = rgb and 0x00ff00 shr 8

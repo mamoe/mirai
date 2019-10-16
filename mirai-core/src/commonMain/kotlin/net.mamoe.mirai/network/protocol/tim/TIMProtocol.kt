@@ -41,10 +41,13 @@ object TIMProtocol {
      */
     const val touchKey = "A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D"//16
 
-    /**
-     * Redirection 发出时写入, 并用于加密, 接受 Redirection response 时解密.
-     */
-    const val redirectionKey = "A8 F2 14 5F 58 12 60 AF 07 63 97 D6 76 B2 1A 3B"//16
+
+    //统一替换为了 touchKey
+    ///**
+    // * Redirection 发出时写入, 并用于加密, 接受 Redirection response 时解密.
+    // * 这个 key 似乎是可以任意的.
+    // */
+    //const val redirectionKey = "A8 F2 14 5F 58 12 60 AF 07 63 97 D6 76 B2 1A 3B"//16
 
     /**
      * 并非常量. 设置为常量是为了让 [shareKey] 为常量

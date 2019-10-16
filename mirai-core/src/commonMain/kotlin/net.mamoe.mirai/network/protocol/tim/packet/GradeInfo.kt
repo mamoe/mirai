@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
@@ -16,26 +16,23 @@ import net.mamoe.mirai.utils.writeRandom
  *
  * @author Him188moe
  */
-
-@PacketId("00 5C")
+@PacketId(0x00_5Cu)
 class ClientAccountInfoRequestPacket(
         private val qq: Long,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeRandom(2)
-
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer2)
         this.encryptAndWrite(sessionKey) {
-            writeUByte(0x88.toUByte())
+            writeUByte(0x88u)
             writeQQ(qq)
             writeByte(0x00)
         }
     }
 }
 
-@PacketId("00 5C")
+@PacketId(0x00_5Cu)
 class ServerAccountInfoResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     //等级
     //升级剩余活跃天数
@@ -44,8 +41,8 @@ class ServerAccountInfoResponsePacket(input: ByteReadPacket) : ServerPacket(inpu
 
     }
 
-    @PacketId("00 5C")
-    class Encrypted(inputStream: ByteReadPacket) : ServerPacket(inputStream) {
-        fun decrypt(sessionKey: ByteArray): ServerAccountInfoResponsePacket = ServerAccountInfoResponsePacket(this.decryptBy(sessionKey)).setId(this.idHex)
+    @PacketId(0x00_5Cu)
+    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
+        fun decrypt(sessionKey: ByteArray): ServerAccountInfoResponsePacket = ServerAccountInfoResponsePacket(this.decryptBy(sessionKey)).applySequence(sequenceId)
     }
 }

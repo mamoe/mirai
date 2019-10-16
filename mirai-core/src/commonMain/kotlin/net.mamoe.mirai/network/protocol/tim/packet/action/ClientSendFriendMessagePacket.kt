@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.*
@@ -10,7 +12,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.*
 
 
-@PacketId("00 CD")
+@PacketId(0x00_CDu)
 class ClientSendFriendMessagePacket(
         private val botQQ: Long,
         private val targetQQ: Long,
@@ -68,5 +70,5 @@ class ClientSendFriendMessagePacket(
     }
 }
 
-@PacketId("00 CD")
+@PacketId(0x00_CDu)
 class ServerSendFriendMessageResponsePacket(input: ByteReadPacket) : ServerPacket(input)

@@ -33,7 +33,6 @@ fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = 
  */
 abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: EventPacketIdentity) : ServerPacket(input) {
     class Raw(input: ByteReadPacket) : ServerPacket(input) {
-
         fun distribute(): ServerEventPacket = with(input) {
             val eventIdentity = EventPacketIdentity(
                     from = readUInt(),
@@ -67,8 +66,9 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 
                     //todo 错了. 可能是 00 79 才是.
                     return@with ServerFriendTypingCanceledPacket(input, eventIdentity)
+                    /*
                     if (readUByte().toUInt() == 0x37u) ServerFriendTypingStartedPacket(input, eventIdentity)
-                    else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)
+                    else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)*/
                 }
                 "00 79" -> IgnoredServerEventPacket(type, input, eventIdentity)
 
@@ -78,11 +78,11 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                     MiraiLogger.logDebug("UnknownEvent type = ${type.toUHexString()}")
                     UnknownServerEventPacket(input, eventIdentity)
                 }
-            }.setId(idHex)
+            }.applyId(id).applySequence(sequenceId)
         }
 
         class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey)).setId(this.idHex)
+            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey)).applyId(id).applySequence(sequenceId)
         }
     }
 
@@ -90,9 +90,8 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
             val bot: Long,
             val sessionKey: ByteArray
     ) : ClientPacket() {
-        override val idHex: String = this@ServerEventPacket.idHex
-        override val idByteArray: ByteArray = this@ServerEventPacket.idByteArray
-        override val fixedId: String = idHex
+        override val id: UShort get() = this@ServerEventPacket.id
+        override val sequenceId: UShort get() = this@ServerEventPacket.sequenceId
 
         override fun encode(builder: BytePacketBuilder) = with(builder) {
             this.writeQQ(bot)

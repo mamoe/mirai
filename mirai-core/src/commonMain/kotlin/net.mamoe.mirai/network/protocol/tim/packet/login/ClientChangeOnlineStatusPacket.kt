@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
@@ -12,16 +12,12 @@ import net.mamoe.mirai.utils.*
 /**
  * 改变在线状态: "我在线上", "隐身" 等
  */
-@PacketId("00 EC")
+@PacketId(0x00_ECu)
 class ClientChangeOnlineStatusPacket(
         private val qq: Long,
         private val sessionKey: ByteArray,
         private val loginStatus: OnlineStatus
 ) : ClientPacket() {
-    override val idHex: String by lazy {
-        super.idHex + " " + getRandomByteArray(2).toUHexString()
-    }
-
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer2)
