@@ -1,6 +1,6 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
-import net.mamoe.mirai.network.LoginSession
+import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import kotlin.reflect.KClass
 
@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
  * 数据包(接受/发送)处理器
  */
 abstract class PacketHandler(
-        val session: LoginSession
+        val session: BotSession
 ) {
     abstract suspend fun onPacketReceived(packet: ServerPacket)
 

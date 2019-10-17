@@ -12,7 +12,7 @@ expect class PlatformImage
 expect class ClientTryGetImageIDPacket(
         botNumber: Long,
         sessionKey: ByteArray,
-        groupNumberOrQQNumber: Long,
+        groupNumberOrAccount: Long,
         image: PlatformImage
 ) : ClientPacket
 

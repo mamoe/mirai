@@ -6,7 +6,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.mamoe.mirai.network.LoginSession
+import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.network.isOpen
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.AddFriendResult
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientAddFriendPacket
@@ -15,9 +16,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResp
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ServerSKeyResponsePacket
-import net.mamoe.mirai.utils.getGTK
-import net.mamoe.mirai.utils.hexToBytes
-import kotlin.properties.Delegates
 
 /**
  * 动作: 获取好友列表, 点赞, 踢人等.
@@ -25,7 +23,7 @@ import kotlin.properties.Delegates
  *
  * @author Him188moe
  */
-class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
+class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
     companion object Key : PacketHandler.Key<ActionPacketHandler>
 
     private val addFriendSessions = mutableListOf<AddFriendSession>()
@@ -60,17 +58,15 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
             is ServerSKeyResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
             is ServerSKeyResponsePacket -> {
                 session.sKey = packet.sKey
-                session.cookies = "uin=o" + session.bot.account.qqNumber + ";skey=" + session.sKey + ";"
+                session.cookies = "uin=o" + session.bot.account.account + ";skey=" + session.sKey + ";"
 
 
                 sKeyRefresherJob = session.scope.launch {
                     while (session.isOpen) {
                         delay(1800000)
-                        session.socket.sendPacket(ClientSKeyRefreshmentRequestPacket(session.bot.account.qqNumber, session.sessionKey))
+                        session.socket.sendPacket(ClientSKeyRefreshmentRequestPacket(session.bot.account.account, session.sessionKey))
                     }
                 }
-
-                session.gtk = getGTK(session.sKey)
             }
 
             is ServerEventPacket.Raw.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
@@ -82,9 +78,9 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
     }
 
     //@JvmSynthetic
-    suspend fun addFriend(qqNumber: Long, message: Lazy<String> = lazyOf("")): CompletableDeferred<AddFriendResult> {
+    suspend fun addFriend(account: Long, message: Lazy<String> = lazyOf("")): CompletableDeferred<AddFriendResult> {
         val future = CompletableDeferred<AddFriendResult>()
-        val session = AddFriendSession(qqNumber, future, message)
+        val session = AddFriendSession(account, future, message)
         //  uploadImageSessions.add(session)
         session.sendAddRequest()
         return future
@@ -92,12 +88,12 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
 
 
     suspend fun requestSKey() {
-        session.socket.sendPacket(ClientSKeyRequestPacket(session.bot.account.qqNumber, session.sessionKey))
+        session.socket.sendPacket(ClientSKeyRequestPacket(session.bot.account.account, session.sessionKey))
     }
 
 
     suspend fun requestAccountInfo() {
-        session.socket.sendPacket(ClientAccountInfoRequestPacket(session.bot.account.qqNumber, session.sessionKey))
+        session.socket.sendPacket(ClientAccountInfoRequestPacket(session.bot.account.account, session.sessionKey))
     }
 
     override fun close() {
@@ -135,7 +131,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
                         }
 
                         ServerCanAddFriendResponsePacket.State.REQUIRE_VERIFICATION -> {
-                            //           session.socket.sendPacket(ClientAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey))
+                            //           session.socket.sendPacket(ClientAddFriendPacket(session.bot.account.account, qq, session.sessionKey))
                         }
 
                         ServerCanAddFriendResponsePacket.State.NOT_REQUIRE_VERIFICATION -> {
@@ -188,7 +184,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
                         }
 
                         ServerCanAddFriendResponsePacket.State.REQUIRE_VERIFICATION -> {
-                            session.socket.sendPacket(ClientAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey))
+                            session.socket.sendPacket(ClientAddFriendPacket(session.bot.account.account, qq, session.sessionKey))
                         }
 
                         ServerCanAddFriendResponsePacket.State.NOT_REQUIRE_VERIFICATION -> {
@@ -203,7 +199,7 @@ class ActionPacketHandler(session: LoginSession) : PacketHandler(session) {
 
 
         suspend fun sendAddRequest() {
-            session.socket.sendPacket(ClientCanAddFriendPacket(session.bot.account.qqNumber, qq, session.sessionKey))
+            session.socket.sendPacket(ClientCanAddFriendPacket(session.bot.account.account, qq, session.sessionKey))
         }
 
         fun close() {

@@ -4,12 +4,12 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.network.LoginSession
+import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.ClientTryGetImageIDPacketJvm
 import net.mamoe.mirai.network.protocol.tim.packet.ServerTryGetImageIDFailedPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerTryGetImageIDResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerTryGetImageIDSuccessPacket
-import net.mamoe.mirai.qqNumber
+import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.ImageNetworkUtils
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toByteArray
@@ -30,9 +30,9 @@ class UnsolvedImage(private val filename: String, val image: BufferedImage) {
     constructor(imageFile: File) : this(imageFile.name, ImageIO.read(imageFile))
     constructor(url: URL) : this(File(url.file))
 
-    suspend fun upload(session: LoginSession, contact: Contact): CompletableJob {
+    suspend fun upload(session: BotSession, contact: Contact): CompletableJob {
         return session.expectPacket<ServerTryGetImageIDResponsePacket> {
-            toSend { ClientTryGetImageIDPacketJvm(session.bot.qqNumber, session.sessionKey, contact.number, image) }
+            toSend { ClientTryGetImageIDPacketJvm(session.bot.qqAccount, session.sessionKey, contact.number, image) }
 
             onExpect {
                 when (it) {
@@ -43,7 +43,7 @@ class UnsolvedImage(private val filename: String, val image: BufferedImage) {
                     is ServerTryGetImageIDSuccessPacket -> {
                         val data = image.toByteArray()
                         withContext(Dispatchers.IO) {
-                            if (!ImageNetworkUtils.postImage(it.uKey.toUHexString(), data.size, session.bot.qqNumber, contact.number, data)) {
+                            if (!ImageNetworkUtils.postImage(it.uKey.toUHexString(), data.size, session.bot.qqAccount, contact.number, data)) {
                                 throw RuntimeException("cannot upload image")
                             }
                         }

@@ -32,6 +32,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
     return when (id.toUInt()) {
         0x08_25u -> ServerTouchResponsePacket.Encrypted(this)
         0x08_36u -> {
+            //todo 不要用size分析
             when (size) {
                 271, 207 -> return ServerLoginResponseKeyExchangePacket.Encrypted(this).applySequence(sequenceId)
                 871 -> return ServerLoginResponseCaptchaInitPacket.Encrypted(this).applySequence(sequenceId)

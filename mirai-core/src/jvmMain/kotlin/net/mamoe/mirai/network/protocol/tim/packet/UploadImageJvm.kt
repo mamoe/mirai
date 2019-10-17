@@ -23,7 +23,7 @@ actual typealias ClientTryGetImageIDPacket = ClientTryGetImageIDPacketJvm
 class ClientTryGetImageIDPacketJvm(
         private val botNumber: Long,
         private val sessionKey: ByteArray,
-        private val groupNumberOrQQNumber: Long,
+        private val groupNumberOrAccount: Long,
         private val image: PlatformImage
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
@@ -52,7 +52,7 @@ class ClientTryGetImageIDPacketJvm(
             writeHex("57")//原5A
 
             writeHex("08")
-            writeUVarInt(groupNumberOrQQNumber)//FB D2 D8 94
+            writeUVarInt(groupNumberOrAccount)//FB D2 D8 94
 
             writeByte(0x02)
             writeHex("10")

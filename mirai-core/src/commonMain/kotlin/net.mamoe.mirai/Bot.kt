@@ -21,9 +21,9 @@ import net.mamoe.mirai.utils.MiraiLogger
  * [Bot] 由 3 个模块组成.
  * [联系人管理][ContactSystem]: 可通过 [Bot.contacts] 访问
  * [网络处理器][TIMBotNetworkHandler]: 可通过 [Bot.network] 访问
- * [机器人账号信息][BotAccount]: 可通过 [Bot.account] 访问
+ * [机器人账号信息][BotAccount]: 可通过 [Bot.qqAccount] 访问
  *
- * 若你需要得到机器人的 QQ 账号, 请访问 [Bot.account]
+ * 若你需要得到机器人的 QQ 账号, 请访问 [Bot.qqAccount]
  * 若你需要得到服务器上所有机器人列表, 请访问 [Bot.instances]
  *
  *
@@ -34,7 +34,7 @@ import net.mamoe.mirai.utils.MiraiLogger
  * a [TIMBotNetworkHandler], which manages the connection to the server;
  * a [BotAccount], which stores the account information(e.g. qq number the bot)
  *
- * To of all the QQ contacts, access [Bot.account]
+ * To of all the QQ contacts, access [Bot.qqAccount]
  * To of all the Robot instance, access [Bot.instances]
  *
  *
@@ -52,10 +52,10 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
     init {
         instances.add(this)
 
-        this.logger.identity = "Bot" + this.id + "(" + this.account.qqNumber + ")"
+        this.logger.identity = "Bot" + this.id + "(" + this.account.account + ")"
     }
 
-    override fun toString(): String = "Bot{id=$id,qq=${account.qqNumber}}"
+    override fun toString(): String = "Bot{id=$id,qq=${account.account}}"
 
     /**
      * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler.NetworkScope] 下的协程.
@@ -83,7 +83,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
          * 通过群号码获取群对象.
          * 注意: 在并发调用时, 这个方法并不是原子的.
          */
-        fun getQQ(qqNumber: Long): QQ = qqs.getOrPut(qqNumber) { QQ(this@Bot, qqNumber) }
+        fun getQQ(account: Long): QQ = qqs.getOrPut(account) { QQ(this@Bot, account) }
 
         /**
          * 通过群号码获取群对象.

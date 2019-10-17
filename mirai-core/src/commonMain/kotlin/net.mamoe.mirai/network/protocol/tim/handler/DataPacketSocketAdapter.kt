@@ -3,7 +3,7 @@ package net.mamoe.mirai.network.protocol.tim.handler
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
-import net.mamoe.mirai.network.LoginSession
+import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
@@ -16,7 +16,7 @@ import net.mamoe.mirai.utils.PlatformDatagramChannel
  *
  * @author Him188moe
  */
-interface DataPacketSocket : Closeable {
+interface DataPacketSocketAdapter : Closeable {
     val owner: Bot
 
     val serverIp: String
@@ -41,7 +41,7 @@ interface DataPacketSocket : Closeable {
      *
      * 可通过 hook 事件 [ServerPacketReceivedEvent] 来获取服务器返回.
      *
-     * @see [LoginSession.expectPacket] kotlin DSL
+     * @see [BotSession.expectPacket] kotlin DSL
      */
     suspend fun sendPacket(packet: ClientPacket)
 

@@ -23,7 +23,7 @@ import kotlin.system.measureTimeMillis
 
 suspend fun main() {
     val bot = Bot(BotAccount(//填写你的账号
-            qqNumber = 2903772581,
+            account = 2903772581,
             password = "zxc123456"
     ), Console())
 

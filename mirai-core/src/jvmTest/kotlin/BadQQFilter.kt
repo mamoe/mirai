@@ -62,5 +62,5 @@ suspend fun main() {
     }
 
     println("Filtering finished")
-    println(goodBotList.joinToString("\n") { it.account.qqNumber.toString() + "    " + it.account.password })
+    println(goodBotList.joinToString("\n") { it.account.account.toString() + "    " + it.account.password })
 }

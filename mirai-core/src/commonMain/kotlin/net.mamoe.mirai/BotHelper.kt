@@ -41,7 +41,7 @@ suspend fun Bot.login(configuration: LoginConfiguration.() -> Unit): LoginResult
 suspend fun Bot.login(): LoginResult = this.network.login(LoginConfiguration.Default)
 
 //BotAccount
-val Bot.qqNumber: Long get() = this.account.qqNumber
+val Bot.qqAccount: Long get() = this.account.account
 
 
 //logging

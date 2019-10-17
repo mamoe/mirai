@@ -8,7 +8,7 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.getGroupByNumber
 import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.MessageChain
-import net.mamoe.mirai.network.LoginSession
+import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.distributePacket
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendFriendMessagePacket
@@ -23,7 +23,7 @@ import net.mamoe.mirai.utils.MiraiLogger
  * @author Him188moe
  */
 @Suppress("EXPERIMENTAL_API_USAGE")
-class EventPacketHandler(session: LoginSession) : PacketHandler(session) {
+class EventPacketHandler(session: BotSession) : PacketHandler(session) {
     companion object Key : PacketHandler.Key<EventPacketHandler>
 
 
@@ -44,7 +44,7 @@ class EventPacketHandler(session: LoginSession) : PacketHandler(session) {
             is ServerGroupMessageEventPacket -> {
                 if (ignoreMessage) return
 
-                if (packet.qq.toLong() == bot.account.qqNumber) return
+                if (packet.qq.toLong() == bot.account.account) return
 
                 GroupMessageEvent(bot, bot.getGroupByNumber(packet.groupNumber), bot.getQQ(packet.qq), packet.message).broadcast()
             }
@@ -80,10 +80,10 @@ class EventPacketHandler(session: LoginSession) : PacketHandler(session) {
     }
 
     suspend fun sendFriendMessage(qq: QQ, message: MessageChain) {
-        session.socket.sendPacket(ClientSendFriendMessagePacket(session.bot.account.qqNumber, qq.number, session.sessionKey, message))
+        session.socket.sendPacket(ClientSendFriendMessagePacket(session.bot.account.account, qq.number, session.sessionKey, message))
     }
 
     suspend fun sendGroupMessage(group: Group, message: MessageChain) {
-        session.socket.sendPacket(ClientSendGroupMessagePacket(session.bot.account.qqNumber, group.groupId, session.sessionKey, message))
+        session.socket.sendPacket(ClientSendGroupMessagePacket(session.bot.account.account, group.groupId, session.sessionKey, message))
     }
 }

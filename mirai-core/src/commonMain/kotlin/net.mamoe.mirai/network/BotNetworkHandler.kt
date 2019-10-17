@@ -2,7 +2,7 @@ package net.mamoe.mirai.network
 
 import kotlinx.coroutines.*
 import kotlinx.io.core.Closeable
-import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocket
+import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
 import net.mamoe.mirai.network.protocol.tim.handler.*
 import net.mamoe.mirai.network.protocol.tim.packet.*
@@ -17,8 +17,8 @@ import kotlin.coroutines.ContinuationInterceptor
  * [BotNetworkHandler] 是全异步和线程安全的.
  *
  * [BotNetworkHandler] 由 2 个模块构成:
- * - [BotSocket]: 处理数据包底层的发送([ByteArray])
- * - [PacketHandler]: 制作 [ClientPacket] 并传递给 [BotSocket] 发送; 分析 [ServerPacket] 并处理
+ * - [BotSocketAdapter]: 处理数据包底层的发送([ByteArray])
+ * - [PacketHandler]: 制作 [ClientPacket] 并传递给 [BotSocketAdapter] 发送; 分析 [ServerPacket] 并处理
  *
  * 其中, [PacketHandler] 由 3 个子模块构成:
  * - [LoginHandler] 处理 sendTouch/login/verification code 相关
@@ -27,7 +27,7 @@ import kotlin.coroutines.ContinuationInterceptor
  *
  * A BotNetworkHandler is used to connect with Tencent servers.
  */
-interface BotNetworkHandler<Socket : DataPacketSocket> : Closeable {
+interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : Closeable {
     /**
      * [BotNetworkHandler] 的协程作用域.
      * 所有 [BotNetworkHandler] 的协程均启动在此作用域下.
