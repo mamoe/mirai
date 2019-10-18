@@ -75,7 +75,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         0x00_58_u -> ServerHeartbeatResponsePacket(this)
         0x00_BA_u -> ServerCaptchaPacket.Encrypted(this)
         0x00_CE_u, 0x00_17_u -> ServerEventPacket.Raw.Encrypted(this, id, sequenceId)
-        0x00_81_u -> ServerFieldOnlineStatusChangedPacket.Encrypted(this)
+        0x00_81_u -> ServerFriendOnlineStatusChangedPacket.Encrypted(this)
         0x00_CD_u -> ServerSendFriendMessageResponsePacket(this)
         0x00_02_u -> ServerSendGroupMessageResponsePacket(this)
         0x00_A7_u -> ServerCanAddFriendResponsePacket(this)

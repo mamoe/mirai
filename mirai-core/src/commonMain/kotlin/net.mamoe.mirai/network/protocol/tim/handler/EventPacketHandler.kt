@@ -10,7 +10,9 @@ import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.distributePacket
-import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.IgnoredServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerFriendOnlineStatusChangedPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendFriendMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendGroupMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
@@ -41,7 +43,14 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
             is ServerGroupMessageEventPacket -> {
                 if (packet.qq.toLong() == bot.account.account) return
 
-                GroupMessageEvent(bot, bot.getGroupByNumber(packet.groupNumber), bot.getQQ(packet.qq), packet.message).broadcast()
+                GroupMessageEvent(
+                        bot,
+                        group = bot.getGroupByNumber(packet.groupNumber),
+                        sender = bot.getQQ(packet.qq),
+                        message = packet.message,
+                        senderName = packet.senderName,
+                        senderPermission = packet.senderPermission
+                ).broadcast()
             }
 
             is ServerSendFriendMessageResponsePacket,
@@ -49,8 +58,8 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
                 //ignored
             }
 
-            is ServerFieldOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
-            is ServerFieldOnlineStatusChangedPacket -> {
+            is ServerFriendOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
+            is ServerFriendOnlineStatusChangedPacket -> {
                 MiraiLogger.logInfo("${packet.qq.toLong()} 登录状态改变为 ${packet.status}")
                 //TODO
             }

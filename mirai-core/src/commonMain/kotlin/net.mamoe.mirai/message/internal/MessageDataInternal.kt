@@ -29,30 +29,31 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
         //MiraiLogger.logDebug(this.toUHexString())
         val filenameLength = readShort()
         val suffix = readString(filenameLength).substringAfter(".")
-        discardExact(this.readRemaining - 37 - 1 - filenameLength - 2 - 8 - 4)
-        val imageId = readString(36)
-        MiraiLogger.logDebug("imageId=$imageId")//todo ID似乎错了??
-        discardExact(1)//0x41
-        return Image("{$imageId}.$suffix")
+        discardExact(8)//03 00 04 00 00 02 9C 04
+        val length = readShort()//27
+        discardExact(1)
+        return Image("{${readString(length - 2/*去掉首尾各一个*/)}}.$suffix")
     }
+}
+
+//00 1B filenameLength
+// 43 37 46 29 5F 34 32 34 4E 33 55 37 7B 4C 47 36 7D 4F 25 5A 51 58 51 2E 6A 70 67 get suffix
+// 03 00 04 00 00 02 9C 04
+// 00 25 2F 32 65 37 61 65 33 36 66 2D 61 39 31 63 2D 34 31 32 39 2D 62 61 34 32 2D 37 65 30 31 32 39 37 37 35 63 63 38 14
+// 00 04 03 00 00 00 18
+// 00 25 2F 32 65 37 61 65 33 36 66 2D 61 39 31 63 2D 34 31 32 39 2D 62 61 34 32 2D 37 65 30 31 32 39 37 37 35 63 63 38 19
+// 00 04 00 00 00 2E 1A 00 04 00 00 00 2E FF
+// 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 36 36 38 65 35 43 36 38 45 36 42 44 32 46 35 38 34 31 42 30 39 37 39 45 37 46 32 35 34 33 38 38 31 33 43 33 2E 6A 70 67 66 2F 32 65 37 61 65 33 36 66 2D 61 39 31 63 2D 34 31 32 39 2D 62 61 34 32 2D 37 65 30 31 32 39 37 37 35 63 63 38 41
+
+fun main() {
+    println("f/".toByteArray().toUHexString())
+    println("16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 36 36 38 65 35 43 36 38 45 36 42 44 32 46 35 38 34 31 42 30 39 37 39 45 37 46 32 35 34 33 38 38 31 33 43 33 2E 6A 70 67 66 2F 32 65 37 61 65 33 36 66 2D 61 39 31 63 2D 34 31 32 39 2D 62 61 34 32 2D 37 65 30 31 32 39 37 37 35 63 63 38 41"
+            .hexToBytes().stringOf())
 }
 
 internal fun IoBuffer.parseMessageImage0x03(): Image {
     discardExact(1)
     return Image(String(readLVByteArray()))
-    /*
-    println(String(readLVByteArray()))
-    readTLVMap()
-    return Image(String(readLVByteArray().cutTail(5).getRight(42)))
-    /
-    discardExact(data.size - 47)
-    val imageId = String(readBytes(42))
-    discardExact(1)//0x41
-    discardExact(1)//0x42
-    discardExact(1)//0x43
-    discardExact(1)//0x41
-
-    return Image(imageId)*/
 }
 
 internal fun ByteReadPacket.parseMessageChain(): MessageChain {
@@ -63,50 +64,56 @@ internal fun ByteReadPacket.readMessage(): Message? {
     val messageType = this.readByte().toInt()
     val sectionLength = this.readShort().toLong()//sectionLength: short
     val sectionData = this.readIoBuffer(sectionLength.toInt())//use buffer instead
-    return when (messageType) {
-        0x01 -> sectionData.parsePlainText()
-        0x02 -> sectionData.parseMessageFace()
-        0x03 -> sectionData.parseMessageImage0x03()
-        0x06 -> sectionData.parseMessageImage0x06()
+
+    return try {
+        when (messageType) {
+            0x01 -> sectionData.parsePlainText()
+            0x02 -> sectionData.parseMessageFace()
+            0x03 -> sectionData.parseMessageImage0x03()
+            0x06 -> sectionData.parseMessageImage0x06()
 
 
-        0x19 -> {//未知, 可能是长文本?
-            //bot手机自己跟自己发消息会出这个
-            //似乎手机发消息就会有这个?
-            //sectionData: 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00
-            //             01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00
-            return null
-            sectionData.readBytes().debugPrint("sectionData")
-            return PlainText("[UNKNOWN(${this.readBytes().toUHexString()})]")
-            println()
-            val value = readLVByteArray()
-            //todo 未知压缩算法
-            PlainText(String(value))
+            0x19 -> {//未知, 可能是长文本?
+                //bot手机自己跟自己发消息会出这个
+                //似乎手机发消息就会有这个?
+                //sectionData: 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00
+                //             01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00
+                return null
+                sectionData.readBytes().debugPrint("sectionData")
+                return PlainText("[UNKNOWN(${this.readBytes().toUHexString()})]")
+                println()
+                val value = readLVByteArray()
+                //todo 未知压缩算法
+                PlainText(String(value))
 
-            // PlainText(String(GZip.uncompress( value)))
+                // PlainText(String(GZip.uncompress( value)))
+            }
+
+
+            0x14 -> {//长文本
+
+                //是否要用 sectionData.read?
+                val value = readLVByteArray()
+                println(value.size)
+                println(value.toUHexString())
+                //todo 未知压缩算法
+                this.discardExact(7)//几个TLV
+                return PlainText(String(value))
+            }
+
+            0x0E -> {
+                null
+            }
+
+            else -> {
+                println("未知的messageType=0x${messageType.toByte().toUHexString()}")
+                println("后文=${this.readBytes().toUHexString()}")
+                null
+            }
         }
-
-
-        0x14 -> {//长文本
-            val value = readLVByteArray()
-            println(value.size)
-            println(value.toUHexString())
-            //todo 未知压缩算法
-            this.discardExact(7)//几个TLV
-            return PlainText(String(value))
-        }
-
-        0x0E -> {
-            null
-        }
-
-        else -> {
-            println("未知的messageType=0x${messageType.toByte().toUHexString()}")
-            println("后文=${this.readBytes().toUHexString()}")
-            null
-        }
+    } finally {
+        sectionData.release(IoBuffer.Pool)
     }
-
 }
 
 fun ByteReadPacket.readMessageChain(): MessageChain {

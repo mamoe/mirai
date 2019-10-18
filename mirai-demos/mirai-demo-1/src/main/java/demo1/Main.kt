@@ -17,6 +17,7 @@ import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import net.mamoe.mirai.utils.MiraiLogger
 
+@Suppress("UNUSED_VARIABLE")
 suspend fun main() {
     val bot = Bot(BotAccount(//填写你的账号
             account = 1994701021,
