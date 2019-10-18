@@ -16,7 +16,8 @@ import kotlin.properties.Delegates
  * @see parseServerPacket
  */
 abstract class ServerPacket(val input: ByteReadPacket) : Packet(), Closeable {
-    override var id: UShort = super.id
+    override val id: UShort by lazy { super.id }
+
     override var sequenceId: UShort by Delegates.notNull()
 
     open fun decode() {
@@ -26,11 +27,6 @@ abstract class ServerPacket(val input: ByteReadPacket) : Packet(), Closeable {
     override fun close() = this.input.close()
 
     override fun toString(): String = this.packetToString()
-}
-
-fun <S : ServerPacket> S.applyId(id: UShort): S {
-    this.id = id
-    return this
 }
 
 fun <S : ServerPacket> S.applySequence(sequenceId: UShort): S {

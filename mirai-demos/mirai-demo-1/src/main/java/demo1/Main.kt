@@ -1,7 +1,6 @@
 package demo1
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.FriendMessageEvent
@@ -17,14 +16,11 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import net.mamoe.mirai.utils.MiraiLogger
-import kotlin.coroutines.coroutineContext
-import kotlin.system.exitProcess
-import kotlin.system.measureTimeMillis
 
 suspend fun main() {
     val bot = Bot(BotAccount(//填写你的账号
-            account = 2903772581,
-            password = "zxc123456"
+            account = 1994701021,
+            password = "asdhim188666"
     ), Console())
 
     bot.login {
@@ -79,7 +75,7 @@ suspend fun main() {
     subscribeAll<FriendMessageEvent> {
         always {
             //获取第一个纯文本消息
-            val firstText = it.message.first<PlainText>()
+            val firstText = it.message.firstOrNull<PlainText>()
 
         }
     }

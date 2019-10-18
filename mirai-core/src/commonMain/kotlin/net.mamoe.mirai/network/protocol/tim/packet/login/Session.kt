@@ -9,14 +9,14 @@ import net.mamoe.mirai.utils.*
 
 @PacketId(0x08_28u)
 class ClientSessionRequestPacket(
-        private val qq: Long,
+        private val bot: Long,
         private val serverIp: String,
         private val token38: IoBuffer,
         private val token88: IoBuffer,
         private val encryptionKey: IoBuffer
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(qq)
+        this.writeQQ(bot)
         this.writeHex("02 00 00 00 01 2E 01 00 00 68 52 00 30 00 3A")
         this.writeHex("00 38")
         this.writeFully(token38)
@@ -31,7 +31,7 @@ class ClientSessionRequestPacket(
             writeHex("00 36 00 12 00 02 00 01 00 00 00 05 00 00 00 00 00 00 00 00 00 00")
             writeHex(TIMProtocol.constantData1)
             writeHex(TIMProtocol.constantData2)
-            writeQQ(qq)
+            writeQQ(bot)
             writeHex("00 00 00 00 00 1F 00 22 00 01")
             writeHex("1A 68 73 66 E4 BA 79 92 CC C2 D4 EC 14 7C 8B AF 43 B0 62 FB 65 58 A9 EB 37 55 1D 26 13 A8 E5 3D")//device ID
 

@@ -1,0 +1,10 @@
+package net.mamoe.mirai.utils
+
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
+
+actual typealias PlatformImage = BufferedImage
+
+@JvmOverloads
+actual fun BufferedImage.toByteArray(formatName: String): ByteArray = ByteArrayOutputStream().use { ImageIO.write(this, "JPG", it); it.toByteArray() }

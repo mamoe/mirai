@@ -30,6 +30,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     override val NetworkScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
     override lateinit var socket: BotSocketAdapter
+        private set
 
     internal val temporaryPacketHandlers = mutableListOf<TemporaryPacketHandler<*>>()
     private val handlersLock = Mutex()
@@ -73,6 +74,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
         add(EventPacketHandler(session).asNode(EventPacketHandler))
         add(ActionPacketHandler(session).asNode(ActionPacketHandler))
+        bot.logger.logPurple("Successfully logged in")
     }
 
     private lateinit var sessionKey: ByteArray
@@ -110,9 +112,10 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 try {
                     channel.read(buffer)//JVM: withContext(IO)
                 } catch (e: ReadPacketInternalException) {
-
-                } catch (e: Exception) {
-                    e.log()
+                    //read failed, continue and reread
+                    continue
+                } catch (e: Throwable) {
+                    e.log()//other unexpected exceptions caught.
                     continue
                 }
 
@@ -123,11 +126,11 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                 NetworkScope.launch {
                     try {
-                        //Ensure the packet is consumed totally so that all buffers are released
+                        //`.use`: Ensure that the packet is consumed totally so that all the buffers are released
                         ByteReadPacket(buffer, IoBuffer.Pool).use {
                             distributePacket(it.parseServerPacket(buffer.readRemaining))
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         e.log()
                     }
                 }
@@ -168,6 +171,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             try {
                 packet.decode()
             } catch (e: Exception) {
+                e.log()
                 bot.printPacketDebugging(packet)
                 packet.close()
                 throw e
@@ -237,9 +241,6 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 } catch (e: SendPacketInternalException) {
                     bot.logger.logError("Caught SendPacketInternalException: ${e.cause?.message}")
                     bot.reinitializeNetworkHandler(configuration)
-                    return@withContext
-                } catch (e: Throwable) {
-                    e.log()
                     return@withContext
                 } finally {
                     buffer.release(IoBuffer.Pool)
@@ -338,7 +339,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 is ServerLoginResponseCaptchaInitPacket -> {
                     //[token00BA]来源之一: 验证码
                     this.token00BA = packet.token00BA
-                    this.captchaCache = packet.verifyCodePart1
+                    this.captchaCache = packet.captchaPart1
 
                     if (packet.unknownBoolean == true) {
                         this.captchaSectionId = 1
@@ -390,12 +391,14 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                             privateKey = privateKey,
                             token0825 = token0825,
                             token00BA = packet.tokenUnknown ?: token00BA,
-                            randomDeviceName = socket.configuration.randomDeviceName
+                            randomDeviceName = socket.configuration.randomDeviceName,
+                            tlv0006 = packet.tlv0006
                     ))
                 }
 
                 is ServerSessionKeyResponsePacket -> {
                     sessionKey = packet.sessionKey
+                    bot.logger.logPurple("sessionKey = ${sessionKey.toUHexString()}")
 
                     heartbeatJob = NetworkScope.launch {
                         while (socket.isOpen) {
@@ -412,14 +415,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 is ServerLoginSuccessPacket -> {
                     BotLoginSucceedEvent(bot).broadcast()
 
-                    //登录成功后会收到大量上次的消息, 忽略掉 todo 优化
-                    NetworkScope.launch {
-                        delay(3000)
-                        this@TIMBotNetworkHandler[EventPacketHandler].ignoreMessage = false
-                    }
-
                     onLoggedIn(sessionKey)
-
                     this.close()//The LoginHandler is useless since then
                 }
 

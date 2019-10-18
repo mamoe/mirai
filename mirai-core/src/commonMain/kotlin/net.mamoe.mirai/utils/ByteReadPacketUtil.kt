@@ -69,12 +69,12 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         }
         0x08_28u -> ServerSessionKeyResponsePacket.Encrypted(this)
 
-        0x00_EC_u -> ServerSKeyResponsePacket(this)
+        0x00_EC_u -> ServerLoginSuccessPacket(this)
         0x00_1D_u -> ServerSKeyResponsePacket.Encrypted(this)
         0x00_5C_u -> ServerAccountInfoResponsePacket.Encrypted(this)
         0x00_58_u -> ServerHeartbeatResponsePacket(this)
         0x00_BA_u -> ServerCaptchaPacket.Encrypted(this)
-        0x00_CE_u, 0x00_17_u -> ServerEventPacket.Raw.Encrypted(this)
+        0x00_CE_u, 0x00_17_u -> ServerEventPacket.Raw.Encrypted(this, id, sequenceId)
         0x00_81_u -> ServerFieldOnlineStatusChangedPacket.Encrypted(this)
         0x00_CD_u -> ServerSendFriendMessageResponsePacket(this)
         0x00_02_u -> ServerSendGroupMessageResponsePacket(this)
@@ -82,7 +82,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         0x03_88_u -> ServerTryGetImageIDResponsePacket.Encrypted(this)
 
         else -> UnknownServerPacket.Encrypted(this, id, sequenceId)
-    }.applyId(id).applySequence(sequenceId)
+    }.applySequence(sequenceId)
 }
 
 fun Input.readIP(): String = buildString(4 + 3) {
@@ -145,6 +145,7 @@ fun Input.readLVNumber(): Number {
 //@JvmSynthetic
 @Deprecated("Low efficiency", ReplaceWith(""))
 fun <I : Input> I.gotoWhere(matcher: UByteArray): I {
+    @Suppress("DEPRECATION")
     return this.gotoWhere(matcher.toByteArray())
 }
 

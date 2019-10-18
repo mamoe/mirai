@@ -41,7 +41,7 @@ interface DataPacketSocketAdapter : Closeable {
      *
      * 可通过 hook 事件 [ServerPacketReceivedEvent] 来获取服务器返回.
      *
-     * @see [BotSession.expectPacket] kotlin DSL
+     * @see [BotSession.sendAndExpect] kotlin DSL
      */
     suspend fun sendPacket(packet: ClientPacket)
 

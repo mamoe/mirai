@@ -76,7 +76,6 @@ object Main {
         }
     }
 
-
     /**
      * 可从 TIM 内存中读取
      *
@@ -89,7 +88,7 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "9E A6 16 46 FF 15 FB 73 2F 31 0D 7E CB C4 E6 49".hexToBytes()
+    val sessionKey: ByteArray = "F1 68 24 ED A8 6D 33 6E 5C B7 E0 F4 45 77 21 04".hexToBytes()
 
     fun dataReceived(data: ByteArray) {
         println("--------------")

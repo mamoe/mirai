@@ -26,13 +26,20 @@ fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = 
     writeFully(uniqueId)
 }
 
+fun <S : ServerEventPacket> S.applyId(id: UShort): S {
+    this.id = id
+    return this
+}
+
 /**
  * Packet id: `00 CE` or `00 17`
  *
  * @author Him188moe
  */
 abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: EventPacketIdentity) : ServerPacket(input) {
-    class Raw(input: ByteReadPacket) : ServerPacket(input) {
+    override var id: UShort = 0u
+
+    class Raw(input: ByteReadPacket, override val id: UShort) : ServerPacket(input) {
         fun distribute(): ServerEventPacket = with(input) {
             val eventIdentity = EventPacketIdentity(
                     from = readUInt(),
@@ -65,7 +72,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                     println(readUByte().toUInt())
 
                     //todo 错了. 可能是 00 79 才是.
-                    return@with ServerFriendTypingCanceledPacket(input, eventIdentity)
+                    ServerFriendTypingCanceledPacket(input, eventIdentity)
                     /*
                     if (readUByte().toUInt() == 0x37u) ServerFriendTypingStartedPacket(input, eventIdentity)
                     else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)*/
@@ -81,8 +88,8 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
             }.applyId(id).applySequence(sequenceId)
         }
 
-        class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey)).applyId(id).applySequence(sequenceId)
+        class Encrypted(input: ByteReadPacket, override var id: UShort, override var sequenceId: UShort) : ServerPacket(input) {
+            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey), id).applySequence(sequenceId)
         }
     }
 
@@ -185,8 +192,8 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
             senderName = map.getValue(18).read {
                 val tlv = readTLVMap(true)
                 tlv.printTLVMap("子map")
-                //群主的18: 05 00 04 00 00 00 03 08 00 04 00 00 00 04 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
-
+                ////群主的18: 05 00 04 00 00 00 03 08 00 04 00 00 00 04 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
+                //群主的 子map= {5=00 00 00 03, 8=00 00 00 04, 1=48 69 6D 31 38 38 6D 6F 65, 3=04, 4=00 00 00 08}
                 when {
                     tlv.containsKey(0x01) -> String(tlv.getValue(0x01))
                     tlv.containsKey(0x02) -> String(tlv.getValue(0x02))
@@ -202,7 +209,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
 //刚刚的消息: 00 00 00 2D 00 05 00 02 00 01 00 06 00 04 00 01 2E 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 01 38 03 3E 03 3F A2 76 E4 B8 DD 11 F4 B2 F2 1A E7 1F C4 F1 3F 23 FB 74 80 42 64 00 0B 78 1A 5D A3 26 C1 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D A3 26 C1 AA 34 08 42 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E4 BD A0 E5 A5 BD 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
 
 fun main() {
-    println("08 02 1A 12 08 95 02 10 90 04 40 D6 DE 8C ED 05 48 CF B5 90 D6 02 08 DD F1 92 B7 07 10 DD F1 92 B7 07 1A 14 08 00 10 05 18 D6 DE 8C ED 05 20 02 28 FF FF FF FF 0F 32 00".hexToBytes().stringOf())
+    println("01 00 32 AA 02 2F 50 03 60 00 68 00 9A 01 26 08 09 20 BF 02 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00".hexToBytes().stringOf())
 }
 
 fun main2() {

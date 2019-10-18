@@ -24,15 +24,17 @@ internal fun IoBuffer.parsePlainText(): PlainText {
 
 internal fun IoBuffer.parseMessageImage0x06(): Image {
     discardExact(1)
-    this.debugPrint("好友的图片")
-    //MiraiLogger.logDebug(this.toUHexString())
-    val filenameLength = readShort()
-    val suffix = readString(filenameLength).substringAfter(".")
-    discardExact(this@parseMessageImage0x06.readRemaining - 37 - 1 - filenameLength - 2)
-    val imageId = readString(36)
-    MiraiLogger.logDebug(imageId)
-    discardExact(1)//0x41
-    return Image("{$imageId}.$suffix")
+    with(this.debugPrint("好友的图片")) {
+
+        //MiraiLogger.logDebug(this.toUHexString())
+        val filenameLength = readShort()
+        val suffix = readString(filenameLength).substringAfter(".")
+        discardExact(this.readRemaining - 37 - 1 - filenameLength - 2 - 8 - 4)
+        val imageId = readString(36)
+        MiraiLogger.logDebug("imageId=$imageId")//todo ID似乎错了??
+        discardExact(1)//0x41
+        return Image("{$imageId}.$suffix")
+    }
 }
 
 internal fun IoBuffer.parseMessageImage0x03(): Image {

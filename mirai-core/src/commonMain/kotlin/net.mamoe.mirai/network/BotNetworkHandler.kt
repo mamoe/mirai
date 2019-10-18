@@ -1,6 +1,8 @@
 package net.mamoe.mirai.network
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancelChildren
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
@@ -27,6 +29,7 @@ import kotlin.coroutines.ContinuationInterceptor
  *
  * A BotNetworkHandler is used to connect with Tencent servers.
  */
+@Suppress("PropertyName")
 interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : Closeable {
     /**
      * [BotNetworkHandler] 的协程作用域.
@@ -38,11 +41,11 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : Closeable {
      * - SKey 刷新 [ClientSKeyRefreshmentRequestPacket]
      * - 所有数据包处理和发送
      *
-     * [BotNetworkHandler.close] 时将会 [取消][CoroutineScope.cancel] 所有此作用域下的协程
+     * [BotNetworkHandler.close] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
      */
     val NetworkScope: CoroutineScope
 
-    var socket: Socket
+    val socket: Socket
 
     /**
      * 得到 [PacketHandler].
@@ -57,9 +60,10 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : Closeable {
     suspend fun login(configuration: LoginConfiguration): LoginResult
 
     /**
-     * 添加一个临时包处理器
+     * 添加一个临时包处理器, 并发送相应的包
      *
-     * @see [TemporaryPacketHandler]
+     * @see [BotSession.sendAndExpect] 发送并期待一个包
+     * @see [TemporaryPacketHandler] 临时包处理器
      */
     suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>)
 

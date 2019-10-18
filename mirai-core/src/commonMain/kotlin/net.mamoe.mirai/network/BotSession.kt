@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package net.mamoe.mirai.network
 
 import kotlinx.coroutines.CompletableJob
@@ -50,7 +52,7 @@ class BotSession(
      *
      * 实现方法:
      * ```kotlin
-     * session.expectPacket<ServerPacketXXX> {
+     * session.sendAndExpect<ServerPacketXXX> {
      *  toSend { ClientPacketXXX(...) }
      *  onExpect {//it: ServerPacketXXX
      *
@@ -62,7 +64,7 @@ class BotSession(
      * @param handlerTemporary 处理器.
      */
     //@JvmSynthetic
-    suspend inline fun <reified P : ServerPacket> expectPacket(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableJob {
+    suspend inline fun <reified P : ServerPacket> sendAndExpect(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableJob {
         val job = coroutineContext[Job].takeIf { it != null }?.let { Job(it) } ?: Job()
         this.bot.network.addHandler(TemporaryPacketHandler(P::class, job, this).also(handlerTemporary))
         return job
@@ -71,28 +73,28 @@ class BotSession(
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket].
      * 发送成功后, 该方法会等待收到 [ServerPacket] 直到超时.
-     * 由于包名可能过长, 可使用 `DataPacketSocketAdapter.expectPacket(PacketProcessor)` 替代.
+     * 由于包名可能过长, 可使用 `DataPacketSocketAdapter.sendAndExpect(PacketProcessor)` 替代.
      *
      * 实现方法:
      * ```kotlin
-     * session.expectPacket<ServerPacketXXX>(ClientPacketXXX(...)) {//it: ServerPacketXXX
-     *
+     * ClientPacketXXX(...).sendAndExpect<ServerPacketXXX> {
+     *  //it: ServerPacketXXX
      * }
      * ```
      *
      * @param P 期待的包
-     * @param toSend 将要发送的包
      * @param handler 处理期待的包
      */
-    //@JvmSynthetic
-    suspend inline fun <reified P : ServerPacket> expectPacket(toSend: ClientPacket, noinline handler: suspend (P) -> Unit): CompletableJob {
+    suspend inline fun <reified P : ServerPacket> ClientPacket.sendAndExpect(noinline handler: suspend (P) -> Unit): CompletableJob {
         val job = coroutineContext[Job].takeIf { it != null }?.let { Job(it) } ?: Job()
-        this.bot.network.addHandler(TemporaryPacketHandler(P::class, job, this).also {
-            it.toSend(toSend)
+        bot.network.addHandler(TemporaryPacketHandler(P::class, job, this@BotSession).also {
+            it.toSend(this)
             it.onExpect(handler)
         })
         return job
     }
+
+    suspend inline fun ClientPacket.send() = socket.sendPacket(this)
 }
 
 

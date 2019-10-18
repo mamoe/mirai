@@ -32,3 +32,14 @@ expect fun solveIpAddress(hostname: String): String
  * Localhost 解析
  */
 expect fun localIpAddress(): String
+
+/**
+ * 上传群图片
+ */
+expect suspend fun httpPostGroupImage(
+        uKeyHex: String,
+        fileSize: Int,
+        botNumber: Long,
+        groupCode: Long,
+        imageData: ByteArray
+): Boolean

@@ -17,11 +17,11 @@ import kotlin.reflect.KClass
  * }
  * ```
  *
- * @see BotSession.expectPacket
+ * @see BotSession.sendAndExpect
  */
 class TemporaryPacketHandler<P : ServerPacket>(
         private val expectationClass: KClass<P>,
-        private val deferred: CompletableJob,
+        private val job: CompletableJob,
         private val fromSession: BotSession
 ) {
     private lateinit var toSend: ClientPacket
@@ -54,7 +54,7 @@ class TemporaryPacketHandler<P : ServerPacket>(
             kotlin.runCatching {
                 @Suppress("UNCHECKED_CAST")
                 expect(packet as P)
-            }.onFailure { deferred.completeExceptionally(it) }.onSuccess { deferred.complete() }
+            }.onFailure { job.completeExceptionally(it) }.onSuccess { job.complete() }
             return true
         }
         return false

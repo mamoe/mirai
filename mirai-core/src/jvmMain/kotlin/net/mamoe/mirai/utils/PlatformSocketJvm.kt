@@ -14,6 +14,7 @@ actual class PlatformDatagramChannel actual constructor(serverHost: String, serv
     private val serverAddress: InetSocketAddress = InetSocketAddress(serverHost, serverPort.toInt())
     private val channel: DatagramChannel = DatagramChannel.open().connect(serverAddress)
 
+    @Throws(ReadPacketInternalException::class)
     actual suspend fun read(buffer: IoBuffer) = withContext(Dispatchers.IO) {
         try {
             (channel as ReadableByteChannel).read(buffer)
@@ -22,6 +23,7 @@ actual class PlatformDatagramChannel actual constructor(serverHost: String, serv
         }
     }
 
+    @Throws(SendPacketInternalException::class)
     actual suspend fun send(buffer: IoBuffer) = withContext(Dispatchers.IO) {
         buffer.readDirect {
             try {

@@ -45,8 +45,10 @@ class ServerSKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
 
     override fun decode() = with(input) {
         discardExact(4)
-        sKey = this.readString(10)//todo test
-        MiraiLogger.logDebug("SKey=$sKey")
+        //debugDiscardExact(2)
+        sKey = this.readString(10)
+        DebugLogger.logPurple("SKey=$sKey")
+        DebugLogger.logPurple("Skey包后面${this.readRemainingBytes().toUHexString()}")
     }
 
     @PacketId(0x00_1Du)

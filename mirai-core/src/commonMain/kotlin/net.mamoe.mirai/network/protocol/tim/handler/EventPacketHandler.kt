@@ -26,9 +26,6 @@ import net.mamoe.mirai.utils.MiraiLogger
 class EventPacketHandler(session: BotSession) : PacketHandler(session) {
     companion object Key : PacketHandler.Key<EventPacketHandler>
 
-
-    internal var ignoreMessage: Boolean = true
-
     override suspend fun onPacketReceived(packet: ServerPacket): Unit = with(session) {
         when (packet) {
             is ServerGroupUploadFileEventPacket -> {
@@ -36,14 +33,12 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
             }
 
             is ServerFriendMessageEventPacket -> {
-                if (ignoreMessage) return
-
-                FriendMessageEvent(bot, bot.getQQ(packet.qq), packet.message).broadcast()
+                if (!packet.isPrevious) {
+                    FriendMessageEvent(bot, bot.getQQ(packet.qq), packet.message).broadcast()
+                }
             }
 
             is ServerGroupMessageEventPacket -> {
-                if (ignoreMessage) return
-
                 if (packet.qq.toLong() == bot.account.account) return
 
                 GroupMessageEvent(bot, bot.getGroupByNumber(packet.groupNumber), bot.getQQ(packet.qq), packet.message).broadcast()

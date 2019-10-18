@@ -2,17 +2,16 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.io.core.Closeable
 import net.mamoe.mirai.utils.toUHexString
 
 /**
  * 数据包.
  */
-abstract class Packet : Closeable {
+abstract class Packet {
     /**
      * 2 Ubyte
      */
-    open val id: UShort = (this::class.annotations.firstOrNull { it is PacketId } as? PacketId)?.value ?: error("Annotation PacketId not found")
+    open val id: UShort by lazy { (this::class.annotations.firstOrNull { it is PacketId } as? PacketId)?.value ?: error("Annotation PacketId not found") }
 
     /**
      * 包序列 id. 唯一

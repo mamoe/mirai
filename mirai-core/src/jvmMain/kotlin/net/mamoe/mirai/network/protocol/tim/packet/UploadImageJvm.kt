@@ -5,9 +5,6 @@ package net.mamoe.mirai.network.protocol.tim.packet
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.utils.*
-import java.awt.image.BufferedImage
-
-actual typealias PlatformImage = BufferedImage
 
 actual typealias ClientTryGetImageIDPacket = ClientTryGetImageIDPacketJvm
 

@@ -4,7 +4,6 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.internal.DangerousInternalIoApi
 import net.mamoe.mirai.utils.toUHexString
 import java.lang.reflect.Field
 
@@ -37,7 +36,8 @@ private object IgnoreIdList : List<String> by listOf(
         "EMPTY_ID_HEX",
         "input",
         "output",
-        "UninitializedByteReadPacket"
+        "UninitializedByteReadPacket",
+        "sessionKey"
 )
 
 internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjustName(this::class.simpleName + "(${this.idHexString})") + this::class.java.allDeclaredFields

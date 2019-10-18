@@ -16,6 +16,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResp
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ServerSKeyResponsePacket
+import net.mamoe.mirai.utils.log
 
 /**
  * 动作: 获取好友列表, 点赞, 踢人等.
@@ -64,7 +65,11 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
                 sKeyRefresherJob = session.scope.launch {
                     while (session.isOpen) {
                         delay(1800000)
-                        session.socket.sendPacket(ClientSKeyRefreshmentRequestPacket(session.bot.account.account, session.sessionKey))
+                        try {
+                            session.socket.sendPacket(ClientSKeyRefreshmentRequestPacket(session.bot.account.account, session.sessionKey))
+                        } catch (e: Throwable) {
+                            e.log()
+                        }
                     }
                 }
             }

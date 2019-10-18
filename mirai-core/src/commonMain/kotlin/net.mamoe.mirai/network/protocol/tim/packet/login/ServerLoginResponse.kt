@@ -16,8 +16,6 @@ class ServerLoginResponseFailedPacket(val loginResult: LoginResult, input: ByteR
 
 /**
  * 服务器进行加密后返回 privateKey
- *
- * @author NaturalHG
  */
 @PacketId(0x08_36u)
 class ServerLoginResponseKeyExchangePacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
@@ -29,7 +27,7 @@ class ServerLoginResponseKeyExchangePacket(input: ByteReadPacket) : ServerLoginR
     @Tested
     override fun decode() {
         this.input.discardExact(5)//01 00 1E 00 10
-        privateKeyUpdate = this.input.readBytes(0x10)//22
+        privateKeyUpdate = this.input.readBytes(0x10)
         this.input.discardExact(4)//00 06 00 78
         tlv0006 = this.input.readIoBuffer(0x78)
 
@@ -127,7 +125,7 @@ class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginRespo
 @PacketId(0x08_36u)
 class ServerLoginResponseCaptchaInitPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
 
-    lateinit var verifyCodePart1: IoBuffer
+    lateinit var captchaPart1: IoBuffer
     lateinit var token00BA: ByteArray
     var unknownBoolean: Boolean? = null
 
@@ -136,8 +134,8 @@ class ServerLoginResponseCaptchaInitPacket(input: ByteReadPacket) : ServerLoginR
     override fun decode() {
         this.input.discardExact(78)
         //println(this.input.readRemainingBytes().toUHexString())
-        val verifyCodeLength = this.input.readShort()//2bytes
-        this.verifyCodePart1 = this.input.readIoBuffer(verifyCodeLength)
+        val captchaLength = this.input.readShort()//2bytes
+        this.captchaPart1 = this.input.readIoBuffer(captchaLength)
 
         this.input.discardExact(1)
 

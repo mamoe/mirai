@@ -35,7 +35,6 @@ actual sealed class Contact actual constructor(bot: Bot, number: Long) : Platfor
      */
     fun blockingSendMessage(message: Message) = runBlocking { sendMessage(message) }
 
-
     /**
      * 阻塞发送一个消息. 仅应在 Java 使用
      */
@@ -44,23 +43,17 @@ actual sealed class Contact actual constructor(bot: Bot, number: Long) : Platfor
     /**
      * 异步发送一个消息. 仅应在 Java 使用
      */
-    fun asyncSendMessage(chain: MessageChain) {
-        bot.network.NetworkScope.launch { sendMessage(chain) }
-    }
+    fun asyncSendMessage(chain: MessageChain) = bot.network.NetworkScope.launch { sendMessage(chain) }
 
     /**
      * 异步发送一个消息. 仅应在 Java 使用
      */
-    fun asyncSendMessage(message: Message) {
-        bot.network.NetworkScope.launch { sendMessage(message) }
-    }
+    fun asyncSendMessage(message: Message) = bot.network.NetworkScope.launch { sendMessage(message) }
 
     /**
      * 异步发送一个消息. 仅应在 Java 使用
      */
-    fun asyncSendMessage(plain: String) {
-        bot.network.NetworkScope.launch { sendMessage(plain) }
-    }
+    fun asyncSendMessage(plain: String) = bot.network.NetworkScope.launch { sendMessage(plain) }
 }
 
 /**
