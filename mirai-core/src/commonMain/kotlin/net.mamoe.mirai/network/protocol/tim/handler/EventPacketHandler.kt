@@ -17,6 +17,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendFriendMessag
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendGroupMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.*
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**

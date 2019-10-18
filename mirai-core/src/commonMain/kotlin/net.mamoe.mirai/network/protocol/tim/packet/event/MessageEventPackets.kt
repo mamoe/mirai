@@ -57,7 +57,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
 
                 senderPermission = when (val value0x03 = tlv.getValue(0x03)[0].toUInt()) {
                     0x04u -> SenderPermission.OWNER
-                    0x03u -> {
+                    0x02u -> {
                         when (val value0x04 = tlv.getValue(0x04)[3].toUInt()) {
                             0x08u -> SenderPermission.OPERATOR
                             0x10u -> SenderPermission.MEMBER

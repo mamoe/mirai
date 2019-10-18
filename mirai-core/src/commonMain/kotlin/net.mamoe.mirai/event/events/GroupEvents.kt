@@ -5,7 +5,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
-import net.mamoe.mirai.network.protocol.tim.packet.SenderPermission
+import net.mamoe.mirai.network.protocol.tim.packet.event.SenderPermission
 
 
 abstract class GroupEvent(bot: Bot, val group: Group) : BotEvent(bot)
