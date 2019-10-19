@@ -5,6 +5,7 @@ import jpcap.packet.IPPacket
 import jpcap.packet.UDPPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
+import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
@@ -71,7 +72,7 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "99 91 B9 8B 79 45 FD CF 51 4A B9 DE 14 61 ED E3".hexToBytes()
+    val sessionKey: ByteArray = "99 82 67 D4 62 20 CA 5D 81 F8 6F 83 EE 8A F7 68".hexToBytes()
 
     fun dataReceived(data: ByteArray) {
         println("--------------")
@@ -121,7 +122,8 @@ object Main {
         discardExact(3)//head
         val idHex = readBytes(4).toUHexString()
         println("发出包ID = $idHex")
-        discardExact(TIMProtocol.fixVer2.hexToBytes().size + 1 + 5 - 3 + 1)
+        readUInt()//客户端登录的qq
+        println("TIM的fixVer2=" + readBytes(TIMProtocol.fixVer2.hexToBytes().size).toUHexString())
 
         val encryptedBody = readRemainingBytes()
         println("解密body = ${encryptedBody.decryptBy(sessionKey).toUHexString()}")

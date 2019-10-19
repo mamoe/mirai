@@ -13,15 +13,30 @@ import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.PlainText
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotAccount
-import net.mamoe.mirai.utils.Console
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.PlatformLogger
+import java.io.File
+
+private fun readTestAccount(): BotAccount? {
+    val file = File("testAccount.txt")
+    if (!file.exists() || !file.canRead()) {
+        return null
+    }
+
+    val lines = file.readLines()
+    return try {
+        BotAccount(lines[0].toLong(), lines[1])
+    } catch (e: IndexOutOfBoundsException) {
+        null
+    }
+}
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = Bot(BotAccount(//填写你的账号
+    val bot = Bot(readTestAccount() ?: BotAccount(//填写你的账号
             account = 1994701121,
             password = "123456"
-    ), Console())
+    ), PlatformLogger())
 
     bot.login {
         randomDeviceName = true

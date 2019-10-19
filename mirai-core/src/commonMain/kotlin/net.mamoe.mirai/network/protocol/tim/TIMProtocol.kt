@@ -31,7 +31,7 @@ object TIMProtocol {
      */
     const val fixVer2 = "02 00 00 00 01 01 01 00 00 68 20"
     //                   02 38 03 00 CD 48 68 3E 03 3F A2 02 00 00 00
-    //                   02 00 00 00 01 2E 01 00 00 69 35
+    const val versionNewest = "02 00 00 00 01 2E 01 00 00 69 35"
 
     const val constantData1 = "00 18 00 16 00 01 "
     const val constantData2 = "00 00 04 53 00 00 00 01 00 00 15 85 "
@@ -92,5 +92,6 @@ object TIMProtocol {
      * length=15
      */
     const val messageConst1 = "00 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
+    const val messageConstNewest = "22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
     //               TIM最新   22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91
 }

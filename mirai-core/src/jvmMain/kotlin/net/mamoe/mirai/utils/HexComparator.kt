@@ -43,8 +43,6 @@ internal object HexComparator {
             val 群 = "群".toByteArray().toUHexString()
             val 你好 = "你好".toByteArray().toUHexString()
 
-            val SINGLE_PLAIN_MESSAGE_HEAD = "00 00 01 00 09 01"
-
             val MESSAGE_TAIL_10404 = "0E  00  07  01  00  04  00  00  00  09 19  00  18  01  00  15  AA  02  12  9A  01  0F  80  01  01  C8  01  00  F0  01  00  F8  01  00  90  02  00"
                     .replace("  ", " ")
 
