@@ -23,32 +23,11 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        /*--------------	第一步绑定网络设备       --------------*/
         val devices = JpcapCaptor.getDeviceList()
-
-        /*
-        \Device\NPF_{0E7103E4-BF96-4B66-A23B-F6F630D814CD}     |     Microsoft
-        \Device\NPF_{2CCA31E2-93D5-42F2-92C1-5882E18A8E95}     |     VMware Virtual Ethernet Adapter
-        \Device\NPF_{A12C8971-858B-4BC8-816C-4077E1636AC5}     |     VMware Virtual Ethernet Adapter
-        \Device\NPF_{231C4E27-AF20-4362-BCA3-107236CB8A2E}     |     MS NDIS 6.0 LoopBack Driver
-        \Device\NPF_{500B5537-AA10-4E2F-8F7D-E6BD365BDCD1}     |     Microsoft
-        \Device\NPF_{A177317B-903A-45B5-8AEA-3698E423ABD6}     |     Microsoft
-         */
-        /*
-        for (n in devices) {
-            println(n.name + "     |     " + n.description)
-        }
-        println("-------------------------------------------")
-        exitProcess(0)*/
-
         val jpcap: JpcapCaptor?
         val caplen = 4096
         val promiscCheck = true
-
         jpcap = JpcapCaptor.openDevice(devices[0], caplen, promiscCheck, 50)
-
-
-        /*----------第二步抓包-----------------*/
         while (true) {
             assert(jpcap != null)
             val pk = jpcap!!.packet
@@ -60,7 +39,11 @@ object Main {
                     }
 
                     if (localIp in pk.dst_ip.hostAddress) {//接受
-                        dataReceived(pk.data)
+                        try {
+                            dataReceived(pk.data)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     } else {
                         try {
                             dataSent(pk.data)
@@ -88,7 +71,7 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "F1 68 24 ED A8 6D 33 6E 5C B7 E0 F4 45 77 21 04".hexToBytes()
+    val sessionKey: ByteArray = "99 91 B9 8B 79 45 FD CF 51 4A B9 DE 14 61 ED E3".hexToBytes()
 
     fun dataReceived(data: ByteArray) {
         println("--------------")

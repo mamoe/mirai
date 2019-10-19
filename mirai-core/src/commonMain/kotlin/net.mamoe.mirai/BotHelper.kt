@@ -14,8 +14,6 @@ import net.mamoe.mirai.utils.toUHexString
 
 /**
  * The mirror of functions in inner classes of [Bot]
- *
- * @author Him188moe
  */
 
 //Contacts

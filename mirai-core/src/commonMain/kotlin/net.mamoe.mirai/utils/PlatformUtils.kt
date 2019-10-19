@@ -1,9 +1,11 @@
 package net.mamoe.mirai.utils
 
+import com.soywiz.klock.DateTime
+
 /**
  * 时间戳
  */
-expect val currentTime: Long
+val currentTime: Long = DateTime.nowUnixLong()
 
 /**
  * 设备名

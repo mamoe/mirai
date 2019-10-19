@@ -41,13 +41,22 @@ fun UInt.toByteArray(): ByteArray = byteArrayOf(
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 fun Byte.toUHexString(): String = this.toUByte().toString(16).toUpperCase()
 fun String.hexToBytes(): ByteArray = HexCache.hexToBytes(this)
+
+/**
+ * 将 Hex 转为 UByteArray, 有根据 hex 的 [hashCode] 建立的缓存.
+ */
 fun String.hexToUBytes(): UByteArray = HexCache.hexToUBytes(this)
+
 fun String.hexToInt(): Int = hexToBytes().toUInt().toInt()
 fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
 fun ByteArray.toUInt(): UInt = this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
 
 fun ByteArray.toIoBuffer(): IoBuffer = IoBuffer.Pool.borrow().let { it.writeFully(this); it }
 
+/**
+ * Hex 转换 [ByteArray] 和 [UByteArray] 缓存.
+ * 为 [net.mamoe.mirai.network.protocol.tim.TIMProtocol] 的 hex 常量使用
+ */
 internal object HexCache {
     private val hexToByteArrayCacheMap: MutableMap<Int, ByteArray> = mutableMapOf()
 

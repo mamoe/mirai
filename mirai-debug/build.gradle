@@ -5,9 +5,9 @@ dependencies {
     implementation project(':mirai-core')
     compile files('./lib/jpcap.jar')
 
-    compile rootProject.ext.coroutineCommon
-    compile rootProject.ext.kotlinJvm
-    compile rootProject.ext.kotlinxIOJvm
+    implementation rootProject.ext.coroutineCommon
+    implementation rootProject.ext.kotlinJvm
+    implementation rootProject.ext.kotlinxIOJvm
 }
 
 tasks.withType(JavaCompile) {

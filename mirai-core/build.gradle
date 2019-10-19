@@ -35,6 +35,7 @@ kotlin {
                 implementation rootProject.ext.atomicFUCommon
 
                 implementation rootProject.ext.kotlinxIOCommon
+                implementation rootProject.ext.klock
             }
         }
 
@@ -51,6 +52,7 @@ kotlin {
                 implementation 'org.yaml:snakeyaml:1.18'
                 implementation 'org.jsoup:jsoup:1.12.1'
                 implementation 'org.ini4j:ini4j:0.5.2'
+                implementation rootProject.ext.klock
             }
         }
 

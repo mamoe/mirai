@@ -20,7 +20,7 @@ object TIMProtocol {
         ).forEach { list.add(solveIpAddress(it)) }
 
         list.toList()
-    }()
+    }()//不使用lazy是为了在启动时就加载.
 
     const val head = "02"
     const val ver = "37 13"
@@ -35,6 +35,9 @@ object TIMProtocol {
 
     const val constantData1 = "00 18 00 16 00 01 "
     const val constantData2 = "00 00 04 53 00 00 00 01 00 00 15 85 "
+
+
+    //todo 使用 byte array
 
     /**
      * Touch 发出时写入, 并用于加密, 接受 sendTouch response 时解密.

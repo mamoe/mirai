@@ -30,4 +30,5 @@ ext {
     kotlinxIOJS = "org.jetbrains.kotlinx:kotlinx-io-js:$kotlinx_io_version"
     kotlinxIONative = "org.jetbrains.kotlinx:kotlinx-io-native:$kotlinx_io_version"
 
+    klock = "com.soywiz.korlibs.klock:klock:1.7.0"
 }

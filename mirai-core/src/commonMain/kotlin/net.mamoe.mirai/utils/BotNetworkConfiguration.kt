@@ -1,5 +1,7 @@
 package net.mamoe.mirai.utils
 
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
 import net.mamoe.mirai.network.protocol.tim.packet.login.ServerTouchResponsePacket
 
 /**
@@ -9,7 +11,7 @@ class BotNetworkConfiguration {
     /**
      * 等待 [ServerTouchResponsePacket] 的时间
      */
-    var touchTimeoutMillis: Long = 2000
+    var touchTimeout: TimeSpan = 2.seconds
 
     /**
      * 是否使用随机的设备名.
@@ -21,13 +23,13 @@ class BotNetworkConfiguration {
     /**
      * 心跳周期. 过长会导致被服务器断开连接.
      */
-    var heartbeatPeriodMillis: Long = 1 * 60 * 1000
+    var heartbeatPeriod: TimeSpan = 60.seconds
 
     /**
      * 每次心跳时等待结果的时间.
      * 一旦心跳超时, 整个网络服务将会重启 (将消耗约 1s). 除正在进行的任务 (如图片上传) 会被中断外, 事件和插件均不受影响.
      */
-    var heartbeatTimeoutMillis: Long = 2000
+    var heartbeatTimeout: TimeSpan = 2.seconds
 
     companion object {
         val Default = BotNetworkConfiguration()

@@ -147,7 +147,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             val expect = expectPacket<ServerTouchResponsePacket>()
             NetworkScope.launch { processReceive() }
             NetworkScope.launch {
-                if (withTimeoutOrNull(configuration.touchTimeoutMillis) { expect.join() } == null) {
+                if (withTimeoutOrNull(configuration.touchTimeout.millisecondsLong) { expect.join() } == null) {
                     loginResult.complete(LoginResult.TIMEOUT)
                 }
             }
@@ -342,7 +342,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     this.token00BA = packet.token00BA
                     this.captchaCache = packet.captchaPart1
 
-                    if (packet.unknownBoolean == true) {
+                    if (packet.unknownBoolean) {
                         this.captchaSectionId = 1
                         socket.sendPacket(ClientCaptchaTransmissionRequestPacket(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
                     }
@@ -403,11 +403,11 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                     heartbeatJob = NetworkScope.launch {
                         while (socket.isOpen) {
-                            delay(configuration.heartbeatPeriodMillis)
+                            delay(configuration.heartbeatPeriod.millisecondsLong)
                             with(session) {
                                 class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
 
-                                if (withTimeoutOrNull(configuration.heartbeatTimeoutMillis) {
+                                if (withTimeoutOrNull(configuration.heartbeatTimeout.millisecondsLong) {
                                             ClientHeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<ServerHeartbeatResponsePacket> {}
                                         } == null) {
                                     bot.logPurple("Heartbeat timed out")

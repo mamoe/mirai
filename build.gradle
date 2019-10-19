@@ -19,6 +19,7 @@ allprojects {
     version = "1.0"
 
     repositories {
+        jcenter()//klock
         google()
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
     }

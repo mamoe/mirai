@@ -24,7 +24,6 @@ suspend fun main() {
     ), Console())
 
     bot.login {
-        touchTimeoutMillis = 2000
         randomDeviceName = true
     }.let {
         if (it != LoginResult.SUCCESS) {

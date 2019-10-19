@@ -127,7 +127,7 @@ class ServerLoginResponseCaptchaInitPacket(input: ByteReadPacket) : ServerLoginR
 
     lateinit var captchaPart1: IoBuffer
     lateinit var token00BA: ByteArray
-    var unknownBoolean: Boolean? = null
+    var unknownBoolean: Boolean by Delegates.notNull()
 
 
     @Tested

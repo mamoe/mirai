@@ -8,8 +8,6 @@ import java.net.InetAddress
 import java.security.MessageDigest
 import java.util.zip.CRC32
 
-actual val currentTime: Long = System.currentTimeMillis()
-
 actual val deviceName: String = InetAddress.getLocalHost().hostName
 
 

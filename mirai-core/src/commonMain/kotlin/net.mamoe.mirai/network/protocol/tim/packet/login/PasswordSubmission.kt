@@ -22,22 +22,23 @@ class ClientPasswordSubmissionPacket constructor(
         private val loginIP: String,
         private val privateKey: ByteArray,
         private val token0825: ByteArray,
-        private val token00BA: ByteArray? = null,//
+        private val token00BA: ByteArray? = null,
         private val randomDeviceName: Boolean = false,
         private val tlv0006: IoBuffer? = null
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(bot)
-        this.writeHex(TIMProtocol.passwordSubmissionTLV1)
+        writeQQ(bot)
+        writeHex(TIMProtocol.passwordSubmissionTLV1)
 
-        this.writeShort(25)
-        this.writeHex(TIMProtocol.publicKey)//25
+        writeShort(25)
+        writeHex(TIMProtocol.publicKey)//=25
 
-        this.writeHex("00 00 00 10")//=16
-        this.writeHex(TIMProtocol.key0836)//16
+        writeZero(2)
+        writeShort(16)
+        writeHex(TIMProtocol.key0836)//=16
 
         //TODO shareKey 极大可能为 publicKey, key0836 计算得到
-        this.encryptAndWrite(TIMProtocol.shareKey.hexToBytes()) {
+        encryptAndWrite(TIMProtocol.shareKey) {
             writePart1(bot, password, loginTime, loginIP, privateKey, token0825, randomDeviceName, tlv0006)
 
             if (token00BA != null) {

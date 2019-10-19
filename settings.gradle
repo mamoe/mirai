@@ -6,3 +6,5 @@ include(':mirai-demos:mirai-demo-1')
 include(':mirai-demos')
 include(':mirai-debug')
 project(':mirai-demos:mirai-demo-1').projectDir = file('mirai-demos/mirai-demo-1')
+
+enableFeaturePreview('GRADLE_METADATA')
