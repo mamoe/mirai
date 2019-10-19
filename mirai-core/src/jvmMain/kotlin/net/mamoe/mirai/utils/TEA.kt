@@ -1,7 +1,5 @@
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.readBytes
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.experimental.and
@@ -12,7 +10,7 @@ import kotlin.experimental.xor
  *
  * @author iweiz https://github.com/iweizime/StepChanger/blob/master/app/src/main/java/me/iweizi/stepchanger/qq/Cryptor.java
  */
-actual object TEA {
+internal actual object TEA {
     private const val UINT32_MASK = 0xffffffffL
 
     internal actual fun doOption(data: ByteArray, key: ByteArray, encrypt: Boolean): ByteArray {
@@ -163,14 +161,14 @@ actual object TEA {
             return mOutput
         }
 
-        fun decrypt(cipherText: ByteArray, offset: Int, len: Int): ByteArray? {
+        fun decrypt(cipherText: ByteArray, offset: Int, len: Int): ByteArray {
             require(!(len % 8 != 0 || len < 16)) { "data must len % 8 == 0 && len >= 16 but given $len" }
             mIV = decode(cipherText, offset)
             mIndexPos = (mIV[0] and 7).toInt()
             var plen = len - mIndexPos - 10
             isFirstBlock = true
             if (plen < 0) {
-                return null
+                fail()
             }
             mOutput = ByteArray(plen)
             mPreOutPos = 0
@@ -185,7 +183,7 @@ actual object TEA {
                 if (mIndexPos == 8) {
                     isFirstBlock = false
                     if (!decodeOneBlock(cipherText, offset, len)) {
-                        throw RuntimeException("Unable to dataDecode")
+                        fail()
                     }
                 }
             }
@@ -203,7 +201,7 @@ actual object TEA {
                     mPreOutPos = mOutPos - 8
                     isFirstBlock = false
                     if (!decodeOneBlock(cipherText, offset, len)) {
-                        throw RuntimeException("Unable to dataDecode")
+                        fail()
                     }
                 }
                 plen--
@@ -212,7 +210,7 @@ actual object TEA {
             while (g < 7) {
                 if (mIndexPos < 8) {
                     if (cipherText[mPreOutPos + offset + mIndexPos].xor(mIV[mIndexPos]).toInt() != 0) {
-                        throw RuntimeException()
+                        fail()
                     } else {
                         ++mIndexPos
                     }
@@ -221,7 +219,7 @@ actual object TEA {
                 if (mIndexPos == 8) {
                     mPreOutPos = mOutPos
                     if (!decodeOneBlock(cipherText, offset, len)) {
-                        throw RuntimeException("Unable to dataDecode")
+                        fail()
                     }
                 }
                 g++
@@ -232,15 +230,11 @@ actual object TEA {
         return if (encrypt) {
             encrypt(data, 0, data.size)
         } else {
-            try {
-                return decrypt(data, 0, data.size)!!
-            } catch (e: Exception) {
-                //println("Source: " + data.toUHexString(" "))
-                // println("Key: " + key.toUHexString(" "))
-                throw e
-            }
+            decrypt(data, 0, data.size)
         }
     }
+
+    private fun fail(): Nothing = throw DecryptionFailedException()
 
     @JvmStatic
     actual fun encrypt(source: ByteArray, key: ByteArray): ByteArray {
@@ -250,16 +244,6 @@ actual object TEA {
     @JvmStatic
     actual fun decrypt(source: ByteArray, key: ByteArray): ByteArray {
         return doOption(source, key, false)
-    }
-
-    @JvmStatic
-    actual fun decrypt(source: ByteArray, key: IoBuffer): ByteArray {
-        return doOption(source, key.readBytes(), false)
-    }
-
-    @JvmStatic
-    actual fun decrypt(source: ByteArray, keyHex: String): ByteArray {
-        return decrypt(source, keyHex.hexToBytes())
     }
 
     @Suppress("SameParameterValue")
@@ -272,3 +256,5 @@ actual object TEA {
         return result shr 32 or (result and UINT32_MASK)
     }
 }
+
+class DecryptionFailedException : Exception()
