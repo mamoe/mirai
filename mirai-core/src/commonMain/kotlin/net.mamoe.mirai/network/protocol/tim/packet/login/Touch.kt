@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
@@ -60,7 +60,7 @@ class ServerTouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class ClientTouchPacket(private val bot: Long, private val serverIp: String) : ClientPacket() {
+class ClientTouchPacket(private val bot: UInt, private val serverIp: String) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer)
@@ -84,7 +84,7 @@ class ClientTouchPacket(private val bot: Long, private val serverIp: String) : C
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class ClientTouchRedirectionPacket(private val serverIP: String, private val qq: Long) : ClientPacket() {
+class ClientTouchRedirectionPacket(private val serverIP: String, private val qq: UInt) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer)

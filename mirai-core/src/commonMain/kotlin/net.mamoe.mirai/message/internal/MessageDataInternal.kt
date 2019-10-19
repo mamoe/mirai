@@ -37,8 +37,8 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
     val suffix = readString(filenameLength).substringAfter(".")
     discardExact(8)//03 00 04 00 00 02 9C 04
     val length = readShort()//=27
-    discardExact(1)//无意义符号?
-    return Image("{${readString(length - 2/*去掉首尾各一个无意义符号*/)}}.$suffix")
+    return Image(ImageId(readString(length)), "")//todo 文件名解析
+    //return Image("{${readString(length)}}.$suffix")
 }
 
 
@@ -56,8 +56,8 @@ fun main() {
 }
 
 internal fun IoBuffer.parseMessageImage0x03(): Image {
-    discardExact(1)
-    return Image(String(readLVByteArray()))
+    discardExact(1) //TODO 这里的文件名解析
+    return Image(ImageId(String(readLVByteArray())), "")
 }
 
 internal fun ByteReadPacket.readMessage(): Message? {
@@ -67,7 +67,7 @@ internal fun ByteReadPacket.readMessage(): Message? {
 
     return try {
         when (messageType) {
-            //todo 在每个parse里面都 discard 了第一byte.
+            //todo 在每个parse里面都 discard 了第一 byte.
             0x01 -> sectionData.parsePlainText()
             0x02 -> sectionData.parseMessageFace()
             0x03 -> sectionData.parseMessageImage0x03()
@@ -128,14 +128,14 @@ fun ByteReadPacket.readMessageChain(): MessageChain {
     return chain
 }
 
-fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
+fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
     this@toPacket.forEach { message ->
         writePacket(with(message) {
             when (this) {
                 is Face -> buildPacket {
                     writeUByte(MessageType.FACE.value)
 
-                    writeLVPacket {
+                    writeShortLVPacket {
                         writeShort(1)
                         writeUByte(id.id)
 
@@ -150,31 +150,88 @@ fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
                 is At -> throw UnsupportedOperationException("At is not supported now but is expecting to be supported")
 
                 is Image -> buildPacket {
-                    writeUByte(MessageType.IMAGE.value)
+                    if (forGroup) {
+                        writeUByte(MessageType.GROUP_IMAGE.value)
 
-                    writeLVPacket {
-                        writeByte(0x02)
-                        writeLVString(id)
-                        writeHex("04 00 " +
-                                "04 9B 53 B0 08 " +
-                                "05 00 " +
-                                "04 D9 8A 5A 70 " +
-                                "06 00 " +
-                                "04 00 00 00 50 " +
-                                "07 00 " +
-                                "01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 11 00 00 00 15 00 04 00 00 02 BC 16 00 04 00 00 02 BC 18 00 04 00 00 7D 5E FF 00 5C 15 36 20 39 32 6B 41 31 43 39 62 35 33 62 30 30 38 64 39 38 61 35 61 37 30 20")
-                        writeHex("20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20")
-                        writeStringUtf8(id)
-                        writeByte(0x41)
+                        /*
+                         * 00 00 06 00 F3 02 00 1B 28 52 49 5F 36 31 28 32 52 59 4B 59 43 40 37 59 29 58 29 39 29 42 49 2E 67 69 66 03 00 04 00 00 11 90 04 00 25 2F 35 37 34 63 34 32 34 30 2D 30 31 33 66 2D 34 35 39 38 2D 61 37 32 34 2D 30 36 65 66 35 36 39 39 30 64 30 62 14 00 04 03 00 00 00 0B 00 00 18 00 25 2F 35 37 34 63 34 32 34 30 2D 30 31 33 66 2D 34 35 39 38 2D 61 37 32 34 2D 30 36 65 66 35 36 39 39 30 64 30 62 19 00 04 00 00 00 2D 1A 00 04 00 00 00 2D FF 00 63 16 20 20 39 39 31 30 20 38 38 31 44 42 20 20 20 20 20 20 34 34 39 36 65 33 39 46 37 36 35 33 32 45 31 41 42 35 43 41 37 38 36 44 37 41 35 31 33 38 39 32 32 35 33 38 35 2E 67 69 66 66 2F 35 37 34 63 34 32 34 30 2D 30 31 33 66 2D 34 35 39 38 2D 61 37 32 34 2D 30 36 65 66 35 36 39 39 30 64 30 62 41
+                         * 00 00 06 00 F3 02 00 1B 46 52 25 46 60 30 59 4F 4A 5A 51 48 31 46 4A 53 4C 51 4C 4A 33 46 31 2E 6A 70 67 03 00 04 00 00 02 A2 04 00 25 2F 37 33 38 33 35 38 36 37 2D 38 64 65 31 2D 34 65 30 66 2D 61 33 36 35 2D 34 39 62 30 33 39 63 34 61 39 31 66 14 00 04 03 00 00 00 0B 00 00 18 00 25 2F 37 33 38 33 35 38 36 37 2D 38 64 65 31 2D 34 65 30 66 2D 61 33 36 35 2D 34 39 62 30 33 39 63 34 61 39 31 66 19 00 04 00 00 00 4E 1A 00 04 00 00 00 23 FF 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 36 37 34 65 31 46 42 34 43 32 35 45 42 34 46 45 31 32 45 34 46 33 42 42 38 31 39 31 33 37 42 44 39 39 30 39 2E 6A 70 67 66 2F 37 33 38 33 35 38 36 37 2D 38 64 65 31 2D 34 65 30 66 2D 61 33 36 35 2D 34 39 62 30 33 39 63 34 61 39 31 66 41
+                         */
+
+                        writeShortLVPacket {
+                            //todo
+                            writeByte(0x02)
+                            writeShortLVString(id.value.substring(1..35))
+                            writeHex("04 00 " +
+                                    "04 9B 53 B0 08 " +
+                                    "05 00 " +
+                                    "04 D9 8A 5A 70 " +
+                                    "06 00 " +
+                                    "04 00 00 00 50 " +
+                                    "07 00 " +
+                                    "01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 11 00 00 00 15 00 04 00 00 02 BC 16 00 04 00 00 02 BC 18 00 04 00 00 7D 5E FF 00 5C 15 36 20 39 32 6B 41 31 43 39 62 35 33 62 30 30 38 64 39 38 61 35 61 37 30 20")
+                            writeHex("20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20")
+                            writeStringUtf8(id.value)
+                            writeByte(0x41)
+                        }
+                    } else {
+                        writeUByte(MessageType.FRIEND_IMAGE.value)
+
+                        // 00 00 06 00 F3 02
+                        // 00 1B 24 5B 56 54 4A 38 60 4C 5A 4E 46 7D 53 39 4F 52 36 25 45 60 42 55 53 2E 6A 70 67
+                        // 03 00 04 00 01 41 1B 04
+                        // 00 25 2F 65 61 37 30 30 61 38 33 2D 38 38 38 62 2D 34 66 37 31 2D 61 62 64 31 2D 63 33 38 64 63 62 64 31 61 65 36 31
+                        // 14 00 04 00 00 00 00 0B 00 00 18
+                        // 00 25 2F 65 61 37 30 30 61 38 33 2D 38 38 38 62 2D 34 66 37 31 2D 61 62 64 31 2D 63 33 38 64 63 62 64 31 61 65 36 31
+                        // 19 00 04 00 00 03 74 1A 00 04 00 00 02 BE FF 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20
+                        ///38 32 32 30 33 65 39 36 30 46 42 35 44 37 46 42 33 39 46 34 39 39 31 37 46 34 37 33 44 41 45 31 37 30 32 46 44 31 2E 6A 70 67 66
+                        // 2F 65 61 37 30 30 61 38 33 2D 38 38 38 62 2D 34 66 37 31 2D 61 62 64 31 2D 63 33 38 64 63 62 64 31 61 65 36 31 41
+
+                        // 00 00 06 00 F3 02
+                        // 00 1B 7B 48 29 47 52 53 31 29 50 24 5A 42 28 4F 35 43 44 4B 45 31 35 7B 37 2E 70 6E 67
+                        // 03 00 04 00 00 6F 36 04
+                        // 00 25 2F 35 65 63 32 34 63 37 62 2D 34 30 32 39 2D 34 61 39 33 2D 62 63 66 35 2D 34 31 38 34 35 32 65 39 32 33 31 64
+                        // 14 00 04 00 00 00 00 0B 00 00 18
+                        // 00 25 2F 35 65 63 32 34 63 37 62 2D 34 30 32 39 2D 34 61 39 33 2D 62 63 66 35 2D 34 31 38 34 35 32 65 39 32 33 31 64
+                        // 19 00 04 00 00 04 14 1A 00 04 00 00 02 77 FF 00 63 16 20 20 39 39 31 30 20 38 38 31 41 42 20 20 20 20 20
+                        ///32 38 34 37 30 65 35 42 37 44 45 37 36 41 34 41 44 44 31 37 43 46 39 32 39 38 33 43 46 30 41 43 45 35 42 34 33 39 2E 70 6E 67 66
+                        // 2F 35 65 63 32 34 63 37 62 2D 34 30 32 39 2D 34 61 39 33 2D 62 63 66 35 2D 34 31 38 34 35 32 65 39 32 33 31 64 41
+                        /*
+                         * 00 00 06 00 F3 02
+                         * 00 1B 46 52 25 46 60 30 59 4F 4A 5A 51 48 31 46 4A 53 4C 51 4C 4A 33 46 31 2E 6A 70 67
+                         * 03 00 04 00 00 02 A2 04
+                         * 00 25 2F 37 33 38 33 35 38 36 37 2D 38 64 65 31 2D 34 65 30 66 2D 61 33 36 35 2D 34 39 62 30 33 39 63 34 61 39 31 66
+                         * 14 00 04 03 00 00 00 0B 00 00 18
+                         * 00 25 2F 37 33 38 33 35 38 36 37 2D 38 64 65 31 2D 34 65 30 66 2D 61 33 36 35 2D 34 39 62 30 33 39 63 34 61 39 31 66
+                         * 19 00 04 00 00 00 4E 1A 00 04 00 00 00 23 FF 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20
+                         **36 37 34 65 31 46 42 34 43 32 35 45 42 34 46 45 31 32 45 34 46 33 42 42 38 31 39 31 33 37 42 44 39 39 30 39 2E 6A 70 67 66
+                         * 2F 37 33 38 33 35 38 36 37 2D 38 64 65 31 2D 34 65 30 66 2D 61 33 36 35 2D 34 39 62 30 33 39 63 34 61 39 31 66 41
+                         */
+                        writeShortLVPacket {
+                            //todo
+                            writeByte(0x02)
+                            //"46 52 25 46 60 30 59 4F 4A 5A 51 48 31 46 4A 53 4C 51 4C 4A 33 46 31 2E 6A 70 67".hexToBytes().stringOfWitch()
+                            //   writeShortLVString(filename)//图片文件名 FR%F`0YOJZQH1FJSLQLJ3F1.jpg
+                            writeShortLVString(getRandomString(24, 'A'..'Z') + ".jpg")//图片文件名 FR%F`0YOJZQH1FJSLQLJ3F1.jpg
+                            writeHex("03 00 04 00 00 02 A2 04")
+                            writeShortLVString(id.value)
+                            writeHex("14 00 04 03 00 00 00 0B 00 00 18")
+                            writeShortLVString(id.value)
+                            writeHex("19 00 04 00 00 00 4E 1A 00 04 00 00 00 23 FF 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 " +
+                                    "36 37 34 65 31 46 42 34 43 32 35 45 42 34 46 45 31 32 45 34 46 33 42 42 38 31 39 31 33 37 42 44 39 39 30 39 2E 6A 70 67 66 ")
+                            //36 37 34 65 31 46 42 34 43 32 35 45 42 34 46 45 31 32 45 34 46 33 42 42 38 31 39 31 33 37 42 44 39 39 30 39 2E 6A 70 67 66
+                            writeStringUtf8(id.value)
+                            writeUByte(0x41u)
+                        }
                     }
                 }
 
                 is PlainText -> buildPacket {
                     writeUByte(MessageType.PLAIN_TEXT.value)
 
-                    writeLVPacket {
+                    writeShortLVPacket {
                         writeByte(0x01)
-                        writeLVString(stringValue)
+                        writeShortLVString(stringValue)
                     }
                 }
 

@@ -9,7 +9,6 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.encryptAndWrite
 import net.mamoe.mirai.utils.writeHex
 import net.mamoe.mirai.utils.writeQQ
-import net.mamoe.mirai.utils.writeRandom
 
 /**
  * 获取升级天数等.
@@ -18,7 +17,7 @@ import net.mamoe.mirai.utils.writeRandom
  */
 @PacketId(0x00_5Cu)
 class ClientAccountInfoRequestPacket(
-        private val qq: Long,
+        private val qq: UInt,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {

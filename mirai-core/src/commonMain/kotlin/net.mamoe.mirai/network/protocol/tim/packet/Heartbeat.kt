@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.writeQQ
 
 @PacketId(0x00_58u)
 class ClientHeartbeatPacket(
-        private val bot: Long,
+        private val bot: UInt,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {

@@ -13,24 +13,34 @@ fun BytePacketBuilder.writeZero(count: Int) = repeat(count) { this.writeByte(0) 
 fun BytePacketBuilder.writeRandom(length: Int) = repeat(length) { this.writeByte(Random.Default.nextInt(255).toByte()) }
 
 fun BytePacketBuilder.writeQQ(qq: Long) = this.writeUInt(qq.toUInt())
+fun BytePacketBuilder.writeQQ(qq: UInt) = this.writeUInt(qq)
 
-fun BytePacketBuilder.writeGroup(groupIdOrGroupNumber: Long) = this.writeFully(groupIdOrGroupNumber.toUInt().toByteArray())
+fun BytePacketBuilder.writeGroup(groupIdOrGroupNumber: Long) = this.writeUInt(groupIdOrGroupNumber.toUInt())
+fun BytePacketBuilder.writeGroup(groupIdOrGroupNumber: UInt) = this.writeUInt(groupIdOrGroupNumber)
 
 fun BytePacketBuilder.writeLVByteArray(byteArray: ByteArray) {
     this.writeShort(byteArray.size.toShort())
     this.writeFully(byteArray)
 }
 
-fun BytePacketBuilder.writeLVPacket(packet: ByteReadPacket) {
+fun BytePacketBuilder.writeShortLVPacket(packet: ByteReadPacket) {
     this.writeShort(packet.remaining.toShort())
     this.writePacket(packet)
     packet.release()
 }
 
-fun BytePacketBuilder.writeLVPacket(builder: BytePacketBuilder.() -> Unit) = this.writeLVPacket(BytePacketBuilder().apply(builder).build())
+fun BytePacketBuilder.writeUVarintLVPacket(packet: ByteReadPacket) {
+    this.writeUVarLong(packet.remaining)
+    this.writePacket(packet)
+    packet.release()
+}
+
+
+fun BytePacketBuilder.writeShortLVPacket(builder: BytePacketBuilder.() -> Unit) = this.writeShortLVPacket(BytePacketBuilder().apply(builder).build())
+fun BytePacketBuilder.writeUVarintLVPacket(builder: BytePacketBuilder.() -> Unit) = this.writeUVarintLVPacket(BytePacketBuilder().apply(builder).build())
 
 @Suppress("DEPRECATION")
-fun BytePacketBuilder.writeLVString(str: String) = this.writeLVByteArray(str.toByteArray())
+fun BytePacketBuilder.writeShortLVString(str: String) = this.writeLVByteArray(str.toByteArray())
 
 @Suppress("DEPRECATION")
 fun BytePacketBuilder.writeLVHex(hex: String) = this.writeLVByteArray(hex.hexToBytes())
@@ -45,7 +55,7 @@ fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.
 fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) = writeFully(TEA.encrypt(BytePacketBuilder().apply(encoder).use { it.build().readBytes() }, key))
 fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
 
-fun BytePacketBuilder.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray) {
+fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray) {
     val firstMD5 = md5(password)
     val secondMD5 = md5(firstMD5 + byteArrayOf(0, 0, 0, 0) + qq.toUInt().toByteArray())
 

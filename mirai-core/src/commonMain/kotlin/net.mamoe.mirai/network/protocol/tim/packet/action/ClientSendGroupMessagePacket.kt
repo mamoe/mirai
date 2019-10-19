@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
@@ -15,8 +15,8 @@ import net.mamoe.mirai.utils.*
 
 @PacketId(0x00_02u)
 class ClientSendGroupMessagePacket(
-        private val botQQ: Long,
-        private val groupId: Long,//不是 number
+        private val botQQ: UInt,
+        private val groupId: UInt,//不是 number
         private val sessionKey: ByteArray,
         private val message: MessageChain
 ) : ClientPacket() {
@@ -28,7 +28,7 @@ class ClientSendGroupMessagePacket(
             writeByte(0x2A)
             writeGroup(groupId)
 
-            writeLVPacket {
+            writeShortLVPacket {
                 writeHex("00 01 01")
                 writeHex("00 00 00 00 00 00 00 4D 53 47 00 00 00 00 00")
 
@@ -38,7 +38,7 @@ class ClientSendGroupMessagePacket(
                 writeHex(TIMProtocol.messageConst1)
                 writeZero(2)
 
-                writePacket(message.toPacket())
+                writePacket(message.toPacket(true))
             }
             /*it.writeByte(0x01)
             it.writeShort(bytes.size + 3)

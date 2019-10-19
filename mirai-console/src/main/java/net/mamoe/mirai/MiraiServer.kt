@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai
 
 import kotlinx.coroutines.runBlocking
@@ -172,7 +174,7 @@ object MiraiServer {
         get() {
             for (it in qqList.split("\n").dropLastWhile { it.isEmpty() }.toTypedArray()) {
                 val strings = it.split("----").dropLastWhile { it.isEmpty() }.toTypedArray()
-                val bot = Bot(BotAccount(strings[0].toLong(), strings[1]), MiraiLogger)
+                val bot = Bot(BotAccount(strings[0].toUInt(), strings[1]), MiraiLogger)
 
                 if (runBlocking { bot.login() } === LoginResult.SUCCESS) {
                     bot.logGreen("Login succeed")

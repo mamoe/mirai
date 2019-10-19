@@ -17,14 +17,14 @@ import net.mamoe.mirai.utils.toUHexString
  */
 
 //Contacts
-fun Bot.getQQ(number: Long): QQ = this.contacts.getQQ(number)
+fun Bot.getQQ(number: Long): QQ = this.contacts.getQQ(number.toUInt())
 
-fun Bot.getQQ(number: UInt): QQ = getQQ(number.toLong())
+fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
 
-fun Bot.getGroupByNumber(number: Long): Group = this.contacts.getGroupByNumber(number)
-fun Bot.getGroupByNumber(number: UInt): Group = getGroupByNumber(number.toLong())
+fun Bot.getGroupByNumber(number: Long): Group = this.contacts.getGroupByNumber(number.toUInt())
+fun Bot.getGroupByNumber(number: UInt): Group = this.contacts.getGroupByNumber(number)
 
-fun Bot.getGroupById(number: Long): Group = this.contacts.getGroupById(number)
+fun Bot.getGroupById(number: UInt): Group = this.contacts.getGroupById(number)
 
 val Bot.groups: ContactList<Group> get() = this.contacts.groups
 
@@ -39,7 +39,7 @@ suspend fun Bot.login(configuration: BotNetworkConfiguration.() -> Unit): LoginR
 suspend fun Bot.login(): LoginResult = this.network.login(BotNetworkConfiguration.Default)
 
 //BotAccount
-val Bot.qqAccount: Long get() = this.account.account
+val Bot.qqAccount: UInt get() = this.account.account
 
 
 //logging

@@ -1,6 +1,6 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
-import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
@@ -19,14 +19,14 @@ import kotlin.reflect.KClass
  *
  * @see BotSession.sendAndExpect
  */
-class TemporaryPacketHandler<P : ServerPacket>(
+class TemporaryPacketHandler<P : ServerPacket, R>(
         private val expectationClass: KClass<P>,
-        private val job: CompletableJob,
+        private val deferred: CompletableDeferred<R>,
         private val fromSession: BotSession
 ) {
     private lateinit var toSend: ClientPacket
 
-    private lateinit var expect: suspend (P) -> Unit
+    private lateinit var expect: suspend (P) -> R
 
 
     lateinit var session: BotSession//无需覆盖
@@ -40,7 +40,7 @@ class TemporaryPacketHandler<P : ServerPacket>(
     }
 
 
-    fun onExpect(handler: suspend (P) -> Unit) {
+    fun onExpect(handler: suspend (P) -> R) {
         this.expect = handler
     }
 
@@ -51,10 +51,15 @@ class TemporaryPacketHandler<P : ServerPacket>(
 
     suspend fun shouldRemove(session: BotSession, packet: ServerPacket): Boolean {
         if (expectationClass.isInstance(packet) && session === this.fromSession) {
-            kotlin.runCatching {
-                @Suppress("UNCHECKED_CAST")
+
+            @Suppress("UNCHECKED_CAST")
+            val ret = try {
                 expect(packet as P)
-            }.onFailure { job.completeExceptionally(it) }.onSuccess { job.complete() }
+            } catch (e: Exception) {
+                deferred.completeExceptionally(e)
+                return true
+            }
+            deferred.complete(ret)
             return true
         }
         return false

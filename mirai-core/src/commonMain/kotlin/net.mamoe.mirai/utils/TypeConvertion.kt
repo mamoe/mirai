@@ -49,6 +49,7 @@ fun String.hexToUBytes(): UByteArray = HexCache.hexToUBytes(this)
 
 fun String.hexToInt(): Int = hexToBytes().toUInt().toInt()
 fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
+fun getRandomString(length: Int, charRange: CharRange): String = String(CharArray(length) { charRange.random() })
 fun ByteArray.toUInt(): UInt = this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
 
 fun ByteArray.toIoBuffer(): IoBuffer = IoBuffer.Pool.borrow().let { it.writeFully(this); it }

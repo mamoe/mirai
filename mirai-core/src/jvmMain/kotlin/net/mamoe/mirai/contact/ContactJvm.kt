@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.launch
@@ -18,7 +20,7 @@ import net.mamoe.mirai.utils.ContactList
  * @author Him188moe
  */
 @Suppress("unused")
-actual sealed class Contact actual constructor(bot: Bot, number: Long) : PlatformContactBase(bot, number) {
+actual sealed class Contact actual constructor(bot: Bot, number: UInt) : PlatformContactBase(bot, number) {
 
     abstract override suspend fun sendMessage(message: MessageChain)
 
@@ -71,7 +73,7 @@ actual sealed class Contact actual constructor(bot: Bot, number: Long) : Platfor
  * Java 调用 [groupNumberToId] : `Group.groupNumberToId(number)`
  * @author Him188moe
  */
-actual class Group actual constructor(bot: Bot, number: Long) : Contact(bot, number) {
+actual class Group actual constructor(bot: Bot, number: UInt) : Contact(bot, number) {
     actual val groupId = groupNumberToId(number)
     actual val members: ContactList<QQ>
         //todo members
@@ -100,7 +102,7 @@ actual class Group actual constructor(bot: Bot, number: Long) : Contact(bot, num
  *
  * @author Him188moe
  */
-actual class QQ actual constructor(bot: Bot, number: Long) : Contact(bot, number) {
+actual class QQ actual constructor(bot: Bot, number: UInt) : Contact(bot, number) {
     actual override suspend fun sendMessage(message: MessageChain) {
         bot.network[EventPacketHandler].sendFriendMessage(this, message)
     }

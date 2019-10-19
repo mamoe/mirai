@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.*
  */
 @PacketId(0x00_1Du)
 class ClientSKeyRequestPacket(
-        private val qq: Long,
+        private val qq: UInt,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
@@ -28,7 +28,7 @@ class ClientSKeyRequestPacket(
 
 @PacketId(0x00_1Du)
 class ClientSKeyRefreshmentRequestPacket(
-        private val qq: Long,
+        private val qq: UInt,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
@@ -46,7 +46,7 @@ class ServerSKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     override fun decode() = with(input) {
         discardExact(4)
         //debugDiscardExact(2)
-        sKey = this.readString(10)
+        sKey = this.readString(10)//16??
         DebugLogger.logPurple("SKey=$sKey")
         DebugLogger.logPurple("Skey包后面${this.readRemainingBytes().toUHexString()}")
     }

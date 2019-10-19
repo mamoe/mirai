@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
@@ -9,7 +9,7 @@ import net.mamoe.mirai.utils.*
 
 @PacketId(0x08_28u)
 class ClientSessionRequestPacket(
-        private val bot: Long,
+        private val bot: UInt,
         private val serverIp: String,
         private val token38: IoBuffer,
         private val token88: IoBuffer,

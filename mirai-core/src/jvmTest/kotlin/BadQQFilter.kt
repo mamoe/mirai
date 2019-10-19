@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
@@ -44,7 +46,7 @@ suspend fun main() {
                     runBlocking {
                         val bot = Bot(
                                 BotAccount(
-                                        qq,
+                                        qq.toUInt(),
                                         if (password.endsWith(".")) password.substring(0, password.length - 1) else password
                                 ),
                                 Console()

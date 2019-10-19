@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
@@ -16,7 +16,7 @@ import net.mamoe.mirai.utils.*
  */
 @PacketId(0x08_36u)
 class ClientPasswordSubmissionPacket constructor(
-        private val bot: Long,
+        private val bot: UInt,
         private val password: String,
         private val loginTime: Int,
         private val loginIP: String,
@@ -57,7 +57,7 @@ class ClientPasswordSubmissionPacket constructor(
 
 
 private fun BytePacketBuilder.writePart1(
-        qq: Long,
+        qq: UInt,
         password: String,
         loginTime: Int,
         loginIP: String,

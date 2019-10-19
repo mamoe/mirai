@@ -7,4 +7,4 @@ import javax.imageio.ImageIO
 actual typealias PlatformImage = BufferedImage
 
 @JvmOverloads
-actual fun BufferedImage.toByteArray(formatName: String): ByteArray = ByteArrayOutputStream().use { ImageIO.write(this, "JPG", it); it.toByteArray() }
+actual fun BufferedImage.toByteArray(formatName: String): ByteArray = ByteArrayOutputStream().use { ImageIO.write(this, "PNG", it); it.toByteArray() }

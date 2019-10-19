@@ -33,13 +33,13 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     override lateinit var socket: BotSocketAdapter
         private set
 
-    internal val temporaryPacketHandlers = mutableListOf<TemporaryPacketHandler<*>>()
+    internal val temporaryPacketHandlers = mutableListOf<TemporaryPacketHandler<*, *>>()
     private val handlersLock = Mutex()
 
     private var heartbeatJob: Job? = null
 
 
-    override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>) {
+    override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
         handlersLock.withLock {
             temporaryPacketHandlers.add(temporaryPacketHandler)
         }
@@ -408,7 +408,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                                 class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
 
                                 if (withTimeoutOrNull(configuration.heartbeatTimeout.millisecondsLong) {
-                                            ClientHeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<ServerHeartbeatResponsePacket> {}
+                                            ClientHeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<ServerHeartbeatResponsePacket, Unit> {}
                                         } == null) {
                                     bot.logPurple("Heartbeat timed out")
                                     bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())

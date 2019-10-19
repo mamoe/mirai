@@ -70,7 +70,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> {
      * @see [BotSession.sendAndExpect] 发送并期待一个包
      * @see [TemporaryPacketHandler] 临时包处理器
      */
-    suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*>)
+    suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>)
 
     /**
      * 发送数据包

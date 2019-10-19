@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.utils
 
 import com.soywiz.klock.DateTime
@@ -38,10 +40,14 @@ expect fun localIpAddress(): String
 /**
  * 上传群图片
  */
-expect suspend fun httpPostGroupImage(
+expect suspend fun httpPostFriendImage(
         uKeyHex: String,
         fileSize: Int,
-        botNumber: Long,
-        groupCode: Long,
+        botNumber: UInt,
+        qq: UInt,
         imageData: ByteArray
 ): Boolean
+
+fun main() {
+    "46 52 25 46 60 30 59 4F 4A 5A 51".printStringFromHex()
+}

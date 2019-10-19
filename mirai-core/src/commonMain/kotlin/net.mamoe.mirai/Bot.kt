@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai
 
 import kotlinx.atomicfu.atomic
@@ -86,16 +88,16 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
          * 通过群号码获取群对象.
          * 注意: 在并发调用时, 这个方法并不是原子的.
          */
-        fun getQQ(account: Long): QQ = qqs.getOrPut(account) { QQ(this@Bot, account) }
+        fun getQQ(account: UInt): QQ = qqs.getOrPut(account) { QQ(this@Bot, account) }
 
         /**
          * 通过群号码获取群对象.
          * 注意: 在并发调用时, 这个方法并不是原子的.
          */
-        fun getGroupByNumber(groupNumber: Long): Group = groups.getOrPut(groupNumber) { Group(this@Bot, groupNumber) }
+        fun getGroupByNumber(groupNumber: UInt): Group = groups.getOrPut(groupNumber) { Group(this@Bot, groupNumber) }
 
 
-        fun getGroupById(groupId: Long): Group {
+        fun getGroupById(groupId: UInt): Group {
             return getGroupByNumber(Group.groupIdToNumber(groupId))
         }
     }

@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.message
 
@@ -87,21 +87,24 @@ data class PlainText(override val stringValue: String) : Message() {
 // ==================================== Image ====================================
 
 /**
- * 图片消息.
+ * 图片消息. 在发送时将会区分群图片和好友图片发送.
  * 由接收消息时构建, 可直接发送
  *
- * @param id 类似 `{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg`. 群的是大写id, 好友的是小写id
+ * @param id 类似 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef`. 群的是大写id, 好友的是小写id
+ * @param filename 文件名. 这将决定图片的显示
  */
-data class Image(val id: String) : Message() {
-    override val stringValue: String = "[$id]"
+data class Image(val id: ImageId, val filename: String = "") : Message() {
+    override val stringValue: String = "[${id.value}]"
 }
+
+inline class ImageId(val value: String)
 
 // ==================================== At ====================================
 
 /**
  * At 一个人
  */
-data class At(val targetQQ: Long) : Message() {
+data class At(val targetQQ: UInt) : Message() {
     constructor(target: QQ) : this(target.number)
 
     override val stringValue: String = "[@$targetQQ]"

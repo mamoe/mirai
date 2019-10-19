@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.writeQQ
  */
 @PacketId(0x00_ECu)
 class ClientChangeOnlineStatusPacket(
-        private val bot: Long,
+        private val bot: UInt,
         private val sessionKey: ByteArray,
         private val loginStatus: OnlineStatus
 ) : ClientPacket() {

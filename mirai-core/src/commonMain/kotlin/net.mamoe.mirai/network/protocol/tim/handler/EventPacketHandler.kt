@@ -41,7 +41,7 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
             }
 
             is ServerGroupMessageEventPacket -> {
-                if (packet.qq.toLong() == bot.account.account) return
+                if (packet.qq == bot.account.account) return
 
                 GroupMessageEvent(
                         bot,

@@ -58,4 +58,9 @@ abstract class ClientPacket : Packet(), Closeable {
     }
 }
 
+@MustBeDocumented
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.SOURCE)
+annotation class PacketVersion(val date: String, val timVersion: String)
+
 private val UninitializedByteReadPacket = ByteReadPacket(IoBuffer.Empty, IoBuffer.EmptyPool)

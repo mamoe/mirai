@@ -63,7 +63,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 
                 0x0052u -> ServerGroupMessageEventPacket(input, eventIdentity)
 
-                0x00A6u -> ServerFriendMessageEventPacket(input.debugColorizedPrint("好友消息事件", ignoreUntilFirstConst = true), eventIdentity)
+                0x00A6u -> ServerFriendMessageEventPacket(input, eventIdentity)
 
                 //0210: 00 00 00 0E 00 08 00 02 00 01 00 0A 00 04 01 00 00 00 00 00 00 06 00 00 00 26 08 02 1A 02 08 49 0A 08 08 00 10 B2 DE 8C ED 05 0A 0C 08 A2 FF 8C F0 03 10 E4 A1 A7 ED 05 0A 0C 08 DD F1 92 B7 07 10 B1 DE 8C ED 05
                 //      00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 16 00 00 00 37 08 02 1A 12 08 95 02 10 90 04 40 98 E1 8C ED 05 48 AF 96 C3 A4 03 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 1A 29 08 00 10 05 18 98 E1 8C ED 05 20 01 28 FF FF FF FF 0F 32 15 E5 AF B9 E6 96 B9 E6 AD A3 E5 9C A8 E8 BE 93 E5 85 A5 2E 2E 2E
@@ -101,7 +101,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
     }
 
     inner class ResponsePacket(
-            val bot: Long,
+            val bot: UInt,
             val sessionKey: ByteArray
     ) : ClientPacket() {
         override val id: UShort get() = this@ServerEventPacket.id

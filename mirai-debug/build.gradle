@@ -8,6 +8,8 @@ dependencies {
     implementation rootProject.ext.coroutineCommon
     implementation rootProject.ext.kotlinJvm
     implementation rootProject.ext.kotlinxIOJvm
+    compile "org.jetbrains.kotlin:kotlin-reflect:1.3.50"
+    implementation 'org.jsoup:jsoup:1.12.1'
 }
 
 tasks.withType(JavaCompile) {

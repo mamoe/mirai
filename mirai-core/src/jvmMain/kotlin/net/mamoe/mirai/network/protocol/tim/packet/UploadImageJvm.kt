@@ -2,97 +2,186 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.writeFully
+import kotlinx.io.core.*
 import net.mamoe.mirai.utils.*
+import java.io.File
+import javax.imageio.ImageIO
 
 actual typealias ClientTryGetImageIDPacket = ClientTryGetImageIDPacketJvm
 
+fun main() {
+    val packet = ClientTryGetImageIDPacketJvm(1040400290u,
+            "99 82 67 D4 62 20 CA 5D 81 F8 6F 83 EE 8A F7 68".hexToBytes(),
+            2978594313u,
+            ImageIO.read(File(("C:\\Users\\Him18\\Desktop\\哈哈哈操.jpg"))))
+    println(packet.packet.readBytes().toUHexString())
+
+
+
+    "89 FC A6 8C 0B".hexToBytes().read {
+        println(readUnsignedVarInt())
+    }
+}
+
 /**
- * 请求上传图片. 将发送图片的 md5, size.
+ * 请求上传图片. 将发送图片的 md5, size, width, height.
  * 服务器返回以下之一:
  * - 服务器已经存有这个图片 [ServerTryGetImageIDFailedPacket]
  * - 服务器未存有, 返回一个 key 用于客户端上传 [ServerTryGetImageIDSuccessPacket]
  *
  * @author Him188moe
  */
-@PacketId(0x03_88u)
+@PacketId(0x03_52u)
 class ClientTryGetImageIDPacketJvm(
-        private val botNumber: Long,
+        private val botNumber: UInt,
         private val sessionKey: ByteArray,
-        private val groupNumberOrAccount: Long,
+        private val target: UInt,
         private val image: PlatformImage
 ) : ClientPacket() {
+
+    //00 00 00 07 00 00 00 4B 08 01 12 03 98 01 01 08 01 12 47 08 A2 FF 8C F0 03 10 89 FC A6 8C 0B 18 00 22 10 2B 23 D7 05 CA D1 F2 CF 37 10 FE 58 26 92 FC C4 28 FD 08 32 1A 7B 00 47 00 47 00 42 00 7E 00 49 00 31 00 5A 00 4D 00 43 00 28 00 25 00 49 00 38 01 48 00 70 42 78 42
+
+    @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeRandom(2)
+        writeQQ(botNumber)
+        //04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00
+        writeHex("04 00 00 00 01 2E 01 00 00 69 35 00 00 00 00 00 00 00 00")
 
+        val imageData = image.toByteArray()
+        encryptAndWrite(sessionKey) {
+            //好友图片
+            // 00 00 00
+            // 07 00
+            // 00 00
 
-        //一次 body
-        //00 00 00 00 00 00 00 00 3C 61 3C 48 85 91 81 B9 DF 27 D9 C3 20 43 F7 1C 73 DA 2A 84 74 AC 78 AC CC 38 54 8F AE 06 8C 22 AA AF 2E C1 E4 70 8C 31 63 52 95 F2 6F C3 9A 2D 77 4B F7 7B 4F C4 1A 6D 7A 3F 22 D8 9D B3 48 99 F3 E7 4F D0 2D 31 94 40 ED A7 5C D9 CE 70 B1 F7 B8 1B 3D CA B3 0E BE 86 33 56 B4 E4 30 AD 66 30 C1 C7 15 6A 71 B6 49 DC DC 0E 74 4B CE 12 3F ED
+            // proto
 
-        this.writeQQ(botNumber)
-        this.writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
+            // [4D 08]后文长度
+            // 01 12
+            // 03 98
+            // 01 01
+            // 08 01
+            // 12 49
+            // 08 [A2 FF 8C F0 03](1040400290 varint)
+            // 10 [DD F1 92 B7 07](1994701021 varint)
+            // 18 00
+            // 22 [10](=16) [E9 BA 47 2E 36 ED D4 BF 8C 4F E5 6A CB A0 2D 5E](md5)
+            // 28 [CE 0E](1870 varint)
+            // 32 1A
+            // 39 00
+            // 51 00
+            // 24 00
+            // 32 00
+            // 4A 00
+            // 53 00
+            // 25 00
+            // 4C 00
+            // 56 00
+            // 42 00
+            // 33 00
+            // 44 00
+            // 44 00
+            // 38 01
+            // 48 00
+            // 70 [92 03](402 varint)
+            // 78 [E3 01](227 varint)
 
-        val byteArray = image.toByteArray()
-        this.encryptAndWrite(sessionKey) {
+            //好友图片
+            /*
+             * 00 00 00 07 00 00 00
+             * [4E 08]后文长度
+             * 01 12
+             * 03 98
+             * 01 01
+             * 08 01
+             * 12 4A
+             * 08 [A2 FF 8C F0 03](varint)
+             * 10 [DD F1 92 B7 07](varint)
+             * 18 00//24
+             * 22 10 72 02 57 44 84 1D 83 FC C0 85 A1 E9 10 AA 9C 2C
+             * 28 [BD D9 19](421053 varint)
+             * 32 1A//48
+             * 49 00
+             * 49 00
+             * 25 00
+             * 45 00
+             * 5D 00
+             * 50 00
+             * 41 00
+             * 7D 00
+             * 4F 00
+             * 56 00
+             * 46 00
+             * 4B 00
+             * 5D 00
+             * 38 01
+             * 48 00//78
+             *
+             *
+             * 70 [80 14]
+             * 78 [A0 0B]//84
+             */
+
             writeZero(3)
+            writeUShort(0x07_00u)
+            writeZero(1)
 
-            writeHex("07 00")
-
-            writeZero(2)
-
-            writeHex("5B")//原5E
-            writeHex("08")
-            writeHex("01 12 03 98 01 01 10 01")
-
-            writeHex("1A")
-            writeHex("57")//原5A
-
-            writeHex("08")
-            writeUVarInt(groupNumberOrAccount)//FB D2 D8 94
-
-            writeByte(0x02)
-            writeHex("10")
-            writeUVarInt(botNumber)//A2 FF 8C F0
-
-            writeHex("18 00")
-
-            writeHex("22")
-            writeHex("10")
-            writeFully(md5(byteArray))
-
-            writeHex("28")
-            writeUVarInt(byteArray.size.toUInt())//E2 0D
-
-            writeHex("32")
-            writeHex("1A")
-            //28 00 5A 00 53 00 41 00 58 00 40 00 57 00 4B 00 52 00 4A 00 5A 00 31 00 7E 00 38 01 48 01 50 38 58 34 60 04 6A 05 32 36 39 33 33 70 00 78 03 80 01 00
+            //proto
+            val packet = buildPacket {
+                writeUByte(0x08u)
+                writeUShort(0x01_12u)
+                writeUShort(0x03_98u)
+                writeUShort(0x01_01u)
+                writeUShort(0x08_01u)
 
 
-            writeHex("37 00 4D 00 32 00 25 00 4C 00 31 00 56 00 32 00 7B 00 39 00 30 00 29 00 52 00")
+                writeUShort(0x12_47u)//?似乎会变
 
-            writeHex("38 01")
+                writeUByte(0x08u)
+                writeUVarInt(target)//todo 这两qq号反过来放也tm可以成功
 
-            writeHex("48 01")
+                writeUByte(0x10u)
+                writeUVarInt(botNumber)
 
-            writeHex("50")
-            writeUVarInt(image.width.toUInt())
-            writeHex("58")
-            writeUVarInt(image.height.toUInt())
+                writeUShort(0x18_00u)
 
-            writeHex("60 04")
+                writeUByte(0x22u)
+                writeUByte(0x10u)
+                writeFully(md5(imageData))
 
-            writeHex("6A")
-            writeHex("05")
-            writeHex("32 36 36 35 36")
+                writeUByte(0x28u)
+                writeUVarInt(imageData.size.toUInt())
 
-            writeHex("70 00")
+                writeUByte(0x32u)
+                //长度应为1A
+                writeUVarintLVPacket {
+                    writeUShort(0x28_00u)
+                    writeUShort(0x46_00u)
+                    writeUShort(0x51_00u)
+                    writeUShort(0x56_00u)
+                    writeUShort(0x4B_00u)
+                    writeUShort(0x41_00u)
+                    writeUShort(0x49_00u)
+                    writeUShort(0x25_00u)
+                    writeUShort(0x4B_00u)
+                    writeUShort(0x24_00u)
+                    writeUShort(0x55_00u)
+                    writeUShort(0x30_00u)
+                    writeUShort(0x24_00u)
+                }
 
-            writeHex("78 03")
+                writeUShort(0x38_01u)
+                writeUShort(0x48_00u)
 
-            writeHex("80 01")
+                writeUByte(0x70u)
+                writeUVarInt(image.width.toUInt())
+                writeUByte(0x78u)
+                writeUVarInt(image.height.toUInt())
+            }
+            writeShort((packet.remaining - 7).toShort())//why?
+            writePacket(packet)
 
-            writeHex("00")
+            //println(this.build().readBytes().toUHexString())
         }
     }
 }

@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 import jpcap.JpcapCaptor
 import jpcap.packet.IPPacket
@@ -31,7 +31,7 @@ object Main {
         jpcap = JpcapCaptor.openDevice(devices[0], caplen, promiscCheck, 50)
         while (true) {
             assert(jpcap != null)
-            val pk = jpcap!!.packet
+            val pk = jpcap!!.packet ?: continue
             if (pk is IPPacket && pk.version.toInt() == 4) {
 
                 if (pk is UDPPacket) {
@@ -47,6 +47,7 @@ object Main {
                         }
                     } else {
                         try {
+                            //println("发出包全部=${pk.data.toUHexString()}")
                             dataSent(pk.data)
                             println()
                         } catch (e: Throwable) {
@@ -73,20 +74,36 @@ object Main {
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
     val sessionKey: ByteArray = "99 82 67 D4 62 20 CA 5D 81 F8 6F 83 EE 8A F7 68".hexToBytes()
+    val qq: UInt = 1040400290u
 
     fun dataReceived(data: ByteArray) {
-        println("--------------")
-        println("接收数据包")
         //println("raw = " + data.toUHexString())
         data.read {
             discardExact(3)
             val idHex = readInt().toUHexString(" ")
-            discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00. 但更可能是应该 discard 8
-            println("id=$idHex")
-            println("解密body=${this.readRemainingBytes().cutTail(1).decryptBy(sessionKey).toUHexString()}")
-        }
+            if (idHex.startsWith("00 81")) {
+                return@read
+            }
+            if (readUInt() != qq) {
+                return@read
+            }
+            println("--------------")
+            println("接收数据包")
 
-        packetReceived(data.read { this.parseServerPacket(data.size) })
+            discardExact(3)//0x00 0x00 0x00. 但更可能是应该 discard 8
+            println("id=$idHex")
+            val remaining = this.readRemainingBytes().cutTail(1)
+            try {
+                val decrypted = remaining.decryptBy(sessionKey)
+                println("解密body=${decrypted.toUHexString()}")
+
+                packetReceived(data.read { parseServerPacket(data.size) })
+            } catch (e: DecryptionFailedException) {
+                println("密文body=" + remaining.toUHexString())
+                println("解密body=解密失败")
+            }
+
+        }
     }
 
     fun packetReceived(packet: ServerPacket) {
@@ -118,15 +135,38 @@ object Main {
     }
 
     fun dataSent(rawPacket: ByteArray) = rawPacket.cutTail(1).read {
+
+        // 02 38 03
+        // 03 52 78 9F
+        // 3E 03 3F A2 04 00 00 00 01 2E 01 00 00 69 35 00 00 00 00 00 00 00 00
+
+        // 02 38 03
+        // 01 BD 63 D6
+        // 3E 03 3F A2 02 00 00 00 01 2E 01 00 00 69 35
+
         println("---------------------------")
         discardExact(3)//head
         val idHex = readBytes(4).toUHexString()
         println("发出包ID = $idHex")
-        readUInt()//客户端登录的qq
-        println("TIM的fixVer2=" + readBytes(TIMProtocol.fixVer2.hexToBytes().size).toUHexString())
+        if (readUInt() != qq) {
+            return@read
+        }
+
+        println("fixVer2=" + when (val flag = readByte().toInt()) {
+            2 -> byteArrayOf(2) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1)
+            4 -> byteArrayOf(4) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1 + 8)//8个0
+            else -> error("unknown fixVer2 flag=$flag")
+        }.toUHexString())
+
+        //39 27 DC E2 04 00 00 00 00 00 00 00 1E 0E 89 00 00 01 05 0F 05 0F 00 00 00 00 00 00 00 00 00 00 00 00 00 3E 03 3F A2 00 00 00 00 00 00 00 00 00 00 00
 
         val encryptedBody = readRemainingBytes()
-        println("解密body = ${encryptedBody.decryptBy(sessionKey).toUHexString()}")
+        try {
+            println("解密body=${encryptedBody.decryptBy(sessionKey).toUHexString()}")
+        } catch (e: DecryptionFailedException) {
+            println("密文=" + encryptedBody.toUHexString())
+            println("解密body=解密失败")
+        }
 
         encryptedBody.read {
 
@@ -139,13 +179,18 @@ object Main {
                     val messageData = raw.decryptBy(sessionKey)
                     println("解密结果: " + messageData.toUHexString())
                     println("尝试解消息")
-                    messageData.read {
-                        discardExact(
-                                4 + 4 + 12 + 2 + 4 + 4 + 16 + 2 + 2 + 4 + 2 + 16 + 4 + 4 + 7 + 15 + 2
-                                        + 1
-                        )
-                        val chain = readMessageChain()
-                        println(chain)
+
+                    try {
+                        messageData.read {
+                            discardExact(
+                                    4 + 4 + 12 + 2 + 4 + 4 + 16 + 2 + 2 + 4 + 2 + 16 + 4 + 4 + 7 + 15 + 2
+                                            + 1
+                            )
+                            val chain = readMessageChain()
+                            println(chain)
+                        }
+                    } catch (e: Exception) {
+                        println("失败")
                     }
                 }
 

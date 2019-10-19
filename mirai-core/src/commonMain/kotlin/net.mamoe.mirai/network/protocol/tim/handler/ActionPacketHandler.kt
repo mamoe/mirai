@@ -50,7 +50,12 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
 
             }
 
+            is ServerSubmitImageFilenameResponsePacket -> {
+
+            }
+
             is ServerTryGetImageIDResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
+            is ServerSubmitImageFilenameResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
 
             is ServerAccountInfoResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
             is ServerAccountInfoResponsePacket -> {
@@ -84,7 +89,7 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
     }
 
     //@JvmSynthetic
-    suspend fun addFriend(account: Long, message: Lazy<String> = lazyOf("")): CompletableDeferred<AddFriendResult> {
+    suspend fun addFriend(account: UInt, message: Lazy<String> = lazyOf("")): CompletableDeferred<AddFriendResult> {
         val future = CompletableDeferred<AddFriendResult>()
         val session = AddFriendSession(account, future, message)
         //  uploadImageSessions.add(session)
@@ -160,7 +165,7 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
     }
 
     private inner class AddFriendSession(
-            private val qq: Long,
+            private val qq: UInt,
             private val future: CompletableDeferred<AddFriendResult>,
             private val message: Lazy<String>
     ) {

@@ -23,7 +23,7 @@ fun ByteArray.encryptBy(keyHex: String): ByteArray = TEA.encrypt(checkLength(), 
 
 private fun ByteArray.checkLength(): ByteArray {
     size.let {
-        require(it % 8 == 0 && it >= 16) { "data must len % 8 == 0 && len >= 16 but given $it" }
+        require(it % 8 == 0 && it >= 16) { "data must len % 8 == 0 && len >= 16 but given (length=$it) ${this.toUHexString()}" }
     }
     return this
 }

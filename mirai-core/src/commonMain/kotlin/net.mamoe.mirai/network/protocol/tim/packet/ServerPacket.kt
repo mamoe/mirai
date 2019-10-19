@@ -27,6 +27,8 @@ abstract class ServerPacket(val input: ByteReadPacket) : Packet(), Closeable {
     override fun close() = this.input.close()
 
     override fun toString(): String = this.packetToString()
+
+    fun <S : ServerPacket> S.applySequence() = this.applySequence(this@ServerPacket.sequenceId)
 }
 
 fun <S : ServerPacket> S.applySequence(sequenceId: UShort): S {

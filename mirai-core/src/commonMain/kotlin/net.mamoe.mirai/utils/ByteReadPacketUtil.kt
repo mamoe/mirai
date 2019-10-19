@@ -80,7 +80,8 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         0x00_CD_u -> ServerSendFriendMessageResponsePacket(this)
         0x00_02_u -> ServerSendGroupMessageResponsePacket(this)
         0x00_A7_u -> ServerCanAddFriendResponsePacket(this)
-        0x03_88_u -> ServerTryGetImageIDResponsePacket.Encrypted(this)
+        0x03_52_u -> ServerTryGetImageIDResponsePacket.Encrypted(this)
+        0x01_BDu -> ServerSubmitImageFilenameResponsePacket.Encrypted(this)
 
         else -> UnknownServerPacket.Encrypted(this, id, sequenceId)
     }.applySequence(sequenceId)

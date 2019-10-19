@@ -12,7 +12,7 @@ import net.mamoe.mirai.utils.*
  */
 @PacketId(0x00_BAu)
 class ClientCaptchaTransmissionRequestPacket(
-        private val qq: Long,
+        private val qq: UInt,
         private val token0825: ByteArray,
         private val verificationSequence: Int,
         private val token00BA: ByteArray
@@ -44,7 +44,7 @@ class ClientCaptchaTransmissionRequestPacket(
  */
 @PacketId(0x00_BAu)
 class ClientCaptchaSubmitPacket(
-        private val qq: Long,
+        private val qq: UInt,
         private val token0825: ByteArray,
         private val captcha: String,
         private val verificationToken: IoBuffer
@@ -83,7 +83,7 @@ class ClientCaptchaSubmitPacket(
  */
 @PacketId(0x00_BAu)
 class ClientCaptchaRefreshPacket(
-        private val qq: Long,
+        private val qq: UInt,
         private val token0825: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {

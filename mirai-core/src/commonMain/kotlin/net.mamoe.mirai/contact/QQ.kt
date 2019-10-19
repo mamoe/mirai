@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
@@ -14,7 +16,7 @@ import net.mamoe.mirai.message.MessageChain
  *
  * @author Him188moe
  */
-expect class QQ(bot: Bot, number: Long) : Contact {
+expect class QQ(bot: Bot, number: UInt) : Contact {
     override suspend fun sendMessage(message: MessageChain)
 
     override suspend fun sendXMLMessage(message: String)

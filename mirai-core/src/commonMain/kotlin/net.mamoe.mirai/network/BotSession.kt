@@ -1,8 +1,8 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.network
 
-import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
@@ -65,10 +65,10 @@ class BotSession(
      * @param handlerTemporary 处理器.
      */
     //@JvmSynthetic
-    suspend inline fun <reified P : ServerPacket> sendAndExpect(handlerTemporary: TemporaryPacketHandler<P>.() -> Unit): CompletableJob {
-        val job = coroutineContext[Job].takeIf { it != null }?.let { Job(it) } ?: Job()
-        this.bot.network.addHandler(TemporaryPacketHandler(P::class, job, this).also(handlerTemporary))
-        return job
+    suspend inline fun <reified P : ServerPacket, R> sendAndExpect(handlerTemporary: TemporaryPacketHandler<P, R>.() -> Unit): CompletableDeferred<R> {
+        val deferred: CompletableDeferred<R> = coroutineContext[Job].takeIf { it != null }?.let { CompletableDeferred<R>(it) } ?: CompletableDeferred()
+        this.bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this).also(handlerTemporary))
+        return deferred
     }
 
     /**
@@ -86,13 +86,13 @@ class BotSession(
      * @param P 期待的包
      * @param handler 处理期待的包
      */
-    suspend inline fun <reified P : ServerPacket> ClientPacket.sendAndExpect(noinline handler: suspend (P) -> Unit): CompletableJob {
-        val job = coroutineContext[Job].takeIf { it != null }?.let { Job(it) } ?: Job()
-        bot.network.addHandler(TemporaryPacketHandler(P::class, job, this@BotSession).also {
+    suspend inline fun <reified P : ServerPacket, R> ClientPacket.sendAndExpect(noinline handler: suspend (P) -> R): CompletableDeferred<R> {
+        val deferred: CompletableDeferred<R> = coroutineContext[Job].takeIf { it != null }?.let { CompletableDeferred<R>(it) } ?: CompletableDeferred()
+        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession).also {
             it.toSend(this)
             it.onExpect(handler)
         })
-        return job
+        return deferred
     }
 
     suspend inline fun ClientPacket.send() = socket.sendPacket(this)
@@ -101,6 +101,6 @@ class BotSession(
 
 suspend fun BotSession.distributePacket(packet: ServerPacket) = this.socket.distributePacket(packet)
 val BotSession.isOpen: Boolean get() = socket.isOpen
-val BotSession.account: Long get() = bot.account.account
+val BotSession.account: UInt get() = bot.account.account
 
 val <T : BotNetworkHandler<*>> T.session get() = this[ActionPacketHandler].session

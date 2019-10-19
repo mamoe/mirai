@@ -2,10 +2,15 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import kotlinx.io.core.*
+import kotlinx.io.core.BytePacketBuilder
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readUShort
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.encryptAndWrite
+import net.mamoe.mirai.utils.writeHex
+import net.mamoe.mirai.utils.writeQQ
 
 /**
  * 向服务器检查是否可添加某人为好友
@@ -14,8 +19,8 @@ import net.mamoe.mirai.utils.*
  */
 @PacketId(0x00_A7u)
 class ClientCanAddFriendPacket(
-        val bot: Long,
-        val qq: Long,
+        val bot: UInt,
+        val qq: UInt,
         val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
@@ -85,8 +90,8 @@ class ServerCanAddFriendResponsePacket(input: ByteReadPacket) : ServerPacket(inp
  */
 @PacketId(0x00_AEu)
 class ClientAddFriendPacket(
-        val bot: Long,
-        val qq: Long,
+        val bot: UInt,
+        val qq: UInt,
         val sessionKey: ByteArray
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {

@@ -8,7 +8,8 @@ enum class MessageType(val value: UByte) {
     PLAIN_TEXT(0x01u),
     AT(0x06u),
     FACE(0x02u),
-    IMAGE(0x03u),//may be 0x06?
+    GROUP_IMAGE(0x03u),
+    FRIEND_IMAGE(0x06u),
     ;
 
 
