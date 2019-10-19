@@ -33,3 +33,25 @@ internal fun ByteReadPacket.debugPrint(name: String = ""): ByteReadPacket {
     DebugLogger.logPurple("ByteReadPacket $name=" + bytes.toUHexString())
     return bytes.toReadPacket()
 }
+
+@Deprecated("Low efficiency, only for debug purpose", ReplaceWith(""))
+internal fun ByteReadPacket.debugColorizedPrint(name: String = "", ignoreUntilFirstConst: Boolean = false): ByteReadPacket {
+    val bytes = this.readBytes()
+    bytes.printColorizedHex(name, ignoreUntilFirstConst)
+    return bytes.toReadPacket()
+}
+
+
+internal fun String.printStringFromHex() {
+    println(this.hexToBytes().stringOfWitch())
+}
+
+
+internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstConst: Boolean = false) {
+    println("Hex比较 `$name`")
+    println(toUHexString().colorize(ignoreUntilFirstConst))
+    println()
+}
+
+expect fun compareHex(hex1s: String, hex2s: String): String
+expect fun String.colorize(ignoreUntilFirstConst: Boolean = false): String

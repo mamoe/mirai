@@ -58,6 +58,7 @@ internal object EventListenerManger {
 @Suppress("UNCHECKED_CAST")
 internal suspend fun <E : Event> E.broadcastInternal(): E {
     suspend fun callListeners(listeners: EventListeners<in E>) = listeners.lock.withLock {
+        //fixme 这个锁会导致在事件处理时再监听这个事件死锁
         listeners.removeIfInlined { it.onEvent(this) == ListeningStatus.STOPPED }
     }
 

@@ -51,16 +51,21 @@ interface Cancellable {
 }
 
 /**
- * 广播一个事件的唯一途径
+ * 广播一个事件的唯一途径.
+ * 若 [context] 不包含 [CoroutineExceptionHandler], 将会使用默认的异常捕获, 即 [log]
+ * 也就是说, 这个方法不会抛出异常, 只会把异常交由 [context] 捕获
  */
 @Suppress("UNCHECKED_CAST")
 @JvmOverloads
-suspend fun <E : Event> E.broadcast(context: CoroutineContext? = null): E {
+suspend fun <E : Event> E.broadcast(context: CoroutineContext? = CoroutineExceptionHandler { _, e -> e.log() }): E {
     var ctx = EventScope.coroutineContext
-    if (context != null) {
-        if (context[CoroutineExceptionHandler] == null)
-            ctx += CoroutineExceptionHandler { _, e -> e.log() }
+    if (context == null) {
+        ctx += CoroutineExceptionHandler { _, e -> e.log() }
+    } else {
         ctx += context
+        if (context[CoroutineExceptionHandler] == null) {
+            ctx += CoroutineExceptionHandler { _, e -> e.log() }
+        }
     }
     return withContext(ctx) { this@broadcast.broadcastInternal() }
 }

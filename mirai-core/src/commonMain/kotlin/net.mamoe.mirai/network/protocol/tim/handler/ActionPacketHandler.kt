@@ -13,6 +13,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.AddFriendResult
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientAddFriendPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientCanAddFriendPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ServerSKeyResponsePacket

@@ -2,6 +2,8 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.io.charsets.Charset
+import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlin.jvm.JvmOverloads
@@ -18,7 +20,7 @@ fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(s
 @JvmOverloads
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
-fun ByteArray.stringOf(): String = String(this)
+fun ByteArray.stringOfWitch(charset: Charset = Charsets.UTF_8): String = String(this, charset = charset)
 
 //@JvmSynthetic TODO 等待 kotlin 修复 bug 后添加这个注解
 @JvmOverloads

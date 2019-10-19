@@ -7,9 +7,7 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.readMessageChain
-import net.mamoe.mirai.network.protocol.tim.packet.EventPacketIdentity
-import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
-import net.mamoe.mirai.utils.printTLVMap
+import net.mamoe.mirai.utils.printStringFromHex
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.readLVByteArray
 import net.mamoe.mirai.utils.readTLVMap
@@ -64,6 +62,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
                             else -> error("Could not determine member permission, unknown tlv(key=0x04,value=$value0x04)")
                         }
                     }
+                    0x01u -> SenderPermission.MEMBER
 
                     else -> error("Could not determine member permission, unknown tlv(key=0x03,value=$value0x03)")
                 }
@@ -76,6 +75,10 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
             }
         }
     }
+}
+
+fun main() {
+    "00 00 00 08 00 0A 00 04 01 00 00 00 35 DB 60 A2 01 8D 62 3A B8 02 76 E4 B8 DD 06 B4 B4 BD A8 D5 DF 00 30 34 46 30 41 39 37 31 45 42 37 46 31 42 34 43 33 34 41 31 42 34 33 37 41 35 33 45 31 36 43 30 43 38 35 43 36 44 31 34 46 35 44 31 41 31 43 39 34".printStringFromHex()
 }
 
 //
@@ -106,8 +109,8 @@ class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: Event
         discardExact(2)//2个0x00
         message = readMessageChain()
 
-        val map: Map<Int, ByteArray> = readTLVMap(true).withDefault { byteArrayOf() }
-        map.printTLVMap("readTLVMap")
+        //val map: Map<Int, ByteArray> = readTLVMap(true).withDefault { byteArrayOf() }
+        //map.printTLVMap("readTLVMap")
         //println("map.getValue(18)=" + map.getValue(18).toUHexString())
 
         //19 00 38 01 00 35 AA 02 32 50 03 60 00 68 00 9A 01 29 08 09 20 BF 02 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 B8 03 00 C0 03 00 D0 03 00 E8 03 00 12 00 25 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08 05 00 04 00 00 00 01 08 00 04 00 00 00 01

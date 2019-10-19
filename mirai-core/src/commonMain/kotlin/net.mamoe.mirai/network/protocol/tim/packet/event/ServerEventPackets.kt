@@ -1,10 +1,13 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.network.protocol.tim.packet
+package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.event.*
+import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.applySequence
+import net.mamoe.mirai.network.protocol.tim.packet.decryptBy
 import net.mamoe.mirai.utils.*
 
 /**
@@ -60,27 +63,33 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 
                 0x0052u -> ServerGroupMessageEventPacket(input, eventIdentity)
 
-                0x00A6u -> ServerFriendMessageEventPacket(input.debugPrint("好友消息事件"), eventIdentity)
+                0x00A6u -> ServerFriendMessageEventPacket(input.debugColorizedPrint("好友消息事件", ignoreUntilFirstConst = true), eventIdentity)
 
-
-                //00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 16 00 00 00 37 08 02 1A 12 08 95 02 10 90 04 40 98 E1 8C ED 05 48 AF 96 C3 A4 03 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 1A 29 08 00 10 05 18 98 E1 8C ED 05 20 01 28 FF FF FF FF 0F 32 15 E5 AF B9 E6 96 B9 E6 AD A3 E5 9C A8 E8 BE 93 E5 85 A5 2E 2E 2E
-                //00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 07 00 00 00
-                0x0210u -> {
-                    discardExact(19)
-                    println("type事件" + readUByte().toUInt())
+                //0210: 00 00 00 0E 00 08 00 02 00 01 00 0A 00 04 01 00 00 00 00 00 00 06 00 00 00 26 08 02 1A 02 08 49 0A 08 08 00 10 B2 DE 8C ED 05 0A 0C 08 A2 FF 8C F0 03 10 E4 A1 A7 ED 05 0A 0C 08 DD F1 92 B7 07 10 B1 DE 8C ED 05
+                //      00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 16 00 00 00 37 08 02 1A 12 08 95 02 10 90 04 40 98 E1 8C ED 05 48 AF 96 C3 A4 03 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 1A 29 08 00 10 05 18 98 E1 8C ED 05 20 01 28 FF FF FF FF 0F 32 15 E5 AF B9 E6 96 B9 E6 AD A3 E5 9C A8 E8 BE 93 E5 85 A5 2E 2E 2E
+                //      00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 07 00 00 00
+                /*{
+                //todo 02 10 可能是发起会话? 在手机 QQ 打开一个公众号也有这个包; 取消关注公众号也会有这个包; 手机打开某人聊天界面也会有
+               0x0210u ->     discardExact(19)
+                    println("type事件" + readUByte().toUInt().toByteArray().toUHexString())
 
                     //todo 错了. 可能是 00 79 才是.
                     ServerFriendTypingCanceledPacket(input, eventIdentity)
                     /*
                     if (readUByte().toUInt() == 0x37u) ServerFriendTypingStartedPacket(input, eventIdentity)
                     else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)*/
-                }
-                0x0079u -> IgnoredServerEventPacket(type, input, eventIdentity)
+                }*/
+                0x0210u -> IgnoredServerEventPacket(
+                        eventId = type.toByteArray(),
+                        showData = true,
+                        input = input,
+                        eventIdentity = eventIdentity
+                )
 
                 //"02 10", "00 12" -> ServerUnknownEventPacket(input, eventIdentity)
 
-                else -> {
-                    MiraiLogger.logDebug("UnknownEvent type = ${type.toInt().toByteArray().toUHexString()}")
+                else -> {//0x00 79u, 可能是正在输入的包
+                    MiraiLogger.logDebug("UnknownEvent type = ${type.toByteArray().toUHexString()}")
                     UnknownServerEventPacket(input, eventIdentity)
                 }
             }.applyId(id).applySequence(sequenceId)
@@ -114,7 +123,15 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
  * 如 00 79: 总是与 01 12 一起发生, 但 00 79 却没多大意义
  */
 @Suppress("unused")
-class IgnoredServerEventPacket(val eventId: UShort, input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity)
+class IgnoredServerEventPacket(val eventId: ByteArray, private val showData: Boolean = false, input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
+    override fun decode() {
+        if (showData) {
+            MiraiLogger.logDebug("IgnoredServerEventPacket data: " + this.input.readBytes().toUHexString())
+        } else {
+            this.input.discard()
+        }
+    }
+}
 
 /**
  * Unknown event

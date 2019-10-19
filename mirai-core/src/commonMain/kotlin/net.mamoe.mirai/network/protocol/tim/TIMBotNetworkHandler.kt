@@ -17,9 +17,10 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.*
 import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
+import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.*
-
 
 /**
  * [BotNetworkHandler] 的 TIM PC 协议实现
@@ -45,7 +46,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         temporaryPacketHandler.send(this[ActionPacketHandler].session)
     }
 
-    override suspend fun login(configuration: LoginConfiguration): LoginResult {
+    override suspend fun login(configuration: BotNetworkConfiguration): LoginResult {
         TIMProtocol.SERVER_IP.forEach {
             bot.logger.logInfo("Connecting server $it")
             this.socket = BotSocketAdapter(it, configuration)
@@ -79,8 +80,8 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
     private lateinit var sessionKey: ByteArray
 
-    override fun close() {
-        super.close()
+    override fun close(cause: Throwable?) {
+        super.close(cause)
 
         this.heartbeatJob?.cancel(CancellationException("handler closed"))
         this.heartbeatJob = null
@@ -98,7 +99,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
     override suspend fun sendPacket(packet: ClientPacket) = socket.sendPacket(packet)
 
-    internal inner class BotSocketAdapter(override val serverIp: String, val configuration: LoginConfiguration) : DataPacketSocketAdapter {
+    internal inner class BotSocketAdapter(override val serverIp: String, val configuration: BotNetworkConfiguration) : DataPacketSocketAdapter {
         override val channel: PlatformDatagramChannel = PlatformDatagramChannel(serverIp, 8000)
 
         override val isOpen: Boolean get() = channel.isOpen
@@ -140,7 +141,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         internal suspend fun resendTouch(): LoginResult {
             if (::loginHandler.isInitialized) loginHandler.close()
 
-            loginHandler = LoginHandler()
+            loginHandler = LoginHandler(configuration)
 
 
             val expect = expectPacket<ServerTouchResponsePacket>()
@@ -187,7 +188,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                 val name = packet::class.simpleName
                 if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
-                    bot.cyan("Packet received: $packet")
+                    bot.logCyan("Packet received: $packet")
                 }
 
                 if (packet is ServerEventPacket) {
@@ -240,14 +241,14 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     channel.send(buffer)//JVM: withContext(IO)
                 } catch (e: SendPacketInternalException) {
                     bot.logger.logError("Caught SendPacketInternalException: ${e.cause?.message}")
-                    bot.reinitializeNetworkHandler(configuration)
+                    bot.reinitializeNetworkHandler(configuration, e)
                     return@withContext
                 } finally {
                     buffer.release(IoBuffer.Pool)
                 }
             }
 
-            bot.green("Packet sent:     $packet")
+            bot.logGreen("Packet sent:     $packet")
 
             EventScope.launch { PacketSentEvent(bot, packet).broadcast() }
         }
@@ -264,7 +265,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     /**
      * 处理登录过程
      */
-    inner class LoginHandler {
+    inner class LoginHandler(private val configuration: BotNetworkConfiguration) {
         private lateinit var token00BA: ByteArray
         private lateinit var token0825: ByteArray//56
         private var loginTime: Int = 0
@@ -350,7 +351,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 is ServerCaptchaTransmissionPacket -> {
                     //packet is ServerCaptchaWrongPacket
                     if (this.captchaSectionId == 0) {
-                        bot.error("验证码错误, 请重新输入")
+                        bot.logError("验证码错误, 请重新输入")
                         this.captchaSectionId = 1
                         this.captchaCache = null
                     }
@@ -402,8 +403,18 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                     heartbeatJob = NetworkScope.launch {
                         while (socket.isOpen) {
-                            delay(90000)
-                            socket.sendPacket(ClientHeartbeatPacket(bot.qqAccount, sessionKey))
+                            delay(configuration.heartbeatPeriodMillis)
+                            with(session) {
+                                class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
+
+                                if (withTimeoutOrNull(configuration.heartbeatTimeoutMillis) {
+                                            ClientHeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<ServerHeartbeatResponsePacket> {}
+                                        } == null) {
+                                    bot.logPurple("Heartbeat timed out")
+                                    bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
+                                    return@launch
+                                }
+                            }
                         }
                     }
 
@@ -447,7 +458,8 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         fun close() {
             this.captchaCache = null
 
-            if (::sessionResponseDecryptionKey.isInitialized) this.sessionResponseDecryptionKey.release(IoBuffer.Pool)
+            if (::sessionResponseDecryptionKey.isInitialized && sessionResponseDecryptionKey.readRemaining != 0)
+                this.sessionResponseDecryptionKey.release(IoBuffer.Pool)
         }
     }
 }

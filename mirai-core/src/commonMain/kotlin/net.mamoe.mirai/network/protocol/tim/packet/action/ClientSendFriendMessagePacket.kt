@@ -20,8 +20,6 @@ class ClientSendFriendMessagePacket(
         private val message: MessageChain
 ) : ClientPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        writeRandom(2)
-
         writeQQ(botQQ)
         writeHex(TIMProtocol.fixVer2)
 

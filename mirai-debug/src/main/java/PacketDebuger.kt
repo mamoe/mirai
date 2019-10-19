@@ -7,10 +7,10 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.UnknownServerEventPacket
 import net.mamoe.mirai.utils.*
 
 /**
@@ -177,6 +177,6 @@ object Main {
 }
 
 fun main() {
-    println("00 01 00 23 24 8B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 4E 22 4E 25 4E 26 4E 27 4E 29 4E 2A 4E 2B 4E 2D 4E 2E 4E 2F 4E 30 4E 31 4E 33 4E 35 4E 36 4E 37 4E 38 4E 3F 4E 40 4E 41 4E 42 4E 43 4E 45 4E 49 4E 4B 4E 4F 4E 54 4E 5B 52 0B 52 0F 5D C2 5D C8 65 97 69 9D 69 A9 9D A5 A4 91 A4 93 A4 94 A4 9C A4 B5".hexToBytes().stringOf())
+    println("00 01 00 23 24 8B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 4E 22 4E 25 4E 26 4E 27 4E 29 4E 2A 4E 2B 4E 2D 4E 2E 4E 2F 4E 30 4E 31 4E 33 4E 35 4E 36 4E 37 4E 38 4E 3F 4E 40 4E 41 4E 42 4E 43 4E 45 4E 49 4E 4B 4E 4F 4E 54 4E 5B 52 0B 52 0F 5D C2 5D C8 65 97 69 9D 69 A9 9D A5 A4 91 A4 93 A4 94 A4 9C A4 B5".hexToBytes().stringOfWitch())
 }
 

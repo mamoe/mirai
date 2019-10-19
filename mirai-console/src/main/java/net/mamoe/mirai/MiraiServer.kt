@@ -175,7 +175,7 @@ object MiraiServer {
                 val bot = Bot(BotAccount(strings[0].toLong(), strings[1]), MiraiLogger)
 
                 if (runBlocking { bot.login() } === LoginResult.SUCCESS) {
-                    bot.green("Login succeed")
+                    bot.logGreen("Login succeed")
                     return bot
                 }
             }

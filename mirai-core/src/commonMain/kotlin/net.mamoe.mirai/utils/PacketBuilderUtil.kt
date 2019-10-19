@@ -4,7 +4,6 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -25,9 +24,10 @@ fun BytePacketBuilder.writeLVByteArray(byteArray: ByteArray) {
 fun BytePacketBuilder.writeLVPacket(packet: ByteReadPacket) {
     this.writeShort(packet.remaining.toShort())
     this.writePacket(packet)
+    packet.release()
 }
 
-fun BytePacketBuilder.writeLVPacket(builder: BytePacketBuilder.() -> Unit) = this.writeLVPacket(BytePacketBuilder().apply(builder).use { it.build() })
+fun BytePacketBuilder.writeLVPacket(builder: BytePacketBuilder.() -> Unit) = this.writeLVPacket(BytePacketBuilder().apply(builder).build())
 
 @Suppress("DEPRECATION")
 fun BytePacketBuilder.writeLVString(str: String) = this.writeLVByteArray(str.toByteArray())

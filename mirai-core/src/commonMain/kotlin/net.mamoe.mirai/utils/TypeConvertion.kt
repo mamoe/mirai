@@ -12,21 +12,30 @@ import kotlin.random.nextInt
  * 255 -> 00 00 00 FF
  */
 fun Int.toByteArray(): ByteArray = byteArrayOf(
-        (this.ushr(24) and 0xFF).toByte(),
-        (this.ushr(16) and 0xFF).toByte(),
-        (this.ushr(8) and 0xFF).toByte(),
-        (this.ushr(0) and 0xFF).toByte()
+        (ushr(24) and 0xFF).toByte(),
+        (ushr(16) and 0xFF).toByte(),
+        (ushr(8) and 0xFF).toByte(),
+        (ushr(0) and 0xFF).toByte()
 )
+
+/**
+ * 255 -> 00 FF
+ */
+fun UShort.toByteArray(): ByteArray = with(toUInt()) {
+    byteArrayOf(
+            (shr(8) and 255u).toByte(),
+            (shr(0) and 255u).toByte()
+    )
+}
 
 /**
  * 255u -> 00 00 00 FF
  */
-
 fun UInt.toByteArray(): ByteArray = byteArrayOf(
-        (this.shr(24) and 255u).toByte(),
-        (this.shr(16) and 255u).toByte(),
-        (this.shr(8) and 255u).toByte(),
-        (this.shr(0) and 255u).toByte()
+        (shr(24) and 255u).toByte(),
+        (shr(16) and 255u).toByte(),
+        (shr(8) and 255u).toByte(),
+        (shr(0) and 255u).toByte()
 )
 
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)

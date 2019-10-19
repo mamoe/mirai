@@ -1,8 +1,6 @@
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.network.protocol.tim.packet.EventPacketIdentity
-import net.mamoe.mirai.network.protocol.tim.packet.ServerEventPacket
 
 
 sealed class ServerFriendTypingPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {

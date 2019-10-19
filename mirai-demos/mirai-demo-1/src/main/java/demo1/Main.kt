@@ -7,7 +7,6 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.subscribeAll
 import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.event.subscribeOnce
 import net.mamoe.mirai.event.subscribeUntilFalse
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.Image
@@ -20,8 +19,8 @@ import net.mamoe.mirai.utils.MiraiLogger
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
     val bot = Bot(BotAccount(//填写你的账号
-            account = 1994701021,
-            password = "asdhim188666"
+            account = 1994701121,
+            password = "123456"
     ), Console())
 
     bot.login {
@@ -35,9 +34,10 @@ suspend fun main() {
     }
 
     //提供泛型以监听事件
-    subscribeOnce<FriendMessageEvent> {
+    subscribeAlways<FriendMessageEvent> {
         //获取第一个纯文本消息, 获取不到会抛出 NoSuchElementException
-        val firstText = it.message.first<PlainText>()
+        //val firstText = it.message.first<PlainText>()
+        val firstText = it.message.firstOrNull<PlainText>()
 
         //获取第一个图片
         val firstImage = it.message.firstOrNull<Image>()

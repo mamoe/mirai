@@ -3,14 +3,16 @@ package net.mamoe.mirai.network
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
-import kotlinx.io.core.Closeable
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.ClientHeartbeatPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.LoginConfiguration
+import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.PlatformDatagramChannel
 import kotlin.coroutines.ContinuationInterceptor
 
@@ -30,7 +32,7 @@ import kotlin.coroutines.ContinuationInterceptor
  * A BotNetworkHandler is used to connect with Tencent servers.
  */
 @Suppress("PropertyName")
-interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : Closeable {
+interface BotNetworkHandler<Socket : DataPacketSocketAdapter> {
     /**
      * [BotNetworkHandler] 的协程作用域.
      * 所有 [BotNetworkHandler] 的协程均启动在此作用域下.
@@ -47,17 +49,20 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : Closeable {
 
     val socket: Socket
 
+
     /**
      * 得到 [PacketHandler].
      * `get(EventPacketHandler)` 返回 [EventPacketHandler]
-     * `get(ActionPacketHandler)` 返回 [ActionPacketHandler]
+     * `get(ActionPacketHandler)` 返回 [ActionPacketHandler].
+     *
+     * 这个方法在 [PacketHandlerList] 中实现
      */
     operator fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T
 
     /**
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果
      */
-    suspend fun login(configuration: LoginConfiguration): LoginResult
+    suspend fun login(configuration: BotNetworkConfiguration): LoginResult
 
     /**
      * 添加一个临时包处理器, 并发送相应的包
@@ -72,13 +77,8 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : Closeable {
      */
     suspend fun sendPacket(packet: ClientPacket)
 
-    override fun close() {
+    fun close(cause: Throwable? = null) {
         //todo check??
-        NetworkScope.coroutineContext[ContinuationInterceptor]!!.cancelChildren(HandlerClosedException())
+        NetworkScope.coroutineContext[ContinuationInterceptor]!!.cancelChildren(CancellationException("handler closed", cause))
     }
 }
-
-/**
- * [BotNetworkHandler] closed
- */
-class HandlerClosedException : CancellationException("handler closed")

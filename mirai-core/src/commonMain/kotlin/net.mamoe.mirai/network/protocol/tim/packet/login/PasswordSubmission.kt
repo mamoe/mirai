@@ -78,10 +78,8 @@ private fun BytePacketBuilder.writePart1(
     this.writeHex("00 06")//tag
     this.writeHex("00 78")//length
     if (tlv0006 != null) {
-        MiraiLogger.logDebug("tlv0006!=null")
         this.writeFully(tlv0006)
     } else {
-        MiraiLogger.logDebug("tlv0006==null")
         this.writeTLV0006(qq, password, loginTime, loginIP, privateKey)
     }
     //fix

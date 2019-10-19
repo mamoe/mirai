@@ -8,8 +8,8 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.ContactList
-import net.mamoe.mirai.utils.LoginConfiguration
 import net.mamoe.mirai.utils.toUHexString
 
 /**
@@ -36,31 +36,31 @@ val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 //NetworkHandler
 suspend fun Bot.sendPacket(packet: ClientPacket) = this.network.sendPacket(packet)
 
-suspend fun Bot.login(configuration: LoginConfiguration.() -> Unit): LoginResult = this.network.login(LoginConfiguration().apply(configuration))
+suspend fun Bot.login(configuration: BotNetworkConfiguration.() -> Unit): LoginResult = this.network.login(BotNetworkConfiguration().apply(configuration))
 
-suspend fun Bot.login(): LoginResult = this.network.login(LoginConfiguration.Default)
+suspend fun Bot.login(): LoginResult = this.network.login(BotNetworkConfiguration.Default)
 
 //BotAccount
 val Bot.qqAccount: Long get() = this.account.account
 
 
 //logging
-fun Bot.log(o: Any?) = info(o)
+fun Bot.log(o: Any?) = logInfo(o)
 
-fun Bot.println(o: Any?) = info(o)
-fun Bot.info(o: Any?) = this.logger.logInfo(o)
+fun Bot.println(o: Any?) = logInfo(o)
+fun Bot.logInfo(o: Any?) = this.logger.logInfo(o)
 
-fun Bot.error(o: Any?) = this.logger.logError(o)
+fun Bot.logError(o: Any?) = this.logger.logError(o)
 
-fun Bot.purple(o: Any?) = this.logger.logPurple(o)
+fun Bot.logPurple(o: Any?) = this.logger.logPurple(o)
 
-fun Bot.cyan(o: Any?) = this.logger.logCyan(o)
-fun Bot.green(o: Any?) = this.logger.logGreen(o)
+fun Bot.logCyan(o: Any?) = this.logger.logCyan(o)
+fun Bot.logGreen(o: Any?) = this.logger.logGreen(o)
 
-fun Bot.debug(o: Any?) = this.logger.logDebug(o)
+fun Bot.logDebug(o: Any?) = this.logger.logDebug(o)
 
 fun Bot.printPacketDebugging(packet: ServerPacket) {
-    debug("Packet=$packet")
-    debug("Packet size=" + packet.input.readBytes().size)
-    debug("Packet data=" + packet.input.readBytes().toUHexString())
+    logDebug("Packet=$packet")
+    logDebug("Packet size=" + packet.input.readBytes().size)
+    logDebug("Packet data=" + packet.input.readBytes().toUHexString())
 }

@@ -9,10 +9,8 @@ import net.mamoe.mirai.contact.groupIdToNumber
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.BotAccount
-import net.mamoe.mirai.utils.ContactList
-import net.mamoe.mirai.utils.LoginConfiguration
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmOverloads
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -61,9 +59,14 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
      * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler.NetworkScope] 下的协程.
      * 然后重新启动并尝试登录
      */
-    suspend fun reinitializeNetworkHandler(configuration: LoginConfiguration): LoginResult {
+    @JvmOverloads
+    suspend fun reinitializeNetworkHandler(configuration: BotNetworkConfiguration, cause: Throwable? = null): LoginResult {
         logger.logPurple("Reinitializing BotNetworkHandler")
-        network.close()
+        try {
+            network.close(cause)
+        } catch (e: Exception) {
+            e.log()
+        }
         network = TIMBotNetworkHandler(this)
         return network.login(configuration)
     }

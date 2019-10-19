@@ -8,6 +8,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 
 

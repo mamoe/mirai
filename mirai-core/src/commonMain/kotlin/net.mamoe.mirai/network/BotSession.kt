@@ -6,6 +6,7 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
@@ -101,3 +102,5 @@ class BotSession(
 suspend fun BotSession.distributePacket(packet: ServerPacket) = this.socket.distributePacket(packet)
 val BotSession.isOpen: Boolean get() = socket.isOpen
 val BotSession.account: Long get() = bot.account.account
+
+val <T : BotNetworkHandler<*>> T.session get() = this[ActionPacketHandler].session

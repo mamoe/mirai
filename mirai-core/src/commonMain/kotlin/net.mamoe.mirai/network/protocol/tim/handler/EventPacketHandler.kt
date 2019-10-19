@@ -10,7 +10,6 @@ import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.distributePacket
-import net.mamoe.mirai.network.protocol.tim.packet.IgnoredServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerFriendOnlineStatusChangedPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendFriendMessagePacket
