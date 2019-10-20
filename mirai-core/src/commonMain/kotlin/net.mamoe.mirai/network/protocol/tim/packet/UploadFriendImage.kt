@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.*
 /**
  * 上传图片
  */
-suspend fun QQ.uploadImage(image: PlatformImage): ImageId = with(bot.network.session) {
+suspend fun QQ.uploadImage(image: BufferedImage): ImageId = with(bot.network.session) {
     //SubmitImageFilenamePacket(account, account, "sdiovaoidsa.png", sessionKey).sendAndExpect<ServerSubmitImageFilenameResponsePacket>().join()
     DebugLogger.logPurple("正在上传好友图片, md5=${image.md5.toUHexString()}")
     return FriendImageIdRequestPacket(account, sessionKey, account, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
@@ -22,12 +22,12 @@ suspend fun QQ.uploadImage(image: PlatformImage): ImageId = with(bot.network.ses
             require(httpPostFriendImage(
                     uKeyHex = it.uKey!!.toUHexString(""),
                     botNumber = bot.qqAccount,
-                    imageData = image.fileData,
+                    imageData = image.data,
                     fileSize = image.fileSize,
                     qq = account
             ))
             it.imageId!!
-        } else image.id //todo 是这个么
+        } else TODO("分析服务器已有图片时的 imageId")
     }.await()
 }
 
@@ -40,6 +40,9 @@ suspend fun QQ.uploadImage(image: PlatformImage): ImageId = with(bot.network.ses
 
 //01 3E 03 3F A2 76 E4 B8 DD     00 00 50 7C 00 0A 00 01 00 01    00 2D 55 73 65 72 44 61 74 61 49 6D 61 67 65 3A 43 32 43 5C 40 53 51 25 4F 46 43 50 36 4C 48 30 47 34 43 47 57 53 49 52 46 37 32 2E 70 6E 67
 // 00 01 61 A7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 2E 01
+/**
+ * 似乎没有必要. 服务器的返回永远都是 01 00 00 00 02 00 00
+ */
 @PacketId(0X01_BDu)
 @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
 class SubmitImageFilenamePacket(
@@ -95,16 +98,14 @@ class SubmitImageFilenamePacket(
  * 服务器返回以下之一:
  * - 服务器已经存有这个图片
  * - 服务器未存有, 返回一个 key 用于客户端上传
- *
- * @author Him188moe
  */
 @PacketId(0x03_52u)
-@PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
 class FriendImageIdRequestPacket(
         private val botNumber: UInt,
         private val sessionKey: ByteArray,
         private val target: UInt,
-        private val image: PlatformImage
+        private val image: BufferedImage
 ) : ClientPacket() {
 
     //00 00 00 07 00 00 00 4B 08 01 12 03 98 01 01 08 01 12 47 08 A2 FF 8C F0 03 10 89 FC A6 8C 0B 18 00 22 10 2B 23 D7 05 CA D1 F2 CF 37 10 FE 58 26 92 FC C4 28 FD 08 32 1A 7B 00 47 00 47 00 42 00 7E 00 49 00 31 00 5A 00 4D 00 43 00 28 00 25 00 49 00 38 01 48 00 70 42 78 42
@@ -240,9 +241,9 @@ class FriendImageIdRequestPacket(
                 writeUShort(0x48_00u)
 
                 writeUByte(0x70u)
-                writeUVarInt(image.imageWidth.toUInt())
+                writeUVarInt(image.width.toUInt())
                 writeUByte(0x78u)
-                writeUVarInt(image.imageHeight.toUInt())
+                writeUVarInt(image.height.toUInt())
             }
             writeShort((packet.remaining - 7).toShort())//why?
             writePacket(packet)
@@ -283,9 +284,9 @@ class FriendImageIdRequestPacket(
             } else {
                 //服务器已经有这个图片了
                 DebugLogger.logPurple("服务器已有好友图片 ")
+                println("获取图片 repsonse 后文=" + readRemainingBytes().toUHexString())
+                TODO("分析后文获取 imageId")
             }
-
-            println("获取图片 repsonse 后文=" + readRemainingBytes().toUHexString())
         }
     }
 }

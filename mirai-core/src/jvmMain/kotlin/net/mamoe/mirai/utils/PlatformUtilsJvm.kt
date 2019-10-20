@@ -5,8 +5,8 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.streams.writePacket
 import org.jsoup.Connection
-import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URL
@@ -117,12 +117,4 @@ actual suspend fun httpPostGroupImage(uKeyHex: String, fileSize: Long, imageData
 
 private suspend fun Connection.suspendExecute(): Connection.Response = withContext(Dispatchers.IO) {
     execute()
-}
-
-private fun OutputStream.writePacket(packet: ByteReadPacket) {
-    val byteArray = ByteArray(1)
-    repeat(packet.remaining.toInt()) {
-        packet.readAvailable(byteArray)
-        this.write(byteArray)
-    }
 }

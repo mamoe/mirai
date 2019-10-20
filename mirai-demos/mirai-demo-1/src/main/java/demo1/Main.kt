@@ -81,18 +81,18 @@ suspend fun main() {
 
             "上传好友图片" in it.message -> withTimeoutOrNull(3000) {
                 val id = QQ(bot, 1040400290u)
-                        .uploadImage(withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\色图.jpg").readBytes().inputStream()) }.toPlatformImage("png"))
+                        .uploadImage(withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\色图.jpg").readBytes().inputStream()) }.toMiraiImage("png"))
                 it.reply(id.value)
                 delay(1000)
                 it.reply(Image(id))
             }
 
             "上传群图片" in it.message -> withTimeoutOrNull(3000) {
-                val image = withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\色图.jpg").readBytes().inputStream()) }.toPlatformImage("png")
+                val image = withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\色图.jpg").readBytes().inputStream()) }.toMiraiImage("png")
                 Group(bot, 580266363u).uploadImage(image)
-                it.reply(image.id.value)
+                it.reply(image.groupImageId.value)
                 delay(1000)
-                Group(bot, 580266363u).sendMessage(Image(image.id))
+                Group(bot, 580266363u).sendMessage(Image(image.groupImageId))
             }
 
             "发群图片" in it.message -> {

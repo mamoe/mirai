@@ -3,7 +3,7 @@
 import net.mamoe.mirai.network.protocol.tim.packet.GroupImageIdRequestPacket
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.readRemainingBytes
-import net.mamoe.mirai.utils.toPlatformImage
+import net.mamoe.mirai.utils.toMiraiImage
 import net.mamoe.mirai.utils.toUHexString
 import java.io.File
 import javax.imageio.ImageIO
@@ -11,7 +11,7 @@ import javax.imageio.ImageIO
 val sessionKey: ByteArray = "F1 ED F2 BC 55 17 7B FE CC CC F3 08 D1 8D A7 0E".hexToBytes()
 
 fun main() = println({
-    val image = ImageIO.read(File("C:\\Users\\Him18\\Desktop\\test2.png").readBytes().inputStream()).toPlatformImage("png")
+    val image = ImageIO.read(File("C:\\Users\\Him18\\Desktop\\test2.png").readBytes().inputStream()).toMiraiImage("png")
 
     // File("C:\\Users\\Him18\\Desktop\\test2.jpg").writeBytes(image.fileData.readBytes())
     GroupImageIdRequestPacket(

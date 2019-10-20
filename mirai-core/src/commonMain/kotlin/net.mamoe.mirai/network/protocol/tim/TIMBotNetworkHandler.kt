@@ -187,7 +187,6 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     bot.logCyan("Packet received: $packet")
                 }
 
-                //coz removeIf is not inline
                 handlersLock.withLock {
                     temporaryPacketHandlers.removeIfInlined {
                         it.shouldRemove(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)

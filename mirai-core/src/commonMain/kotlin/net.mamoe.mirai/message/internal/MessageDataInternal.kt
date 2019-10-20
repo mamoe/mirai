@@ -203,11 +203,10 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
                          * 2F 37 33 38 33 35 38 36 37 2D 38 64 65 31 2D 34 65 30 66 2D 61 33 36 35 2D 34 39 62 30 33 39 63 34 61 39 31 66 41
                          */
                         writeShortLVPacket {
-                            //todo
                             writeByte(0x02)
                             //"46 52 25 46 60 30 59 4F 4A 5A 51 48 31 46 4A 53 4C 51 4C 4A 33 46 31 2E 6A 70 67".hexToBytes().stringOfWitch()
                             //   writeShortLVString(filename)//图片文件名 FR%F`0YOJZQH1FJSLQLJ3F1.jpg
-                            writeShortLVString(id.value.substring(1..24) + ".gif")//图片文件名 FR%F`0YOJZQH1FJSLQLJ3F1.jpg
+                            writeShortLVString(id.value.substring(1..24) + ".gif")//图片文件名. 后缀不影响. 但无后缀会导致 PC QQ 无法显示这个图片
                             writeHex("03 00 04 00 00 02 A2 04")
                             writeShortLVString(id.value)
                             writeHex("14 00 04 03 00 00 00 0B 00 00 18")
@@ -215,10 +214,13 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
 
                             writeHex("19 00 04 00 00 00 4E 1A 00 04 00 00 00 23 FF 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 ")
 
-                            writeStringUtf8("674e")//补长度
-                            writeStringUtf8(id.value.substring(1..id.value.lastIndex - 4).replace("-", "B"))//这一串文件名决定手机QQ保存的图片. 可以随意
-                            writeStringUtf8(".gif")
+                            writeStringUtf8("674e")//没有 "e" 服务器就不回复
+
+                            writeStringUtf8(id.value.substring(1..id.value.lastIndex - 4))//这一串文件名决定手机 QQ 保存的图片. 可以随意
+                            writeStringUtf8(".gif")//后缀要有
                             writeUByte(0x66u)
+
+                            //有时候 PC QQ 看不到发这些消息, 但手机可以. 可能是 ID 过期了, 手机有缓存而电脑没有
 
                             /*
                             * writeHex("19 00 04 00 00 00 4E 1A 00 04 00 00 00 23 FF 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 ")

@@ -10,13 +10,13 @@ import net.mamoe.mirai.utils.*
 
 
 suspend fun Group.uploadImage(
-        image: PlatformImage
+        image: BufferedImage
 ) = with(bot.network.session) {
     GroupImageIdRequestPacket(bot.qqAccount, groupId, image, sessionKey)
             .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
                 if (it.uKey != null) {
                     httpPostGroupImage(
-                            imageData = image.fileData,
+                            imageData = image.data,
                             fileSize = image.fileSize,
                             uKeyHex = it.uKey!!.toUHexString()
                     )
@@ -32,7 +32,7 @@ suspend fun Group.uploadImage(
 class GroupImageIdRequestPacket(
         private val bot: UInt,
         private val groupId: UInt,
-        private val image: PlatformImage,
+        private val image: BufferedImage,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
 
