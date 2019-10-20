@@ -73,7 +73,7 @@ actual suspend fun httpPostFriendImage(
             "&range=" + "0" +
             "&uin=" + botNumber.toLong()).openConnection() as HttpURLConnection
     conn.setRequestProperty("User-Agent", "QQClient")
-    conn.setRequestProperty("Content-Length", "" + fileSize)
+    conn.setRequestProperty("Content-Length", imageData.toString())
     conn.setRequestProperty("Connection", "Keep-Alive")
     conn.requestMethod = "POST"
     conn.doOutput = true
@@ -98,7 +98,7 @@ actual suspend fun httpPostGroupImage(uKeyHex: String, fileSize: Long, imageData
             "&term=pc" +
             "&ver=5603" +
             "&ukey=" + uKeyHex.replace(" ", "")).openConnection() as HttpURLConnection
-    conn.setRequestProperty("Content-Length", fileSize.toString())
+    conn.setRequestProperty("Content-Length", imageData.remaining.toString())
     conn.setRequestProperty("Connection", "Keep-Alive")
     conn.requestMethod = "POST"
     conn.doOutput = true

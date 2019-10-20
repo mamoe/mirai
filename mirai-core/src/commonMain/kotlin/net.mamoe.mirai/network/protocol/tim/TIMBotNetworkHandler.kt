@@ -182,16 +182,16 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
 
             packet.use {
+                val name = packet::class.simpleName
+                if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
+                    bot.logCyan("Packet received: $packet")
+                }
+
                 //coz removeIf is not inline
                 handlersLock.withLock {
                     temporaryPacketHandlers.removeIfInlined {
                         it.shouldRemove(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)
                     }
-                }
-
-                val name = packet::class.simpleName
-                if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
-                    bot.logCyan("Packet received: $packet")
                 }
 
                 if (packet is ServerEventPacket) {

@@ -195,11 +195,11 @@ class GroupImageIdRequestPacket(
 
             //if (readUByte() != UByte.MIN_VALUE) {
                 //服务器还没有
-                discardExact(remaining - 128)
-                uKey = readBytes(128)
+            discardExact(remaining - 128 - 14)
+            uKey = readBytes(128)
             //} else {
             //    println("服务器已经有了这个图片")
-            //    println("后文 = ${readRemainingBytes().toUHexString()}")
+            //println("后文 = ${readRemainingBytes().toUHexString()}")
             //}
 
 

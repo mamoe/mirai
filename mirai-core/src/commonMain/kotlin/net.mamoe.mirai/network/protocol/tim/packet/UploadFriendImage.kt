@@ -16,7 +16,7 @@ import net.mamoe.mirai.utils.*
  */
 suspend fun QQ.uploadImage(image: PlatformImage): ImageId = with(bot.network.session) {
     //SubmitImageFilenamePacket(account, account, "sdiovaoidsa.png", sessionKey).sendAndExpect<ServerSubmitImageFilenameResponsePacket>().join()
-
+    DebugLogger.logPurple("正在上传好友图片, md5=${image.md5.toUHexString()}")
     return FriendImageIdRequestPacket(account, sessionKey, account, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
         if (it.uKey != null) {
             require(httpPostFriendImage(
