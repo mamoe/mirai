@@ -8,3 +8,7 @@ actual typealias PlatformImage = BufferedImage
 
 @JvmOverloads
 actual fun BufferedImage.toByteArray(formatName: String): ByteArray = ByteArrayOutputStream().use { ImageIO.write(this, "PNG", it); it.toByteArray() }
+
+actual val PlatformImage.imageWidth: Int get() = this.width
+
+actual val PlatformImage.imageHeight: Int get() = this.height

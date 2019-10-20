@@ -69,11 +69,17 @@ actual suspend fun httpPostFriendImage(
             "&uin=" + botNumber.toLong()).openConnection() as HttpURLConnection
     conn.setRequestProperty("User-Agent", "QQClient")
     conn.setRequestProperty("Content-Length", "" + fileSize)
+    conn.setRequestProperty("connection", "Keep-Alive")
+    conn.setRequestProperty("Content-type", "image/png")
     conn.requestMethod = "POST"
     conn.doOutput = true
-    conn.outputStream.buffered().write(imageData)
-
+    conn.doInput = true
     conn.connect()
+
+    val buffered = conn.outputStream.buffered()
+    buffered.write(imageData)
+    buffered.flush()
+
     println(conn.responseMessage)
     println(conn.responseCode)
     return conn.responseCode == 200

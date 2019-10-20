@@ -30,7 +30,7 @@ class ClientSendFriendMessagePacket(
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(botQQ)
-        writeHex(TIMProtocol.versionNewest)
+        writeHex(TIMProtocol.version0x02)
 
         encryptAndWrite(sessionKey) {
             // TIM最新, 消息内容 "牛逼"

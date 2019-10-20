@@ -73,7 +73,7 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "99 82 67 D4 62 20 CA 5D 81 F8 6F 83 EE 8A F7 68".hexToBytes()
+    val sessionKey: ByteArray = "F1 ED F2 BC 55 17 7B FE CC CC F3 08 D1 8D A7 0E".hexToBytes()
     val qq: UInt = 1040400290u
 
     fun dataReceived(data: ByteArray) {
@@ -175,9 +175,9 @@ object Main {
                     println("好友消息")
 
                     val raw = readRemainingBytes()
-                    println("解密前数据: " + raw.toUHexString())
+                    //println("解密前数据: " + raw.toUHexString())
                     val messageData = raw.decryptBy(sessionKey)
-                    println("解密结果: " + messageData.toUHexString())
+                    //println("解密结果: " + messageData.toUHexString())
                     println("尝试解消息")
 
                     try {
@@ -195,10 +195,11 @@ object Main {
                 }
 
                 "03 88" -> {
-                    println("上传图片-获取图片ID")
+                    println("0388上传图片-获取图片ID")
                     discardExact(8)
-                    val body = readRemainingBytes().decryptBy(sessionKey)
-                    println(body.toUHexString())
+
+                    //val body = readRemainingBytes().decryptBy(sessionKey)
+                    //println(body.toUHexString())
                 }
             }
         }

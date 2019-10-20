@@ -18,38 +18,79 @@ fun BytePacketBuilder.writeQQ(qq: UInt) = this.writeUInt(qq)
 fun BytePacketBuilder.writeGroup(groupIdOrGroupNumber: Long) = this.writeUInt(groupIdOrGroupNumber.toUInt())
 fun BytePacketBuilder.writeGroup(groupIdOrGroupNumber: UInt) = this.writeUInt(groupIdOrGroupNumber)
 
-fun BytePacketBuilder.writeLVByteArray(byteArray: ByteArray) {
+fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
     this.writeShort(byteArray.size.toShort())
     this.writeFully(byteArray)
 }
 
-fun BytePacketBuilder.writeShortLVPacket(packet: ByteReadPacket) {
-    this.writeShort(packet.remaining.toShort())
-    this.writePacket(packet)
-    packet.release()
+
+private fun <N : Comparable<N>> N.coerceAtMostOrFail(maximumValue: N): N =
+        if (this > maximumValue) error("value is greater than its expected maximum value $maximumValue")
+        else this
+
+fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) = with(BytePacketBuilder().apply(builder).build()) {
+    if (tag != null) {
+        writeUByte(tag)
+    }
+    writeUShort((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL).toUShort())
+    writePacket(this)
+    this.release()
 }
 
-fun BytePacketBuilder.writeUVarintLVPacket(packet: ByteReadPacket) {
-    this.writeUVarLong(packet.remaining)
-    this.writePacket(packet)
-    packet.release()
+fun BytePacketBuilder.writeUVarintLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) = with(BytePacketBuilder().apply(builder).build()) {
+    if (tag != null) {
+        writeUByte(tag)
+    }
+    writeUVarInt((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL))
+    writePacket(this)
+    this.release()
 }
 
-
-fun BytePacketBuilder.writeShortLVPacket(builder: BytePacketBuilder.() -> Unit) = this.writeShortLVPacket(BytePacketBuilder().apply(builder).build())
-fun BytePacketBuilder.writeUVarintLVPacket(builder: BytePacketBuilder.() -> Unit) = this.writeUVarintLVPacket(BytePacketBuilder().apply(builder).build())
+@Suppress("DEPRECATION")
+fun BytePacketBuilder.writeShortLVString(str: String) = this.writeShortLVByteArray(str.toByteArray())
 
 @Suppress("DEPRECATION")
-fun BytePacketBuilder.writeShortLVString(str: String) = this.writeLVByteArray(str.toByteArray())
-
-@Suppress("DEPRECATION")
-fun BytePacketBuilder.writeLVHex(hex: String) = this.writeLVByteArray(hex.hexToBytes())
+fun BytePacketBuilder.writeLVHex(hex: String) = this.writeShortLVByteArray(hex.hexToBytes())
 
 fun BytePacketBuilder.writeIP(ip: String) = writeFully(ip.trim().split(".").map { it.toUByte() }.toUByteArray())
 
 fun BytePacketBuilder.writeTime() = this.writeInt(currentTime.toInt())
 
 fun BytePacketBuilder.writeHex(uHex: String) = this.writeFully(uHex.hexToUBytes())
+
+fun BytePacketBuilder.writeTLV(tag: UByte, values: UByteArray) {
+    writeUByte(tag)
+    writeVarInt(values.size)
+    writeFully(values)
+}
+
+fun BytePacketBuilder.writeTLV(tag: UByte, values: ByteArray) {
+    writeUByte(tag)
+    writeVarInt(values.size)
+    writeFully(values)
+}
+
+fun BytePacketBuilder.writeTHex(tag: UByte, uHex: String) {
+    this.writeUByte(tag)
+    this.writeFully(uHex.hexToUBytes())
+}
+
+fun BytePacketBuilder.writeTV(tagValue: UShort) = writeUShort(tagValue)
+
+fun BytePacketBuilder.writeTUbyte(tag: UByte, value: UByte) {
+    this.writeUByte(tag)
+    this.writeUByte(value)
+}
+
+fun BytePacketBuilder.writeTUVarint(tag: UByte, value: UInt) {
+    this.writeUByte(tag)
+    this.writeUVarInt(value)
+}
+
+fun BytePacketBuilder.writeTByteArray(tag: UByte, value: ByteArray) {
+    this.writeUByte(tag)
+    this.writeFully(value)
+}
 
 fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.readBytes(), encoder)
 fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) = writeFully(TEA.encrypt(BytePacketBuilder().apply(encoder).use { it.build().readBytes() }, key))
