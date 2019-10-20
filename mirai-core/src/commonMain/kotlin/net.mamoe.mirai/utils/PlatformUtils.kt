@@ -3,6 +3,7 @@
 package net.mamoe.mirai.utils
 
 import com.soywiz.klock.DateTime
+import kotlinx.io.core.ByteReadPacket
 
 /**
  * 时间戳
@@ -38,14 +39,23 @@ expect fun solveIpAddress(hostname: String): String
 expect fun localIpAddress(): String
 
 /**
- * 上传群图片
+ * 上传好友图片
  */
 expect suspend fun httpPostFriendImage(
         uKeyHex: String,
-        fileSize: Int,
+        fileSize: Long,
         botNumber: UInt,
         qq: UInt,
-        imageData: ByteArray
+        imageData: ByteReadPacket
+): Boolean
+
+/**
+ * 上传群图片
+ */
+expect suspend fun httpPostGroupImage(
+        uKeyHex: String,
+        fileSize: Long,
+        imageData: ByteReadPacket
 ): Boolean
 
 fun main() {

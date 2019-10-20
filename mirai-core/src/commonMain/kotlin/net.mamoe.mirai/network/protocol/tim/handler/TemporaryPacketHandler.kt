@@ -26,25 +26,21 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
 ) {
     private lateinit var toSend: ClientPacket
 
-    private lateinit var expect: suspend (P) -> R
-
+    private lateinit var handler: suspend (P) -> R
 
     lateinit var session: BotSession//无需覆盖
 
-    fun toSend(packet: () -> ClientPacket) {
-        this.toSend = packet()
-    }
 
     fun toSend(packet: ClientPacket) {
         this.toSend = packet
     }
 
-
     fun onExpect(handler: suspend (P) -> R) {
-        this.expect = handler
+        this.handler = handler
     }
 
     suspend fun send(session: BotSession) {
+        require(::handler.isInitialized) { "handler is not initialized" }
         this.session = session
         session.socket.sendPacket(toSend)
     }
@@ -54,7 +50,7 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
 
             @Suppress("UNCHECKED_CAST")
             val ret = try {
-                expect(packet as P)
+                handler(packet as P)
             } catch (e: Exception) {
                 deferred.completeExceptionally(e)
                 return true

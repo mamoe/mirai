@@ -16,7 +16,10 @@ import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
@@ -408,7 +411,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                                 class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
 
                                 if (withTimeoutOrNull(configuration.heartbeatTimeout.millisecondsLong) {
-                                            ClientHeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<ServerHeartbeatResponsePacket, Unit> {}
+                                            HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacket.Response>().join()
                                         } == null) {
                                     bot.logPurple("Heartbeat timed out")
                                     bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
@@ -437,11 +440,6 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.privateKey))
                 is ServerSessionKeyResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
                 is ServerTouchResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt())
-
-
-                is ServerHeartbeatResponsePacket -> {
-
-                }
 
                 is UnknownServerPacket.Encrypted -> socket.distributePacket(packet.decrypt(sessionKey))
                 else -> {

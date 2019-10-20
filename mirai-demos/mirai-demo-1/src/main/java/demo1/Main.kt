@@ -2,7 +2,9 @@
 
 package demo1
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
@@ -78,10 +80,19 @@ suspend fun main() {
             }
 
             "上传好友图片" in it.message -> withTimeoutOrNull(3000) {
-                val id = QQ(bot, 1040400290u).uploadImage(ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()))
+                val id = QQ(bot, 1040400290u)
+                        .uploadImage(withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("PNG"))
                 it.reply(id.value)
                 delay(1000)
                 it.reply(Image(id))
+            }
+
+            "上传群图片" in it.message -> withTimeoutOrNull(3000) {
+                val image = withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("PNG")
+                Group(bot, 580266363u).uploadImage(image)
+                it.reply(image.id.value)
+                delay(1000)
+                it.reply(Image(image.id))
             }
 
             /*it.event eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->

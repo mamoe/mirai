@@ -2,6 +2,11 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.io.core.ByteReadPacket
+import org.jsoup.Connection
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URL
@@ -28,10 +33,10 @@ fun main() {
 
 actual suspend fun httpPostFriendImage(
         uKeyHex: String,
-        fileSize: Int,
+        fileSize: Long,
         botNumber: UInt,
         qq: UInt,
-        imageData: ByteArray
+        imageData: ByteReadPacket
 ): Boolean {/*Jsoup
         //htdata2.qq.com
 
@@ -60,7 +65,7 @@ actual suspend fun httpPostFriendImage(
             }
         };*/
 
-    val conn = URL("http://101.227.143.109/cgi-bin/httpconn" +
+    val conn = URL("http://htdata2.qq.com/cgi-bin/httpconn" +
             "?htcmd=0x6ff0070" +
             "&ver=5603" +
             "&ukey=" + uKeyHex.replace(" ", "") +
@@ -69,18 +74,55 @@ actual suspend fun httpPostFriendImage(
             "&uin=" + botNumber.toLong()).openConnection() as HttpURLConnection
     conn.setRequestProperty("User-Agent", "QQClient")
     conn.setRequestProperty("Content-Length", "" + fileSize)
-    conn.setRequestProperty("connection", "Keep-Alive")
-    conn.setRequestProperty("Content-type", "image/png")
+    conn.setRequestProperty("Connection", "Keep-Alive")
     conn.requestMethod = "POST"
     conn.doOutput = true
     conn.doInput = true
-    conn.connect()
+    withContext(Dispatchers.IO) {
+        conn.connect()
+    }
 
-    val buffered = conn.outputStream.buffered()
-    buffered.write(imageData)
-    buffered.flush()
+    conn.outputStream.writePacket(imageData)
 
     println(conn.responseMessage)
     println(conn.responseCode)
     return conn.responseCode == 200
+}
+
+/**
+ * 上传群图片
+ */
+actual suspend fun httpPostGroupImage(uKeyHex: String, fileSize: Long, imageData: ByteReadPacket): Boolean {
+    val conn = URL("http://htdata2.qq.com/cgi-bin/httpconn" +
+            "?htcmd=0x6ff0071" +
+            "&term=pc" +
+            "&ver=5603" +
+            "&ukey=" + uKeyHex.replace(" ", "")).openConnection() as HttpURLConnection
+    conn.setRequestProperty("Content-Length", fileSize.toString())
+    conn.setRequestProperty("Connection", "Keep-Alive")
+    conn.requestMethod = "POST"
+    conn.doOutput = true
+    conn.doInput = true
+    withContext(Dispatchers.IO) {
+        conn.connect()
+    }
+
+    val stream = conn.outputStream
+    stream.writePacket(imageData)
+
+    println(conn.responseMessage)
+    println(conn.responseCode)
+    return conn.responseCode == 200
+}
+
+private suspend fun Connection.suspendExecute(): Connection.Response = withContext(Dispatchers.IO) {
+    execute()
+}
+
+private fun OutputStream.writePacket(packet: ByteReadPacket) {
+    val byteArray = ByteArray(1)
+    repeat(packet.remaining.toInt()) {
+        packet.readAvailable(byteArray)
+        this.write(byteArray)
+    }
 }

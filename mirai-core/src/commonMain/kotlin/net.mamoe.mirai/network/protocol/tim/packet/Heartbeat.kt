@@ -10,7 +10,7 @@ import net.mamoe.mirai.utils.writeHex
 import net.mamoe.mirai.utils.writeQQ
 
 @PacketId(0x00_58u)
-class ClientHeartbeatPacket(
+class HeartbeatPacket(
         private val bot: UInt,
         private val sessionKey: ByteArray
 ) : ClientPacket() {
@@ -21,7 +21,7 @@ class ClientHeartbeatPacket(
             writeHex("00 01 00 01")
         }
     }
-}
 
-@PacketId(0x00_58u)
-class ServerHeartbeatResponsePacket(input: ByteReadPacket) : ServerPacket(input)
+    @PacketId(0x00_58u)
+    class Response(input: ByteReadPacket) : ServerSessionPacket(input)
+}

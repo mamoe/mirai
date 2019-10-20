@@ -8,7 +8,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.isOpen
-import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.ClientAccountInfoRequestPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerAccountInfoResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ServerSessionPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.AddFriendResult
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientAddFriendPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientCanAddFriendPacket
@@ -42,20 +45,6 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
                     it.onPacketReceived(packet)
                 }
             }
-            is ServerTryGetImageIDSuccessPacket -> {
-                // ImageNetworkUtils.postImage(packet.uKey.toUHexString(), )
-            }
-
-            is ServerTryGetImageIDFailedPacket -> {
-
-            }
-
-            is ServerSubmitImageFilenameResponsePacket -> {
-
-            }
-
-            is ServerTryGetImageIDResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
-            is ServerSubmitImageFilenameResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
 
             is ServerAccountInfoResponsePacket.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
             is ServerAccountInfoResponsePacket -> {
@@ -82,6 +71,7 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
 
             is ServerEventPacket.Raw.Encrypted -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
             is ServerEventPacket.Raw -> session.socket.distributePacket(packet.distribute())
+            is ServerSessionPacket.Encrypted<*> -> session.socket.distributePacket(packet.decrypt(session.sessionKey))
 
             else -> {
             }

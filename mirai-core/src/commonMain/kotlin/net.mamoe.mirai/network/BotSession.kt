@@ -50,36 +50,15 @@ class BotSession(
 
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket].
-     *
-     * 实现方法:
-     * ```kotlin
-     * session.sendAndExpect<ServerPacketXXX> {
-     *  toSend { ClientPacketXXX(...) }
-     *  onExpect {//it: ServerPacketXXX
-     *
-     *  }
-     * }
-     * ```
-     *
-     * @param P 期待的包
-     * @param handlerTemporary 处理器.
-     */
-    //@JvmSynthetic
-    suspend inline fun <reified P : ServerPacket, R> sendAndExpect(handlerTemporary: TemporaryPacketHandler<P, R>.() -> Unit): CompletableDeferred<R> {
-        val deferred: CompletableDeferred<R> = coroutineContext[Job].takeIf { it != null }?.let { CompletableDeferred<R>(it) } ?: CompletableDeferred()
-        this.bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this).also(handlerTemporary))
-        return deferred
-    }
-
-    /**
-     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket].
      * 发送成功后, 该方法会等待收到 [ServerPacket] 直到超时.
      * 由于包名可能过长, 可使用 `DataPacketSocketAdapter.sendAndExpect(PacketProcessor)` 替代.
      *
      * 实现方法:
      * ```kotlin
-     * ClientPacketXXX(...).sendAndExpect<ServerPacketXXX> {
-     *  //it: ServerPacketXXX
+     * with(session){
+     *  ClientPacketXXX(...).sendAndExpect<ServerPacketXXX> {
+     *   //it: ServerPacketXXX
+     *  }
      * }
      * ```
      *
@@ -94,6 +73,8 @@ class BotSession(
         })
         return deferred
     }
+
+    suspend inline fun <reified P : ServerPacket> ClientPacket.sendAndExpect(): CompletableDeferred<Unit> = sendAndExpect<P, Unit> {}
 
     suspend inline fun ClientPacket.send() = socket.sendPacket(this)
 }

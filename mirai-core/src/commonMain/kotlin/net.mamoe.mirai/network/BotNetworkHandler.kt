@@ -6,8 +6,8 @@ import kotlinx.coroutines.cancelChildren
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.ClientHeartbeatPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
@@ -39,7 +39,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> {
      *
      * [BotNetworkHandler] 的协程包含:
      * - UDP 包接收: [PlatformDatagramChannel.read]
-     * - 心跳 Job [ClientHeartbeatPacket]
+     * - 心跳 Job [HeartbeatPacket]
      * - SKey 刷新 [ClientSKeyRefreshmentRequestPacket]
      * - 所有数据包处理和发送
      *
