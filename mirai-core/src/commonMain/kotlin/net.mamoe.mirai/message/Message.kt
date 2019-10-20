@@ -90,7 +90,7 @@ data class PlainText(override val stringValue: String) : Message() {
  * 图片消息. 在发送时将会区分群图片和好友图片发送.
  * 由接收消息时构建, 可直接发送
  *
- * @param id 类似 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef`. 群的是大写id, 好友的是小写id
+ * @param id 类似 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef` 或 `{F61593B5-5B98-1798-3F47-2A91D32ED2FC}.jpg`
  * @param filename 文件名. 这将决定图片的显示
  */
 data class Image(val id: ImageId, val filename: String = "") : Message() {

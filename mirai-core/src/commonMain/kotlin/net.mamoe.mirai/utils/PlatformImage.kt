@@ -12,7 +12,7 @@ class PlatformImage(
 ) {
     val fileSize: Long = fileData.remaining
 
-    val id: ImageId by lazy { ImageId("{${md5[0..4]}-${md5[0..2]}-${md5[0..2]}-${md5[0..2]}-${md5[0..6]}}.$format") }
+    val id: ImageId by lazy { ImageId("{${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}}.$format") }
 
     override fun toString(): String = "[PlatformImage(${width}x${height} $format)]"
 }

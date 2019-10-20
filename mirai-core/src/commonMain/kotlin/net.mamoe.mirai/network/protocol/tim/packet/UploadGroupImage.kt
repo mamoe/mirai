@@ -193,11 +193,16 @@ class GroupImageIdRequestPacket(
         override fun decode(): Unit = with(input) {
             discardExact(6)//00 00 00 05 00 00
 
-            if (readUByte() != UByte.MIN_VALUE) {
+            //if (readUByte() != UByte.MIN_VALUE) {
                 //服务器还没有
                 discardExact(remaining - 128)
                 uKey = readBytes(128)
-            }
+            //} else {
+            //    println("服务器已经有了这个图片")
+            //    println("后文 = ${readRemainingBytes().toUHexString()}")
+            //}
+
+
 
             // 已经有了的一张图片
             // 00 3B 12 03 98 01 01

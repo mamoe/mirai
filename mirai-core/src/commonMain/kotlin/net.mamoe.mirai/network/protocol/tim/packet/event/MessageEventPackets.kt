@@ -42,7 +42,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
         discardExact(2)//2个0x00
         message = readMessageChain()
 
-        val map = readTLVMap(true).withDefault { byteArrayOf(0, 0, 0, 0) }
+        val map = readTLVMap(true)
         //map.printTLVMap("父map")
         if (map.containsKey(18)) {
             senderName = map.getValue(18).read {
@@ -56,7 +56,9 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
                 senderPermission = when (val value0x03 = tlv.getValue(0x03)[0].toUInt()) {
                     0x04u -> SenderPermission.OWNER
                     0x02u -> {
-                        when (val value0x04 = tlv.getValue(0x04)[3].toUInt()) {
+                        if (!tlv.containsKey(0x04)) {
+                            SenderPermission.MEMBER
+                        } else when (val value0x04 = tlv.getValue(0x04)[3].toUInt()) {
                             0x08u -> SenderPermission.OPERATOR
                             0x10u -> SenderPermission.MEMBER
                             else -> error("Could not determine member permission, unknown tlv(key=0x04,value=$value0x04)")

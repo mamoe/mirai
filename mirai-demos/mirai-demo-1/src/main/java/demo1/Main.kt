@@ -81,18 +81,26 @@ suspend fun main() {
 
             "上传好友图片" in it.message -> withTimeoutOrNull(3000) {
                 val id = QQ(bot, 1040400290u)
-                        .uploadImage(withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("png"))
+                        .uploadImage(withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\色图.jpg").readBytes().inputStream()) }.toPlatformImage("png"))
                 it.reply(id.value)
                 delay(1000)
                 it.reply(Image(id))
             }
 
             "上传群图片" in it.message -> withTimeoutOrNull(3000) {
-                val image = withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("png")
+                val image = withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\色图.jpg").readBytes().inputStream()) }.toPlatformImage("png")
                 Group(bot, 580266363u).uploadImage(image)
                 it.reply(image.id.value)
                 delay(1000)
-                it.reply(Image(image.id))
+                Group(bot, 580266363u).sendMessage(Image(image.id))
+            }
+
+            "发群图片" in it.message -> {
+                Group(bot, 580266363u).sendMessage(Image(ImageId(it.message.toString().substringAfter("发图片"))))
+            }
+
+            "发好友图片" in it.message -> {
+                it.reply(Image(ImageId(it.message.toString().substringAfter("发好友图片"))))
             }
 
             /*it.event eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->

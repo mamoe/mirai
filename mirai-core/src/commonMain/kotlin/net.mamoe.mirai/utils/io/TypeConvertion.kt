@@ -39,7 +39,11 @@ fun UInt.toByteArray(): ByteArray = byteArrayOf(
 )
 
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
-fun Byte.toUHexString(): String = this.toUByte().toString(16).toUpperCase()
+fun Byte.toUHexString(): String = this.toUByte().toString(16).toUpperCase().let {
+    if (it.length == 1) "0$it"
+    else it
+}
+
 fun String.hexToBytes(): ByteArray = HexCache.hexToBytes(this)
 
 /**
@@ -50,6 +54,7 @@ fun String.hexToUBytes(): UByteArray = HexCache.hexToUBytes(this)
 fun String.hexToInt(): Int = hexToBytes().toUInt().toInt()
 fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
 fun getRandomString(length: Int, charRange: CharRange): String = String(CharArray(length) { charRange.random() })
+fun getRandomString(length: Int, vararg charRanges: CharRange): String = String(CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() })
 fun ByteArray.toUInt(): UInt = this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
 
 fun ByteArray.toIoBuffer(): IoBuffer = IoBuffer.Pool.borrow().let { it.writeFully(this); it }
