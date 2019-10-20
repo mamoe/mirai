@@ -74,8 +74,8 @@ internal object HexCache {
     }
 
     internal fun hexToUBytes(hex: String): UByteArray =
-            hex.split(" ").dropLastWhile { it.isEmpty() }.toTypedArray()
-                    .map { value -> value.trim { it <= ' ' } }
+            hex.split(" ")
+                    .filterNot { it.isEmpty() }
                     .map { s -> s.toUByte(16) }
                     .toUByteArray()
 }

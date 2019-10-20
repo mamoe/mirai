@@ -92,6 +92,11 @@ fun BytePacketBuilder.writeTByteArray(tag: UByte, value: ByteArray) {
     this.writeFully(value)
 }
 
+fun BytePacketBuilder.writeTByteArray(tag: UByte, value: UByteArray) {
+    this.writeUByte(tag)
+    this.writeFully(value)
+}
+
 fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.readBytes(), encoder)
 fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) = writeFully(TEA.encrypt(BytePacketBuilder().apply(encoder).use { it.build().readBytes() }, key))
 fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)

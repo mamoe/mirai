@@ -4,10 +4,10 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
+
 
 suspend fun Group.uploadImage(
         image: PlatformImage
@@ -110,54 +110,79 @@ class GroupImageIdRequestPacket(
         // 78 03
         // 80 01 00
 
+
+        /*
         writeQQ(bot)
         writeHex(TIMProtocol.version0x04)
 
         encryptAndWrite(sessionKey) {
             writeHex("00 00 00 07 00 00 00")
 
-            writeUVarintLVPacket(lengthOffset = { it - 6 }) {
+            writeUVarintLVPacket {
+                writeByte(0x08)
                 writeHex("01 12 03 98 01 01 10 01 1A")
 
-                writeUVarintLVPacket(lengthOffset = { it + 1 }) {
-                    writeUVarInt(groupId)
-                    writeUVarInt(bot)
-
+                writeUVarintLVPacket(lengthOffset = { it + 7 }) {
+                    writeTUVarint(0x08u, groupId)
+                    writeTUVarint(0x10u, bot)
                     writeTV(0x1800u)
                     writeTLV(0x22u, image.md5)
                     writeTUVarint(0x28u, image.fileSize.toUInt())
                     writeUVarintLVPacket(tag = 0x32u) {
-                        writeTV(0x31_00u)
-                        writeTV(0x35_00u)
-                        writeTV(0x4C_00u)
+                        writeTV(0x5B_00u)
+                        writeTV(0x40_00u)
+                        writeTV(0x33_00u)
+                        writeTV(0x48_00u)
+                        writeTV(0x5F_00u)
+                        writeTV(0x58_00u)
+                        writeTV(0x46_00u)
+                        writeTV(0x51_00u)
+                        writeTV(0x45_00u)
+                        writeTV(0x51_00u)
+                        writeTV(0x40_00u)
                         writeTV(0x24_00u)
-                        writeTV(0x40_00u)
-                        writeTV(0x5B_00u)
-                        writeTV(0x4D_00u)
-                        writeTV(0x5B_00u)
-                        writeTV(0x39_00u)
-                        writeTV(0x39_00u)
-                        writeTV(0x40_00u)
-                        writeTV(0x57_00u)
-                        writeTV(0x5D_00u)
+                        writeTV(0x4F_00u)
                     }
                     writeTV(0x38_01u)
                     writeTV(0x48_01u)
                     writeTUVarint(0x50u, image.imageWidth.toUInt())
                     writeTUVarint(0x58u, image.imageHeight.toUInt())
                     writeTV(0x60_02u)
-                    writeTLV(0x6Au, value0x6A)
-                    writeTV(0x70_00u)
-                    writeTV(0x78_03u)
-                    writeTV(0x80_01u)
-                    writeUByte(0u)
+                    writeTByteArray(0x6Au, value0x6A)
                 }
             }
+            writeTV(0x70_00u)
+            writeTV(0x78_03u)
+            writeTV(0x80_01u)
+            writeUByte(0u)
+
+           // this.debugColorizedPrintThis(compareTo = "00 00 00 07 00 00 00 5D 08 01 12 03 98 01 01 10 01 1A 59 08 FB D2 D8 94 02 10 A2 FF 8C F0 03 18 00 22 10 1D D2 2B 9B BC F2 10 83 DC 99 D2 2E 20 39 CC 0E 28 8A 03 32 1A 5B 00 40 00 33 00 48 00 5F 00 58 00 46 00 51 00 45 00 51 00 40 00 24 00 4F 00 38 01 48 01 50 EF 01 58 C2 01 60 02 6A 05 32 36 39 33 33 70 00 78 03 80 01 00")
+        }*/
+
+        writeQQ(bot)
+        writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
+
+        encryptAndWrite(sessionKey) {
+            writeHex("00 00 00 07 00 00 00 5E 08 01 12 03 98 01 01 10 01 1A")
+            writeHex("5A 08")
+            writeUVarInt(groupId)
+            writeUByte(0x10u)
+            writeUVarInt(bot)
+            writeHex("18 00 22 10")
+            writeFully(image.md5)
+            writeUByte(0x28u)
+            writeUVarInt(image.fileSize.toUInt())
+            writeHex("32 1A 37 00 4D 00 32 00 25 00 4C 00 31 00 56 00 32 00 7B 00 39 00 30 00 29 00 52 00")
+            writeHex("38 01 48 01 50")
+            writeUVarInt(image.width.toUInt())
+            writeUByte(0x58u)
+            writeUVarInt(image.height.toUInt())
+            writeHex("60 04 6A 05 32 36 36 35 36 70 00 78 03 80 01 00")
         }
     }
 
     companion object {
-        private val value0x6A: UByteArray = ubyteArrayOf(32u, 36u, 39u, 33u, 33u)
+        private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x39u, 0x33u, 0x33u)
     }
 
     @PacketId(0x0388u)
@@ -189,7 +214,7 @@ class GroupImageIdRequestPacket(
 }
 
 fun main() {
-    ("12 03 98 01 01").hexToBytes().read {
+    ("8E  4B").hexToBytes().read {
         println(readUnsignedVarInt())
     }
 

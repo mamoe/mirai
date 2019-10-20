@@ -46,6 +46,13 @@ internal fun BytePacketBuilder.debugColorizedPrintThis(name: String = "") {
 }
 
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith(" "))
+internal fun BytePacketBuilder.debugColorizedPrintThis(name: String = "", compareTo: String? = null) {
+    val data = this.build().readBytes()
+    data.printColorizedHex(name, compareTo = compareTo)
+    this.writeFully(data)
+}
+
+@Deprecated("Low efficiency, only for debug purpose", ReplaceWith(" "))
 internal fun BytePacketBuilder.debugPrintThis(name: String = "") {
     val data = this.build().readBytes()
     data.debugPrint(name)
@@ -57,14 +64,18 @@ internal fun String.printStringFromHex() {
 }
 
 
-internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstConst: Boolean = false) {
+internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstConst: Boolean = false, compareTo: String? = null) {
     println("Hex比较 `$name`")
-    println(toUHexString().colorize(ignoreUntilFirstConst))
+    if (compareTo != null) {
+        println(printCompareHex(toUHexString(), compareTo))
+    } else {
+        println(toUHexString().printColorize(ignoreUntilFirstConst))
+    }
     println()
 }
 
-expect fun compareHex(hex1s: String, hex2s: String): String
-expect fun String.colorize(ignoreUntilFirstConst: Boolean = false): String
+expect fun printCompareHex(hex1s: String, hex2s: String): String
+expect fun String.printColorize(ignoreUntilFirstConst: Boolean = false): String
 
 
 fun main() {

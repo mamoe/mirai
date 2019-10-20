@@ -286,5 +286,5 @@ internal object HexComparator {
 
 }
 
-actual fun String.colorize(ignoreUntilFirstConst: Boolean): String = with(HexComparator) { colorize(ignoreUntilFirstConst) }
-actual fun compareHex(hex1s: String, hex2s: String): String = with(HexComparator) { compare(hex1s, hex2s) }
+actual fun String.printColorize(ignoreUntilFirstConst: Boolean): String = with(HexComparator) { colorize(ignoreUntilFirstConst) }
+actual fun printCompareHex(hex1s: String, hex2s: String): String = with(HexComparator) { compare(hex1s, hex2s) }

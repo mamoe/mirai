@@ -30,7 +30,7 @@ abstract class ClientPacket : Packet(), Closeable {
     /**
      * 务必 [ByteReadPacket.close] 或 [close] 或使用 [Closeable.use]
      */
-    internal var packet: ByteReadPacket = UninitializedByteReadPacket
+    var packet: ByteReadPacket = UninitializedByteReadPacket
         get() {
             if (field === UninitializedByteReadPacket) build()
             return field

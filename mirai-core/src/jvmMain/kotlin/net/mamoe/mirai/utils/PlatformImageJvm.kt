@@ -8,7 +8,7 @@ import java.io.OutputStream
 import java.security.MessageDigest
 import javax.imageio.ImageIO
 
-fun BufferedImage.toPlatformImage(formatName: String = "PNG"): PlatformImage {
+fun BufferedImage.toPlatformImage(formatName: String = "png"): PlatformImage {
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
 

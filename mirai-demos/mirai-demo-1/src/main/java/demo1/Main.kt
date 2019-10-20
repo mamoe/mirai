@@ -81,14 +81,14 @@ suspend fun main() {
 
             "上传好友图片" in it.message -> withTimeoutOrNull(3000) {
                 val id = QQ(bot, 1040400290u)
-                        .uploadImage(withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("PNG"))
+                        .uploadImage(withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("png"))
                 it.reply(id.value)
                 delay(1000)
                 it.reply(Image(id))
             }
 
             "上传群图片" in it.message -> withTimeoutOrNull(3000) {
-                val image = withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("PNG")
+                val image = withContext(Dispatchers.IO) { ImageIO.read(File("C:\\Users\\Him18\\Desktop\\lemon.png").readBytes().inputStream()) }.toPlatformImage("png")
                 Group(bot, 580266363u).uploadImage(image)
                 it.reply(image.id.value)
                 delay(1000)

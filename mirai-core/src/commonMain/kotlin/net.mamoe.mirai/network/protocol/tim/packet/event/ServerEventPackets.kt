@@ -119,8 +119,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 }
 
 /**
- * 忽略的事件.
- * 如 00 79: 总是与 01 12 一起发生, 但 00 79 却没多大意义
+ * 忽略的事件
  */
 @Suppress("unused")
 class IgnoredServerEventPacket(val eventId: ByteArray, private val showData: Boolean = false, input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
