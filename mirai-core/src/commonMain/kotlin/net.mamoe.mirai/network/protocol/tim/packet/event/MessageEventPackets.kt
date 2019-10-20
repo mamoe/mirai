@@ -7,10 +7,7 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.readMessageChain
-import net.mamoe.mirai.utils.printStringFromHex
-import net.mamoe.mirai.utils.read
-import net.mamoe.mirai.utils.readLVByteArray
-import net.mamoe.mirai.utils.readTLVMap
+import net.mamoe.mirai.utils.*
 import kotlin.properties.Delegates
 
 
@@ -45,7 +42,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
         val map = readTLVMap(true)
         //map.printTLVMap("父map")
         if (map.containsKey(18)) {
-            senderName = map.getValue(18).read {
+            map.getValue(18).read {
                 val tlv = readTLVMap(true)
                 //tlv.printTLVMap("子map")
                 ////群主的18: 05 00 04 00 00 00 03 08 00 04 00 00 00 04 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
@@ -66,10 +63,13 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
                     }
                     0x01u -> SenderPermission.MEMBER
 
-                    else -> error("Could not determine member permission, unknown tlv(key=0x03,value=$value0x03)")
+                    else -> {
+                        tlv.printTLVMap("Child TLV map")
+                        error("Could not determine member permission, unknown TLV(key=0x03,value=$value0x03;)")
+                    }
                 }
 
-                when {
+                senderName = when {
                     tlv.containsKey(0x01) -> kotlinx.io.core.String(tlv.getValue(0x01))//这个人的qq昵称
                     tlv.containsKey(0x02) -> kotlinx.io.core.String(tlv.getValue(0x02))//这个人的群名片
                     else -> "null"

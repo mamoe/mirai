@@ -20,7 +20,8 @@ class ServerFriendOnlineStatusChangedPacket(input: ByteReadPacket) : ServerPacke
     override fun decode() = with(input) {
         qq = readUInt()
         discardExact(8)
-        status = OnlineStatus.ofId(readUByte())
+        val id = readUByte()
+        status = OnlineStatus.ofId(id) ?: error("Unknown online status id $id")
     }
 
     //在线     XX XX XX XX 01 00 00 00 00 00 00 00 0A 15 E3 10 00 01 2E 01 00 00 00 00 00 00 00 00 00 00 00 13 08 02 C2 76 E4 B8 DD 00 00 00 00 00 00 00 00 00 00 00

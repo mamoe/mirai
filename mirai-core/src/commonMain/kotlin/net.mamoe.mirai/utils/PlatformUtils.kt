@@ -53,6 +53,8 @@ expect suspend fun httpPostFriendImage(
  * 上传群图片
  */
 expect suspend fun httpPostGroupImage(
+        bot: UInt,
+        groupNumber: UInt,
         uKeyHex: String,
         fileSize: Long,
         imageData: ByteReadPacket

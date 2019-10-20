@@ -5,11 +5,10 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.streams.writePacket
+import kotlinx.io.core.readBytes
 import org.jsoup.Connection
-import java.net.HttpURLConnection
+import org.jsoup.Jsoup
 import java.net.InetAddress
-import java.net.URL
 import java.security.MessageDigest
 import java.util.zip.CRC32
 
@@ -37,83 +36,46 @@ actual suspend fun httpPostFriendImage(
         botNumber: UInt,
         qq: UInt,
         imageData: ByteReadPacket
-): Boolean {/*Jsoup
-        //htdata2.qq.com
-
-        //	101.227.143.109/cgi-bin/httpconn
-        //	?htcmd=0x6ff0070
-        //	&ver=5603
-        //	&ukey=3B121C959B85035F12497519221FB9E09740E477D3A440D28253E96C95BD72EA1D11B25189894F0256F3E0F3D553FB92925A8834F85583C78D0D9639A3F35C730783D45C065FF9E9E74765183A11492D50750C6BB5DCAD9F171285B68F6A11061CDDA740AD2DCD28D5B2DB2D6440143FA53F1B6F14584DB49E926FDDC4F49907
-        //	&filesize=137791
-        //	&range=0
-        //	&uin=1040400290
-        .connect("http://101.227.143.109/cgi-bin/httpconn" +
-                "?htcmd=0x6ff0070" +
-                "&ver=5603" +
-                "&ukey=" + uKeyHex.replace(" ", "") +
-                "&filezise=" + fileSize +
-                "&range=" + "0" +
-                "&uin=" + botNumber.toLong())
-        //.userAgent("QQClient")
-        .header("Content-Length", fileSize.toString())
-        .requestBody(String(imageData, Charset.forName("ASCII")))
-        .method(Connection.Method.POST)
-        .ignoreContentType(true)
-        .let {
-            withContext(Dispatchers.IO) {
-                it.execute()
-            }
-        };*/
-
-    val conn = URL("http://htdata2.qq.com/cgi-bin/httpconn" +
-            "?htcmd=0x6ff0070" +
-            "&ver=5603" +
-            "&ukey=" + uKeyHex.replace(" ", "") +
-            "&filezise=" + fileSize +
-            "&range=" + "0" +
-            "&uin=" + botNumber.toLong()).openConnection() as HttpURLConnection
-    conn.setRequestProperty("User-Agent", "QQClient")
-    conn.setRequestProperty("Content-Length", imageData.toString())
-    conn.setRequestProperty("Connection", "Keep-Alive")
-    conn.requestMethod = "POST"
-    conn.doOutput = true
-    conn.doInput = true
-    withContext(Dispatchers.IO) {
-        conn.connect()
-    }
-
-    conn.outputStream.writePacket(imageData)
-
-    println(conn.responseMessage)
-    println(conn.responseCode)
-    return conn.responseCode == 200
-}
+): Boolean = Jsoup.connect("http://htdata2.qq.com/cgi-bin/httpconn" +
+        "?htcmd=0x6ff0070" +
+        "&ver=5603" +
+        "&ukey=${uKeyHex}" +
+        "&filezise=${imageData.remaining}" +
+        "&range=0" +
+        "&uin=$botNumber")
+        .postImage(imageData)
 
 /**
  * 上传群图片
  */
-actual suspend fun httpPostGroupImage(uKeyHex: String, fileSize: Long, imageData: ByteReadPacket): Boolean {
-    val conn = URL("http://htdata2.qq.com/cgi-bin/httpconn" +
-            "?htcmd=0x6ff0071" +
-            "&term=pc" +
-            "&ver=5603" +
-            "&ukey=" + uKeyHex.replace(" ", "")).openConnection() as HttpURLConnection
-    conn.setRequestProperty("Content-Length", imageData.remaining.toString())
-    conn.setRequestProperty("Connection", "Keep-Alive")
-    conn.requestMethod = "POST"
-    conn.doOutput = true
-    conn.doInput = true
-    withContext(Dispatchers.IO) {
-        conn.connect()
-    }
+actual suspend fun httpPostGroupImage(
+        bot: UInt,
+        groupNumber: UInt,
+        uKeyHex: String,
+        fileSize: Long,
+        imageData: ByteReadPacket
+): Boolean = Jsoup.connect("http://htdata2.qq.com/cgi-bin/httpconn" +
+        "?htcmd=0x6ff0071" +
+        "&term=pc" +
+        "&ver=5603" +
+        "&filesize=${imageData.remaining}" +
+        "&uin=$bot" +
+        "&groupcode=$groupNumber" +
+        "&range=0" +
+        "&ukey=" + uKeyHex)
+        .postImage(imageData)
 
-    val stream = conn.outputStream
-    stream.writePacket(imageData)
 
-    println(conn.responseMessage)
-    println(conn.responseCode)
-    return conn.responseCode == 200
-}
+private suspend fun Connection.postImage(image: ByteReadPacket): Boolean = this
+        .userAgent("QQClient")
+        .header("Content-Length", image.remaining.toString())
+        .requestBody(String(image.readBytes(), Charsets.ISO_8859_1))
+        .method(Connection.Method.POST)
+        .postDataCharset("ISO_8859_1")
+        .header("Content-type", "image/png")
+        .ignoreContentType(true)
+        .suspendExecute()
+        .statusCode() == 200
 
 private suspend fun Connection.suspendExecute(): Connection.Response = withContext(Dispatchers.IO) {
     execute()

@@ -59,7 +59,7 @@ subscribe<FriendMessageEvent>{
 ![JsssF](.github/J%5DCE%29IK4BU08%28EO~UVLJ%7B%5BF.png)  
 ![](.github/68f8fec9.png)
 
-发送图片已经完成，但我们还在开发上传图片至服务器。  
+上传发送图片已经完成, 您可以在 Demo 中找到发送方式.  
 机器人可以转发图片消息.详情查看 [Image.kt](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/Message.kt#L81)
 
 ## 现已支持
@@ -70,6 +70,7 @@ subscribe<FriendMessageEvent>{
   - 成员权限, 昵称(10/18)
 - 好友在线状态改变(10/14)
 - Android客户端上线/下线(10/18)
+- 上传并发送图片(10/21)
 
 ## 使用方法
 ### 要求

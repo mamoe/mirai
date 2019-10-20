@@ -41,7 +41,7 @@ private object IgnoreIdList : List<String> by listOf(
 )
 
 internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjustName(this::class.simpleName + "(${this.idHexString})") + this::class.java.allDeclaredFields
-        .filterNot { it.name in IgnoreIdList || "delegate" in it.name || "$" in it.name }
+        .filterNot { it.name in IgnoreIdList || /*"delegate" in it.name||*/ "$" in it.name }
         .joinToString(", ", "{", "}") {
             it.isAccessible = true
             it.name + "=" + it.get(this).let { value ->

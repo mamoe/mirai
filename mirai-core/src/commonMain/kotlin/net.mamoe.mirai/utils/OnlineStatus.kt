@@ -23,6 +23,6 @@ enum class OnlineStatus(
 
 
     companion object {
-        fun ofId(id: UByte): OnlineStatus = values().first { it.id == id }
+        fun ofId(id: UByte): OnlineStatus? = values().firstOrNull { it.id == id }
     }
 }

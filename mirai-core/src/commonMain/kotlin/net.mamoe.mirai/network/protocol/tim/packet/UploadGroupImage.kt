@@ -16,9 +16,11 @@ suspend fun Group.uploadImage(
             .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
                 if (it.uKey != null) {
                     httpPostGroupImage(
+                            bot = bot.qqAccount,
+                            groupNumber = groupId,
                             imageData = image.data,
                             fileSize = image.fileSize,
-                            uKeyHex = it.uKey!!.toUHexString()
+                            uKeyHex = it.uKey!!.toUHexString("")
                     )
                 }
             }.await()
@@ -111,7 +113,7 @@ class GroupImageIdRequestPacket(
         // 80 01 00
 
 
-        /*
+/*
         writeQQ(bot)
         writeHex(TIMProtocol.version0x04)
 
@@ -145,8 +147,8 @@ class GroupImageIdRequestPacket(
                     }
                     writeTV(0x38_01u)
                     writeTV(0x48_01u)
-                    writeTUVarint(0x50u, image.imageWidth.toUInt())
-                    writeTUVarint(0x58u, image.imageHeight.toUInt())
+                    writeTUVarint(0x50u, image.width.toUInt())
+                    writeTUVarint(0x58u, image.height.toUInt())
                     writeTV(0x60_02u)
                     writeTByteArray(0x6Au, value0x6A)
                 }
@@ -158,6 +160,7 @@ class GroupImageIdRequestPacket(
 
            // this.debugColorizedPrintThis(compareTo = "00 00 00 07 00 00 00 5D 08 01 12 03 98 01 01 10 01 1A 59 08 FB D2 D8 94 02 10 A2 FF 8C F0 03 18 00 22 10 1D D2 2B 9B BC F2 10 83 DC 99 D2 2E 20 39 CC 0E 28 8A 03 32 1A 5B 00 40 00 33 00 48 00 5F 00 58 00 46 00 51 00 45 00 51 00 40 00 24 00 4F 00 38 01 48 01 50 EF 01 58 C2 01 60 02 6A 05 32 36 39 33 33 70 00 78 03 80 01 00")
         }*/
+
 
         writeQQ(bot)
         writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
@@ -193,9 +196,13 @@ class GroupImageIdRequestPacket(
         override fun decode(): Unit = with(input) {
             discardExact(6)//00 00 00 05 00 00
 
-            //if (readUByte() != UByte.MIN_VALUE) {
-                //服务器还没有
-            discardExact(remaining - 128 - 14)
+            val length = remaining - 128 - 14
+            if (length < 0) {
+                //服务器已经有这个图片了
+                return@with
+            }
+
+            discardExact(length)
             uKey = readBytes(128)
             //} else {
             //    println("服务器已经有了这个图片")

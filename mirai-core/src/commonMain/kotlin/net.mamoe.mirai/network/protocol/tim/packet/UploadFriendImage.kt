@@ -18,7 +18,7 @@ suspend fun QQ.uploadImage(image: BufferedImage): ImageId = with(bot.network.ses
     //SubmitImageFilenamePacket(account, account, "sdiovaoidsa.png", sessionKey).sendAndExpect<ServerSubmitImageFilenameResponsePacket>().join()
     DebugLogger.logPurple("正在上传好友图片, md5=${image.md5.toUHexString()}")
     return FriendImageIdRequestPacket(account, sessionKey, account, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
-        if (it.uKey != null) {
+        if (it.uKey != null)
             require(httpPostFriendImage(
                     uKeyHex = it.uKey!!.toUHexString(""),
                     botNumber = bot.qqAccount,
@@ -26,8 +26,7 @@ suspend fun QQ.uploadImage(image: BufferedImage): ImageId = with(bot.network.ses
                     fileSize = image.fileSize,
                     qq = account
             ))
-            it.imageId!!
-        } else TODO("分析服务器已有图片时的 imageId")
+        it.imageId!!
     }.await()
 }
 
@@ -255,8 +254,8 @@ class FriendImageIdRequestPacket(
     @PacketId(0x0352u)
     @PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ServerSessionPacket(input) {
-        var uKey: ByteArray? = null
-        var imageId: ImageId? = null
+        var uKey: ByteArray? = null//最终可能为null
+        var imageId: ImageId? = null//最终不会为null
 
         override fun decode() = with(input) {
             //00 00 00 08 00 00
@@ -279,13 +278,17 @@ class FriendImageIdRequestPacket(
                 discardExact(1)//52, id
                 imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
 
-                DebugLogger.logPurple("获得 uKey(${uKey!!.size})=${uKey!!.toUHexString()}")
-                DebugLogger.logPurple("获得 imageId(${imageId!!.value.length})=${imageId}")
+                //DebugLogger.logPurple("获得 uKey(${uKey!!.size})=${uKey!!.toUHexString()}")
+                //DebugLogger.logPurple("获得 imageId(${imageId!!.value.length})=${imageId}")
             } else {
                 //服务器已经有这个图片了
-                DebugLogger.logPurple("服务器已有好友图片 ")
-                println("获取图片 repsonse 后文=" + readRemainingBytes().toUHexString())
-                TODO("分析后文获取 imageId")
+                //DebugLogger.logPurple("服务器已有好友图片 ")
+                //89 12 06 98 01 01 A0 01 00 08 01 12 82 01 08 00 10 AB A7 89 D8 02 18 00 28 01 32 20 0A 10 5A 39 37 10 EA D5 B5 57 A8 04 14 70 CE 90 67 14 10 67 18 8A 94 17 20 ED 03 28 97 04 30 0A 52 25 2F 39 38 31 65 61 31 64 65 2D 62 32 31 33 2D 34 31 61 39 2D 38 38 37 65 2D 32 38 37 39 39 66 31 39 36 37 35 65 5A 25 2F 39 38 31 65 61 31 64 65 2D 62 32 31 33 2D 34 31 61 39 2D 38 38 37 65 2D 32 38 37 39 39 66 31 39 36 37 35 65 60 00 68 80 80 08 20 01
+
+                discardExact(60)
+
+                discardExact(1)//52, id
+                imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
             }
         }
     }
