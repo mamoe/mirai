@@ -72,7 +72,7 @@ private suspend fun Connection.postImage(image: ByteReadPacket): Boolean = this
         .requestBody(String(image.readBytes(), Charsets.ISO_8859_1))
         .method(Connection.Method.POST)
         .postDataCharset("ISO_8859_1")
-        .header("Content-type", "image/png")
+        .header("Content-type", "image/gif")
         .ignoreContentType(true)
         .suspendExecute()
         .statusCode() == 200

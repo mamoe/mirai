@@ -10,7 +10,7 @@ import java.security.MessageDigest
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage as JavaBufferedImage
 
-fun JavaBufferedImage.toMiraiImage(formatName: String = "png"): BufferedImage {
+fun JavaBufferedImage.toMiraiImage(formatName: String = "gif"): BufferedImage {
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
 
