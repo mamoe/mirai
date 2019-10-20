@@ -16,8 +16,10 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendFriendMessag
 import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendGroupMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendGroupMessageResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.event.*
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.network.protocol.tim.packet.event.IgnoredServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerFriendMessageEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerGroupMessageEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerGroupUploadFileEventPacket
 
 /**
  * 处理消息事件, 承担消息发送任务.
@@ -60,17 +62,6 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
 
             is ServerFriendOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
             is ServerFriendOnlineStatusChangedPacket -> {
-                MiraiLogger.logInfo("${packet.qq.toLong()} 登录状态改变为 ${packet.status}")
-                //TODO
-            }
-
-            is ServerFriendTypingStartedPacket -> {
-                MiraiLogger.logInfo("${packet.qq.toLong()} 正在输入")
-                //TODO
-            }
-
-            is ServerFriendTypingCanceledPacket -> {
-                MiraiLogger.logInfo("${packet.qq.toLong()} 取消了输入")
                 //TODO
             }
 
