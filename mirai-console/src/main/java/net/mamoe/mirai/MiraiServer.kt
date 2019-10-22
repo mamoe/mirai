@@ -4,7 +4,6 @@ package net.mamoe.mirai
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.LoggerTextFormat
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.config.MiraiConfig

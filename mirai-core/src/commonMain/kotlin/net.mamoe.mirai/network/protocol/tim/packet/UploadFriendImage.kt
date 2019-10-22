@@ -5,11 +5,12 @@ package net.mamoe.mirai.network.protocol.tim.packet
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.ImageId
-import net.mamoe.mirai.network.account
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.*
 
 /**
  * 上传图片
@@ -17,14 +18,14 @@ import net.mamoe.mirai.utils.*
 suspend fun QQ.uploadImage(image: BufferedImage): ImageId = with(bot.network.session) {
     //SubmitImageFilenamePacket(account, account, "sdiovaoidsa.png", sessionKey).sendAndExpect<ServerSubmitImageFilenameResponsePacket>().join()
     DebugLogger.logPurple("正在上传好友图片, md5=${image.md5.toUHexString()}")
-    return FriendImageIdRequestPacket(account, sessionKey, account, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
+    return FriendImageIdRequestPacket(this.qqAccount, sessionKey, this.qqAccount, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
         if (it.uKey != null)
             require(httpPostFriendImage(
                     uKeyHex = it.uKey!!.toUHexString(""),
                     botNumber = bot.qqAccount,
                     imageData = image.data,
                     fileSize = image.fileSize,
-                    qq = account
+                    qq = this.qqAccount
             ))
         it.imageId!!
     }.await()
@@ -49,7 +50,7 @@ class SubmitImageFilenamePacket(
         private val target: UInt,
         private val filename: String,
         private val sessionKey: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer2)//?
@@ -80,7 +81,7 @@ class SubmitImageFilenamePacket(
 
     @PacketId(0x01_BDu)
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
-    class Response(input: ByteReadPacket) : ServerSessionPacket(input) {
+    class Response(input: ByteReadPacket) : ResponsePacket(input) {
         override fun decode() = with(input) {
             require(readBytes().contentEquals(expecting))
         }
@@ -105,7 +106,7 @@ class FriendImageIdRequestPacket(
         private val sessionKey: ByteArray,
         private val target: UInt,
         private val image: BufferedImage
-) : ClientPacket() {
+) : OutgoingPacket() {
 
     //00 00 00 07 00 00 00 4B 08 01 12 03 98 01 01 08 01 12 47 08 A2 FF 8C F0 03 10 89 FC A6 8C 0B 18 00 22 10 2B 23 D7 05 CA D1 F2 CF 37 10 FE 58 26 92 FC C4 28 FD 08 32 1A 7B 00 47 00 47 00 42 00 7E 00 49 00 31 00 5A 00 4D 00 43 00 28 00 25 00 49 00 38 01 48 00 70 42 78 42
 
@@ -253,7 +254,7 @@ class FriendImageIdRequestPacket(
 
     @PacketId(0x0352u)
     @PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
-    class Response(input: ByteReadPacket) : ServerSessionPacket(input) {
+    class Response(input: ByteReadPacket) : ResponsePacket(input) {
         var uKey: ByteArray? = null//最终可能为null
         var imageId: ImageId? = null//最终不会为null
 

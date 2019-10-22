@@ -1,4 +1,4 @@
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.io.toUHexString
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 

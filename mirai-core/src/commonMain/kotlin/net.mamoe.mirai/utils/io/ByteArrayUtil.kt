@@ -1,6 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets

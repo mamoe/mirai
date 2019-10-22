@@ -5,18 +5,23 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Tested
+import net.mamoe.mirai.utils.encryptAndWrite
+import net.mamoe.mirai.utils.io.readIoBuffer
+import net.mamoe.mirai.utils.io.toReadPacket
+import net.mamoe.mirai.utils.writeHex
+import net.mamoe.mirai.utils.writeQQ
 
 /**
  * 客户端请求验证码图片数据的第几部分
  */
 @PacketId(0x00_BAu)
-class ClientCaptchaTransmissionRequestPacket(
+class OutgoingCaptchaTransmissionRequestPacket(
         private val qq: UInt,
         private val token0825: ByteArray,
         private val verificationSequence: Int,
         private val token00BA: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     @Tested
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
@@ -43,12 +48,12 @@ class ClientCaptchaTransmissionRequestPacket(
  * 提交验证码
  */
 @PacketId(0x00_BAu)
-class ClientCaptchaSubmitPacket(
+class OutgoingCaptchaSubmitPacket(
         private val qq: UInt,
         private val token0825: ByteArray,
         private val captcha: String,
         private val verificationToken: IoBuffer
-) : ClientPacket() {
+) : OutgoingPacket() {
     init {
         require(captcha.length == 4) { "captcha.length must == 4" }
     }
@@ -82,10 +87,10 @@ class ClientCaptchaSubmitPacket(
  * 刷新验证码
  */
 @PacketId(0x00_BAu)
-class ClientCaptchaRefreshPacket(
+class OutgoingCaptchaRefreshPacket(
         private val qq: UInt,
         private val token0825: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer)

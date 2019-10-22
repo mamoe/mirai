@@ -6,7 +6,7 @@ package net.mamoe.mirai.utils
  * QQ 在线状态
  *
  * @author Him188moe
- * @see net.mamoe.mirai.network.protocol.tim.packet.login.ClientChangeOnlineStatusPacket
+ * @see net.mamoe.mirai.network.protocol.tim.packet.login.ChangeOnlineStatusPacket
  */
 enum class OnlineStatus(
         val id: UByte//1 ubyte

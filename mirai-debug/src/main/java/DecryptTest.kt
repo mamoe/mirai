@@ -1,6 +1,6 @@
 import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.stringOfWitch
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.io.stringOfWitch
+import net.mamoe.mirai.utils.io.toUHexString
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*

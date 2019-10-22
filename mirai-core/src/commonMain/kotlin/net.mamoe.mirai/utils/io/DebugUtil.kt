@@ -1,6 +1,10 @@
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.PlatformLogger
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toIoBuffer
 
 
 internal object DebugLogger : MiraiLogger by PlatformLogger("Packet Debug")

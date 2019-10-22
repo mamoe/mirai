@@ -6,6 +6,13 @@ import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
 import kotlin.reflect.KClass
 
+/*
+ * 该文件为所有的订阅事件的方法.
+ */
+
+/**
+ * 订阅者的状态
+ */
 enum class ListeningStatus {
     LISTENING,
     STOPPED

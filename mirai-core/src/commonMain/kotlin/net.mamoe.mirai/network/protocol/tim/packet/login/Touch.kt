@@ -9,12 +9,13 @@ import kotlinx.io.core.readBytes
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.readIP
 
 /**
  * The packet received when logging in, used to redirect server address
  *
- * @see ClientTouchRedirectionPacket
- * @see ClientPasswordSubmissionPacket
+ * @see OutgoingTouchRedirectionPacket
+ * @see OutgoingPasswordSubmissionPacket
  *
  * @author Him188moe
  */
@@ -60,7 +61,7 @@ class ServerTouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class ClientTouchPacket(private val bot: UInt, private val serverIp: String) : ClientPacket() {
+class OutgoingTouchPacket(private val bot: UInt, private val serverIp: String) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer)
@@ -84,7 +85,7 @@ class ClientTouchPacket(private val bot: UInt, private val serverIp: String) : C
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class ClientTouchRedirectionPacket(private val serverIP: String, private val qq: UInt) : ClientPacket() {
+class OutgoingTouchRedirectionPacket(private val serverIP: String, private val qq: UInt) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer)

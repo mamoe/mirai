@@ -8,9 +8,9 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.writeHex
 
 /**
- * 发给服务器的数据包. 必须有 [PacketId] 注解或 `override` [packetId]. 否则将会抛出 [IllegalStateException]
+ * 发给服务器的数据包. 必须有 [PacketId] 注解或 `override` [id]. 否则将会抛出 [IllegalStateException]
  */
-abstract class ClientPacket : Packet(), Closeable {
+abstract class OutgoingPacket : Packet(), Closeable {
     /**
      * Encode this packet.
      *
@@ -53,7 +53,7 @@ abstract class ClientPacket : Packet(), Closeable {
     override fun close() = if (this.packet === UninitializedByteReadPacket) Unit else this.packet.close()
 
     private fun BytePacketBuilder.writePacketId() {
-        writeUShort(this@ClientPacket.id)
+        writeUShort(this@OutgoingPacket.id)
         writeUShort(sequenceId)
     }
 }

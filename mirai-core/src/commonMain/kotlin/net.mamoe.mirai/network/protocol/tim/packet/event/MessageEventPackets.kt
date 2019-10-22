@@ -7,7 +7,7 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.readMessageChain
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.*
 import kotlin.properties.Delegates
 
 

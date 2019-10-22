@@ -1,6 +1,6 @@
 @file:Suppress("ObjectPropertyName", "unused", "NonAsciiCharacters", "MayBeConstant")
 
-import net.mamoe.mirai.utils.printCompareHex
+import net.mamoe.mirai.utils.io.printCompareHex
 import java.util.*
 
 

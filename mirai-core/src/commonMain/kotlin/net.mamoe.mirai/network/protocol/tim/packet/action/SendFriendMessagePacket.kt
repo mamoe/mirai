@@ -8,26 +8,26 @@ import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.message.toChain
 import net.mamoe.mirai.message.toMessage
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.toUHexString
 
 fun main() {
     println("牛逼".toMessage().toChain().toPacket(true).readBytes().toUHexString())
 }
 
 @PacketId(0x00_CDu)
-class ClientSendFriendMessagePacket(
+@PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
+class SendFriendMessagePacket(
         private val botQQ: UInt,
         private val targetQQ: UInt,
         private val sessionKey: ByteArray,
         private val message: MessageChain
-) : ClientPacket() {
+) : OutgoingPacket() {
 
-
-    @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(botQQ)
         writeHex(TIMProtocol.version0x02)
@@ -124,7 +124,7 @@ class ClientSendFriendMessagePacket(
                 it.write(bytes)*/
         }
     }
-}
 
-@PacketId(0x00_CDu)
-class ServerSendFriendMessageResponsePacket(input: ByteReadPacket) : ServerPacket(input)
+    @PacketId(0x00_CDu)
+    class Response(input: ByteReadPacket) : ResponsePacket(input)
+}

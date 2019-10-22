@@ -4,6 +4,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.writeFully
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.jvm.Synchronized
 import kotlin.random.Random
 import kotlin.random.nextInt

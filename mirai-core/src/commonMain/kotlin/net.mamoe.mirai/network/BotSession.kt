@@ -9,7 +9,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.getGTK
 import kotlin.coroutines.coroutineContext
@@ -24,7 +24,7 @@ class BotSession(
         val bot: Bot,
         val sessionKey: ByteArray,//TODO 协议抽象? 可能并不是所有协议均需要 sessionKey
         val socket: DataPacketSocketAdapter,
-        val scope: CoroutineScope
+        val NetworkScope: CoroutineScope
 ) {
 
     /**
@@ -65,7 +65,7 @@ class BotSession(
      * @param P 期待的包
      * @param handler 处理期待的包
      */
-    suspend inline fun <reified P : ServerPacket, R> ClientPacket.sendAndExpect(noinline handler: suspend (P) -> R): CompletableDeferred<R> {
+    suspend inline fun <reified P : ServerPacket, R> OutgoingPacket.sendAndExpect(noinline handler: suspend (P) -> R): CompletableDeferred<R> {
         val deferred: CompletableDeferred<R> = coroutineContext[Job].takeIf { it != null }?.let { CompletableDeferred<R>(it) } ?: CompletableDeferred()
         bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession).also {
             it.toSend(this)
@@ -74,14 +74,14 @@ class BotSession(
         return deferred
     }
 
-    suspend inline fun <reified P : ServerPacket> ClientPacket.sendAndExpect(): CompletableDeferred<Unit> = sendAndExpect<P, Unit> {}
+    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(): CompletableDeferred<Unit> = sendAndExpect<P, Unit> {}
 
-    suspend inline fun ClientPacket.send() = socket.sendPacket(this)
+    suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
 }
 
 
 suspend fun BotSession.distributePacket(packet: ServerPacket) = this.socket.distributePacket(packet)
 val BotSession.isOpen: Boolean get() = socket.isOpen
-val BotSession.account: UInt get() = bot.account.account
+val BotSession.qqAccount: UInt get() = bot.account.account
 
 val <T : BotNetworkHandler<*>> T.session get() = this[ActionPacketHandler].session

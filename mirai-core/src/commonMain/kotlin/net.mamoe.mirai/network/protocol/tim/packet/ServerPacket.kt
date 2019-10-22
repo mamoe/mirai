@@ -6,14 +6,19 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.io.cutTail
+import net.mamoe.mirai.utils.io.parseServerPacket
+import net.mamoe.mirai.utils.io.readRemainingBytes
+import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.properties.Delegates
 
 
 /**
  * 来自服务器的数据包
  *
- * @see parseServerPacket
+ * @see parseServerPacket 解析包种类
  */
 abstract class ServerPacket(val input: ByteReadPacket) : Packet(), Closeable {
     override val id: UShort by lazy { super.id }

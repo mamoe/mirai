@@ -4,7 +4,7 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.io.toUHexString
 import java.lang.reflect.Field
 
 internal object PacketNameFormatter {

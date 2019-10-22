@@ -16,14 +16,16 @@ import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.parseServerPacket
+import net.mamoe.mirai.utils.io.toUHexString
 
 /**
  * [BotNetworkHandler] 的 TIM PC 协议实现
@@ -100,7 +102,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         this.socket.close()
     }
 
-    override suspend fun sendPacket(packet: ClientPacket) = socket.sendPacket(packet)
+    override suspend fun sendPacket(packet: OutgoingPacket) = socket.sendPacket(packet)
 
     internal inner class BotSocketAdapter(override val serverIp: String, val configuration: BotNetworkConfiguration) : DataPacketSocketAdapter {
         override val channel: PlatformDatagramChannel = PlatformDatagramChannel(serverIp, 8000)
@@ -154,7 +156,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     loginResult.complete(LoginResult.TIMEOUT)
                 }
             }
-            sendPacket(ClientTouchPacket(bot.qqAccount, this.serverIp))
+            sendPacket(OutgoingTouchPacket(bot.qqAccount, this.serverIp))
 
             return loginResult.await()
         }
@@ -188,7 +190,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
 
                 handlersLock.withLock {
-                    temporaryPacketHandlers.removeIfInlined {
+                    temporaryPacketHandlers.inlinedRemoveIf {
                         it.shouldRemove(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)
                     }
                 }
@@ -229,7 +231,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
         }*/
 
-        override suspend fun sendPacket(packet: ClientPacket) = withContext(NetworkScope.coroutineContext) {
+        override suspend fun sendPacket(packet: OutgoingPacket) = withContext(NetworkScope.coroutineContext) {
             check(channel.isOpen) { "channel is not open" }
 
             if (BeforePacketSendEvent(bot, packet).broadcast().cancelled) {
@@ -305,7 +307,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                         this.loginTime = packet.loginTime
                         this.token0825 = packet.token0825
 
-                        socket.sendPacket(ClientPasswordSubmissionPacket(
+                        socket.sendPacket(OutgoingPasswordSubmissionPacket(
                                 bot = bot.qqAccount,
                                 password = bot.account.password,
                                 loginTime = loginTime,
@@ -327,7 +329,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     this.privateKey = getRandomByteArray(16)//似乎是必须的
                     this.token00BA = packet.token00BA
 
-                    socket.sendPacket(ClientPasswordSubmissionPacket(
+                    socket.sendPacket(OutgoingPasswordSubmissionPacket(
                             bot = bot.qqAccount,
                             password = bot.account.password,
                             loginTime = loginTime,
@@ -346,7 +348,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                     if (packet.unknownBoolean) {
                         this.captchaSectionId = 1
-                        socket.sendPacket(ClientCaptchaTransmissionRequestPacket(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
+                        socket.sendPacket(OutgoingCaptchaTransmissionRequestPacket(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
                     }
                 }
 
@@ -367,26 +369,26 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                         this.captchaCache = null
                         if (code == null) {
                             this.captchaSectionId = 1//意味着正在刷新验证码
-                            socket.sendPacket(ClientCaptchaRefreshPacket(bot.qqAccount, token0825))
+                            socket.sendPacket(OutgoingCaptchaRefreshPacket(bot.qqAccount, token0825))
                         } else {
                             this.captchaSectionId = 0//意味着已经提交验证码
-                            socket.sendPacket(ClientCaptchaSubmitPacket(bot.qqAccount, token0825, code, packet.verificationToken))
+                            socket.sendPacket(OutgoingCaptchaSubmitPacket(bot.qqAccount, token0825, code, packet.verificationToken))
                         }
                     } else {
-                        socket.sendPacket(ClientCaptchaTransmissionRequestPacket(bot.qqAccount, token0825, captchaSectionId++, packet.token00BA))
+                        socket.sendPacket(OutgoingCaptchaTransmissionRequestPacket(bot.qqAccount, token0825, captchaSectionId++, packet.token00BA))
                     }
                 }
 
                 is ServerLoginResponseSuccessPacket -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-                    socket.sendPacket(ClientSessionRequestPacket(bot.qqAccount, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey))
+                    socket.sendPacket(OutgoingSessionRequestPacket(bot.qqAccount, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey))
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的可能之一
                 is ServerLoginResponseKeyExchangePacket -> {
                     this.privateKey = packet.privateKeyUpdate
 
-                    socket.sendPacket(ClientPasswordSubmissionPacket(
+                    socket.sendPacket(OutgoingPasswordSubmissionPacket(
                             bot = bot.qqAccount,
                             password = bot.account.password,
                             loginTime = loginTime,
@@ -449,7 +451,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
         @Suppress("MemberVisibilityCanBePrivate")
         suspend fun setOnlineStatus(status: OnlineStatus) {
-            socket.sendPacket(ClientChangeOnlineStatusPacket(bot.qqAccount, sessionKey, status))
+            socket.sendPacket(ChangeOnlineStatusPacket(bot.qqAccount, sessionKey, status))
         }
 
         fun close() {

@@ -16,10 +16,10 @@ import net.mamoe.mirai.utils.writeQQ
  * @author Him188moe
  */
 @PacketId(0x00_5Cu)
-class ClientAccountInfoRequestPacket(
+class RequestAccountInfoPacket(
         private val qq: UInt,
         private val sessionKey: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
         this.writeHex(TIMProtocol.fixVer2)
@@ -29,19 +29,11 @@ class ClientAccountInfoRequestPacket(
             writeByte(0x00)
         }
     }
-}
-
-@PacketId(0x00_5Cu)
-class ServerAccountInfoResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
-    //等级
-    //升级剩余活跃天数
-    //ignored
-    override fun decode() {
-
-    }
 
     @PacketId(0x00_5Cu)
-    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(sessionKey: ByteArray): ServerAccountInfoResponsePacket = ServerAccountInfoResponsePacket(this.decryptBy(sessionKey)).applySequence(sequenceId)
+    class Response(input: ByteReadPacket) : ResponsePacket(input) {
+        //等级
+        //升级剩余活跃天数
+        //ignored
     }
 }

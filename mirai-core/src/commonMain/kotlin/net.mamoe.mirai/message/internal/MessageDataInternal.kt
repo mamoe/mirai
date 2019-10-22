@@ -4,7 +4,11 @@ package net.mamoe.mirai.message.internal
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.writeHex
+import net.mamoe.mirai.utils.writeShortLVPacket
+import net.mamoe.mirai.utils.writeShortLVString
 
 internal fun IoBuffer.parseMessageFace(): Face {
     //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0

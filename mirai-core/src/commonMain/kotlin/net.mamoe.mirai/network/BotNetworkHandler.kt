@@ -6,11 +6,10 @@ import kotlinx.coroutines.cancelChildren
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.login.ClientSKeyRefreshmentRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.PlatformDatagramChannel
@@ -22,7 +21,7 @@ import kotlin.coroutines.ContinuationInterceptor
  *
  * [BotNetworkHandler] 由 2 个模块构成:
  * - [BotSocketAdapter]: 处理数据包底层的发送([ByteArray])
- * - [PacketHandler]: 制作 [ClientPacket] 并传递给 [BotSocketAdapter] 发送; 分析 [ServerPacket] 并处理
+ * - [PacketHandler]: 制作 [OutgoingPacket] 并传递给 [BotSocketAdapter] 发送; 分析 [ServerPacket] 并处理
  *
  * 其中, [PacketHandler] 由 3 个子模块构成:
  * - [LoginHandler] 处理 sendTouch/login/verification code 相关
@@ -40,7 +39,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> {
      * [BotNetworkHandler] 的协程包含:
      * - UDP 包接收: [PlatformDatagramChannel.read]
      * - 心跳 Job [HeartbeatPacket]
-     * - SKey 刷新 [ClientSKeyRefreshmentRequestPacket]
+     * - SKey 刷新 [RefreshSKeyRequestPacket]
      * - 所有数据包处理和发送
      *
      * [BotNetworkHandler.close] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
@@ -75,7 +74,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> {
     /**
      * 发送数据包
      */
-    suspend fun sendPacket(packet: ClientPacket)
+    suspend fun sendPacket(packet: OutgoingPacket)
 
     fun close(cause: Throwable? = null) {
         //todo check??

@@ -7,6 +7,8 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.toUHexString
 
 
 suspend fun Group.uploadImage(
@@ -36,7 +38,7 @@ class GroupImageIdRequestPacket(
         private val groupId: UInt,
         private val image: BufferedImage,
         private val sessionKey: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
 
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         //未知图片A
@@ -235,7 +237,7 @@ class GroupImageIdRequestPacket(
 
     @PacketId(0x0388u)
     @PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
-    class Response(input: ByteReadPacket) : ServerSessionPacket(input) {
+    class Response(input: ByteReadPacket) : ResponsePacket(input) {
         var uKey: ByteArray? = null
 
         override fun decode(): Unit = with(input) {

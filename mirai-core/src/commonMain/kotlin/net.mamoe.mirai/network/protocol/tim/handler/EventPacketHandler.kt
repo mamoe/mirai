@@ -12,10 +12,8 @@ import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.distributePacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerFriendOnlineStatusChangedPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendFriendMessagePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ClientSendGroupMessagePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.SendFriendMessagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.SendGroupMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.IgnoredServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerFriendMessageEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerGroupMessageEventPacket
@@ -55,11 +53,6 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
                 ).broadcast()
             }
 
-            is ServerSendFriendMessageResponsePacket,
-            is ServerSendGroupMessageResponsePacket -> {
-                //ignored
-            }
-
             is ServerFriendOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
             is ServerFriendOnlineStatusChangedPacket -> {
                 //TODO
@@ -75,10 +68,10 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
     }
 
     suspend fun sendFriendMessage(qq: QQ, message: MessageChain) {
-        session.socket.sendPacket(ClientSendFriendMessagePacket(session.bot.account.account, qq.number, session.sessionKey, message))
+        session.socket.sendPacket(SendFriendMessagePacket(session.bot.account.account, qq.number, session.sessionKey, message))
     }
 
     suspend fun sendGroupMessage(group: Group, message: MessageChain) {
-        session.socket.sendPacket(ClientSendGroupMessagePacket(session.bot.account.account, group.groupId, session.sessionKey, message))
+        session.socket.sendPacket(SendGroupMessagePacket(session.bot.account.account, group.groupId, session.sessionKey, message))
     }
 }

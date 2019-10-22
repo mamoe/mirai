@@ -6,15 +6,16 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.readIoBuffer
 
 @PacketId(0x08_28u)
-class ClientSessionRequestPacket(
+class OutgoingSessionRequestPacket(
         private val bot: UInt,
         private val serverIp: String,
         private val token38: IoBuffer,
         private val token88: IoBuffer,
         private val encryptionKey: IoBuffer
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(bot)
         this.writeHex("02 00 00 00 01 2E 01 00 00 68 52 00 30 00 3A")

@@ -1,8 +1,9 @@
 @file:Suppress("ObjectPropertyName", "MayBeConstant", "NonAsciiCharacters", "SpellCheckingInspection")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.utils.toUHexString
 import java.lang.reflect.Field
 import java.util.*
 import kotlin.math.max

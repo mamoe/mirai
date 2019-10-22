@@ -11,8 +11,16 @@ import net.mamoe.mirai.contact.groupIdToNumber
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.ContactList
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.log
 import kotlin.jvm.JvmOverloads
+
+data class BotAccount(
+        val account: UInt,
+        val password: String//todo 不保存 password?
+)
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.

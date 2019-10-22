@@ -6,7 +6,7 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.utils.*
 
@@ -15,7 +15,7 @@ import net.mamoe.mirai.utils.*
  * 提交密码
  */
 @PacketId(0x08_36u)
-class ClientPasswordSubmissionPacket constructor(
+class OutgoingPasswordSubmissionPacket constructor(
         private val bot: UInt,
         private val password: String,
         private val loginTime: Int,
@@ -25,7 +25,7 @@ class ClientPasswordSubmissionPacket constructor(
         private val token00BA: ByteArray? = null,
         private val randomDeviceName: Boolean = false,
         private val tlv0006: IoBuffer? = null
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(bot)
         writeHex(TIMProtocol.passwordSubmissionTLV1)

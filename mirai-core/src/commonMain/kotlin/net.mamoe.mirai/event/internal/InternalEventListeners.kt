@@ -4,7 +4,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.utils.removeIfInlined
+import net.mamoe.mirai.utils.inlinedRemoveIf
 import kotlin.reflect.KClass
 
 /**
@@ -59,7 +59,7 @@ internal object EventListenerManger {
 internal suspend fun <E : Event> E.broadcastInternal(): E {
     suspend fun callListeners(listeners: EventListeners<in E>) = listeners.lock.withLock {
         //fixme 这个锁会导致在事件处理时再监听这个事件死锁
-        listeners.removeIfInlined { it.onEvent(this) == ListeningStatus.STOPPED }
+        listeners.inlinedRemoveIf { it.onEvent(this) == ListeningStatus.STOPPED }
     }
 
     callListeners(this::class.listeners as EventListeners<in E>)

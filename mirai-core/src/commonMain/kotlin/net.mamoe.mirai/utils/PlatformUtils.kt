@@ -4,6 +4,7 @@ package net.mamoe.mirai.utils
 
 import com.soywiz.klock.DateTime
 import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.utils.io.printStringFromHex
 
 /**
  * 时间戳

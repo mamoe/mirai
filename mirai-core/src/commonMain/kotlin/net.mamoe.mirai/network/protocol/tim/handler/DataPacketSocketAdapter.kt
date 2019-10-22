@@ -5,7 +5,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.PlatformDatagramChannel
 
@@ -43,7 +43,7 @@ interface DataPacketSocketAdapter : Closeable {
      *
      * @see [BotSession.sendAndExpect] kotlin DSL
      */
-    suspend fun sendPacket(packet: ClientPacket)
+    suspend fun sendPacket(packet: OutgoingPacket)
 
     override fun close()
 }

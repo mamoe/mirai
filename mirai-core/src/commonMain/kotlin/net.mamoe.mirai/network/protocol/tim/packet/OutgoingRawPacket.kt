@@ -7,13 +7,13 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.utils.encryptAndWrite
 import net.mamoe.mirai.utils.writeQQ
 
-class ClientRawPacket(
+class OutgoingRawPacket(
         override val id: UShort,
         private val bot: UInt,
         private val version: ByteArray,
         private val sessionKey: ByteArray,
         private val data: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(bot)
         writeFully(version)

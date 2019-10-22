@@ -13,7 +13,7 @@ import net.mamoe.mirai.utils.writeQQ
 class HeartbeatPacket(
         private val bot: UInt,
         private val sessionKey: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer)
@@ -23,5 +23,5 @@ class HeartbeatPacket(
     }
 
     @PacketId(0x00_58u)
-    class Response(input: ByteReadPacket) : ServerSessionPacket(input)
+    class Response(input: ByteReadPacket) : ResponsePacket(input)
 }

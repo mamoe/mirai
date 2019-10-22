@@ -5,12 +5,12 @@ package net.mamoe.mirai
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.ContactList
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.io.toUHexString
 
 /**
  * The mirror of functions in inner classes of [Bot]
@@ -32,7 +32,7 @@ val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 
 
 //NetworkHandler
-suspend fun Bot.sendPacket(packet: ClientPacket) = this.network.sendPacket(packet)
+suspend fun Bot.sendPacket(packet: OutgoingPacket) = this.network.sendPacket(packet)
 
 suspend fun Bot.login(configuration: BotNetworkConfiguration.() -> Unit): LoginResult = this.network.login(BotNetworkConfiguration().apply(configuration))
 

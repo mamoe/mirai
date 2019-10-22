@@ -4,11 +4,14 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.applySequence
 import net.mamoe.mirai.network.protocol.tim.packet.decryptBy
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.readBoolean
+import net.mamoe.mirai.utils.io.readIoBuffer
+import net.mamoe.mirai.utils.io.toUHexString
 
 /**
  * 事件的识别 ID. 在 [事件确认包][ServerEventPacket.ResponsePacket] 中被使用.
@@ -103,7 +106,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
     inner class ResponsePacket(
             val bot: UInt,
             val sessionKey: ByteArray
-    ) : ClientPacket() {
+    ) : OutgoingPacket() {
         override val id: UShort get() = this@ServerEventPacket.id
         override val sequenceId: UShort get() = this@ServerEventPacket.sequenceId
 

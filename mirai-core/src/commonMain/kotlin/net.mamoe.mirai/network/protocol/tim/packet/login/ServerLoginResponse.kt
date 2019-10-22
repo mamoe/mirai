@@ -5,7 +5,11 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Tested
+import net.mamoe.mirai.utils.io.readBoolean
+import net.mamoe.mirai.utils.io.readIoBuffer
+import net.mamoe.mirai.utils.io.readString
+import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.properties.Delegates
 
 @PacketId(0x08_36u)

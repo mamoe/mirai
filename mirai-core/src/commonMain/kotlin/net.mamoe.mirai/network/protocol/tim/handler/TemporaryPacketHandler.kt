@@ -2,7 +2,7 @@ package net.mamoe.mirai.network.protocol.tim.handler
 
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import kotlin.reflect.KClass
 
@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  * 临时数据包处理器
  * ```kotlin
  * session.addHandler<ClientTouchResponsePacket>{
- *   toSend { ClientTouchPacket() }
+ *   toSend { OutgoingTouchPacket() }
  *   onExpect {//it: ClientTouchResponsePacket
  *      //do sth.
  *   }
@@ -24,14 +24,14 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
         private val deferred: CompletableDeferred<R>,
         private val fromSession: BotSession
 ) {
-    private lateinit var toSend: ClientPacket
+    private lateinit var toSend: OutgoingPacket
 
     private lateinit var handler: suspend (P) -> R
 
     lateinit var session: BotSession//无需覆盖
 
 
-    fun toSend(packet: ClientPacket) {
+    fun toSend(packet: OutgoingPacket) {
         this.toSend = packet
     }
 

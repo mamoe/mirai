@@ -1,15 +1,17 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.SendFriendMessagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.SendGroupMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.decryptBy
 
 
 fun ByteReadPacket.readRemainingBytes(
@@ -71,19 +73,19 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         0x08_28u -> ServerSessionKeyResponsePacket.Encrypted(this)
 
         0x00_ECu -> ServerLoginSuccessPacket(this)
-        0x00_1Du -> ServerSKeyResponsePacket.Encrypted(this)
-        0x00_5Cu -> ServerAccountInfoResponsePacket.Encrypted(this)
         0x00_BAu -> ServerCaptchaPacket.Encrypted(this)
         0x00_CEu, 0x00_17u -> ServerEventPacket.Raw.Encrypted(this, id, sequenceId)
         0x00_81u -> ServerFriendOnlineStatusChangedPacket.Encrypted(this)
-        0x00_CDu -> ServerSendFriendMessageResponsePacket(this)
-        0x00_02u -> ServerSendGroupMessageResponsePacket(this)
-        0x00_A7u -> ServerCanAddFriendResponsePacket(this)
 
-        0x00_58u -> ServerSessionPacket.Encrypted<HeartbeatPacket.Response>(this)
-        0x03_88u -> ServerSessionPacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
-        0x03_52u -> ServerSessionPacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
-        0x01_BDu -> ServerSessionPacket.Encrypted<SubmitImageFilenamePacket.Response>(this)
+        0x00_1Du -> ResponsePacket.Encrypted<RequestSKeyPacket.Response>(this)
+        0X00_5Cu -> ResponsePacket.Encrypted<RequestAccountInfoPacket.Response>(this)
+        0x00_02u -> ResponsePacket.Encrypted<SendGroupMessagePacket.Response>(this)
+        0x00_CDu -> ResponsePacket.Encrypted<SendFriendMessagePacket.Response>(this)
+        0x00_A7u -> ResponsePacket.Encrypted<CanAddFriendPacket.Response>(this)
+        0x00_58u -> ResponsePacket.Encrypted<HeartbeatPacket.Response>(this)
+        0x03_88u -> ResponsePacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
+        0x03_52u -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
+        0x01_BDu -> ResponsePacket.Encrypted<SubmitImageFilenamePacket.Response>(this)
 
         else -> UnknownServerPacket.Encrypted(this, id, sequenceId)
     }.applySequence(sequenceId)
