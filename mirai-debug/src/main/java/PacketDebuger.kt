@@ -73,7 +73,7 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "F1 ED F2 BC 55 17 7B FE CC CC F3 08 D1 8D A7 0E".hexToBytes()
+    val sessionKey: ByteArray = "B7 E2 A6 3D 90 4F 4F 74 7D 55 9C 0E 91 20 40 A5".hexToBytes()
     val qq: UInt = 1040400290u
 
     fun dataReceived(data: ByteArray) {
@@ -155,7 +155,8 @@ object Main {
         println("fixVer2=" + when (val flag = readByte().toInt()) {
             2 -> byteArrayOf(2) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1)
             4 -> byteArrayOf(4) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1 + 8)//8个0
-            else -> error("unknown fixVer2 flag=$flag")
+            0 -> byteArrayOf(0) + readBytes(2)
+            else -> error("unknown fixVer2 flag=$flag. Remaining =${readBytes().toUHexString()}")
         }.toUHexString())
 
         //39 27 DC E2 04 00 00 00 00 00 00 00 1E 0E 89 00 00 01 05 0F 05 0F 00 00 00 00 00 00 00 00 00 00 00 00 00 3E 03 3F A2 00 00 00 00 00 00 00 00 00 00 00

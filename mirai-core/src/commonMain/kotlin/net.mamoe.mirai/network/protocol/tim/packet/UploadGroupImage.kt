@@ -113,22 +113,45 @@ class GroupImageIdRequestPacket(
         // 80 01 00
 
 
-/*
+        //00 00 00 07 00 00 00
+        // 5B 08 01 12 03 98 01 01 10 01 1A
+        // 57
+        // 08 A0 89 F7 B6 03
+        // 10 A2 FF 8C F0 03
+        // 18 00
+        // 22 10 39 F7 65 32 E1 AB 5C A7 86 D7 A5 13 89 22 53 85
+        // 28 90 23
+        // 32 1A
+        // 28 00 52 00 49 00 5F 00 36 00 31 00 28 00 32 00 52 00 59 00 4B 00 59 00 43 00
+        // 38 01
+        // 48 01
+        // 50 2D
+        // 58 2D
+        // 60 03
+        // 6A 05 32 36 39 33 33
+        // 70 00
+        // 78 03
+        // 80 01 00
         writeQQ(bot)
-        writeHex(TIMProtocol.version0x04)
+        writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
+        //writeHex(TIMProtocol.version0x02)
 
         encryptAndWrite(sessionKey) {
             writeHex("00 00 00 07 00 00 00")
 
-            writeUVarintLVPacket {
+            writeUVarintLVPacket(lengthOffset = { it - 6 }) {
                 writeByte(0x08)
                 writeHex("01 12 03 98 01 01 10 01 1A")
 
-                writeUVarintLVPacket(lengthOffset = { it + 7 }) {
+                writeUVarintLVPacket(lengthOffset = { it + 1 }) {
                     writeTUVarint(0x08u, groupId)
                     writeTUVarint(0x10u, bot)
                     writeTV(0x1800u)
-                    writeTLV(0x22u, image.md5)
+
+                    writeUByte(0x22u)
+                    writeUByte(0x10u)
+                    writeFully(image.md5)
+
                     writeTUVarint(0x28u, image.fileSize.toUInt())
                     writeUVarintLVPacket(tag = 0x32u) {
                         writeTV(0x5B_00u)
@@ -149,19 +172,40 @@ class GroupImageIdRequestPacket(
                     writeTV(0x48_01u)
                     writeTUVarint(0x50u, image.width.toUInt())
                     writeTUVarint(0x58u, image.height.toUInt())
-                    writeTV(0x60_02u)
+                    writeTV(0x60_04u)//这个似乎会变 有时候是02, 有时候是03
                     writeTByteArray(0x6Au, value0x6A)
+
+                    writeTV(0x70_00u)
+                    writeTV(0x78_03u)
+                    writeTV(0x80_01u)
+                    writeUByte(0u)
                 }
             }
-            writeTV(0x70_00u)
-            writeTV(0x78_03u)
-            writeTV(0x80_01u)
-            writeUByte(0u)
 
-           // this.debugColorizedPrintThis(compareTo = "00 00 00 07 00 00 00 5D 08 01 12 03 98 01 01 10 01 1A 59 08 FB D2 D8 94 02 10 A2 FF 8C F0 03 18 00 22 10 1D D2 2B 9B BC F2 10 83 DC 99 D2 2E 20 39 CC 0E 28 8A 03 32 1A 5B 00 40 00 33 00 48 00 5F 00 58 00 46 00 51 00 45 00 51 00 40 00 24 00 4F 00 38 01 48 01 50 EF 01 58 C2 01 60 02 6A 05 32 36 39 33 33 70 00 78 03 80 01 00")
-        }*/
+            /*
+             this.debugColorizedPrintThis(compareTo =  buildPacket {
+                 writeHex("00 00 00 07 00 00 00 5E 08 01 12 03 98 01 01 10 01 1A")
+                 writeHex("5A 08")
+                 writeUVarInt(groupId)
+                 writeUByte(0x10u)
+                 writeUVarInt(bot)
+                 writeHex("18 00 22 10")
+                 writeFully(image.md5)
+                 writeUByte(0x28u)
+                 writeUVarInt(image.fileSize.toUInt())
+                 writeHex("32 1A 37 00 4D 00 32 00 25 00 4C 00 31 00 56 00 32 00 7B 00 39 00 30 00 29 00 52 00")
+                 writeHex("38 01 48 01 50")
+                 writeUVarInt(image.width.toUInt())
+                 writeUByte(0x58u)
+                 writeUVarInt(image.height.toUInt())
+                 writeHex("60 04 6A 05 32 36 36 35 36 70 00 78 03 80 01 00")
+             }.readBytes().toUHexString())
+                */
+        }
 
 
+        //以下仅支持中等大小图片
+/*
         writeQQ(bot)
         writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
 
@@ -182,10 +226,11 @@ class GroupImageIdRequestPacket(
             writeUVarInt(image.height.toUInt())
             writeHex("60 04 6A 05 32 36 36 35 36 70 00 78 03 80 01 00")
         }
+              */
     }
 
     companion object {
-        private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x39u, 0x33u, 0x33u)
+        private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x36u, 0x35u, 0x36u)
     }
 
     @PacketId(0x0388u)
@@ -210,7 +255,6 @@ class GroupImageIdRequestPacket(
             //}
 
 
-
             // 已经有了的一张图片
             // 00 3B 12 03 98 01 01
             // 08 AB A7 89 D8 02 //群ID
@@ -226,8 +270,9 @@ class GroupImageIdRequestPacket(
 }
 
 fun main() {
-    ("8E  4B").hexToBytes().read {
+    ("A2  FF  8C  F0  03").hexToBytes().read {
         println(readUnsignedVarInt())
     }
 
+    println(0x40)
 }

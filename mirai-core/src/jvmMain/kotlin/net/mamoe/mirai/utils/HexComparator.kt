@@ -47,6 +47,10 @@ internal object HexComparator {
                     .replace("  ", " ")
 
             val FONT_10404 = "E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
+
+            val varint580266363 = "FB D2 D8 94 02"
+            val varint1040400290 = "A2 FF 8C F0 03"
+            var varint1994701021 = "DD F1 92 B7 07"
         }
 
         @Suppress("SpellCheckingInspection")
