@@ -106,6 +106,8 @@ class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: Event
         discardExact(1)//0x00
         isPrevious = readByte().toInt() == 0x08
         discardExact(l1.toInt() - 2)
+        //java.io.EOFException: Only 49 bytes were discarded of 69 requested
+        //抖动窗口消息
         discardExact(69)
         readLVByteArray()//font
         discardExact(2)//2个0x00

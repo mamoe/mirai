@@ -29,4 +29,3 @@ interface MiraiLogger {
 expect class PlatformLogger @JvmOverloads constructor(identity: String? = null) : MiraiLogger
 
 fun Throwable.log() = MiraiLogger.log(this)
-fun Throwable.printStacktrace() = this.log()
