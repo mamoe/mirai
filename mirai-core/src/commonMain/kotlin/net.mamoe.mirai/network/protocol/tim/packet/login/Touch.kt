@@ -15,7 +15,7 @@ import net.mamoe.mirai.utils.toUHexString
 /**
  * The packet received when logging in, used to redirect server address
  *
- * @see OutgoingTouchRedirectionPacket
+ * @see RedirectionPacket
  * @see SubmitPasswordPacket
  *
  * @author Him188moe
@@ -62,7 +62,7 @@ class TouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class OutgoingTouchPacket(private val bot: UInt, private val serverIp: String) : OutgoingPacket() {
+class TouchPacket(private val bot: UInt, private val serverIp: String) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer)
@@ -86,16 +86,16 @@ class OutgoingTouchPacket(private val bot: UInt, private val serverIp: String) :
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class OutgoingTouchRedirectionPacket(private val serverIP: String, private val qq: UInt) : OutgoingPacket() {
+class RedirectionPacket(private val bot: UInt, private val serverIP: String) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(qq)
+        this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer)
         this.writeHex(TIMProtocol.touchKey)//redirection key
 
         this.encryptAndWrite(TIMProtocol.touchKey) {
             this.writeHex(TIMProtocol.constantData1)
             this.writeHex(TIMProtocol.constantData2)
-            this.writeQQ(qq)
+            this.writeQQ(bot)
             this.writeHex("00 01 00 00 03 09 00 0C 00 01")
             this.writeIP(serverIP)
             this.writeHex("01 6F A1 58 22 01 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 03 00 19")

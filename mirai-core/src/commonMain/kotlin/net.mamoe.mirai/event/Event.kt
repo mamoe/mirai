@@ -4,7 +4,6 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.newCoroutineContext
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.internal.broadcastInternal
@@ -59,7 +58,7 @@ interface Cancellable {
 @Suppress("UNCHECKED_CAST")
 @JvmOverloads
 suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
-    return withContext(EventScope.newCoroutineContext(context)) { this@broadcast.broadcastInternal() }
+    return withContext(EventScope.coroutineContext + context) { this@broadcast.broadcastInternal() }
 }
 
 /**

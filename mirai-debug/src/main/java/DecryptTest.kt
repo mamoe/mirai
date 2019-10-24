@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.io.stringOfWitch
 import net.mamoe.mirai.utils.io.toUHexString
@@ -17,9 +19,9 @@ fun main() {
 
     // println("53 4B 4B 2F 6F 59 33 42 39 2F 68 56 54 45 4B 65 6A 5A 39 35 45 4D 7A 68 5A 2F 6F 4A 42 79 35 36 61 6F 50 59 32 6E 51 49 77 41 67 37 47 51 33 34 65 72 43 4C 41 72 50 4B 56 39 35 43 76 65 34 64".hexToBytes().stringOfWitch())
     println("53 4B 4B 2F 6F 59 33 42 39 2F 68 56 54 45 4B 65 6A 5A 39 35 45 4D 7A 68 5A 2F 6F 4A 42 79 35 36 61 6F 50 59 32 6E 51 49 77 41 67 37 47 51 33 34 65 72 43 4C 41 72 50 4B 56 39 35 43 76 65 34 64"
-            .hexToBytes().unbase64().stringOfWitch())
+        .hexToBytes().unbase64().stringOfWitch())
     println("53 4B 4B 2F 6F 59 33 42 39 2F 68 56 54 45 4B 65 6A 5A 39 35 45 4D 7A 68 5A 2F 6F 4A 42 79 35 36 61 6F 50 59 32 6E 51 49 77 41 67 37 47 51 33 34 65 72 43 4C 41 72 50 4B 56 39 35 43 76 65 34 64"
-            .hexToBytes().unbase64().toUHexString())
+        .hexToBytes().unbase64().toUHexString())
 
     //base64解密结果 48 A2 BF A1 8D C1 F7 F8 55 4C 42 9E 8D 9F 79 10 CC E1 67 FA 09 07 2E 7A 6A 83 D8 DA 74 08 C0 08 3B 19 0D F8 7A B0 8B 02 B3 CA 57 DE 42 BD EE 1D
 

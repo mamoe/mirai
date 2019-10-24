@@ -1,5 +1,8 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
+import Main.localIp
+import Main.qq
+import Main.sessionKey
 import jpcap.JpcapCaptor
 import jpcap.packet.IPPacket
 import jpcap.packet.UDPPacket
@@ -19,13 +22,12 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.toUHexString
 
 /**
- * 抓包分析器
+ * 抓包分析器.
+ * 设置好 [sessionKey], [localIp] 和 [qq] 后运行即可开始抓包和自动解密
  *
  * @author Him188moe
  */
 object Main {
-    const val localIp = "192.168.3."
-
     @JvmStatic
     fun main(args: Array<String>) {
         val devices = JpcapCaptor.getDeviceList()
@@ -77,8 +79,9 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "B7 E2 A6 3D 90 4F 4F 74 7D 55 9C 0E 91 20 40 A5".hexToBytes()
-    val qq: UInt = 1040400290u
+    val sessionKey: ByteArray = "1D 1E 71 68 B9 41 FD 5B F3 5A 3F 71 87 B5 86 CB".hexToBytes()
+    const val qq: UInt = 1040400290u
+    const val localIp = "192.168.3."
 
     fun dataReceived(data: ByteArray) {
         //println("raw = " + data.toUHexString())

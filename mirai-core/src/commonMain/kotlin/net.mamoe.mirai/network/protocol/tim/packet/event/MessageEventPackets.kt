@@ -50,8 +50,10 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
                 //管理员 子map= {5=00 00 00 03, 8=00 00 00 04, 2=65 6F 6D 38 38 31 6D 69 48, 3=02, 4=00 00 00 10}
                 //群成员 子map= {5=00 00 00 03, 8=00 00 00 04, 2=65 6F 6D 38 38 31 6D 69 48, 3=02}
 
+                tlv.printTLVMap("Child TLV map")
                 senderPermission = when (val value0x03 = tlv.getValue(0x03)[0].toUInt()) {
                     0x04u -> SenderPermission.OWNER
+                    0x03u -> SenderPermission.MEMBER
                     0x02u -> {
                         if (!tlv.containsKey(0x04)) {
                             SenderPermission.MEMBER
@@ -64,8 +66,8 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
                     0x01u -> SenderPermission.MEMBER
 
                     else -> {
-                        tlv.printTLVMap("Child TLV map")
                         error("Could not determine member permission, unknown TLV(key=0x03,value=$value0x03;)")
+                        //{5=00 00 00 01, 8=00 00 00 01, 1=48 69 6D 31 38 38 6D 6F 65, 3=03}
                     }
                 }
 

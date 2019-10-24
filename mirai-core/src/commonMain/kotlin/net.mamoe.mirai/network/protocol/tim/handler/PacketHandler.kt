@@ -1,6 +1,5 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
-import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import kotlin.reflect.KClass
@@ -10,7 +9,7 @@ import kotlin.reflect.KClass
  */
 abstract class PacketHandler(
         val session: BotSession
-) : CoroutineScope {
+) {
     abstract suspend fun onPacketReceived(packet: ServerPacket)
 
     interface Key<T : PacketHandler>

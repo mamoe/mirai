@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  * 临时数据包处理器
  * ```kotlin
  * session.addHandler<ClientTouchResponsePacket>{
- *   toSend { OutgoingTouchPacket() }
+ *   toSend { TouchPacket() }
  *   onExpect {//it: ClientTouchResponsePacket
  *      //do sth.
  *   }

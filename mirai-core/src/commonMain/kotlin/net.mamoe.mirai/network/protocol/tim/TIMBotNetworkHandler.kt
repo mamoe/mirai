@@ -164,7 +164,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     loginResult.complete(LoginResult.TIMEOUT)
                 }
             }
-            sendPacket(OutgoingTouchPacket(bot.qqAccount, this.serverIp))
+            sendPacket(TouchPacket(bot.qqAccount, this.serverIp))
 
             return loginResult.await()
         }
@@ -206,16 +206,15 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
 
                 if (packet is ServerEventPacket) {
-                    //no need to sync acknowledgement packets
-                    launch {
-                        sendPacket(packet.ResponsePacket(bot.qqAccount, sessionKey))
-                    }
+                    //must ensure the response packet is sent
+                    sendPacket(packet.ResponsePacket(bot.qqAccount, sessionKey))
                 }
 
                 if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled) {
                     return@coroutineScope
                 }
 
+                //they should be called in sequence otherwise because packet is lock-free
                 loginHandler.onPacketReceived(packet)
                 this@TIMBotNetworkHandler.forEach {
                     it.instance.onPacketReceived(packet)
