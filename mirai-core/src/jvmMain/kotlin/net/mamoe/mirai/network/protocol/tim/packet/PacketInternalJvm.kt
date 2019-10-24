@@ -23,39 +23,42 @@ internal object PacketNameFormatter {
 }
 
 private object IgnoreIdList : List<String> by listOf(
-        "idHex",
-        "id",
-        "packetId",
-        "sequenceIdInternal",
-        "sequenceId",
-        "fixedId",
-        "idByteArray",
-        "encoded",
-        "packet",
-        "Companion",
-        "EMPTY_ID_HEX",
-        "input",
-        "output",
-        "UninitializedByteReadPacket",
-        "sessionKey"
+    "idHex",
+    "id",
+    "packetId",
+    "sequenceIdInternal",
+    "sequenceId",
+    "fixedId",
+    "idByteArray",
+    "encoded",
+    "packet",
+    "Companion",
+    "EMPTY_ID_HEX",
+    "input",
+    "output",
+    "this\$0",
+    "\$\$delegatedProperties",
+    "UninitializedByteReadPacket",
+    "sessionKey"
 )
 
 internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjustName(this::class.simpleName + "(${this.idHexString})") + this::class.java.allDeclaredFields
-        .filterNot { it.name in IgnoreIdList || /*"delegate" in it.name||*/ "$" in it.name }
-        .joinToString(", ", "{", "}") {
-            it.isAccessible = true
-            it.name + "=" + it.get(this).let { value ->
-                when (value) {
-                    null -> null
-                    is ByteArray -> value.toUHexString()
-                    is UByteArray -> value.toUHexString()
-                    is ByteReadPacket -> "[ByteReadPacket(${value.remaining})]"
-                    //is ByteReadPacket -> value.copy().readBytes().toUHexString()
-                    is IoBuffer -> "[IoBuffer(${value.readRemaining})]"
-                    else -> value.toString()
-                }
+    .filterNot { it.name in IgnoreIdList /*|| "delegate" in it.name|| "$" in it.name */ }
+    .joinToString(", ", "{", "}") {
+        it.isAccessible = true
+        it.name.replace("\$delegate", "") + "=" + it.get(this).let { value ->
+            when (value) {
+                null -> null
+                is ByteArray -> value.toUHexString()
+                is UByteArray -> value.toUHexString()
+                is ByteReadPacket -> "[ByteReadPacket(${value.remaining})]"
+                //is ByteReadPacket -> value.copy().readBytes().toUHexString()
+                is IoBuffer -> "[IoBuffer(${value.readRemaining})]"
+                is Lazy<*> -> "[Lazy]"
+                else -> value.toString()
             }
         }
+    }
 
 private val Class<*>.allDeclaredFields: List<Field>
     get() {

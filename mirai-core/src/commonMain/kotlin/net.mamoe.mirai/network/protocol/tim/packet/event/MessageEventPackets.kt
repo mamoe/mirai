@@ -6,6 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.message.NullMessageChain
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.utils.io.*
 import kotlin.properties.Delegates
@@ -26,7 +27,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
      * 发送方权限.
      */
     lateinit var senderPermission: SenderPermission
-    var message: MessageChain by Delegates.notNull()
+    var message: MessageChain = NullMessageChain
 
     override fun decode() = with(input) {
         discardExact(31)

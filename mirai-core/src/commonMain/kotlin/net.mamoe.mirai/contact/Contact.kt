@@ -24,15 +24,8 @@ sealed class Contact(val bot: Bot, val id: UInt) {
 
     abstract suspend fun sendMessage(message: MessageChain)
 
-    suspend fun sendMessage(message: Message) {
-        if (message is MessageChain) {
-            return sendMessage(message)
-        }
-        return sendMessage(message.toChain())
-    }
-
-    suspend fun sendMessage(plain: String) = this.sendMessage(PlainText(plain))
-
+    suspend fun sendMessage(message: Message) = sendMessage(message.toChain())
+    suspend fun sendMessage(plain: String) = sendMessage(PlainText(plain))
 
     abstract suspend fun sendXMLMessage(message: String)
 }

@@ -15,6 +15,7 @@ import net.mamoe.mirai.login
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.message.PlainText
+import net.mamoe.mirai.message.firstOrNull
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingRawPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.uploadImage
