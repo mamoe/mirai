@@ -2,10 +2,7 @@
 
 package net.mamoe.mirai.contact
 
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
 import net.mamoe.mirai.utils.ContactList
@@ -26,36 +23,36 @@ actual sealed class Contact actual constructor(bot: Bot, number: UInt) : Platfor
 
     abstract override suspend fun sendXMLMessage(message: String)
 
-
-    /**
-     * 阻塞发送一个消息. 仅应在 Java 使用
-     */
-    fun blockingSendMessage(chain: MessageChain) = runBlocking { sendMessage(chain) }
-
-    /**
-     * 阻塞发送一个消息. 仅应在 Java 使用
-     */
-    fun blockingSendMessage(message: Message) = runBlocking { sendMessage(message) }
-
-    /**
-     * 阻塞发送一个消息. 仅应在 Java 使用
-     */
-    fun blockingSendMessage(plain: String) = runBlocking { sendMessage(plain) }
-
-    /**
-     * 异步发送一个消息. 仅应在 Java 使用
-     */
-    fun asyncSendMessage(chain: MessageChain) = bot.network.NetworkScope.launch { sendMessage(chain) }
-
-    /**
-     * 异步发送一个消息. 仅应在 Java 使用
-     */
-    fun asyncSendMessage(message: Message) = bot.network.NetworkScope.launch { sendMessage(message) }
-
-    /**
-     * 异步发送一个消息. 仅应在 Java 使用
-     */
-    fun asyncSendMessage(plain: String) = bot.network.NetworkScope.launch { sendMessage(plain) }
+//
+//    /**
+//     * 阻塞发送一个消息. 仅应在 Java 使用
+//     */
+//    fun blockingSendMessage(chain: MessageChain) = runBlocking { sendMessage(chain) }
+//
+//    /**
+//     * 阻塞发送一个消息. 仅应在 Java 使用
+//     */
+//    fun blockingSendMessage(message: Message) = runBlocking { sendMessage(message) }
+//
+//    /**
+//     * 阻塞发送一个消息. 仅应在 Java 使用
+//     */
+//    fun blockingSendMessage(plain: String) = runBlocking { sendMessage(plain) }
+//
+//    /**
+//     * 异步发送一个消息. 仅应在 Java 使用
+//     */
+//    fun asyncSendMessage(chain: MessageChain) = bot.network.launch { sendMessage(chain) }
+//
+//    /**
+//     * 异步发送一个消息. 仅应在 Java 使用
+//     */
+//    fun asyncSendMessage(message: Message) = bot.network.launch { sendMessage(message) }
+//
+//    /**
+//     * 异步发送一个消息. 仅应在 Java 使用
+//     */
+//    fun asyncSendMessage(plain: String) = bot.network.launch { sendMessage(plain) }
 }
 
 /**

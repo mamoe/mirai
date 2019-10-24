@@ -1,16 +1,27 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.utils
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
 import net.mamoe.mirai.message.ImageId
 
+fun BufferedImage(
+    width: Int,
+    height: Int,
+    md5: ByteArray,
+    format: String,
+    data: ByteReadPacket
+) = BufferedImage(width, height, md5, format, data, data.remaining)
+
 class BufferedImage(
-        val width: Int,
-        val height: Int,
-        val md5: ByteArray,
-        val format: String,
-        val data: ByteReadPacket
+    val width: Int,
+    val height: Int,
+    val md5: ByteArray,
+    val format: String,
+    val input: Input,
+    val inputSize: Long
 ) {
-    val fileSize: Long = data.remaining
 
     /**
      * 用于发送消息的 [ImageId]

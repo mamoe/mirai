@@ -110,7 +110,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         }
     }
 
-    fun close() {
+    suspend fun close() {
         this.network.close()
         this.contacts.groups.clear()
         this.contacts.qqs.clear()

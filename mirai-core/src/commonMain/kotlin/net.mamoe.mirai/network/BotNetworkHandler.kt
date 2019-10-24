@@ -28,26 +28,24 @@ import kotlin.coroutines.ContinuationInterceptor
  * - [EventPacketHandler] 处理消息相关(群消息/好友消息)([ServerEventPacket])
  * - [ActionPacketHandler] 处理动作相关(踢人/加入群/好友列表等)
  *
+ *
+ * NetworkHandler 实现接口 [CoroutineScope]
+ * 即 [BotNetworkHandler] 自己就是作用域.
+ * 所有 [BotNetworkHandler] 的协程均启动在此作用域下.
+ *
+ * [BotNetworkHandler] 的协程包含:
+ * - UDP 包接收: [PlatformDatagramChannel.read]
+ * - 心跳 Job [HeartbeatPacket]
+ * - SKey 刷新 [ReuestSKeyPcket]
+ * - 所有数据包处理和发送
+ *
+ * [BotNetworkHandler.close] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
+ *
  * A BotNetworkHandler is used to connect with Tencent servers.
  */
 @Suppress("PropertyName")
-interface BotNetworkHandler<Socket : DataPacketSocketAdapter> {
-    /**
-     * [BotNetworkHandler] 的协程作用域.
-     * 所有 [BotNetworkHandler] 的协程均启动在此作用域下.
-     *
-     * [BotNetworkHandler] 的协程包含:
-     * - UDP 包接收: [PlatformDatagramChannel.read]
-     * - 心跳 Job [HeartbeatPacket]
-     * - SKey 刷新 [RefreshSKeyRequestPacket]
-     * - 所有数据包处理和发送
-     *
-     * [BotNetworkHandler.close] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
-     */
-    val NetworkScope: CoroutineScope
-
+interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
     val socket: Socket
-
 
     /**
      * 得到 [PacketHandler].
@@ -76,8 +74,13 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> {
      */
     suspend fun sendPacket(packet: OutgoingPacket)
 
-    fun close(cause: Throwable? = null) {
+    /**
+     * 等待直到与服务器断开连接. 若未连接则立即返回
+     */
+    suspend fun awaitDisconnection()
+
+    suspend fun close(cause: Throwable? = null) {
         //todo check??
-        NetworkScope.coroutineContext[ContinuationInterceptor]!!.cancelChildren(CancellationException("handler closed", cause))
+        coroutineContext[ContinuationInterceptor]!!.cancelChildren(CancellationException("handler closed", cause))
     }
 }

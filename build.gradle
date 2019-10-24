@@ -2,11 +2,11 @@ buildscript {
     ext.kotlin_version = '1.3.50'
 
     repositories {
-        google()
+        mavenLocal()
+        jcenter()
+        mavenCentral()
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
     }
-
-    apply from: rootProject.file('dependencies.gradle')
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -16,14 +16,12 @@ buildscript {
 
 allprojects {
     group = "net.mamoe"
-    version = "1.0"
+    version = getProperty("mirai_version")
 
     repositories {
-        jcenter()//klock
-        google()
+        mavenLocal()
+        mavenCentral()
+        jcenter()
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
     }
-
-    apply from: rootProject.file('dependencies.gradle')
 }
-

@@ -5,11 +5,10 @@ dependencies {
     implementation project(':mirai-core')
     compile files('./lib/jpcap.jar')
 
-    implementation rootProject.ext.coroutineCommon
-    implementation rootProject.ext.kotlinJvm
-    implementation rootProject.ext.kotlinxIOJvm
-    compile "org.jetbrains.kotlin:kotlin-reflect:1.3.50"
-    implementation 'org.jsoup:jsoup:1.12.1'
+    api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
+    api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinxio_version
+
+    api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
 }
 
 tasks.withType(JavaCompile) {

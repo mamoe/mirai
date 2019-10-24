@@ -2,10 +2,7 @@
 
 package demo1
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.contact.Group
@@ -44,14 +41,14 @@ private fun readTestAccount(): BotAccount? {
 }
 
 @Suppress("UNUSED_VARIABLE")
-suspend fun main() {
+suspend fun main() = coroutineScope {
     val bot = Bot(readTestAccount() ?: BotAccount(//填写你的账号
             account = 1994701121u,
             password = "123456"
     ), PlatformLogger())
 
     bot.login {
-        randomDeviceName = true
+        randomDeviceName = false
     }.let {
         if (it != LoginResult.SUCCESS) {
             MiraiLogger.logError("Login failed: " + it.name)
@@ -143,8 +140,7 @@ suspend fun main() {
 
     demo2()
 
-    //由于使用的是协程, main函数执行完后就会结束程序.
-    delay(Long.MAX_VALUE)//永远等待, 以测试事件
+    bot.network.awaitDisconnection()//等到直到断开连接
 }
 
 
@@ -153,7 +149,7 @@ suspend fun main() {
  * 对机器人说 "记笔记", 机器人记录之后的所有消息.
  * 对机器人说 "停止", 机器人停止
  */
-fun demo2() {
+suspend fun demo2() {
     subscribeAlways<FriendMessageEvent> { event ->
         if (event.message eq "记笔记") {
             subscribeUntilFalse<FriendMessageEvent> {

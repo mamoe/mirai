@@ -6,6 +6,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
@@ -14,6 +15,12 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.getGTK
 import kotlin.coroutines.coroutineContext
 
+internal fun TIMBotNetworkHandler.BotSession(
+    bot: Bot,
+    sessionKey: ByteArray,
+    socket: DataPacketSocketAdapter
+) = BotSession(bot, sessionKey, socket, this)
+
 /**
  * 登录会话. 当登录完成后, 客户端会拿到 sessionKey.
  * 此时建立 session, 然后开始处理事务.
@@ -21,10 +28,10 @@ import kotlin.coroutines.coroutineContext
  * @author Him188moe
  */
 class BotSession(
-        val bot: Bot,
-        val sessionKey: ByteArray,//TODO 协议抽象? 可能并不是所有协议均需要 sessionKey
-        val socket: DataPacketSocketAdapter,
-        val NetworkScope: CoroutineScope
+    val bot: Bot,
+    val sessionKey: ByteArray,//TODO 协议抽象? 可能并不是所有协议均需要 sessionKey
+    val socket: DataPacketSocketAdapter,
+    val NetworkScope: CoroutineScope
 ) {
 
     /**
@@ -66,7 +73,8 @@ class BotSession(
      * @param handler 处理期待的包
      */
     suspend inline fun <reified P : ServerPacket, R> OutgoingPacket.sendAndExpect(noinline handler: suspend (P) -> R): CompletableDeferred<R> {
-        val deferred: CompletableDeferred<R> = coroutineContext[Job].takeIf { it != null }?.let { CompletableDeferred<R>(it) } ?: CompletableDeferred()
+        val deferred: CompletableDeferred<R> =
+            coroutineContext[Job].takeIf { it != null }?.let { CompletableDeferred<R>(it) } ?: CompletableDeferred()
         bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession).also {
             it.toSend(this)
             it.onExpect(handler)
@@ -74,7 +82,8 @@ class BotSession(
         return deferred
     }
 
-    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(): CompletableDeferred<Unit> = sendAndExpect<P, Unit> {}
+    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(): CompletableDeferred<Unit> =
+        sendAndExpect<P, Unit> {}
 
     suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
 }

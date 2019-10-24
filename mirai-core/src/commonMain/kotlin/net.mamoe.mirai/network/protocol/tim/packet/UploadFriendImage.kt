@@ -2,6 +2,8 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.ImageId
@@ -21,11 +23,10 @@ suspend fun QQ.uploadImage(image: BufferedImage): ImageId = with(bot.network.ses
     return FriendImageIdRequestPacket(this.qqAccount, sessionKey, this.qqAccount, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
         if (it.uKey != null)
             require(httpPostFriendImage(
+                botAccount = bot.qqAccount,
                     uKeyHex = it.uKey!!.toUHexString(""),
-                    botNumber = bot.qqAccount,
-                    imageData = image.data,
-                    fileSize = image.fileSize,
-                    qq = this.qqAccount
+                imageInput = image.input,
+                inputSize = image.inputSize
             ))
         it.imageId!!
     }.await()
@@ -217,8 +218,10 @@ class FriendImageIdRequestPacket(
                 writeFully(image.md5)
 
                 writeUByte(0x28u)
-                writeUVarInt(image.fileSize.toUInt())
+                writeUVarInt(image.inputSize.toUInt())
 
+
+                GlobalScope.launch { }
                 writeUByte(0x32u)
                 //长度应为1A
                 writeUVarintLVPacket {

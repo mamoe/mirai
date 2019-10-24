@@ -3,8 +3,13 @@
 package net.mamoe.mirai.utils
 
 import com.soywiz.klock.DateTime
-import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.utils.io.printStringFromHex
+import io.ktor.client.HttpClient
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.post
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLProtocol
+import io.ktor.http.userAgent
+import kotlinx.io.core.Input
 
 /**
  * 时间戳
@@ -40,27 +45,66 @@ expect fun solveIpAddress(hostname: String): String
 expect fun localIpAddress(): String
 
 /**
+ * Provided by Ktor Http
+ */
+internal expect val httpClient: HttpClient
+
+/**
  * 上传好友图片
  */
-expect suspend fun httpPostFriendImage(
-        uKeyHex: String,
-        fileSize: Long,
-        botNumber: UInt,
-        qq: UInt,
-        imageData: ByteReadPacket
-): Boolean
+@Suppress("DuplicatedCode")
+suspend fun httpPostFriendImage(
+    botAccount: UInt,
+    uKeyHex: String,
+    imageInput: Input,
+    inputSize: Long
+): Boolean = (httpClient.postImage(imageInput, inputSize, uKeyHex) {
+    url {
+        parameters["htcmd"] = "0x6ff0070"
+        parameters["uin"] = botAccount.toLong().toString()
+    }
+
+} as HttpStatusCode).value.also { println(it) } == 200
 
 /**
  * 上传群图片
  */
-expect suspend fun httpPostGroupImage(
-        bot: UInt,
-        groupNumber: UInt,
-        uKeyHex: String,
-        fileSize: Long,
-        imageData: ByteReadPacket
-): Boolean
+@Suppress("DuplicatedCode")
+suspend fun httpPostGroupImage(
+    botAccount: UInt,
+    groupNumber: UInt,
+    uKeyHex: String,
+    imageInput: Input,
+    inputSize: Long
+): Boolean = (httpClient.postImage(imageInput, inputSize, uKeyHex) {
+    url {
+        parameters["htcmd"] = "0x6ff0071"
+        parameters["uin"] = botAccount.toLong().toString()
+        parameters["groupcode"] = groupNumber.toLong().toString()
+    }
+} as HttpStatusCode).value.also { println(it) } == 200
 
-fun main() {
-    "46 52 25 46 60 30 59 4F 4A 5A 51".printStringFromHex()
+
+private suspend inline fun <reified T> HttpClient.postImage(
+    imageInput: Input,
+    inputSize: Long,
+    uKeyHex: String,
+    block: HttpRequestBuilder.() -> Unit = {}
+): T = post {
+    url {
+        protocol = URLProtocol.HTTP
+        host = "htdata2.qq.com"
+        path("cgi-bin/httpconn")
+
+        parameters["ver"] = "5603"
+        parameters["filezise"] = inputSize.toString()
+        parameters["range"] = 0.toString()
+        parameters["ukey"] = uKeyHex
+
+        userAgent("QQClient")
+    }
+    block()
+    configureBody(inputSize, imageInput)
 }
+
+internal expect fun HttpRequestBuilder.configureBody(inputSize: Long, input: Input)

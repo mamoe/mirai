@@ -3,6 +3,7 @@ package net.mamoe.mirai.utils
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import net.mamoe.mirai.network.protocol.tim.packet.login.ServerTouchResponsePacket
+import kotlin.jvm.JvmField
 
 /**
  * 网络配置
@@ -32,6 +33,7 @@ class BotNetworkConfiguration {
     var heartbeatTimeout: TimeSpan = 2.seconds
 
     companion object {
+        @JvmField
         val Default = BotNetworkConfiguration()
     }
 }

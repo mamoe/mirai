@@ -18,10 +18,10 @@ suspend fun Group.uploadImage(
             .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
                 if (it.uKey != null) {
                     httpPostGroupImage(
-                            bot = bot.qqAccount,
+                        botAccount = bot.qqAccount,
                             groupNumber = groupId,
-                            imageData = image.data,
-                            fileSize = image.fileSize,
+                        imageInput = image.input,
+                        inputSize = image.inputSize,
                             uKeyHex = it.uKey!!.toUHexString("")
                     )
                 }
@@ -154,7 +154,7 @@ class GroupImageIdRequestPacket(
                     writeUByte(0x10u)
                     writeFully(image.md5)
 
-                    writeTUVarint(0x28u, image.fileSize.toUInt())
+                    writeTUVarint(0x28u, image.inputSize.toUInt())
                     writeUVarintLVPacket(tag = 0x32u) {
                         writeTV(0x5B_00u)
                         writeTV(0x40_00u)
