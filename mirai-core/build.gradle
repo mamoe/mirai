@@ -6,7 +6,9 @@ kotlin {
         fromPreset(presets.jvm, "jvm")
         //fromPreset(presets.mingwX64, "mingwX64")
     }
-    jvm()
+    jvm{
+        withJava()
+    }
 
     /*
     mingwX64("mingwX64") {
@@ -82,6 +84,8 @@ kotlin {
         }*/
 
         jvmTest {
+            apply plugin: 'java'
+
         }
 
         all {
@@ -91,5 +95,9 @@ kotlin {
 }
 
 compileKotlinJvm {
+
+}
+
+compileTestJava{
 
 }

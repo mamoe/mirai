@@ -12,4 +12,4 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
  * @author Him188moe
  */
 @PacketId(0x00_ECu)
-class ServerLoginSuccessPacket(input: ByteReadPacket) : ServerPacket(input)
+class ServerLoginSuccessPacket(input: ByteReadPacket) : ServerPacket(input)//TODO 可能只是 login status change 的返回包

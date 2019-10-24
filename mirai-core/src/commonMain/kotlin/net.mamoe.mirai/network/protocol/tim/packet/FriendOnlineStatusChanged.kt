@@ -11,6 +11,8 @@ import kotlin.properties.Delegates
 
 /**
  * 好友在线状态改变
+ *
+ * TODO 真的是在线状态改变么
  */
 @PacketId(0x00_81u)
 class ServerFriendOnlineStatusChangedPacket(input: ByteReadPacket) : ServerPacket(input) {
