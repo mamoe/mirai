@@ -139,13 +139,13 @@ inline class Face(val id: FaceID) : Message {
  * - 若一个 [MessageChain] 与一个其他 [Message] 连接, [Message] 将会被添加入 [MessageChain].
  * - 若一个 [Message] 与一个 [MessageChain] 连接, 将会创建一个新的 [MessageChain], 并顺序添加连接时的参数.
  */
-data class MessageChain constructor(//todo 优化: 不构造 list. 而是在每个 Message 内写 head 和 tail 来连接.
+inline class MessageChain constructor(
     /**
      * Elements will not be instances of [MessageChain]
      */
     private val delegate: MutableList<Message>
 ) : Message, MutableList<Message> {
-    constructor() : this(mutableListOf())
+    constructor() : this(ArrayList(8))
     constructor(vararg messages: Message) : this(messages.toMutableList())
     constructor(messages: Iterable<Message>) : this(messages.toMutableList())
 
@@ -203,6 +203,6 @@ data class MessageChain constructor(//todo 优化: 不构造 list. 而是在每�
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> = delegate.subList(fromIndex, toIndex)
     override fun iterator(): MutableIterator<Message> = delegate.iterator()
     override operator fun contains(element: Message): Boolean = delegate.contains(element)
-    override val size: Int = delegate.size
+    override val size: Int get() = delegate.size
     // endregion
 }

@@ -140,13 +140,6 @@ suspend fun main() = coroutineScope {
         }
     }
 
-    //通过 KClass 扩展方式监听事件(不推荐)
-    GroupMessageEvent::class.subscribeAlways {
-        when {
-            it.message.contains("复读") -> it.reply(it.message)
-        }
-    }
-
 
     //DSL 监听
     subscribeAll<FriendMessageEvent> {
