@@ -13,7 +13,7 @@ import java.security.MessageDigest
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage as JavaBufferedImage
 
-fun JavaBufferedImage.toMiraiImage(formatName: String = "gif"): BufferedImage {
+fun JavaBufferedImage.toMiraiImage(formatName: String = "gif"): ExternalImage {
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
 
@@ -28,10 +28,10 @@ fun JavaBufferedImage.toMiraiImage(formatName: String = "gif"): BufferedImage {
         })
     }
 
-    return BufferedImage(width, height, digest.digest(), formatName, buffer)
+    return ExternalImage(width, height, digest.digest(), formatName, buffer)
 }
 
-fun BufferedImage.toJavaImage(): JavaBufferedImage = ImageIO.read(object : InputStream() {
+fun ExternalImage.toJavaImage(): JavaBufferedImage = ImageIO.read(object : InputStream() {
     override fun read(): Int = with(this@toJavaImage.input) {
         if (!endOfInput)
             readByte().toInt()
@@ -39,7 +39,7 @@ fun BufferedImage.toJavaImage(): JavaBufferedImage = ImageIO.read(object : Input
     }
 })
 
-fun File.toMiraiImage(): BufferedImage {
+fun File.toMiraiImage(): ExternalImage {
     val image = ImageIO.getImageReaders(this.inputStream()).asSequence().first()
 
     val digest = MessageDigest.getInstance("md5")
@@ -53,7 +53,7 @@ fun File.toMiraiImage(): BufferedImage {
     })
 
     val dimension = image.defaultReadParam.sourceRenderSize
-    return BufferedImage(
+    return ExternalImage(
         width = dimension.width,
         height = dimension.height,
         md5 = digest.digest(),

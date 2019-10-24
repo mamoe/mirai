@@ -12,20 +12,20 @@ import net.mamoe.mirai.utils.io.toUHexString
 
 
 suspend fun Group.uploadImage(
-        image: BufferedImage
+    image: ExternalImage
 ) = with(bot.network.session) {
-    GroupImageIdRequestPacket(bot.qqAccount, groupId, image, sessionKey)
-            .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
-                if (it.uKey != null) {
-                    httpPostGroupImage(
-                        botAccount = bot.qqAccount,
-                            groupNumber = groupId,
-                        imageInput = image.input,
-                        inputSize = image.inputSize,
-                            uKeyHex = it.uKey!!.toUHexString("")
-                    )
-                }
-            }.await()
+    GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey)
+        .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
+            if (it.uKey != null) {
+                httpPostGroupImage(
+                    botAccount = bot.qqAccount,
+                    groupNumber = internalId,
+                    imageInput = image.input,
+                    inputSize = image.inputSize,
+                    uKeyHex = it.uKey!!.toUHexString("")
+                )
+            }
+        }.await()
 }
 
 /**
@@ -34,10 +34,10 @@ suspend fun Group.uploadImage(
 @PacketId(0x0388u)
 @PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
 class GroupImageIdRequestPacket(
-        private val bot: UInt,
-        private val groupId: UInt,
-        private val image: BufferedImage,
-        private val sessionKey: ByteArray
+    private val bot: UInt,
+    private val groupId: UInt,
+    private val image: ExternalImage,
+    private val sessionKey: ByteArray
 ) : OutgoingPacket() {
 
     override fun encode(builder: BytePacketBuilder) = with(builder) {
