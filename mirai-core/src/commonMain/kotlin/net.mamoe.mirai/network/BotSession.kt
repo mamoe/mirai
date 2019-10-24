@@ -91,6 +91,6 @@ class BotSession(
 
 suspend fun BotSession.distributePacket(packet: ServerPacket) = this.socket.distributePacket(packet)
 val BotSession.isOpen: Boolean get() = socket.isOpen
-val BotSession.qqAccount: UInt get() = bot.account.account
+val BotSession.qqAccount: UInt get() = bot.account.id
 
 val <T : BotNetworkHandler<*>> T.session get() = this[ActionPacketHandler].session

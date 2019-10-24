@@ -3,6 +3,7 @@ package net.mamoe.mirai.event.internal
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventScope
 import net.mamoe.mirai.event.ListeningStatus
@@ -49,16 +50,22 @@ internal suspend fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<
  *
  * @author Him188moe
  */
-internal interface Listener<in E : Event> {
-    suspend fun onEvent(event: E): ListeningStatus
+sealed class Listener<in E : Event> {
+    abstract suspend fun onEvent(event: E): ListeningStatus
 }
 
 /**
  * Lambda 监听器.
  * 不推荐直接使用该类
  */
-class Handler<E : Event>(val handler: suspend (E) -> ListeningStatus) : Listener<E> {
+class Handler<E : Event>(val handler: suspend (E) -> ListeningStatus) : Listener<E>() {
     override suspend fun onEvent(event: E): ListeningStatus = handler.invoke(event)
+}
+
+class HandlerWithBot<E : Event>(val bot: Bot, val handler: suspend Bot.(E) -> ListeningStatus) : Listener<E>() {
+    override suspend fun onEvent(event: E): ListeningStatus = with(bot) {
+        handler(event)
+    }
 }
 
 /**
@@ -105,7 +112,6 @@ internal object EventListenerManger {
 
 @Suppress("UNCHECKED_CAST")
 internal suspend fun <E : Event> E.broadcastInternal(): E {
-    //FIXME 若一个 listener 阻塞, 则这个事件全部阻塞.
     suspend fun callListeners(listeners: EventListeners<in E>) = listeners.mainMutex.withLock {
         listeners.inlinedRemoveIf { it.onEvent(this) == ListeningStatus.STOPPED }
     }

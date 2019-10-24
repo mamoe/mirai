@@ -1,11 +1,12 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
-import net.mamoe.mirai.getGroupByNumber
+import net.mamoe.mirai.getGroup
 import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.BotSession
@@ -41,11 +42,11 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
             }
 
             is ServerGroupMessageEventPacket -> {
-                if (packet.qq == bot.account.account) return
+                if (packet.qq == bot.account.id) return
 
                 GroupMessageEvent(
                         bot,
-                        group = bot.getGroupByNumber(packet.groupNumber),
+                    group = bot.getGroup(GroupId(packet.groupNumber)),
                         sender = bot.getQQ(packet.qq),
                         message = packet.message,
                         senderName = packet.senderName,
@@ -68,10 +69,10 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
     }
 
     suspend fun sendFriendMessage(qq: QQ, message: MessageChain) {
-        session.socket.sendPacket(SendFriendMessagePacket(session.bot.account.account, qq.number, session.sessionKey, message))
+        session.socket.sendPacket(SendFriendMessagePacket(session.bot.account.id, qq.id, session.sessionKey, message))
     }
 
     suspend fun sendGroupMessage(group: Group, message: MessageChain) {
-        session.socket.sendPacket(SendGroupMessagePacket(session.bot.account.account, group.groupId, session.sessionKey, message))
+        session.socket.sendPacket(SendGroupMessagePacket(session.bot.account.id, group.internalId, session.sessionKey, message))
     }
 }

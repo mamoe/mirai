@@ -4,7 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
-import net.mamoe.mirai.*
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforePacketSendEvent
@@ -22,6 +22,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
+import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.parseServerPacket
 import net.mamoe.mirai.utils.io.toUHexString
@@ -184,7 +185,9 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 packet.decode()
             } catch (e: Exception) {
                 e.log()
-                bot.printPacketDebugging(packet)
+                bot.logger.logDebug("Packet=$packet")
+                bot.logger.logDebug("Packet size=" + packet.input.readBytes().size)
+                bot.logger.logDebug("Packet data=" + packet.input.readBytes().toUHexString())
                 packet.close()
                 throw e
             }
@@ -192,7 +195,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             packet.use {
                 val name = packet::class.simpleName
                 if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
-                    bot.logCyan("Packet received: $packet")
+                    bot.logger.logCyan("Packet received: $packet")
                 }
 
                 handlersLock.withLock {
@@ -258,7 +261,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
             }
 
-            bot.logGreen("Packet sent:     $packet")
+            bot.logger.logGreen("Packet sent:     $packet")
 
             PacketSentEvent(bot, packet).broadcast()
 
@@ -374,7 +377,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 is ServerCaptchaTransmissionPacket -> {
                     //packet is ServerCaptchaWrongPacket
                     if (this.captchaSectionId == 0) {
-                        bot.logError("验证码错误, 请重新输入")
+                        bot.logger.logPurple("验证码错误, 请重新输入")
                         this.captchaSectionId = 1
                         this.captchaCache = null
                     }
@@ -460,7 +463,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                                             sessionKey
                                         ).sendAndExpect<HeartbeatPacket.Response>().join()
                                     } == null) {
-                                    bot.logPurple("Heartbeat timed out")
+                                    bot.logger.logPurple("Heartbeat timed out")
                                     bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
                                     return@launch
                                 }
