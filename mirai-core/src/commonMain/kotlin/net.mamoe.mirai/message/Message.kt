@@ -4,6 +4,8 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.network.protocol.tim.packet.FriendImageIdRequestPacket
+import net.mamoe.mirai.utils.ExternalImage
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -30,7 +32,7 @@ import net.mamoe.mirai.contact.QQ
  *
  * @see Contact.sendMessage 发送消息
  */
-sealed class Message {//todo 使用 inline class 以减少 obj 创建. 在连接时才创建一个 linked 对象
+interface Message {
     /**
      * 易读的 [String] 值
      * 如:
@@ -39,9 +41,7 @@ sealed class Message {//todo 使用 inline class 以减少 obj 创建. 在连接
      * [face123]
      * ```
      */
-    abstract val stringValue: String
-
-    final override fun toString(): String = stringValue
+    val stringValue: String
 
     infix fun eq(other: Message): Boolean = this == other
 
@@ -50,7 +50,7 @@ sealed class Message {//todo 使用 inline class 以减少 obj 创建. 在连接
      */
     infix fun eq(other: String): Boolean = this.stringValue == other
 
-    open operator fun contains(sub: String): Boolean = false
+    operator fun contains(sub: String): Boolean = false
 
     /**
      * 把这个消息连接到另一个消息的头部. 类似于字符串相加.
@@ -59,7 +59,7 @@ sealed class Message {//todo 使用 inline class 以减少 obj 创建. 在连接
      * ```kotlin
      * val a = PlainText("Hello ")
      * val b = PlainText("world!")
-     * val c:MessageChain = a + b;
+     * val c:MessageChain = a + b
      * println(c)// "Hello world!"
      * ```
      *
@@ -69,9 +69,9 @@ sealed class Message {//todo 使用 inline class 以减少 obj 创建. 在连接
      * println(c)// "Hello world!"
      * ```
      */
-    open fun concat(tail: Message): MessageChain =
-            if (tail is MessageChain) MessageChain(this).also { tail.forEach { child -> it.concat(child) } }
-            else MessageChain(this, tail)
+    fun concat(tail: Message): MessageChain =
+        if (tail is MessageChain) MessageChain(this).also { tail.forEach { child -> it.concat(child) } }
+        else MessageChain(this, tail)
 
     infix operator fun plus(another: Message): MessageChain = this.concat(another)
     infix operator fun plus(another: String): MessageChain = this.concat(another.toMessage())
@@ -80,7 +80,7 @@ sealed class Message {//todo 使用 inline class 以减少 obj 创建. 在连接
 
 // ==================================== PlainText ====================================
 
-data class PlainText(override val stringValue: String) : Message() {
+inline class PlainText(override val stringValue: String) : Message {
     override operator fun contains(sub: String): Boolean = this.stringValue.contains(sub)
 }
 
@@ -90,13 +90,23 @@ data class PlainText(override val stringValue: String) : Message() {
  * 图片消息. 在发送时将会区分群图片和好友图片发送.
  * 由接收消息时构建, 可直接发送
  *
- * @param id 好友的为 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef`, 群的为 `{F61593B5-5B98-1798-3F47-2A91D32ED2FC}.jpg`
+ * @param id 这个图片的 [ImageId]
  * @param filename 文件名. 这将决定图片的显示
+ *
+ * @see
  */
-data class Image(val id: ImageId, val filename: String = "") : Message() {
+class Image(val id: ImageId, val filename: String = "") : Message {
     override val stringValue: String = "[${id.value}]"
 }
 
+/**
+ * 图片的标识符. 由图片的数据产生.
+ * 对于群, [value] 类似于 `{F61593B5-5B98-1798-3F47-2A91D32ED2FC}.jpg`, 由图片文件 MD5 直接产生.
+ * 对于好友, [value] 类似于 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef`, 由服务器返回.
+ *
+ * @see ExternalImage.groupImageId 群图片的 [ImageId] 获取
+ * @see FriendImageIdRequestPacket.Response.imageId 好友图片的 [ImageId] 获取
+ */
 inline class ImageId(val value: String)
 
 // ==================================== At ====================================
@@ -104,10 +114,10 @@ inline class ImageId(val value: String)
 /**
  * At 一个人
  */
-data class At(val targetQQ: UInt) : Message() {
-    constructor(target: QQ) : this(target.number)
+inline class At(val targetQQ: UInt) : Message {
+    constructor(target: QQ) : this(target.id)
 
-    override val stringValue: String = "[@$targetQQ]"
+    override val stringValue: String get() = "[@$targetQQ]"
 }
 
 // ==================================== Face ====================================
@@ -115,10 +125,9 @@ data class At(val targetQQ: UInt) : Message() {
 /**
  * QQ 自带表情
  */
-data class Face(val id: FaceID) : Message() {
-    override val stringValue: String = "[face${id.id}]"
+inline class Face(val id: FaceID) : Message {
+    override val stringValue: String get() = "[face${id.id}]"
 }
-
 
 // ==================================== MessageChain ====================================
 /**
@@ -132,11 +141,11 @@ data class Face(val id: FaceID) : Message() {
  * - 若一个 [Message] 与一个 [MessageChain] 连接, 将会创建一个新的 [MessageChain], 并顺序添加连接时的参数.
  */
 data class MessageChain constructor(//todo 优化: 不构造 list. 而是在每个 Message 内写 head 和 tail 来连接.
-        /**
-         * Elements will not be instances of [MessageChain]
-         */
-        private val delegate: MutableList<Message>
-) : Message(), MutableList<Message> {
+    /**
+     * Elements will not be instances of [MessageChain]
+     */
+    private val delegate: MutableList<Message>
+) : Message, MutableList<Message> {
     constructor() : this(mutableListOf())
     constructor(vararg messages: Message) : this(messages.toMutableList())
     constructor(messages: Iterable<Message>) : this(messages.toMutableList())
