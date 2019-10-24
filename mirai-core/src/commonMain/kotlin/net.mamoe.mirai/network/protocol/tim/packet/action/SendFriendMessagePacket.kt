@@ -12,8 +12,8 @@ import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
-import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.md5
 
 fun main() {
     println("牛逼".toMessage().toChain().toPacket(true).readBytes().toUHexString())

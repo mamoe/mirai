@@ -1,6 +1,6 @@
 @file:JvmName("IterableUtil")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.internal
 
 import kotlin.jvm.JvmName
 

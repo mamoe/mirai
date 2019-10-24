@@ -1,5 +1,7 @@
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
 
+import net.mamoe.mirai.contact.groupId
+import net.mamoe.mirai.contact.toInternalId
 import net.mamoe.mirai.network.protocol.tim.packet.GroupImageIdRequestPacket
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.io.readRemainingBytes
@@ -15,9 +17,9 @@ fun main() = println({
 
     // File("C:\\Users\\Him18\\Desktop\\test2.jpg").writeBytes(image.fileData.readBytes())
     GroupImageIdRequestPacket(
-            1994701021u,
-            580266363u,
-            image,
-            sessionKey
+        1994701021u,
+        580266363u.groupId().toInternalId(),
+        image,
+        sessionKey
     ).packet.readRemainingBytes().toUHexString()
 }())

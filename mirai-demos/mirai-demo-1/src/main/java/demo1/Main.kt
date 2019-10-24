@@ -2,7 +2,6 @@
 
 package demo1
 
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.Bot
@@ -40,7 +39,7 @@ private fun readTestAccount(): BotAccount? {
 }
 
 @Suppress("UNUSED_VARIABLE")
-suspend fun main() = coroutineScope {
+suspend fun main() {
     val bot = Bot(
         readTestAccount() ?: BotAccount(//填写你的账号
             id = 1994701121u,
@@ -58,7 +57,7 @@ suspend fun main() = coroutineScope {
     }
 
     subscribeAlways<GroupMessageEvent> {
-        if (it.message eq "复读" && it.group.internalId == 580266363u) {
+        if (it.message eq "复读" && it.group.internalId.value == 580266363u) {
             it.reply(it.message)
         }
     }

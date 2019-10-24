@@ -6,9 +6,9 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeUByte
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.utils.encryptAndWrite
-import net.mamoe.mirai.utils.writeHex
-import net.mamoe.mirai.utils.writeQQ
+import net.mamoe.mirai.utils.io.encryptAndWrite
+import net.mamoe.mirai.utils.io.writeHex
+import net.mamoe.mirai.utils.io.writeQQ
 
 /**
  * 获取升级天数等.

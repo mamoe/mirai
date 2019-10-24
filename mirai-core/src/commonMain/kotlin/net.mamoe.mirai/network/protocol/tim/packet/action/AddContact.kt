@@ -8,9 +8,9 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUShort
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.encryptAndWrite
-import net.mamoe.mirai.utils.writeHex
-import net.mamoe.mirai.utils.writeQQ
+import net.mamoe.mirai.utils.io.encryptAndWrite
+import net.mamoe.mirai.utils.io.writeHex
+import net.mamoe.mirai.utils.io.writeQQ
 
 /**
  * 向服务器检查是否可添加某人为好友

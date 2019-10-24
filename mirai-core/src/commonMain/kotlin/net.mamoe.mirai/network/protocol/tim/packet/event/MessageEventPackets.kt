@@ -26,7 +26,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
      * 发送方权限.
      */
     lateinit var senderPermission: SenderPermission
-    lateinit var message: MessageChain
+    var message: MessageChain by Delegates.notNull()
 
     override fun decode() = with(input) {
         discardExact(31)
@@ -95,7 +95,7 @@ class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: Event
      */
     var isPrevious: Boolean = false
 
-    lateinit var message: MessageChain
+    var message: MessageChain by Delegates.notNull()
 
     //来自自己发送给自己
     //00 00 00 20 00 05 00 02 00 06 00 06 00 04 00 01 01 07 00 09 00 06 03 E9 20 02 EB 94 00 0A 00 04 01 00 00 00 0C 17 76 E4 B8 DD 76 E4 B8 DD 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0B A6 D2 5D A3 2A 3F 00 00 5D A3 2A 3F 01 00 00 00 00 4D 53 47 00 00 00 00 00 5D A3 2A 3F 0C 8A 59 3D 00 00 00 00 0A 00 86 02 00 06 E5 AE 8B E4 BD 93 00 00 01 00 06 01 00 03 31 32 33 19 00 1F 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 0E 00 0E 01 00 04 00 00 00 00 0A 00 04 00 00 00 00

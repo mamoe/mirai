@@ -8,20 +8,21 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.readIP
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.toUHexString
 
 /**
  * The packet received when logging in, used to redirect server address
  *
  * @see OutgoingTouchRedirectionPacket
- * @see OutgoingPasswordSubmissionPacket
+ * @see SubmitPasswordPacket
  *
  * @author Him188moe
  */
 @Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 @PacketId(0x08_25u)
-class ServerTouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
+class TouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     var serverIP: String? = null
 
     var loginTime: Int = 0
@@ -51,7 +52,7 @@ class ServerTouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
 
     @PacketId(0x08_25u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(): ServerTouchResponsePacket = ServerTouchResponsePacket(decryptBy(TIMProtocol.touchKey.hexToBytes())).applySequence(sequenceId)
+        fun decrypt(): TouchResponsePacket = TouchResponsePacket(decryptBy(TIMProtocol.touchKey.hexToBytes())).applySequence(sequenceId)
     }
 }
 

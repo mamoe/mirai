@@ -4,8 +4,8 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.writeFully
-import net.mamoe.mirai.utils.encryptAndWrite
-import net.mamoe.mirai.utils.writeQQ
+import net.mamoe.mirai.utils.io.encryptAndWrite
+import net.mamoe.mirai.utils.io.writeQQ
 
 class OutgoingRawPacket(
         override val id: UShort,

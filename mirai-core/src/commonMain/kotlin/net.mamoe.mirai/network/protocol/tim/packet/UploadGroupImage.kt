@@ -4,11 +4,14 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.httpPostGroupImage
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.readUnsignedVarInt
 
 
 suspend fun Group.uploadImage(
@@ -19,7 +22,7 @@ suspend fun Group.uploadImage(
             if (it.uKey != null) {
                 httpPostGroupImage(
                     botAccount = bot.qqAccount,
-                    groupNumber = internalId,
+                    groupInternalId = internalId,
                     imageInput = image.input,
                     inputSize = image.inputSize,
                     uKeyHex = it.uKey!!.toUHexString("")
@@ -35,7 +38,7 @@ suspend fun Group.uploadImage(
 @PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
 class GroupImageIdRequestPacket(
     private val bot: UInt,
-    private val groupId: UInt,
+    private val groupInternalId: GroupInternalId,
     private val image: ExternalImage,
     private val sessionKey: ByteArray
 ) : OutgoingPacket() {
@@ -146,7 +149,7 @@ class GroupImageIdRequestPacket(
                 writeHex("01 12 03 98 01 01 10 01 1A")
 
                 writeUVarintLVPacket(lengthOffset = { it + 1 }) {
-                    writeTUVarint(0x08u, groupId)
+                    writeTUVarint(0x08u, groupInternalId.value)
                     writeTUVarint(0x10u, bot)
                     writeTV(0x1800u)
 

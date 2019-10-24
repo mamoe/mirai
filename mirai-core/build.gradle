@@ -85,7 +85,6 @@ kotlin {
 
         jvmTest {
             apply plugin: 'java'
-
         }
 
         all {

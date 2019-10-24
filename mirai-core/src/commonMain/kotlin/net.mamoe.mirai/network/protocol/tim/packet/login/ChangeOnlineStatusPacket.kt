@@ -8,9 +8,9 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.utils.OnlineStatus
-import net.mamoe.mirai.utils.encryptAndWrite
-import net.mamoe.mirai.utils.writeHex
-import net.mamoe.mirai.utils.writeQQ
+import net.mamoe.mirai.utils.io.encryptAndWrite
+import net.mamoe.mirai.utils.io.writeHex
+import net.mamoe.mirai.utils.io.writeQQ
 
 /**
  * 改变在线状态: "我在线上", "隐身" 等

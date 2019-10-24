@@ -46,6 +46,8 @@ sealed class Contact(val bot: Bot, val id: UInt) {
  */
 inline class GroupId(val value: UInt)
 
+fun UInt.groupId(): GroupId = GroupId(this)
+
 /**
  * 一些群 API 使用的 ID. 在使用时会特别注明
  *
@@ -62,7 +64,7 @@ inline class GroupInternalId(val value: UInt)
  * @author Him188moe
  */
 class Group internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
-    val internalId = groupNumberToId(id)
+    val internalId = GroupId(id).toInternalId()
     val members: ContactList<QQ>
         //todo members
         get() = throw UnsupportedOperationException("Not yet supported")
@@ -96,42 +98,3 @@ class QQ internal constructor(bot: Bot, number: UInt) : Contact(bot, number) {
         TODO()
     }
 }
-
-
-fun Group.Companion.groupNumberToId(number: UInt): UInt {//求你别出错
-    val left: Long = number.toString().let {
-        if (it.length < 6) {
-            return@groupNumberToId number
-        }
-        it.substring(0, it.length - 6).toLong()
-    }
-    val right: Long = number.toString().let {
-        it.substring(it.length - 6).toLong()
-    }
-
-    return when (left) {
-        in 1..10 -> {
-            ((left + 202).toString() + right.toString()).toUInt()
-        }
-        in 11..19 -> {
-            ((left + 469).toString() + right.toString()).toUInt()
-        }
-        in 20..66 -> {
-            ((left + 208).toString() + right.toString()).toUInt()
-        }
-        in 67..156 -> {
-            ((left + 1943).toString() + right.toString()).toUInt()
-        }
-        in 157..209 -> {
-            ((left + 199).toString() + right.toString()).toUInt()
-        }
-        in 210..309 -> {
-            ((left + 389).toString() + right.toString()).toUInt()
-        }
-        in 310..499 -> {
-            ((left + 349).toString() + right.toString()).toUInt()
-        }
-        else -> number
-    }
-}
-

@@ -75,7 +75,7 @@ internal actual fun HttpRequestBuilder.configureBody(
                 override val contentType: ContentType = ContentType.Image.GIF
                 override val contentLength: Long = inputSize
 
-                override suspend fun writeTo(channel: ByteWriteChannel) {
+                override suspend fun writeTo(channel: ByteWriteChannel) {//不知道为什么这个 channel 在 common 找不到...
                         val buffer = byteArrayOf(1)
                         while (!input.endOfInput) {
                                 input.readFully(buffer)

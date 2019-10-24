@@ -5,11 +5,12 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.readIoBuffer
+import net.mamoe.mirai.utils.Tested
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.localIpAddress
 
 @PacketId(0x08_28u)
-class OutgoingSessionRequestPacket(
+class RequestSessionPacket(
         private val bot: UInt,
         private val serverIp: String,
         private val token38: IoBuffer,
@@ -61,7 +62,7 @@ class OutgoingSessionRequestPacket(
 
 
 @PacketId(0x08_28u)
-class ServerSessionKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
+class SessionKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     lateinit var sessionKey: ByteArray
     lateinit var tlv0105: ByteReadPacket
 
@@ -111,7 +112,7 @@ Discarded(11) =41 01 00 02 03 3C 01 03 00 00 86
 
     @PacketId(0x08_28u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(sessionResponseDecryptionKey: IoBuffer): ServerSessionKeyResponsePacket =
-                ServerSessionKeyResponsePacket(decryptBy(sessionResponseDecryptionKey)).applySequence(sequenceId)
+        fun decrypt(sessionResponseDecryptionKey: IoBuffer): SessionKeyResponsePacket =
+            SessionKeyResponsePacket(decryptBy(sessionResponseDecryptionKey)).applySequence(sequenceId)
     }
 }

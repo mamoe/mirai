@@ -10,6 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.userAgent
 import kotlinx.io.core.Input
+import net.mamoe.mirai.contact.GroupInternalId
 
 /**
  * 时间戳
@@ -72,7 +73,7 @@ suspend fun httpPostFriendImage(
 @Suppress("DuplicatedCode")
 suspend fun httpPostGroupImage(
     botAccount: UInt,
-    groupNumber: UInt,
+    groupInternalId: GroupInternalId,
     uKeyHex: String,
     imageInput: Input,
     inputSize: Long
@@ -80,7 +81,7 @@ suspend fun httpPostGroupImage(
     url {
         parameters["htcmd"] = "0x6ff0071"
         parameters["uin"] = botAccount.toLong().toString()
-        parameters["groupcode"] = groupNumber.toLong().toString()
+        parameters["groupcode"] = groupInternalId.value.toLong().toString()
     }
 } as HttpStatusCode).value.also { println(it) } == 200
 

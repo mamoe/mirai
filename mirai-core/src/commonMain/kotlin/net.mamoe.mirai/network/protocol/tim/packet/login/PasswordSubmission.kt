@@ -8,14 +8,17 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.TEA
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.writeCRC32
 
 
 /**
  * 提交密码
  */
 @PacketId(0x08_36u)
-class OutgoingPasswordSubmissionPacket constructor(
+class SubmitPasswordPacket constructor(
         private val bot: UInt,
         private val password: String,
         private val loginTime: Int,

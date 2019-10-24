@@ -4,29 +4,30 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.*
 
 
 @PacketId(0x00_02u)
 class SendGroupMessagePacket(
-        private val botQQ: UInt,
-        private val groupId: UInt,//不是 number
-        private val sessionKey: ByteArray,
-        private val message: MessageChain
+    private val botQQ: UInt,
+    private val groupInternalId: GroupInternalId,
+    private val sessionKey: ByteArray,
+    private val message: MessageChain
 ) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(botQQ)
-        this.writeHex(TIMProtocol.fixVer2)
+        writeQQ(botQQ)
+        writeHex(TIMProtocol.fixVer2)
 
-        this.encryptAndWrite(sessionKey) {
+        encryptAndWrite(sessionKey) {
             writeByte(0x2A)
-            writeGroup(groupId)
+            writeGroup(groupInternalId)
 
             writeShortLVPacket {
                 writeHex("00 01 01")

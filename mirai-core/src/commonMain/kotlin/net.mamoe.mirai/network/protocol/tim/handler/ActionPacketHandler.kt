@@ -15,6 +15,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.utils.log
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 动作: 获取好友列表, 点赞, 踢人等.
@@ -23,6 +24,9 @@ import net.mamoe.mirai.utils.log
  * @author Him188moe
  */
 class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
+    override val coroutineContext: CoroutineContext
+        get() = session.NetworkScope.coroutineContext
+
     companion object Key : PacketHandler.Key<ActionPacketHandler>
 
 
@@ -66,15 +70,15 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
         }
     }
 
-    suspend fun requestSKey() = with(session) {
-        withContext(NetworkScope.coroutineContext) {
+    private suspend fun requestSKey() = with(session) {
+        withContext(coroutineContext) {
             socket.sendPacket(RequestSKeyPacket())
         }
     }
 
 
     suspend fun requestAccountInfo() = with(session) {
-        withContext(NetworkScope.coroutineContext) {
+        withContext(coroutineContext) {
             socket.sendPacket(RequestAccountInfoPacket(qqAccount, sessionKey))
         }
     }

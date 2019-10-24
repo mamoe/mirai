@@ -7,7 +7,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventScope
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.utils.inlinedRemoveIf
+import net.mamoe.mirai.utils.internal.inlinedRemoveIf
 import kotlin.reflect.KClass
 
 /**

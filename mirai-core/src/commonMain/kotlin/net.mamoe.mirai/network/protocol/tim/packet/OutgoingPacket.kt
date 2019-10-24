@@ -5,7 +5,7 @@ package net.mamoe.mirai.network.protocol.tim.packet
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.utils.writeHex
+import net.mamoe.mirai.utils.io.writeHex
 
 /**
  * 发给服务器的数据包. 必须有 [PacketId] 注解或 `override` [id]. 否则将会抛出 [IllegalStateException]

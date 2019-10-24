@@ -33,18 +33,19 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
 
     discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00. 但更可能是应该 discard 8
     return when (id.toUInt()) {
-        0x08_25u -> ServerTouchResponsePacket.Encrypted(this)
+        0x08_25u -> TouchResponsePacket.Encrypted(this)
         0x08_36u -> {
             //todo 不要用size分析
             when (size) {
-                271, 207 -> return ServerLoginResponseKeyExchangePacket.Encrypted(this).applySequence(sequenceId)
-                871 -> return ServerLoginResponseCaptchaInitPacket.Encrypted(this).applySequence(sequenceId)
+                271, 207 -> return LoginResponseKeyExchangeResponsePacket.Encrypted(this).applySequence(sequenceId)
+                871 -> return LoginResponseCaptchaInitPacket.Encrypted(this).applySequence(sequenceId)
             }
 
-            if (size > 700) return ServerLoginResponseSuccessPacket.Encrypted(this).applySequence(sequenceId)
+            if (size > 700) return LoginResponseSuccessPacket.Encrypted(this).applySequence(sequenceId)
 
             println("登录包size=$size")
-            return ServerLoginResponseFailedPacket(when (size) {
+            return LoginResponseFailedPacket(
+                when (size) {
                 135 -> {//包数据错误. 目前怀疑是 tlv0006
                     this.readRemainingBytes().cutTail(1).decryptBy(TIMProtocol.shareKey).read {
                         discardExact(51)
@@ -70,7 +71,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
                 else -> throw IllegalArgumentException(bytes.size.toString())*/
             }, this).applySequence(sequenceId)
         }
-        0x08_28u -> ServerSessionKeyResponsePacket.Encrypted(this)
+        0x08_28u -> SessionKeyResponsePacket.Encrypted(this)
 
         0x00_ECu -> ServerLoginSuccessPacket(this)
         0x00_BAu -> ServerCaptchaPacket.Encrypted(this)
