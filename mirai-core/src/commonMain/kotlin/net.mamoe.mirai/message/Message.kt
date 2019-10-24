@@ -81,7 +81,7 @@ interface Message {
 // ==================================== PlainText ====================================
 
 inline class PlainText(override val stringValue: String) : Message {
-    override operator fun contains(sub: String): Boolean = this.stringValue.contains(sub)
+    override operator fun contains(sub: String): Boolean = sub in stringValue
 }
 
 // ==================================== Image ====================================
@@ -91,12 +91,11 @@ inline class PlainText(override val stringValue: String) : Message {
  * 由接收消息时构建, 可直接发送
  *
  * @param id 这个图片的 [ImageId]
- * @param filename 文件名. 这将决定图片的显示
  *
  * @see
  */
-class Image(val id: ImageId, val filename: String = "") : Message {
-    override val stringValue: String = "[${id.value}]"
+inline class Image(val id: ImageId) : Message {
+    override val stringValue: String get() = "[${id.value}]"
 }
 
 /**
@@ -126,7 +125,7 @@ inline class At(val targetQQ: UInt) : Message {
  * QQ 自带表情
  */
 inline class Face(val id: FaceID) : Message {
-    override val stringValue: String get() = "[face${id.id}]"
+    override val stringValue: String get() = "[face${id.value}]"
 }
 
 // ==================================== MessageChain ====================================

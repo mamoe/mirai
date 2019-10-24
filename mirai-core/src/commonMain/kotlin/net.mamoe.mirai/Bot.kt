@@ -1,25 +1,22 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot.ContactSystem
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.contact.groupIdToNumber
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotNetworkConfiguration
-import net.mamoe.mirai.utils.ContactList
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.log
 import kotlin.jvm.JvmOverloads
 
 data class BotAccount(
-        val account: UInt,
-        val password: String//todo 不保存 password?
+    val id: UInt,
+    val password: String//todo 不保存 password?
 )
 
 /**
@@ -51,8 +48,6 @@ data class BotAccount(
  * @see net.mamoe.mirai.contact.Contact
  */
 class Bot(val account: BotAccount, val logger: MiraiLogger) {
-    val id = nextId()
-
     val contacts = ContactSystem()
 
     var network: BotNetworkHandler<*> = TIMBotNetworkHandler(this)
@@ -60,17 +55,20 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
     init {
         instances.add(this)
 
-        this.logger.identity = "Bot" + this.id + "(" + this.account.account + ")"
+        this.logger.identity = "Bot(" + this.account.id + ")"
     }
 
-    override fun toString(): String = "Bot{id=$id,qq=${account.account}}"
+    override fun toString(): String = "Bot{qq=${account.id}}"
 
     /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler.NetworkScope] 下的协程.
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
      * 然后重新启动并尝试登录
      */
     @JvmOverloads
-    suspend fun reinitializeNetworkHandler(configuration: BotNetworkConfiguration, cause: Throwable? = null): LoginResult {
+    suspend fun reinitializeNetworkHandler(
+        configuration: BotNetworkConfiguration,
+        cause: Throwable? = null
+    ): LoginResult {
         logger.logPurple("Reinitializing BotNetworkHandler")
         try {
             network.close(cause)
@@ -93,22 +91,42 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         private val qqsLock = Mutex()
 
         /**
-         * 通过群号码获取群对象.
-         * 注意: 在并发调用时, 这个方法并不是原子的.
+         * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.
+         *
+         * 注: 这个方法是线程安全的
          */
-        fun getQQ(account: UInt): QQ = qqs.getOrPut(account) { QQ(this@Bot, account) }
+        suspend fun getQQ(account: UInt): QQ =
+            if (qqs.containsKey(account)) qqs[account]!!
+            else qqsLock.withLock {
+                qqs.getOrPut(account) { QQ(this@Bot, account) }
+            }
 
         /**
-         * 通过群号码获取群对象.
-         * 注意: 在并发调用时, 这个方法并不是原子的.
+         * 获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
+         *
+         * 注: 这个方法是线程安全的
          */
-        fun getGroupByNumber(groupNumber: UInt): Group = groups.getOrPut(groupNumber) { Group(this@Bot, groupNumber) }
+        suspend fun getGroup(internalId: GroupInternalId): Group = getGroup(internalId.toId())
 
-
-        fun getGroupById(groupId: UInt): Group {
-            return getGroupByNumber(Group.groupIdToNumber(groupId))
+        /**
+         * 获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
+         *
+         * 注: 这个方法是线程安全的
+         */
+        suspend fun getGroup(id: GroupId): Group = id.value.let {
+            if (groups.containsKey(it)) groups[it]!!
+            else groupsLock.withLock {
+                groups.getOrPut(it) { Group(this@Bot, it) }
+            }
         }
     }
+
+    suspend fun UInt.qq(): QQ = getQQ(this)
+    suspend fun Long.qq(): QQ = getQQ(this)
+
+    suspend fun UInt.group(): Group = getGroup(GroupId(this))
+    suspend fun GroupId.group(): Group = getGroup(this)
+    suspend fun GroupInternalId.group(): Group = getGroup(this)
 
     suspend fun close() {
         this.network.close()
@@ -118,8 +136,5 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
 
     companion object {
         val instances: MutableList<Bot> = mutableListOf()
-
-        private val id = atomic(0)
-        fun nextId(): Int = id.addAndGet(1)
     }
 }

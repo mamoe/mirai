@@ -6,7 +6,7 @@ package net.mamoe.mirai.message
  * @author LamGC
  */
 @Suppress("EnumEntryName", "unused", "SpellCheckingInspection")
-enum class FaceID constructor(val id: UByte) {
+enum class FaceID constructor(val value: UByte) {
     unknown(0xffu),
     // TODO: 2019/9/1 添加更多表情
     jingya(0u),
@@ -150,14 +150,14 @@ enum class FaceID constructor(val id: UByte) {
     qingwa(170u);
 
     override fun toString(): String {
-        return "$name($id)"
+        return "$name($value)"
     }
 
     companion object {
 
         fun ofId(id: UByte): FaceID {
             for (value in values()) {
-                if (value.id == id) {
+                if (value.value == id) {
                     return value
                 }
             }

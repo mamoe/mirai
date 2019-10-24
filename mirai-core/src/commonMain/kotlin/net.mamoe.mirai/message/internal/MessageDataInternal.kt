@@ -41,7 +41,7 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
     val suffix = readString(filenameLength).substringAfter(".")
     discardExact(8)//03 00 04 00 00 02 9C 04
     val length = readShort()//=27
-    return Image(ImageId(readString(length)), "")//todo 文件名解析
+    return Image(ImageId(readString(length)))
     //return Image("{${readString(length)}}.$suffix")
 }
 
@@ -60,8 +60,8 @@ fun main() {
 }
 
 internal fun IoBuffer.parseMessageImage0x03(): Image {
-    discardExact(1) //TODO 这里的文件名解析
-    return Image(ImageId(String(readLVByteArray())), "")
+    discardExact(1)
+    return Image(ImageId(String(readLVByteArray())))
 }
 
 internal fun ByteReadPacket.readMessage(): Message? {
@@ -141,13 +141,13 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
 
                     writeShortLVPacket {
                         writeShort(1)
-                        writeUByte(id.id)
+                        writeUByte(id.value)
 
                         writeHex("0B 00 08 00 01 00 04 52 CC F5 D0 FF")
 
                         writeShort(2)
                         writeByte(0x14)//??
-                        writeUByte((id.id + 65u).toUByte())
+                        writeUByte((id.value + 65u).toUByte())
                     }
                 }
 
