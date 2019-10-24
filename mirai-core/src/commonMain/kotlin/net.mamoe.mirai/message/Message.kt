@@ -279,13 +279,6 @@ internal inline class MessageChainImpl constructor(
     }
 
     // endregion
-    override operator fun plusAssign(message: Message) {
-        this.concat(message)
-    }
-
-    override operator fun plusAssign(plain: String) {
-        this.concat(plain.toMessage())
-    }
 
     // region MutableList override
     override fun containsAll(elements: Collection<Message>): Boolean = delegate.containsAll(elements)

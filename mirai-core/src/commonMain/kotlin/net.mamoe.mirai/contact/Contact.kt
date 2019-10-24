@@ -33,9 +33,12 @@ sealed class Contact(val bot: Bot, val id: UInt) {
 
 /**
  * 一般的用户可见的 ID.
- * 在 TIM/QQ 客户端中所看到的的号码均是这个 ID
+ * 在 TIM/QQ 客户端中所看到的的号码均是这个 ID.
+ *
+ * 注: 在引用群 ID 时, 应使用 [GroupId] 或 [GroupInternalId] 类型, 而不是 [UInt]
  *
  * @see GroupInternalId.toId 由 [GroupInternalId] 转换为 [GroupId]
+ * @see GroupId.toInternalId 由 [GroupId] 转换为 [GroupInternalId]
  */
 inline class GroupId(val value: UInt)
 
@@ -44,7 +47,10 @@ fun UInt.groupId(): GroupId = GroupId(this)
 /**
  * 一些群 API 使用的 ID. 在使用时会特别注明
  *
+ * 注: 在引用群 ID 时, 应使用 [GroupId] 或 [GroupInternalId] 类型, 而不是 [UInt]
+ *
  * @see GroupInternalId.toId 由 [GroupInternalId] 转换为 [GroupId]
+ * @see GroupId.toInternalId 由 [GroupId] 转换为 [GroupInternalId]
  */
 inline class GroupInternalId(val value: UInt)
 
