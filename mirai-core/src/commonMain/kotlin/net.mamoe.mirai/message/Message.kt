@@ -212,6 +212,8 @@ object NullMessageChain : MessageChain {
     override val stringValue: String
         get() = ""
 
+    override fun toString(): String = stringValue
+
     override fun contains(sub: String): Boolean = false
     override fun contains(element: Message): Boolean = false
     override fun concat(tail: Message): MessageChain = MessageChainImpl(tail)
@@ -271,6 +273,8 @@ internal inline class MessageChainImpl constructor(
     // region Message override
     override val stringValue: String get() = this.delegate.joinToString("") { it.stringValue }
 
+    override fun toString(): String = stringValue
+
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
     override fun concat(tail: Message): MessageChain {
         if (tail is MessageChain) tail.forEach { child -> this.concat(child) }
@@ -324,6 +328,7 @@ internal inline class SingleMessageChainImpl(
         return this
     }
 
+    override fun toString(): String = stringValue
     // endregion
     // region MutableList override
     override fun containsAll(elements: Collection<Message>): Boolean = elements.all { it === delegate }
@@ -339,23 +344,28 @@ internal inline class SingleMessageChainImpl(
     override fun clear() = throw UnsupportedOperationException()
     override fun listIterator(): MutableListIterator<Message> = object : MutableListIterator<Message> {
         private var hasNext = true
-        override fun hasPrevious(): Boolean = false
+        override fun hasPrevious(): Boolean = !hasNext
         override fun nextIndex(): Int = if (hasNext) 0 else -1
-        override fun previous(): Message = throw NoSuchElementException()
-        override fun previousIndex(): Int = -1
+        override fun previous(): Message =
+            if (hasPrevious()) {
+                hasNext = true
+                delegate
+            } else throw NoSuchElementException()
+
+        override fun previousIndex(): Int = if (!hasNext) 0 else -1
         override fun add(element: Message) = throw UnsupportedOperationException()
-        override fun hasNext(): Boolean = !hasNext
+        override fun hasNext(): Boolean = hasNext
         override fun next(): Message =
             if (hasNext) {
                 hasNext = false
-                this@SingleMessageChainImpl
+                delegate
             } else throw NoSuchElementException()
 
         override fun remove() = throw UnsupportedOperationException()
         override fun set(element: Message) = throw UnsupportedOperationException()
     }
 
-    override fun listIterator(index: Int): MutableListIterator<Message> = throw UnsupportedOperationException()
+    override fun listIterator(index: Int): MutableListIterator<Message> = if (index == 0) listIterator() else throw UnsupportedOperationException()
     override fun remove(element: Message): Boolean = throw UnsupportedOperationException()
     override fun removeAll(elements: Collection<Message>): Boolean = throw UnsupportedOperationException()
     override fun removeAt(index: Int): Message = throw UnsupportedOperationException()
@@ -372,11 +382,11 @@ internal inline class SingleMessageChainImpl(
 
     override fun iterator(): MutableIterator<Message> = object : MutableIterator<Message> {
         private var hasNext = true
-        override fun hasNext(): Boolean = !hasNext
+        override fun hasNext(): Boolean = hasNext
         override fun next(): Message =
             if (hasNext) {
                 hasNext = false
-                this@SingleMessageChainImpl
+                delegate
             } else throw NoSuchElementException()
 
         override fun remove() = throw UnsupportedOperationException()

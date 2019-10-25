@@ -249,7 +249,7 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
                     }
                 }
 
-                else -> throw UnsupportedOperationException("${this::class.simpleName} is not supported")
+                else -> throw UnsupportedOperationException("${this::class.simpleName} is not supported(Full MessageChain=${this@toPacket})")
             }
         })
     }
