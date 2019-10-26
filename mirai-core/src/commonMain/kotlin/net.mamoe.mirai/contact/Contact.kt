@@ -7,7 +7,9 @@ import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.PlainText
 import net.mamoe.mirai.message.toChain
+import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
+import net.mamoe.mirai.withSession
 
 class ContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf()
 
@@ -78,6 +80,8 @@ class Group internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
 
     companion object
 }
+
+inline fun <R> Group.withSession(block: BotSession.() -> R): R = bot.withSession(block)
 
 /**
  * QQ 账号.
