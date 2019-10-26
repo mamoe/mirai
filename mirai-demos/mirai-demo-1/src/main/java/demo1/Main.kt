@@ -18,11 +18,13 @@ import net.mamoe.mirai.message.PlainText
 import net.mamoe.mirai.message.firstOrNull
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingRawPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.toByteArray
+import net.mamoe.mirai.utils.toExternalImage
 import java.io.File
 
 private fun readTestAccount(): BotAccount? {
@@ -45,17 +47,13 @@ suspend fun main() {
         readTestAccount() ?: BotAccount(//填写你的账号
             id = 1994701121u,
             password = "123456"
-        ), PlatformLogger()
+        )
     )
 
+    // 覆盖默认的配置
     bot.login {
         randomDeviceName = false
-    }.let {
-        if (it != LoginResult.SUCCESS) {
-            MiraiLogger.logError("Login failed: " + it.name)
-            bot.close()
-        }
-    }
+    }.requireSuccess()
 
     subscribeAlways<GroupMessageEvent> {
         if (it.message eq "复读" && it.group.internalId.value == 580266363u) {

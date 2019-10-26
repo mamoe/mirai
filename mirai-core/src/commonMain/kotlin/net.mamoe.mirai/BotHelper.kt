@@ -21,14 +21,15 @@ suspend inline fun Bot.getGroup(id: GroupId): Group = this.contacts.getGroup(id)
 suspend inline fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.getGroup(internalId)
 
 /**
- * 取得机器人的群成员列表. 当机器人登录后成员列表就会
+ * 取得机器人的群成员列表
  */
-@Suppress("WRONG_MODIFIER_TARGET")
-suspend inline val Bot.groups: ContactList<Group>
+inline val Bot.groups: ContactList<Group>
     get() = this.contacts.groups
 
-@Suppress("WRONG_MODIFIER_TARGET")
-suspend inline val Bot.qqs: ContactList<QQ>
+/**
+ * 取得机器人的好友列表
+ */
+inline val Bot.qqs: ContactList<QQ>
     get() = this.contacts.qqs
 
 /**
@@ -53,5 +54,7 @@ suspend inline fun Bot.login(noinline configuration: BotNetworkConfiguration.() 
  */
 suspend inline fun Bot.login(): LoginResult = this.network.login(BotNetworkConfiguration.Default)
 
-//BotAccount
+/**
+ * 取得机器人的 QQ 号
+ */
 inline val Bot.qqAccount: UInt get() = this.account.id

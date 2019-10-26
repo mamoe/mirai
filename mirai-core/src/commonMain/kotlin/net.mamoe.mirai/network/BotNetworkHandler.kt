@@ -2,6 +2,7 @@ package net.mamoe.mirai.network
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
@@ -10,10 +11,11 @@ import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.PlatformDatagramChannel
-import kotlin.coroutines.ContinuationInterceptor
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.
@@ -36,7 +38,7 @@ import kotlin.coroutines.ContinuationInterceptor
  * [BotNetworkHandler] 的协程包含:
  * - UDP 包接收: [PlatformDatagramChannel.read]
  * - 心跳 Job [HeartbeatPacket]
- * - SKey 刷新 [ReuestSKeyPcket]
+ * - SKey 刷新 [RequestSKeyPacket]
  * - 所有数据包处理和发送
  *
  * [BotNetworkHandler.close] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
@@ -58,6 +60,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
 
     /**
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果
+     * 本函数将挂起直到登录成功.
      */
     suspend fun login(configuration: BotNetworkConfiguration): LoginResult
 
@@ -79,8 +82,11 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
      */
     suspend fun awaitDisconnection()
 
+    /**
+     * 关闭网络接口, 停止所有有关协程和任务
+     */
     suspend fun close(cause: Throwable? = null) {
         //todo check??
-        coroutineContext[ContinuationInterceptor]!!.cancelChildren(CancellationException("handler closed", cause))
+        coroutineContext[Job]!!.cancelChildren(CancellationException("handler closed", cause))
     }
 }
