@@ -12,8 +12,6 @@ Mirai 的所有模块均开源
 ## 抢先体验  
 核心框架结构已经开发完毕，一些核心功能也测试完成。  
 仅需几分钟就可以测试 Mirai.  
-现在你可以登录小号来测试 Mirai.  
-即使测试消息时未发现冻结情况，我们也无法100%保证账号冻结不会发生。
 
 目前还没有写构建，请使用 IDE 运行单个 main 函数。
 1. Clone
@@ -31,24 +29,6 @@ inline fun <reified E: Event> subscribeAlways(handler: (E) -> Unit)
 
 subscribeAlways<FriendMessageEvent>{
   //it: FriendMessageEvent
-}
-```
-
-##### DSL
-查看更多: [ListenerBuilder](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Subscribers.kt#L87)
-```kotlin
-inline fun <reified E: Event> subscribeAll(builder: ListenerBuilder.() -> Unit)
-
-subscribe<FriendMessageEvent>{
-  always{
-    //it: FriendMessageEvent
-    //coroutineContext: EventScope.coroutineContext
-  }
-  //可同时开始多个监听。
-  always{
-    //it: FriendMessageEvent
-    //coroutineContext: EventScope.coroutineContext
-  }
 }
 ```
 
