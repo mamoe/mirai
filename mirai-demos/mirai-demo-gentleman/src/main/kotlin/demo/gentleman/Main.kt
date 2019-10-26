@@ -1,9 +1,11 @@
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
-package demo1
+package demo.gentleman
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.event.events.FriendMessageEvent
+import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.login
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
@@ -25,13 +27,19 @@ private fun readTestAccount(): BotAccount? {
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
     val bot = Bot(
-        readTestAccount() ?: BotAccount(//填写你的账号
+        readTestAccount() ?: BotAccount(
             id = 1994701121u,
             password = "123456"
         )
     )
 
     bot.login().requireSuccess()
+
+    bot.subscribeAlways<FriendMessageEvent> {
+
+    }
+
+
 
     bot.network.awaitDisconnection()//等到直到断开连接
 }

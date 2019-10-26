@@ -72,6 +72,7 @@ suspend fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> An
  * 监听一个事件. 可同时进行多种方式的监听
  * @see ListenerBuilder
  */
+@ListenersBuilderDsl
 suspend fun <E : Event> KClass<E>.subscribeAll(listeners: suspend ListenerBuilder<E>.() -> Unit) {
     with(ListenerBuilder<E> { this.subscribeInternal(it) }) {
         listeners()
@@ -82,6 +83,7 @@ suspend fun <E : Event> KClass<E>.subscribeAll(listeners: suspend ListenerBuilde
  * 监听一个事件. 可同时进行多种方式的监听
  * @see ListenerBuilder
  */
+@ListenersBuilderDsl
 suspend inline fun <reified E : Event> subscribeAll(noinline listeners: suspend ListenerBuilder<E>.() -> Unit) = E::class.subscribeAll(listeners)
 
 /**
@@ -100,6 +102,7 @@ suspend inline fun <reified E : Event> subscribeAll(noinline listeners: suspend 
  * }
  * ```
  */
+@ListenersBuilderDsl
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 inline class ListenerBuilder<out E : Event>(
     private val handlerConsumer: suspend (Handler<in E>) -> Unit
@@ -124,5 +127,8 @@ inline class ListenerBuilder<out E : Event>(
 
     suspend fun once(block: suspend (E) -> Unit) = handler { block(it); ListeningStatus.STOPPED }
 }
+
+@DslMarker
+annotation class ListenersBuilderDsl
 
 // endregion

@@ -7,6 +7,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventScope
 import net.mamoe.mirai.event.ListeningStatus
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.internal.inlinedRemoveIf
 import kotlin.reflect.KClass
 
@@ -62,9 +63,22 @@ class Handler<E : Event>(val handler: suspend (E) -> ListeningStatus) : Listener
     override suspend fun onEvent(event: E): ListeningStatus = handler.invoke(event)
 }
 
+/**
+ * 带有 bot 筛选的监听器.
+ * 所有的非 [BotEvent] 的事件都不会被处理
+ * 所有的 [BotEvent.bot] `!==` `bot` 的事件都不会被处理
+ */
 class HandlerWithBot<E : Event>(val bot: Bot, val handler: suspend Bot.(E) -> ListeningStatus) : Listener<E>() {
     override suspend fun onEvent(event: E): ListeningStatus = with(bot) {
-        handler(event)
+        if (event !is BotEvent || event.bot !== this) {
+            return ListeningStatus.LISTENING
+        }
+
+        return if (bot !== this) {
+            ListeningStatus.LISTENING
+        } else {
+            handler(event)
+        }
     }
 }
 

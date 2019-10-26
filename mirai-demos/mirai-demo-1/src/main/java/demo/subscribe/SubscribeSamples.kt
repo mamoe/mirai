@@ -1,22 +1,15 @@
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
-package demo1
+package demo.subscribe
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.contact.sendMessage
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.GroupMessageEvent
-import net.mamoe.mirai.event.subscribeAll
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.event.subscribeUntilFalse
 import net.mamoe.mirai.login
-import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.message.ImageId
-import net.mamoe.mirai.message.PlainText
-import net.mamoe.mirai.message.firstOrNull
+import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingRawPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
@@ -42,34 +35,104 @@ private fun readTestAccount(): BotAccount? {
     }
 }
 
-@Suppress("UNUSED_VARIABLE")
-suspend fun main() {
-    val bot = Bot(
-        readTestAccount() ?: BotAccount(//填写你的账号
-            id = 1994701121u,
-            password = "123456"
-        )
-    )
+/**
+ * 使用 dsl 监听消息事件
+ *
+ * @see subscribeFriendMessages
+ * @see subscribeMessages
+ * @see subscribeGroupMessages
+ *
+ * @see MessageSubscribersBuilder
+ */
+suspend fun Bot.messageDSL() {
+    //监听所有 bot 的来自所有群和好友的消息
+    subscribeMessages {
+        replyCase("你好") { "你好" }
 
-    // 覆盖默认的配置
-    bot.login {
-        randomDeviceName = false
-    }.requireSuccess()
+        has<Image> {
+            // this: SenderAndMessage
+            // message: MessageChain
+            // sender: QQ
+            // it: String (MessageChain.toString)
 
-    subscribeAlways<GroupMessageEvent> {
-        if (it.message eq "复读" && it.group.internalId.value == 580266363u) {
-            it.reply(it.message)
+            if (this is GroupSenderAndMessage) {
+                //如果是群消息
+                // group: Group
+                this.group.sendMessage("你在一个群里")
+            }
+
+            reply("你发送了一个图片, ID为 ${message[Image].id}, 我要复读了")
+            reply(message)
+        }
+
+        replyContains("123") { "你的消息里面包含 123" }
+
+        replyCase("我的qq") { sender.id.toString() }
+
+        sentBy(1040400290) {
+            reply("是你!")
+        }
+
+        contains("复读") {
+            reply(message)
+        }
+
+        case("上传好友图片") {
+            val filename = it.toString().substringAfter("上传好友图片")
+            File("C:\\Users\\Him18\\Desktop\\$filename").sendAsImageTo(1040400290u.qq())
+        }
+
+        case("上传群图片") {
+            val filename = it.toString().substringAfter("上传好友图片")
+            File("C:\\Users\\Him18\\Desktop\\$filename").sendAsImageTo(920503456u.group())
         }
     }
 
+    subscribeMessages {
+        case("你好") {
+            // this: SenderAndMessage
+            // message: MessageChain
+            // sender: QQ
+            // it: String (来自 MessageChain.toString)
+            // group: Group (如果是群消息)
+            reply("你好")
+        }
+    }
+
+    subscribeFriendMessages {
+        contains("A") {
+            // this: FriendSenderAndMessage
+            // message: MessageChain
+            // sender: QQ
+            // it: String (来自 MessageChain.toString)
+            reply("B")
+        }
+    }
+
+    subscribeGroupMessages {
+        // this: FriendSenderAndMessage
+        // message: MessageChain
+        // sender: QQ
+        // it: String (来自 MessageChain.toString)
+        // group: Group
+    }
+}
+
+/**
+ * 监听单个事件
+ */
+@Suppress("UNUSED_VARIABLE")
+suspend fun directlySubscribe(bot: Bot) {
+    // 手动处理消息
     // 使用 Bot 的扩展方法监听, 将在处理事件时得到一个 this: Bot.
-    // 这样可以很方便地调用 Bot 内的一些扩展方法如 UInt.qq():QQ
+    // 这样可以调用 Bot 内的一些扩展方法如 UInt.qq():QQ
     bot.subscribeAlways<FriendMessageEvent> {
         // this: Bot
         // it: FriendMessageEvent
 
         // 获取第一个纯文本消息, 获取不到会抛出 NoSuchElementException
         // val firstText = it.message.first<PlainText>()
+
         val firstText = it.message.firstOrNull<PlainText>()
 
         // 获取第一个图片
@@ -97,15 +160,6 @@ suspend fun main() {
                 )
             }
 
-            "上传好友图片" in it.message -> withTimeoutOrNull(5000) {
-                val filename = it.message.toString().substringAfter("上传好友图片")
-                val id = 1040400290u.qq()
-                    .uploadImage(File("C:\\Users\\Him18\\Desktop\\$filename").toExternalImage())
-                it.reply(id.value)
-                delay(100)
-                it.reply(Image(id))
-            }
-
             "上传群图片" in it.message -> withTimeoutOrNull(5000) {
                 val filename = it.message.toString().substringAfter("上传群图片")
                 val image = File(
@@ -131,8 +185,8 @@ suspend fun main() {
 
             it.message eq "发图片群2" -> 580266363u.group().sendMessage(Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
 
-            /* it.event eq "发图片" -> sendFriendMessage(it.sender, PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
-                     image.upload(session, it.sender).of()
+            /* it.event eq "发图片" -> sendFriendMessage(it.sentBy, PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
+                     image.upload(session, it.sentBy).of()
                  })*/
             it.message eq "发图片2" -> it.reply(PlainText("test") + Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
             else -> {
@@ -140,7 +194,24 @@ suspend fun main() {
             }
         }
     }
+}
 
+@Suppress("UNUSED_VARIABLE")
+suspend fun main() {
+    val bot = Bot(
+        readTestAccount() ?: BotAccount(//填写你的账号
+            id = 1994701121u,
+            password = "123456"
+        )
+    )
+
+    // 覆盖默认的配置
+    bot.login {
+        randomDeviceName = false
+    }.requireSuccess()
+
+    bot.messageDSL()
+    directlySubscribe(bot)
 
     //DSL 监听
     subscribeAll<FriendMessageEvent> {

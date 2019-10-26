@@ -27,11 +27,13 @@ sealed class Contact(val bot: Bot, val id: UInt) {
     abstract suspend fun sendMessage(message: MessageChain)
 
     abstract suspend fun sendXMLMessage(message: String)
+
+
+    //这两个方法写在 Contact 里面更适合. 因为 import 不便
+    suspend fun sendMessage(plain: String) = sendMessage(PlainText(plain))
+
+    suspend fun sendMessage(message: Message) = sendMessage(message.toChain())
 }
-
-suspend fun Contact.sendMessage(plain: String) = sendMessage(PlainText(plain))
-suspend fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
-
 
 /**
  * 一般的用户可见的 ID.

@@ -9,14 +9,19 @@ import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.internal.PositiveNumbers
+import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 
 /*
  * 在 [Bot] 中的方法的捷径
  */
 
 //Contacts
+suspend inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number.coerceAtLeastOrFail(0).toUInt())
 suspend inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
 
+suspend inline fun Bot.getGroup(id: UInt): Group = this.contacts.getGroup(GroupId(id))
+suspend inline fun Bot.getGroup(@PositiveNumbers id: Long): Group = this.contacts.getGroup(GroupId(id.coerceAtLeastOrFail(0).toUInt()))
 suspend inline fun Bot.getGroup(id: GroupId): Group = this.contacts.getGroup(id)
 suspend inline fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.getGroup(internalId)
 

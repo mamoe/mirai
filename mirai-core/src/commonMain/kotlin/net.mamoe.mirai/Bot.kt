@@ -13,6 +13,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.utils.log
 import kotlin.jvm.JvmOverloads
 
@@ -52,7 +53,7 @@ data class BotAccount(
  * @see net.mamoe.mirai.contact.Contact
  */
 class Bot(val account: BotAccount, val logger: MiraiLogger) {
-    constructor(id: UInt, password: String) : this(BotAccount(id, password))
+    constructor(qq: UInt, password: String) : this(BotAccount(qq, password))
     constructor(account: BotAccount) : this(account, DefaultLogger("Bot(" + account.id + ")"))
 
     val contacts = ContactSystem()
@@ -131,8 +132,12 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         }
     }
 
+    suspend inline fun Int.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0))
     suspend inline fun UInt.qq(): QQ = getQQ(this)
 
+    suspend inline fun Int.group(): Group = getGroup(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.group(): Group = getGroup(this.coerceAtLeastOrFail(0))
     suspend inline fun UInt.group(): Group = getGroup(GroupId(this))
     suspend inline fun GroupId.group(): Group = getGroup(this)
     suspend inline fun GroupInternalId.group(): Group = getGroup(this)

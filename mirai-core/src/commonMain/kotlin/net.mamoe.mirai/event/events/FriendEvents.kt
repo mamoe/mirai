@@ -2,7 +2,6 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 
