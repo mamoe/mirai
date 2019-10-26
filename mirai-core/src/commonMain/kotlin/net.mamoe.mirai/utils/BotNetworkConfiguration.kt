@@ -7,7 +7,7 @@ import kotlin.jvm.JvmField
 import kotlin.jvm.JvmOverloads
 
 /**
- * 网络配置
+ * 网络和连接配置
  */
 class BotNetworkConfiguration @JvmOverloads constructor(
     /**

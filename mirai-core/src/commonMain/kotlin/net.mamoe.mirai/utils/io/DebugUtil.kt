@@ -1,13 +1,13 @@
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlatformLogger
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toIoBuffer
 
 
-internal object DebugLogger : MiraiLogger by PlatformLogger("Packet Debug")
+internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug")
 
 internal fun debugPrintln(any: Any?) = DebugLogger.logPurple(any)
 
@@ -80,9 +80,3 @@ internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstCons
 
 expect fun printCompareHex(hex1s: String, hex2s: String): String
 expect fun String.printColorize(ignoreUntilFirstConst: Boolean = false): String
-
-
-fun main() {
-    "00 02 3E 03 3F A2 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 39 00 00 00 0B 00 00 00 2E 51 51 E7 A9 BA E9 97 B4 20 0A 20 20 E6 9C 89 E6 96 B0 E8 AE BF E5 AE A2 20 0A 20 20 E6 9C 89 E6 96 B0 E5 A5 BD E5 8F 8B E5 8A A8 E6 80 81 00 00 01 2C 00 00 00 00"
-            .printStringFromHex()
-}

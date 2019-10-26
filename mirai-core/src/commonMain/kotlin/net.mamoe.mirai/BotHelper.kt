@@ -3,6 +3,7 @@
 package net.mamoe.mirai
 
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
@@ -10,29 +11,47 @@ import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 
 /*
- * The mirror of functions in inner classes of [Bot]
+ * 在 [Bot] 中的方法的捷径
  */
 
 //Contacts
-suspend fun Bot.getQQ(number: Long): QQ = this.contacts.getQQ(number.toUInt())
+suspend inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
 
-suspend fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
+suspend inline fun Bot.getGroup(id: GroupId): Group = this.contacts.getGroup(id)
+suspend inline fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.getGroup(internalId)
 
-suspend fun Bot.getGroup(id: GroupId): Group = this.contacts.getGroup(id)
-suspend fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.getGroup(internalId)
+/**
+ * 取得机器人的群成员列表. 当机器人登录后成员列表就会
+ */
+@Suppress("WRONG_MODIFIER_TARGET")
+suspend inline val Bot.groups: ContactList<Group>
+    get() = this.contacts.groups
 
-val Bot.groups: ContactList<Group> get() = this.contacts.groups
-val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
+@Suppress("WRONG_MODIFIER_TARGET")
+suspend inline val Bot.qqs: ContactList<QQ>
+    get() = this.contacts.qqs
 
-inline fun <T> Bot.withSession(block: BotSession.() -> T): T = with(this.network.session) { block() }
+/**
+ * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
+ * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpect]
+ */
+inline fun <R> Bot.withSession(block: BotSession.() -> R): R = with(this.network.session) { block() }
 
+/**
+ * 发送数据包
+ * @throws IllegalStateException 当 [BotNetworkHandler.socket] 未开启时
+ */
+suspend inline fun Bot.sendPacket(packet: OutgoingPacket) = this.network.sendPacket(packet)
 
-//NetworkHandler
-suspend fun Bot.sendPacket(packet: OutgoingPacket) = this.network.sendPacket(packet)
+/**
+ * 使用在默认配置基础上修改的配置登录
+ */
+suspend inline fun Bot.login(noinline configuration: BotNetworkConfiguration.() -> Unit): LoginResult = this.network.login(BotNetworkConfiguration().apply(configuration))
 
-suspend fun Bot.login(configuration: BotNetworkConfiguration.() -> Unit): LoginResult = this.network.login(BotNetworkConfiguration().apply(configuration))
-
-suspend fun Bot.login(): LoginResult = this.network.login(BotNetworkConfiguration.Default)
+/**
+ * 使用默认的配置 ([BotNetworkConfiguration.Default]) 登录
+ */
+suspend inline fun Bot.login(): LoginResult = this.network.login(BotNetworkConfiguration.Default)
 
 //BotAccount
-val Bot.qqAccount: UInt get() = this.account.id
+inline val Bot.qqAccount: UInt get() = this.account.id

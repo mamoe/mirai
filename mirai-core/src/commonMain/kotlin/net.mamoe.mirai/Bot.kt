@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai
 
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot.ContactSystem
@@ -10,6 +11,7 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.log
 import kotlin.jvm.JvmOverloads
@@ -28,8 +30,10 @@ data class BotAccount(
  * [网络处理器][TIMBotNetworkHandler]: 可通过 [Bot.network] 访问
  * [机器人账号信息][BotAccount]: 可通过 [Bot.qqAccount] 访问
  *
- * 若你需要得到机器人的 QQ 账号, 请访问 [Bot.qqAccount]
- * 若你需要得到服务器上所有机器人列表, 请访问 [Bot.instances]
+ * 若需要得到机器人的 QQ 账号, 请访问 [Bot.qqAccount]
+ * 若需要得到服务器上所有机器人列表, 请访问 [Bot.instances]
+ *
+ * 在 BotHelper.kt 中有一些访问的捷径. 如 [Bot.getGroup]
  *
  *
  *
@@ -44,18 +48,19 @@ data class BotAccount(
  *
  *
  * @author Him188moe
- * @author NatrualHG
+ * @author NaturalHG
  * @see net.mamoe.mirai.contact.Contact
  */
 class Bot(val account: BotAccount, val logger: MiraiLogger) {
+    constructor(id: UInt, password: String) : this(BotAccount(id, password))
+    constructor(account: BotAccount) : this(account, DefaultLogger("Bot(" + account.id + ")"))
+
     val contacts = ContactSystem()
 
     var network: BotNetworkHandler<*> = TIMBotNetworkHandler(this)
 
     init {
         instances.add(this)
-
-        this.logger.identity = "Bot(" + this.account.id + ")"
     }
 
     override fun toString(): String = "Bot{qq=${account.id}}"
@@ -85,9 +90,14 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
      * @see Bot.contacts
      */
     inner class ContactSystem internal constructor() {
+        private val _groups = ContactList<Group>()
+        private lateinit var groupsUpdater: Job
         val groups = ContactList<Group>()
         private val groupsLock = Mutex()
-        val qqs = ContactList<QQ>()
+
+        private val _qqs = ContactList<QQ>() //todo 实现群列表和好友列表获取
+        private lateinit var qqUpdaterJob: Job
+        val qqs: ContactList<QQ> = _qqs
         private val qqsLock = Mutex()
 
         /**
@@ -121,12 +131,11 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         }
     }
 
-    suspend fun UInt.qq(): QQ = getQQ(this)
-    suspend fun Long.qq(): QQ = getQQ(this)
+    suspend inline fun UInt.qq(): QQ = getQQ(this)
 
-    suspend fun UInt.group(): Group = getGroup(GroupId(this))
-    suspend fun GroupId.group(): Group = getGroup(this)
-    suspend fun GroupInternalId.group(): Group = getGroup(this)
+    suspend inline fun UInt.group(): Group = getGroup(GroupId(this))
+    suspend inline fun GroupId.group(): Group = getGroup(this)
+    suspend inline fun GroupInternalId.group(): Group = getGroup(this)
 
     suspend fun close() {
         this.network.close()
