@@ -7,7 +7,9 @@ import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.ImageId
+import net.mamoe.mirai.message.image
 import net.mamoe.mirai.message.sendTo
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 
@@ -22,7 +24,8 @@ fun ExternalImage(
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
- * @see ExternalImage.sendTo
+ * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
+ * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
 class ExternalImage(
     val width: Int,
@@ -59,9 +62,20 @@ suspend fun ExternalImage.sendTo(contact: Contact) = when (contact) {
 }
 
 /**
+ * 上传图片并通过图片 ID 构造 [Image]
+ * 这个函数可能需消耗一段时间
+ *
+ * @see contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
+ */
+suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
+    is Group -> contact.uploadImage(this).image()
+    is QQ -> contact.uploadImage(this).image()
+}
+
+/**
  * 将图片发送给 [this]
  */
-suspend fun Contact.sendMessage(image: ExternalImage) = image.sendTo(this)
+suspend fun Contact.sendImage(image: ExternalImage) = image.sendTo(this)
 
 private operator fun ByteArray.get(range: IntRange): String = buildString {
     range.forEach {

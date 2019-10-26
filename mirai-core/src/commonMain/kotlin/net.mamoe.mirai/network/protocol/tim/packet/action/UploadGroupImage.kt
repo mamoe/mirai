@@ -26,6 +26,9 @@ class OverFileSizeMaxException : IllegalStateException()
 /**
  * 上传群图片
  * 挂起直到上传完成或失败
+ *
+ * 在 JVM 下, `SendImageUtilsJvm.kt` 内有多个捷径函数
+ *
  * @throws OverFileSizeMaxException 如果文件过大, 服务器拒绝接收时
  */
 suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {

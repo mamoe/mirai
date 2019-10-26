@@ -4,15 +4,15 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
 import net.mamoe.mirai.utils.ExternalImage
 
+// region Message Base
 /**
  * 可发送的或从服务器接收的消息.
  * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
- * #### 在 Kotlin 使用 [Message]
+ * **在 Kotlin 使用 [Message]**
  *  这与使用 [String] 的使用非常类似.
  *
  *  比较 [Message] 与 [String] (使用 infix [Message.eq]):
@@ -43,6 +43,15 @@ interface Message {
      * ```
      */
     val stringValue: String
+
+    /**
+     * 类型 Key.
+     * 除 [MessageChain] 外, 每个 [Message] 类型都拥有一个`伴生对象`(companion object) 来持有一个 Key
+     * 在 [MessageChain.get] 时将会使用到这个 Key 进行判断类型.
+     *
+     * @param M 指代持有它的消息类型
+     */
+    interface Key<M>
 
     infix fun eq(other: Message): Boolean = this == other
 
@@ -76,20 +85,26 @@ interface Message {
 
     infix operator fun plus(another: Message): MessageChain = this.concat(another)
     infix operator fun plus(another: String): MessageChain = this.concat(another.toMessage())
-    infix operator fun plus(another: Number): MessageChain = this.concat(another.toString().toMessage())
 }
 
 /**
  * 将 [this] 发送给指定联系人
  */
 suspend fun Message.sendTo(contact: Contact) = contact.sendMessage(this)
+// endregion
 
+// region PlainText
 // ==================================== PlainText ====================================
 
 inline class PlainText(override val stringValue: String) : Message {
     override operator fun contains(sub: String): Boolean = sub in stringValue
-}
+    override fun toString(): String = stringValue
 
+    companion object Key : Message.Key<PlainText>
+}
+// endregion
+
+// region Image
 // ==================================== Image ====================================
 
 /**
@@ -100,6 +115,9 @@ inline class PlainText(override val stringValue: String) : Message {
  */
 inline class Image(val id: ImageId) : Message {
     override val stringValue: String get() = "[${id.value}]"
+    override fun toString(): String = stringValue
+
+    companion object Key : Message.Key<Image>
 }
 
 /**
@@ -116,6 +134,10 @@ fun ImageId.image(): Image = Image(this)
 
 suspend fun ImageId.sendTo(contact: Contact) = contact.sendMessage(this.image())
 
+// endregion
+
+
+// region At
 // ==================================== At ====================================
 
 /**
@@ -125,8 +147,14 @@ inline class At(val targetQQ: UInt) : Message {
     constructor(target: QQ) : this(target.id)
 
     override val stringValue: String get() = "[@$targetQQ]"
-}
+    override fun toString(): String = stringValue
 
+    companion object Key : Message.Key<At>
+}
+// endregion
+
+
+// region Face
 // ==================================== Face ====================================
 
 /**
@@ -134,10 +162,17 @@ inline class At(val targetQQ: UInt) : Message {
  */
 inline class Face(val id: FaceID) : Message {
     override val stringValue: String get() = "[face${id.value}]"
-}
+    override fun toString(): String = stringValue
 
+    companion object Key : Message.Key<Face>
+}
+// endregion Face
+
+
+// region MessageChain
 // ==================================== MessageChain ====================================
 
+// region constructors
 /**
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 8
  */
@@ -178,6 +213,27 @@ fun SingleMessageChain(delegate: Message): MessageChain {
     require(delegate !is MessageChain) { "delegate for SingleMessageChain should not be any instance of MessageChain" }
     return SingleMessageChainImpl(delegate)
 }
+// endregion
+
+// region extensions
+
+/**
+ * 获取第一个 [M] 类型的 [Message] 实例
+ */
+inline fun <reified M : Message> MessageChain.firstOrNull(): Message? = this.firstOrNull { M::class.isInstance(it) }
+
+/**
+ * 获取第一个 [M] 类型的 [Message] 实例
+ * @throws [NoSuchElementException] 如果找不到该类型的实例
+ */
+inline fun <reified M : Message> MessageChain.first(): Message = this.first { M::class.isInstance(it) }
+
+/**
+ * 获取第一个 [M] 类型的 [Message] 实例
+ */
+inline fun <reified M : Message> MessageChain.any(): Boolean = this.firstOrNull { M::class.isInstance(it) } !== null
+
+// endregion
 
 /**
  * 消息链. 即 MutableList<Message>.
@@ -204,6 +260,20 @@ interface MessageChain : Message, MutableList<Message> {
     operator fun plusAssign(plain: String) {
         this.concat(plain.toMessage())
     }
+
+    /**
+     * 获取第一个类型为 [key] 的 [Message] 实例
+     *
+     * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+     */
+    @Suppress("UNCHECKED_CAST")
+    operator fun <M> get(key: Message.Key<M>): M = when (key) {
+        At -> first<At>()
+        PlainText -> first<PlainText>()
+        Image -> first<Image>()
+        Face -> first<Face>()
+        else -> error("unknown key: $key")
+    } as M
 }
 
 /**
@@ -404,14 +474,3 @@ internal inline class SingleMessageChainImpl(
     override val size: Int get() = 1
     // endregion
 }
-
-/**
- * 获取第一个 [M] 类型的实例
- */
-inline fun <reified M : Message> MessageChain.firstOrNull(): Message? = this.firstOrNull { M::class.isInstance(it) }
-
-/**
- * 获取第一个 [M] 类型的实例
- * @throws [NoSuchElementException] 如果找不到该类型的实例
- */
-inline fun <reified M : Message> MessageChain.first(): Message = this.first { M::class.isInstance(it) }

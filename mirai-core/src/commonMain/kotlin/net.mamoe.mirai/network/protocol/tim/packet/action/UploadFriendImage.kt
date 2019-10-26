@@ -23,6 +23,9 @@ import net.mamoe.mirai.withSession
 /**
  * 上传图片
  * 挂起直到上传完成或失败
+ *
+ * 在 JVM 下, `SendImageUtilsJvm.kt` 内有多个捷径函数
+ *
  * @throws OverFileSizeMaxException 如果文件过大, 服务器拒绝接收时
  */
 suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
