@@ -3,6 +3,7 @@
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.event.internal.Handler
+import net.mamoe.mirai.event.internal.Listener
 import net.mamoe.mirai.event.internal.subscribeInternal
 import kotlin.reflect.KClass
 
@@ -43,26 +44,41 @@ suspend inline fun <reified E : Event> subscribeWhileNull(noinline listener: sus
 
 // region KClass 的扩展方法 (不推荐)
 
-suspend fun <E : Event> KClass<E>.subscribe(handler: suspend (E) -> ListeningStatus) = this.subscribeInternal(Handler(handler))
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribe(handler: suspend (E) -> ListeningStatus) = this.subscribeInternal(Handler(handler))
 
-suspend fun <E : Event> KClass<E>.subscribeAlways(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.LISTENING })
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeAlways(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.LISTENING })
 
-suspend fun <E : Event> KClass<E>.subscribeOnce(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.STOPPED })
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeOnce(listener: suspend (E) -> Unit) = this.subscribeInternal(Handler { listener(it); ListeningStatus.STOPPED })
 
-suspend fun <E : Event, T> KClass<E>.subscribeUntil(valueIfStop: T, listener: suspend (E) -> T) =
+@PublishedApi
+internal suspend fun <E : Event, T> KClass<E>.subscribeUntil(valueIfStop: T, listener: suspend (E) -> T) =
     subscribeInternal(Handler { if (listener(it) === valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
-suspend fun <E : Event> KClass<E>.subscribeUntilFalse(listener: suspend (E) -> Boolean) = subscribeUntil(false, listener)
-suspend fun <E : Event> KClass<E>.subscribeUntilTrue(listener: suspend (E) -> Boolean) = subscribeUntil(true, listener)
-suspend fun <E : Event> KClass<E>.subscribeUntilNull(listener: suspend (E) -> Any?) = subscribeUntil(null, listener)
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeUntilFalse(listener: suspend (E) -> Boolean) = subscribeUntil(false, listener)
+
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeUntilTrue(listener: suspend (E) -> Boolean) = subscribeUntil(true, listener)
+
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeUntilNull(listener: suspend (E) -> Any?) = subscribeUntil(null, listener)
 
 
-suspend fun <E : Event, T> KClass<E>.subscribeWhile(valueIfContinue: T, listener: suspend (E) -> T) =
+@PublishedApi
+internal suspend fun <E : Event, T> KClass<E>.subscribeWhile(valueIfContinue: T, listener: suspend (E) -> T) =
     subscribeInternal(Handler { if (listener(it) !== valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
-suspend fun <E : Event> KClass<E>.subscribeWhileFalse(listener: suspend (E) -> Boolean) = subscribeWhile(false, listener)
-suspend fun <E : Event> KClass<E>.subscribeWhileTrue(listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
-suspend fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeWhileFalse(listener: suspend (E) -> Boolean) = subscribeWhile(false, listener)
+
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeWhileTrue(listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
+
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
 
 // endregion
 
@@ -73,7 +89,8 @@ suspend fun <E : Event> KClass<E>.subscribeWhileNull(listener: suspend (E) -> An
  * @see ListenerBuilder
  */
 @ListenersBuilderDsl
-suspend fun <E : Event> KClass<E>.subscribeAll(listeners: suspend ListenerBuilder<E>.() -> Unit) {
+@PublishedApi
+internal suspend fun <E : Event> KClass<E>.subscribeAll(listeners: suspend ListenerBuilder<E>.() -> Unit) {
     with(ListenerBuilder<E> { this.subscribeInternal(it) }) {
         listeners()
     }
@@ -105,27 +122,28 @@ suspend inline fun <reified E : Event> subscribeAll(noinline listeners: suspend 
 @ListenersBuilderDsl
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 inline class ListenerBuilder<out E : Event>(
-    private val handlerConsumer: suspend (Handler<in E>) -> Unit
+    @PublishedApi
+    internal inline val handlerConsumer: suspend (Listener<E>) -> Unit
 ) {
-    suspend fun handler(listener: suspend (E) -> ListeningStatus) {
+    suspend inline fun handler(noinline listener: suspend (E) -> ListeningStatus) {
         handlerConsumer(Handler(listener))
     }
 
-    suspend fun always(listener: suspend (E) -> Unit) = handler { listener(it); ListeningStatus.LISTENING }
+    suspend inline fun always(noinline listener: suspend (E) -> Unit) = handler { listener(it); ListeningStatus.LISTENING }
 
-    suspend fun <T> until(until: T, listener: suspend (E) -> T) = handler { if (listener(it) === until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
-    suspend fun untilFalse(listener: suspend (E) -> Boolean) = until(false, listener)
-    suspend fun untilTrue(listener: suspend (E) -> Boolean) = until(true, listener)
-    suspend fun untilNull(listener: suspend (E) -> Any?) = until(null, listener)
-
-
-    suspend fun <T> `while`(until: T, listener: suspend (E) -> T) = handler { if (listener(it) !== until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
-    suspend fun whileFalse(listener: suspend (E) -> Boolean) = `while`(false, listener)
-    suspend fun whileTrue(listener: suspend (E) -> Boolean) = `while`(true, listener)
-    suspend fun whileNull(listener: suspend (E) -> Any?) = `while`(null, listener)
+    suspend inline fun <T> until(until: T, noinline listener: suspend (E) -> T) = handler { if (listener(it) === until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
+    suspend inline fun untilFalse(noinline listener: suspend (E) -> Boolean) = until(false, listener)
+    suspend inline fun untilTrue(noinline listener: suspend (E) -> Boolean) = until(true, listener)
+    suspend inline fun untilNull(noinline listener: suspend (E) -> Any?) = until(null, listener)
 
 
-    suspend fun once(block: suspend (E) -> Unit) = handler { block(it); ListeningStatus.STOPPED }
+    suspend inline fun <T> `while`(until: T, noinline listener: suspend (E) -> T) = handler { if (listener(it) !== until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
+    suspend inline fun whileFalse(noinline listener: suspend (E) -> Boolean) = `while`(false, listener)
+    suspend inline fun whileTrue(noinline listener: suspend (E) -> Boolean) = `while`(true, listener)
+    suspend inline fun whileNull(noinline listener: suspend (E) -> Any?) = `while`(null, listener)
+
+
+    suspend inline fun once(noinline listener: suspend (E) -> Unit) = handler { listener(it); ListeningStatus.STOPPED }
 }
 
 @DslMarker
