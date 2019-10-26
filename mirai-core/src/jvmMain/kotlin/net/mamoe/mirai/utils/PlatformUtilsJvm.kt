@@ -10,7 +10,9 @@ import io.ktor.http.content.OutgoingContent
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.io.core.Input
 import kotlinx.io.core.readFully
-import java.io.File
+import java.io.DataInput
+import java.io.EOFException
+import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetAddress
 import java.security.MessageDigest
@@ -26,16 +28,31 @@ actual fun crc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.t
 
 actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
-fun File.md5(): ByteArray {
+fun InputStream.md5(): ByteArray {
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
-    this.inputStream().transferTo(object : OutputStream() {
+    this.transferTo(object : OutputStream() {
         override fun write(b: Int) {
             b.toByte().let {
                 digest.update(it)
             }
         }
     })
+    return digest.digest()
+}
+
+fun DataInput.md5(): ByteArray {
+    val digest = MessageDigest.getInstance("md5")
+    digest.reset()
+    val buffer = byteArrayOf(1)
+    while (true) {
+        try {
+            this.readFully(buffer)
+        } catch (e: EOFException) {
+            break
+        }
+        digest.update(buffer[0])
+    }
     return digest.digest()
 }
 

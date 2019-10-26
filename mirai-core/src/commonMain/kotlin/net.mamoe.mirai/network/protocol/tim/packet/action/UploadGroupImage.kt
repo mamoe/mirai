@@ -7,6 +7,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.contact.withSession
+import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
@@ -25,11 +26,9 @@ class OverFileSizeMaxException : IllegalStateException()
 /**
  * 上传群图片
  * 挂起直到上传完成或失败
- * 失败后抛出 [OverFileSizeMaxException]
+ * @throws OverFileSizeMaxException 如果文件过大, 服务器拒绝接收时
  */
-suspend fun Group.uploadImage(
-    image: ExternalImage
-) = withSession {
+suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
     GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey)
         .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
             when (it.state) {
@@ -50,6 +49,7 @@ suspend fun Group.uploadImage(
                 GroupImageIdRequestPacket.Response.State.OVER_FILE_SIZE_MAX -> throw OverFileSizeMaxException()
             }
         }.join()
+    image.groupImageId
 }
 
 /**

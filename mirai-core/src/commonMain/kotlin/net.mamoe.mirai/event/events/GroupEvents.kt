@@ -3,6 +3,7 @@ package net.mamoe.mirai.event.events
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.protocol.tim.packet.event.SenderPermission

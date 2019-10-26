@@ -26,11 +26,11 @@ sealed class Contact(val bot: Bot, val id: UInt) {
 
     abstract suspend fun sendMessage(message: MessageChain)
 
-    suspend fun sendMessage(message: Message) = sendMessage(message.toChain())
-    suspend fun sendMessage(plain: String) = sendMessage(PlainText(plain))
-
     abstract suspend fun sendXMLMessage(message: String)
 }
+
+suspend fun Contact.sendMessage(plain: String) = sendMessage(PlainText(plain))
+suspend fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
 
 
 /**

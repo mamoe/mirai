@@ -10,31 +10,44 @@ import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket.Response.State.*
 import net.mamoe.mirai.network.qqAccount
-import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.httpPostFriendImage
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.readUnsignedVarInt
 import net.mamoe.mirai.utils.writeUVarInt
+import net.mamoe.mirai.withSession
 
 /**
  * 上传图片
+ * 挂起直到上传完成或失败
+ * @throws OverFileSizeMaxException 如果文件过大, 服务器拒绝接收时
  */
-suspend fun QQ.uploadImage(image: ExternalImage): ImageId = with(bot.network.session) {
-    //SubmitImageFilenamePacket(account, account, "sdiovaoidsa.png", sessionKey).sendAndExpect<ServerSubmitImageFilenameResponsePacket>().join()
-    DebugLogger.logPurple("正在上传好友图片, md5=${image.md5.toUHexString()}")
-    return FriendImageIdRequestPacket(this.qqAccount, sessionKey, id, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
-        if (it.uKey != null)
-            require(
-                httpPostFriendImage(
-                    botAccount = bot.qqAccount,
-                    uKeyHex = it.uKey!!.toUHexString(""),
-                    imageInput = image.input,
-                    inputSize = image.inputSize
+suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
+    FriendImageIdRequestPacket(qqAccount, sessionKey, id, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
+        when (it.state) {
+            REQUIRE_UPLOAD -> {
+                require(
+                    httpPostFriendImage(
+                        botAccount = bot.qqAccount,
+                        uKeyHex = it.uKey!!.toUHexString(""),
+                        imageInput = image.input,
+                        inputSize = image.inputSize
+                    )
                 )
-            )
+            }
+
+            ALREADY_EXISTS -> {
+
+            }
+
+            OVER_FILE_SIZE_MAX -> {
+                throw OverFileSizeMaxException()
+            }
+        }
+
         it.imageId!!
     }.await()
 }
@@ -110,7 +123,7 @@ class SubmitImageFilenamePacket(
 @PacketId(0x03_52u)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
 class FriendImageIdRequestPacket(
-    private val botNumber: UInt,
+    private val bot: UInt,
     private val sessionKey: ByteArray,
     private val target: UInt,
     private val image: ExternalImage
@@ -119,7 +132,7 @@ class FriendImageIdRequestPacket(
     //00 00 00 07 00 00 00 4B 08 01 12 03 98 01 01 08 01 12 47 08 A2 FF 8C F0 03 10 89 FC A6 8C 0B 18 00 22 10 2B 23 D7 05 CA D1 F2 CF 37 10 FE 58 26 92 FC C4 28 FD 08 32 1A 7B 00 47 00 47 00 42 00 7E 00 49 00 31 00 5A 00 4D 00 43 00 28 00 25 00 49 00 38 01 48 00 70 42 78 42
 
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        writeQQ(botNumber)
+        writeQQ(bot)
         //04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00
         writeHex("04 00 00 00 01 2E 01 00 00 69 35 00 00 00 00 00 00 00 00")
 
@@ -209,7 +222,7 @@ class FriendImageIdRequestPacket(
 
                 writeUVarintLVPacket(tag = 0x12u, lengthOffset = { it + 1 }) {
                     writeUByte(0x08u)
-                    writeUVarInt(botNumber)
+                    writeUVarInt(bot)
 
                     writeUByte(0x10u)
                     writeUVarInt(target)
@@ -321,11 +334,11 @@ class FriendImageIdRequestPacket(
                 //83 12 06 98 01 01 A0 01 00 08 01 12 7D 08 00 10 9B A4 DC 92 06 18 00 28 01 32 1B 0A 10 8E C4 9D 72 26 AE 20 C0 5D A2 B6 78 4D 12 B7 3A 10 00 18 86 1F 20 30 28 30 52 25 2F 30 31 62
                 val toDiscard = readUByte().toInt() - 37
                 if (toDiscard < 0) {
-                    state = State.OVER_FILE_SIZE_MAX
+                    state = OVER_FILE_SIZE_MAX
                 } else {
                     discardExact(toDiscard)
                     imageId = ImageId(readString(37))
-                    state = State.ALREADY_EXISTS
+                    state = ALREADY_EXISTS
                 }
             }
         }

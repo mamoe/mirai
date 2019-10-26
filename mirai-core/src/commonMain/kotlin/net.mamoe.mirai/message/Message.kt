@@ -4,6 +4,7 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
 import net.mamoe.mirai.utils.ExternalImage
 
@@ -78,6 +79,11 @@ interface Message {
     infix operator fun plus(another: Number): MessageChain = this.concat(another.toString().toMessage())
 }
 
+/**
+ * 将 [this] 发送给指定联系人
+ */
+suspend fun Message.sendTo(contact: Contact) = contact.sendMessage(this)
+
 // ==================================== PlainText ====================================
 
 inline class PlainText(override val stringValue: String) : Message {
@@ -91,8 +97,6 @@ inline class PlainText(override val stringValue: String) : Message {
  * 由接收消息时构建, 可直接发送
  *
  * @param id 这个图片的 [ImageId]
- *
- * @see
  */
 inline class Image(val id: ImageId) : Message {
     override val stringValue: String get() = "[${id.value}]"
@@ -107,6 +111,10 @@ inline class Image(val id: ImageId) : Message {
  * @see FriendImageIdRequestPacket.Response.imageId 好友图片的 [ImageId] 获取
  */
 inline class ImageId(val value: String)
+
+fun ImageId.image(): Image = Image(this)
+
+suspend fun ImageId.sendTo(contact: Contact) = contact.sendMessage(this.image())
 
 // ==================================== At ====================================
 
