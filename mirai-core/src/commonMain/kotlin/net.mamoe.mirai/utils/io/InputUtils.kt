@@ -145,34 +145,3 @@ fun Input.readLVNumber(): Number {
         else -> throw UnsupportedOperationException()
     }
 }
-
-//添加@JvmSynthetic 导致 idea 无法检查这个文件的错误
-//@JvmSynthetic
-@Deprecated("Low efficiency", ReplaceWith(""))
-fun <I : Input> I.gotoWhere(matcher: UByteArray): I {
-    @Suppress("DEPRECATION")
-    return this.gotoWhere(matcher.toByteArray())
-}
-
-/**
- * 去往下一个含这些连续字节的位置
- */
-@Deprecated("Low efficiency", ReplaceWith(""))
-fun <I : Input> I.gotoWhere(matcher: ByteArray): I {
-    require(matcher.isNotEmpty())
-
-    loop@
-    do {
-        val byte = this.readByte()
-        if (byte == matcher[0]) {
-            //todo mark here
-            for (i in 1 until matcher.size) {
-                val b = this.readByte()
-                if (b != matcher[i]) {
-                    continue@loop //todo goto mark
-                }
-            }
-            return this
-        }
-    } while (true)
-}
