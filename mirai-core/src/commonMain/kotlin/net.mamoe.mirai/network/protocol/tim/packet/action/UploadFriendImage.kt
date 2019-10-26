@@ -1,16 +1,23 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "unused")
 
-package net.mamoe.mirai.network.protocol.tim.packet
+package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
+import net.mamoe.mirai.network.protocol.tim.packet.PacketId
+import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
+import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.httpPostFriendImage
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.readUnsignedVarInt
+import net.mamoe.mirai.utils.writeUVarInt
 
 /**
  * 上传图片
@@ -18,14 +25,16 @@ import net.mamoe.mirai.utils.io.*
 suspend fun QQ.uploadImage(image: ExternalImage): ImageId = with(bot.network.session) {
     //SubmitImageFilenamePacket(account, account, "sdiovaoidsa.png", sessionKey).sendAndExpect<ServerSubmitImageFilenameResponsePacket>().join()
     DebugLogger.logPurple("正在上传好友图片, md5=${image.md5.toUHexString()}")
-    return FriendImageIdRequestPacket(this.qqAccount, sessionKey, this.qqAccount, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
+    return FriendImageIdRequestPacket(this.qqAccount, sessionKey, id, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
         if (it.uKey != null)
-            require(httpPostFriendImage(
-                botAccount = bot.qqAccount,
+            require(
+                httpPostFriendImage(
+                    botAccount = bot.qqAccount,
                     uKeyHex = it.uKey!!.toUHexString(""),
-                imageInput = image.input,
-                inputSize = image.inputSize
-            ))
+                    imageInput = image.input,
+                    inputSize = image.inputSize
+                )
+            )
         it.imageId!!
     }.await()
 }
@@ -43,12 +52,12 @@ suspend fun QQ.uploadImage(image: ExternalImage): ImageId = with(bot.network.ses
  * 似乎没有必要. 服务器的返回永远都是 01 00 00 00 02 00 00
  */
 @PacketId(0X01_BDu)
-@PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
 class SubmitImageFilenamePacket(
-        private val bot: UInt,
-        private val target: UInt,
-        private val filename: String,
-        private val sessionKey: ByteArray
+    private val bot: UInt,
+    private val target: UInt,
+    private val filename: String,
+    private val sessionKey: ByteArray
 ) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(bot)
@@ -99,7 +108,7 @@ class SubmitImageFilenamePacket(
  * - 服务器未存有, 返回一个 key 用于客户端上传
  */
 @PacketId(0x03_52u)
-@PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
 class FriendImageIdRequestPacket(
     private val botNumber: UInt,
     private val sessionKey: ByteArray,
@@ -187,13 +196,10 @@ class FriendImageIdRequestPacket(
              * 70 [80 14]
              * 78 [A0 0B]//84
              */
-
-            writeZero(3)
-            writeUShort(0x07_00u)
-            writeZero(1)
+            writeHex("00 00 00 07 00 00 00")
 
             //proto
-            val packet = buildPacket {
+            writeUVarintLVPacket(lengthOffset = { it - 7 }) {
                 writeUByte(0x08u)
                 writeUShort(0x01_12u)
                 writeUShort(0x03_98u)
@@ -201,62 +207,85 @@ class FriendImageIdRequestPacket(
                 writeUShort(0x08_01u)
 
 
-                writeUShort(0x12_47u)//?似乎会变
+                writeUVarintLVPacket(tag = 0x12u, lengthOffset = { it + 1 }) {
+                    writeUByte(0x08u)
+                    writeUVarInt(botNumber)
 
-                writeUByte(0x08u)
-                writeUVarInt(botNumber)
+                    writeUByte(0x10u)
+                    writeUVarInt(target)
 
-                writeUByte(0x10u)
-                writeUVarInt(target)
+                    writeUShort(0x18_00u)
 
-                writeUShort(0x18_00u)
+                    writeUByte(0x22u)
+                    writeUByte(0x10u)
+                    writeFully(image.md5)
 
-                writeUByte(0x22u)
-                writeUByte(0x10u)
-                writeFully(image.md5)
-
-                writeUByte(0x28u)
-                writeUVarInt(image.inputSize.toUInt())
+                    writeUByte(0x28u)
+                    writeUVarInt(image.inputSize.toUInt())
 
 
-                writeUByte(0x32u)
-                //长度应为1A
-                writeUVarintLVPacket {
-                    writeUShort(0x28_00u)
-                    writeUShort(0x46_00u)
-                    writeUShort(0x51_00u)
-                    writeUShort(0x56_00u)
-                    writeUShort(0x4B_00u)
-                    writeUShort(0x41_00u)
-                    writeUShort(0x49_00u)
-                    writeUShort(0x25_00u)
-                    writeUShort(0x4B_00u)
-                    writeUShort(0x24_00u)
-                    writeUShort(0x55_00u)
-                    writeUShort(0x30_00u)
-                    writeUShort(0x24_00u)
+                    writeUByte(0x32u)
+                    //长度应为1A
+                    writeUVarintLVPacket {
+                        writeUShort(0x28_00u)
+                        writeUShort(0x46_00u)
+                        writeUShort(0x51_00u)
+                        writeUShort(0x56_00u)
+                        writeUShort(0x4B_00u)
+                        writeUShort(0x41_00u)
+                        writeUShort(0x49_00u)
+                        writeUShort(0x25_00u)
+                        writeUShort(0x4B_00u)
+                        writeUShort(0x24_00u)
+                        writeUShort(0x55_00u)
+                        writeUShort(0x30_00u)
+                        writeUShort(0x24_00u)
+                    }
+
+                    writeUShort(0x38_01u)
+                    writeUShort(0x48_00u)
+
+                    writeUByte(0x70u)
+                    writeUVarInt(image.width.toUInt())
+                    writeUByte(0x78u)
+                    writeUVarInt(image.height.toUInt())
                 }
-
-                writeUShort(0x38_01u)
-                writeUShort(0x48_00u)
-
-                writeUByte(0x70u)
-                writeUVarInt(image.width.toUInt())
-                writeUByte(0x78u)
-                writeUVarInt(image.height.toUInt())
             }
-            writeShort((packet.remaining - 7).toShort())//why?
-            writePacket(packet)
+
 
             //println(this.build().readBytes().toUHexString())
         }
     }
 
     @PacketId(0x0352u)
-    @PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
+    @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
-        var uKey: ByteArray? = null//最终可能为null
-        var imageId: ImageId? = null//最终不会为null
+        /**
+         * 访问 HTTP API 时需要使用的一个 key. 128 位
+         */
+        var uKey: ByteArray? = null
+
+        /**
+         * 发送消息时使用的 id
+         */
+        var imageId: ImageId? = null
+
+        lateinit var state: State
+
+        enum class State {
+            /**
+             * 需要上传. 此时 [uKey], [imageId] 均不为 `null`
+             */
+            REQUIRE_UPLOAD,
+            /**
+             * 服务器已有这个图片. 此时 [uKey] 为 `null`, [imageId] 不为 `null`
+             */
+            ALREADY_EXISTS,
+            /**
+             * 图片过大. 此时 [uKey], [imageId] 均为 `null`
+             */
+            OVER_FILE_SIZE_MAX,
+        }
 
         override fun decode() = with(input) {
             //00 00 00 08 00 00
@@ -278,41 +307,27 @@ class FriendImageIdRequestPacket(
 
                 discardExact(1)//52, id
                 imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
+                state = State.REQUIRE_UPLOAD
 
                 //DebugLogger.logPurple("获得 uKey(${uKey!!.size})=${uKey!!.toUHexString()}")
                 //DebugLogger.logPurple("获得 imageId(${imageId!!.value.length})=${imageId}")
             } else {
                 //服务器已经有这个图片了
                 //DebugLogger.logPurple("服务器已有好友图片 ")
-                //89 12 06 98 01 01 A0 01 00 08 01 12 82 01 08 00 10 AB A7 89 D8 02 18 00 28 01 32 20 0A 10 5A 39 37 10 EA D5 B5 57 A8 04 14 70 CE 90 67 14 10 67 18 8A 94 17 20 ED 03 28 97 04 30 0A 52 25 2F 39 38 31 65 61 31 64 65 2D 62 32 31 33 2D 34 31 61 39 2D 38 38 37 65 2D 32 38 37 39 39 66 31 39 36 37 35 65 5A 25 2F 39 38 31 65 61 31 64 65 2D 62 32 31 33 2D 34 31 61 39 2D 38 38 37 65 2D 32 38 37 39 39 66 31 39 36 37 35 65 60 00 68 80 80 08 20 01
+                // 89
+                // 12 06 98 01 01 A0 01 00 08 01 12 82 01 08 00 10 AB A7 89 D8 02 18 00 28 01 32 20 0A 10 5A 39 37 10 EA D5 B5 57 A8 04 14 70 CE 90 67 14 10 67 18 8A 94 17 20 ED 03 28 97 04 30 0A 52 25 2F 39 38 31 65 61 31 64 65 2D 62 32 31 33 2D 34 31 61 39 2D 38 38 37 65 2D 32 38 37 39 39 66 31 39 36 37 35 65 5A 25 2F 39 38 31 65 61 31 64 65 2D 62 32 31 33 2D 34 31 61 39 2D 38 38 37 65 2D 32 38 37 39 39 66 31 39 36 37 35 65 60 00 68 80 80 08 20 01
 
-                discardExact(60)
 
-                discardExact(1)//52, id
-                imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
+                //83 12 06 98 01 01 A0 01 00 08 01 12 7D 08 00 10 9B A4 DC 92 06 18 00 28 01 32 1B 0A 10 8E C4 9D 72 26 AE 20 C0 5D A2 B6 78 4D 12 B7 3A 10 00 18 86 1F 20 30 28 30 52 25 2F 30 31 62
+                val toDiscard = readUByte().toInt() - 37
+                if (toDiscard < 0) {
+                    state = State.OVER_FILE_SIZE_MAX
+                } else {
+                    discardExact(toDiscard)
+                    imageId = ImageId(readString(37))
+                    state = State.ALREADY_EXISTS
+                }
             }
         }
-    }
-}
-
-fun main() {
-    //GlobalSysTemp:II%E]PA}OVFK]61EGGF$356.jpg
-    //实际文件名为 II%E]PA}OVFK]61EGGF$356.jpg
-
-    println(SubmitImageFilenamePacket(
-            1994701021u,
-            1040400290u,
-            "testfilename.png",
-            "99 82 67 D4 62 20 CA 5D 81 F8 6F 83 EE 8A F7 68".hexToBytes()
-
-    ).packet.readBytes().toUHexString())
-
-    println("01ee6426-5ff1-4cf0-8278-e8634d2909e".toByteArray().toUHexString())
-
-    "5A 25 2F 36 61 38 35 32 66 64 65 2D 38 32 38 35 2D 34 33 35 31 2D 61 65 65 38 2D 35 34 65 37 35 65 65 32 65 61 37 63 60 00 68 80 80 08 20 01"
-            .printStringFromHex()
-
-    "25 2F ".hexToBytes().read {
-        println(readUnsignedVarInt())
     }
 }

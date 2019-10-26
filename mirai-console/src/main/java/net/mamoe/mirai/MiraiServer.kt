@@ -147,7 +147,7 @@ object MiraiServer {
                 Bot bot = new Bot(section);
                 var state = bot.network.login$mirai_core().of();
                 //bot.network.login$mirai_core().whenComplete((state, e) -> {
-                if (state == LoginState.SUCCESS) {
+                if (state == LoginState.REQUIRE_UPLOAD) {
                     Bot.instances.add(bot);
                     getLogger().logGreen("   Login Succeed");
                 } else {

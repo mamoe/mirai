@@ -5,9 +5,7 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendPacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.SendFriendMessagePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.SendGroupMessagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.utils.MiraiLogger

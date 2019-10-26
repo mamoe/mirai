@@ -4,7 +4,7 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.network.protocol.tim.packet.FriendImageIdRequestPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
 import net.mamoe.mirai.utils.ExternalImage
 
 /**

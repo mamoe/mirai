@@ -3,9 +3,7 @@
 import Main.localIp
 import Main.qq
 import Main.sessionKey
-import jpcap.JpcapCaptor
-import jpcap.packet.IPPacket
-import jpcap.packet.UDPPacket
+import com.sun.jna.Platform
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
@@ -20,6 +18,12 @@ import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.toUHexString
+import org.pcap4j.core.BpfProgram.BpfCompileMode
+import org.pcap4j.core.PacketListener
+import org.pcap4j.core.PcapNetworkInterface
+import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode
+import org.pcap4j.core.Pcaps
+
 
 /**
  * 抓包分析器.
@@ -30,11 +34,31 @@ import net.mamoe.mirai.utils.toUHexString
 object Main {
     @JvmStatic
     fun main(args: Array<String>) {
-        val devices = JpcapCaptor.getDeviceList()
-        val jpcap: JpcapCaptor?
-        val caplen = 4096
-        val promiscCheck = true
-        jpcap = JpcapCaptor.openDevice(devices[0], caplen, promiscCheck, 50)
+        val nif: PcapNetworkInterface = Pcaps.findAllDevs()[0]
+        println(nif.name + "(" + nif.description + ")")
+
+        val handle = nif.openLive(65536, PromiscuousMode.PROMISCUOUS, 3000)
+
+        handle.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
+
+        val listener = PacketListener {
+            println(it.rawData.toUHexString())
+            println()
+        }
+
+        handle.loop(Int.MAX_VALUE, listener)
+
+        val ps = handle.stats
+        println("ps_recv: " + ps.numPacketsReceived)
+        println("ps_drop: " + ps.numPacketsDropped)
+        println("ps_ifdrop: " + ps.numPacketsDroppedByIf)
+        if (Platform.isWindows()) {
+            println("bs_capt: " + ps.numPacketsCaptured)
+        }
+
+        handle.close()
+
+/*
         while (true) {
             assert(jpcap != null)
             val pk = jpcap!!.packet ?: continue
@@ -65,6 +89,8 @@ object Main {
                 //pk.dst_ip
             }
         }
+*/
+
     }
 
     /**
@@ -79,9 +105,9 @@ object Main {
      * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
      * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
      */
-    val sessionKey: ByteArray = "1D 1E 71 68 B9 41 FD 5B F3 5A 3F 71 87 B5 86 CB".hexToBytes()
+    val sessionKey: ByteArray = "0D D7 C8 06 C6 C1 40 FE A8 3B CF 81 EE DF 69 83".hexToBytes()
     const val qq: UInt = 1040400290u
-    const val localIp = "192.168.3."
+    const val localIp = "192.168.3.10"
 
     fun dataReceived(data: ByteArray) {
         //println("raw = " + data.toUHexString())
@@ -159,12 +185,14 @@ object Main {
             return@read
         }
 
-        println("fixVer2=" + when (val flag = readByte().toInt()) {
-            2 -> byteArrayOf(2) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1)
-            4 -> byteArrayOf(4) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1 + 8)//8个0
-            0 -> byteArrayOf(0) + readBytes(2)
-            else -> error("unknown fixVer2 flag=$flag. Remaining =${readBytes().toUHexString()}")
-        }.toUHexString())
+        println(
+            "fixVer2=" + when (val flag = readByte().toInt()) {
+                2 -> byteArrayOf(2) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1)
+                4 -> byteArrayOf(4) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1 + 8)//8个0
+                0 -> byteArrayOf(0) + readBytes(2)
+                else -> error("unknown fixVer2 flag=$flag. Remaining =${readBytes().toUHexString()}")
+            }.toUHexString()
+        )
 
         //39 27 DC E2 04 00 00 00 00 00 00 00 1E 0E 89 00 00 01 05 0F 05 0F 00 00 00 00 00 00 00 00 00 00 00 00 00 3E 03 3F A2 00 00 00 00 00 00 00 00 00 00 00
 
@@ -191,8 +219,8 @@ object Main {
                     try {
                         messageData.read {
                             discardExact(
-                                    4 + 4 + 12 + 2 + 4 + 4 + 16 + 2 + 2 + 4 + 2 + 16 + 4 + 4 + 7 + 15 + 2
-                                            + 1
+                                4 + 4 + 12 + 2 + 4 + 4 + 16 + 2 + 2 + 4 + 2 + 16 + 4 + 4 + 7 + 15 + 2
+                                        + 1
                             )
                             val chain = readMessageChain()
                             println(chain)

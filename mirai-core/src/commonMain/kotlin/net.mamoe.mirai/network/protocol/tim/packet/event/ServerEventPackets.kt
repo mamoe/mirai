@@ -20,7 +20,7 @@ data class EventPacketIdentity(
         val to: UInt,//对于好友消息, 这个是bot
         internal val uniqueId: IoBuffer//8
 ) {
-    override fun toString(): String = "(from=$from, to=$to)"
+    override fun toString(): String = "($from->$to)"
 }
 
 fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = with(identity) {

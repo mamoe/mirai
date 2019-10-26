@@ -3,8 +3,10 @@
 package net.mamoe.mirai
 
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 
 /*
@@ -21,6 +23,8 @@ suspend fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.get
 
 val Bot.groups: ContactList<Group> get() = this.contacts.groups
 val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
+
+inline fun <T> Bot.withSession(block: BotSession.() -> T): T = with(this.network.session) { block() }
 
 
 //NetworkHandler

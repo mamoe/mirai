@@ -1,41 +1,62 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.network.protocol.tim.packet
+package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
-import net.mamoe.mirai.network.session
+import net.mamoe.mirai.contact.withSession
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
+import net.mamoe.mirai.network.protocol.tim.packet.PacketId
+import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
+import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.httpPostGroupImage
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.readUnsignedVarInt
 
 
+/**
+ * 图片文件过大
+ */
+class OverFileSizeMaxException : IllegalStateException()
+
+/**
+ * 上传群图片
+ * 挂起直到上传完成或失败
+ * 失败后抛出 [OverFileSizeMaxException]
+ */
 suspend fun Group.uploadImage(
     image: ExternalImage
-) = with(bot.network.session) {
+) = withSession {
     GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey)
         .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
-            if (it.uKey != null) {
-                httpPostGroupImage(
-                    botAccount = bot.qqAccount,
-                    groupInternalId = internalId,
-                    imageInput = image.input,
-                    inputSize = image.inputSize,
-                    uKeyHex = it.uKey!!.toUHexString("")
-                )
+            when (it.state) {
+                GroupImageIdRequestPacket.Response.State.REQUIRE_UPLOAD -> {
+                    httpPostGroupImage(
+                        botAccount = bot.qqAccount,
+                        groupId = GroupId(id),
+                        imageInput = image.input,
+                        inputSize = image.inputSize,
+                        uKeyHex = it.uKey!!.toUHexString("")
+                    )
+                }
+
+                GroupImageIdRequestPacket.Response.State.ALREADY_EXISTS -> {
+
+                }
+
+                GroupImageIdRequestPacket.Response.State.OVER_FILE_SIZE_MAX -> throw OverFileSizeMaxException()
             }
-        }.await()
+        }.join()
 }
 
 /**
  * 获取 Image Id 和上传用的一个 uKey
  */
 @PacketId(0x0388u)
-@PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
 class GroupImageIdRequestPacket(
     private val bot: UInt,
     private val groupInternalId: GroupInternalId,
@@ -51,8 +72,8 @@ class GroupImageIdRequestPacket(
 
         //小图B
         // 00 00 00 07 00 00 00
-        // 5B 08 =后文长度-6
-        // 01 12 03 98 01 01 10 01 1A
+        // 5B =后文长度-7
+        // 08 01 12 03 98 01 01 10 01 1A
         // 57长度
         // 08 FB D2 D8 94 02
         // 10 A2 FF 8C F0 03
@@ -82,6 +103,28 @@ class GroupImageIdRequestPacket(
         // 70 00
         // 78 03
         // 80 01 00
+
+        //450*298
+        //00 00 00 07 00 00 00
+        // 5D=后文-7 varint
+        // 08 01 12 03 98 01 01 10 01 1A
+        // 59 =后文长度 varint
+        // 08 A0 89 F7 B6 03
+        // 10 A2 FF 8C F0 03
+        // 18 00
+        // 22 10  01 FC 9D 6B E9 B2 D9 CD AC 25 66 73 F9 AF 6A 67
+        // 28 [C9 10] varint size
+        // 32 1A
+        // 58 00 51 00 56 00 51 00 58 00 47 00 55 00 47 00 38 00 57 00 5F 00 4A 00 43 00
+        // 38 01 48 01
+        // 50 [C2 03]
+        // 58 [AA 02]
+        // 60 02
+        // 6A 05 32 36 39 33 33
+        // 70 00
+        // 78 03
+        // 80 01
+        // 00
 
         //大图C
         // 00 00 00 07 00 00 00
@@ -144,11 +187,11 @@ class GroupImageIdRequestPacket(
         encryptAndWrite(sessionKey) {
             writeHex("00 00 00 07 00 00 00")
 
-            writeUVarintLVPacket(lengthOffset = { it - 6 }) {
+            writeUVarintLVPacket(lengthOffset = { it - 7 }) {
                 writeByte(0x08)
                 writeHex("01 12 03 98 01 01 10 01 1A")
 
-                writeUVarintLVPacket(lengthOffset = { it + 1 }) {
+                writeUVarintLVPacket(lengthOffset = { it }) {
                     writeTUVarint(0x08u, groupInternalId.value)
                     writeTUVarint(0x10u, bot)
                     writeTV(0x1800u)
@@ -207,31 +250,6 @@ class GroupImageIdRequestPacket(
              }.readBytes().toUHexString())
                 */
         }
-
-
-        //以下仅支持中等大小图片
-/*
-        writeQQ(bot)
-        writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
-
-        encryptAndWrite(sessionKey) {
-            writeHex("00 00 00 07 00 00 00 5E 08 01 12 03 98 01 01 10 01 1A")
-            writeHex("5A 08")
-            writeUVarInt(groupId)
-            writeUByte(0x10u)
-            writeUVarInt(bot)
-            writeHex("18 00 22 10")
-            writeFully(image.md5)
-            writeUByte(0x28u)
-            writeUVarInt(image.fileSize.toUInt())
-            writeHex("32 1A 37 00 4D 00 32 00 25 00 4C 00 31 00 56 00 32 00 7B 00 39 00 30 00 29 00 52 00")
-            writeHex("38 01 48 01 50")
-            writeUVarInt(image.width.toUInt())
-            writeUByte(0x58u)
-            writeUVarInt(image.height.toUInt())
-            writeHex("60 04 6A 05 32 36 36 35 36 70 00 78 03 80 01 00")
-        }
-              */
     }
 
     companion object {
@@ -239,21 +257,51 @@ class GroupImageIdRequestPacket(
     }
 
     @PacketId(0x0388u)
-    @PacketVersion(date = "2019.10.20", timVersion = "2.3.2.21173")
+    @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
+        lateinit var state: State
+
+        /**
+         * 访问 HTTP API 时需要使用的一个 key. 128 位
+         */
         var uKey: ByteArray? = null
+
+        enum class State {
+            /**
+             * 需要上传. 此时 [uKey] 不为 `null`
+             */
+            REQUIRE_UPLOAD,
+            /**
+             * 服务器已有这个图片. 此时 [uKey] 为 `null`
+             */
+            ALREADY_EXISTS,
+            /**
+             * 图片过大. 此时 [uKey] 为 `null`
+             */
+            OVER_FILE_SIZE_MAX,
+        }
 
         override fun decode(): Unit = with(input) {
             discardExact(6)//00 00 00 05 00 00
 
             val length = remaining - 128 - 14
             if (length < 0) {
-                //服务器已经有这个图片了
+                state = if (readUShort().toUInt() == 0x0025u) {
+                    State.OVER_FILE_SIZE_MAX
+                } else {
+                    State.ALREADY_EXISTS
+                }
+
+                //图片过大 00 25 12 03 98 01 01 08 9B A4 DC 92 06 10 01 1A 1B 08 00 10 C5 01 1A 12 6F 76 65 72 20 66 69 6C 65 20 73 69 7A 65 20 6D 61 78 20 00
+                //图片过大 00 25 12 03 98 01 01 08 9B A4 DC 92 06 10 01 1A 1B 08 00 10 C5 01 1A 12 6F 76 65 72 20 66 69 6C 65 20 73 69 7A 65 20 6D 61 78 20 00
+                //图片已有 00 3F 12 03 98 01 01 08 9B A4 DC 92 06 10 01 1A 35 08 00 10 00 20 01 2A 1F 0A 10 24 66 B9 6B E8 58 FE C0 12 BD 1E EC CB 74 A8 8E 10 04 18 83 E2 AF 01 20 80 3C 28 E0 21 30 EF 9A 88 B9 0B 38 50 48 90 D7 DA B0 08
+                //debugPrint("后文")
                 return@with
             }
 
             discardExact(length)
             uKey = readBytes(128)
+            state = State.REQUIRE_UPLOAD
             //} else {
             //    println("服务器已经有了这个图片")
             //println("后文 = ${readRemainingBytes().toUHexString()}")
@@ -272,12 +320,4 @@ class GroupImageIdRequestPacket(
             // [80 01] 04 9A 01 79 2F 67 63 68 61 74 70 69 63 5F 6E 65 77 2F 33 39 36 37 39 34 39 34 32 37 2F 33 39 36 37 39 34 39 34 32 37 2D 32 36 36 32 36 30 30 34 34 30 2D 32 46 43 41 36 42 45 37 42 37 39 35 42 37 32 37 30 36 33 35 32 37 35 34 30 45 34 33 42 34 33 30 2F 34 30 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 A0 01 00
         }
     }
-}
-
-fun main() {
-    ("A2  FF  8C  F0  03").hexToBytes().read {
-        println(readUnsignedVarInt())
-    }
-
-    println(0x40)
 }

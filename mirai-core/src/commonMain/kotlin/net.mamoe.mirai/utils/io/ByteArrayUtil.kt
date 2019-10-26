@@ -6,6 +6,7 @@ import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
+import kotlinx.io.core.use
 import kotlin.jvm.JvmOverloads
 
 @JvmOverloads
@@ -34,6 +35,6 @@ fun UByteArray.toUHexString(separator: String = " "): String = this.joinToString
 
 fun ByteArray.toReadPacket() = ByteReadPacket(this)
 
-fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R = this.toReadPacket().run(t)
+fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R = this.toReadPacket().use(t)
 
 fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)

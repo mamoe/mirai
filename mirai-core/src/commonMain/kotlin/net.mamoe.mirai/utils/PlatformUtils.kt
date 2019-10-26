@@ -10,7 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.userAgent
 import kotlinx.io.core.Input
-import net.mamoe.mirai.contact.GroupInternalId
+import net.mamoe.mirai.contact.GroupId
 
 /**
  * 时间戳
@@ -59,52 +59,95 @@ suspend fun httpPostFriendImage(
     uKeyHex: String,
     imageInput: Input,
     inputSize: Long
-): Boolean = (httpClient.postImage(imageInput, inputSize, uKeyHex) {
-    url {
-        parameters["htcmd"] = "0x6ff0070"
-        parameters["uin"] = botAccount.toLong().toString()
-    }
+): Boolean = (httpClient.postImage(
+    htcmd = "0x6ff0070",
+    uin = botAccount,
+    groupcode = null,
+    imageInput = imageInput,
+    inputSize = inputSize,
+    uKeyHex = uKeyHex
+) as HttpStatusCode).value.also { println(it) } == 200
 
-} as HttpStatusCode).value.also { println(it) } == 200
+/*
+  httpPostFriendImageOld(uKeyHex, botAccount, imageInput.readBytes().toReadPacket())
 
+expect suspend fun httpPostFriendImageOld(
+  uKeyHex: String,
+  botNumber: UInt,
+  imageData: ByteReadPacket
+): Boolean
+*/
 /**
  * 上传群图片
  */
 @Suppress("DuplicatedCode")
 suspend fun httpPostGroupImage(
     botAccount: UInt,
-    groupInternalId: GroupInternalId,
+    groupId: GroupId,
     uKeyHex: String,
     imageInput: Input,
     inputSize: Long
-): Boolean = (httpClient.postImage(imageInput, inputSize, uKeyHex) {
-    url {
-        parameters["htcmd"] = "0x6ff0071"
-        parameters["uin"] = botAccount.toLong().toString()
-        parameters["groupcode"] = groupInternalId.value.toLong().toString()
-    }
-} as HttpStatusCode).value.also { println(it) } == 200
+): Boolean = (httpClient.postImage(
+    htcmd = "0x6ff0071",
+    uin = botAccount,
+    groupcode = groupId,
+    imageInput = imageInput,
+    inputSize = inputSize,
+    uKeyHex = uKeyHex
+) as HttpStatusCode).value.also { println(it) } == 200
+/*    = (httpClient.post {
+url {
+    protocol = URLProtocol.HTTP
+    host = "htdata2.qq.com"
+    path("cgi-bin/httpconn")
 
+    parameters["htcmd"] = "0x6ff0071"
+    parameters["ver"] = "5603"
+    parameters["term"] = "pc"
+    parameters["ukey"] = uKeyHex
+    parameters["filesize"] = inputSize.toString()
+    parameters["range"] = 0.toString()
+    parameters["uin"] = botAccount.toLong().toString()
+    parameters["groupcode"] = groupId.value.toLong().toString()
+   // userAgent("QQClient")
+}
 
+println(url.buildString())
+body = ByteArrayContent(imageInput.readBytes())
+//configureBody(inputSize, imageInput)
+} as HttpStatusCode).value.also { println(it) } == 200*/
+
+@Suppress("SpellCheckingInspection")
 private suspend inline fun <reified T> HttpClient.postImage(
+    htcmd: String,
+    uin: UInt,
+    groupcode: GroupId?,
     imageInput: Input,
     inputSize: Long,
-    uKeyHex: String,
-    block: HttpRequestBuilder.() -> Unit = {}
+    uKeyHex: String
 ): T = post {
     url {
         protocol = URLProtocol.HTTP
         host = "htdata2.qq.com"
         path("cgi-bin/httpconn")
 
+        parameters["htcmd"] = htcmd
+        parameters["uin"] = uin.toLong().toString()
+
+        if (groupcode != null) {
+            parameters["groupcode"] = groupcode.value.toLong().toString()
+        }
+
+        parameters["term"] = "pc"
         parameters["ver"] = "5603"
-        parameters["filezise"] = inputSize.toString()
+        parameters["filesize"] = inputSize.toString()
         parameters["range"] = 0.toString()
         parameters["ukey"] = uKeyHex
 
         userAgent("QQClient")
     }
-    block()
+
+    println(url.buildString())
     configureBody(inputSize, imageInput)
 }
 

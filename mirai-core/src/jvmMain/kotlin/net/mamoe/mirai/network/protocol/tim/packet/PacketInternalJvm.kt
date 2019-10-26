@@ -6,6 +6,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.utils.io.toUHexString
 import java.lang.reflect.Field
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.jvm.kotlinProperty
 
 internal object PacketNameFormatter {
     @JvmStatic
@@ -22,7 +24,7 @@ internal object PacketNameFormatter {
     }
 }
 
-private object IgnoreIdList : List<String> by listOf(
+private object IgnoreIdListEquals : List<String> by listOf(
     "idHex",
     "id",
     "packetId",
@@ -32,18 +34,32 @@ private object IgnoreIdList : List<String> by listOf(
     "idByteArray",
     "encoded",
     "packet",
-    "Companion",
     "EMPTY_ID_HEX",
     "input",
+    "sequenceId",
     "output",
-    "this\$0",
-    "\$\$delegatedProperties",
+    "bot",
     "UninitializedByteReadPacket",
     "sessionKey"
 )
 
+private object IgnoreIdListInclude : List<String> by listOf(
+    "Companion",
+    "EMPTY_ID_HEX",
+    "input",
+    "output",
+    "this\$",
+    "\$\$delegatedProperties",
+    "UninitializedByteReadPacket",
+    "\$FU",
+    "RefVolatile"
+)
+
+@Suppress("UNCHECKED_CAST")
 internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjustName(this::class.simpleName + "(${this.idHexString})") + this::class.java.allDeclaredFields
-    .filterNot { it.name in IgnoreIdList /*|| "delegate" in it.name|| "$" in it.name */ }
+    .filterNot { field ->
+        IgnoreIdListEquals.any { field.name.replace("\$delegate", "") == it } || IgnoreIdListInclude.any { it in field.name }
+    }
     .joinToString(", ", "{", "}") {
         it.isAccessible = true
         it.name.replace("\$delegate", "") + "=" + it.get(this).let { value ->
@@ -55,6 +71,7 @@ internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjust
                 //is ByteReadPacket -> value.copy().readBytes().toUHexString()
                 is IoBuffer -> "[IoBuffer(${value.readRemaining})]"
                 is Lazy<*> -> "[Lazy]"
+                is ReadWriteProperty<*, *> -> (value as ReadWriteProperty<Packet, *>).getValue(this, it.kotlinProperty!!)
                 else -> value.toString()
             }
         }

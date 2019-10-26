@@ -17,8 +17,8 @@ import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.message.PlainText
 import net.mamoe.mirai.message.firstOrNull
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingRawPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.network.protocol.tim.packet.uploadImage
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
@@ -99,25 +99,27 @@ suspend fun main() {
             }
 
             "上传好友图片" in it.message -> withTimeoutOrNull(5000) {
+                val filename = it.message.toString().substringAfter("上传好友图片")
                 val id = 1040400290u.qq()
-                    .uploadImage(File("C:\\Users\\Him18\\Desktop\\${it.message.toString().substringAfter("上传好友图片")}").toMiraiImage())
+                    .uploadImage(File("C:\\Users\\Him18\\Desktop\\$filename").toExternalImage())
                 it.reply(id.value)
-                delay(1000)
+                delay(100)
                 it.reply(Image(id))
             }
 
             "上传群图片" in it.message -> withTimeoutOrNull(5000) {
+                val filename = it.message.toString().substringAfter("上传群图片")
                 val image = File(
-                    "C:\\Users\\Him18\\Desktop\\${it.message.toString().substringAfter("上传群图片")}"
-                ).toMiraiImage()
-                580266363u.group().uploadImage(image)
+                    "C:\\Users\\Him18\\Desktop\\$filename"
+                ).toExternalImage()
+                920503456u.group().uploadImage(image)
                 it.reply(image.groupImageId.value)
-                delay(1000)
-                580266363u.group().sendMessage(Image(image.groupImageId))
+                delay(100)
+                920503456u.group().sendMessage(Image(image.groupImageId))
             }
 
             "发群图片" in it.message -> {
-                580266363u.group().sendMessage(Image(ImageId(it.message.toString().substringAfter("发群图片"))))
+                920503456u.group().sendMessage(Image(ImageId(it.message.toString().substringAfter("发群图片"))))
             }
 
             "发好友图片" in it.message -> {

@@ -18,17 +18,26 @@ class ExternalImage(
     val width: Int,
     val height: Int,
     val md5: ByteArray,
-    val format: String,
+    imageFormat: String,
     val input: Input,
     val inputSize: Long
 ) {
+    private val format: String
+
+    init {
+        if (imageFormat == "JPEG" || imageFormat == "jpeg") {//必须转换
+            this.format = "jpg"
+        } else {
+            this.format = imageFormat
+        }
+    }
 
     /**
      * 用于发送消息的 [ImageId]
      */
     val groupImageId: ImageId by lazy { ImageId("{${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}}.$format") }
 
-    override fun toString(): String = "[ExternalImage(${width}x${height} $format)]"
+    override fun toString(): String = "[ExternalImage(${width}x$height $format)]"
 }
 
 private operator fun ByteArray.get(range: IntRange): String = buildString {
