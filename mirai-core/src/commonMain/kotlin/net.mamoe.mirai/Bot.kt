@@ -127,7 +127,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         suspend fun getGroup(id: GroupId): Group = id.value.let {
             if (groups.containsKey(it)) groups[it]!!
             else groupsLock.withLock {
-                groups.getOrPut(it) { Group(this@Bot, it) }
+                groups.getOrPut(it) { Group(this@Bot, id) }
             }
         }
     }

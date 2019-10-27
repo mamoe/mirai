@@ -24,7 +24,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.internal.inlinedRemoveIf
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 
@@ -129,10 +128,11 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 try {
                     channel.read(buffer)// JVM: withContext(IO)
                 } catch (e: ReadPacketInternalException) {
-                    // read failed, continue and reread
+                    bot.logger.logError("Socket channel read failed: ${e.message}")
                     continue
                 } catch (e: Throwable) {
-                    e.log()// other unexpected exceptions caught.
+                    bot.logger.logError("Caught unexpected exceptions")
+                    bot.logger.logError(e)
                     continue
                 } finally {
                     if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
@@ -146,7 +146,11 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     // `.use`: Ensure that the packet is consumed **totally**
                     // so that all the buffers are released
                     ByteReadPacket(buffer, IoBuffer.Pool).use {
-                        distributePacket(it.parseServerPacket(buffer.readRemaining))
+                        try {
+                            distributePacket(it.parseServerPacket(buffer.readRemaining))
+                        } catch (e: Exception) {
+                            bot.logger.logError(e)
+                        }
                     }
                 }
             }
@@ -200,14 +204,15 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     bot.logger.logCyan("Packet received: $packet")
                 }
 
+                //Remove first to release the lock
                 handlersLock.withLock {
-                    temporaryPacketHandlers.inlinedRemoveIf {
-                        it.shouldRemove(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)
-                    }
+                    temporaryPacketHandlers.filter { it.filter(session, packet) }
+                }.forEach {
+                    it.doReceive(packet)
                 }
 
                 if (packet is ServerEventPacket) {
-                    //must ensure the response packet is sent
+                    //ensure the response packet is sent
                     sendPacket(packet.ResponsePacket(bot.qqAccount, sessionKey))
                 }
 

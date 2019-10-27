@@ -47,7 +47,7 @@ private fun readTestAccount(): BotAccount? {
 suspend fun Bot.messageDSL() {
     //监听所有 bot 的来自所有群和好友的消息
     subscribeMessages {
-        replyCase("你好") { "你好" }
+        "你好" reply "你好!"
 
         has<Image> {
             // this: SenderAndMessage
@@ -65,9 +65,9 @@ suspend fun Bot.messageDSL() {
             reply(message)
         }
 
-        replyContains("123") { "你的消息里面包含 123" }
+        "123" reply "你的消息里面包含 123"
 
-        replyCase("我的qq") { sender.id.toString() }
+        "我的qq" reply { sender.id.toString() }
 
         sentBy(1040400290) {
             reply("是你!")

@@ -66,7 +66,8 @@ inline class GroupInternalId(val value: UInt)
  * - Group ID([Group.internalId]) 是与调用 API 时使用的 id.(在 QQ 客户端中不可见)
  * @author Him188moe
  */
-class Group internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
+@Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
+class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, groupId.value) {
     val internalId = GroupId(id).toInternalId()
     val members: ContactList<QQ>
         //todo members

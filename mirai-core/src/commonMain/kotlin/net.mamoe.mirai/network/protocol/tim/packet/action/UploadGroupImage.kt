@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
+import kotlinx.coroutines.withContext
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.GroupId
@@ -16,6 +17,7 @@ import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.httpPostGroupImage
 import net.mamoe.mirai.utils.io.*
+import kotlin.coroutines.coroutineContext
 
 
 /**
@@ -32,24 +34,27 @@ class OverFileSizeMaxException : IllegalStateException()
  * @throws OverFileSizeMaxException 如果文件过大, 服务器拒绝接收时
  */
 suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
+    val userContext = coroutineContext
     GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey)
         .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
-            when (it.state) {
-                GroupImageIdRequestPacket.Response.State.REQUIRE_UPLOAD -> {
-                    httpPostGroupImage(
-                        botAccount = bot.qqAccount,
-                        groupId = GroupId(id),
-                        imageInput = image.input,
-                        inputSize = image.inputSize,
-                        uKeyHex = it.uKey!!.toUHexString("")
-                    )
+            withContext(userContext) {
+                when (it.state) {
+                    GroupImageIdRequestPacket.Response.State.REQUIRE_UPLOAD -> {
+                        httpPostGroupImage(
+                            botAccount = bot.qqAccount,
+                            groupId = GroupId(id),
+                            imageInput = image.input,
+                            inputSize = image.inputSize,
+                            uKeyHex = it.uKey!!.toUHexString("")
+                        )
+                    }
+
+                    GroupImageIdRequestPacket.Response.State.ALREADY_EXISTS -> {
+
+                    }
+
+                    GroupImageIdRequestPacket.Response.State.OVER_FILE_SIZE_MAX -> throw OverFileSizeMaxException()
                 }
-
-                GroupImageIdRequestPacket.Response.State.ALREADY_EXISTS -> {
-
-                }
-
-                GroupImageIdRequestPacket.Response.State.OVER_FILE_SIZE_MAX -> throw OverFileSizeMaxException()
             }
         }.join()
     image.groupImageId

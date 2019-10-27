@@ -79,8 +79,7 @@ class BotSession(
      * @see Bot.withSession 转换接收器 (receiver, 即 `this` 的指向) 为 [BotSession]
      */
     suspend inline fun <reified P : ServerPacket, R> OutgoingPacket.sendAndExpect(noinline handler: suspend (P) -> R): CompletableDeferred<R> {
-        val deferred: CompletableDeferred<R> =
-            coroutineContext[Job].takeIf { it != null }?.let { CompletableDeferred<R>(it) } ?: CompletableDeferred()
+        val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
         bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession).also {
             it.toSend(this)
             it.onExpect(handler)

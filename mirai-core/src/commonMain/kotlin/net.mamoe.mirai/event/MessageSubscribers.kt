@@ -10,6 +10,9 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.sendTo
+import net.mamoe.mirai.utils.upload
 import kotlin.jvm.JvmName
 
 /**
@@ -33,8 +36,19 @@ abstract class SenderAndMessage<S : Contact>(
      */
     suspend fun reply(message: MessageChain) = subject.sendMessage(message)
 
-    suspend fun reply(plain: String) = reply(PlainText(plain))
     suspend fun reply(message: Message) = reply(message.toChain())
+    suspend fun reply(plain: String) = reply(PlainText(plain))
+
+
+    // region Send to subject
+    suspend inline fun ExternalImage.send() = this.sendTo(subject)
+
+    suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
+    suspend inline fun Image.send() = this.sendTo(subject)
+    suspend inline fun ImageId.send() = this.sendTo(subject)
+    suspend inline fun Message.send() = this.sendTo(subject)
+
+    // endregion
 }
 
 /**
@@ -134,11 +148,16 @@ suspend inline fun Bot.subscribeFriendMessages(noinline listeners: suspend Messa
 
 internal typealias MessageListener<T> = @MessageListenerDsl suspend T.(String) -> Unit
 
-internal typealias MessageReplier<T> = @MessageListenerDsl suspend T.(String) -> String
+internal typealias MessageReplier<T> = @MessageListenerDsl suspend T.(String) -> Message
 
-internal suspend inline operator fun <T : SenderAndMessage<*>> MessageListener<T>.invoke(t: T) = this.invoke(t, t.message.toString())
+internal typealias StringReplier<T> = @MessageListenerDsl suspend T.(String) -> String
+
+internal suspend inline operator fun <T : SenderAndMessage<*>> MessageListener<T>.invoke(t: T) = this.invoke(t, t.message.stringValue)
 @JvmName("invoke1") //Avoid Platform declaration clash
-internal suspend inline operator fun <T : SenderAndMessage<*>> MessageReplier<T>.invoke(t: T) = this.invoke(t, t.message.toString())
+internal suspend inline operator fun <T : SenderAndMessage<*>> StringReplier<T>.invoke(t: T): String = this.invoke(t, t.message.stringValue)
+
+@JvmName("invoke2") //Avoid Platform declaration clash
+internal suspend inline operator fun <T : SenderAndMessage<*>> MessageReplier<T>.invoke(t: T): Message = this.invoke(t, t.message.stringValue)
 
 /**
  * 消息订阅构造器
@@ -148,27 +167,35 @@ internal suspend inline operator fun <T : SenderAndMessage<*>> MessageReplier<T>
  */
 @Suppress("unused")
 @MessageListenerDsl
-inline class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
+//TODO 将这个类 inline 后会导致 kotlin 编译错误. 等待修复后再 inline
+class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
     val handlerConsumer: suspend (MessageListener<T>) -> Unit
 ) {
     suspend inline fun case(equals: String, trim: Boolean = true, noinline listener: MessageListener<T>) = content({ equals == if (trim) it.trim() else it }, listener)
     suspend inline fun contains(value: String, noinline listener: MessageListener<T>) = content({ value in it }, listener)
-    suspend inline fun replyEndsWith(value: String, noinline replier: MessageReplier<T>) = content({ it.endsWith(value) }) { replier(this) }
     suspend inline fun startsWith(start: String, noinline listener: MessageListener<T>) = content({ it.startsWith(start) }, listener)
     suspend inline fun endsWith(start: String, noinline listener: MessageListener<T>) = content({ it.endsWith(start) }, listener)
     suspend inline fun sentBy(id: UInt, noinline listener: MessageListener<T>) = content({ sender.id == id }, listener)
     suspend inline fun sentBy(id: Long, noinline listener: MessageListener<T>) = sentBy(id.toUInt(), listener)
     suspend inline fun <reified M : Message> has(noinline listener: MessageListener<T>) = handlerConsumer { if (message.any<M>()) listener(this) }
     suspend inline fun content(noinline filter: T.(String) -> Boolean, noinline listener: MessageListener<T>) =
-        handlerConsumer { if (this.filter(message.toString())) listener(this) }
+        handlerConsumer { if (this.filter(message.stringValue)) listener(this) }
+
+    suspend infix fun String.caseReply(replier: StringReplier<T>) = case(this, true) { this@case.reply(replier(this)) }
+    suspend infix fun String.containsReply(replier: StringReplier<T>) = content({ this@containsReply in it }) { replier(this) }
+    suspend infix fun String.startsWithReply(replier: StringReplier<T>) = content({ it.startsWith(this@startsWithReply) }) { replier(this) }
+    suspend infix fun String.endswithReply(replier: StringReplier<T>) = content({ it.endsWith(this@endswithReply) }) { replier(this) }
+
+    suspend infix fun String.reply(reply: String) = case(this) { this@case.reply(reply) }
+    suspend infix fun String.reply(reply: StringReplier<T>) = case(this) { this@case.reply(reply(this)) }
 
 
+/* 易产生迷惑感
     suspend inline fun replyCase(equals: String, trim: Boolean = true, noinline replier: MessageReplier<T>) = case(equals, trim) { reply(replier(this)) }
     suspend inline fun replyContains(value: String, noinline replier: MessageReplier<T>) = content({ value in it }) { replier(this) }
     suspend inline fun replyStartsWith(value: String, noinline replier: MessageReplier<T>) = content({ it.startsWith(value) }) { replier(this) }
-
-    suspend infix fun String.reply(reply: String) = case(this) { this.reply(reply) }
-    suspend infix fun String.reply(reply: MessageReplier<T>) = case(this) { this.reply(reply(this)) }
+    suspend inline fun replyEndsWith(value: String, noinline replier: MessageReplier<T>) = content({ it.endsWith(value) }) { replier(this) }
+*/
 }
 
 

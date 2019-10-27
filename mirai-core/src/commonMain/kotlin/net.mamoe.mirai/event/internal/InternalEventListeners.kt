@@ -21,11 +21,11 @@ import kotlin.reflect.KClass
  * @author Him188moe
  */
 internal suspend fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<E>): Unit = with(this.listeners()) {
-    if (mainMutex.tryLock()) {//能锁则代表这个事件目前没有正在广播.
+    if (mainMutex.tryLock(listener)) {//能锁则代表这个事件目前没有正在广播.
         try {
             add(listener)//直接修改主监听者列表
         } finally {
-            mainMutex.unlock()
+            mainMutex.unlock(listener)
         }
         return
     }
@@ -38,7 +38,7 @@ internal suspend fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<
     EventScope.launch {
         //启动协程并等待正在进行的广播结束, 然后将缓存转移到主监听者列表
         //启动后的协程马上就会因为锁而被挂起
-        mainMutex.withLock {
+        mainMutex.withLock(listener) {
             cacheMutex.withLock {
                 if (cache.size != 0) {
                     addAll(cache)
@@ -55,6 +55,7 @@ internal suspend fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<
  * @author Him188moe
  */
 sealed class Listener<in E : Event> {
+    internal val lock = Mutex()
     abstract suspend fun onEvent(event: E): ListeningStatus
 }
 
@@ -127,8 +128,25 @@ internal object EventListenerManger {
 
 @Suppress("UNCHECKED_CAST")
 internal suspend fun <E : Event> E.broadcastInternal(): E {
-    suspend fun callListeners(listeners: EventListeners<in E>) = listeners.mainMutex.withLock {
-        listeners.inlinedRemoveIf { it.onEvent(this) == ListeningStatus.STOPPED }
+    suspend fun callListeners(listeners: EventListeners<in E>) {
+        suspend fun callAndRemoveIfRequired() {
+            listeners.inlinedRemoveIf {
+                if (it.lock.tryLock()) {
+                    try {
+                        it.onEvent(this) == ListeningStatus.STOPPED
+                    } finally {
+                        it.lock.unlock()
+                    }
+                } else false
+            }
+        }
+
+        //自己持有, 则是在一个事件中
+        if (listeners.mainMutex.holdsLock(listeners)) {
+            callAndRemoveIfRequired()
+        } else listeners.mainMutex.withLock(listeners) {
+            callAndRemoveIfRequired()
+        }
     }
 
     callListeners(this::class.listeners() as EventListeners<in E>)

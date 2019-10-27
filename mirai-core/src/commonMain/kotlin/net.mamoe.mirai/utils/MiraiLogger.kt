@@ -42,6 +42,8 @@ interface MiraiLogger {
 
     fun logError(any: Any?)
 
+    fun logError(e: Throwable) = log(e)
+
     fun logDebug(any: Any?)
 
     fun logCyan(any: Any?)
@@ -93,6 +95,8 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         logError0(any)
         follower?.logError(any)
     }
+
+    override fun logError(e: Throwable) = log(e)
 
     final override fun logDebug(any: Any?) {
         logDebug0(any)

@@ -8,6 +8,8 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.log
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -39,6 +41,18 @@ abstract class Event {
     fun cancel() {
         cancelled = true
     }
+
+    init {
+        if (EventDebuggingFlag) {
+            EventLogger.logDebug(this::class.simpleName + " created")
+        }
+    }
+}
+
+internal object EventLogger : MiraiLogger by DefaultLogger("Event")
+
+val EventDebuggingFlag: Boolean by lazy {
+    false
 }
 
 /**
@@ -58,7 +72,16 @@ interface Cancellable {
 @Suppress("UNCHECKED_CAST")
 @JvmOverloads
 suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
-    return withContext(EventScope.coroutineContext + context) { this@broadcast.broadcastInternal() }
+    if (EventDebuggingFlag) {
+        EventLogger.logDebug(this::class.simpleName + " pre broadcast")
+    }
+    try {
+        return withContext(EventScope.coroutineContext + context) { this@broadcast.broadcastInternal() }
+    } finally {
+        if (EventDebuggingFlag) {
+            EventLogger.logDebug(this::class.simpleName + " after broadcast")
+        }
+    }
 }
 
 /**

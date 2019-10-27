@@ -2,7 +2,6 @@ package net.mamoe.mirai.network.protocol.tim.handler
 
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import kotlin.reflect.KClass
 
 /**
  * 数据包(接受/发送)处理器
@@ -20,14 +19,13 @@ abstract class PacketHandler(
 }
 
 internal class PacketHandlerNode<T : PacketHandler>(
-        val clazz: KClass<T>,
-        val instance: T,
-        val key: PacketHandler.Key<T>
+    val instance: T,
+    val key: PacketHandler.Key<T>
 )
 
 internal fun <T : PacketHandler> T.asNode(key: PacketHandler.Key<T>): PacketHandlerNode<T> {
     @Suppress("UNCHECKED_CAST")
-    return PacketHandlerNode(this::class as KClass<T>, this, key)
+    return PacketHandlerNode(this, key)
 }
 
 internal open class PacketHandlerList : MutableList<PacketHandlerNode<*>> by mutableListOf() {
