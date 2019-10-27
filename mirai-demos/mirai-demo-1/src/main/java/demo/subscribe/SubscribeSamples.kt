@@ -61,7 +61,7 @@ suspend fun Bot.messageDSL() {
                 this.group.sendMessage("你在一个群里")
             }
 
-            reply("你发送了一个图片, ID为 ${message[Image].id}, 我要复读了")
+            reply("图片, ID= ${message[Image].id}")
             reply(message)
         }
 
@@ -70,7 +70,7 @@ suspend fun Bot.messageDSL() {
         "我的qq" reply { sender.id.toString() }
 
         sentBy(1040400290) {
-            reply("是你!")
+            //reply("是你!")
         }
 
         contains("复读") {

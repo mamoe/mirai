@@ -6,6 +6,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
+import net.mamoe.mirai.message.Image
+import net.mamoe.mirai.message.ImageId
+import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
 
@@ -18,7 +21,7 @@ private fun readTestAccount(): BotAccount? {
     val lines = file.readLines()
     return try {
         BotAccount(lines[0].toUInt(), lines[1])
-    } catch (e: IndexOutOfBoundsException) {
+    } catch (e: Exception) {
         null
     }
 }
@@ -26,19 +29,35 @@ private fun readTestAccount(): BotAccount? {
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
     val bot = Bot(
-        //readTestAccount() ?: BotAccount(
-        qq = 1994701121u,
+        readTestAccount() ?: BotAccount(
+            id = 1994701121u,
             password = "123456"
-        // )
-    )
-
-    val bot2 = Bot(1994701121u, "").apply { login().requireSuccess() }
-
-    bot.login().requireSuccess()
+        )
+    ).apply { login().requireSuccess() }
 
     bot.subscribeMessages {
-        contains("") {
+        "你好" reply "你好!"
 
+        startsWith("发送图片", removePrefix = true) {
+            reply(Image(ImageId(it)))
+        }
+
+        startsWith("上传图片", removePrefix = true) {
+            File("C:/Users/Him18/Desktop/$it").sendAsImageTo(subject)
+        }
+
+        case("随机色图") {
+            reply("Downloading started")
+            val received = Gentlemen.getOrPut(subject).receive()
+            reply("Received Image")
+
+            received.image.await().send()
+            reply("Thanks for using")
+        }
+
+        "色图" caseReply {
+
+            ""
         }
     }
 

@@ -54,7 +54,10 @@ suspend fun InputStream.sendAsImageTo(contact: Contact) = withContext(Dispatcher
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun File.sendAsImageTo(contact: Contact) = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun File.sendAsImageTo(contact: Contact) {
+    require(this.exists() && this.canRead())
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+}
 
 // endregion
 
@@ -93,7 +96,10 @@ suspend fun InputStream.upload(contact: Contact): Image = withContext(Dispatcher
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun File.upload(contact: Contact): Image = withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+suspend fun File.upload(contact: Contact): Image {
+    require(this.exists() && this.canRead())
+    return withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+}
 
 // endregion
 

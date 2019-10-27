@@ -9,7 +9,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.io.core.Input
-import kotlinx.io.core.readFully
 import java.io.DataInput
 import java.io.EOFException
 import java.io.InputStream
@@ -70,7 +69,7 @@ actual suspend fun httpPostFriendImageOld(
             "?htcmd=0x6ff0070" +
             "&ver=5603" +
             "&ukey=$uKeyHex" +
-            "&filezise=${imageData.remaining}" +
+            "&filesize=${imageData.remaining}" +
             "&range=0" +
             "&uin=$botNumber"
 )
@@ -101,7 +100,6 @@ internal actual fun HttpRequestBuilder.configureBody(
 ) {
     //body = ByteArrayContent(input.readBytes(), ContentType.Image.PNG)
 
-
     body = object : OutgoingContent.WriteChannelContent() {
         override val contentType: ContentType = ContentType.Image.PNG
         override val contentLength: Long = inputSize
@@ -109,9 +107,10 @@ internal actual fun HttpRequestBuilder.configureBody(
         override suspend fun writeTo(channel: ByteWriteChannel) {//不知道为什么这个 channel 在 common 找不到...
             val buffer = byteArrayOf(1)
             repeat(contentLength.toInt()) {
-                input.readFully(buffer)
-                channel.writeFully(buffer, 0, buffer.size)
+                input.readFully(buffer, 0, 1)
+                channel.writeFully(buffer, 0, 1)
             }
+            println("已经发送$contentLength")
         }
     }
 }
