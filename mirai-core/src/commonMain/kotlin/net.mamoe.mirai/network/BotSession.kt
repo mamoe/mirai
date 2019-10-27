@@ -73,14 +73,15 @@ class BotSession(
      * ```
      * @sample net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
      *
+     * @param checkSequence 是否期待 [ServerPacket.sequenceId] 与 [OutgoingPacket.sequenceId] 相同的包.
      * @param P 期待的包
      * @param handler 处理期待的包
      *
      * @see Bot.withSession 转换接收器 (receiver, 即 `this` 的指向) 为 [BotSession]
      */
-    suspend inline fun <reified P : ServerPacket, R> OutgoingPacket.sendAndExpect(noinline handler: suspend (P) -> R): CompletableDeferred<R> {
+    suspend inline fun <reified P : ServerPacket, R> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true, noinline handler: suspend (P) -> R): CompletableDeferred<R> {
         val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
-        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession).also {
+        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession, checkSequence).also {
             it.toSend(this)
             it.onExpect(handler)
         })
@@ -91,7 +92,7 @@ class BotSession(
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
      * 您将能从本函数的返回值 [CompletableDeferred] 接收到所期待的 [P]
      */
-    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(): CompletableDeferred<P> = sendAndExpect<P, P> { it }
+    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): CompletableDeferred<P> = sendAndExpect<P, P>(checkSequence) { it }
 
     suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
 }

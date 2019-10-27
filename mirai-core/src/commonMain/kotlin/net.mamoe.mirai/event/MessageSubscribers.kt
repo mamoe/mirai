@@ -173,7 +173,9 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
 ) {
     suspend inline fun case(equals: String, trim: Boolean = true, noinline listener: MessageListener<T>) = content({ equals == if (trim) it.trim() else it }, listener)
     suspend inline fun contains(value: String, noinline listener: MessageListener<T>) = content({ value in it }, listener)
-    suspend inline fun startsWith(start: String, noinline listener: MessageListener<T>) = content({ it.startsWith(start) }, listener)
+    suspend inline fun startsWith(prefix: String, removePrefix: Boolean = false, noinline listener: MessageListener<T>) =
+        content({ it.startsWith(prefix) }) { if (removePrefix) listener.invoke(this, this.message.stringValue.substringAfter(prefix)) else listener(this) }
+
     suspend inline fun endsWith(start: String, noinline listener: MessageListener<T>) = content({ it.endsWith(start) }, listener)
     suspend inline fun sentBy(id: UInt, noinline listener: MessageListener<T>) = content({ sender.id == id }, listener)
     suspend inline fun sentBy(id: Long, noinline listener: MessageListener<T>) = sentBy(id.toUInt(), listener)

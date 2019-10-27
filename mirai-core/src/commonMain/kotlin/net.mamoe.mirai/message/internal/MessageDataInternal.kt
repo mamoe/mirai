@@ -208,6 +208,7 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
                             writeByte(0x02)
                             //"46 52 25 46 60 30 59 4F 4A 5A 51 48 31 46 4A 53 4C 51 4C 4A 33 46 31 2E 6A 70 67".hexToBytes().stringOfWitch()
                             //   writeShortLVString(filename)//图片文件名 FR%F`0YOJZQH1FJSLQLJ3F1.jpg
+                            require(id.value.length == 37) { "Illegal ImageId: ${id.value}" }
                             writeShortLVString(id.value.substring(1..24) + ".gif")//图片文件名. 后缀不影响. 但无后缀会导致 PC QQ 无法显示这个图片
                             writeHex("03 00 04 00 00 02 A2 04")
                             writeShortLVString(id.value)

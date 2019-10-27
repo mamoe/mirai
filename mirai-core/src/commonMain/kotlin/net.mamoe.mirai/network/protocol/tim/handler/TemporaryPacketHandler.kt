@@ -22,7 +22,8 @@ import kotlin.reflect.KClass
 class TemporaryPacketHandler<P : ServerPacket, R>(
     private val expectationClass: KClass<P>,
     private val deferred: CompletableDeferred<R>,
-    private val fromSession: BotSession
+    private val fromSession: BotSession,
+    private val checkSequence: Boolean
 ) {
     private lateinit var toSend: OutgoingPacket
 
@@ -45,7 +46,9 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
         session.socket.sendPacket(toSend)
     }
 
-    suspend fun filter(session: BotSession, packet: ServerPacket): Boolean = expectationClass.isInstance(packet) && session === this.fromSession
+    @ExperimentalUnsignedTypes
+    fun filter(session: BotSession, packet: ServerPacket): Boolean =
+        expectationClass.isInstance(packet) && session === this.fromSession && if (checkSequence) packet.sequenceId == toSend.sequenceId else true
 
     suspend fun doReceive(packet: ServerPacket) {
         @Suppress("UNCHECKED_CAST")
