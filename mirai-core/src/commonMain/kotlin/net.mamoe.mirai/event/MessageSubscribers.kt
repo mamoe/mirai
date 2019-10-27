@@ -3,6 +3,7 @@
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.events.BotEvent
@@ -13,45 +14,52 @@ import kotlin.jvm.JvmName
 
 /**
  * 消息事件时创建的临时容器.
- * @see
  */
-abstract class SenderAndMessage(
+abstract class SenderAndMessage<S : Contact>(
+    /**
+     * 发送这条消息的用户.
+     */
     val sender: QQ,
+    /**
+     * 消息事件主体. 对于好友消息, 这个属性为 [QQ] 的实例;  对于群消息, 这个属性为 [Group] 的实例
+     */
+    val subject: S,
     val message: MessageChain
 ) {
     /**
      * 给这个消息事件的主体发送消息
-     * 对于好友消息事件, 这个方法将会给好友 ([sender]) 发送消息
-     * 对于群消息事件, 这个方法将会给群 ([sender]) 发送消息
+     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
+     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    abstract suspend fun reply(message: MessageChain)
+    suspend fun reply(message: MessageChain) = subject.sendMessage(message)
 
     suspend fun reply(plain: String) = reply(PlainText(plain))
     suspend fun reply(message: Message) = reply(message.toChain())
 }
 
+/**
+ * [subject] = [sender] = [QQ]
+ */
 class FriendSenderAndMessage(
     sender: QQ,
     message: MessageChain
-) : SenderAndMessage(sender, message) {
-    override suspend fun reply(message: MessageChain) = sender.sendMessage(message)
-}
+) : SenderAndMessage<QQ>(sender, sender, message)
 
+/**
+ * [subject] = [group] = [Group]
+ */
 class GroupSenderAndMessage(
     val group: Group,
     sender: QQ,
     message: MessageChain
-) : SenderAndMessage(sender, message) {
-    override suspend fun reply(message: MessageChain) = group.sendMessage(message)
-}
-
+) : SenderAndMessage<Group>(sender, group, message)
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
 @MessageListenerDsl
-suspend inline fun subscribeMessages(noinline listeners: suspend MessageSubscribersBuilder<SenderAndMessage>.() -> Unit) {
-    MessageSubscribersBuilder<SenderAndMessage> { listener ->
+suspend inline fun subscribeMessages(noinline listeners: suspend MessageSubscribersBuilder<SenderAndMessage<*>>.() -> Unit) {
+    MessageSubscribersBuilder<SenderAndMessage<*>> { listener ->
         subscribeAlways<BotEvent> {
             when (it) {
                 is FriendMessageEvent -> listener(FriendSenderAndMessage(it.sender, it.message))
@@ -89,8 +97,8 @@ suspend inline fun subscribeFriendMessages(noinline listeners: suspend MessageSu
  * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
 @MessageListenerDsl
-suspend inline fun Bot.subscribeMessages(noinline listeners: suspend MessageSubscribersBuilder<SenderAndMessage>.() -> Unit) {
-    MessageSubscribersBuilder<SenderAndMessage> { listener ->
+suspend inline fun Bot.subscribeMessages(noinline listeners: suspend MessageSubscribersBuilder<SenderAndMessage<*>>.() -> Unit) {
+    MessageSubscribersBuilder<SenderAndMessage<*>> { listener ->
         this.subscribeAlways<BotEvent> {
             when (it) {
                 is FriendMessageEvent -> listener(FriendSenderAndMessage(it.sender, it.message))
@@ -128,9 +136,9 @@ internal typealias MessageListener<T> = @MessageListenerDsl suspend T.(String) -
 
 internal typealias MessageReplier<T> = @MessageListenerDsl suspend T.(String) -> String
 
-internal suspend inline operator fun <T : SenderAndMessage> MessageListener<T>.invoke(t: T) = this.invoke(t, t.message.toString())
+internal suspend inline operator fun <T : SenderAndMessage<*>> MessageListener<T>.invoke(t: T) = this.invoke(t, t.message.toString())
 @JvmName("invoke1") //Avoid Platform declaration clash
-internal suspend inline operator fun <T : SenderAndMessage> MessageReplier<T>.invoke(t: T) = this.invoke(t, t.message.toString())
+internal suspend inline operator fun <T : SenderAndMessage<*>> MessageReplier<T>.invoke(t: T) = this.invoke(t, t.message.toString())
 
 /**
  * 消息订阅构造器
@@ -140,7 +148,7 @@ internal suspend inline operator fun <T : SenderAndMessage> MessageReplier<T>.in
  */
 @Suppress("unused")
 @MessageListenerDsl
-inline class MessageSubscribersBuilder<T : SenderAndMessage>(
+inline class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
     val handlerConsumer: suspend (MessageListener<T>) -> Unit
 ) {
     suspend inline fun case(equals: String, trim: Boolean = true, noinline listener: MessageListener<T>) = content({ equals == if (trim) it.trim() else it }, listener)
