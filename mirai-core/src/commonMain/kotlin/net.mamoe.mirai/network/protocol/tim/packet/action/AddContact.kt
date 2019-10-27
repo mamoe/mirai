@@ -17,6 +17,7 @@ import net.mamoe.mirai.utils.io.writeQQ
  *
  * @author Him188moe
  */
+@Response(CanAddFriendPacket.Response::class)
 @PacketId(0x00_A7u)
 class CanAddFriendPacket(
         val bot: UInt,

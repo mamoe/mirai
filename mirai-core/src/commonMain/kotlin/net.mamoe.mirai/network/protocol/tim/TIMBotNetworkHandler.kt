@@ -25,8 +25,7 @@ import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.inlinedRemoveIf
-import net.mamoe.mirai.utils.io.parseServerPacket
-import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -128,22 +127,24 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 val buffer = IoBuffer.Pool.borrow()
 
                 try {
-                    channel.read(buffer)//JVM: withContext(IO)
+                    channel.read(buffer)// JVM: withContext(IO)
                 } catch (e: ReadPacketInternalException) {
-                    //read failed, continue and reread
+                    // read failed, continue and reread
                     continue
                 } catch (e: Throwable) {
-                    e.log()//other unexpected exceptions caught.
+                    e.log()// other unexpected exceptions caught.
                     continue
+                } finally {
+                    if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
+                        buffer.release(IoBuffer.Pool)
+                        continue
+                    }// sometimes exceptions are thrown without this `if` clause
                 }
 
-                if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
-                    buffer.release(IoBuffer.Pool)
-                    continue
-                }
 
                 launch {
-                    //`.use`: Ensure that the packet is consumed totally so that all the buffers are released
+                    // `.use`: Ensure that the packet is consumed **totally**
+                    // so that all the buffers are released
                     ByteReadPacket(buffer, IoBuffer.Pool).use {
                         distributePacket(it.parseServerPacket(buffer.readRemaining))
                     }
@@ -306,7 +307,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 field = value
             }
 
-        suspend fun onPacketReceived(packet: ServerPacket) {
+        suspend fun onPacketReceived(packet: ServerPacket) {//complex function, but it doesn't matter
             when (packet) {
                 is TouchResponsePacket -> {
                     if (packet.serverIP != null) {//redirection

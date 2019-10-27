@@ -15,7 +15,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
 import net.mamoe.mirai.utils.BotNetworkConfiguration
-import net.mamoe.mirai.utils.PlatformDatagramChannel
+import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.

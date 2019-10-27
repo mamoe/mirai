@@ -4,8 +4,7 @@ package demo.gentleman
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
@@ -27,19 +26,21 @@ private fun readTestAccount(): BotAccount? {
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
     val bot = Bot(
-        readTestAccount() ?: BotAccount(
-            id = 1994701121u,
+        //readTestAccount() ?: BotAccount(
+        qq = 1994701121u,
             password = "123456"
-        )
+        // )
     )
+
+    val bot2 = Bot(1994701121u, "").apply { login().requireSuccess() }
 
     bot.login().requireSuccess()
 
-    bot.subscribeAlways<FriendMessageEvent> {
+    bot.subscribeMessages {
+        contains("") {
 
+        }
     }
-
-
 
     bot.network.awaitDisconnection()//等到直到断开连接
 }

@@ -1,4 +1,4 @@
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

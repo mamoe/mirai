@@ -29,30 +29,31 @@ import net.mamoe.mirai.withSession
  * @throws OverFileSizeMaxException 如果文件过大, 服务器拒绝接收时
  */
 suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
-    FriendImageIdRequestPacket(qqAccount, sessionKey, id, image).sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
-        when (it.state) {
-            REQUIRE_UPLOAD -> {
-                require(
-                    httpPostFriendImage(
-                        botAccount = bot.qqAccount,
-                        uKeyHex = it.uKey!!.toUHexString(""),
-                        imageInput = image.input,
-                        inputSize = image.inputSize
+    FriendImageIdRequestPacket(qqAccount, sessionKey, id, image)
+        .sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
+            when (it.state) {
+                REQUIRE_UPLOAD -> {
+                    require(
+                        httpPostFriendImage(
+                            botAccount = bot.qqAccount,
+                            uKeyHex = it.uKey!!.toUHexString(""),
+                            imageInput = image.input,
+                            inputSize = image.inputSize
+                        )
                     )
-                )
+                }
+
+                ALREADY_EXISTS -> {
+
+                }
+
+                OVER_FILE_SIZE_MAX -> {
+                    throw OverFileSizeMaxException()
+                }
             }
 
-            ALREADY_EXISTS -> {
-
-            }
-
-            OVER_FILE_SIZE_MAX -> {
-                throw OverFileSizeMaxException()
-            }
-        }
-
-        it.imageId!!
-    }.await()
+            it.imageId!!
+        }.await()
 }
 
 //fixVer2=00 00 00 01 2E 01 00 00 69 35

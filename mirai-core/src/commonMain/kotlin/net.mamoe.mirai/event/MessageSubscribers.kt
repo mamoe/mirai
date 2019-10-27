@@ -160,6 +160,7 @@ inline class MessageSubscribersBuilder<T : SenderAndMessage>(
     suspend inline fun replyStartsWith(value: String, noinline replier: MessageReplier<T>) = content({ it.startsWith(value) }) { replier(this) }
 
     suspend infix fun String.reply(reply: String) = case(this) { this.reply(reply) }
+    suspend infix fun String.reply(reply: MessageReplier<T>) = case(this) { this.reply(reply(this)) }
 }
 
 

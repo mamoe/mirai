@@ -71,6 +71,7 @@ class BotSession(
      *  }
      * }
      * ```
+     * @sample net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
      *
      * @param P 期待的包
      * @param handler 处理期待的包
@@ -89,9 +90,9 @@ class BotSession(
 
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
+     * 您将能从本函数的返回值 [CompletableDeferred] 接收到所期待的 [P]
      */
-    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(): CompletableDeferred<Unit> =
-        sendAndExpect<P, Unit> {}
+    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(): CompletableDeferred<P> = sendAndExpect<P, P> { it }
 
     suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
 }
@@ -105,4 +106,4 @@ inline val BotSession.qqAccount: UInt get() = bot.account.id
  * 取得 [T] 的 [BotSession].
  * 实际上是一个捷径.
  */
-inline val <T : BotNetworkHandler<*>> T.session get() = this[ActionPacketHandler].session
+val <T : BotNetworkHandler<*>> T.session get() = this[ActionPacketHandler].session
