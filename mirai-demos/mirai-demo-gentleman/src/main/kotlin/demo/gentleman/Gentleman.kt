@@ -1,17 +1,16 @@
 package demo.gentleman
 
-import com.alibaba.fastjson.JSONArray
-import kotlinx.coroutines.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.Contact
-import org.jsoup.Connection
-import org.jsoup.Jsoup
 
 
 /**
  * 最少缓存的图片数量
  */
-private const val IMAGE_BUFFER_CAPACITY: Int = 5
+private const val IMAGE_BUFFER_CAPACITY: Int = 50
 
 /**
  * 每次补充的数量
@@ -30,12 +29,20 @@ class Gentleman(private val contact: Contact) : Channel<GentleImage> by Channel(
 
         GlobalScope.launch {
             while (!isClosedForSend) {
+                send(GentleImage().apply {
+                    sample_url = "http://dev.itxtech.org:10322/randomImg.uue?tdsourcetag=s_pctim_aiomsg"
+                    contact = this@Gentleman.contact
+
+                    image.await()
+                })
+
+/*
                 val response = withContext(Dispatchers.IO) {
                     tryNTimes(2) {
                         Jsoup.connect("https://yande.re/post.json?")
                             .userAgent(UserAgent.randomUserAgent)
                             .data("limit", "20")
-                            .data("page", (Math.random() * 4000).toString())
+                            .data("page", (Random.Default.nextInt(12000)).toString())
                             .ignoreContentType(true)
                             .timeout(20_000)
                             .method(Connection.Method.GET)
@@ -57,7 +64,7 @@ class Gentleman(private val contact: Contact) : Channel<GentleImage> by Channel(
                         it.image//start downloading
 
                         send(it)
-                    }
+                    }*/
             }
         }
     }

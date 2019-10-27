@@ -4,7 +4,6 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.upload
-import net.mamoe.mirai.utils.MiraiLogger
 import org.jsoup.Jsoup
 
 class GentleImage {
@@ -42,7 +41,7 @@ class GentleImage {
 
             // CompletableDeferred(suspend {
             delay((Math.random() * 5000L).toLong())
-            MiraiLogger.logPurple("Downloading image: $name")
+            // MiraiLogger.logPurple("Downloading image: $name")
             withContext(Dispatchers.IO) {
                 Jsoup.connect(sample_url)
                     .userAgent(UserAgent.randomUserAgent)
@@ -52,7 +51,7 @@ class GentleImage {
                     .execute()
                     .bodyStream()
             }.upload(contact).also {
-                MiraiLogger.logPurple("Downloaded image: $name")
+                //MiraiLogger.logPurple("Downloaded image: $name")
             }
             // }())
             // }

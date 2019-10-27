@@ -59,39 +59,6 @@ actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(host
 
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
-/*
-actual suspend fun httpPostFriendImageOld(
-    uKeyHex: String,
-    botNumber: UInt,
-    imageData: ByteReadPacket
-): Boolean = Jsoup.connect(
-    "http://htdata2.qq.com/cgi-bin/httpconn" +
-            "?htcmd=0x6ff0070" +
-            "&ver=5603" +
-            "&ukey=$uKeyHex" +
-            "&filesize=${imageData.remaining}" +
-            "&range=0" +
-            "&uin=$botNumber"
-)
-    .postImage(imageData)
-
-
-private suspend fun Connection.postImage(image: ByteReadPacket): Boolean = this
-    .userAgent("QQClient")
-    .header("Content-Length", image.remaining.toString())
-    .requestBody(String(image.readBytes(), Charsets.ISO_8859_1))
-    .method(Connection.Method.POST)
-    .postDataCharset("ISO_8859_1")
-    .header("Content-type", "image/gif")
-    .ignoreContentType(true)
-    .suspendExecute()
-    .statusCode() == 200
-
-private suspend fun Connection.suspendExecute(): Connection.Response = withContext(Dispatchers.IO) {
-    execute()
-}
-*/
-
 internal actual val httpClient: HttpClient = HttpClient(CIO)
 
 internal actual fun HttpRequestBuilder.configureBody(

@@ -66,7 +66,7 @@ suspend fun httpPostFriendImage(
     imageInput = imageInput,
     inputSize = inputSize,
     uKeyHex = uKeyHex
-) as HttpStatusCode).value.also { println(it) } == 200
+) as HttpStatusCode).value == 200
 
 /**
  * 上传群图片
@@ -85,7 +85,7 @@ suspend fun httpPostGroupImage(
     imageInput = imageInput,
     inputSize = inputSize,
     uKeyHex = uKeyHex
-) as HttpStatusCode).value.also { println(it) } == 200
+) as HttpStatusCode).value == 200
 
 @Suppress("SpellCheckingInspection")
 private suspend inline fun <reified T> HttpClient.postImage(
@@ -95,28 +95,31 @@ private suspend inline fun <reified T> HttpClient.postImage(
     imageInput: Input,
     inputSize: Long,
     uKeyHex: String
-): T = post {
-    url {
-        protocol = URLProtocol.HTTP
-        host = "htdata2.qq.com"
-        path("cgi-bin/httpconn")
+): T = try {
+    post {
+        url {
+            protocol = URLProtocol.HTTP
+            host = "htdata2.qq.com"
+            path("cgi-bin/httpconn")
 
-        parameters["htcmd"] = htcmd
-        parameters["uin"] = uin.toLong().toString()
+            parameters["htcmd"] = htcmd
+            parameters["uin"] = uin.toLong().toString()
 
-        if (groupcode != null) parameters["groupcode"] = groupcode.value.toLong().toString()
+            if (groupcode != null) parameters["groupcode"] = groupcode.value.toLong().toString()
 
-        parameters["term"] = "pc"
-        parameters["ver"] = "5603"
-        parameters["filesize"] = inputSize.toString()
-        parameters["range"] = 0.toString()
-        parameters["ukey"] = uKeyHex
+            parameters["term"] = "pc"
+            parameters["ver"] = "5603"
+            parameters["filesize"] = inputSize.toString()
+            parameters["range"] = 0.toString()
+            parameters["ukey"] = uKeyHex
 
-        userAgent("QQClient")
+            userAgent("QQClient")
+        }
+
+        configureBody(inputSize, imageInput)
     }
-
-    println(url.buildString())
-    configureBody(inputSize, imageInput)
+} finally {
+    imageInput.close()
 }
 
 internal expect fun HttpRequestBuilder.configureBody(inputSize: Long, input: Input)
