@@ -68,15 +68,6 @@ suspend fun httpPostFriendImage(
     uKeyHex = uKeyHex
 ) as HttpStatusCode).value.also { println(it) } == 200
 
-/*
-  httpPostFriendImageOld(uKeyHex, botAccount, imageInput.readBytes().toReadPacket())
-
-expect suspend fun httpPostFriendImageOld(
-  uKeyHex: String,
-  botNumber: UInt,
-  imageData: ByteReadPacket
-): Boolean
-*/
 /**
  * 上传群图片
  */
@@ -95,27 +86,6 @@ suspend fun httpPostGroupImage(
     inputSize = inputSize,
     uKeyHex = uKeyHex
 ) as HttpStatusCode).value.also { println(it) } == 200
-/*    = (httpClient.post {
-url {
-    protocol = URLProtocol.HTTP
-    host = "htdata2.qq.com"
-    path("cgi-bin/httpconn")
-
-    parameters["htcmd"] = "0x6ff0071"
-    parameters["ver"] = "5603"
-    parameters["term"] = "pc"
-    parameters["ukey"] = uKeyHex
-    parameters["filesize"] = inputSize.toString()
-    parameters["range"] = 0.toString()
-    parameters["uin"] = botAccount.toLong().toString()
-    parameters["groupcode"] = groupId.value.toLong().toString()
-   // userAgent("QQClient")
-}
-
-println(url.buildString())
-body = ByteArrayContent(imageInput.readBytes())
-//configureBody(inputSize, imageInput)
-} as HttpStatusCode).value.also { println(it) } == 200*/
 
 @Suppress("SpellCheckingInspection")
 private suspend inline fun <reified T> HttpClient.postImage(
@@ -134,9 +104,7 @@ private suspend inline fun <reified T> HttpClient.postImage(
         parameters["htcmd"] = htcmd
         parameters["uin"] = uin.toLong().toString()
 
-        if (groupcode != null) {
-            parameters["groupcode"] = groupcode.value.toLong().toString()
-        }
+        if (groupcode != null) parameters["groupcode"] = groupcode.value.toLong().toString()
 
         parameters["term"] = "pc"
         parameters["ver"] = "5603"

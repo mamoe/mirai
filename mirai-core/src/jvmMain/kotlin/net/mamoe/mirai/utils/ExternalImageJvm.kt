@@ -49,7 +49,6 @@ fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
  */
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
-    println(this.path)
     val input = ImageIO.createImageInputStream(this)
     checkNotNull(input) { "Unable to read file(path=${this.path}), no ImageInputStream found" }
     val image = ImageIO.getImageReaders(input).asSequence().firstOrNull() ?: error("Unable to read file(path=${this.path}), no ImageReader found")
@@ -58,7 +57,7 @@ fun File.toExternalImage(): ExternalImage {
     return ExternalImage(
         width = image.getWidth(0),
         height = image.getHeight(0),
-        md5 = input.md5(),
+        md5 = this.inputStream().md5(),
         imageFormat = image.formatName,
         input = this.inputStream().asInput(IoBuffer.Pool),
         inputSize = this.length()

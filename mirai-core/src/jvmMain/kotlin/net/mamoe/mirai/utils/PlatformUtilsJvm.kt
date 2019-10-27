@@ -110,7 +110,6 @@ internal actual fun HttpRequestBuilder.configureBody(
                 input.readFully(buffer, 0, 1)
                 channel.writeFully(buffer, 0, 1)
             }
-            println("已经发送$contentLength")
         }
     }
 }

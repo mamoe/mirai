@@ -8,7 +8,6 @@ import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.ImageId
-import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
 
@@ -42,17 +41,8 @@ suspend fun main() {
             reply(Image(ImageId(it)))
         }
 
-        startsWith("上传图片", removePrefix = true) {
-            File("C:/Users/Him18/Desktop/$it").sendAsImageTo(subject)
-        }
-
         case("随机色图") {
-            reply("Downloading started")
-            val received = Gentlemen.getOrPut(subject).receive()
-            reply("Received Image")
-
-            received.image.await().send()
-            reply("Thanks for using")
+            Gentlemen.getOrPut(subject).receive().image.await().send()
         }
 
         "色图" caseReply {
