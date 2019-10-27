@@ -27,8 +27,9 @@ internal fun IoBuffer.parseLongText0x19(): PlainText {
     //01  00  59  AA  02  56  30  01  3A  40  6E  35  46  4F  62  68  75  4B  6F  65  31  4E  63  45  41  6B  77  4B  51  5A  5A  4C  47  54  57  43  68  30  4B  56  7A  57  44  38  67  58  70  37  62  77  6A  67  51  69  66  66  53  4A  63  4F  69  78  4F  75  37  36  49  49  4F  37  48  32  55  63  9A  01  0F  80  01  01  C8  01  00  F0  01  00  F8  01  00  90  02  00  14  01  75  01  01  6B  01  78  9C  CD  92  BB  4E  C3  30  14  86  77  9E  C2  32  73  DA  A4  21  24  48  4E  AA  F4  06  A5  B4  51  55  A0  A8  0B  4A  5D  27  35  E4  82  72  69  4B  B7  6E  08  06  C4  C0  06  42  48  30  20  21  60  62  EB  E3  34  F4  31  70  4A  11  23  23  FC  96  2C  F9  D8  BF  CF  F1  77  8C  F2  23  D7  01  03  12  84  D4  F7  54  28  64  78  08  88  87  FD  1E  F5  6C  15  C6  91  C5  29  30  AF  AD  00  26  E4  86  36  E8  06  94  58  2A  CC  FC  73  41  E0  1E  5A  D4  21  0D  D3  25  2A  2C  55  0A  1B  D2  BA  5E  E0  24  91  D7  B9  B5  72  41  E1  74  B9  5C  E0  78  25  27  8B  92  28  14  45  45  FF  76  B4  E8  98  39  18  05  13  47  0B  24  03  4A  86  F5  D8  89  68  3D  B4  21  B0  1C  93  71  11  21  08  49  30  A0  98  54  4B  6C  25  A5  E6  80  84  B4  A7  42  4F  AA  18  DD  7E  5C  F3  89  D0  C0  65  FD  78  58  6B  76  3A  3B  9B  BB  ED  62  9F  AF  ED  8F  DB  25  C5  3E  38  91  BB  C3  23  BB  49  2D  AB  B5  8D  0D  3A  32  62  79  BD  5A  35  E4  AD  DC  1E  86  40  03  88  46  C4  05  8E  79  EA  C7  11  EB  09  64  91  88  46  0E  D1  C0  5F  73  FD  4D  00  65  97  95  02  D4  0F  34  94  65  D3  B2  78  80  7D  C7  0F  54  B8  AA  F0  E9  60  8F  4A  EE  1E  3F  6E  2E  84  E4  F6  7E  3E  7D  9E  5D  5E  25  EF  67  C9  E4  15  FC  DC  81  B2  29  08  0D  85  7E  1C  60  02  BC  45  33  E7  93  F3  D9  C3  D3  FC  E5  6D  36  BD  86  2C  C3  D7  66  7A  98  FD  4F  ED  13  9B  C7  C1  78  02  00  04  00  00  00  23  0E  00  07  01  00  04  00  00  00  09
     discardExact(1)//0x01
     val raw = readLVByteArray()
+    //TODO 这应该是手机发送时的字体或气泡之类的
     println("parseLongText0x19.raw=${raw.toUHexString()}")
-    return PlainText(raw.toUHexString())
+    return PlainText("")
 }
 
 internal fun IoBuffer.parseMessageImage0x06(): Image {
@@ -99,6 +100,8 @@ internal fun ByteReadPacket.readMessage(): Message? {
                 println(value.size)
                 println("0x14的未知压缩的data=" + value.toUHexString())
                 //todo 未知压缩算法
+
+                return PlainText("")
 
                 //后面似乎还有一节?
                 //discardExact(7)//02  00  04  00  00  00  23

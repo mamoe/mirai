@@ -2,12 +2,14 @@
 
 package demo.gentleman
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
-import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
 
@@ -37,17 +39,30 @@ suspend fun main() {
     bot.subscribeMessages {
         "你好" reply "你好!"
 
-        startsWith("发送图片", removePrefix = true) {
-            reply(Image(ImageId(it)))
+        startsWith("随机色图", removePrefix = true) {
+            withContext(Dispatchers.Default) {
+                try {
+                    repeat(it.toIntOrNull() ?: 1) {
+                        launch {
+                            Gentlemen.getOrPut(subject).receive().image.await().send()
+                        }
+                    }
+                } catch (e: Exception) {
+                    reply(e.message ?: "exception: null")
+                }
+            }
         }
 
-        case("随机色图") {
-            Gentlemen.getOrPut(subject).receive().image.await().send()
+    }
+
+    bot.subscribeGroupMessages {
+        startsWith("色图", removePrefix = true) {
+            HPictureSession(group, sender, it)
         }
 
-        "色图" caseReply {
-
-            ""
+        startsWith("minstar=", removePrefix = true) {
+            minstar = it.toInt()
+            reply("minStar set to $minstar")
         }
     }
 
