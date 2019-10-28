@@ -83,14 +83,14 @@ interface Message {
         if (tail is MessageChain) tail.concat(this)/*MessageChainImpl(this).also { tail.forEach { child -> it.concat(child) } }*/
         else MessageChainImpl(this, tail)
 
-    infix operator fun plus(another: Message): MessageChain = this.concat(another)
-    infix operator fun plus(another: String): MessageChain = this.concat(another.toMessage())
+    operator fun plus(another: Message): MessageChain = this.concat(another)
+    operator fun plus(another: String): MessageChain = this.concat(another.toMessage())
 }
 
 /**
  * 将 [this] 发送给指定联系人
  */
-suspend fun Message.sendTo(contact: Contact) = contact.sendMessage(this)
+suspend inline fun Message.sendTo(contact: Contact) = contact.sendMessage(this)
 // endregion
 
 // region PlainText
@@ -172,7 +172,7 @@ inline class Face(val id: FaceID) : Message {
 // region MessageChain
 // ==================================== MessageChain ====================================
 
-// region constructors
+// region constructor functions
 /**
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 8
  */

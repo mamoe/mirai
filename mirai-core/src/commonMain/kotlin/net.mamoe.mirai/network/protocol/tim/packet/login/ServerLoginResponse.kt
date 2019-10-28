@@ -83,7 +83,10 @@ class LoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginResponsePac
         discardExact(60)//00 20 01 60 C5 A1 39 7A 12 8E BC 34 C3 56 70 E3 1A ED 20 67 ED A9 DB 06 C1 70 81 3C 01 69 0D FF 63 DA 00 00 01 03 00 14 00 01 00 10 60 C9 5D A7 45 70 04 7F 21 7D 84 50 5C 66 A5 C6
 
         discardExact(when (readUByte().toUInt()) {
-            0x00u -> if (readUByte().toUInt() == 0x33u) 28 else null
+            0x00u -> when (readUByte().toUInt()) {
+                0x33u -> 28
+                else -> null
+            }
             0x01u -> when (readUByte().toUInt()) {
                 0x07u -> 0
                 0x10u -> 64

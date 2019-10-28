@@ -75,7 +75,7 @@ suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
 /**
  * 将图片发送给 [this]
  */
-suspend fun Contact.sendImage(image: ExternalImage) = image.sendTo(this)
+suspend inline fun Contact.sendImage(image: ExternalImage) = image.sendTo(this)
 
 private operator fun ByteArray.get(range: IntRange): String = buildString {
     range.forEach {

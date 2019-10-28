@@ -5,8 +5,6 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 import kotlinx.io.core.*
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
-import net.mamoe.mirai.message.toChain
-import net.mamoe.mirai.message.toMessage
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
@@ -14,10 +12,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.md5
-
-fun main() {
-    println("牛逼".toMessage().toChain().toPacket(true).readBytes().toUHexString())
-}
 
 @PacketId(0x00_CDu)
 @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
