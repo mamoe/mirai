@@ -7,7 +7,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
@@ -53,17 +52,6 @@ suspend fun main() {
             }
         }
 
-    }
-
-    bot.subscribeGroupMessages {
-        startsWith("图片", removePrefix = true) {
-            HPictureSession(group, sender, it)
-        }
-
-        startsWith("minstar=", removePrefix = true) {
-            minstar = it.toInt()
-            reply("minStar set to $minstar")
-        }
     }
 
     bot.network.awaitDisconnection()//等到直到断开连接

@@ -37,11 +37,7 @@ class GentleImage {
     lateinit var contact: Contact
     val image: Deferred<Image> by lazy {
         GlobalScope.async {
-            // runBlocking {
-
-            // CompletableDeferred(suspend {
             delay((Math.random() * 5000L).toLong())
-            // MiraiLogger.logPurple("Downloading image: $name")
             withContext(Dispatchers.IO) {
                 Jsoup.connect(sample_url)
                     .userAgent(UserAgent.randomUserAgent)
@@ -50,11 +46,7 @@ class GentleImage {
                     .maxBodySize(Int.MAX_VALUE)
                     .execute()
                     .bodyStream()
-            }.upload(contact).also {
-                //MiraiLogger.logPurple("Downloaded image: $name")
-            }
-            // }())
-            // }
+            }.upload(contact)
         }
     }
 }
