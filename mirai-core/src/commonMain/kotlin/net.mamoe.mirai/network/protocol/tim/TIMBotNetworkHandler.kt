@@ -32,8 +32,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
-    BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
+internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
     override val coroutineContext: CoroutineContext =
         Dispatchers.Default + CoroutineExceptionHandler { _, e -> bot.logger.log(e) } + SupervisorJob()
@@ -217,7 +216,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     return@coroutineScope
                 }
 
-                // They should be called in sequence otherwise because packet is lock-free
+                // They should be called in sequence because packet is lock-free
                 loginHandler.onPacketReceived(packet)
                 this@TIMBotNetworkHandler.forEach {
                     it.instance.onPacketReceived(packet)
@@ -243,6 +242,24 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
         }*/
 
+        /* todo 修改为这个模式是否更好?
+
+        interface Pk
+
+        object TestPacket : Pk {
+            operator fun invoke(bot: UInt):ByteReadPacket = buildPacket {
+
+            }
+        }
+
+        override inline fun send(p: ByteReadPacket): UShort {
+            sendPacket{
+                // write packet head
+                // write version
+                // write bot qq number
+                writePacket(p)
+            }
+        }*/
         override suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext) {
             check(channel.isOpen) { "channel is not open" }
 
