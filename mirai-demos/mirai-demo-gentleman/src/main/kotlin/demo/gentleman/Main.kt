@@ -43,7 +43,7 @@ suspend fun main() {
                 try {
                     repeat(it.toIntOrNull() ?: 1) {
                         launch {
-                            Gentlemen.getOrPut(subject).receive().image.await().send()
+                            Gentlemen.provide(subject).receive().image.await().send()
                         }
                     }
                 } catch (e: Exception) {

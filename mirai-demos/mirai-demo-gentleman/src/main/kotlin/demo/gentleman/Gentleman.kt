@@ -18,7 +18,7 @@ private const val IMAGE_BUFFER_CAPACITY: Int = 5
 @ExperimentalUnsignedTypes
 @ExperimentalCoroutinesApi
 object Gentlemen : MutableMap<UInt, Gentleman> by mutableMapOf() {
-    fun getOrPut(key: Contact): Gentleman = this.getOrPut(key.id) { Gentleman(key) }
+    fun provide(key: Contact): Gentleman = this.getOrPut(key.id) { Gentleman(key) }
 }
 
 /**
