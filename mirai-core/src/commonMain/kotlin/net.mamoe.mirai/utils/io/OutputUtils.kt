@@ -26,9 +26,10 @@ fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
 }
 
 
+// will box, but it doesn't matter
 private fun <N : Comparable<N>> N.coerceAtMostOrFail(maximumValue: N): N =
-        if (this > maximumValue) error("value is greater than its expected maximum value $maximumValue")
-        else this
+    if (this > maximumValue) error("value is greater than its expected maximum value $maximumValue")
+    else this
 
 fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) = with(BytePacketBuilder().apply(builder).build()) {
     if (tag != null) {
