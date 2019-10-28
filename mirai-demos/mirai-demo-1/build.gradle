@@ -3,6 +3,6 @@ apply plugin: "java"
 
 dependencies {
     compile project(":mirai-core")
-    compile rootProject.ext.coroutine
-    compile rootProject.ext.kotlinJvm
+    api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
+    api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
 }

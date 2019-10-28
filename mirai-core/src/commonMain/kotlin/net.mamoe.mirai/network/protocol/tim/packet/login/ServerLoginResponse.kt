@@ -5,20 +5,24 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Tested
+import net.mamoe.mirai.utils.io.readBoolean
+import net.mamoe.mirai.utils.io.readIoBuffer
+import net.mamoe.mirai.utils.io.readString
+import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.properties.Delegates
 
 @PacketId(0x08_36u)
 sealed class ServerLoginResponsePacket(input: ByteReadPacket) : ServerPacket(input)
 
 @PacketId(0x08_36u)
-class ServerLoginResponseFailedPacket(val loginResult: LoginResult, input: ByteReadPacket) : ServerLoginResponsePacket(input)
+class LoginResponseFailedPacket(val loginResult: LoginResult, input: ByteReadPacket) : ServerLoginResponsePacket(input)
 
 /**
  * 服务器进行加密后返回 privateKey
  */
 @PacketId(0x08_36u)
-class ServerLoginResponseKeyExchangePacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
+class LoginResponseKeyExchangeResponsePacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
     lateinit var tlv0006: IoBuffer//120bytes
     var tokenUnknown: ByteArray? = null
 
@@ -43,7 +47,8 @@ class ServerLoginResponseKeyExchangePacket(input: ByteReadPacket) : ServerLoginR
     @PacketId(0x08_36u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         @Tested
-        fun decrypt(privateKey: ByteArray): ServerLoginResponseKeyExchangePacket = ServerLoginResponseKeyExchangePacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
+        fun decrypt(privateKey: ByteArray): LoginResponseKeyExchangeResponsePacket =
+            LoginResponseKeyExchangeResponsePacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
     }
 }
 
@@ -56,7 +61,7 @@ enum class Gender(val id: Boolean) {
  * @author NaturalHG
  */
 @PacketId(0x08_36u)
-class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
+class LoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
     lateinit var sessionResponseDecryptionKey: IoBuffer//16 bytes|
 
     lateinit var token38: IoBuffer//56
@@ -112,7 +117,7 @@ class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginRespo
 
     @PacketId(0x08_36u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(privateKey: ByteArray): ServerLoginResponseSuccessPacket = ServerLoginResponseSuccessPacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
+        fun decrypt(privateKey: ByteArray): LoginResponseSuccessPacket = LoginResponseSuccessPacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
     }
 
 }
@@ -123,7 +128,7 @@ class ServerLoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginRespo
  * @author Him188moe
  */
 @PacketId(0x08_36u)
-class ServerLoginResponseCaptchaInitPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
+class LoginResponseCaptchaInitPacket(input: ByteReadPacket) : ServerLoginResponsePacket(input) {
 
     lateinit var captchaPart1: IoBuffer
     lateinit var token00BA: ByteArray
@@ -148,6 +153,6 @@ class ServerLoginResponseCaptchaInitPacket(input: ByteReadPacket) : ServerLoginR
 
     @PacketId(0x08_36u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(): ServerLoginResponseCaptchaInitPacket = ServerLoginResponseCaptchaInitPacket(decryptAsByteArray(TIMProtocol.shareKey).toReadPacket()).applySequence(sequenceId)
+        fun decrypt(): LoginResponseCaptchaInitPacket = LoginResponseCaptchaInitPacket(decryptAsByteArray(TIMProtocol.shareKey).toReadPacket()).applySequence(sequenceId)
     }
 }

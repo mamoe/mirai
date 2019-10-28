@@ -4,8 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
-import net.mamoe.mirai.*
-import net.mamoe.mirai.event.EventScope
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforePacketSendEvent
@@ -16,22 +15,28 @@ import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
 import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
+import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.*
+import kotlin.coroutines.CoroutineContext
 
 /**
  * [BotNetworkHandler] 的 TIM PC 协议实现
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
-    override val NetworkScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
+    BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
+
+    override val coroutineContext: CoroutineContext =
+        Dispatchers.Default + CoroutineExceptionHandler { _, e -> bot.logger.log(e) }
 
     override lateinit var socket: BotSocketAdapter
         private set
@@ -49,23 +54,23 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         temporaryPacketHandler.send(this[ActionPacketHandler].session)
     }
 
-    override suspend fun login(configuration: BotNetworkConfiguration): LoginResult {
+    override suspend fun login(configuration: BotNetworkConfiguration): LoginResult = withContext(this.coroutineContext) {
         TIMProtocol.SERVER_IP.forEach {
             bot.logger.logInfo("Connecting server $it")
-            this.socket = BotSocketAdapter(it, configuration)
+            socket = BotSocketAdapter(it, configuration)
 
             loginResult = CompletableDeferred()
 
             val state = socket.resendTouch()
 
             if (state != LoginResult.TIMEOUT) {
-                return state
+                return@withContext state
             }
             bot.logger.logPurple("Timeout. Retrying next server")
 
             socket.close()
         }
-        return LoginResult.TIMEOUT
+        return@withContext LoginResult.TIMEOUT
     }
 
     internal var loginResult: CompletableDeferred<LoginResult> = CompletableDeferred()
@@ -74,7 +79,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     //private | internal
     private fun onLoggedIn(sessionKey: ByteArray) {
         require(size == 0) { "Already logged in" }
-        val session = BotSession(bot, sessionKey, socket, NetworkScope)
+        val session = BotSession(bot, sessionKey, socket)
 
         add(EventPacketHandler(session).asNode(EventPacketHandler))
         add(ActionPacketHandler(session).asNode(ActionPacketHandler))
@@ -83,14 +88,20 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
     private lateinit var sessionKey: ByteArray
 
-    override fun close(cause: Throwable?) {
+    override suspend fun awaitDisconnection() {
+        heartbeatJob?.join()
+    }
+
+    override suspend fun close(cause: Throwable?) {
         super.close(cause)
 
-        this.heartbeatJob?.cancel(CancellationException("handler closed"))
+        this.heartbeatJob?.cancelChildren(CancellationException("handler closed"))
+        this.heartbeatJob?.join()//等待 cancel 完成
         this.heartbeatJob = null
 
         if (!this.loginResult.isCompleted && !this.loginResult.isCancelled) {
             this.loginResult.cancel(CancellationException("socket closed"))
+            this.loginResult.join()
         }
 
         this.forEach {
@@ -100,9 +111,10 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         this.socket.close()
     }
 
-    override suspend fun sendPacket(packet: ClientPacket) = socket.sendPacket(packet)
+    override suspend fun sendPacket(packet: OutgoingPacket) = socket.sendPacket(packet)
 
-    internal inner class BotSocketAdapter(override val serverIp: String, val configuration: BotNetworkConfiguration) : DataPacketSocketAdapter {
+    internal inner class BotSocketAdapter(override val serverIp: String, val configuration: BotNetworkConfiguration) :
+        DataPacketSocketAdapter {
         override val channel: PlatformDatagramChannel = PlatformDatagramChannel(serverIp, 8000)
 
         override val isOpen: Boolean get() = channel.isOpen
@@ -114,28 +126,31 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 val buffer = IoBuffer.Pool.borrow()
 
                 try {
-                    channel.read(buffer)//JVM: withContext(IO)
+                    channel.read(buffer)// JVM: withContext(IO)
                 } catch (e: ReadPacketInternalException) {
-                    //read failed, continue and reread
+                    bot.logger.logError("Socket channel read failed: ${e.message}")
                     continue
                 } catch (e: Throwable) {
-                    e.log()//other unexpected exceptions caught.
+                    bot.logger.logError("Caught unexpected exceptions")
+                    bot.logger.logError(e)
                     continue
+                } finally {
+                    if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
+                        buffer.release(IoBuffer.Pool)
+                        continue
+                    }// sometimes exceptions are thrown without this `if` clause
                 }
 
-                if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
-                    buffer.release(IoBuffer.Pool)
-                    continue
-                }
 
-                NetworkScope.launch {
-                    try {
-                        //`.use`: Ensure that the packet is consumed totally so that all the buffers are released
-                        ByteReadPacket(buffer, IoBuffer.Pool).use {
+                launch {
+                    // `.use`: Ensure that the packet is consumed **totally**
+                    // so that all the buffers are released
+                    ByteReadPacket(buffer, IoBuffer.Pool).use {
+                        try {
                             distributePacket(it.parseServerPacket(buffer.readRemaining))
+                        } catch (e: Exception) {
+                            bot.logger.logError(e)
                         }
-                    } catch (e: Throwable) {
-                        e.log()
                     }
                 }
             }
@@ -147,19 +162,19 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             loginHandler = LoginHandler(configuration)
 
 
-            val expect = expectPacket<ServerTouchResponsePacket>()
-            NetworkScope.launch { processReceive() }
-            NetworkScope.launch {
+            val expect = expectPacket<TouchResponsePacket>()
+            launch { processReceive() }
+            launch {
                 if (withTimeoutOrNull(configuration.touchTimeout.millisecondsLong) { expect.join() } == null) {
                     loginResult.complete(LoginResult.TIMEOUT)
                 }
             }
-            sendPacket(ClientTouchPacket(bot.qqAccount, this.serverIp))
+            sendPacket(TouchPacket(bot.qqAccount, this.serverIp))
 
             return loginResult.await()
         }
 
-        private inline fun <reified P : ServerPacket> expectPacket(): CompletableDeferred<P> {
+        private suspend inline fun <reified P : ServerPacket> expectPacket(): CompletableDeferred<P> {
             val receiving = CompletableDeferred<P>()
             subscribe<ServerPacketReceivedEvent> {
                 if (it.packet is P && it.bot === bot) {
@@ -171,12 +186,14 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             return receiving
         }
 
-        override suspend fun distributePacket(packet: ServerPacket) {
+        override suspend fun distributePacket(packet: ServerPacket) = coroutineScope {
             try {
                 packet.decode()
             } catch (e: Exception) {
                 e.log()
-                bot.printPacketDebugging(packet)
+                bot.logger.logDebug("Packet=$packet")
+                bot.logger.logDebug("Packet size=" + packet.input.readBytes().size)
+                bot.logger.logDebug("Packet data=" + packet.input.readBytes().toUHexString())
                 packet.close()
                 throw e
             }
@@ -184,26 +201,26 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             packet.use {
                 val name = packet::class.simpleName
                 if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
-                    bot.logCyan("Packet received: $packet")
+                    bot.logger.logCyan("Packet received: $packet")
                 }
 
+                //Remove first to release the lock
                 handlersLock.withLock {
-                    temporaryPacketHandlers.removeIfInlined {
-                        it.shouldRemove(this@TIMBotNetworkHandler[ActionPacketHandler].session, packet)
-                    }
+                    temporaryPacketHandlers.filter { it.filter(session, packet) }
+                }.forEach {
+                    it.doReceive(packet)
                 }
 
                 if (packet is ServerEventPacket) {
-                    //no need to sync acknowledgement packets
-                    NetworkScope.launch {
-                        sendPacket(packet.ResponsePacket(bot.qqAccount, sessionKey))
-                    }
+                    //ensure the response packet is sent
+                    sendPacket(packet.ResponsePacket(bot.qqAccount, sessionKey))
                 }
 
                 if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled) {
-                    return
+                    return@coroutineScope
                 }
 
+                //they should be called in sequence otherwise because packet is lock-free
                 loginHandler.onPacketReceived(packet)
                 this@TIMBotNetworkHandler.forEach {
                     it.instance.onPacketReceived(packet)
@@ -229,7 +246,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
         }*/
 
-        override suspend fun sendPacket(packet: ClientPacket) = withContext(NetworkScope.coroutineContext) {
+        override suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext) {
             check(channel.isOpen) { "channel is not open" }
 
             if (BeforePacketSendEvent(bot, packet).broadcast().cancelled) {
@@ -250,9 +267,11 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
             }
 
-            bot.logGreen("Packet sent:     $packet")
+            bot.logger.logGreen("Packet sent:     $packet")
 
-            EventScope.launch { PacketSentEvent(bot, packet).broadcast() }
+            PacketSentEvent(bot, packet).broadcast()
+
+            Unit
         }
 
         override val owner: Bot get() = this@TIMBotNetworkHandler.bot
@@ -281,6 +300,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
         private var captchaSectionId: Int = 1
         private var captchaCache: IoBuffer? = null
+            //set 为 null 时自动 release; get 为 null 时自动 borrow
             get() {
                 if (field == null) field = IoBuffer.Pool.borrow()
                 return field
@@ -292,9 +312,9 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 field = value
             }
 
-        suspend fun onPacketReceived(packet: ServerPacket) {
+        suspend fun onPacketReceived(packet: ServerPacket) {//complex function, but it doesn't matter
             when (packet) {
-                is ServerTouchResponsePacket -> {
+                is TouchResponsePacket -> {
                     if (packet.serverIP != null) {//redirection
                         socket.close()
                         socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
@@ -305,7 +325,8 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                         this.loginTime = packet.loginTime
                         this.token0825 = packet.token0825
 
-                        socket.sendPacket(ClientPasswordSubmissionPacket(
+                        socket.sendPacket(
+                            SubmitPasswordPacket(
                                 bot = bot.qqAccount,
                                 password = bot.account.password,
                                 loginTime = loginTime,
@@ -314,20 +335,22 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                                 token0825 = token0825,
                                 token00BA = null,
                                 randomDeviceName = socket.configuration.randomDeviceName
-                        ))
+                            )
+                        )
                     }
                 }
 
-                is ServerLoginResponseFailedPacket -> {
+                is LoginResponseFailedPacket -> {
                     loginResult.complete(packet.loginResult)
                     return
                 }
 
-                is ServerCaptchaCorrectPacket -> {
+                is CaptchaCorrectPacket -> {
                     this.privateKey = getRandomByteArray(16)//似乎是必须的
                     this.token00BA = packet.token00BA
 
-                    socket.sendPacket(ClientPasswordSubmissionPacket(
+                    socket.sendPacket(
+                        SubmitPasswordPacket(
                             bot = bot.qqAccount,
                             password = bot.account.password,
                             loginTime = loginTime,
@@ -336,24 +359,32 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                             token0825 = token0825,
                             token00BA = packet.token00BA,
                             randomDeviceName = socket.configuration.randomDeviceName
-                    ))
+                        )
+                    )
                 }
 
-                is ServerLoginResponseCaptchaInitPacket -> {
+                is LoginResponseCaptchaInitPacket -> {
                     //[token00BA]来源之一: 验证码
                     this.token00BA = packet.token00BA
                     this.captchaCache = packet.captchaPart1
 
                     if (packet.unknownBoolean) {
                         this.captchaSectionId = 1
-                        socket.sendPacket(ClientCaptchaTransmissionRequestPacket(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
+                        socket.sendPacket(
+                            RequestCaptchaTransmissionPacket(
+                                bot.qqAccount,
+                                this.token0825,
+                                this.captchaSectionId++,
+                                packet.token00BA
+                            )
+                        )
                     }
                 }
 
-                is ServerCaptchaTransmissionPacket -> {
+                is CaptchaTransmissionResponsePacket -> {
                     //packet is ServerCaptchaWrongPacket
                     if (this.captchaSectionId == 0) {
-                        bot.logError("验证码错误, 请重新输入")
+                        bot.logger.logPurple("验证码错误, 请重新输入")
                         this.captchaSectionId = 1
                         this.captchaCache = null
                     }
@@ -367,26 +398,49 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                         this.captchaCache = null
                         if (code == null) {
                             this.captchaSectionId = 1//意味着正在刷新验证码
-                            socket.sendPacket(ClientCaptchaRefreshPacket(bot.qqAccount, token0825))
+                            socket.sendPacket(OutgoingCaptchaRefreshPacket(bot.qqAccount, token0825))
                         } else {
                             this.captchaSectionId = 0//意味着已经提交验证码
-                            socket.sendPacket(ClientCaptchaSubmitPacket(bot.qqAccount, token0825, code, packet.verificationToken))
+                            socket.sendPacket(
+                                SubmitCaptchaPacket(
+                                    bot.qqAccount,
+                                    token0825,
+                                    code,
+                                    packet.verificationToken
+                                )
+                            )
                         }
                     } else {
-                        socket.sendPacket(ClientCaptchaTransmissionRequestPacket(bot.qqAccount, token0825, captchaSectionId++, packet.token00BA))
+                        socket.sendPacket(
+                            RequestCaptchaTransmissionPacket(
+                                bot.qqAccount,
+                                token0825,
+                                captchaSectionId++,
+                                packet.token00BA
+                            )
+                        )
                     }
                 }
 
-                is ServerLoginResponseSuccessPacket -> {
+                is LoginResponseSuccessPacket -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-                    socket.sendPacket(ClientSessionRequestPacket(bot.qqAccount, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey))
+                    socket.sendPacket(
+                        RequestSessionPacket(
+                            bot.qqAccount,
+                            socket.serverIp,
+                            packet.token38,
+                            packet.token88,
+                            packet.encryptionKey
+                        )
+                    )
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的可能之一
-                is ServerLoginResponseKeyExchangePacket -> {
+                is LoginResponseKeyExchangeResponsePacket -> {
                     this.privateKey = packet.privateKeyUpdate
 
-                    socket.sendPacket(ClientPasswordSubmissionPacket(
+                    socket.sendPacket(
+                        SubmitPasswordPacket(
                             bot = bot.qqAccount,
                             password = bot.account.password,
                             loginTime = loginTime,
@@ -396,23 +450,27 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                             token00BA = packet.tokenUnknown ?: token00BA,
                             randomDeviceName = socket.configuration.randomDeviceName,
                             tlv0006 = packet.tlv0006
-                    ))
+                        )
+                    )
                 }
 
-                is ServerSessionKeyResponsePacket -> {
+                is SessionKeyResponsePacket -> {
                     sessionKey = packet.sessionKey
                     bot.logger.logPurple("sessionKey = ${sessionKey.toUHexString()}")
 
-                    heartbeatJob = NetworkScope.launch {
+                    heartbeatJob = launch {
                         while (socket.isOpen) {
                             delay(configuration.heartbeatPeriod.millisecondsLong)
                             with(session) {
                                 class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
 
                                 if (withTimeoutOrNull(configuration.heartbeatTimeout.millisecondsLong) {
-                                            HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacket.Response>().join()
-                                        } == null) {
-                                    bot.logPurple("Heartbeat timed out")
+                                        HeartbeatPacket(
+                                            bot.qqAccount,
+                                            sessionKey
+                                        ).sendAndExpect<HeartbeatPacket.Response>().join()
+                                    } == null) {
+                                    bot.logger.logPurple("Heartbeat timed out")
                                     bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
                                     return@launch
                                 }
@@ -434,11 +492,11 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
 
                 is ServerCaptchaPacket.Encrypted -> socket.distributePacket(packet.decrypt())
-                is ServerLoginResponseCaptchaInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
-                is ServerLoginResponseKeyExchangePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.privateKey))
-                is ServerLoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.privateKey))
-                is ServerSessionKeyResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
-                is ServerTouchResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt())
+                is LoginResponseCaptchaInitPacket.Encrypted -> socket.distributePacket(packet.decrypt())
+                is LoginResponseKeyExchangeResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.privateKey))
+                is LoginResponseSuccessPacket.Encrypted -> socket.distributePacket(packet.decrypt(this.privateKey))
+                is SessionKeyResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt(this.sessionResponseDecryptionKey))
+                is TouchResponsePacket.Encrypted -> socket.distributePacket(packet.decrypt())
 
                 is UnknownServerPacket.Encrypted -> socket.distributePacket(packet.decrypt(sessionKey))
                 else -> {
@@ -449,7 +507,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
         @Suppress("MemberVisibilityCanBePrivate")
         suspend fun setOnlineStatus(status: OnlineStatus) {
-            socket.sendPacket(ClientChangeOnlineStatusPacket(bot.qqAccount, sessionKey, status))
+            socket.sendPacket(ChangeOnlineStatusPacket(bot.qqAccount, sessionKey, status))
         }
 
         fun close() {

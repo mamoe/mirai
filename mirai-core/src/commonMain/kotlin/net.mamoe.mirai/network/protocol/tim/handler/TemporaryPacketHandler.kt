@@ -2,7 +2,7 @@ package net.mamoe.mirai.network.protocol.tim.handler
 
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import kotlin.reflect.KClass
 
@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  * 临时数据包处理器
  * ```kotlin
  * session.addHandler<ClientTouchResponsePacket>{
- *   toSend { ClientTouchPacket() }
+ *   toSend { TouchPacket() }
  *   onExpect {//it: ClientTouchResponsePacket
  *      //do sth.
  *   }
@@ -20,18 +20,19 @@ import kotlin.reflect.KClass
  * @see BotSession.sendAndExpect
  */
 class TemporaryPacketHandler<P : ServerPacket, R>(
-        private val expectationClass: KClass<P>,
-        private val deferred: CompletableDeferred<R>,
-        private val fromSession: BotSession
+    private val expectationClass: KClass<P>,
+    private val deferred: CompletableDeferred<R>,
+    private val fromSession: BotSession,
+    private val checkSequence: Boolean
 ) {
-    private lateinit var toSend: ClientPacket
+    private lateinit var toSend: OutgoingPacket
 
     private lateinit var handler: suspend (P) -> R
 
     lateinit var session: BotSession//无需覆盖
 
 
-    fun toSend(packet: ClientPacket) {
+    fun toSend(packet: OutgoingPacket) {
         this.toSend = packet
     }
 
@@ -45,19 +46,19 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
         session.socket.sendPacket(toSend)
     }
 
-    suspend fun shouldRemove(session: BotSession, packet: ServerPacket): Boolean {
-        if (expectationClass.isInstance(packet) && session === this.fromSession) {
+    @ExperimentalUnsignedTypes
+    fun filter(session: BotSession, packet: ServerPacket): Boolean =
+        expectationClass.isInstance(packet) && session === this.fromSession && if (checkSequence) packet.sequenceId == toSend.sequenceId else true
 
-            @Suppress("UNCHECKED_CAST")
-            val ret = try {
-                handler(packet as P)
-            } catch (e: Exception) {
-                deferred.completeExceptionally(e)
-                return true
-            }
-            deferred.complete(ret)
-            return true
+    suspend fun doReceive(packet: ServerPacket) {
+        @Suppress("UNCHECKED_CAST")
+        val ret = try {
+            handler(packet as P)
+        } catch (e: Exception) {
+            deferred.completeExceptionally(e)
+            return
         }
-        return false
+        deferred.complete(ret)
+        return
     }
 }

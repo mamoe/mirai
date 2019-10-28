@@ -6,8 +6,9 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.message.NullMessageChain
 import net.mamoe.mirai.message.internal.readMessageChain
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.*
 import kotlin.properties.Delegates
 
 
@@ -26,7 +27,7 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
      * 发送方权限.
      */
     lateinit var senderPermission: SenderPermission
-    lateinit var message: MessageChain
+    var message: MessageChain = NullMessageChain
 
     override fun decode() = with(input) {
         discardExact(31)
@@ -50,8 +51,10 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
                 //管理员 子map= {5=00 00 00 03, 8=00 00 00 04, 2=65 6F 6D 38 38 31 6D 69 48, 3=02, 4=00 00 00 10}
                 //群成员 子map= {5=00 00 00 03, 8=00 00 00 04, 2=65 6F 6D 38 38 31 6D 69 48, 3=02}
 
+                tlv.printTLVMap("Child TLV map")
                 senderPermission = when (val value0x03 = tlv.getValue(0x03)[0].toUInt()) {
                     0x04u -> SenderPermission.OWNER
+                    0x03u -> SenderPermission.MEMBER
                     0x02u -> {
                         if (!tlv.containsKey(0x04)) {
                             SenderPermission.MEMBER
@@ -64,8 +67,8 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
                     0x01u -> SenderPermission.MEMBER
 
                     else -> {
-                        tlv.printTLVMap("Child TLV map")
                         error("Could not determine member permission, unknown TLV(key=0x03,value=$value0x03;)")
+                        //{5=00 00 00 01, 8=00 00 00 01, 1=48 69 6D 31 38 38 6D 6F 65, 3=03}
                     }
                 }
 
@@ -95,7 +98,7 @@ class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: Event
      */
     var isPrevious: Boolean = false
 
-    lateinit var message: MessageChain
+    var message: MessageChain by Delegates.notNull()
 
     //来自自己发送给自己
     //00 00 00 20 00 05 00 02 00 06 00 06 00 04 00 01 01 07 00 09 00 06 03 E9 20 02 EB 94 00 0A 00 04 01 00 00 00 0C 17 76 E4 B8 DD 76 E4 B8 DD 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0B A6 D2 5D A3 2A 3F 00 00 5D A3 2A 3F 01 00 00 00 00 4D 53 47 00 00 00 00 00 5D A3 2A 3F 0C 8A 59 3D 00 00 00 00 0A 00 86 02 00 06 E5 AE 8B E4 BD 93 00 00 01 00 06 01 00 03 31 32 33 19 00 1F 01 00 1C AA 02 19 08 00 88 01 00 9A 01 11 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 0E 00 0E 01 00 04 00 00 00 00 0A 00 04 00 00 00 00
@@ -106,6 +109,8 @@ class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: Event
         discardExact(1)//0x00
         isPrevious = readByte().toInt() == 0x08
         discardExact(l1.toInt() - 2)
+        //java.io.EOFException: Only 49 bytes were discarded of 69 requested
+        //抖动窗口消息
         discardExact(69)
         readLVByteArray()//font
         discardExact(2)//2个0x00

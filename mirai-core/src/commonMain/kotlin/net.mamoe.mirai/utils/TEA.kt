@@ -2,6 +2,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.readBytes
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.jvm.JvmStatic
 
 internal expect object TEA { //TODO 优化为 buffer

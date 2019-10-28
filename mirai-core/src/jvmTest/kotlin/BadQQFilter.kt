@@ -5,9 +5,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.login
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.Console
 import java.util.*
 
@@ -64,5 +64,5 @@ suspend fun main() {
     }
 
     println("Filtering finished")
-    println(goodBotList.joinToString("\n") { it.account.account.toString() + "    " + it.account.password })
+    println(goodBotList.joinToString("\n") { it.account.id.toString() + "    " + it.account.password })
 }

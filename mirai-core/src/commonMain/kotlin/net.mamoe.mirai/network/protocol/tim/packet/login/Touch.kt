@@ -8,19 +8,21 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.toUHexString
 
 /**
  * The packet received when logging in, used to redirect server address
  *
- * @see ClientTouchRedirectionPacket
- * @see ClientPasswordSubmissionPacket
+ * @see RedirectionPacket
+ * @see SubmitPasswordPacket
  *
  * @author Him188moe
  */
 @Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 @PacketId(0x08_25u)
-class ServerTouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
+class TouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     var serverIP: String? = null
 
     var loginTime: Int = 0
@@ -50,7 +52,7 @@ class ServerTouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
 
     @PacketId(0x08_25u)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(): ServerTouchResponsePacket = ServerTouchResponsePacket(decryptBy(TIMProtocol.touchKey.hexToBytes())).applySequence(sequenceId)
+        fun decrypt(): TouchResponsePacket = TouchResponsePacket(decryptBy(TIMProtocol.touchKey.hexToBytes())).applySequence(sequenceId)
     }
 }
 
@@ -60,7 +62,7 @@ class ServerTouchResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class ClientTouchPacket(private val bot: UInt, private val serverIp: String) : ClientPacket() {
+class TouchPacket(private val bot: UInt, private val serverIp: String) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer)
@@ -84,16 +86,16 @@ class ClientTouchPacket(private val bot: UInt, private val serverIp: String) : C
  * @author Him188moe
  */
 @PacketId(0x08_25u)
-class ClientTouchRedirectionPacket(private val serverIP: String, private val qq: UInt) : ClientPacket() {
+class RedirectionPacket(private val bot: UInt, private val serverIP: String) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(qq)
+        this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer)
         this.writeHex(TIMProtocol.touchKey)//redirection key
 
         this.encryptAndWrite(TIMProtocol.touchKey) {
             this.writeHex(TIMProtocol.constantData1)
             this.writeHex(TIMProtocol.constantData2)
-            this.writeQQ(qq)
+            this.writeQQ(bot)
             this.writeHex("00 01 00 00 03 09 00 0C 00 01")
             this.writeIP(serverIP)
             this.writeHex("01 6F A1 58 22 01 00 36 00 12 00 02 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 14 00 1D 01 03 00 19")

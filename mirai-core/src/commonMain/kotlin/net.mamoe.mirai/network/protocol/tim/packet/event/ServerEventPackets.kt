@@ -4,11 +4,13 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.applySequence
 import net.mamoe.mirai.network.protocol.tim.packet.decryptBy
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.toByteArray
 
 /**
  * 事件的识别 ID. 在 [事件确认包][ServerEventPacket.ResponsePacket] 中被使用.
@@ -18,7 +20,7 @@ data class EventPacketIdentity(
         val to: UInt,//对于好友消息, 这个是bot
         internal val uniqueId: IoBuffer//8
 ) {
-    override fun toString(): String = "(from=$from, to=$to)"
+    override fun toString(): String = "($from->$to)"
 }
 
 fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = with(identity) {
@@ -103,7 +105,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
     inner class ResponsePacket(
             val bot: UInt,
             val sessionKey: ByteArray
-    ) : ClientPacket() {
+    ) : OutgoingPacket() {
         override val id: UShort get() = this@ServerEventPacket.id
         override val sequenceId: UShort get() = this@ServerEventPacket.sequenceId
 

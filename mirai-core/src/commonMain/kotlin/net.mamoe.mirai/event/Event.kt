@@ -4,13 +4,15 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.log
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmOverloads
 
 /**
@@ -39,6 +41,18 @@ abstract class Event {
     fun cancel() {
         cancelled = true
     }
+
+    init {
+        if (EventDebuggingFlag) {
+            EventLogger.logDebug(this::class.simpleName + " created")
+        }
+    }
+}
+
+internal object EventLogger : MiraiLogger by DefaultLogger("Event")
+
+val EventDebuggingFlag: Boolean by lazy {
+    false
 }
 
 /**
@@ -57,17 +71,17 @@ interface Cancellable {
  */
 @Suppress("UNCHECKED_CAST")
 @JvmOverloads
-suspend fun <E : Event> E.broadcast(context: CoroutineContext? = CoroutineExceptionHandler { _, e -> e.log() }): E {
-    var ctx = EventScope.coroutineContext
-    if (context == null) {
-        ctx += CoroutineExceptionHandler { _, e -> e.log() }
-    } else {
-        ctx += context
-        if (context[CoroutineExceptionHandler] == null) {
-            ctx += CoroutineExceptionHandler { _, e -> e.log() }
+suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
+    if (EventDebuggingFlag) {
+        EventLogger.logDebug(this::class.simpleName + " pre broadcast")
+    }
+    try {
+        return withContext(EventScope.coroutineContext + context) { this@broadcast.broadcastInternal() }
+    } finally {
+        if (EventDebuggingFlag) {
+            EventLogger.logDebug(this::class.simpleName + " after broadcast")
         }
     }
-    return withContext(ctx) { this@broadcast.broadcastInternal() }
 }
 
 /**
@@ -77,4 +91,6 @@ suspend fun <E : Event> E.broadcast(context: CoroutineContext? = CoroutineExcept
  * 然而, 若在事件处理过程中使用到 [Contact.sendMessage] 等会 [发送数据包][BotNetworkHandler.sendPacket] 的方法,
  * 发送过程将会通过 [withContext] 将协程切换到 [BotNetworkHandler.NetworkScope]
  */
-object EventScope : CoroutineScope by CoroutineScope(Dispatchers.Default)//todo may change
+object EventScope : CoroutineScope {
+    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+}

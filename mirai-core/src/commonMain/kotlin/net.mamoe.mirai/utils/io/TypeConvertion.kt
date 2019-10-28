@@ -4,6 +4,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.writeFully
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.jvm.Synchronized
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -53,6 +54,7 @@ fun String.hexToUBytes(): UByteArray = HexCache.hexToUBytes(this)
 
 fun String.hexToInt(): Int = hexToBytes().toUInt().toInt()
 fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
+fun getRandomString(length: Int): String = getRandomString(length, 'a'..'z', 'A'..'Z', '0'..'9')
 fun getRandomString(length: Int, charRange: CharRange): String = String(CharArray(length) { charRange.random() })
 fun getRandomString(length: Int, vararg charRanges: CharRange): String = String(CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() })
 fun ByteArray.toUInt(): UInt = this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)

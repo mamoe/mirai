@@ -20,7 +20,7 @@ object TIMProtocol {
         ).forEach { list.add(solveIpAddress(it)) }
 
         list.toList()
-    }()//不使用lazy是为了在启动时就加载.
+    }()//不使用lazy, 在初始化时就加载.
 
     const val head = "02"
     const val ver = "37 13"

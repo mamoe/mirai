@@ -8,21 +8,22 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUShort
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.encryptAndWrite
-import net.mamoe.mirai.utils.writeHex
-import net.mamoe.mirai.utils.writeQQ
+import net.mamoe.mirai.utils.io.encryptAndWrite
+import net.mamoe.mirai.utils.io.writeHex
+import net.mamoe.mirai.utils.io.writeQQ
 
 /**
  * 向服务器检查是否可添加某人为好友
  *
  * @author Him188moe
  */
+@Response(CanAddFriendPacket.Response::class)
 @PacketId(0x00_A7u)
-class ClientCanAddFriendPacket(
+class CanAddFriendPacket(
         val bot: UInt,
         val qq: UInt,
         val sessionKey: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer2)
@@ -30,70 +31,62 @@ class ClientCanAddFriendPacket(
             writeQQ(qq)
         }
     }
-}
-
-@PacketId(0x00_A7u)
-class ServerCanAddFriendResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
-    lateinit var state: State
-
-    enum class State {
-        /**
-         * 已经添加
-         */
-        ALREADY_ADDED,
-        /**
-         * 需要验证信息
-         */
-        REQUIRE_VERIFICATION,
-        /**
-         * 不需要验证信息
-         */
-        NOT_REQUIRE_VERIFICATION,
-
-        /**
-         * 对方拒绝添加
-         */
-        FAILED,
-    }
-
-
-    override fun decode() = with(input) {
-        //需要验证信息 00 23 24 8B 00 01
-
-        if (input.remaining > 20) {//todo check
-            state = State.ALREADY_ADDED
-            return
-        }
-        discardExact(4)//对方qq号
-        state = when (val state = readUShort().toUInt()) {
-            0x00u -> State.NOT_REQUIRE_VERIFICATION
-            0x01u -> State.REQUIRE_VERIFICATION//需要验证信息
-            0x99u -> State.ALREADY_ADDED
-
-            0x03u,
-            0x04u -> State.FAILED
-            else -> throw IllegalStateException(state.toString())
-        }
-    }
 
     @PacketId(0x00_A7u)
-    class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(sessionKey: ByteArray): ServerCanAddFriendResponsePacket {
-            return ServerCanAddFriendResponsePacket(decryptBy(sessionKey)).applySequence(sequenceId)
+    class Response(input: ByteReadPacket) : ResponsePacket(input) {
+        lateinit var state: State
+
+        enum class State {
+            /**
+             * 已经添加
+             */
+            ALREADY_ADDED,
+            /**
+             * 需要验证信息
+             */
+            REQUIRE_VERIFICATION,
+            /**
+             * 不需要验证信息
+             */
+            NOT_REQUIRE_VERIFICATION,
+
+            /**
+             * 对方拒绝添加
+             */
+            FAILED,
+        }
+
+
+        override fun decode() = with(input) {
+            //需要验证信息 00 23 24 8B 00 01
+
+            if (input.remaining > 20) {//todo check
+                state = State.ALREADY_ADDED
+                return
+            }
+            discardExact(4)//对方qq号
+            state = when (val state = readUShort().toUInt()) {
+                0x00u -> State.NOT_REQUIRE_VERIFICATION
+                0x01u -> State.REQUIRE_VERIFICATION//需要验证信息
+                0x99u -> State.ALREADY_ADDED
+
+                0x03u,
+                0x04u -> State.FAILED
+                else -> throw IllegalStateException(state.toString())
+            }
         }
     }
 }
-
 
 /**
  * 请求添加好友
  */
 @PacketId(0x00_AEu)
-class ClientAddFriendPacket(
+class AddFriendPacket(
         val bot: UInt,
         val qq: UInt,
         val sessionKey: ByteArray
-) : ClientPacket() {
+) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(bot)
         this.writeHex(TIMProtocol.fixVer2)
@@ -102,13 +95,7 @@ class ClientAddFriendPacket(
             writeQQ(qq)
         }
     }
-
 }
-
-
-class ServerAddFriendResponsePacket(input: ByteReadPacket) : ServerAddContactResponsePacket(input)
-
-class ServerAddGroupResponsePacket(input: ByteReadPacket) : ServerAddContactResponsePacket(input)
 
 /**
  * 添加好友/群的回复

@@ -6,7 +6,9 @@ kotlin {
         fromPreset(presets.jvm, "jvm")
         //fromPreset(presets.mingwX64, "mingwX64")
     }
-    jvm()
+    jvm{
+        withJava()
+    }
 
     /*
     mingwX64("mingwX64") {
@@ -23,19 +25,21 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-reflect
-                implementation rootProject.ext.kotlinCommon
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: kotlin_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core-common', version: coroutines_version
+                api group: 'org.jetbrains.kotlinx', name: 'atomicfu-common', version: atomicfu_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinxio_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesio_version
 
-                implementation rootProject.ext.reflect
+                implementation "com.soywiz.korlibs.klock:klock:$klock_version"
 
-                //implementation rootProject.ext.coroutine
-                implementation rootProject.ext.coroutineCommon
-                implementation rootProject.ext.coroutineIo
-
-                implementation rootProject.ext.atomicFUCommon
-
-                implementation rootProject.ext.kotlinxIOCommon
-                implementation rootProject.ext.klock
+                api group: 'io.ktor', name: 'ktor-client-core', version: ktor_version
+                //api group: 'io.ktor', name: 'ktor-client-cio', version: ktor_version
+                //api group: 'io.ktor', name: 'ktor-client', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-http', version: ktor_version
+                //api group: 'io.ktor', name: 'ktor-utils', version: ktor_version
+                //api group: 'io.ktor', name: 'ktor-io', version: ktorio_version
             }
         }
 
@@ -43,16 +47,23 @@ kotlin {
             apply plugin: 'java'
 
             dependencies {
-                implementation rootProject.ext.kotlinJvm
-                implementation rootProject.ext.reflect
-                implementation rootProject.ext.coroutine
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
+                api group: 'org.jetbrains.kotlinx', name: 'atomicfu', version: atomicfu_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinxio_version
+                // api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io-jvm', version: kotlinxio_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesio_version
 
-                implementation rootProject.ext.kotlinxIOJvm
+                api group: 'io.ktor', name: 'ktor-http-cio', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-http', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-client-core-jvm', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-client-cio', version: ktor_version
 
                 implementation 'org.yaml:snakeyaml:1.18'
                 implementation 'org.jsoup:jsoup:1.12.1'
                 implementation 'org.ini4j:ini4j:0.5.2'
-                implementation rootProject.ext.klock
             }
         }
 
@@ -73,6 +84,7 @@ kotlin {
         }*/
 
         jvmTest {
+            apply plugin: 'java'
         }
 
         all {
@@ -82,5 +94,9 @@ kotlin {
 }
 
 compileKotlinJvm {
+
+}
+
+compileTestJava{
 
 }

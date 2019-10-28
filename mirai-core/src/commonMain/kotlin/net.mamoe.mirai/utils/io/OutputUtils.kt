@@ -1,9 +1,12 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.contact.GroupId
+import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.utils.*
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -14,9 +17,8 @@ fun BytePacketBuilder.writeRandom(length: Int) = repeat(length) { this.writeByte
 
 fun BytePacketBuilder.writeQQ(qq: Long) = this.writeUInt(qq.toUInt())
 fun BytePacketBuilder.writeQQ(qq: UInt) = this.writeUInt(qq)
-
-fun BytePacketBuilder.writeGroup(groupIdOrGroupNumber: Long) = this.writeUInt(groupIdOrGroupNumber.toUInt())
-fun BytePacketBuilder.writeGroup(groupIdOrGroupNumber: UInt) = this.writeUInt(groupIdOrGroupNumber)
+fun BytePacketBuilder.writeGroup(groupId: GroupId) = this.writeUInt(groupId.value)
+fun BytePacketBuilder.writeGroup(groupInternalId: GroupInternalId) = this.writeUInt(groupInternalId.value)
 
 fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
     this.writeShort(byteArray.size.toShort())
@@ -98,7 +100,9 @@ fun BytePacketBuilder.writeTByteArray(tag: UByte, value: UByteArray) {
 }
 
 fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.readBytes(), encoder)
-fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) = writeFully(TEA.encrypt(BytePacketBuilder().apply(encoder).use { it.build().readBytes() }, key))
+fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) = writeFully(TEA.encrypt(BytePacketBuilder().apply(encoder).use {
+    it.build().readBytes()
+}, key))
 fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
 
 fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray) {

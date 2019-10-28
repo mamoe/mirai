@@ -1,18 +1,26 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai
 
-import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot.ContactSystem
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.contact.groupIdToNumber
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import net.mamoe.mirai.utils.log
 import kotlin.jvm.JvmOverloads
+
+data class BotAccount(
+    val id: UInt,
+    val password: String//todo 不保存 password?
+)
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -23,8 +31,10 @@ import kotlin.jvm.JvmOverloads
  * [网络处理器][TIMBotNetworkHandler]: 可通过 [Bot.network] 访问
  * [机器人账号信息][BotAccount]: 可通过 [Bot.qqAccount] 访问
  *
- * 若你需要得到机器人的 QQ 账号, 请访问 [Bot.qqAccount]
- * 若你需要得到服务器上所有机器人列表, 请访问 [Bot.instances]
+ * 若需要得到机器人的 QQ 账号, 请访问 [Bot.qqAccount]
+ * 若需要得到服务器上所有机器人列表, 请访问 [Bot.instances]
+ *
+ * 在 BotHelper.kt 中有一些访问的捷径. 如 [Bot.getGroup]
  *
  *
  *
@@ -39,11 +49,12 @@ import kotlin.jvm.JvmOverloads
  *
  *
  * @author Him188moe
- * @author NatrualHG
+ * @author NaturalHG
  * @see net.mamoe.mirai.contact.Contact
  */
 class Bot(val account: BotAccount, val logger: MiraiLogger) {
-    val id = nextId()
+    constructor(qq: UInt, password: String) : this(BotAccount(qq, password))
+    constructor(account: BotAccount) : this(account, DefaultLogger("Bot(" + account.id + ")"))
 
     val contacts = ContactSystem()
 
@@ -51,18 +62,19 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
 
     init {
         instances.add(this)
-
-        this.logger.identity = "Bot" + this.id + "(" + this.account.account + ")"
     }
 
-    override fun toString(): String = "Bot{id=$id,qq=${account.account}}"
+    override fun toString(): String = "Bot{qq=${account.id}}"
 
     /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler.NetworkScope] 下的协程.
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
      * 然后重新启动并尝试登录
      */
     @JvmOverloads
-    suspend fun reinitializeNetworkHandler(configuration: BotNetworkConfiguration, cause: Throwable? = null): LoginResult {
+    suspend fun reinitializeNetworkHandler(
+        configuration: BotNetworkConfiguration,
+        cause: Throwable? = null
+    ): LoginResult {
         logger.logPurple("Reinitializing BotNetworkHandler")
         try {
             network.close(cause)
@@ -79,30 +91,58 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
      * @see Bot.contacts
      */
     inner class ContactSystem internal constructor() {
+        private val _groups = ContactList<Group>()
+        private lateinit var groupsUpdater: Job
         val groups = ContactList<Group>()
         private val groupsLock = Mutex()
-        val qqs = ContactList<QQ>()
+
+        private val _qqs = ContactList<QQ>() //todo 实现群列表和好友列表获取
+        private lateinit var qqUpdaterJob: Job
+        val qqs: ContactList<QQ> = _qqs
         private val qqsLock = Mutex()
 
         /**
-         * 通过群号码获取群对象.
-         * 注意: 在并发调用时, 这个方法并不是原子的.
+         * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.
+         *
+         * 注: 这个方法是线程安全的
          */
-        fun getQQ(account: UInt): QQ = qqs.getOrPut(account) { QQ(this@Bot, account) }
+        suspend fun getQQ(account: UInt): QQ =
+            if (qqs.containsKey(account)) qqs[account]!!
+            else qqsLock.withLock {
+                qqs.getOrPut(account) { QQ(this@Bot, account) }
+            }
 
         /**
-         * 通过群号码获取群对象.
-         * 注意: 在并发调用时, 这个方法并不是原子的.
+         * 获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
+         *
+         * 注: 这个方法是线程安全的
          */
-        fun getGroupByNumber(groupNumber: UInt): Group = groups.getOrPut(groupNumber) { Group(this@Bot, groupNumber) }
+        suspend fun getGroup(internalId: GroupInternalId): Group = getGroup(internalId.toId())
 
-
-        fun getGroupById(groupId: UInt): Group {
-            return getGroupByNumber(Group.groupIdToNumber(groupId))
+        /**
+         * 获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
+         *
+         * 注: 这个方法是线程安全的
+         */
+        suspend fun getGroup(id: GroupId): Group = id.value.let {
+            if (groups.containsKey(it)) groups[it]!!
+            else groupsLock.withLock {
+                groups.getOrPut(it) { Group(this@Bot, id) }
+            }
         }
     }
 
-    fun close() {
+    suspend inline fun Int.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.qq(): QQ = getQQ(this)
+
+    suspend inline fun Int.group(): Group = getGroup(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.group(): Group = getGroup(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.group(): Group = getGroup(GroupId(this))
+    suspend inline fun GroupId.group(): Group = getGroup(this)
+    suspend inline fun GroupInternalId.group(): Group = getGroup(this)
+
+    suspend fun close() {
         this.network.close()
         this.contacts.groups.clear()
         this.contacts.qqs.clear()
@@ -110,8 +150,5 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
 
     companion object {
         val instances: MutableList<Bot> = mutableListOf()
-
-        private val id = atomic(0)
-        fun nextId(): Int = id.addAndGet(1)
     }
 }

@@ -4,7 +4,6 @@ package net.mamoe.mirai
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.BotAccount
 import net.mamoe.mirai.utils.LoggerTextFormat
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.config.MiraiConfig
@@ -148,7 +147,7 @@ object MiraiServer {
                 Bot bot = new Bot(section);
                 var state = bot.network.login$mirai_core().of();
                 //bot.network.login$mirai_core().whenComplete((state, e) -> {
-                if (state == LoginState.SUCCESS) {
+                if (state == LoginState.REQUIRE_UPLOAD) {
                     Bot.instances.add(bot);
                     getLogger().logGreen("   Login Succeed");
                 } else {
@@ -177,7 +176,7 @@ object MiraiServer {
                 val bot = Bot(BotAccount(strings[0].toUInt(), strings[1]), MiraiLogger)
 
                 if (runBlocking { bot.login() } === LoginResult.SUCCESS) {
-                    bot.logGreen("Login succeed")
+                    bot.logger.logGreen("Login succeed")
                     return bot
                 }
             }

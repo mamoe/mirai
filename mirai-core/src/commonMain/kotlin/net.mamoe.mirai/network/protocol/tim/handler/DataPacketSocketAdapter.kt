@@ -5,9 +5,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.packet.ClientPacket
+import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.utils.PlatformDatagramChannel
+import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
  * 网络接口.
@@ -19,6 +19,10 @@ import net.mamoe.mirai.utils.PlatformDatagramChannel
 interface DataPacketSocketAdapter : Closeable {
     val owner: Bot
 
+    /**
+     * 连接的服务器的 IPv4 地址
+     * 在整个过程中都不会变化. 若连接丢失, [DataPacketSocketAdapter] 将会被 [close]
+     */
     val serverIp: String
 
     /**
@@ -43,7 +47,7 @@ interface DataPacketSocketAdapter : Closeable {
      *
      * @see [BotSession.sendAndExpect] kotlin DSL
      */
-    suspend fun sendPacket(packet: ClientPacket)
+    suspend fun sendPacket(packet: OutgoingPacket)
 
     override fun close()
 }

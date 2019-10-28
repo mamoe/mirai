@@ -4,7 +4,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
-import net.mamoe.mirai.utils.readString
+import net.mamoe.mirai.utils.io.readString
 
 
 /**

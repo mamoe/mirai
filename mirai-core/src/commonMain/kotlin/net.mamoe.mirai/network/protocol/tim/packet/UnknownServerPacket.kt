@@ -6,7 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.utils.LoggerTextFormat
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.io.toUHexString
 
 
 class UnknownServerPacket(

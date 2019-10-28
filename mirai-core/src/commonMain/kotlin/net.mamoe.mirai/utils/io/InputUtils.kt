@@ -1,15 +1,15 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerCanAddFriendResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendFriendMessageResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ServerSendGroupMessageResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.decryptBy
 
 
 fun ByteReadPacket.readRemainingBytes(
@@ -31,18 +31,19 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
 
     discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00. 但更可能是应该 discard 8
     return when (id.toUInt()) {
-        0x08_25u -> ServerTouchResponsePacket.Encrypted(this)
+        0x08_25u -> TouchResponsePacket.Encrypted(this)
         0x08_36u -> {
             //todo 不要用size分析
             when (size) {
-                271, 207 -> return ServerLoginResponseKeyExchangePacket.Encrypted(this).applySequence(sequenceId)
-                871 -> return ServerLoginResponseCaptchaInitPacket.Encrypted(this).applySequence(sequenceId)
+                271, 207 -> return LoginResponseKeyExchangeResponsePacket.Encrypted(this).applySequence(sequenceId)
+                871 -> return LoginResponseCaptchaInitPacket.Encrypted(this).applySequence(sequenceId)
             }
 
-            if (size > 700) return ServerLoginResponseSuccessPacket.Encrypted(this).applySequence(sequenceId)
+            if (size > 700) return LoginResponseSuccessPacket.Encrypted(this).applySequence(sequenceId)
 
             println("登录包size=$size")
-            return ServerLoginResponseFailedPacket(when (size) {
+            return LoginResponseFailedPacket(
+                when (size) {
                 135 -> {//包数据错误. 目前怀疑是 tlv0006
                     this.readRemainingBytes().cutTail(1).decryptBy(TIMProtocol.shareKey).read {
                         discardExact(51)
@@ -68,22 +69,22 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
                 else -> throw IllegalArgumentException(bytes.size.toString())*/
             }, this).applySequence(sequenceId)
         }
-        0x08_28u -> ServerSessionKeyResponsePacket.Encrypted(this)
+        0x08_28u -> SessionKeyResponsePacket.Encrypted(this)
 
         0x00_ECu -> ServerLoginSuccessPacket(this)
-        0x00_1Du -> ServerSKeyResponsePacket.Encrypted(this)
-        0x00_5Cu -> ServerAccountInfoResponsePacket.Encrypted(this)
         0x00_BAu -> ServerCaptchaPacket.Encrypted(this)
         0x00_CEu, 0x00_17u -> ServerEventPacket.Raw.Encrypted(this, id, sequenceId)
         0x00_81u -> ServerFriendOnlineStatusChangedPacket.Encrypted(this)
-        0x00_CDu -> ServerSendFriendMessageResponsePacket(this)
-        0x00_02u -> ServerSendGroupMessageResponsePacket(this)
-        0x00_A7u -> ServerCanAddFriendResponsePacket(this)
 
-        0x00_58u -> ServerSessionPacket.Encrypted<HeartbeatPacket.Response>(this)
-        0x03_88u -> ServerSessionPacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
-        0x03_52u -> ServerSessionPacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
-        0x01_BDu -> ServerSessionPacket.Encrypted<SubmitImageFilenamePacket.Response>(this)
+        0x00_1Du -> ResponsePacket.Encrypted<RequestSKeyPacket.Response>(this)
+        0X00_5Cu -> ResponsePacket.Encrypted<RequestAccountInfoPacket.Response>(this)
+        0x00_02u -> ResponsePacket.Encrypted<SendGroupMessagePacket.Response>(this)
+        0x00_CDu -> ResponsePacket.Encrypted<SendFriendMessagePacket.Response>(this)
+        0x00_A7u -> ResponsePacket.Encrypted<CanAddFriendPacket.Response>(this)
+        0x00_58u -> ResponsePacket.Encrypted<HeartbeatPacket.Response>(this)
+        0x03_88u -> ResponsePacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
+        0x03_52u -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
+        0x01_BDu -> ResponsePacket.Encrypted<SubmitImageFilenamePacket.Response>(this)
 
         else -> UnknownServerPacket.Encrypted(this, id, sequenceId)
     }.applySequence(sequenceId)
@@ -143,35 +144,4 @@ fun Input.readLVNumber(): Number {
         8 -> this.readLong()
         else -> throw UnsupportedOperationException()
     }
-}
-
-//添加@JvmSynthetic 导致 idea 无法检查这个文件的错误
-//@JvmSynthetic
-@Deprecated("Low efficiency", ReplaceWith(""))
-fun <I : Input> I.gotoWhere(matcher: UByteArray): I {
-    @Suppress("DEPRECATION")
-    return this.gotoWhere(matcher.toByteArray())
-}
-
-/**
- * 去往下一个含这些连续字节的位置
- */
-@Deprecated("Low efficiency", ReplaceWith(""))
-fun <I : Input> I.gotoWhere(matcher: ByteArray): I {
-    require(matcher.isNotEmpty())
-
-    loop@
-    do {
-        val byte = this.readByte()
-        if (byte == matcher[0]) {
-            //todo mark here
-            for (i in 1 until matcher.size) {
-                val b = this.readByte()
-                if (b != matcher[i]) {
-                    continue@loop //todo goto mark
-                }
-            }
-            return this
-        }
-    } while (true)
 }
