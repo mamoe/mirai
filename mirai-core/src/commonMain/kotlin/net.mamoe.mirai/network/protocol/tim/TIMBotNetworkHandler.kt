@@ -56,17 +56,14 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     }
 
     override suspend fun login(configuration: BotNetworkConfiguration): LoginResult = withContext(this.coroutineContext) {
-        TIMProtocol.SERVER_IP.forEach {
-            bot.logger.logInfo("Connecting server $it")
-            socket = BotSocketAdapter(it, configuration)
+        TIMProtocol.SERVER_IP.forEach { ip ->
+            bot.logger.logInfo("Connecting server $ip")
+            socket = BotSocketAdapter(ip, configuration)
 
             loginResult = CompletableDeferred()
 
-            val state = socket.resendTouch()
+            socket.resendTouch().takeIf { it != LoginResult.TIMEOUT }?.let { return@withContext it }
 
-            if (state != LoginResult.TIMEOUT) {
-                return@withContext state
-            }
             bot.logger.logPurple("Timeout. Retrying next server")
 
             socket.close()
@@ -206,7 +203,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                 // Remove first to release the lock
                 handlersLock.withLock {
-                    temporaryPacketHandlers.filter { it.filter(session, packet) }
+                    temporaryPacketHandlers.filter { it.filter(session, packet) }.also { temporaryPacketHandlers.removeAll(it) }
                 }.forEach {
                     it.doReceiveWithoutExceptions(packet)
                 }
