@@ -33,7 +33,7 @@ internal inline fun TIMBotNetworkHandler.BotSession(
  */
 class BotSession(
     val bot: Bot,
-    val sessionKey: ByteArray,//TODO 协议抽象? 可能并不是所有协议均需要 sessionKey
+    val sessionKey: ByteArray,
     val socket: DataPacketSocketAdapter,
     val NetworkScope: CoroutineScope
 ) {
@@ -61,7 +61,7 @@ class BotSession(
 
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
-     * 发送成功后, 该方法会等待收到 [ServerPacket][P] 直到超时.
+     * 这个方法会立即返回.
      *
      * 实现方法:
      * ```kotlin
@@ -75,13 +75,13 @@ class BotSession(
      *
      * @param checkSequence 是否期待 [ServerPacket.sequenceId] 与 [OutgoingPacket.sequenceId] 相同的包.
      * @param P 期待的包
-     * @param handler 处理期待的包
+     * @param handler 处理期待的包. 将会在调用 [sendAndExpect] 的函数所在 [coroutineContext] 下执行.
      *
      * @see Bot.withSession 转换接收器 (receiver, 即 `this` 的指向) 为 [BotSession]
      */
     suspend inline fun <reified P : ServerPacket, R> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true, noinline handler: suspend (P) -> R): CompletableDeferred<R> {
         val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
-        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession, checkSequence).also {
+        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession, checkSequence, coroutineContext + deferred).also {
             it.toSend(this)
             it.onExpect(handler)
         })

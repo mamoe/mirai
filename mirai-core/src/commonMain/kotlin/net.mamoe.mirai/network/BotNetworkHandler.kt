@@ -2,6 +2,7 @@ package net.mamoe.mirai.network
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
@@ -15,7 +16,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
-import kotlin.coroutines.ContinuationInterceptor
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.
@@ -86,7 +86,8 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
      * 关闭网络接口, 停止所有有关协程和任务
      */
     suspend fun close(cause: Throwable? = null) {
-        //todo check??
-        coroutineContext[ContinuationInterceptor]!!.cancelChildren(CancellationException("handler closed", cause))
+        val job = coroutineContext[Job]
+        checkNotNull(job) { "Job should not be null because there will always be a SupervisorJob. There may be a internal mistake" }
+        job.cancelChildren(CancellationException("handler closed", cause))
     }
 }

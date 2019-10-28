@@ -1,9 +1,13 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.protocol.tim.handler
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 
 /**
@@ -23,7 +27,11 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
     private val expectationClass: KClass<P>,
     private val deferred: CompletableDeferred<R>,
     private val fromSession: BotSession,
-    private val checkSequence: Boolean
+    private val checkSequence: Boolean,
+    /**
+     * 调用者的 [CoroutineContext]
+     */
+    private val callerContext: CoroutineContext
 ) {
     private lateinit var toSend: OutgoingPacket
 
@@ -40,21 +48,22 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
         this.handler = handler
     }
 
-    suspend fun send(session: BotSession) {
+    internal suspend fun send(session: BotSession) {
         require(::handler.isInitialized) { "handler is not initialized" }
         this.session = session
         session.socket.sendPacket(toSend)
     }
 
-    @ExperimentalUnsignedTypes
-    fun filter(session: BotSession, packet: ServerPacket): Boolean =
+    internal fun filter(session: BotSession, packet: ServerPacket): Boolean =
         expectationClass.isInstance(packet) && session === this.fromSession && if (checkSequence) packet.sequenceId == toSend.sequenceId else true
 
-    suspend fun doReceive(packet: ServerPacket) {
+    internal suspend fun doReceiveWithoutExceptions(packet: ServerPacket) {
         @Suppress("UNCHECKED_CAST")
         val ret = try {
-            handler(packet as P)
-        } catch (e: Exception) {
+            withContext(callerContext) {
+                handler(packet as P)
+            }
+        } catch (e: Throwable) {
             deferred.completeExceptionally(e)
             return
         }

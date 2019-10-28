@@ -14,8 +14,7 @@ import net.mamoe.mirai.withSession
 class ContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf()
 
 /**
- * 联系人. 虽然叫做联系人, 但它直营
- * 现支持的联系人只有 [QQ号][QQ] 和 [群][Group].
+ * 联系人. 虽然叫做联系人, 但他的子类有 [QQ] 和 [群][Group].
  *
  * @param bot 这个联系人所属 [Bot]
  * @param id 可以是 QQ 号码或者群号码 [GroupId].
@@ -70,8 +69,7 @@ inline class GroupInternalId(val value: UInt)
 class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, groupId.value) {
     val internalId = GroupId(id).toInternalId()
     val members: ContactList<QQ>
-        //todo members
-        get() = throw UnsupportedOperationException("Not yet supported")
+        get() = TODO("Implementing group members is less important")
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.network[EventPacketHandler].sendGroupMessage(this, message)
@@ -87,7 +85,7 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
 inline fun <R> Group.withSession(block: BotSession.() -> R): R = bot.withSession(block)
 
 /**
- * QQ 账号.
+ * QQ 对象.
  * 注意: 一个 [QQ] 实例并不是独立的, 它属于一个 [Bot].
  *
  * A QQ instance helps you to receive event from or sendPacket event to.
@@ -95,7 +93,7 @@ inline fun <R> Group.withSession(block: BotSession.() -> R): R = bot.withSession
  *
  * @author Him188moe
  */
-class QQ internal constructor(bot: Bot, number: UInt) : Contact(bot, number) {
+class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
     override suspend fun sendMessage(message: MessageChain) {
         bot.network[EventPacketHandler].sendFriendMessage(this, message)
     }

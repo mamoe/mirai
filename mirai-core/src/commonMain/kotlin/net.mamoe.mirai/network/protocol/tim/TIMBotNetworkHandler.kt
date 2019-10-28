@@ -36,7 +36,8 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
     override val coroutineContext: CoroutineContext =
-        Dispatchers.Default + CoroutineExceptionHandler { _, e -> bot.logger.log(e) }
+        Dispatchers.Default + CoroutineExceptionHandler { _, e -> bot.logger.log(e) } + SupervisorJob()
+
 
     override lateinit var socket: BotSocketAdapter
         private set
@@ -156,7 +157,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
         }
 
-        internal suspend fun resendTouch(): LoginResult {
+        internal suspend fun resendTouch(): LoginResult = coroutineScope {
             if (::loginHandler.isInitialized) loginHandler.close()
 
             loginHandler = LoginHandler(configuration)
@@ -169,9 +170,9 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     loginResult.complete(LoginResult.TIMEOUT)
                 }
             }
-            sendPacket(TouchPacket(bot.qqAccount, this.serverIp))
+            sendPacket(TouchPacket(bot.qqAccount, serverIp))
 
-            return loginResult.await()
+            return@coroutineScope loginResult.await()
         }
 
         private suspend inline fun <reified P : ServerPacket> expectPacket(): CompletableDeferred<P> {
@@ -199,20 +200,19 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
 
             packet.use {
-                val name = packet::class.simpleName
-                if (name != null && !name.endsWith("Encrypted") && !name.endsWith("Raw")) {
+                packet::class.simpleName?.takeIf { !it.endsWith("Encrypted") && !it.endsWith("Raw") }?.let {
                     bot.logger.logCyan("Packet received: $packet")
                 }
 
-                //Remove first to release the lock
+                // Remove first to release the lock
                 handlersLock.withLock {
                     temporaryPacketHandlers.filter { it.filter(session, packet) }
                 }.forEach {
-                    it.doReceive(packet)
+                    it.doReceiveWithoutExceptions(packet)
                 }
 
                 if (packet is ServerEventPacket) {
-                    //ensure the response packet is sent
+                    // Ensure the response packet is sent
                     sendPacket(packet.ResponsePacket(bot.qqAccount, sessionKey))
                 }
 
@@ -220,7 +220,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     return@coroutineScope
                 }
 
-                //they should be called in sequence otherwise because packet is lock-free
+                // They should be called in sequence otherwise because packet is lock-free
                 loginHandler.onPacketReceived(packet)
                 this@TIMBotNetworkHandler.forEach {
                     it.instance.onPacketReceived(packet)
@@ -293,9 +293,6 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         private lateinit var loginIP: String
         private var privateKey: ByteArray = getRandomByteArray(16)
 
-        /**
-         * 0828_decr_key
-         */
         private lateinit var sessionResponseDecryptionKey: IoBuffer
 
         private var captchaSectionId: Int = 1
@@ -406,7 +403,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                                     bot.qqAccount,
                                     token0825,
                                     code,
-                                    packet.verificationToken
+                                    packet.captchaToken
                                 )
                             )
                         }

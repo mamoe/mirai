@@ -15,7 +15,7 @@ import net.mamoe.mirai.utils.io.*
 class RequestCaptchaTransmissionPacket(
     private val bot: UInt,
     private val token0825: ByteArray,
-    private val verificationSequence: Int,
+    private val captchaSequence: Int,
     private val token00BA: ByteArray
 ) : OutgoingPacket() {
     @Tested
@@ -31,7 +31,7 @@ class RequestCaptchaTransmissionPacket(
             writeHex("01 03 00 19")
             writeHex(TIMProtocol.publicKey)
             writeHex("13 00 05 00 00 00 00")
-            writeUByte(verificationSequence.toUByte())
+            writeUByte(captchaSequence.toUByte())
             writeHex("00 28")
             writeFully(token00BA)
             writeHex("00 10")
@@ -48,7 +48,7 @@ class SubmitCaptchaPacket(
     private val bot: UInt,
     private val token0825: ByteArray,
     private val captcha: String,
-    private val verificationToken: IoBuffer
+    private val captchaToken: IoBuffer
 ) : OutgoingPacket() {
     init {
         require(captcha.length == 4) { "captcha.length must == 4" }
@@ -71,7 +71,7 @@ class SubmitCaptchaPacket(
             writeHex("14 00 05 00 00 00 00 00 04")
             writeStringUtf8(captcha.toUpperCase())
             writeHex("00 38")
-            writeFully(verificationToken)
+            writeFully(captchaToken)
 
             writeShort(16)
             writeHex(TIMProtocol.key00BAFix)//16
@@ -113,14 +113,14 @@ class OutgoingCaptchaRefreshPacket(
 open class CaptchaTransmissionResponsePacket(input: ByteReadPacket) : ServerCaptchaPacket(input) {
 
     lateinit var captchaSectionN: IoBuffer
-    lateinit var verificationToken: IoBuffer//56bytes
+    lateinit var captchaToken: IoBuffer//56bytes
     var transmissionCompleted: Boolean = false//验证码是否已经传输完成
     lateinit var token00BA: ByteArray//40 bytes
 
 
     override fun decode() = with(input) {
         input.discardExact(10)//13 00 05 01 00 00 01 23 00 38
-        verificationToken = readIoBuffer(56)
+        captchaToken = readIoBuffer(56)
 
         val length = readShort()
         captchaSectionN = readIoBuffer(length)

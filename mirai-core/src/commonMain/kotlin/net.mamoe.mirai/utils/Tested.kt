@@ -5,4 +5,5 @@ package net.mamoe.mirai.utils
  *
  * @author Him188moe
  */
-internal annotation class Tested
+@Suppress("unused")
+internal annotation class Tested(val date: String = "")
