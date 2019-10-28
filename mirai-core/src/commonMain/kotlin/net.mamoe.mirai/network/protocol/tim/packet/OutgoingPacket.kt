@@ -26,15 +26,16 @@ abstract class OutgoingPacket : Packet(), Closeable {
     companion object {
         @JvmStatic
         private val sequenceIdInternal = atomic(1)
+
         internal fun atomicNextSequenceId() = sequenceIdInternal.getAndIncrement().toUShort()
     }
 
     /**
      * 务必 [ByteReadPacket.close] 或 [close] 或使用 [Closeable.use]
      */
-    var packet: ByteReadPacket = UninitializedByteReadPacket
+    var packet: ByteReadPacket = Uninitialized
         get() {
-            if (field === UninitializedByteReadPacket) build()
+            if (field === Uninitialized) build()
             return field
         }
         private set
@@ -52,7 +53,11 @@ abstract class OutgoingPacket : Packet(), Closeable {
 
     override fun toString(): String = packetToString()
 
-    override fun close() = if (this.packet === UninitializedByteReadPacket) Unit else this.packet.close()
+    override fun close() {
+        if (this.packet !== Uninitialized) {
+            this.packet.close()
+        }
+    }
 
     private fun BytePacketBuilder.writePacketId() {
         writeUShort(this@OutgoingPacket.id)
@@ -66,4 +71,4 @@ abstract class OutgoingPacket : Packet(), Closeable {
 @Retention(AnnotationRetention.SOURCE)
 annotation class PacketVersion(val date: String, val timVersion: String)
 
-private val UninitializedByteReadPacket = ByteReadPacket(IoBuffer.Empty, IoBuffer.EmptyPool)
+private val Uninitialized = ByteReadPacket(IoBuffer.Empty, IoBuffer.EmptyPool)
