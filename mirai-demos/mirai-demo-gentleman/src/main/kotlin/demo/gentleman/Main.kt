@@ -39,7 +39,7 @@ suspend fun main() {
     bot.subscribeMessages {
         "你好" reply "你好!"
 
-        startsWith("随机色图", removePrefix = true) {
+        startsWith("随机图片", removePrefix = true) {
             withContext(Dispatchers.Default) {
                 try {
                     repeat(it.toIntOrNull() ?: 1) {
@@ -56,7 +56,7 @@ suspend fun main() {
     }
 
     bot.subscribeGroupMessages {
-        startsWith("色图", removePrefix = true) {
+        startsWith("图片", removePrefix = true) {
             HPictureSession(group, sender, it)
         }
 

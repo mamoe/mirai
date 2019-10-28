@@ -51,7 +51,7 @@ interface Message {
      *
      * @param M 指代持有它的消息类型
      */
-    interface Key<M>
+    interface Key<M : Message>
 
     infix fun eq(other: Message): Boolean = this == other
 
@@ -233,6 +233,31 @@ inline fun <reified M : Message> MessageChain.first(): Message = this.first { M:
  */
 inline fun <reified M : Message> MessageChain.any(): Boolean = this.firstOrNull { M::class.isInstance(it) } !== null
 
+/**
+ * 获取第一个 [M] 类型的 [Message] 实例
+ */
+@Suppress("UNCHECKED_CAST")
+fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {
+    At -> first<At>()
+    PlainText -> first<PlainText>()
+    Image -> first<Image>()
+    Face -> first<Face>()
+    else -> null
+} as M
+
+/**
+ * 获取第一个 [M] 类型的 [Message] 实例
+ * @throws [NoSuchElementException] 如果找不到该类型的实例
+ */
+@Suppress("UNCHECKED_CAST")
+fun <M : Message> MessageChain.first(key: Message.Key<M>): M = firstOrNull(key) ?: error("unknown key: $key")
+
+/**
+ * 获取第一个 [M] 类型的 [Message] 实例
+ */
+@Suppress("UNCHECKED_CAST")
+fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(key) != null
+
 // endregion
 
 /**
@@ -267,13 +292,7 @@ interface MessageChain : Message, MutableList<Message> {
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
     @Suppress("UNCHECKED_CAST")
-    operator fun <M> get(key: Message.Key<M>): M = when (key) {
-        At -> first<At>()
-        PlainText -> first<PlainText>()
-        Image -> first<Image>()
-        Face -> first<Face>()
-        else -> error("unknown key: $key")
-    } as M
+    operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
 }
 
 /**
@@ -332,6 +351,12 @@ object NullMessageChain : MessageChain {
     override fun set(index: Int, element: Message): Message = unsupported()
     private fun unsupported(): Nothing = throw UnsupportedOperationException()
 }
+
+
+// ==============================================================================
+// ================================== INTERNAL ==================================
+// ==============================================================================
+
 
 /**
  * [MessageChain] 实现
