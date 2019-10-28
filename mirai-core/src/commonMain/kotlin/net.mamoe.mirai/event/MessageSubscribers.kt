@@ -196,8 +196,26 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
     suspend inline fun endsWith(start: String, noinline listener: MessageListener<T>) =
         content({ it.endsWith(start) }, listener)
 
-    suspend inline fun sentBy(id: UInt, noinline listener: MessageListener<T>) = content({ sender.id == id }, listener)
-    suspend inline fun sentBy(id: Long, noinline listener: MessageListener<T>) = sentBy(id.toUInt(), listener)
+    /**
+     * 如果是这个人发的消息. 可以好友消息也可以是群消息
+     */
+    suspend inline fun sentBy(qqId: UInt, noinline listener: MessageListener<T>) = content({ sender.id == qqId }, listener)
+
+    /**
+     * 如果是这个人发的消息. 可以好友消息也可以是群消息
+     */
+    suspend inline fun sentBy(qqId: Long, noinline listener: MessageListener<T>) = sentBy(qqId.toUInt(), listener)
+
+    /**
+     * 如果是来自这个群的消息
+     */
+    suspend inline fun sentFrom(id: UInt, noinline listener: MessageListener<T>) = content({ if (this is GroupSenderAndMessage) group.id == id else false }, listener)
+
+    /**
+     * 如果是来自这个群的消息
+     */
+    suspend inline fun sentFrom(id: Long, noinline listener: MessageListener<T>) = sentFrom(id.toUInt(), listener)
+
     suspend inline fun <reified M : Message> has(noinline listener: MessageListener<T>) =
         handlerConsumer { if (message.any<M>()) listener(this) }
 

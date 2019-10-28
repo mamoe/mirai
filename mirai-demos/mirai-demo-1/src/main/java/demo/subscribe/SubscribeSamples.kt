@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.login
@@ -45,10 +46,27 @@ private fun readTestAccount(): BotAccount? {
  * @see MessageSubscribersBuilder
  */
 suspend fun Bot.messageDSL() {
-    //监听所有 bot 的来自所有群和好友的消息
-    subscribeMessages {
+    // 监听这个 bot 的来自所有群和好友的消息
+    this.subscribeMessages {
+        // 当接收到消息 == "你好" 时就回复 "你好!"
         "你好" reply "你好!"
 
+        // 当消息 == "查看 subject" 时, 执行 lambda 并回复 lambda 的返回值
+        case("查看 subject") {
+            if (subject is QQ) {
+                reply("消息主体为 QQ, 你在跟发私聊消息")
+            } else {
+                reply("消息主体为 Group, 你在群里发消息")
+            }
+
+            // 在回复的时候, 一般使用 subject 来作为回复对象.
+            // 因为当群消息时, subject 为这个群.
+            // 当好友消息时, subject 为这个好友.
+            // 所有在 SenderAndMessage(也就是此时的 this 指代的对象) 中实现的扩展方法, 如刚刚的 "reply", 都是以 subject 作为目标
+        }
+
+
+        // 当消息里面包含这个类型的消息时
         has<Image> {
             // this: SenderAndMessage
             // message: MessageChain
@@ -61,30 +79,53 @@ suspend fun Bot.messageDSL() {
                 this.group.sendMessage("你在一个群里")
             }
 
-            reply("图片, ID= ${message[Image].id}")
+            reply("图片, ID= ${message[Image].id}")//获取第一个 Image 类型的消息
             reply(message)
         }
 
-        "123" reply "你的消息里面包含 123"
 
+        "123" containsReply "你的消息里面包含 123"
+
+
+        // 当收到 "我的qq" 就执行 lambda 并回复 lambda 的返回值 String
         "我的qq" reply { sender.id.toString() }
 
+
+        // 如果是这个 QQ 号发送的消息(可以是好友消息也可以是群消息)
         sentBy(1040400290) {
-            //reply("是你!")
         }
 
+
+        // 当消息前缀为 "我是" 时
+        startsWith("我是", removePrefix = true) {
+            // it: 删除了消息前缀 "我是" 后的消息
+            // 如一条消息为 "我是张三", 则此时的 it 为 "张三".
+
+            reply("你是$it")
+        }
+
+
+        // 当消息中包含 "复读" 时
         contains("复读") {
             reply(message)
         }
 
+
+        // 自定义的 filter, filter 中 it 为转为 String 的消息.
+        // 也可以用任何能在处理时使用的变量, 如 subject, sender, message
+        content({ it.length == 3 }) {
+            reply("你发送了长度为 3 的消息")
+        }
+
+
         case("上传好友图片") {
-            val filename = it.toString().substringAfter("上传好友图片")
-            File("C:\\Users\\Him18\\Desktop\\$filename").sendAsImageTo(1040400290u.qq())
+            val filename = it.substringAfter("上传好友图片")
+            File("C:\\Users\\Him18\\Desktop\\$filename").sendAsImageTo(subject)
         }
 
         case("上传群图片") {
-            val filename = it.toString().substringAfter("上传好友图片")
-            File("C:\\Users\\Him18\\Desktop\\$filename").sendAsImageTo(920503456u.group())
+            val filename = it.substringAfter("上传好友图片")
+            File("C:\\Users\\Him18\\Desktop\\$filename").sendAsImageTo(subject)
         }
     }
 
