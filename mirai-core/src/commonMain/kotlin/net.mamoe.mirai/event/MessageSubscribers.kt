@@ -183,7 +183,6 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
 
     /**
      * 如果消息的前缀是 [prefix], 就执行 [onEvent]
-     * @param
      */
     suspend fun startsWith(prefix: String, removePrefix: Boolean = false, onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ it.startsWith(prefix) }) {
@@ -259,3 +258,11 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 @DslMarker
 internal annotation class MessageDsl
+
+
+fun main() {
+
+    println('B')
+    println("\u7154225")
+    println('B' - 'b')
+}

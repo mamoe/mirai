@@ -55,6 +55,9 @@ private object IgnoreIdListInclude : List<String> by listOf(
     "RefVolatile"
 )
 
+/**
+ * 这个方法会翻倍内存占用, 考虑修改.
+ */
 @Suppress("UNCHECKED_CAST")
 internal actual fun Packet.packetToString(): String = PacketNameFormatter.adjustName(this::class.simpleName + "(${this.idHexString})") + this::class.java.allDeclaredFields
     .filterNot { field ->

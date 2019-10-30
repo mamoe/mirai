@@ -8,8 +8,7 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.utils.TEA
-import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.encryptBy
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.writeCRC32
 
@@ -90,7 +89,7 @@ private fun BytePacketBuilder.writePart1(
     this.writeHex(TIMProtocol.passwordSubmissionTLV2)
     this.writeHex("00 1A")//tag
     this.writeHex("00 40")//length
-    this.writeFully(TEA.encrypt(TIMProtocol.passwordSubmissionTLV2.hexToBytes(), privateKey))
+    this.writeFully(TIMProtocol.passwordSubmissionTLV2.hexToBytes().encryptBy(privateKey))
     this.writeHex(TIMProtocol.constantData1)
     this.writeHex(TIMProtocol.constantData2)
     this.writeQQ(qq)

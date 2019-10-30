@@ -35,3 +35,6 @@ mirai.iml
 
 
 .gradle/
+
+
+local.properties

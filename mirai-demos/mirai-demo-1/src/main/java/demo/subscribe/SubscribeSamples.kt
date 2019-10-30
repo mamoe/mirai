@@ -16,9 +16,9 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.io.hexToBytes
+import net.mamoe.mirai.utils.io.toByteArray
 import net.mamoe.mirai.utils.io.toUHexString
-import net.mamoe.mirai.utils.toByteArray
 import net.mamoe.mirai.utils.toExternalImage
 import java.io.File
 
@@ -34,6 +34,37 @@ private fun readTestAccount(): BotAccount? {
     } catch (e: IndexOutOfBoundsException) {
         null
     }
+}
+
+@Suppress("UNUSED_VARIABLE")
+suspend fun main() {
+    val bot = Bot(
+        readTestAccount() ?: BotAccount(//填写你的账号
+            id = 1994701121u,
+            password = "123456"
+        )
+    )
+
+    // 覆盖默认的配置
+    bot.login {
+        randomDeviceName = false
+    }.requireSuccess()
+
+    bot.messageDSL()
+    directlySubscribe(bot)
+
+    //DSL 监听
+    subscribeAll<FriendMessageEvent> {
+        always {
+            //获取第一个纯文本消息
+            val firstText = it.message.firstOrNull<PlainText>()
+
+        }
+    }
+
+    demo2()
+
+    bot.network.awaitDisconnection()//等到直到断开连接
 }
 
 /**
@@ -236,38 +267,6 @@ suspend fun directlySubscribe(bot: Bot) {
         }
     }
 }
-
-@Suppress("UNUSED_VARIABLE")
-suspend fun main() {
-    val bot = Bot(
-        readTestAccount() ?: BotAccount(//填写你的账号
-            id = 1994701121u,
-            password = "123456"
-        )
-    )
-
-    // 覆盖默认的配置
-    bot.login {
-        randomDeviceName = false
-    }.requireSuccess()
-
-    bot.messageDSL()
-    directlySubscribe(bot)
-
-    //DSL 监听
-    subscribeAll<FriendMessageEvent> {
-        always {
-            //获取第一个纯文本消息
-            val firstText = it.message.firstOrNull<PlainText>()
-
-        }
-    }
-
-    demo2()
-
-    bot.network.awaitDisconnection()//等到直到断开连接
-}
-
 
 /**
  * 实现功能:

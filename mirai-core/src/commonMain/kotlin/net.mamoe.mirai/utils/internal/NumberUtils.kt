@@ -12,6 +12,16 @@ internal fun Long.coerceAtLeastOrFail(value: Long): Long {
     return this
 }
 
+@PublishedApi
+internal fun Int.coerceAtMostOrFail(maximumValue: Int): Int =
+    if (this > maximumValue) error("value is greater than its expected maximum value $maximumValue")
+    else this
+
+@PublishedApi
+internal fun Long.coerceAtMostOrFail(maximumValue: Long): Long =
+    if (this > maximumValue) error("value is greater than its expected maximum value $maximumValue")
+    else this
+
 /**
  * 表示这个参数必须为正数
  */

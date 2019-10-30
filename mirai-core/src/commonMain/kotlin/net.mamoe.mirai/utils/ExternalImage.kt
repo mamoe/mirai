@@ -12,6 +12,7 @@ import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.message.image
 import net.mamoe.mirai.message.sendTo
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
+import net.mamoe.mirai.utils.io.toUHexString
 
 @Suppress("FunctionName")
 fun ExternalImage(

@@ -1,9 +1,7 @@
-apply plugin: 'kotlinx-atomicfu'
-apply plugin: "kotlin-multiplatform"
-
 kotlin {
     targets {
         fromPreset(presets.jvm, "jvm")
+        //fromPreset(presets.jvm, "android")
         //fromPreset(presets.mingwX64, "mingwX64")
     }
     jvm{
@@ -35,6 +33,7 @@ kotlin {
                 implementation "com.soywiz.korlibs.klock:klock:$klock_version"
 
                 api group: 'io.ktor', name: 'ktor-client-core', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-network', version: ktor_version
                 //api group: 'io.ktor', name: 'ktor-client-cio', version: ktor_version
                 //api group: 'io.ktor', name: 'ktor-client', version: ktor_version
                 api group: 'io.ktor', name: 'ktor-http', version: ktor_version
@@ -85,6 +84,28 @@ kotlin {
 
         jvmTest {
             apply plugin: 'java'
+        }
+
+
+        androidMain{
+            dependencies{
+                api 'com.google.android:android:4.1.1.4'
+                api 'com.android.support:support-annotations:26.1.0'
+
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
+                api group: 'org.jetbrains.kotlinx', name: 'atomicfu', version: atomicfu_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinxio_version
+                // api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io-jvm', version: kotlinxio_version
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesio_version
+
+                api group: 'io.ktor', name: 'ktor-http-cio', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-http', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-client-core-jvm', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-client-cio', version: ktor_version
+            }
         }
 
         all {

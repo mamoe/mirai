@@ -84,7 +84,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         0x00_58u -> ResponsePacket.Encrypted<HeartbeatPacket.Response>(this)
         0x03_88u -> ResponsePacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
         0x03_52u -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
-        0x01_BDu -> ResponsePacket.Encrypted<SubmitImageFilenamePacket.Response>(this)
+        // 0x01_BDu -> ResponsePacket.Encrypted<SubmitImageFilenamePacket.Response>(this)
 
         else -> UnknownServerPacket.Encrypted(this, id, sequenceId)
     }.applySequence(sequenceId)

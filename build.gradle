@@ -4,11 +4,12 @@ buildscript {
     repositories {
         mavenLocal()
         jcenter()
-        mavenCentral()
+        google()
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
     }
 
     dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfu_version"
     }
@@ -20,8 +21,8 @@ allprojects {
 
     repositories {
         mavenLocal()
-        mavenCentral()
         jcenter()
+        google()
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
     }
 }

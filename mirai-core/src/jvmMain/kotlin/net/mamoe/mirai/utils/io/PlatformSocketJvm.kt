@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Closeable
 import kotlinx.io.core.IoBuffer
-import kotlinx.io.errors.IOException
 import kotlinx.io.nio.read
 import java.net.InetSocketAddress
 import java.nio.channels.DatagramChannel
@@ -43,6 +42,56 @@ actual class PlatformDatagramChannel actual constructor(serverHost: String, serv
 
 actual typealias ClosedChannelException = java.nio.channels.ClosedChannelException
 
-actual class SendPacketInternalException actual constructor(cause: Throwable?) : IOException(cause)
 
-actual class ReadPacketInternalException actual constructor(cause: Throwable?) : IOException(cause)
+/*
+
+actual class PlatformDatagramChannel actual constructor(serverHost: String, serverPort: Short) : Closeable {
+    private val serverAddress: InetSocketAddress = InetSocketAddress(serverHost, serverPort.toInt())
+
+    @KtorExperimentalAPI
+    val socket = runBlocking { aSocket(ActorSelectorManager(Dispatchers.IO)).tcp()
+        .connect(remoteAddress = serverAddress) }
+
+    @KtorExperimentalAPI
+    val readChannel = socket.openReadChannel()
+
+    @KtorExperimentalAPI
+    val writeChannel = socket.openWriteChannel(true)
+
+    @KtorExperimentalAPI
+    @Throws(ReadPacketInternalException::class)
+    actual suspend fun read(buffer: IoBuffer) =
+        try {
+            readChannel.readAvailable(buffer)
+        } catch (e: ClosedChannelException) {
+            throw e
+        } catch (e: Throwable) {
+            throw ReadPacketInternalException(e)
+        }
+
+
+    @KtorExperimentalAPI
+    @Throws(SendPacketInternalException::class)
+    actual suspend fun send(buffer: IoBuffer) =
+        buffer.readDirect {
+            try {
+                writeChannel.writeFully(it)
+            } catch (e: ClosedChannelException) {
+                throw e
+            } catch (e: Throwable) {
+                throw SendPacketInternalException(e)
+            }
+        }
+
+
+    @KtorExperimentalAPI
+    @Throws(IOException::class)
+    override fun close() {
+        socket.close()
+    }
+
+    @KtorExperimentalAPI
+    actual val isOpen: Boolean
+        get() = socket.isClosed.not()
+}
+ */

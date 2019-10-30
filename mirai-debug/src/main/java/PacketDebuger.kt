@@ -15,9 +15,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.UnknownServerEventPacket
 import net.mamoe.mirai.utils.DecryptionFailedException
 import net.mamoe.mirai.utils.decryptBy
-import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.toUHexString
 import org.pcap4j.core.BpfProgram.BpfCompileMode
 import org.pcap4j.core.PacketListener
 import org.pcap4j.core.PcapNetworkInterface
@@ -135,7 +133,6 @@ object Main {
                 println("密文body=" + remaining.toUHexString())
                 println("解密body=解密失败")
             }
-
         }
     }
 

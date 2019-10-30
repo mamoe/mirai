@@ -9,8 +9,6 @@ import kotlinx.io.errors.IOException
  */
 expect class PlatformDatagramChannel(serverHost: String, serverPort: Short) : Closeable {
 
-    // TODO: 2019/10/27 使用 Ktor 的 socket
-
     suspend fun read(buffer: IoBuffer): Int
     suspend fun send(buffer: IoBuffer): Int
 
@@ -25,9 +23,9 @@ expect class ClosedChannelException : IOException
 /**
  * 在 [PlatformDatagramChannel.send] 或 [PlatformDatagramChannel.read] 时出现的错误.
  */
-expect class SendPacketInternalException(cause: Throwable?) : IOException
+class SendPacketInternalException(cause: Throwable?) : Exception(cause)
 
 /**
  * 在 [PlatformDatagramChannel.send] 或 [PlatformDatagramChannel.read] 时出现的错误.
  */
-expect class ReadPacketInternalException(cause: Throwable?) : IOException
+class ReadPacketInternalException(cause: Throwable?) : Exception(cause)

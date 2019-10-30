@@ -5,7 +5,6 @@ package net.mamoe.mirai.message.internal
 import kotlinx.io.core.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.toUHexString
 
 internal fun IoBuffer.parseMessageFace(): Face {
     //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
@@ -105,7 +104,7 @@ internal fun ByteReadPacket.readMessage(): Message? {
 
                 //后面似乎还有一节?
                 //discardExact(7)//02  00  04  00  00  00  23
-                return PlainText(value.toUHexString())
+                //return PlainText(value.toUHexString())
             }
 
             0x0E -> {

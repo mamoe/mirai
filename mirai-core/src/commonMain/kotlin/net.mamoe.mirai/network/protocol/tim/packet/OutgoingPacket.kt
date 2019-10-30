@@ -30,33 +30,22 @@ abstract class OutgoingPacket : Packet(), Closeable {
         internal fun atomicNextSequenceId() = sequenceIdInternal.getAndIncrement().toUShort()
     }
 
-    /**
-     * 务必 [ByteReadPacket.close] 或 [close] 或使用 [Closeable.use]
-     */
-    var packet: ByteReadPacket = Uninitialized
-        get() {
-            if (field === Uninitialized) build()
-            return field
-        }
-        private set
+    inline fun buildAndUse(block: (ByteReadPacket) -> Unit) {
+        buildPacket().use(block)
+    }
 
-    private fun build(): ByteReadPacket {
-        packet = buildPacket {
-            writeHex(TIMProtocol.head)
-            writeHex(TIMProtocol.ver)
-            writePacketId()
-            encode(this)
-            writeHex(TIMProtocol.tail)
-        }
-        return packet
+    @PublishedApi
+    internal fun buildPacket(): ByteReadPacket = buildPacket {
+        writeHex(TIMProtocol.head)
+        writeHex(TIMProtocol.ver)
+        writePacketId()
+        encode(this)
+        writeHex(TIMProtocol.tail)
     }
 
     override fun toString(): String = packetToString()
 
     override fun close() {
-        if (this.packet !== Uninitialized) {
-            this.packet.close()
-        }
     }
 
     private fun BytePacketBuilder.writePacketId() {

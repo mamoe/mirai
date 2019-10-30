@@ -7,7 +7,7 @@ import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import kotlinx.coroutines.*
-import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.stringOfWitch
 import net.mamoe.mirai.utils.readUnsignedVarInt

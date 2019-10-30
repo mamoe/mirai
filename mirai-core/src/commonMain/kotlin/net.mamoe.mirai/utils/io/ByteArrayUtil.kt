@@ -33,7 +33,7 @@ fun UByteArray.toUHexString(separator: String = " "): String = this.joinToString
     return@joinToString ret
 }
 
-fun ByteArray.toReadPacket() = ByteReadPacket(this)
+fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size) = ByteReadPacket(this, offset = offset, length = length)
 
 fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R = this.toReadPacket().use(t)
 

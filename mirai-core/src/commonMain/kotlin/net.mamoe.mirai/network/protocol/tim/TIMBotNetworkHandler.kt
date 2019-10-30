@@ -23,8 +23,11 @@ import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.log
+import net.mamoe.mirai.utils.solveCaptcha
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -35,7 +38,9 @@ import kotlin.coroutines.CoroutineContext
 internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
     override val coroutineContext: CoroutineContext =
-        Dispatchers.Default + CoroutineExceptionHandler { _, e -> bot.logger.log(e) } + SupervisorJob()
+        Dispatchers.Default + CoroutineExceptionHandler { _, e ->
+            bot.logger.log(e)
+        } + SupervisorJob()
 
 
     override lateinit var socket: BotSocketAdapter
@@ -56,13 +61,14 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
     override suspend fun login(configuration: BotNetworkConfiguration): LoginResult = withContext(this.coroutineContext) {
         TIMProtocol.SERVER_IP.forEach { ip ->
-            bot.logger.logInfo("Connecting server $ip")
+            bot.logger.logPurple("Connecting server $ip")
             socket = BotSocketAdapter(ip, configuration)
 
             loginResult = CompletableDeferred()
 
             socket.resendTouch().takeIf { it != LoginResult.TIMEOUT }?.let { return@withContext it }
 
+            println()
             bot.logger.logPurple("Timeout. Retrying next server")
 
             socket.close()
@@ -124,6 +130,9 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                 try {
                     channel.read(buffer)// JVM: withContext(IO)
+                } catch (e: ClosedChannelException) {
+                    close()
+                    return
                 } catch (e: ReadPacketInternalException) {
                     bot.logger.logError("Socket channel read failed: ${e.message}")
                     continue
@@ -133,6 +142,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     continue
                 } finally {
                     if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
+                        //bot.logger.logDebug("processReceive: Buffer cannot be read")
                         buffer.release(IoBuffer.Pool)
                         continue
                     }// sometimes exceptions are thrown without this `if` clause
@@ -153,7 +163,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
         }
 
-        internal suspend fun resendTouch(): LoginResult = coroutineScope {
+        internal suspend fun resendTouch(): LoginResult /* = coroutineScope */ {
             if (::loginHandler.isInitialized) loginHandler.close()
 
             loginHandler = LoginHandler(configuration)
@@ -168,7 +178,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
             sendPacket(TouchPacket(bot.qqAccount, serverIp))
 
-            return@coroutineScope loginResult.await()
+            return loginResult.await()
         }
 
         private suspend inline fun <reified P : ServerPacket> expectPacket(): CompletableDeferred<P> {
@@ -183,7 +193,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             return receiving
         }
 
-        override suspend fun distributePacket(packet: ServerPacket) = coroutineScope {
+        override suspend fun distributePacket(packet: ServerPacket) {
             try {
                 packet.decode()
             } catch (e: Exception) {
@@ -213,7 +223,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
 
                 if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled) {
-                    return@coroutineScope
+                    return
                 }
 
                 // They should be called in sequence because packet is lock-free
@@ -267,11 +277,12 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 return@withContext
             }
 
-            packet.packet.use { build ->
+            packet.buildAndUse { build ->
                 val buffer = IoBuffer.Pool.borrow()
                 try {
                     build.readAvailable(buffer)
-                    channel.send(buffer)//JVM: withContext(IO)
+                    val shouldBeSent = buffer.readRemaining
+                    check(channel.send(buffer) == shouldBeSent) { "Buffer is not entirely sent. Required sent length=$shouldBeSent, but after channel.send, buffer remains ${buffer.readBytes().toUHexString()}" }//JVM: withContext(IO)
                 } catch (e: SendPacketInternalException) {
                     bot.logger.logError("Caught SendPacketInternalException: ${e.cause?.message}")
                     bot.reinitializeNetworkHandler(configuration, e)

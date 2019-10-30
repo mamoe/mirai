@@ -3,13 +3,14 @@
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.internal.coerceAtMostOrFail
 import kotlin.random.Random
 import kotlin.random.nextInt
-
 
 fun BytePacketBuilder.writeZero(count: Int) = repeat(count) { this.writeByte(0) }
 
@@ -26,28 +27,25 @@ fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
 }
 
 
-// will box, but it doesn't matter
-private fun <N : Comparable<N>> N.coerceAtMostOrFail(maximumValue: N): N =
-    if (this > maximumValue) error("value is greater than its expected maximum value $maximumValue")
-    else this
-
-fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) = with(BytePacketBuilder().apply(builder).build()) {
-    if (tag != null) {
-        writeUByte(tag)
+fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
+    with(BytePacketBuilder().apply(builder).build()) {
+        if (tag != null) {
+            writeUByte(tag)
+        }
+        writeUShort((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL).toUShort())
+        writePacket(this)
+        this.release()
     }
-    writeUShort((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL).toUShort())
-    writePacket(this)
-    this.release()
-}
 
-fun BytePacketBuilder.writeUVarintLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) = with(BytePacketBuilder().apply(builder).build()) {
-    if (tag != null) {
-        writeUByte(tag)
+fun BytePacketBuilder.writeUVarintLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
+    with(BytePacketBuilder().apply(builder).build()) {
+        if (tag != null) {
+            writeUByte(tag)
+        }
+        writeUVarInt((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL))
+        writePacket(this)
+        this.release()
     }
-    writeUVarInt((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL))
-    writePacket(this)
-    this.release()
-}
 
 @Suppress("DEPRECATION")
 fun BytePacketBuilder.writeShortLVString(str: String) = this.writeShortLVByteArray(str.toByteArray())
@@ -100,10 +98,17 @@ fun BytePacketBuilder.writeTByteArray(tag: UByte, value: UByteArray) {
     this.writeFully(value)
 }
 
-fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.readBytes(), encoder)
-fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) = writeFully(TEA.encrypt(BytePacketBuilder().apply(encoder).use {
-    it.build().readBytes()
-}, key))
+/**
+ * 会使用 [ByteArrayPool] 缓存
+ */
+fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
+    BytePacketBuilder().apply(encoder).build().encryptBy(key) { decrypted -> writeFully(decrypted) }
+
+fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = ByteArrayPool.useInstance {
+    key.readFully(it, 0, key.readRemaining)
+    encryptAndWrite(it, encoder)
+}
+
 fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
 
 fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray) {

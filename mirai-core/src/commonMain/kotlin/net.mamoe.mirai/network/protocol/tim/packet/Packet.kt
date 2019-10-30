@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.io.toUHexString
 
 /**
  * 数据包.

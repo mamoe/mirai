@@ -84,8 +84,8 @@ class SubmitCaptchaPacket(
  */
 @PacketId(0x00_BAu)
 class OutgoingCaptchaRefreshPacket(
-        private val qq: UInt,
-        private val token0825: ByteArray
+    private val qq: UInt,
+    private val token0825: ByteArray
 ) : OutgoingPacket() {
     override fun encode(builder: BytePacketBuilder) = with(builder) {
         this.writeQQ(qq)
@@ -164,14 +164,14 @@ abstract class ServerCaptchaPacket(input: ByteReadPacket) : ServerPacket(input) 
     @PacketId(0x00_BAu)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         fun decrypt(): ServerCaptchaPacket {
-            val data = this.decryptAsByteArray(TIMProtocol.key00BA)
-
-            return when (data.size) {
-                66,
-                95 -> CaptchaCorrectPacket(data.toReadPacket())
-                //66 -> ServerCaptchaUnknownPacket(data.toReadPacket())
-                else -> CaptchaTransmissionResponsePacket(data.toReadPacket())
-            }.applySequence(sequenceId)
+            return this.decryptAsByteArray(TIMProtocol.key00BA) { data ->
+                when (data.size) {
+                    66,
+                    95 -> CaptchaCorrectPacket(data.toReadPacket())
+                    //66 -> ServerCaptchaUnknownPacket(data.toReadPacket())
+                    else -> CaptchaTransmissionResponsePacket(data.toReadPacket())
+                }.applySequence(sequenceId)
+            }
         }
     }
 }

@@ -10,7 +10,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.applySequence
 import net.mamoe.mirai.network.protocol.tim.packet.decryptBy
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.toByteArray
 
 /**
  * 事件的识别 ID. 在 [事件确认包][ServerEventPacket.ResponsePacket] 中被使用.

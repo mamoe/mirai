@@ -8,9 +8,7 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.toUHexString
 
 /**
  * The packet received when logging in, used to redirect server address

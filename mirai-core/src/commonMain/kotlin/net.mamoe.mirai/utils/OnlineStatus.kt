@@ -22,6 +22,8 @@ enum class OnlineStatus(
     BUSY(0x32u);
 
 
+    // TODO: 2019/10/29  what is 0x20u
+
     companion object {
         fun ofId(id: UByte): OnlineStatus? = values().firstOrNull { it.id == id }
     }

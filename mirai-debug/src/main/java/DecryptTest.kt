@@ -1,6 +1,6 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.stringOfWitch
 import net.mamoe.mirai.utils.io.toUHexString
 import java.io.ByteArrayInputStream

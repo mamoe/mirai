@@ -9,7 +9,7 @@ actual typealias PlatformLogger = Console
  * JVM 控制台日志实现
  */
 open class Console @JvmOverloads internal constructor(
-        override var identity: String? = null
+    override val identity: String? = null
 ) : MiraiLoggerPlatformBase() {
     override fun logGreen0(any: Any?) = println(any.toString(), LoggerTextFormat.GREEN)
     override fun logPurple0(any: Any?) = println(any.toString(), LoggerTextFormat.LIGHT_PURPLE)
@@ -17,7 +17,7 @@ open class Console @JvmOverloads internal constructor(
     override fun logCyan0(any: Any?) = println(any.toString(), LoggerTextFormat.LIGHT_CYAN)
     override fun logError0(any: Any?) = println(any.toString(), LoggerTextFormat.RED)
     override fun log0(e: Throwable) = e.printStackTrace()
-    override fun log0(any: Any?) = println(any.toString())//kotlin println
+    override fun log0(any: Any?) = println(any.toString(), LoggerTextFormat.WHITE)
     override fun logDebug0(any: Any?) {
         if (DEBUGGING) {
             println(any.toString(), LoggerTextFormat.YELLOW)

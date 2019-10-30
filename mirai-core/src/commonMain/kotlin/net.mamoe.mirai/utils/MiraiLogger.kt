@@ -17,7 +17,7 @@ interface MiraiLogger {
      */
     companion object : MiraiLogger by DefaultLogger("TOP Level")
 
-    var identity: String?
+    val identity: String?
 
     /**
      * 随从. 在 this 中调用所有方法后都应继续往 [follower] 传递调用.
@@ -74,7 +74,8 @@ interface MiraiLogger {
 
 /**
  * 平台基类.
- * 实现了 [follower] 的调用传递
+ * 实现了 [follower] 的调用传递.
+ * 若要自行实现日志记录, 请优先考虑继承 [PlatformLogger]
  */
 abstract class MiraiLoggerPlatformBase : MiraiLogger {
     final override var follower: MiraiLogger? = null
@@ -145,7 +146,7 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
 /**
  * 用于创建默认的日志记录器. 在一些需要使用日志的 Mirai 的组件, 如 [Bot], 都会通过这个函数构造日志记录器
  */
-var DefaultLogger: (identity: String?) -> PlatformLogger = { PlatformLogger() }
+var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger() }
 
 /**
  * 当前平台的默认的日志记录器.
@@ -153,7 +154,39 @@ var DefaultLogger: (identity: String?) -> PlatformLogger = { PlatformLogger() }
  *
  * 不应该直接构造这个类的实例. 需使用 [DefaultLogger]
  */
-expect class PlatformLogger @JvmOverloads internal constructor(identity: String? = null) : MiraiLoggerPlatformBase
+expect open class PlatformLogger @JvmOverloads internal constructor(identity: String? = null) : MiraiLoggerPlatformBase
+
+/**
+ * 不作任何事情的 logger
+ */
+@Suppress("unused")
+object NoLogger : PlatformLogger() {
+    override val identity: String? = null
+
+    override fun log0(e: Throwable) {
+    }
+
+    override fun log0(any: Any?) {
+    }
+
+    override fun logError0(any: Any?) {
+    }
+
+    override fun logDebug0(any: Any?) {
+    }
+
+    override fun logCyan0(any: Any?) {
+    }
+
+    override fun logPurple0(any: Any?) {
+    }
+
+    override fun logGreen0(any: Any?) {
+    }
+
+    override fun logBlue0(any: Any?) {
+    }
+}
 
 /**
  * 在顶层日志记录这个异常

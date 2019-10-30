@@ -6,11 +6,11 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.utils.TEA
-import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.io.cutTail
+import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.utils.decryptBy
+import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.parseServerPacket
-import net.mamoe.mirai.utils.io.readRemainingBytes
 import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.properties.Delegates
 
@@ -41,16 +41,32 @@ fun <S : ServerPacket> S.applySequence(sequenceId: UShort): S {
     return this
 }
 
-fun ServerPacket.decryptBy(key: ByteArray): ByteReadPacket = ByteReadPacket(decryptAsByteArray(key))
-fun ServerPacket.decryptBy(key: IoBuffer): ByteReadPacket = ByteReadPacket(decryptAsByteArray(key))
+fun ServerPacket.decryptBy(key: ByteArray): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+fun ServerPacket.decryptBy(key: IoBuffer): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
 fun ServerPacket.decryptBy(keyHex: String): ByteReadPacket = this.decryptBy(keyHex.hexToBytes())
 
-fun ServerPacket.decryptBy(key1: ByteArray, key2: ByteArray): ByteReadPacket = TEA.decrypt(this.decryptAsByteArray(key1), key2).toReadPacket()
+fun ServerPacket.decryptBy(key1: ByteArray, key2: ByteArray): ByteReadPacket =
+    this.decryptAsByteArray(key1) { data ->
+        data.decryptBy(key2).toReadPacket()
+    }
+
+
 fun ServerPacket.decryptBy(key1: String, key2: ByteArray): ByteReadPacket = this.decryptBy(key1.hexToBytes(), key2)
 fun ServerPacket.decryptBy(key1: String, key2: IoBuffer): ByteReadPacket = this.decryptBy(key1.hexToBytes(), key2.readBytes())
 fun ServerPacket.decryptBy(key1: ByteArray, key2: String): ByteReadPacket = this.decryptBy(key1, key2.hexToBytes())
 fun ServerPacket.decryptBy(keyHex1: String, keyHex2: String): ByteReadPacket = this.decryptBy(keyHex1.hexToBytes(), keyHex2.hexToBytes())
 
-fun ServerPacket.decryptAsByteArray(key: ByteArray): ByteArray = TEA.decrypt(input.readRemainingBytes().cutTail(1), key)
-fun ServerPacket.decryptAsByteArray(keyHex: String): ByteArray = this.decryptAsByteArray(keyHex.hexToBytes())
-fun ServerPacket.decryptAsByteArray(buffer: IoBuffer): ByteArray = this.decryptAsByteArray(buffer.readBytes())
+inline fun <R> ServerPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
+    ByteArrayPool.useInstance {
+        val length = input.remaining.toInt() - 1
+        input.readFully(it, 0, length)
+        consumer(it.decryptBy(key, length))
+    }.also { input.close() }
+
+inline fun <R> ServerPacket.decryptAsByteArray(keyHex: String, consumer: (ByteArray) -> R): R = this.decryptAsByteArray(keyHex.hexToBytes(), consumer)
+inline fun <R> ServerPacket.decryptAsByteArray(key: IoBuffer, consumer: (ByteArray) -> R): R =
+    ByteArrayPool.useInstance {
+        val length = input.remaining.toInt() - 1
+        input.readFully(it, 0, length)
+        consumer(it.decryptBy(key, length))
+    }.also { input.close() }

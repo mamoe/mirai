@@ -3,8 +3,6 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.core.*
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.toIoBuffer
 
 
 internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug")
@@ -78,5 +76,8 @@ internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstCons
     println()
 }
 
+/**
+ * TODO 这两个方法不应该 MPP
+ */
 expect fun printCompareHex(hex1s: String, hex2s: String): String
 expect fun String.printColorize(ignoreUntilFirstConst: Boolean = false): String

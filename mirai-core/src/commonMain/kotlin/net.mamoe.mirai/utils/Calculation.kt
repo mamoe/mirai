@@ -3,6 +3,7 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
+import net.mamoe.mirai.utils.io.getRandomByteArray
 
 private const val GTK_BASE_VALUE: Int = 5381
 
