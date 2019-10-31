@@ -60,7 +60,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
     override suspend fun login(configuration: BotNetworkConfiguration): LoginResult = withContext(this.coroutineContext) {
         TIMProtocol.SERVER_IP.forEach { ip ->
-            bot.logger.warning("Connecting server $ip")
+            bot.logger.info("Connecting server $ip")
             socket = BotSocketAdapter(ip, configuration)
 
             loginResult = CompletableDeferred()
@@ -290,7 +290,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
             }
 
-            bot.logger.info("Packet sent:     $packet")
+            bot.logger.verbose("Packet sent:     $packet")
 
             PacketSentEvent(bot, packet).broadcast()
 
@@ -338,7 +338,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     if (packet.serverIP != null) {//redirection
                         socket.close()
                         socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
-                        bot.logger.warning("Redirecting to ${packet.serverIP}")
+                        bot.logger.info("Redirecting to ${packet.serverIP}")
                         loginResult.complete(socket.resendTouch())
                     } else {//password submission
                         this.loginIP = packet.loginIP

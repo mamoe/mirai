@@ -63,10 +63,9 @@ kotlin {
         dependencies {
             implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
-            implementation("io.ktor:ktor-http-cio:$ktorVersion")
             implementation("io.ktor:ktor-http:$ktorVersion")
-            implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
-            implementation("io.ktor:ktor-client-cio:$ktorVersion")
+            implementation("io.ktor:ktor-client-core:$ktorVersion")
+            implementation("io.ktor:ktor-client-android:$ktorVersion")
 
         }
         languageSettings.enableLanguageFeature("InlineClasses")
@@ -85,6 +84,10 @@ kotlin {
             implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
         }
+    }
+
+    sourceSets["jvmTest"].apply {
+        kotlin.setSrcDirs(listOf("src/$name/kotlin"))
     }
 
     sourceSets.forEach {
