@@ -3,6 +3,23 @@ package net.mamoe.mirai.utils
 import net.mamoe.mirai.Bot
 import kotlin.jvm.JvmOverloads
 
+
+/**
+ * 用于创建默认的日志记录器. 在一些需要使用日志的 Mirai 的组件, 如 [Bot], 都会通过这个函数构造日志记录器
+ * 可直接修改这个变量的值来重定向日志输出.
+ */
+var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger() }
+
+/**
+ * 当前平台的默认的日志记录器.
+ * 在 _JVM 控制台_ 端的实现为 [println]
+ * 在 _Android_ 端的实现为 [android.util.Log]
+ *
+ * 不应该直接构造这个类的实例. 请使用 [DefaultLogger]
+ */
+expect open class PlatformLogger @JvmOverloads internal constructor(identity: String? = null) : MiraiLoggerPlatformBase
+
+
 /**
  * 日志记录器. 所有的输出均依赖于它.
  * 不同的对象可能拥有只属于自己的 logger. 通过 [identity] 来区分.
@@ -28,38 +45,67 @@ interface MiraiLogger {
      * val bot = Bot( ... )
      * bot.follower = MyOwnLogger()
      *
-     * bot.logInfo("Hi")
+     * bot.info("Hi")
      * ```
      * 在这个例子中的 `MyOwnLogger` 将可以记录到 "Hi".
      */
     var follower: MiraiLogger?
 
-    fun logInfo(any: Any?) = log(any)
+    /**
+     * 记录一个 `verbose` 级别的日志.
+     */
+    fun verbose(any: Any?)
 
-    fun log(e: Throwable)
+    fun verbose(e: Throwable?) = verbose(null, e)
+    fun verbose(message: String?, e: Throwable?)
 
-    fun log(any: Any?)
+    /**
+     * 记录一个 `debug` 级别的日志.
+     */
+    fun debug(any: Any?)
 
-    fun logError(any: Any?)
+    fun debug(e: Throwable?) = debug(null, e)
+    fun debug(message: String?, e: Throwable?)
 
-    fun logError(e: Throwable) = log(e)
 
-    fun logDebug(any: Any?)
+    /**
+     * 记录一个 `info` 级别的日志.
+     */
+    fun info(any: Any?)
 
-    fun logCyan(any: Any?)
+    fun info(e: Throwable?) = info(null, e)
+    fun info(message: String?, e: Throwable?)
 
-    fun logPurple(any: Any?)
 
-    fun logGreen(any: Any?)
+    /**
+     * 记录一个 `warning` 级别的日志.
+     */
+    fun warning(any: Any?)
 
-    fun logBlue(any: Any?)
+    fun warning(e: Throwable?) = warning(null, e)
+    fun warning(message: String?, e: Throwable?)
+
+
+    /**
+     * 记录一个 `error` 级别的日志.
+     */
+    fun error(e: Any?)
+
+    fun error(e: Throwable?) = error(null, e)
+    fun error(message: String?, e: Throwable?)
+
 
     /**
      * 添加一个 [follower], 返回 [follower]
      * 它只会把 `this` 的属性 [MiraiLogger.follower] 修改为这个函数的参数 [follower], 然后返回这个参数.
      * 若 [MiraiLogger.follower] 已经有值, 则会替换掉这个值.
      *
+     *   +------+      +----------+      +----------+      +----------+
+     *   | base | <--  | follower | <--  | follower | <--  | follower |
+     *   +------+      +----------+      +----------+      +----------+
+     *
      * @see follower
+     * @return [follower]
      */
     operator fun plus(follower: MiraiLogger): MiraiLogger
 
@@ -73,6 +119,29 @@ interface MiraiLogger {
 }
 
 /**
+ * 不做任何事情的 logger, keep silent.
+ */
+@Suppress("unused")
+object Silent : PlatformLogger() {
+    override val identity: String? = null
+
+    override fun error0(any: Any?) {
+    }
+
+    override fun debug0(any: Any?) {
+    }
+
+    override fun warning0(any: Any?) {
+    }
+
+    override fun verbose0(any: Any?) {
+    }
+
+    override fun info0(any: Any?) {
+    }
+}
+
+/**
  * 平台基类.
  * 实现了 [follower] 的调用传递.
  * 若要自行实现日志记录, 请优先考虑继承 [PlatformLogger]
@@ -80,58 +149,66 @@ interface MiraiLogger {
 abstract class MiraiLoggerPlatformBase : MiraiLogger {
     final override var follower: MiraiLogger? = null
 
-    final override fun logInfo(any: Any?) = log(any)
-
-    final override fun log(e: Throwable) {
-        log0(e)
-        follower?.log(e)
+    final override fun verbose(any: Any?) {
+        follower?.verbose(any)
+        verbose0(any)
     }
 
-    final override fun log(any: Any?) {
-        log0(any)
-        follower?.log(any)
+    final override fun verbose(message: String?, e: Throwable?) {
+        follower?.verbose(message, e)
+        verbose0(message, e)
     }
 
-    final override fun logError(any: Any?) {
-        logError0(any)
-        follower?.logError(any)
+    final override fun debug(any: Any?) {
+        follower?.debug(any)
+        debug0(any)
     }
 
-    override fun logError(e: Throwable) = log(e)
-
-    final override fun logDebug(any: Any?) {
-        logDebug0(any)
-        follower?.logDebug(any)
+    final override fun debug(message: String?, e: Throwable?) {
+        follower?.debug(message, e)
+        debug0(message, e)
     }
 
-    final override fun logCyan(any: Any?) {
-        logCyan0(any)
-        follower?.logCyan(any)
+    final override fun info(any: Any?) {
+        follower?.info(any)
+        info0(any)
     }
 
-    final override fun logPurple(any: Any?) {
-        logPurple0(any)
-        follower?.logPurple(any)
+    final override fun info(message: String?, e: Throwable?) {
+        follower?.info(message, e)
+        info0(message, e)
     }
 
-    final override fun logGreen(any: Any?) {
-        logGreen0(any)
-        follower?.logGreen(any)
+    final override fun warning(any: Any?) {
+        follower?.warning(any)
+        warning0(any)
     }
 
-    final override fun logBlue(any: Any?) {
-        logBlue0(any)
-        follower?.logBlue(any)
+    final override fun warning(message: String?, e: Throwable?) {
+        follower?.warning(message, e)
+        warning0(message, e)
     }
 
-    protected abstract fun log0(e: Throwable)
-    protected abstract fun log0(any: Any?)
-    protected abstract fun logError0(any: Any?)
-    protected abstract fun logDebug0(any: Any?)
-    protected abstract fun logCyan0(any: Any?)
-    protected abstract fun logPurple0(any: Any?)
-    protected abstract fun logGreen0(any: Any?)
-    protected abstract fun logBlue0(any: Any?)
+    final override fun error(e: Any?) {
+        follower?.error(e)
+        error0(e)
+    }
+
+    final override fun error(message: String?, e: Throwable?) {
+        follower?.error(message, e)
+        error0(message, e)
+    }
+
+    protected abstract fun verbose0(any: Any?)
+    protected abstract fun verbose0(message: String?, e: Throwable?)
+    protected abstract fun debug0(any: Any?)
+    protected abstract fun debug0(message: String?, e: Throwable?)
+    protected abstract fun info0(any: Any?)
+    protected abstract fun info0(message: String?, e: Throwable?)
+    protected abstract fun warning0(any: Any?)
+    protected abstract fun warning0(message: String?, e: Throwable?)
+    protected abstract fun error0(any: Any?)
+    protected abstract fun error0(message: String?, e: Throwable?)
 
     override fun plus(follower: MiraiLogger): MiraiLogger {
         this.follower = follower
@@ -142,53 +219,3 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         if (this.follower == null) this.follower = follower
         else this.follower!! += follower
 }
-
-/**
- * 用于创建默认的日志记录器. 在一些需要使用日志的 Mirai 的组件, 如 [Bot], 都会通过这个函数构造日志记录器
- */
-var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger() }
-
-/**
- * 当前平台的默认的日志记录器.
- * 在 _JVM 控制台_ 端的实现为 [println]
- *
- * 不应该直接构造这个类的实例. 需使用 [DefaultLogger]
- */
-expect open class PlatformLogger @JvmOverloads internal constructor(identity: String? = null) : MiraiLoggerPlatformBase
-
-/**
- * 不作任何事情的 logger
- */
-@Suppress("unused")
-object NoLogger : PlatformLogger() {
-    override val identity: String? = null
-
-    override fun log0(e: Throwable) {
-    }
-
-    override fun log0(any: Any?) {
-    }
-
-    override fun logError0(any: Any?) {
-    }
-
-    override fun logDebug0(any: Any?) {
-    }
-
-    override fun logCyan0(any: Any?) {
-    }
-
-    override fun logPurple0(any: Any?) {
-    }
-
-    override fun logGreen0(any: Any?) {
-    }
-
-    override fun logBlue0(any: Any?) {
-    }
-}
-
-/**
- * 在顶层日志记录这个异常
- */
-fun Throwable.log() = MiraiLogger.log(this)

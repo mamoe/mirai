@@ -26,7 +26,6 @@ import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.log
 import net.mamoe.mirai.utils.solveCaptcha
 import kotlin.coroutines.CoroutineContext
 
@@ -39,7 +38,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
     override val coroutineContext: CoroutineContext =
         Dispatchers.Default + CoroutineExceptionHandler { _, e ->
-            bot.logger.log(e)
+            bot.logger.error(e)
         } + SupervisorJob()
 
 
@@ -61,7 +60,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
     override suspend fun login(configuration: BotNetworkConfiguration): LoginResult = withContext(this.coroutineContext) {
         TIMProtocol.SERVER_IP.forEach { ip ->
-            bot.logger.logPurple("Connecting server $ip")
+            bot.logger.warning("Connecting server $ip")
             socket = BotSocketAdapter(ip, configuration)
 
             loginResult = CompletableDeferred()
@@ -69,7 +68,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             socket.resendTouch().takeIf { it != LoginResult.TIMEOUT }?.let { return@withContext it }
 
             println()
-            bot.logger.logPurple("Timeout. Retrying next server")
+            bot.logger.warning("Timeout. Retrying next server")
 
             socket.close()
         }
@@ -86,7 +85,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
         add(EventPacketHandler(session).asNode(EventPacketHandler))
         add(ActionPacketHandler(session).asNode(ActionPacketHandler))
-        bot.logger.logPurple("Successfully logged in")
+        bot.logger.warning("Successfully logged in")
     }
 
     private lateinit var sessionKey: ByteArray
@@ -134,15 +133,14 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     close()
                     return
                 } catch (e: ReadPacketInternalException) {
-                    bot.logger.logError("Socket channel read failed: ${e.message}")
+                    bot.logger.error("Socket channel read failed: ${e.message}")
                     continue
                 } catch (e: Throwable) {
-                    bot.logger.logError("Caught unexpected exceptions")
-                    bot.logger.logError(e)
+                    bot.logger.error("Caught unexpected exceptions", e)
                     continue
                 } finally {
                     if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
-                        //bot.logger.logDebug("processReceive: Buffer cannot be read")
+                        //bot.logger.debug("processReceive: Buffer cannot be read")
                         buffer.release(IoBuffer.Pool)
                         continue
                     }// sometimes exceptions are thrown without this `if` clause
@@ -156,7 +154,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                         try {
                             distributePacket(it.parseServerPacket(buffer.readRemaining))
                         } catch (e: Exception) {
-                            bot.logger.logError(e)
+                            bot.logger.error(e)
                         }
                     }
                 }
@@ -197,17 +195,17 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             try {
                 packet.decode()
             } catch (e: Exception) {
-                e.log()
-                bot.logger.logDebug("Packet=$packet")
-                bot.logger.logDebug("Packet size=" + packet.input.readBytes().size)
-                bot.logger.logDebug("Packet data=" + packet.input.readBytes().toUHexString())
+                bot.logger.error("When distributePacket", e)
+                bot.logger.debug("Packet=$packet")
+                bot.logger.debug("Packet size=" + packet.input.readBytes().size)
+                bot.logger.debug("Packet data=" + packet.input.readBytes().toUHexString())
                 packet.close()
                 throw e
             }
 
             packet.use {
                 packet::class.simpleName?.takeIf { !it.endsWith("Encrypted") && !it.endsWith("Raw") }?.let {
-                    bot.logger.logCyan("Packet received: $packet")
+                    bot.logger.verbose("Packet received: $packet")
                 }
 
                 // Remove first to release the lock
@@ -284,7 +282,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     val shouldBeSent = buffer.readRemaining
                     check(channel.send(buffer) == shouldBeSent) { "Buffer is not entirely sent. Required sent length=$shouldBeSent, but after channel.send, buffer remains ${buffer.readBytes().toUHexString()}" }//JVM: withContext(IO)
                 } catch (e: SendPacketInternalException) {
-                    bot.logger.logError("Caught SendPacketInternalException: ${e.cause?.message}")
+                    bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
                     bot.reinitializeNetworkHandler(configuration, e)
                     return@withContext
                 } finally {
@@ -292,7 +290,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
             }
 
-            bot.logger.logGreen("Packet sent:     $packet")
+            bot.logger.info("Packet sent:     $packet")
 
             PacketSentEvent(bot, packet).broadcast()
 
@@ -340,7 +338,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                     if (packet.serverIP != null) {//redirection
                         socket.close()
                         socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
-                        bot.logger.logPurple("Redirecting to ${packet.serverIP}")
+                        bot.logger.warning("Redirecting to ${packet.serverIP}")
                         loginResult.complete(socket.resendTouch())
                     } else {//password submission
                         this.loginIP = packet.loginIP
@@ -406,7 +404,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 is CaptchaTransmissionResponsePacket -> {
                     //packet is ServerCaptchaWrongPacket
                     if (this.captchaSectionId == 0) {
-                        bot.logger.logPurple("验证码错误, 请重新输入")
+                        bot.logger.warning("验证码错误, 请重新输入")
                         this.captchaSectionId = 1
                         this.captchaCache = null
                     }
@@ -478,7 +476,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                 is SessionKeyResponsePacket -> {
                     sessionKey = packet.sessionKey
-                    bot.logger.logPurple("sessionKey = ${sessionKey.toUHexString()}")
+                    bot.logger.warning("sessionKey = ${sessionKey.toUHexString()}")
 
                     heartbeatJob = launch {
                         while (socket.isOpen) {
@@ -492,7 +490,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                                             sessionKey
                                         ).sendAndExpect<HeartbeatPacket.Response>().join()
                                     } == null) {
-                                    bot.logger.logPurple("Heartbeat timed out")
+                                    bot.logger.warning("Heartbeat timed out")
                                     bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
                                     return@launch
                                 }

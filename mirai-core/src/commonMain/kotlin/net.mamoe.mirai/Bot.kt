@@ -14,7 +14,6 @@ import net.mamoe.mirai.utils.BotNetworkConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
-import net.mamoe.mirai.utils.log
 import kotlin.jvm.JvmOverloads
 
 data class BotAccount(
@@ -75,11 +74,11 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         configuration: BotNetworkConfiguration,
         cause: Throwable? = null
     ): LoginResult {
-        logger.logPurple("Reinitializing BotNetworkHandler")
+        logger.warning("Reinitializing BotNetworkHandler")
         try {
             network.close(cause)
         } catch (e: Exception) {
-            e.log()
+            logger.error(e)
         }
         network = TIMBotNetworkHandler(this)
         return network.login(configuration)

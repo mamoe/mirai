@@ -40,8 +40,8 @@ class RequestSKeyPacket(
             discardExact(4)
             //debugDiscardExact(2)
             sKey = this.readString(10)//16??
-            DebugLogger.logPurple("SKey=$sKey")
-            DebugLogger.logPurple("SKey 包后面${this.readRemainingBytes().toUHexString()}")
+            DebugLogger.warning("SKey=$sKey")
+            DebugLogger.warning("SKey 包后面${this.readRemainingBytes().toUHexString()}")
         }
     }
 }

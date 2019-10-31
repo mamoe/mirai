@@ -10,7 +10,6 @@ import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.log
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmOverloads
@@ -44,7 +43,7 @@ abstract class Event {
 
     init {
         if (EventDebuggingFlag) {
-            EventLogger.logDebug(this::class.simpleName + " created")
+            EventLogger.debug(this::class.simpleName + " created")
         }
     }
 }
@@ -66,20 +65,20 @@ interface Cancellable {
 
 /**
  * 广播一个事件的唯一途径.
- * 若 [context] 不包含 [CoroutineExceptionHandler], 将会使用默认的异常捕获, 即 [log]
+ * 若 [context] 不包含 [CoroutineExceptionHandler], 将会使用默认的异常捕获, 即 [error]
  * 也就是说, 这个方法不会抛出异常, 只会把异常交由 [context] 捕获
  */
 @Suppress("UNCHECKED_CAST")
 @JvmOverloads
 suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
     if (EventDebuggingFlag) {
-        EventLogger.logDebug(this::class.simpleName + " pre broadcast")
+        EventLogger.debug(this::class.simpleName + " pre broadcast")
     }
     try {
         return withContext(EventScope.coroutineContext + context) { this@broadcast.broadcastInternal() }
     } finally {
         if (EventDebuggingFlag) {
-            EventLogger.logDebug(this::class.simpleName + " after broadcast")
+            EventLogger.debug(this::class.simpleName + " after broadcast")
         }
     }
 }

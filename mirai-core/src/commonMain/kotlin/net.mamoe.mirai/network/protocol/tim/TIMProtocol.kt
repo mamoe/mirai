@@ -2,9 +2,6 @@
 
 package net.mamoe.mirai.network.protocol.tim
 
-import net.mamoe.mirai.utils.solveIpAddress
-
-
 object TIMProtocol {
     val SERVER_IP: List<String> = {
         //add("183.60.56.29")
@@ -17,7 +14,7 @@ object TIMProtocol {
                 "sz8.tencent.com",
                 "sz9.tencent.com",
                 "sz2.tencent.com"
-        ).forEach { list.add(solveIpAddress(it)) }
+        ).forEach { list.add(it) }
 
         list.toList()
     }()//不使用lazy, 在初始化时就加载.

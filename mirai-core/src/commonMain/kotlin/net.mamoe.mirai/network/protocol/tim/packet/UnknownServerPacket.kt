@@ -16,7 +16,7 @@ class UnknownServerPacket(
 ) : ServerPacket(input) {
     override fun decode() {
         val raw = this.input.readBytes()
-        MiraiLogger.logDebug("UnknownServerPacket data: " + raw.toUHexString())
+        MiraiLogger.debug("UnknownServerPacket data: " + raw.toUHexString())
     }
 
     class Encrypted(

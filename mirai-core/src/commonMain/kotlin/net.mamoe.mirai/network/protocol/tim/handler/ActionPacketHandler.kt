@@ -14,7 +14,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
 import net.mamoe.mirai.network.qqAccount
-import net.mamoe.mirai.utils.log
 
 /**
  * 动作: 获取好友列表, 点赞, 踢人等.
@@ -50,7 +49,7 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
                             try {
                                 requestSKey()
                             } catch (e: Throwable) {
-                                e.log()
+                                bot.logger.error(e)
                             }
                         }
                     }

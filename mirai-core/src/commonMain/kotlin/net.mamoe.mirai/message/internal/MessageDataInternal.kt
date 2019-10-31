@@ -33,7 +33,7 @@ internal fun IoBuffer.parseLongText0x19(): PlainText {
 
 internal fun IoBuffer.parseMessageImage0x06(): Image {
     discardExact(1)
-    //MiraiLogger.logDebug(this.toUHexString())
+    //MiraiLogger.debug(this.toUHexString())
     val filenameLength = readShort()
 
     discardExact(filenameLength.toInt())

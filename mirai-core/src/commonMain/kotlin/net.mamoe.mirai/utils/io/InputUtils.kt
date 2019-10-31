@@ -47,7 +47,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
                 135 -> {//包数据错误. 目前怀疑是 tlv0006
                     this.readRemainingBytes().cutTail(1).decryptBy(TIMProtocol.shareKey).read {
                         discardExact(51)
-                        MiraiLogger.logError("Internal logError: " + readLVString())//抱歉，请重新输入密码。
+                        MiraiLogger.error("Internal error: " + readLVString())//抱歉，请重新输入密码。
                     }
 
                     LoginResult.INTERNAL_ERROR
@@ -63,8 +63,8 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
                 else -> LoginResult.UNKNOWN
                 /*
                 //unknown
-                63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown logError)")
-                351 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown logError)")
+                63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
+                351 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
 
                 else -> throw IllegalArgumentException(bytes.size.toString())*/
             }, this).applySequence(sequenceId)

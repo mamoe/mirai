@@ -1,5 +1,7 @@
 package net.mamoe.mirai.utils
 
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -11,21 +13,41 @@ actual typealias PlatformLogger = Console
 open class Console @JvmOverloads internal constructor(
     override val identity: String? = null
 ) : MiraiLoggerPlatformBase() {
-    override fun logGreen0(any: Any?) = println(any.toString(), LoggerTextFormat.GREEN)
-    override fun logPurple0(any: Any?) = println(any.toString(), LoggerTextFormat.LIGHT_PURPLE)
-    override fun logBlue0(any: Any?) = println(any.toString(), LoggerTextFormat.BLUE)
-    override fun logCyan0(any: Any?) = println(any.toString(), LoggerTextFormat.LIGHT_CYAN)
-    override fun logError0(any: Any?) = println(any.toString(), LoggerTextFormat.RED)
-    override fun log0(e: Throwable) = e.printStackTrace()
-    override fun log0(any: Any?) = println(any.toString(), LoggerTextFormat.WHITE)
-    override fun logDebug0(any: Any?) {
-        if (DEBUGGING) {
-            println(any.toString(), LoggerTextFormat.YELLOW)
-        }
+    override fun verbose0(any: Any?) = println(any.toString(), LoggerTextFormat.LIGHT_GRAY)
+    override fun verbose0(message: String?, e: Throwable?) {
+        verbose(message.toString())
+        e?.printStackTrace()
+    }
+
+    override fun info0(any: Any?) = println(any.toString(), LoggerTextFormat.GREEN)
+    override fun info0(message: String?, e: Throwable?) {
+        info(message.toString())
+        e?.printStackTrace()
+    }
+
+    override fun warning0(any: Any?) = println(any.toString(), LoggerTextFormat.YELLOW)
+    override fun warning0(message: String?, e: Throwable?) {
+        warning(message.toString())
+        e?.printStackTrace()
+    }
+
+    override fun error0(any: Any?) = println(any.toString(), LoggerTextFormat.RED)
+    override fun error0(message: String?, e: Throwable?) {
+        error(message.toString())
+        e?.printStackTrace()
+    }
+
+    override fun debug0(any: Any?) {
+        println(any.toString(), LoggerTextFormat.CYAN)
+    }
+
+    override fun debug0(message: String?, e: Throwable?) {
+        debug(message.toString())
+        e?.printStackTrace()
     }
 
     private fun println(value: String?, color: LoggerTextFormat) {
-        val time = SimpleDateFormat("HH:mm:ss").format(Date())
+        val time = SimpleDateFormat("HH:mm:ss", Locale.SIMPLIFIED_CHINESE).format(Date())
 
         if (identity == null) {
             println("$color$time : $value")
@@ -35,8 +57,6 @@ open class Console @JvmOverloads internal constructor(
     }
 }
 
-private val DEBUGGING: Boolean by lazy {
-    //todo 添加环境变量检测
-    //avoid inspections
-    true
-}
+@Suppress("unused")
+val Throwable.stacktraceString: String
+    get() = ByteArrayOutputStream().also { printStackTrace(PrintStream(it)) }.toString()

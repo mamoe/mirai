@@ -31,11 +31,6 @@ expect fun crc32(key: ByteArray): Int
 expect fun md5(byteArray: ByteArray): ByteArray
 
 /**
- * Hostname 解析 IP 地址
- */
-expect fun solveIpAddress(hostname: String): String // TODO: 2019/10/28 是否有必要?
-
-/**
  * Localhost 解析
  */
 expect fun localIpAddress(): String

@@ -50,7 +50,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
             )
             discardExact(2)
             val type = readUShort()
-            //DebugLogger.logPurple("unknown2Byte+byte = ${unknown2Byte.toUHexString()} ${type.toUHexString()}")
+            //DebugLogger.warning("unknown2Byte+byte = ${unknown2Byte.toUHexString()} ${type.toUHexString()}")
             return when (type.toUInt()) {
                 0x00C4u -> {
                     discardExact(13)
@@ -90,7 +90,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                 //"02 10", "00 12" -> ServerUnknownEventPacket(input, eventIdentity)
 
                 else -> {//0x00 79u, 可能是正在输入的包
-                    MiraiLogger.logDebug("UnknownEvent type = ${type.toByteArray().toUHexString()}")
+                    MiraiLogger.debug("UnknownEvent type = ${type.toByteArray().toUHexString()}")
                     UnknownServerEventPacket(input, eventIdentity)
                 }
             }.applyId(id).applySequence(sequenceId)
@@ -126,7 +126,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 class IgnoredServerEventPacket(val eventId: ByteArray, private val showData: Boolean = false, input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
     override fun decode() {
         if (showData) {
-            MiraiLogger.logDebug("IgnoredServerEventPacket data: " + this.input.readBytes().toUHexString())
+            MiraiLogger.debug("IgnoredServerEventPacket data: " + this.input.readBytes().toUHexString())
         } else {
             this.input.discard()
         }
@@ -138,6 +138,6 @@ class IgnoredServerEventPacket(val eventId: ByteArray, private val showData: Boo
  */
 class UnknownServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
     override fun decode() {
-        MiraiLogger.logDebug("UnknownServerEventPacket data: " + this.input.readBytes().toUHexString())
+        MiraiLogger.debug("UnknownServerEventPacket data: " + this.input.readBytes().toUHexString())
     }
 }

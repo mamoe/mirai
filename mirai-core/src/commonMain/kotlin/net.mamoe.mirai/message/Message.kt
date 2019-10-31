@@ -13,18 +13,34 @@ import net.mamoe.mirai.utils.ExternalImage
  * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
  * **在 Kotlin 使用 [Message]**
- *  这与使用 [String] 的使用非常类似.
+ * 这与使用 [String] 的使用非常类似.
  *
- *  比较 [Message] 与 [String] (使用 infix [Message.eq]):
+ * 比较 [Message] 与 [String] (使用 infix [Message.eq]):
  *  `if(event eq "你好") qq.sendMessage(event)`
  *
- *  连接 [Message] 与 [Message], [String], (使用 operator [Message.plus]):
- *  ```
+ * 连接 [Message] 与 [Message], [String], (使用 operator [Message.plus]):
+ *  ```kotlin
  *      event = PlainText("Hello ")
  *      qq.sendMessage(event + "world")
  *  ```
  *
- *  但注意: 不能 `String + Message`. 只能 `Message + String`
+ * `Message1 + Message2 + Message3`, 类似 [String] 的连接:
+ *
+ *   +----------+   plus  +----------+   plus  +----------+
+ *   | Message1 | <------ | Message2 | <------ | Message3 |
+ *   +----------+         +----------+         +----------+
+ *        |                    |                    |
+ *        +--------------------+--------------------+
+ *                             |
+ *                             | 构成
+ *                             |
+ *                             V
+ *                      +--------------+
+ *                      | MessageChain |
+ *                      +--------------+
+ *
+ *
+ * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
  * @see PlainText 纯文本
  * @see Image 图片
@@ -49,7 +65,7 @@ interface Message {
      * 除 [MessageChain] 外, 每个 [Message] 类型都拥有一个`伴生对象`(companion object) 来持有一个 Key
      * 在 [MessageChain.get] 时将会使用到这个 Key 进行判断类型.
      *
-     * @param M 指代持有它的消息类型
+     * @param M 指代持有这个 Key 的消息类型
      */
     interface Key<M : Message>
 

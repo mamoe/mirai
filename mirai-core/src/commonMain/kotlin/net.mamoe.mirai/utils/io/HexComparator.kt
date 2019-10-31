@@ -1,11 +1,79 @@
-@file:Suppress("ObjectPropertyName", "MayBeConstant", "NonAsciiCharacters", "SpellCheckingInspection")
+@file:Suppress("ObjectPropertyName", "MayBeConstant", "NonAsciiCharacters", "SpellCheckingInspection", "unused")
 
 package net.mamoe.mirai.utils.io
 
+import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import java.lang.reflect.Field
-import java.util.*
 import kotlin.math.max
+import kotlin.reflect.KProperty
+
+/**
+ * 匹配已知 hex 常量并格式化后打印到控制台.
+ *
+ * 低效率, 仅调试使用.
+ */
+internal fun String.printColorize(ignoreUntilFirstConst: Boolean): String = with(HexComparator) { colorize(ignoreUntilFirstConst) }
+
+/**
+ * 比较两个 hex 并格式化后打印到控制台.
+ *
+ * 低效率, 仅调试使用.
+ */
+internal fun printCompareHex(hex1s: String, hex2s: String): String = with(HexComparator) { compare(hex1s, hex2s) }
+
+data class NamedHexElement(
+    val name: String,
+    val value: String
+)
+
+/**
+ * 初始化用于匹配的 Hex 列表
+ */
+private fun LinkedHashSet<NamedHexElement>.initConstFileds() {
+    listOf(
+        TestConsts,
+        TIMProtocol,
+        PacketIds
+    ).forEach { obj ->
+        obj::class.members.filterIsInstance<KProperty<*>>().forEach { property ->
+            add(NamedHexElement(property.name, property.getter.call().toString()))
+        }
+    }
+}
+
+private object TestConsts {
+    val NIU_BI = "牛逼".toByteArray().toUHexString()
+    val _1994701021 = 1994701021.toUHexString(" ")
+    val _1040400290 = 1040400290.toUHexString(" ")
+    val _580266363 = 580266363.toUHexString(" ")
+
+    val _1040400290_ = "3E 03 3F A2"
+    val _1994701021_ = "76 E4 B8 DD"
+    val _jiahua_ = "B1 89 BE 09"
+    val _Him188moe_ = "Him188moe".toByteArray().toUHexString()
+    val 发图片2 = "发图片2".toByteArray().toUHexString()
+    val 发图片群 = "发图片群".toByteArray().toUHexString()
+    val 发图片 = "发图片".toByteArray().toUHexString()
+    val 群 = "群".toByteArray().toUHexString()
+    val 你好 = "你好".toByteArray().toUHexString()
+
+    val MESSAGE_TAIL_10404 =
+        "0E  00  07  01  00  04  00  00  00  09 19  00  18  01  00  15  AA  02  12  9A  01  0F  80  01  01  C8  01  00  F0  01  00  F8  01  00  90  02  00"
+            .replace("  ", " ")
+
+    val FONT_10404 = "E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
+
+    val varint580266363 = "FB D2 D8 94 02"
+    val varint1040400290 = "A2 FF 8C F0 03"
+    var varint1994701021 = "DD F1 92 B7 07"
+}
+
+@Suppress("SpellCheckingInspection")
+private object PacketIds {
+    val heartbeat = "00 58"
+    val friendmsgsend = "00 CD"
+    val friendmsgevent = "00 CE"
+}
 
 /**
  * Hex 比较器, 并着色已知常量
@@ -16,7 +84,7 @@ import kotlin.math.max
  * @author NaturalHG
  * @author Him188moe
  */
-internal object HexComparator {
+private object HexComparator {
 
     private val RED = "\u001b[31m"
     private val GREEN = "\u001b[33m"
@@ -24,49 +92,8 @@ internal object HexComparator {
     private val BLUE = "\u001b[34m"
 
     @Suppress("unused")
-    class ConstMatcher constructor(hex: String) {
-        private val matches = LinkedList<Match>()
-
-        object TestConsts {
-            val NIU_BI = "牛逼".toByteArray().toUHexString()
-            val _1994701021 = 1994701021.toUHexString(" ")
-            val _1040400290 = 1040400290.toUHexString(" ")
-            val _580266363 = 580266363.toUHexString(" ")
-
-            val _1040400290_ = "3E 03 3F A2"
-            val _1994701021_ = "76 E4 B8 DD"
-            val _jiahua_ = "B1 89 BE 09"
-            val _Him188moe_ = "Him188moe".toByteArray().toUHexString()
-            val 发图片2 = "发图片2".toByteArray().toUHexString()
-            val 发图片群 = "发图片群".toByteArray().toUHexString()
-            val 发图片 = "发图片".toByteArray().toUHexString()
-            val 群 = "群".toByteArray().toUHexString()
-            val 你好 = "你好".toByteArray().toUHexString()
-
-            val MESSAGE_TAIL_10404 = "0E  00  07  01  00  04  00  00  00  09 19  00  18  01  00  15  AA  02  12  9A  01  0F  80  01  01  C8  01  00  F0  01  00  F8  01  00  90  02  00"
-                    .replace("  ", " ")
-
-            val FONT_10404 = "E5 BE AE E8 BD AF E9 9B 85 E9 BB 91"
-
-            val varint580266363 = "FB D2 D8 94 02"
-            val varint1040400290 = "A2 FF 8C F0 03"
-            var varint1994701021 = "DD F1 92 B7 07"
-        }
-
-        @Suppress("SpellCheckingInspection")
-        object PacketIds {
-            val heartbeat = "00 58"
-            val friendmsgsend = "00 CD"
-            val friendmsgevent = "00 CE"
-        }
-
-        init {
-            CONST_FIELDS.forEach { field ->
-                for (match in match(hex, field)) {
-                    matches.add(Match(match, field.name))
-                }
-            }
-        }
+    private class ConstMatcher constructor(hex: String) {
+        private val matches = linkedSetOf<Match>()
 
         fun getMatchedConstName(hexNumber: Int): String? {
             for (match in this.matches) {
@@ -79,41 +106,36 @@ internal object HexComparator {
 
         private class Match internal constructor(val range: IntRange, val constName: String)
 
-        companion object {
-            private val CONST_FIELDS: List<Field> = listOf(
-                    TestConsts::class.java,
-                    TIMProtocol::class.java,
-                    PacketIds::class.java
-            ).map { it.declaredFields }.flatMap { fields ->
-                fields.map { field ->
-                    field.trySetAccessible()
-                    field
+        init {
+            TIMProtocol::class.members.filterIsInstance<KProperty<*>>().forEach {
+                for (match in match(hex, it.getter.call().toString())) {
+                    matches.add(Match(match, it.getter.call().toString()))
                 }
             }
         }
 
-        private fun match(hex: String, field: Field): List<IntRange> {
+        companion object {
+            val CONST_FIELDS: Set<NamedHexElement> = linkedSetOf<NamedHexElement>().apply { initConstFileds() }
+        }
+
+        private fun match(hex: String, field: String): Set<IntRange> {
             val constValue: String
             try {
-                constValue = (field.get(null) as String).trim { it <= ' ' }
+                constValue = field.trim { it <= ' ' }
                 if (constValue.length / 3 <= 3) {//Minimum numbers of const hex bytes
-                    return LinkedList()
+                    return linkedSetOf()
                 }
-            } catch (e: IllegalAccessException) {
-                throw RuntimeException(e)
             } catch (ignored: ClassCastException) {
-                return LinkedList()
+                return linkedSetOf()
             }
 
-            return object : LinkedList<IntRange>() {
-                init {
-                    var index = -1
-                    index = hex.indexOf(constValue, index + 1)
-                    while (index != -1) {
-                        add(IntRange(index / 3, (index + constValue.length) / 3))
+            return mutableSetOf<IntRange>().apply {
+                var index = -1
+                index = hex.indexOf(constValue, index + 1)
+                while (index != -1) {
+                    add(IntRange(index / 3, (index + constValue.length) / 3))
 
-                        index = hex.indexOf(constValue, index + 1)
-                    }
+                    index = hex.indexOf(constValue, index + 1)
                 }
             }
         }
@@ -222,12 +244,12 @@ internal object HexComparator {
         }
 
         return builder.append(" ").append(dif).append(" 个不同").append("\n")
-                .append(numberLine).append("\n")
-                .append(hex1ConstName).append("\n")
-                .append(hex1b).append("\n")
-                .append(hex2b).append("\n")
-                .append(hex2ConstName).append("\n")
-                .toString()
+            .append(numberLine).append("\n")
+            .append(hex1ConstName).append("\n")
+            .append(hex1b).append("\n")
+            .append(hex2b).append("\n")
+            .append(hex2ConstName).append("\n")
+            .toString()
 
 
     }
@@ -267,15 +289,15 @@ internal object HexComparator {
         }
 
         return builder.append("\n")
-                .append(numberLine).append("\n")
-                .append(if (firstConst == null) hex1ConstName else {
-                    with(hex1ConstName) {
-                        val index = indexOf(firstConst)
-                        if (index == -1) toString() else " " + substring(index, length)
-                    }
-                }).append("\n")
-                .append(hex1b).append("\n")
-                .toString()
+            .append(numberLine).append("\n")
+            .append(if (firstConst == null) hex1ConstName else {
+                with(hex1ConstName) {
+                    val index = indexOf(firstConst)
+                    if (index == -1) toString() else " " + substring(index, length)
+                }
+            }).append("\n")
+            .append(hex1b).append("\n")
+            .toString()
     }
 
 
@@ -289,6 +311,3 @@ internal object HexComparator {
     }
 
 }
-
-actual fun String.printColorize(ignoreUntilFirstConst: Boolean): String = with(HexComparator) { colorize(ignoreUntilFirstConst) }
-actual fun printCompareHex(hex1s: String, hex2s: String): String = with(HexComparator) { compare(hex1s, hex2s) }

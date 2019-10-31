@@ -22,17 +22,17 @@ import kotlin.math.min
 internal actual suspend fun solveCaptcha(captchaBuffer: IoBuffer): String? = captchaLock.withLock {
     val captcha = captchaBuffer.readBytes()
     withContext(Dispatchers.IO) {
-        MiraiLogger.logCyan(ImageIO.read(captcha.inputStream()).createCharImg())
+        MiraiLogger.verbose(ImageIO.read(captcha.inputStream()).createCharImg())
     }
-    MiraiLogger.logCyan("需要验证码登录, 验证码为 4 字母")
+    MiraiLogger.verbose("需要验证码登录, 验证码为 4 字母")
     try {
         File(System.getProperty("user.dir") + "/temp/Captcha.png")
                 .let { withContext(Dispatchers.IO) { it.createNewFile(); it.writeBytes(captcha) } }
-        MiraiLogger.logCyan("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
+        MiraiLogger.verbose("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
     } catch (e: Exception) {
-        MiraiLogger.logCyan("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+        MiraiLogger.verbose("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
     }
-    MiraiLogger.logCyan("若要更换验证码, 请直接回车")
+    MiraiLogger.verbose("若要更换验证码, 请直接回车")
     readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
 }
 

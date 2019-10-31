@@ -7,29 +7,29 @@ import net.mamoe.mirai.utils.MiraiLogger
 
 internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug")
 
-internal fun debugPrintln(any: Any?) = DebugLogger.logPurple(any)
+internal fun debugPrintln(any: Any?) = DebugLogger.warning(any)
 
 internal fun ByteArray.debugPrint(name: String): ByteArray {
-    DebugLogger.logPurple(name + "=" + this.toUHexString())
+    DebugLogger.warning(name + "=" + this.toUHexString())
     return this
 }
 
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
 internal fun IoBuffer.debugPrint(name: String): IoBuffer {
     val readBytes = this.readBytes()
-    DebugLogger.logPurple(name + "=" + readBytes.toUHexString())
+    DebugLogger.warning(name + "=" + readBytes.toUHexString())
     return readBytes.toIoBuffer()
 }
 
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith("discardExact(n)"))
 internal fun Input.debugDiscardExact(n: Number, name: String = "") {
-    DebugLogger.logPurple("Discarded($n) $name=" + this.readBytes(n.toInt()).toUHexString())
+    DebugLogger.warning("Discarded($n) $name=" + this.readBytes(n.toInt()).toUHexString())
 }
 
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
 internal fun ByteReadPacket.debugPrint(name: String = ""): ByteReadPacket {
     val bytes = this.readBytes()
-    DebugLogger.logPurple("ByteReadPacket $name=" + bytes.toUHexString())
+    DebugLogger.warning("ByteReadPacket $name=" + bytes.toUHexString())
     return bytes.toReadPacket()
 }
 
@@ -75,9 +75,3 @@ internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstCons
     }
     println()
 }
-
-/**
- * TODO 这两个方法不应该 MPP
- */
-expect fun printCompareHex(hex1s: String, hex2s: String): String
-expect fun String.printColorize(ignoreUntilFirstConst: Boolean = false): String

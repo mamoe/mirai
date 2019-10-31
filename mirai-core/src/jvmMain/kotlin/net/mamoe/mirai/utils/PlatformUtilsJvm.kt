@@ -19,10 +19,6 @@ import java.util.zip.CRC32
 
 actual val deviceName: String = InetAddress.getLocalHost().hostName
 
-/*
- * TODO: we may use libraries that provide these functions
- */
-
 actual fun crc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
 
 actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
@@ -55,7 +51,7 @@ fun DataInput.md5(): ByteArray {
     return digest.digest()
 }
 
-actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
+//actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
 
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
