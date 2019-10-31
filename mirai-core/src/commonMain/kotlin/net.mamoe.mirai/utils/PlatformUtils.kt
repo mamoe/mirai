@@ -31,6 +31,11 @@ expect fun crc32(key: ByteArray): Int
 expect fun md5(byteArray: ByteArray): ByteArray
 
 /**
+ * hostname 解析 ipv4
+ */
+expect fun solveIpAddress(hostname: String): String
+
+/**
  * Localhost 解析
  */
 expect fun localIpAddress(): String

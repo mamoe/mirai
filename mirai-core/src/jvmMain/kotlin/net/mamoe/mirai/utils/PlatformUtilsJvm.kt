@@ -51,7 +51,7 @@ fun DataInput.md5(): ByteArray {
     return digest.digest()
 }
 
-//actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
+actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
 
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 

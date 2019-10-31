@@ -17,6 +17,8 @@ actual class PlatformDatagramChannel actual constructor(serverHost: String, serv
     actual suspend fun read(buffer: IoBuffer) = withContext(Dispatchers.IO) {
         try {
             (channel as ReadableByteChannel).read(buffer)
+        } catch (e: ClosedChannelException) {
+            throw e
         } catch (e: Throwable) {
             throw ReadPacketInternalException(e)
         }
