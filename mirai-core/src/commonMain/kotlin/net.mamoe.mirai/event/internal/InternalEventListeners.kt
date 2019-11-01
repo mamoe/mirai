@@ -6,12 +6,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.EventLogger
 import net.mamoe.mirai.event.EventScope
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.internal.inlinedRemoveIf
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 
 /**
  * 监听和广播实现.
@@ -25,6 +27,7 @@ internal suspend fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<
     if (mainMutex.tryLock(listener)) {//能锁则代表这个事件目前没有正在广播.
         try {
             add(listener)//直接修改主监听者列表
+            EventLogger.debug("Added a listener to ${this@subscribeInternal.simpleName}")
         } finally {
             mainMutex.unlock(listener)
         }
@@ -34,6 +37,7 @@ internal suspend fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<
     //不能锁住, 则这个事件正在广播, 那么要将新的监听者放入缓存
     cacheMutex.withLock {
         cache.add(listener)
+        EventLogger.debug("Added a listener to cache of ${this@subscribeInternal.simpleName}")
     }
 
     EventScope.launch {
@@ -44,6 +48,7 @@ internal suspend fun <E : Event> KClass<E>.subscribeInternal(listener: Listener<
                 if (cache.size != 0) {
                     addAll(cache)
                     cache.clear()
+                    EventLogger.debug("Cache of ${this@subscribeInternal.simpleName} is now transferred to main")
                 }
             }
         }
@@ -61,7 +66,7 @@ sealed class Listener<in E : Event> {
 }
 
 @PublishedApi
-internal class Handler<E : Event>(@JvmField val handler: suspend (E) -> ListeningStatus) : Listener<E>() {
+internal class Handler<in E : Event>(@JvmField val handler: suspend (E) -> ListeningStatus) : Listener<E>() {
     override suspend fun onEvent(event: E): ListeningStatus = handler.invoke(event)
 }
 
@@ -89,7 +94,7 @@ internal class HandlerWithBot<E : Event>(val bot: Bot, @JvmField val handler: su
 /**
  * 这个事件类的监听器 list
  */
-internal suspend fun <E : Event> KClass<E>.listeners(): EventListeners<E> = EventListenerManger.get(this)
+internal suspend fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManger.get(this)
 
 internal class EventListeners<E : Event> : MutableList<Listener<E>> by mutableListOf() {
     /**
@@ -105,6 +110,14 @@ internal class EventListeners<E : Event> : MutableList<Listener<E>> by mutableLi
      * 等待加入到主 list 的监听者. 务必使用 [cacheMutex]
      */
     val cache: MutableList<Listener<E>> = mutableListOf()
+
+    init {
+        this::class.members.filterIsInstance<KFunction<*>>().forEach {
+            if (it.name == "add") {
+                it.isExternal
+            }
+        }
+    }
 }
 
 /**
@@ -112,11 +125,11 @@ internal class EventListeners<E : Event> : MutableList<Listener<E>> by mutableLi
  * [EventListeners] 是 lazy 的: 它们只会在被需要的时候才创建和存储.
  */
 internal object EventListenerManger {
-    private val registries: MutableMap<KClass<out Event>, EventListeners<out Event>> = mutableMapOf()
+    private val registries: MutableMap<KClass<out Event>, EventListeners<*>> = mutableMapOf()
     private val registriesMutex = Mutex()
 
     @Suppress("UNCHECKED_CAST")
-    internal suspend fun <E : Event> get(clazz: KClass<E>): EventListeners<E> = registriesMutex.withLock {
+    internal suspend fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> = registriesMutex.withLock {
         if (registries.containsKey(clazz)) {
             return registries[clazz] as EventListeners<E>
         } else {
@@ -128,46 +141,49 @@ internal object EventListenerManger {
     }
 }
 
-@Suppress("UNCHECKED_CAST")
 internal suspend fun <E : Event> E.broadcastInternal(): E {
     suspend fun callListeners(listeners: EventListeners<in E>) {
-        suspend fun callAndRemoveIfRequired() {
-            listeners.inlinedRemoveIf {
-                if (it.lock.tryLock()) {
-                    try {
-                        it.onEvent(this) == ListeningStatus.STOPPED
-                    } finally {
-                        it.lock.unlock()
-                    }
-                } else false
-            }
+        suspend fun callAndRemoveIfRequired() = listeners.inlinedRemoveIf {
+            if (it.lock.tryLock()) {
+                try {
+                    it.onEvent(this) == ListeningStatus.STOPPED
+                } finally {
+                    it.lock.unlock()
+                }
+            } else false
         }
 
         //自己持有, 则是在一个事件中
         if (listeners.mainMutex.holdsLock(listeners)) {
             callAndRemoveIfRequired()
         } else {
-            while (!listeners.mainMutex.tryLock(this)) {
+            while (!listeners.mainMutex.tryLock(listeners)) {
                 delay(10)
             }
             try {
                 callAndRemoveIfRequired()
             } finally {
-                listeners.mainMutex.unlock(this)
+                listeners.mainMutex.unlock(listeners)
             }
         }
     }
 
-    callListeners(this::class.listeners() as EventListeners<in E>)
+    callListeners(this::class.listeners())
 
-    applyAllListeners(this::class) { callListeners(it as EventListeners<in E>) }
+    applySuperListeners(this::class) { callListeners(it) }
     return this
 }
 
-private suspend inline fun <E : Event> applyAllListeners(
-    clazz: KClass<E>,
-    block: (EventListeners<in E>) -> Unit
-) = clazz.supertypes.map { it.classifier }.filterIsInstance<KClass<out Event>>().forEach {
+/**
+ * apply [block] to all the [EventListeners] in [clazz]'s superclasses
+ */
+private tailrec suspend fun <E : Event> applySuperListeners(
+    clazz: KClass<out E>,
+    block: suspend (EventListeners<in E>) -> Unit
+) {
+    val superEventClass =
+        clazz.supertypes.map { it.classifier }.filterIsInstance<KClass<out Event>>().firstOrNull() ?: return
     @Suppress("UNCHECKED_CAST")
-    block(it.listeners() as EventListeners<in E>)
+    block(superEventClass.listeners() as EventListeners<in E>)
+    applySuperListeners(superEventClass, block)
 }

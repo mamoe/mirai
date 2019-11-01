@@ -2,10 +2,7 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.newCoroutineContext
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -66,8 +63,9 @@ interface Cancellable {
 
 /**
  * 广播一个事件的唯一途径.
- * 若 [context] 不包含 [CoroutineExceptionHandler], 将会使用默认的异常捕获, 即 [error]
- * 也就是说, 这个方法不会抛出异常, 只会把异常交由 [context] 捕获
+ * 这个方法将会把处理挂起在 [context] 下运行. 默认为使用 [EventDispatcher] 调度事件协程.
+ *
+ * @param context 事件处理协程运行的 [CoroutineContext].
  */
 @Suppress("UNCHECKED_CAST")
 @JvmOverloads
@@ -85,12 +83,22 @@ suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineCo
 }
 
 /**
+ * 事件协程调度器.
+ *
+ * JVM: 共享 [Dispatchers.Default]
+ */
+internal expect val EventDispatcher: CoroutineDispatcher
+
+/**
  * 事件协程作用域.
  * 所有的事件 [broadcast] 过程均在此作用域下运行.
  *
  * 然而, 若在事件处理过程中使用到 [Contact.sendMessage] 等会 [发送数据包][BotNetworkHandler.sendPacket] 的方法,
- * 发送过程将会通过 [withContext] 将协程切换到 [BotNetworkHandler.NetworkScope]
+ * 发送过程将会通过 [withContext] 将协程切换到 [BotNetworkHandler] 作用域下执行.
  */
 object EventScope : CoroutineScope {
-    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    override val coroutineContext: CoroutineContext =
+        EventDispatcher + CoroutineExceptionHandler { _, e ->
+            MiraiLogger.error("An exception is thrown in EventScope", e)
+        }
 }

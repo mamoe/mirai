@@ -19,6 +19,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.event.IgnoredServerEventPacke
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerFriendMessageEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerGroupMessageEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerGroupUploadFileEventPacket
+import net.mamoe.mirai.network.qqAccount
 
 /**
  * 处理消息事件, 承担消息发送任务.
@@ -69,10 +70,17 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
     }
 
     suspend fun sendFriendMessage(qq: QQ, message: MessageChain) {
-        session.socket.sendPacket(SendFriendMessagePacket(session.bot.account.id, qq.id, session.sessionKey, message))
+        session.socket.sendPacket(SendFriendMessagePacket(session.qqAccount, qq.id, session.sessionKey, message))
     }
 
     suspend fun sendGroupMessage(group: Group, message: MessageChain) {
-        session.socket.sendPacket(SendGroupMessagePacket(session.bot.account.id, group.internalId, session.sessionKey, message))
+        session.socket.sendPacket(
+            SendGroupMessagePacket(
+                session.qqAccount,
+                group.internalId,
+                session.sessionKey,
+                message
+            )
+        )
     }
 }

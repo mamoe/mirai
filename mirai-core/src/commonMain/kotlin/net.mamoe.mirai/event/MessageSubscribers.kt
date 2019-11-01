@@ -173,7 +173,12 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
      * @param trim `true` 则删除首尾空格后比较
      * @param ignoreCase `true` 则不区分大小写
      */
-    suspend fun case(equals: String, trim: Boolean = true, ignoreCase: Boolean = false, onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend fun case(
+        equals: String,
+        trim: Boolean = true,
+        ignoreCase: Boolean = false,
+        onEvent: @MessageDsl suspend T.(String) -> Unit
+    ) =
         content({ equals.equals(if (trim) it.trim() else it, ignoreCase = ignoreCase) }, onEvent)
 
     /**
@@ -184,7 +189,11 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
     /**
      * 如果消息的前缀是 [prefix], 就执行 [onEvent]
      */
-    suspend fun startsWith(prefix: String, removePrefix: Boolean = false, onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend fun startsWith(
+        prefix: String,
+        removePrefix: Boolean = false,
+        onEvent: @MessageDsl suspend T.(String) -> Unit
+    ) =
         content({ it.startsWith(prefix) }) {
             if (removePrefix) this.onEvent(this.message.stringValue.substringAfter(prefix))
             else onEvent(this)
@@ -199,7 +208,8 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
     /**
      * 如果是这个人发的消息, 就执行 [onEvent]. 消息可以是好友消息也可以是群消息
      */
-    suspend fun sentBy(qqId: UInt, onEvent: @MessageDsl suspend T.(String) -> Unit) = content({ sender.id == qqId }, onEvent)
+    suspend fun sentBy(qqId: UInt, onEvent: @MessageDsl suspend T.(String) -> Unit) =
+        content({ sender.id == qqId }, onEvent)
 
     /**
      * 如果是这个人发的消息, 就执行 [onEvent]. 消息可以是好友消息也可以是群消息
@@ -231,15 +241,22 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
 
     suspend infix fun String.caseReply(replier: String) = case(this, true) { this@case.reply(replier) }
     suspend infix fun String.caseReply(replier: StringReplier<T>) = case(this, true) { this@case.reply(replier(this)) }
-    suspend infix fun String.containsReply(replier: String) = content({ this@containsReply in it }) { this@content.reply(replier) }
+    suspend infix fun String.containsReply(replier: String) =
+        content({ this@containsReply in it }) { this@content.reply(replier) }
 
-    suspend infix fun String.containsReply(replier: StringReplier<T>) = content({ this@containsReply in it }) { replier(this) }
+    suspend infix fun String.containsReply(replier: StringReplier<T>) =
+        content({ this@containsReply in it }) { replier(this) }
 
-    suspend infix fun String.startsWithReply(replier: StringReplier<T>) = content({ it.startsWith(this@startsWithReply) }) { replier(this) }
+    suspend infix fun String.startsWithReply(replier: StringReplier<T>) =
+        content({ it.startsWith(this@startsWithReply) }) { replier(this) }
 
-    suspend infix fun String.endswithReply(replier: StringReplier<T>) = content({ it.endsWith(this@endswithReply) }) { replier(this) }
+    suspend infix fun String.endswithReply(replier: StringReplier<T>) =
+        content({ it.endsWith(this@endswithReply) }) { replier(this) }
 
-    suspend infix fun String.reply(reply: String) = case(this) { this@case.reply(reply) }
+    suspend infix fun String.reply(reply: String) = case(this) {
+        this@case.reply(reply)
+    }
+
     suspend infix fun String.reply(reply: StringReplier<T>) = case(this) { this@case.reply(reply(this)) }
 
 

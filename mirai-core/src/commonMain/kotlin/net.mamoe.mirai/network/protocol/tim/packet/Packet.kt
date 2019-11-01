@@ -160,7 +160,7 @@ internal fun Packet.packetToString(name: String = this::class.simpleName.toStrin
     PacketNameFormatter.adjustName(name + "(${this.idHexString})") +
             this::class.members
                 .filterIsInstance<KProperty<*>>()
-                .filterNot { it.isConst || it.isSuspend || it.visibility == KVisibility.PRIVATE }
+                .filterNot { it.isConst || it.isSuspend || it.visibility != KVisibility.PUBLIC }
                 .filterNot { prop -> prop.name in IgnoreIdListEquals || IgnoreIdListInclude.any { it in prop.name } }
                 .joinToString(", ", "{", "}") { it.briefDescription(this@packetToString) }
 

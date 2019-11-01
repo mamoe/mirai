@@ -7,6 +7,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
@@ -34,6 +36,13 @@ suspend fun main() {
             password = "123456"
         )
     ).apply { login().requireSuccess() }
+
+    /**
+     * 监听所有事件
+     */
+    subscribeAlways<Event> {
+        //bot.logger.verbose("收到了一个事件: ${it::class.simpleName}")
+    }
 
     bot.subscribeMessages {
         "你好" reply "你好!"

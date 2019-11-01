@@ -22,6 +22,10 @@ enum class ListeningStatus {
 
 // region 顶层方法
 
+/**
+ * 订阅所有 [E] 及其子类事件.
+ * 在
+ */
 suspend inline fun <reified E : Event> subscribe(noinline handler: suspend (E) -> ListeningStatus) = E::class.subscribe(handler)
 
 suspend inline fun <reified E : Event> subscribeAlways(noinline listener: suspend (E) -> Unit) = E::class.subscribeAlways(listener)

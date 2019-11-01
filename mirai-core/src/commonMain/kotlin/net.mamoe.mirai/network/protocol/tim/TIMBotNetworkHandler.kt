@@ -30,6 +30,13 @@ import net.mamoe.mirai.utils.solveCaptcha
 import kotlin.coroutines.CoroutineContext
 
 /**
+ * 包处理协程调度器.
+ *
+ * JVM: 独立的 4 thread 调度器
+ */
+expect val NetworkDispatcher: CoroutineDispatcher
+
+/**
  * [BotNetworkHandler] 的 TIM PC 协议实现
  *
  * @see BotNetworkHandler
@@ -38,7 +45,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
     BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
     override val coroutineContext: CoroutineContext =
-        Dispatchers.Default + CoroutineExceptionHandler { _, e ->
+        NetworkDispatcher + CoroutineExceptionHandler { _, e ->
             bot.logger.error("An exception was thrown in a coroutine under TIMBotNetworkHandler", e)
         } + SupervisorJob()
 

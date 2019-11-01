@@ -18,7 +18,7 @@ class OutgoingPacket(
     name: String?,
     override val packetId: PacketId,
     override val sequenceId: UShort,
-    val delegate: ByteReadPacket
+    internal val delegate: ByteReadPacket
 ) : Packet {
     private val name: String by lazy {
         name ?: packetId.toString()
@@ -49,7 +49,7 @@ interface OutgoingPacketBuilder {
         private val sequenceIdInternal = atomic(1)
 
         @PublishedApi
-        internal fun atomicNextSequenceId() = sequenceIdInternal.getAndIncrement().toUShort()
+        internal fun atomicNextSequenceId(): UShort = sequenceIdInternal.getAndIncrement().toUShort()
     }
 }
 
