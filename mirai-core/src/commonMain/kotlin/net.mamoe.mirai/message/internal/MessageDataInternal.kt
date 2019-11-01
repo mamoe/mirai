@@ -59,8 +59,17 @@ fun main() {
 
 internal fun IoBuffer.parseMessageImage0x03(): Image {
     discardExact(1)
-    return Image(ImageId(String(readLVByteArray())))
+
+    return Image(ImageId(String(readLVByteArray()).adjustImageId()))
 }
+
+private operator fun String.get(range: IntRange) = this.substring(range)
+
+// 有些时候会得到 724D95122B54EEAC1E214AAAC37259DF.gif
+// 需要调整      {724D9512-2B54-EEAC-1E21-4AAAC37259DF}.gif
+
+private fun String.adjustImageId() =
+    "{${this[0..7]}-${this[8..11]}-${this[12..15]}-${this[16..19]}-${this[20..31]}}.${this.substringAfterLast(".")}"
 
 internal fun ByteReadPacket.readMessage(): Message? {
     val messageType = this.readByte().toInt()
@@ -166,7 +175,6 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
                          */
 
                         writeShortLVPacket {
-                            //todo
                             writeUByte(0x02u)
                             writeShortLVString(id.value)
                             writeHex("04 00 04 87 E5 09 3B 05 00 04 D2 C4 C0 B7 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 01 ED 16 00 04 00 00 02 17 18 00 04 00 00 EB 34 FF 00 5C 15 36 20 39 32 6B 41 31 43 38 37 65 35 30 39 33 62 64 32 63 34 63 30 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20")
@@ -252,7 +260,7 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
                     }
                 }
 
-                else -> throw UnsupportedOperationException("${this::class.simpleName} is not supported(Full MessageChain=${this@toPacket})")
+                else -> throw UnsupportedOperationException("${this::class.simpleName} is not supported. Do NOT implement Message manually. Full MessageChain=${this@toPacket}")
             }
         })
     }

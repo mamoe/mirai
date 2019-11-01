@@ -15,7 +15,7 @@ import kotlin.properties.Delegates
  * TODO 真的是在线状态改变么
  */
 @AnnotatedId(KnownPacketId.SEND_FRIEND_MESSAGE)
-class ServerFriendOnlineStatusChangedPacket(input: ByteReadPacket) : ServerPacket(input) {
+class FriendOnlineStatusChangedPacket(input: ByteReadPacket) : ServerPacket(input) {
     var qq: UInt by Delegates.notNull()
     lateinit var status: OnlineStatus
 
@@ -31,6 +31,7 @@ class ServerFriendOnlineStatusChangedPacket(input: ByteReadPacket) : ServerPacke
 
     @AnnotatedId(KnownPacketId.SEND_FRIEND_MESSAGE)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
-        fun decrypt(sessionKey: ByteArray): ServerFriendOnlineStatusChangedPacket = ServerFriendOnlineStatusChangedPacket(this.decryptBy(sessionKey)).applySequence(sequenceId)
+        fun decrypt(sessionKey: ByteArray): FriendOnlineStatusChangedPacket =
+            FriendOnlineStatusChangedPacket(this.decryptBy(sessionKey)).applySequence(sequenceId)
     }
 }

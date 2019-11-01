@@ -8,6 +8,7 @@ import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 
+@NoLog
 @AnnotatedId(KnownPacketId.HEARTBEAT)
 object HeartbeatPacket : OutgoingPacketBuilder {
     operator fun invoke(
@@ -21,6 +22,7 @@ object HeartbeatPacket : OutgoingPacketBuilder {
         }
     }
 
+    @NoLog
     @AnnotatedId(KnownPacketId.HEARTBEAT)
     class Response(input: ByteReadPacket) : ResponsePacket(input)
 }

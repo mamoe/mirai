@@ -11,13 +11,13 @@ import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.distributePacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerFriendOnlineStatusChangedPacket
+import net.mamoe.mirai.network.protocol.tim.packet.FriendOnlineStatusChangedPacket
 import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.SendFriendMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.SendGroupMessagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessageEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessageEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.IgnoredServerEventPacket
-import net.mamoe.mirai.network.protocol.tim.packet.event.ServerFriendMessageEventPacket
-import net.mamoe.mirai.network.protocol.tim.packet.event.ServerGroupMessageEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerGroupUploadFileEventPacket
 import net.mamoe.mirai.network.qqAccount
 
@@ -36,13 +36,13 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
                 //todo
             }
 
-            is ServerFriendMessageEventPacket -> {
+            is FriendMessageEventPacket -> {
                 if (!packet.isPrevious) {
                     FriendMessageEvent(bot, bot.getQQ(packet.qq), packet.message).broadcast()
                 }
             }
 
-            is ServerGroupMessageEventPacket -> {
+            is GroupMessageEventPacket -> {
                 if (packet.qq == bot.account.id) return
 
                 GroupMessageEvent(
@@ -55,8 +55,8 @@ class EventPacketHandler(session: BotSession) : PacketHandler(session) {
                 ).broadcast()
             }
 
-            is ServerFriendOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
-            is ServerFriendOnlineStatusChangedPacket -> {
+            is FriendOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
+            is FriendOnlineStatusChangedPacket -> {
                 //TODO
             }
 

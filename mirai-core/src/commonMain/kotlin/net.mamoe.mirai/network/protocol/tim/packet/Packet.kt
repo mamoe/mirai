@@ -5,6 +5,9 @@ package net.mamoe.mirai.network.protocol.tim.packet
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.network.protocol.tim.packet.NullPacketId.value
+import net.mamoe.mirai.network.protocol.tim.packet.action.*
+import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -69,34 +72,38 @@ object NullPacketId : PacketId {
 /**
  * 未知的 [PacketId]
  */
-inline class UnknownPacketId(override val value: UShort) : PacketId
+inline class UnknownPacketId(override inline val value: UShort) : PacketId
 
 /**
  * 已知的 [PacketId]. 所有在 Mirai 中实现过的包都会使用这些 Id
  */
-enum class KnownPacketId(override val value: UShort) : PacketId {
-    inline TOUCH(0x0825u),
-    inline SESSION_KEY(0x0828u),
-    inline LOGIN(0X0836u),
-    inline CAPTCHA(0X00BAU),
-    inline SERVER_EVENT_1(0X00CEU),
-    inline SERVER_EVENT_2(0X0017U),
-    inline FRIEND_ONLINE_STATUS_CHANGE(0X0081U),
-    inline CHANGE_ONLINE_STATUS(0x00_ECu),
+enum class KnownPacketId(override inline val value: UShort, internal inline val builder: OutgoingPacketBuilder?) :
+    PacketId {
+    inline TOUCH(0x0825u, TouchPacket),
+    inline SESSION_KEY(0x0828u, RequestSessionPacket),
+    inline LOGIN(0x0836u, SubmitPasswordPacket),
+    inline CAPTCHA(0x00BAu, SubmitCaptchaPacket),
+    inline SERVER_EVENT_1(0x00CEu, ServerEventPacket.EventResponse),
+    inline SERVER_EVENT_2(0x0017u, ServerEventPacket.EventResponse),
+    inline FRIEND_ONLINE_STATUS_CHANGE(0x0081u, null),
+    inline CHANGE_ONLINE_STATUS(0x00_ECu, null),
 
-    inline HEARTBEAT(0x0058u),
-    inline S_KEY(0X001DU),
-    inline ACCOUNT_INFO(0X005CU),
-    inline SEND_GROUP_MESSAGE(0X0002U),
-    inline SEND_FRIEND_MESSAGE(0X00CDU),
-    inline CAN_ADD_FRIEND(0X00A7U),
-    inline GROUP_IMAGE_ID(0X0388U),
-    inline FRIEND_IMAGE_ID(0X0352U),
+    inline HEARTBEAT(0x0058u, HeartbeatPacket),
+    inline S_KEY(0x001Du, RequestSKeyPacket),
+    inline ACCOUNT_INFO(0x005Cu, RequestAccountInfoPacket),
+    inline SEND_GROUP_MESSAGE(0x0002u, SendGroupMessagePacket),
+    inline SEND_FRIEND_MESSAGE(0x00CDu, SendFriendMessagePacket),
+    inline CAN_ADD_FRIEND(0x00A7u, CanAddFriendPacket),
+    inline GROUP_IMAGE_ID(0x0388u, GroupImageIdRequestPacket),
+    inline FRIEND_IMAGE_ID(0x0352u, FriendImageIdRequestPacket),
 
-    inline REQUEST_PROFILE(0x00_31u),
-    inline SUBMIT_IMAGE_FILE_NAME(0X01_BDu),
+    inline REQUEST_PROFILE(0x00_31u, RequestProfilePicturePacket),
+    @Suppress("DEPRECATION")
+    inline SUBMIT_IMAGE_FILE_NAME(0x01_BDu, SubmitImageFilenamePacket),
 
     ;
+
+    override fun toString(): String = builder?.let { it::class.simpleName } ?: this.name
 }
 
 // endregion
@@ -109,7 +116,7 @@ enum class KnownPacketId(override val value: UShort) : PacketId {
 @Suppress("unused")
 @MustBeDocumented
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 internal annotation class PacketVersion(val date: String, val timVersion: String)
 
 private object PacketNameFormatter {
@@ -124,6 +131,7 @@ private object PacketNameFormatter {
 private object IgnoreIdListEquals : List<String> by listOf(
     "idHex",
     "id",
+    "eventIdentity",
     "packetId",
     "sequenceIdInternal",
     "sequenceId",
@@ -151,6 +159,13 @@ private object IgnoreIdListInclude : List<String> by listOf(
     "\$FU",
     "RefVolatile"
 )
+
+/**
+ * 带有这个注解的 [Packet], 将不会被记录在 log 中.
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class NoLog
 
 /**
  * 这个方法会翻倍内存占用, 考虑修改.
@@ -187,7 +202,7 @@ private fun KProperty<*>.briefDescription(thisRef: Packet): String =
                 thisRef,
                 this
             ) ?: "[UnknownProperty]"
-            else -> value.toString()
+            else -> value.toString().replace("\n", """\n""")
         }
     }
 

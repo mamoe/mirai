@@ -255,7 +255,7 @@ object FriendImageIdRequestPacket : OutgoingPacketBuilder {
     }
 
     @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
-    @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
+    @PacketVersion(date = "2019.11.1", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
         /**
          * 访问 HTTP API 时需要使用的一个 key. 128 位
@@ -289,7 +289,9 @@ object FriendImageIdRequestPacket : OutgoingPacketBuilder {
             if (readUByte() != UByte.MIN_VALUE) {
                 discardExact(60)
 
-                discardExact(1)//4A, id
+                @Suppress("ControlFlowWithEmptyBody")
+                while (readUByte().toUInt() != 0x4Au);
+
                 uKey = readBytes(readUnsignedVarInt().toInt())//128
 
                 discardExact(1)//52, id

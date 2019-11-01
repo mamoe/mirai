@@ -18,7 +18,7 @@ import kotlin.jvm.JvmName
 /**
  * 消息事件时创建的临时容器.
  */
-abstract class SenderAndMessage<S : Contact>(
+abstract class SenderAndMessage<TContact : Contact>(
     /**
      * 发送这条消息的用户.
      */
@@ -26,7 +26,7 @@ abstract class SenderAndMessage<S : Contact>(
     /**
      * 消息事件主体. 对于好友消息, 这个属性为 [QQ] 的实例;  对于群消息, 这个属性为 [Group] 的实例
      */
-    val subject: S,
+    val subject: TContact,
     val message: MessageChain
 ) {
     /**

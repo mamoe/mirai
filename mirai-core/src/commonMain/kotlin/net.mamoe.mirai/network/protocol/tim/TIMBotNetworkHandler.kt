@@ -15,10 +15,7 @@ import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
@@ -213,9 +210,11 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
 
             packet.use {
-                packet::class.simpleName?.takeIf { !it.endsWith("Encrypted") && !it.endsWith("Raw") }?.let {
-                    bot.logger.verbose("Packet received: $packet")
-                }
+                packet::class.takeUnless { ResponsePacket::class.isInstance(packet) }
+                    ?.simpleName?.takeUnless { it.endsWith("Encrypted") || it.endsWith("Raw") }
+                    ?.let {
+                        bot.logger.verbose("Packet received: $packet")
+                    }
 
                 // Remove first to release the lock
                 handlersLock.withLock {
@@ -264,7 +263,13 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 }
             }
 
-            bot.logger.verbose("Packet sent:     $packet")
+            packet.takeUnless { _ ->
+                packet.packetId is KnownPacketId && packet.packetId.builder?.let {
+                    it::class.annotations.filterIsInstance<NoLog>().any()
+                } == true
+            }?.let {
+                bot.logger.verbose("Packet sent:     $it")
+            }
 
             PacketSentEvent(bot, packet).broadcast()
 

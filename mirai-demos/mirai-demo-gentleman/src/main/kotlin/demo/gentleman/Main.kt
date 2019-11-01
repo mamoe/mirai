@@ -11,6 +11,7 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
+import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
 
@@ -46,6 +47,10 @@ suspend fun main() {
 
     bot.subscribeMessages {
         "你好" reply "你好!"
+
+        has<Image> {
+            reply(message)
+        }
 
         startsWith("随机图片", removePrefix = true) {
             withContext(Dispatchers.Default) {

@@ -66,7 +66,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         CHANGE_ONLINE_STATUS -> ServerLoginSuccessPacket(this)
         CAPTCHA -> ServerCaptchaPacket.Encrypted(this)
         SERVER_EVENT_1, SERVER_EVENT_2 -> ServerEventPacket.Raw.Encrypted(this, PacketId(id), sequenceId)
-        FRIEND_ONLINE_STATUS_CHANGE -> ServerFriendOnlineStatusChangedPacket.Encrypted(this)
+        FRIEND_ONLINE_STATUS_CHANGE -> FriendOnlineStatusChangedPacket.Encrypted(this)
 
         S_KEY -> ResponsePacket.Encrypted<RequestSKeyPacket.Response>(this)
         ACCOUNT_INFO -> ResponsePacket.Encrypted<RequestAccountInfoPacket.Response>(this)

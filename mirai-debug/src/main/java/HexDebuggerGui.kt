@@ -7,6 +7,7 @@ import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import kotlinx.coroutines.*
+import kotlinx.io.core.readUInt
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.stringOfWitch
@@ -74,7 +75,7 @@ class HexDebuggerGui : View("s") {
     private lateinit var outSize: TextField
     private lateinit var outUVarInt: TextField
     private lateinit var outShort: TextField
-    private lateinit var outInt: TextField
+    private lateinit var outUInt: TextField
     private lateinit var outString: TextField
 
 
@@ -134,9 +135,9 @@ class HexDebuggerGui : View("s") {
             }
         }
 
-        outInt.text = runOrNull {
+        outUInt.text = runOrNull {
             value.hexToBytes().read {
-                readInt().toString()
+                readUInt().toString()
             }
         }
 
@@ -192,7 +193,7 @@ class HexDebuggerGui : View("s") {
             label("size")
             label("UVarInt")
             label("short")
-            label("int")
+            label("uint")
             label("string")
             children.filterIsInstance<Region>().forEach {
                 it.fitToParentWidth()
@@ -203,7 +204,7 @@ class HexDebuggerGui : View("s") {
             alignment = Pos.CENTER_RIGHT
 
             outSize = textfield {
-                promptText = "UVarInt"
+                promptText = "Size"
                 isEditable = false
             }
 
@@ -213,17 +214,17 @@ class HexDebuggerGui : View("s") {
             }
 
             outShort = textfield {
-                promptText = "short"
+                promptText = "Short"
                 isEditable = false
             }
 
-            outInt = textfield {
-                promptText = "int"
+            outUInt = textfield {
+                promptText = "UInt"
                 isEditable = false
             }
 
             outString = textfield {
-                promptText = "int"
+                promptText = "String"
                 isEditable = false
             }
 

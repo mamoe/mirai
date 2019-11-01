@@ -8,7 +8,12 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.NullMessageChain
 import net.mamoe.mirai.message.internal.readMessageChain
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.io.printTLVMap
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.readLVByteArray
+import net.mamoe.mirai.utils.io.readTLVMap
 import kotlin.properties.Delegates
 
 
@@ -19,7 +24,9 @@ enum class SenderPermission {
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE")
-class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
+@PacketVersion(date = "2019.11.2", timVersion = "2.3.2.21173")
+class GroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) :
+    ServerEventPacket(input, eventIdentity) {
     var groupNumber: UInt by Delegates.notNull()
     var qq: UInt by Delegates.notNull()
     lateinit var senderName: String
@@ -41,56 +48,50 @@ class ServerGroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventP
         message = readMessageChain()
 
         val map = readTLVMap(true)
-        //map.printTLVMap("父map")
         if (map.containsKey(18)) {
             map.getValue(18).read {
                 val tlv = readTLVMap(true)
-                //tlv.printTLVMap("子map")
+                //tlv.printTLVMap("消息结尾 tag=18 的 TLV")
                 ////群主的18: 05 00 04 00 00 00 03 08 00 04 00 00 00 04 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
                 //群主的 子map= {5=00 00 00 03, 8=00 00 00 04, 1=48 69 6D 31 38 38 6D 6F 65, 3=04, 4=00 00 00 08}
                 //管理员 子map= {5=00 00 00 03, 8=00 00 00 04, 2=65 6F 6D 38 38 31 6D 69 48, 3=02, 4=00 00 00 10}
                 //群成员 子map= {5=00 00 00 03, 8=00 00 00 04, 2=65 6F 6D 38 38 31 6D 69 48, 3=02}
 
-                tlv.printTLVMap("Child TLV map")
-                senderPermission = when (val value0x03 = tlv.getValue(0x03)[0].toUInt()) {
-                    0x04u -> SenderPermission.OWNER
-                    0x03u -> SenderPermission.MEMBER
-                    0x02u -> {
-                        if (!tlv.containsKey(0x04)) {
-                            SenderPermission.MEMBER
-                        } else when (val value0x04 = tlv.getValue(0x04)[3].toUInt()) {
-                            0x08u -> SenderPermission.OPERATOR
-                            0x10u -> SenderPermission.MEMBER
-                            else -> error("Could not determine member permission, unknown tlv(key=0x04,value=$value0x04)")
-                        }
-                    }
-                    0x01u -> SenderPermission.MEMBER
+                // 4=08, 群主
+                // 没有4, 群员
+                // 4=10, 管理员
 
+                senderPermission = when (tlv.takeIf { it.containsKey(0x04) }?.get(0x04)?.getOrNull(3)?.toUInt()) {
+                    null -> SenderPermission.MEMBER
+                    0x08u -> SenderPermission.OWNER
+                    0x10u -> SenderPermission.OPERATOR
                     else -> {
-                        error("Could not determine member permission, unknown TLV(key=0x03,value=$value0x03;)")
-                        //{5=00 00 00 01, 8=00 00 00 01, 1=48 69 6D 31 38 38 6D 6F 65, 3=03}
+                        tlv.printTLVMap("TLV(tag=18) Map")
+                        MiraiLogger.warning("Could not determine member permission, default permission MEMBER is being used")
+                        SenderPermission.MEMBER
                     }
                 }
 
                 senderName = when {
                     tlv.containsKey(0x01) -> kotlinx.io.core.String(tlv.getValue(0x01))//这个人的qq昵称
                     tlv.containsKey(0x02) -> kotlinx.io.core.String(tlv.getValue(0x02))//这个人的群名片
-                    else -> "null"
+                    else -> {
+                        tlv.printTLVMap("TLV(tag=18) Map")
+                        MiraiLogger.warning("Could not determine senderName")
+                        "null"
+                    }
                 }
             }
         }
     }
 }
 
-fun main() {
-    "00 00 00 08 00 0A 00 04 01 00 00 00 35 DB 60 A2 01 8D 62 3A B8 02 76 E4 B8 DD 06 B4 B4 BD A8 D5 DF 00 30 34 46 30 41 39 37 31 45 42 37 46 31 42 34 43 33 34 41 31 42 34 33 37 41 35 33 45 31 36 43 30 43 38 35 43 36 44 31 34 46 35 44 31 41 31 43 39 34".printStringFromHex()
-}
-
 //
 //以前的消息: 00 00 00 25 00 08 00 02 00 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 01 38 03 3E 03 3F A2 76 E4 B8 DD 58 2C 60 86 35 3A 30 B3 C7 63 4A 80 E7 CD 5B 64 00 0B 78 16 5D A3 0A FD 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D A3 0A FD AB 77 16 02 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 04 01 00 01 36 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
 //刚刚的消息: 00 00 00 2D 00 05 00 02 00 01 00 06 00 04 00 01 2E 01 00 09 00 06 00 01 00 00 00 01 00 0A 00 04 01 00 00 00 00 01 00 04 00 00 00 00 00 03 00 01 01 38 03 3E 03 3F A2 76 E4 B8 DD 11 F4 B2 F2 1A E7 1F C4 F1 3F 23 FB 74 80 42 64 00 0B 78 1A 5D A3 26 C1 01 1D 00 00 00 00 01 00 00 00 01 4D 53 47 00 00 00 00 00 5D A3 26 C1 AA 34 08 42 00 00 00 00 0C 00 86 22 00 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 00 00 01 00 09 01 00 06 E4 BD A0 E5 A5 BD 0E 00 07 01 00 04 00 00 00 09 19 00 18 01 00 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00
 
-class ServerFriendMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
+class FriendMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) :
+    ServerEventPacket(input, eventIdentity) {
     val qq: UInt get() = eventIdentity.from
 
     /**

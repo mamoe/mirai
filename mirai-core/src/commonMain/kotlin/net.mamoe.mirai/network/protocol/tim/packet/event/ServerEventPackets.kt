@@ -59,36 +59,24 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                 }
                 0x002Du -> ServerGroupUploadFileEventPacket(input, eventIdentity)
 
-                0x0052u -> ServerGroupMessageEventPacket(input, eventIdentity)
+                0x002Cu -> GroupMemberPermissionChangedPacket(input, eventIdentity)
 
-                0x00A6u -> ServerFriendMessageEventPacket(input, eventIdentity)
+                /*
+                 *
+    inline GROUP_MEMBER_NICK_CHANGED(0x002Fu, null),
+    inline GROUP_MEMBER_PERMISSION_CHANGED(0x002Cu, null),
 
-                //0210: 00 00 00 0E 00 08 00 02 00 01 00 0A 00 04 01 00 00 00 00 00 00 06 00 00 00 26 08 02 1A 02 08 49 0A 08 08 00 10 B2 DE 8C ED 05 0A 0C 08 A2 FF 8C F0 03 10 E4 A1 A7 ED 05 0A 0C 08 DD F1 92 B7 07 10 B1 DE 8C ED 05
-                //      00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 16 00 00 00 37 08 02 1A 12 08 95 02 10 90 04 40 98 E1 8C ED 05 48 AF 96 C3 A4 03 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 1A 29 08 00 10 05 18 98 E1 8C ED 05 20 01 28 FF FF FF FF 0F 32 15 E5 AF B9 E6 96 B9 E6 AD A3 E5 9C A8 E8 BE 93 E5 85 A5 2E 2E 2E
-                //      00 00 00 08 00 0A 00 04 01 00 00 00 00 00 00 07 00 00 00
-                /*{
-                //todo 02 10 可能是发起会话? 在手机 QQ 打开一个公众号也有这个包; 取消关注公众号也会有这个包; 手机打开某人聊天界面也会有
-               0x0210u ->     discardExact(19)
-                    println("type事件" + readUByte().toUInt().toByteArray().toUHexString())
+                 */
 
-                    //todo 错了. 可能是 00 79 才是.
-                    ServerFriendTypingCanceledPacket(input, eventIdentity)
-                    /*
-                    if (readUByte().toUInt() == 0x37u) ServerFriendTypingStartedPacket(input, eventIdentity)
-                    else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)*/
-                }*/
-                0x0210u -> IgnoredServerEventPacket(
-                    eventId = type.toByteArray(),
-                    showData = true,
-                    input = input,
-                    eventIdentity = eventIdentity
-                )
+                0x0052u -> GroupMessageEventPacket(input, eventIdentity)
 
-                //"02 10", "00 12" -> ServerUnknownEventPacket(input, eventIdentity)
+                0x00A6u -> FriendMessageEventPacket(input, eventIdentity)
 
-                else -> {//0x00 79u, 可能是正在输入的包
-                    MiraiLogger.debug("UnknownEvent type = ${type.toByteArray().toUHexString()}")
-                    UnknownServerEventPacket(input, eventIdentity)
+                // "对方正在输入..."
+                0x0210u -> IgnoredServerEventPacket(input, eventIdentity)
+
+                else -> {
+                    UnknownServerEventPacket(type.toByteArray(), true, input, eventIdentity)
                 }
             }.applyId(packetId).applySequence(sequenceId)
         }
@@ -106,6 +94,7 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
         sessionKey: ByteArray
     ): OutgoingPacket = EventResponse(this.packetId, this.sequenceId, bot, sessionKey, this.eventIdentity)
 
+    @NoLog
     @Suppress("FunctionName")
     object EventResponse : OutgoingPacketBuilder {
         operator fun invoke(
@@ -128,27 +117,25 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
  * 忽略的事件
  */
 @Suppress("unused")
-class IgnoredServerEventPacket(
-    val eventId: ByteArray,
-    private val showData: Boolean = false,
-    input: ByteReadPacket,
-    eventIdentity: EventPacketIdentity
-) : ServerEventPacket(input, eventIdentity) {
-    override fun decode() {
-        if (showData) {
-            MiraiLogger.debug("IgnoredServerEventPacket data: " + this.input.readBytes().toUHexString())
-        } else {
-            this.input.discard()
-        }
-    }
-}
+class IgnoredServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) :
+    ServerEventPacket(input, eventIdentity)
 
 /**
  * Unknown event
  */
-class UnknownServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) :
+class UnknownServerEventPacket(
+    val eventId: ByteArray,
+    private val showData: Boolean = false,
+    input: ByteReadPacket,
+    eventIdentity: EventPacketIdentity
+) :
     ServerEventPacket(input, eventIdentity) {
     override fun decode() {
-        MiraiLogger.debug("UnknownServerEventPacket data: " + this.input.readBytes().toUHexString())
+        MiraiLogger.debug("UnknownEvent type = ${eventId.toUHexString()}")
+        if (showData) {
+            MiraiLogger.debug("UnknownServerEventPacket data: " + this.input.readBytes().toUHexString())
+        } else {
+            this.input.discard()
+        }
     }
 }
