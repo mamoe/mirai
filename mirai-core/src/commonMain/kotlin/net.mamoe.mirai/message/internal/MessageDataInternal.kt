@@ -69,7 +69,8 @@ private operator fun String.get(range: IntRange) = this.substring(range)
 // 需要调整      {724D9512-2B54-EEAC-1E21-4AAAC37259DF}.gif
 
 private fun String.adjustImageId() =
-    "{${this[0..7]}-${this[8..11]}-${this[12..15]}-${this[16..19]}-${this[20..31]}}.${this.substringAfterLast(".")}"
+    if (this.first() == '{') this
+    else "{${this[0..7]}-${this[8..11]}-${this[12..15]}-${this[16..19]}-${this[20..31]}}.${this.substringAfterLast(".")}"
 
 internal fun ByteReadPacket.readMessage(): Message? {
     val messageType = this.readByte().toInt()
