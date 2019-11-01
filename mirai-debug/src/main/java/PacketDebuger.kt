@@ -13,6 +13,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.UnknownServerPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.UnknownServerEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.idHexString
 import net.mamoe.mirai.utils.DecryptionFailedException
 import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.*

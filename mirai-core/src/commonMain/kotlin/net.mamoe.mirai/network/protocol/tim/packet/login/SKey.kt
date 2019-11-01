@@ -2,29 +2,26 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
-import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.utils.io.*
 
-fun BotSession.RequestSKeyPacket() = RequestSKeyPacket(qqAccount, sessionKey)
+fun BotSession.RequestSKeyPacket(): OutgoingPacket = RequestSKeyPacket(qqAccount, sessionKey)
 
 /**
  * 请求 `SKey`
  * SKey 用于 http api
  */
-@PacketId(0x00_1Du)
-class RequestSKeyPacket(
-    private val bot: UInt,
-    private val sessionKey: ByteArray
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+@AnnotatedId(KnownPacketId.S_KEY)
+object RequestSKeyPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        sessionKey: ByteArray
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
@@ -32,7 +29,7 @@ class RequestSKeyPacket(
         }
     }
 
-    @PacketId(0x00_1Du)
+    @AnnotatedId(KnownPacketId.S_KEY)
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
         lateinit var sKey: String
 

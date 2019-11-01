@@ -9,20 +9,20 @@ import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.localIpAddress
 
-@PacketId(0x08_28u)
-class RequestSessionPacket(
-        private val bot: UInt,
-        private val serverIp: String,
-        private val token38: IoBuffer,
-        private val token88: IoBuffer,
-        private val encryptionKey: IoBuffer
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(bot)
-        this.writeHex("02 00 00 00 01 2E 01 00 00 68 52 00 30 00 3A")
-        this.writeHex("00 38")
-        this.writeFully(token38)
-        this.encryptAndWrite(encryptionKey) {
+@AnnotatedId(KnownPacketId.SESSION_KEY)
+object RequestSessionPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        serverIp: String,
+        token38: IoBuffer,
+        token88: IoBuffer,
+        encryptionKey: IoBuffer
+    ) = buildOutgoingPacket {
+        writeQQ(bot)
+        writeHex("02 00 00 00 01 2E 01 00 00 68 52 00 30 00 3A")
+        writeHex("00 38")
+        writeFully(token38)
+        encryptAndWrite(encryptionKey) {
             writeHex("00 07 00 88")
             writeFully(token88)
             writeHex("00 0C 00 16 00 02 00 00 00 00 00 00 00 00 00 00")
@@ -55,13 +55,13 @@ class RequestSessionPacket(
             writeHex("68")
 
             writeHex("00 00 00 00 00 2D 00 06 00 01")
-            writeIP(localIpAddress())//todo  random to avoid being banned?
+            writeIP(localIpAddress())//todo  random to avoid being banned? or that may cause errors?
         }
     }
 }
 
 
-@PacketId(0x08_28u)
+@AnnotatedId(KnownPacketId.SESSION_KEY)
 class SessionKeyResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
     lateinit var sessionKey: ByteArray
     lateinit var tlv0105: ByteReadPacket
@@ -110,7 +110,7 @@ Discarded(11) =41 01 00 02 03 3C 01 03 00 00 86
 
     }
 
-    @PacketId(0x08_28u)
+    @AnnotatedId(KnownPacketId.SESSION_KEY)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         fun decrypt(sessionResponseDecryptionKey: IoBuffer): SessionKeyResponsePacket =
             SessionKeyResponsePacket(decryptBy(sessionResponseDecryptionKey)).applySequence(sequenceId)

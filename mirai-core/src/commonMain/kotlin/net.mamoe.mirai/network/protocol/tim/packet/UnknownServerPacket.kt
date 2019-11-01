@@ -4,15 +4,13 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.utils.LoggerTextFormat
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.toUHexString
 
-
 class UnknownServerPacket(
-        input: ByteReadPacket,
-        override var id: UShort,
-        override var sequenceId: UShort
+    input: ByteReadPacket,
+    override val packetId: PacketId,
+    override var sequenceId: UShort
 ) : ServerPacket(input) {
     override fun decode() {
         val raw = this.input.readBytes()
@@ -20,16 +18,12 @@ class UnknownServerPacket(
     }
 
     class Encrypted(
-            input: ByteReadPacket,
-            override var id: UShort,
-            override var sequenceId: UShort
+        input: ByteReadPacket,
+        override val packetId: PacketId,
+        override var sequenceId: UShort
     ) : ServerPacket(input) {
-        fun decrypt(sessionKey: ByteArray): UnknownServerPacket = UnknownServerPacket(this.decryptBy(sessionKey), this.id, this.sequenceId)
-    }
-
-    override fun toString(): String {
-        @Suppress("RemoveRedundantQualifierName")
-        return LoggerTextFormat.LIGHT_RED.toString() + super.toString()
+        fun decrypt(sessionKey: ByteArray): UnknownServerPacket =
+            UnknownServerPacket(this.decryptBy(sessionKey), this.packetId, this.sequenceId)
     }
 }
 

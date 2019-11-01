@@ -2,19 +2,18 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 
-@PacketId(0x00_58u)
-class HeartbeatPacket(
-        private val bot: UInt,
-        private val sessionKey: ByteArray
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+@AnnotatedId(KnownPacketId.HEARTBEAT)
+object HeartbeatPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        sessionKey: ByteArray
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer)
         encryptAndWrite(sessionKey) {
@@ -22,6 +21,6 @@ class HeartbeatPacket(
         }
     }
 
-    @PacketId(0x00_58u)
+    @AnnotatedId(KnownPacketId.HEARTBEAT)
     class Response(input: ByteReadPacket) : ResponsePacket(input)
 }

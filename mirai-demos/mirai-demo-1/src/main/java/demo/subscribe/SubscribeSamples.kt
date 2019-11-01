@@ -12,6 +12,7 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingRawPacket
+import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 import net.mamoe.mirai.network.protocol.tim.packet.login.ifFail
 import net.mamoe.mirai.network.session
@@ -19,7 +20,7 @@ import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.toByteArray
 import net.mamoe.mirai.utils.io.toUHexString
-import net.mamoe.mirai.utils.toExternalImage
+import net.mamoe.mirai.utils.suspendToExternalImage
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -227,7 +228,7 @@ suspend fun directlySubscribe(bot: Bot) {
                         .hexToBytes()
                 it.bot.network.socket.sendPacket(
                     OutgoingRawPacket(
-                        0x01_BDu,
+                        PacketId(0x01_BDu),
                         it.bot.qqAccount,
                         "00 00 00 01 2E 01 00 00 69 35".hexToBytes(),
                         it.bot.network.session.sessionKey,
@@ -240,7 +241,7 @@ suspend fun directlySubscribe(bot: Bot) {
                 val filename = it.message.toString().substringAfter("上传群图片")
                 val image = File(
                     "C:\\Users\\Him18\\Desktop\\$filename"
-                ).toExternalImage()
+                ).suspendToExternalImage()
                 920503456u.group().uploadImage(image)
                 it.reply(image.groupImageId.value)
                 delay(100)

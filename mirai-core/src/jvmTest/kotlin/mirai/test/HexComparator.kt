@@ -1,5 +1,7 @@
 @file:Suppress("ObjectPropertyName", "unused", "NonAsciiCharacters", "MayBeConstant")
 
+package mirai.test
+
 import net.mamoe.mirai.utils.io.printCompareHex
 
 

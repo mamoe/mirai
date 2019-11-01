@@ -1,5 +1,6 @@
 package net.mamoe.mirai.event.internal
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -70,7 +71,8 @@ internal class Handler<E : Event>(@JvmField val handler: suspend (E) -> Listenin
  * 所有的 [BotEvent.bot] `!==` `bot` 的事件都不会被处理
  */
 @PublishedApi
-internal class HandlerWithBot<E : Event>(val bot: Bot, @JvmField val handler: suspend Bot.(E) -> ListeningStatus) : Listener<E>() {
+internal class HandlerWithBot<E : Event>(val bot: Bot, @JvmField val handler: suspend Bot.(E) -> ListeningStatus) :
+    Listener<E>() {
     override suspend fun onEvent(event: E): ListeningStatus = with(bot) {
         if (event !is BotEvent || event.bot !== this) {
             return ListeningStatus.LISTENING
@@ -144,19 +146,28 @@ internal suspend fun <E : Event> E.broadcastInternal(): E {
         //自己持有, 则是在一个事件中
         if (listeners.mainMutex.holdsLock(listeners)) {
             callAndRemoveIfRequired()
-        } else listeners.mainMutex.withLock(listeners) {
-            callAndRemoveIfRequired()
+        } else {
+            while (!listeners.mainMutex.tryLock(this)) {
+                delay(10)
+            }
+            try {
+                callAndRemoveIfRequired()
+            } finally {
+                listeners.mainMutex.unlock(this)
+            }
         }
     }
 
     callListeners(this::class.listeners() as EventListeners<in E>)
 
-    //FIXME 这可能不支持所有的平台. 可能需要修改.
-    loopAllListeners(this::class) { callListeners(it as EventListeners<in E>) }
+    applyAllListeners(this::class) { callListeners(it as EventListeners<in E>) }
     return this
 }
 
-internal expect suspend inline fun <E : Event> loopAllListeners(
+private suspend inline fun <E : Event> applyAllListeners(
     clazz: KClass<E>,
-    consumer: (EventListeners<in E>) -> Unit
-)
+    block: (EventListeners<in E>) -> Unit
+) = clazz.supertypes.map { it.classifier }.filterIsInstance<KClass<out Event>>().forEach {
+    @Suppress("UNCHECKED_CAST")
+    block(it.listeners() as EventListeners<in E>)
+}

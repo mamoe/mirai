@@ -4,6 +4,7 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.newCoroutineContext
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.internal.broadcastInternal
@@ -75,7 +76,7 @@ suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineCo
         EventLogger.debug(this::class.simpleName + " pre broadcast")
     }
     try {
-        return withContext(EventScope.coroutineContext + context) { this@broadcast.broadcastInternal() }
+        return withContext(EventScope.newCoroutineContext(context)) { this@broadcast.broadcastInternal() }
     } finally {
         if (EventDebuggingFlag) {
             EventLogger.debug(this::class.simpleName + " after broadcast")

@@ -6,29 +6,27 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.encryptBy
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.writeCRC32
 
-
 /**
  * 提交密码
  */
-@PacketId(0x08_36u)
-class SubmitPasswordPacket constructor(
-        private val bot: UInt,
-        private val password: String,
-        private val loginTime: Int,
-        private val loginIP: String,
-        private val privateKey: ByteArray,
-        private val token0825: ByteArray,
-        private val token00BA: ByteArray? = null,
-        private val randomDeviceName: Boolean = false,
-        private val tlv0006: IoBuffer? = null
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+@AnnotatedId(KnownPacketId.LOGIN)
+object SubmitPasswordPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        password: String,
+        loginTime: Int,
+        loginIP: String,
+        privateKey: ByteArray,
+        token0825: ByteArray,
+        token00BA: ByteArray? = null,
+        randomDeviceName: Boolean = false,
+        tlv0006: IoBuffer? = null
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex(TIMProtocol.passwordSubmissionTLV1)
 
@@ -57,18 +55,16 @@ class SubmitPasswordPacket constructor(
     }
 }
 
-
 private fun BytePacketBuilder.writePart1(
-        qq: UInt,
-        password: String,
-        loginTime: Int,
-        loginIP: String,
-        privateKey: ByteArray,
-        token0825: ByteArray,
-        randomDeviceName: Boolean,
-        tlv0006: IoBuffer? = null
+    qq: UInt,
+    password: String,
+    loginTime: Int,
+    loginIP: String,
+    privateKey: ByteArray,
+    token0825: ByteArray,
+    randomDeviceName: Boolean,
+    tlv0006: IoBuffer? = null
 ) {
-
     //this.writeInt(System.currentTimeMillis().toInt())
     this.writeHex("01 12")//tag
     this.writeHex("00 38")//length
@@ -102,7 +98,6 @@ private fun BytePacketBuilder.writePart1(
     this.writeHex("00 10")//length
     this.writeHex("60 C9 5D A7 45 70 04 7F 21 7D 84 50 5C 66 A5 C6")//key
 }
-
 
 private fun BytePacketBuilder.writePart2() {
 

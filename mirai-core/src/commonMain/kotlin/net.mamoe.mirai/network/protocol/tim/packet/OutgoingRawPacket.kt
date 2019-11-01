@@ -2,19 +2,18 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeQQ
 
-class OutgoingRawPacket(
-        override val id: UShort,
-        private val bot: UInt,
-        private val version: ByteArray,
-        private val sessionKey: ByteArray,
-        private val data: ByteArray
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+object OutgoingRawPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        id: PacketId,
+        bot: UInt,
+        version: ByteArray,
+        sessionKey: ByteArray,
+        data: ByteArray
+    ): OutgoingPacket = buildOutgoingPacket(id = id) {
         writeQQ(bot)
         writeFully(version)
 

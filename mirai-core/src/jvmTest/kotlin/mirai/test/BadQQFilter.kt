@@ -1,5 +1,7 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
+package mirai.test
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking

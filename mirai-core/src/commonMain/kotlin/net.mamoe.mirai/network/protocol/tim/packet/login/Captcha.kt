@@ -5,25 +5,23 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.io.*
 
 /**
  * 客户端请求验证码图片数据的第几部分
  */
-@PacketId(0x00_BAu)
-class RequestCaptchaTransmissionPacket(
-    private val bot: UInt,
-    private val token0825: ByteArray,
-    private val captchaSequence: Int,
-    private val token00BA: ByteArray
-) : OutgoingPacket() {
-    @Tested
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(bot)
-        this.writeHex(TIMProtocol.fixVer)
-        this.writeHex(TIMProtocol.key00BA)
-        this.encryptAndWrite(TIMProtocol.key00BA) {
+@AnnotatedId(KnownPacketId.CAPTCHA)
+object RequestCaptchaTransmissionPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        token0825: ByteArray,
+        captchaSequence: Int,
+        token00BA: ByteArray
+    ) = buildOutgoingPacket {
+        writeQQ(bot)
+        writeHex(TIMProtocol.fixVer)
+        writeHex(TIMProtocol.key00BA)
+        encryptAndWrite(TIMProtocol.key00BA) {
             writeHex("00 02 00 00 08 04 01 E0")
             writeHex(TIMProtocol.constantData2)
             writeHex("00 00 38")
@@ -43,22 +41,19 @@ class RequestCaptchaTransmissionPacket(
 /**
  * 提交验证码
  */
-@PacketId(0x00_BAu)
-class SubmitCaptchaPacket(
-    private val bot: UInt,
-    private val token0825: ByteArray,
-    private val captcha: String,
-    private val captchaToken: IoBuffer
-) : OutgoingPacket() {
-    init {
+@AnnotatedId(KnownPacketId.CAPTCHA)
+object SubmitCaptchaPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        token0825: ByteArray,
+        captcha: String,
+        captchaToken: IoBuffer
+    ) = buildOutgoingPacket {
         require(captcha.length == 4) { "captcha.length must == 4" }
-    }
-
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(bot)
-        this.writeHex(TIMProtocol.fixVer)
-        this.writeHex(TIMProtocol.key00BA)
-        this.encryptAndWrite(TIMProtocol.key00BA) {
+        writeQQ(bot)
+        writeHex(TIMProtocol.fixVer)
+        writeHex(TIMProtocol.key00BA)
+        encryptAndWrite(TIMProtocol.key00BA) {
             writeHex("00 02 00 00 08 04 01 E0")
             writeHex(TIMProtocol.constantData2)
             writeHex("01 00 38")
@@ -82,16 +77,16 @@ class SubmitCaptchaPacket(
 /**
  * 刷新验证码
  */
-@PacketId(0x00_BAu)
-class OutgoingCaptchaRefreshPacket(
-    private val qq: UInt,
-    private val token0825: ByteArray
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(qq)
-        this.writeHex(TIMProtocol.fixVer)
-        this.writeHex(TIMProtocol.key00BA)
-        this.encryptAndWrite(TIMProtocol.key00BA) {
+@AnnotatedId(KnownPacketId.CAPTCHA)
+object OutgoingCaptchaRefreshPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        qq: UInt,
+        token0825: ByteArray
+    ) = buildOutgoingPacket {
+        writeQQ(qq)
+        writeHex(TIMProtocol.fixVer)
+        writeHex(TIMProtocol.key00BA)
+        encryptAndWrite(TIMProtocol.key00BA) {
             writeHex("00 02 00 00 08 04 01 E0")
             writeHex(TIMProtocol.constantData2)
             writeHex("00 00 38")
@@ -109,14 +104,12 @@ class OutgoingCaptchaRefreshPacket(
  *
  * @author Him188moe
  */
-@PacketId(0x00_BAu)
+@AnnotatedId(KnownPacketId.CAPTCHA)
 open class CaptchaTransmissionResponsePacket(input: ByteReadPacket) : ServerCaptchaPacket(input) {
-
     lateinit var captchaSectionN: IoBuffer
     lateinit var captchaToken: IoBuffer//56bytes
     var transmissionCompleted: Boolean = false//验证码是否已经传输完成
     lateinit var token00BA: ByteArray//40 bytes
-
 
     override fun decode() = with(input) {
         input.discardExact(10)//13 00 05 01 00 00 01 23 00 38
@@ -148,7 +141,7 @@ fun main() {
  *
  * @author Him188moe
  */
-@PacketId(0x00_BAu)
+@AnnotatedId(KnownPacketId.CAPTCHA)
 class CaptchaCorrectPacket(input: ByteReadPacket) : ServerCaptchaPacket(input) {
     lateinit var token00BA: ByteArray//56 bytes
 
@@ -158,10 +151,10 @@ class CaptchaCorrectPacket(input: ByteReadPacket) : ServerCaptchaPacket(input) {
     }
 }
 
-@PacketId(0x00_BAu)
+@AnnotatedId(KnownPacketId.CAPTCHA)
 abstract class ServerCaptchaPacket(input: ByteReadPacket) : ServerPacket(input) {
 
-    @PacketId(0x00_BAu)
+    @AnnotatedId(KnownPacketId.CAPTCHA)
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         fun decrypt(): ServerCaptchaPacket {
             return this.decryptAsByteArray(TIMProtocol.key00BA) { data ->

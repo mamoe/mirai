@@ -4,20 +4,17 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.applySequence
-import net.mamoe.mirai.network.protocol.tim.packet.decryptBy
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.*
 
 /**
- * 事件的识别 ID. 在 [事件确认包][ServerEventPacket.ResponsePacket] 中被使用.
+ * 事件的识别 ID. 在 [事件确认包][ServerEventPacket.EventResponse] 中被使用.
  */
 data class EventPacketIdentity(
-        val from: UInt,//对于好友消息, 这个是发送人
-        val to: UInt,//对于好友消息, 这个是bot
-        internal val uniqueId: IoBuffer//8
+    val from: UInt,//对于好友消息, 这个是发送人
+    val to: UInt,//对于好友消息, 这个是bot
+    internal val uniqueId: IoBuffer//8
 ) {
     override fun toString(): String = "($from->$to)"
 }
@@ -28,8 +25,8 @@ fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = 
     writeFully(uniqueId)
 }
 
-fun <S : ServerEventPacket> S.applyId(id: UShort): S {
-    this.id = id
+fun <S : ServerEventPacket> S.applyId(id: PacketId): S {
+    this.packetId = id
     return this
 }
 
@@ -39,14 +36,14 @@ fun <S : ServerEventPacket> S.applyId(id: UShort): S {
  * @author Him188moe
  */
 abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: EventPacketIdentity) : ServerPacket(input) {
-    override var id: UShort = 0u
+    override var packetId: PacketId = NullPacketId
 
-    class Raw(input: ByteReadPacket, override val id: UShort) : ServerPacket(input) {
+    class Raw(input: ByteReadPacket, override val packetId: PacketId) : ServerPacket(input) {
         fun distribute(): ServerEventPacket = with(input) {
             val eventIdentity = EventPacketIdentity(
-                    from = readUInt(),
-                    to = readUInt(),
-                    uniqueId = readIoBuffer(8)
+                from = readUInt(),
+                to = readUInt(),
+                uniqueId = readIoBuffer(8)
             )
             discardExact(2)
             val type = readUShort()
@@ -81,10 +78,10 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                     else /*0x22*/ ServerFriendTypingCanceledPacket(input, eventIdentity)*/
                 }*/
                 0x0210u -> IgnoredServerEventPacket(
-                        eventId = type.toByteArray(),
-                        showData = true,
-                        input = input,
-                        eventIdentity = eventIdentity
+                    eventId = type.toByteArray(),
+                    showData = true,
+                    input = input,
+                    eventIdentity = eventIdentity
                 )
 
                 //"02 10", "00 12" -> ServerUnknownEventPacket(input, eventIdentity)
@@ -93,29 +90,37 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                     MiraiLogger.debug("UnknownEvent type = ${type.toByteArray().toUHexString()}")
                     UnknownServerEventPacket(input, eventIdentity)
                 }
-            }.applyId(id).applySequence(sequenceId)
+            }.applyId(packetId).applySequence(sequenceId)
         }
 
-        class Encrypted(input: ByteReadPacket, override var id: UShort, override var sequenceId: UShort) : ServerPacket(input) {
-            fun decrypt(sessionKey: ByteArray): Raw = Raw(this.decryptBy(sessionKey), id).applySequence(sequenceId)
+        class Encrypted(input: ByteReadPacket, override var packetId: PacketId, override var sequenceId: UShort) :
+            ServerPacket(input) {
+            fun decrypt(sessionKey: ByteArray): Raw =
+                Raw(this.decryptBy(sessionKey), packetId).applySequence(sequenceId)
         }
     }
 
-    inner class ResponsePacket(
-            val bot: UInt,
-            val sessionKey: ByteArray
-    ) : OutgoingPacket() {
-        override val id: UShort get() = this@ServerEventPacket.id
-        override val sequenceId: UShort get() = this@ServerEventPacket.sequenceId
+    @Suppress("FunctionName")
+    fun ResponsePacket(
+        bot: UInt,
+        sessionKey: ByteArray
+    ): OutgoingPacket = EventResponse(this.packetId, this.sequenceId, bot, sessionKey, this.eventIdentity)
 
-        override fun encode(builder: BytePacketBuilder) = with(builder) {
-            this.writeQQ(bot)
-            this.writeHex(TIMProtocol.fixVer2)
-            this.encryptAndWrite(sessionKey) {
-                writeEventPacketIdentity(eventIdentity)
+    @Suppress("FunctionName")
+    object EventResponse : OutgoingPacketBuilder {
+        operator fun invoke(
+            id: PacketId,
+            sequenceId: UShort,
+            bot: UInt,
+            sessionKey: ByteArray,
+            identity: EventPacketIdentity
+        ): OutgoingPacket = buildOutgoingPacket(name = "EventResponse", id = id, sequenceId = sequenceId) {
+            writeQQ(bot)
+            writeHex(TIMProtocol.fixVer2)
+            encryptAndWrite(sessionKey) {
+                writeEventPacketIdentity(identity)
             }
         }
-
     }
 }
 
@@ -123,7 +128,12 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
  * 忽略的事件
  */
 @Suppress("unused")
-class IgnoredServerEventPacket(val eventId: ByteArray, private val showData: Boolean = false, input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
+class IgnoredServerEventPacket(
+    val eventId: ByteArray,
+    private val showData: Boolean = false,
+    input: ByteReadPacket,
+    eventIdentity: EventPacketIdentity
+) : ServerEventPacket(input, eventIdentity) {
     override fun decode() {
         if (showData) {
             MiraiLogger.debug("IgnoredServerEventPacket data: " + this.input.readBytes().toUHexString())
@@ -136,7 +146,8 @@ class IgnoredServerEventPacket(val eventId: ByteArray, private val showData: Boo
 /**
  * Unknown event
  */
-class UnknownServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) : ServerEventPacket(input, eventIdentity) {
+class UnknownServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) :
+    ServerEventPacket(input, eventIdentity) {
     override fun decode() {
         MiraiLogger.debug("UnknownServerEventPacket data: " + this.input.readBytes().toUHexString())
     }

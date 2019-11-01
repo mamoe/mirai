@@ -34,11 +34,12 @@ import kotlin.coroutines.CoroutineContext
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) : BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
+internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
+    BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
     override val coroutineContext: CoroutineContext =
         Dispatchers.Default + CoroutineExceptionHandler { _, e ->
-            bot.logger.error(e)
+            bot.logger.error("An exception was thrown in a coroutine under TIMBotNetworkHandler", e)
         } + SupervisorJob()
 
 
@@ -58,22 +59,23 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         temporaryPacketHandler.send(this[ActionPacketHandler].session)
     }
 
-    override suspend fun login(configuration: BotNetworkConfiguration): LoginResult = withContext(this.coroutineContext) {
-        TIMProtocol.SERVER_IP.forEach { ip ->
-            bot.logger.info("Connecting server $ip")
-            socket = BotSocketAdapter(ip, configuration)
+    override suspend fun login(configuration: BotNetworkConfiguration): LoginResult =
+        withContext(this.coroutineContext) {
+            TIMProtocol.SERVER_IP.forEach { ip ->
+                bot.logger.info("Connecting server $ip")
+                socket = BotSocketAdapter(ip, configuration)
 
-            loginResult = CompletableDeferred()
+                loginResult = CompletableDeferred()
 
-            socket.resendTouch().takeIf { it != LoginResult.TIMEOUT }?.let { return@withContext it }
+                socket.resendTouch().takeIf { it != LoginResult.TIMEOUT }?.let { return@withContext it }
 
-            println()
-            bot.logger.warning("Timeout. Retrying next server")
+                println()
+                bot.logger.warning("Timeout. Retrying next server")
 
-            socket.close()
+                socket.close()
+            }
+            return@withContext LoginResult.TIMEOUT
         }
-        return@withContext LoginResult.TIMEOUT
-    }
 
     internal var loginResult: CompletableDeferred<LoginResult> = CompletableDeferred()
 
@@ -85,7 +87,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
         add(EventPacketHandler(session).asNode(EventPacketHandler))
         add(ActionPacketHandler(session).asNode(ActionPacketHandler))
-        bot.logger.warning("Successfully logged in")
+        bot.logger.info("Successfully logged in")
     }
 
     private lateinit var sessionKey: ByteArray
@@ -210,7 +212,8 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                 // Remove first to release the lock
                 handlersLock.withLock {
-                    temporaryPacketHandlers.filter { it.filter(session, packet) }.also { temporaryPacketHandlers.removeAll(it) }
+                    temporaryPacketHandlers.filter { it.filter(session, packet) }
+                        .also { temporaryPacketHandlers.removeAll(it) }
                 }.forEach {
                     it.doReceiveWithoutExceptions(packet)
                 }
@@ -232,42 +235,6 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
             }
         }
 
-        /* todo 修改为这个模式是否更好?
-
-        interface Pk
-
-        object TestPacket : Pk {
-            operator fun invoke(bot: UInt): TestPacket.(BytePacketBuilder) -> Unit {
-
-            }
-        }
-
-        override inline fun <reified P : Pk> send(p: P.(BytePacketBuilder) -> Unit): UShort {
-            val encoded = with(P::class.objectInstance!!){
-                buildPacket {
-                    this@with.p(this)
-                }
-            }
-        }*/
-
-        /* todo 修改为这个模式是否更好?
-
-        interface Pk
-
-        object TestPacket : Pk {
-            operator fun invoke(bot: UInt):ByteReadPacket = buildPacket {
-
-            }
-        }
-
-        override inline fun send(p: ByteReadPacket): UShort {
-            sendPacket{
-                // write packet head
-                // write version
-                // write bot qq number
-                writePacket(p)
-            }
-        }*/
         override suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext) {
             check(channel.isOpen) { "channel is not open" }
 
@@ -275,10 +242,10 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
                 return@withContext
             }
 
-            packet.buildAndUse { build ->
+            packet.delegate.use { built ->
                 val buffer = IoBuffer.Pool.borrow()
                 try {
-                    build.readAvailable(buffer)
+                    built.readAvailable(buffer)
                     val shouldBeSent = buffer.readRemaining
                     check(channel.send(buffer) == shouldBeSent) { "Buffer is not entirely sent. Required sent length=$shouldBeSent, but after channel.send, buffer remains ${buffer.readBytes().toUHexString()}" }//JVM: withContext(IO)
                 } catch (e: SendPacketInternalException) {
@@ -476,7 +443,7 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
 
                 is SessionKeyResponsePacket -> {
                     sessionKey = packet.sessionKey
-                    bot.logger.warning("sessionKey = ${sessionKey.toUHexString()}")
+                    bot.logger.info("sessionKey = ${sessionKey.toUHexString()}")
 
                     heartbeatJob = launch {
                         while (socket.isOpen) {

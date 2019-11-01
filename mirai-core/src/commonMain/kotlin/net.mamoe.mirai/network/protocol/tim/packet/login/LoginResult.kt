@@ -43,7 +43,7 @@ enum class LoginResult {
     UNKNOWN,
 
     /**
-     * 未知. 更换服务器或等几分钟再登录可能解决.
+     * 包数据错误
      */
     INTERNAL_ERROR,
 
@@ -57,7 +57,7 @@ enum class LoginResult {
  * 如果 [this] 不为 [LoginResult.SUCCESS] 就抛出消息为 [lazyMessage] 的 [IllegalStateException]
  */
 fun LoginResult.requireSuccess(lazyMessage: (LoginResult) -> String) {
-    if (this != LoginResult.SUCCESS) error(lazyMessage(this))
+    if (this != SUCCESS) error(lazyMessage(this))
 }
 
 
@@ -77,7 +77,7 @@ fun LoginResult.requireSuccess() {
  * @return 成功时 [Unit], 失败时 `null`
  */
 fun LoginResult.requireSuccessOrNull(): Unit? =
-    if (this != LoginResult.SUCCESS) Unit else null
+    if (this == SUCCESS) Unit else null
 
 
 /**
@@ -87,4 +87,4 @@ fun LoginResult.requireSuccessOrNull(): Unit? =
  * @return 成功时 [Unit], 失败时 `null`
  */
 inline fun <R> LoginResult.ifFail(block: (LoginResult) -> R): R? =
-    if (this != LoginResult.SUCCESS) block(this) else null
+    if (this != SUCCESS) block(this) else null

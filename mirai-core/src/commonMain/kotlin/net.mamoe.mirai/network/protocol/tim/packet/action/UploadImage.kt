@@ -12,10 +12,7 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
-import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket.Response.State.*
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.qqAccount
@@ -132,15 +129,15 @@ internal suspend inline fun HttpClient.postImage(
  * 似乎没有必要. 服务器的返回永远都是 01 00 00 00 02 00 00
  */
 @Deprecated("Useless packet")
-@PacketId(0X01_BDu)
+@AnnotatedId(KnownPacketId.SUBMIT_IMAGE_FILE_NAME)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-class SubmitImageFilenamePacket(
-    private val bot: UInt,
-    private val target: UInt,
-    private val filename: String,
-    private val sessionKey: ByteArray
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+object SubmitImageFilenamePacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        target: UInt,
+        filename: String,
+        sessionKey: ByteArray
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer2)//?
         //writeHex("04 00 00 00 01 2E 01 00 00 69 35")
@@ -168,7 +165,7 @@ class SubmitImageFilenamePacket(
         //解密body=01 3E 03 3F A2 7C BC D3 C1 00 00 27 1C 00 0A 00 01 00 01 00 30 55 73 65 72 44 61 74 61 43 75 73 74 6F 6D 46 61 63 65 3A 31 5C 29 37 42 53 4B 48 32 44 35 54 51 28 5A 35 7D 35 24 56 5D 32 35 49 4E 2E 6A 70 67 00 00 03 73 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 2F 02
     }
 
-    @PacketId(0x01_BDu)
+    @AnnotatedId(KnownPacketId.SUBMIT_IMAGE_FILE_NAME)
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
         override fun decode() = with(input) {
@@ -188,16 +185,15 @@ class SubmitImageFilenamePacket(
  * - 服务器已经存有这个图片
  * - 服务器未存有, 返回一个 key 用于客户端上传
  */
-@PacketId(0x03_52u)
+@AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-class FriendImageIdRequestPacket(
-    private val bot: UInt,
-    private val sessionKey: ByteArray,
-    private val target: UInt,
-    private val image: ExternalImage
-) : OutgoingPacket() {
-
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+object FriendImageIdRequestPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        sessionKey: ByteArray,
+        target: UInt,
+        image: ExternalImage
+    ) = buildOutgoingPacket {
         writeQQ(bot)
         writeHex("04 00 00 00 01 2E 01 00 00 69 35 00 00 00 00 00 00 00 00")
 
@@ -258,7 +254,7 @@ class FriendImageIdRequestPacket(
         }
     }
 
-    @PacketId(0x0352u)
+    @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
     @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
         /**
@@ -317,16 +313,15 @@ class FriendImageIdRequestPacket(
 /**
  * 获取 Image Id 和上传用的一个 uKey
  */
-@PacketId(0x0388u)
+@AnnotatedId(KnownPacketId.GROUP_IMAGE_ID)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-class GroupImageIdRequestPacket(
-    private val bot: UInt,
-    private val groupInternalId: GroupInternalId,
-    private val image: ExternalImage,
-    private val sessionKey: ByteArray
-) : OutgoingPacket() {
-
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+object GroupImageIdRequestPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        groupInternalId: GroupInternalId,
+        image: ExternalImage,
+        sessionKey: ByteArray
+    ) = buildOutgoingPacket {
         writeQQ(bot)
         writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
 
@@ -378,11 +373,9 @@ class GroupImageIdRequestPacket(
         }
     }
 
-    companion object {
-        private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x36u, 0x35u, 0x36u)
-    }
+    private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x36u, 0x35u, 0x36u)
 
-    @PacketId(0x0388u)
+    @AnnotatedId(KnownPacketId.GROUP_IMAGE_ID)
     @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
         lateinit var state: State

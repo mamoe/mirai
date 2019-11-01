@@ -5,6 +5,7 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.KnownPacketId.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
@@ -13,11 +14,11 @@ import net.mamoe.mirai.utils.decryptBy
 
 
 fun ByteReadPacket.readRemainingBytes(
-        n: Int = remaining.toInt()//not that safe but adequate
+    n: Int = remaining.toInt()//not that safe but adequate
 ): ByteArray = ByteArray(n).also { readAvailable(it, 0, n) }
 
 fun ByteReadPacket.readIoBuffer(
-        n: Int = remaining.toInt()//not that safe but adequate
+    n: Int = remaining.toInt()//not that safe but adequate
 ): IoBuffer = IoBuffer.Pool.borrow().also { this.readFully(it, n) }
 
 fun ByteReadPacket.readIoBuffer(n: Number) = this.readIoBuffer(n.toInt())
@@ -30,63 +31,55 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
     val sequenceId = readUShort()
 
     discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00. 但更可能是应该 discard 8
-    return when (id.toUInt()) {
-        0x08_25u -> TouchResponsePacket.Encrypted(this)
-        0x08_36u -> {
+    return when (PacketId(id)) {
+        TOUCH -> TouchResponsePacket.Encrypted(this)
+        LOGIN ->
             //todo 不要用size分析
-            when (size) {
-                271, 207 -> return LoginResponseKeyExchangeResponsePacket.Encrypted(this).applySequence(sequenceId)
-                871 -> return LoginResponseCaptchaInitPacket.Encrypted(this).applySequence(sequenceId)
+            when {
+                size == 271 || size == 207 -> LoginResponseKeyExchangeResponsePacket.Encrypted(this)
+                size == 871 -> LoginResponseCaptchaInitPacket.Encrypted(this)
+                size > 700 -> LoginResponseSuccessPacket.Encrypted(this)
+
+                else -> LoginResponseFailedPacket(
+                    when (size) {
+                        135 -> {//包数据错误. 目前怀疑是 tlv0006
+                            this.readRemainingBytes().cutTail(1).decryptBy(TIMProtocol.shareKey).read {
+                                discardExact(51)
+                                MiraiLogger.error("Internal error: " + readLVString())//抱歉，请重新输入密码。
+                            }
+
+                            LoginResult.INTERNAL_ERROR
+                        }
+
+                        319, 351 -> LoginResult.WRONG_PASSWORD
+                        //135 -> LoginState.RETYPE_PASSWORD
+                        63 -> LoginResult.BLOCKED
+                        263 -> LoginResult.UNKNOWN_QQ_NUMBER
+                        279, 495, 551, 487 -> LoginResult.DEVICE_LOCK
+                        343, 359 -> LoginResult.TAKEN_BACK
+
+                        else -> LoginResult.UNKNOWN
+                    }, this)
             }
+        SESSION_KEY -> SessionKeyResponsePacket.Encrypted(this)
 
-            if (size > 700) return LoginResponseSuccessPacket.Encrypted(this).applySequence(sequenceId)
+        CHANGE_ONLINE_STATUS -> ServerLoginSuccessPacket(this)
+        CAPTCHA -> ServerCaptchaPacket.Encrypted(this)
+        SERVER_EVENT_1, SERVER_EVENT_2 -> ServerEventPacket.Raw.Encrypted(this, PacketId(id), sequenceId)
+        FRIEND_ONLINE_STATUS_CHANGE -> ServerFriendOnlineStatusChangedPacket.Encrypted(this)
 
-            println("登录包size=$size")
-            return LoginResponseFailedPacket(
-                when (size) {
-                135 -> {//包数据错误. 目前怀疑是 tlv0006
-                    this.readRemainingBytes().cutTail(1).decryptBy(TIMProtocol.shareKey).read {
-                        discardExact(51)
-                        MiraiLogger.error("Internal error: " + readLVString())//抱歉，请重新输入密码。
-                    }
+        S_KEY -> ResponsePacket.Encrypted<RequestSKeyPacket.Response>(this)
+        ACCOUNT_INFO -> ResponsePacket.Encrypted<RequestAccountInfoPacket.Response>(this)
+        SEND_GROUP_MESSAGE -> ResponsePacket.Encrypted<SendGroupMessagePacket.Response>(this)
+        SEND_FRIEND_MESSAGE -> ResponsePacket.Encrypted<SendFriendMessagePacket.Response>(this)
+        CAN_ADD_FRIEND -> ResponsePacket.Encrypted<CanAddFriendPacket.Response>(this)
+        HEARTBEAT -> ResponsePacket.Encrypted<HeartbeatPacket.Response>(this)
+        GROUP_IMAGE_ID -> ResponsePacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
+        FRIEND_IMAGE_ID
+        -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
+        // 0x01_BDu -> EventResponse.Encrypted<SubmitImageFilenamePacket.Response>(this)
 
-                    LoginResult.INTERNAL_ERROR
-                } //可能是包数据错了. 账号没有被ban, 用TIM官方可以登录
-
-                319, 351 -> LoginResult.WRONG_PASSWORD
-                //135 -> LoginState.RETYPE_PASSWORD
-                63 -> LoginResult.BLOCKED
-                263 -> LoginResult.UNKNOWN_QQ_NUMBER
-                279, 495, 551, 487 -> LoginResult.DEVICE_LOCK
-                343, 359 -> LoginResult.TAKEN_BACK
-
-                else -> LoginResult.UNKNOWN
-                /*
-                //unknown
-                63 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
-                351 -> throw IllegalArgumentException(bytes.size.toString() + " (Unknown error)")
-
-                else -> throw IllegalArgumentException(bytes.size.toString())*/
-            }, this).applySequence(sequenceId)
-        }
-        0x08_28u -> SessionKeyResponsePacket.Encrypted(this)
-
-        0x00_ECu -> ServerLoginSuccessPacket(this)
-        0x00_BAu -> ServerCaptchaPacket.Encrypted(this)
-        0x00_CEu, 0x00_17u -> ServerEventPacket.Raw.Encrypted(this, id, sequenceId)
-        0x00_81u -> ServerFriendOnlineStatusChangedPacket.Encrypted(this)
-
-        0x00_1Du -> ResponsePacket.Encrypted<RequestSKeyPacket.Response>(this)
-        0X00_5Cu -> ResponsePacket.Encrypted<RequestAccountInfoPacket.Response>(this)
-        0x00_02u -> ResponsePacket.Encrypted<SendGroupMessagePacket.Response>(this)
-        0x00_CDu -> ResponsePacket.Encrypted<SendFriendMessagePacket.Response>(this)
-        0x00_A7u -> ResponsePacket.Encrypted<CanAddFriendPacket.Response>(this)
-        0x00_58u -> ResponsePacket.Encrypted<HeartbeatPacket.Response>(this)
-        0x03_88u -> ResponsePacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
-        0x03_52u -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
-        // 0x01_BDu -> ResponsePacket.Encrypted<SubmitImageFilenamePacket.Response>(this)
-
-        else -> UnknownServerPacket.Encrypted(this, id, sequenceId)
+        else -> UnknownServerPacket.Encrypted(this, PacketId(id), sequenceId)
     }.applySequence(sequenceId)
 }
 
@@ -130,7 +123,8 @@ fun Input.readTLVMap(expectingEOF: Boolean = false): Map<Int, ByteArray> {
     return map
 }
 
-fun Map<Int, ByteArray>.printTLVMap(name: String) = debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() })
+fun Map<Int, ByteArray>.printTLVMap(name: String) =
+    debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() })
 
 fun Input.readString(length: Number): String = String(this.readBytes(length.toInt()))
 

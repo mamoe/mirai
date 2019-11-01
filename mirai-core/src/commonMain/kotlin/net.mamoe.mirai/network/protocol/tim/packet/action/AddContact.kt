@@ -2,7 +2,6 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUShort
@@ -18,13 +17,13 @@ import net.mamoe.mirai.utils.io.writeQQ
  * @author Him188moe
  */
 @Response(CanAddFriendPacket.Response::class)
-@PacketId(0x00_A7u)
-class CanAddFriendPacket(
-        val bot: UInt,
-        val qq: UInt,
-        val sessionKey: ByteArray
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+@AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
+object CanAddFriendPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        qq: UInt,
+        sessionKey: ByteArray
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
@@ -32,7 +31,7 @@ class CanAddFriendPacket(
         }
     }
 
-    @PacketId(0x00_A7u)
+    @AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
     class Response(input: ByteReadPacket) : ResponsePacket(input) {
         lateinit var state: State
 
@@ -81,16 +80,16 @@ class CanAddFriendPacket(
 /**
  * 请求添加好友
  */
-@PacketId(0x00_AEu)
-class AddFriendPacket(
-        val bot: UInt,
-        val qq: UInt,
-        val sessionKey: ByteArray
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
-        this.writeQQ(bot)
-        this.writeHex(TIMProtocol.fixVer2)
-        this.encryptAndWrite(sessionKey) {
+@AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
+object AddFriendPacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        bot: UInt,
+        qq: UInt,
+        sessionKey: ByteArray
+    ): OutgoingPacket = buildOutgoingPacket {
+        writeQQ(bot)
+        writeHex(TIMProtocol.fixVer2)
+        encryptAndWrite(sessionKey) {
             writeHex("01 00 01")
             writeQQ(qq)
         }

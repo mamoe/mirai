@@ -103,7 +103,25 @@ inline val BotSession.isOpen: Boolean get() = socket.isOpen
 inline val BotSession.qqAccount: UInt get() = bot.account.id
 
 /**
- * 取得 [T] 的 [BotSession].
+ * 取得 [BotNetworkHandler] 的 [BotSession].
  * 实际上是一个捷径.
  */
-val <T : BotNetworkHandler<*>> T.session get() = this[ActionPacketHandler].session
+val BotNetworkHandler<*>.session get() = this[ActionPacketHandler].session
+
+/**
+ * 取得 [BotNetworkHandler] 的 sessionKey.
+ * 实际上是一个捷径.
+ */
+inline val BotNetworkHandler<*>.sessionKey get() = this.session.sessionKey
+
+/**
+ * 取得 [Bot] 的 [BotSession].
+ * 实际上是一个捷径.
+ */
+inline val Bot.session get() = this.network.session
+
+/**
+ * 取得 [Bot] 的 `sessionKey`.
+ * 实际上是一个捷径.
+ */
+inline val Bot.sessionKey get() = this.session.sessionKey

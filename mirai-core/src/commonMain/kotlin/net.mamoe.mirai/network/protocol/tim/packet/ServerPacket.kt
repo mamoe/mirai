@@ -20,8 +20,11 @@ import kotlin.properties.Delegates
  *
  * @see parseServerPacket 解析包种类
  */
-abstract class ServerPacket(val input: ByteReadPacket) : Packet(), Closeable {
-    override val id: UShort by lazy { super.id }
+abstract class ServerPacket(val input: ByteReadPacket) : Packet, Closeable {
+    override val packetId: PacketId by lazy {
+        (this::class.annotations.firstOrNull { it is AnnotatedId } as? AnnotatedId)?.id
+            ?: error("Annotation AnnotatedId not found")
+    }
 
     override var sequenceId: UShort by Delegates.notNull()
 
@@ -52,9 +55,12 @@ fun ServerPacket.decryptBy(key1: ByteArray, key2: ByteArray): ByteReadPacket =
 
 
 fun ServerPacket.decryptBy(key1: String, key2: ByteArray): ByteReadPacket = this.decryptBy(key1.hexToBytes(), key2)
-fun ServerPacket.decryptBy(key1: String, key2: IoBuffer): ByteReadPacket = this.decryptBy(key1.hexToBytes(), key2.readBytes())
+fun ServerPacket.decryptBy(key1: String, key2: IoBuffer): ByteReadPacket =
+    this.decryptBy(key1.hexToBytes(), key2.readBytes())
+
 fun ServerPacket.decryptBy(key1: ByteArray, key2: String): ByteReadPacket = this.decryptBy(key1, key2.hexToBytes())
-fun ServerPacket.decryptBy(keyHex1: String, keyHex2: String): ByteReadPacket = this.decryptBy(keyHex1.hexToBytes(), keyHex2.hexToBytes())
+fun ServerPacket.decryptBy(keyHex1: String, keyHex2: String): ByteReadPacket =
+    this.decryptBy(keyHex1.hexToBytes(), keyHex2.hexToBytes())
 
 inline fun <R> ServerPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
@@ -63,7 +69,9 @@ inline fun <R> ServerPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteAr
         consumer(it.decryptBy(key, length))
     }.also { input.close() }
 
-inline fun <R> ServerPacket.decryptAsByteArray(keyHex: String, consumer: (ByteArray) -> R): R = this.decryptAsByteArray(keyHex.hexToBytes(), consumer)
+inline fun <R> ServerPacket.decryptAsByteArray(keyHex: String, consumer: (ByteArray) -> R): R =
+    this.decryptAsByteArray(keyHex.hexToBytes(), consumer)
+
 inline fun <R> ServerPacket.decryptAsByteArray(key: IoBuffer, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
         val length = input.remaining.toInt() - 1

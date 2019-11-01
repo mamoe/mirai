@@ -2,26 +2,23 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.*
 
 
-@PacketId(0x00_02u)
-class SendGroupMessagePacket(
-    private val botQQ: UInt,
-    private val groupInternalId: GroupInternalId,
-    private val sessionKey: ByteArray,
-    private val message: MessageChain
-) : OutgoingPacket() {
-    override fun encode(builder: BytePacketBuilder) = with(builder) {
+@AnnotatedId(KnownPacketId.SEND_GROUP_MESSAGE)
+object SendGroupMessagePacket : OutgoingPacketBuilder {
+    operator fun invoke(
+        botQQ: UInt,
+        groupInternalId: GroupInternalId,
+        sessionKey: ByteArray,
+        message: MessageChain
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(botQQ)
         writeHex(TIMProtocol.fixVer2)
 
@@ -49,6 +46,6 @@ class SendGroupMessagePacket(
         }
     }
 
-    @PacketId(0x00_02u)
+    @AnnotatedId(KnownPacketId.SEND_GROUP_MESSAGE)
     class Response(input: ByteReadPacket) : ResponsePacket(input)
 }

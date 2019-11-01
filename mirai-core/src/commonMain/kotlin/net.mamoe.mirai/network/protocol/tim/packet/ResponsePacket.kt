@@ -8,7 +8,7 @@ import kotlinx.io.core.ByteReadPacket
  * 它们都使用 sessionKey 解密.
  * 它们都必须有一个公开的仅有一个 [ByteReadPacket] 参数的构造器.
  *
- * 注意: 需要指定 ID, 通过 [PacketId].
+ * 注意: 需要指定 ID, 通过 [AnnotatedId].
  */
 abstract class ResponsePacket(input: ByteReadPacket) : ServerPacket(input) {
 

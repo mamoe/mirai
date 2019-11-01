@@ -14,17 +14,17 @@ sealed class PacketEvent<out P : Packet>(bot: Bot, open val packet: P) : BotEven
 
 /* Client to Server */
 
-sealed class ClientPacketEvent<out P : OutgoingPacket>(bot: Bot, packet: P) : PacketEvent<P>(bot, packet)
+sealed class ClientPacketEvent(bot: Bot, packet: OutgoingPacket) : PacketEvent<OutgoingPacket>(bot, packet)
 
 /**
  * 包已发送. 不可被取消
  */
-class PacketSentEvent<P : OutgoingPacket>(bot: Bot, packet: P) : ClientPacketEvent<P>(bot, packet)
+class PacketSentEvent(bot: Bot, packet: OutgoingPacket) : ClientPacketEvent(bot, packet)
 
 /**
  * 包发送前. 可被取消
  */
-class BeforePacketSendEvent<P : OutgoingPacket>(bot: Bot, packet: P) : ClientPacketEvent<P>(bot, packet), Cancellable
+class BeforePacketSendEvent(bot: Bot, packet: OutgoingPacket) : ClientPacketEvent(bot, packet), Cancellable
 
 
 /* Server to Client */
