@@ -20,21 +20,19 @@ import kotlin.math.min
  * @return 用户输入得到的验证码
  */
 internal actual suspend fun solveCaptcha(captchaBuffer: IoBuffer): String? = captchaLock.withLock {
-    val tempFile = File(System.getProperty("user.dir") + "/temp/Captcha.png").also {
-        withContext(Dispatchers.IO) {
-            it.createNewFile(); @Suppress("EXPERIMENTAL_API_USAGE")
-        it.writeChannel().writeFully(captchaBuffer)
-        }
-    }
+    val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
     withContext(Dispatchers.IO) {
-        MiraiLogger.info(ImageIO.read(tempFile.inputStream()).createCharImg())
-    }
-    MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
-    try {
+        tempFile.createNewFile()
+        @Suppress("EXPERIMENTAL_API_USAGE")
+        try {
+            tempFile.writeChannel().writeFully(captchaBuffer)
+            MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
+            MiraiLogger.info("若看不清字符图片, 请查看 ${tempFile.absolutePath}")
+        } catch (e: Exception) {
+            MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+        }
 
-        MiraiLogger.info("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
-    } catch (e: Exception) {
-        MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+        MiraiLogger.info(ImageIO.read(tempFile.inputStream()).createCharImg())
     }
     MiraiLogger.info("若要更换验证码, 请直接回车")
     readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
