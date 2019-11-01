@@ -49,7 +49,7 @@ data class BotAccount(
  *
  * @author Him188moe
  * @author NaturalHG
- * @see net.mamoe.mirai.contact.Contact
+ * @see Contact
  */
 class Bot(val account: BotAccount, val logger: MiraiLogger) {
     constructor(qq: UInt, password: String) : this(BotAccount(qq, password))
