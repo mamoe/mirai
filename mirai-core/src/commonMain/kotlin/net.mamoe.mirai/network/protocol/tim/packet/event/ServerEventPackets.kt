@@ -124,6 +124,7 @@ class IgnoredServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacket
  * Unknown event
  */
 class UnknownServerEventPacket(
+    @Suppress("MemberVisibilityCanBePrivate")
     val eventId: ByteArray,
     private val showData: Boolean = false,
     input: ByteReadPacket,

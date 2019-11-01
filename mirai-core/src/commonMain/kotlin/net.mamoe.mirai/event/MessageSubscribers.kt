@@ -36,7 +36,7 @@ abstract class SenderAndMessage<TContact : Contact>(
      */
     suspend inline fun reply(message: MessageChain) = subject.sendMessage(message)
 
-    suspend fun reply(message: Message) = subject.sendMessage(message.toChain())
+    suspend fun reply(message: Message) = subject.sendMessage(message.singleChain())
     suspend fun reply(plain: String) = subject.sendMessage(plain.toMessage())
 
 

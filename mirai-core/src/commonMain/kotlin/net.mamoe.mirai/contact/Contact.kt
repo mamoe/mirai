@@ -5,8 +5,7 @@ package net.mamoe.mirai.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
-import net.mamoe.mirai.message.PlainText
-import net.mamoe.mirai.message.toChain
+import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
 import net.mamoe.mirai.withSession
@@ -25,13 +24,11 @@ sealed class Contact(val bot: Bot, val id: UInt) {
 
     abstract suspend fun sendMessage(message: MessageChain)
 
-    abstract suspend fun sendXMLMessage(message: String)
 
+    //这两个方法应写为扩展函数, 但为方便 import 还是写在这里
+    suspend fun sendMessage(plain: String) = sendMessage(plain.singleChain())
 
-    //这两个方法写在 Contact 里面更适合. 因为 import 不便
-    suspend fun sendMessage(plain: String) = sendMessage(PlainText(plain))
-
-    suspend fun sendMessage(message: Message) = sendMessage(message.toChain())
+    suspend fun sendMessage(message: Message) = sendMessage(message.singleChain())
 }
 
 /**
@@ -75,14 +72,10 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
         bot.network[EventPacketHandler].sendGroupMessage(this, message)
     }
 
-    override suspend fun sendXMLMessage(message: String) {
-
-    }
-
     companion object
 }
 
-inline fun <R> Group.withSession(block: BotSession.() -> R): R = bot.withSession(block)
+inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSession(block)
 
 /**
  * QQ 对象.
@@ -93,12 +86,17 @@ inline fun <R> Group.withSession(block: BotSession.() -> R): R = bot.withSession
  *
  * @author Him188moe
  */
-class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
+open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
     override suspend fun sendMessage(message: MessageChain) {
         bot.network[EventPacketHandler].sendFriendMessage(this, message)
     }
+}
 
-    override suspend fun sendXMLMessage(message: String) {
-        TODO()
+/**
+ * 群成员
+ */
+class Member internal constructor(bot: Bot, id: UInt, val group: Group) : QQ(bot, id) {
+    init {
+        TODO("Group member implementation")
     }
 }

@@ -107,6 +107,7 @@ interface Message {
  * 将 [this] 发送给指定联系人
  */
 suspend inline fun Message.sendTo(contact: Contact) = contact.sendMessage(this)
+
 // endregion
 
 // region PlainText
@@ -118,6 +119,22 @@ inline class PlainText(override val stringValue: String) : Message {
 
     companion object Key : Message.Key<PlainText>
 }
+
+/**
+ * 构造 [PlainText]
+ */
+fun String.toMessage(): PlainText = PlainText(this)
+
+/**
+ * 得到包含作为 [PlainText] 的 [this] 的 [MessageChain].
+ *
+ * @return 唯一成员且不可修改的 [SingleMessageChainImpl]
+ *
+ * @see SingleMessageChain
+ * @see SingleMessageChainImpl
+ */
+fun String.singleChain(): MessageChain = this.toMessage().singleChain()
+
 // endregion
 
 // region Image
@@ -231,7 +248,26 @@ fun SingleMessageChain(delegate: Message): MessageChain {
 }
 // endregion
 
-// region extensions
+// region extensions for MessageChain
+
+/**
+ * 得到包含 [this] 的 [MessageChain].
+ * 若 [this] 为 [MessageChain] 将直接返回 this
+ * 否则将调用 [SingleMessageChain] 构造一个唯一成员且不可修改的 [SingleMessageChainImpl]
+ *
+ * @see SingleMessageChain
+ * @see SingleMessageChainImpl
+ */
+fun Message.singleChain(): MessageChain = if (this is MessageChain) this else SingleMessageChain(this)
+
+@Deprecated(message = "deprected", replaceWith = ReplaceWith("this.singleChain()"), level = DeprecationLevel.WARNING)
+fun Message.toChain(): MessageChain = singleChain()
+
+/**
+ * 构造 [MessageChain]
+ */
+fun List<Message>.toMessageChain(): MessageChain = MessageChain(this)
+
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -248,6 +284,7 @@ inline fun <reified M : Message> MessageChain.first(): Message = this.first { M:
  * 获取第一个 [M] 类型的 [Message] 实例
  */
 inline fun <reified M : Message> MessageChain.any(): Boolean = this.firstOrNull { M::class.isInstance(it) } !== null
+
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -299,7 +336,7 @@ interface MessageChain : Message, MutableList<Message> {
     }
 
     operator fun plusAssign(plain: String) {
-        this.concat(plain.toMessage())
+        this.plusAssign(plain.toMessage())
     }
 
     /**
@@ -309,6 +346,71 @@ interface MessageChain : Message, MutableList<Message> {
      */
     @Suppress("UNCHECKED_CAST")
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
+}
+
+/**
+ * 空的 [Message].
+ *
+ * 它不包含任何元素, 但维护一个 'lazy' 的 [delegate].
+ *
+ * 只有在必要的时候才会创建 list, 如迭代([iterator]), 插入([add]), 连接([concat], [plus], [plusAssign])时.
+ *
+ * 它是一个正常的 [Message] 和 [Message]. 可以做所有 [Message] 能做的事.
+ */
+class EmptyMessageChain : MessageChain {
+    private val delegate: MessageChainImpl by lazy { MessageChainImpl() }
+    private inline val initialized: Boolean get() = (::delegate as Lazy<*>).isInitialized()
+
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> =
+        if (initialized) delegate.subList(
+            fromIndex,
+            toIndex
+        ) else throw IndexOutOfBoundsException("given args that from $fromIndex to $toIndex, but the list is empty")
+
+    override val stringValue: String
+        get() = if (initialized) delegate.stringValue else ""
+
+    override fun toString(): String = stringValue
+
+    override fun contains(sub: String): Boolean = if (initialized) delegate.contains(sub) else false
+    override fun contains(element: Message): Boolean = if (initialized) delegate.contains(element) else false
+    override fun concat(tail: Message): MessageChain = delegate.concat(tail)
+
+    override val size: Int = if (initialized) delegate.size else 0
+    override fun containsAll(elements: Collection<Message>): Boolean =
+        if (initialized) delegate.containsAll(elements) else false
+
+    override fun get(index: Int): Message =
+        if (initialized) delegate[index] else throw IndexOutOfBoundsException(index.toString())
+
+    override fun indexOf(element: Message): Int = if (initialized) delegate.indexOf(element) else -1
+    override fun isEmpty(): Boolean = if (initialized) delegate.isEmpty() else true
+    override fun iterator(): MutableIterator<Message> = delegate.iterator()
+
+    override fun lastIndexOf(element: Message): Int = if (initialized) delegate.lastIndexOf(element) else -1
+    override fun add(element: Message): Boolean = delegate.add(element)
+    override fun add(index: Int, element: Message) = delegate.add(index, element)
+    override fun addAll(index: Int, elements: Collection<Message>): Boolean = delegate.addAll(elements)
+    override fun addAll(elements: Collection<Message>): Boolean = delegate.addAll(elements)
+    override fun clear() {
+        if (initialized) delegate.clear()
+    }
+
+    override fun listIterator(): MutableListIterator<Message> = delegate.listIterator()
+
+    override fun listIterator(index: Int): MutableListIterator<Message> = delegate.listIterator()
+    override fun remove(element: Message): Boolean = if (initialized) delegate.remove(element) else false
+    override fun removeAll(elements: Collection<Message>): Boolean =
+        if (initialized) delegate.removeAll(elements) else false
+
+    override fun removeAt(index: Int): Message =
+        if (initialized) delegate.removeAt(index) else throw IndexOutOfBoundsException(index.toString())
+
+    override fun retainAll(elements: Collection<Message>): Boolean =
+        if (initialized) delegate.retainAll(elements) else false
+
+    override fun set(index: Int, element: Message): Message =
+        if (initialized) delegate.set(index, element) else throw IndexOutOfBoundsException(index.toString())
 }
 
 /**
@@ -335,44 +437,56 @@ object NullMessageChain : MessageChain {
     override fun get(index: Int): Message = throw NoSuchElementException()
     override fun indexOf(element: Message): Int = -1
     override fun isEmpty(): Boolean = true
-    override fun iterator(): MutableIterator<Message> = object : MutableIterator<Message> {
-        override fun hasNext(): Boolean = false
-        override fun next(): Message = throw NoSuchElementException()
-        override fun remove() = throw NoSuchElementException()
-    }
+    override fun iterator(): MutableIterator<Message> = EmptyMutableIterator()
 
     override fun lastIndexOf(element: Message): Int = -1
     override fun add(element: Message): Boolean = unsupported()
-    override fun add(index: Int, element: Message) = unsupported()
-    override fun addAll(index: Int, elements: Collection<Message>): Boolean = unsupported()
+    override fun add(index: Int, element: Message) = throw IndexOutOfBoundsException(index.toString())
+    override fun addAll(index: Int, elements: Collection<Message>): Boolean =
+        throw IndexOutOfBoundsException(index.toString())
+
     override fun addAll(elements: Collection<Message>): Boolean = unsupported()
     override fun clear() {}
-    override fun listIterator(): MutableListIterator<Message> = object : MutableListIterator<Message> {
-        override fun hasPrevious(): Boolean = false
-        override fun nextIndex(): Int = -1
-        override fun previous(): Message = throw NoSuchElementException()
-        override fun previousIndex(): Int = -1
-        override fun add(element: Message) = unsupported()
-        override fun hasNext(): Boolean = false
-        override fun next(): Message = throw NoSuchElementException()
-        override fun remove() = throw NoSuchElementException()
-        override fun set(element: Message) = unsupported()
-    }
+    override fun listIterator(): MutableListIterator<Message> = EmptyMutableListIterator()
 
-    override fun listIterator(index: Int): MutableListIterator<Message> = unsupported()
+    override fun listIterator(index: Int): MutableListIterator<Message> =
+        throw IndexOutOfBoundsException(index.toString())
+
     override fun remove(element: Message): Boolean = false
     override fun removeAll(elements: Collection<Message>): Boolean = false
-    override fun removeAt(index: Int): Message = throw NoSuchElementException()
+    override fun removeAt(index: Int): Message = throw IndexOutOfBoundsException(index.toString())
     override fun retainAll(elements: Collection<Message>): Boolean = false
-    override fun set(index: Int, element: Message): Message = unsupported()
+    override fun set(index: Int, element: Message): Message = throw IndexOutOfBoundsException(index.toString())
     private fun unsupported(): Nothing = throw UnsupportedOperationException()
 }
 
+// endregion
+
+// region internal
 
 // ==============================================================================
 // ================================== INTERNAL ==================================
 // ==============================================================================
 
+@Suppress("FunctionName")
+private fun <E> EmptyMutableIterator(): MutableIterator<E> = object : MutableIterator<E> {
+    override fun hasNext(): Boolean = false
+    override fun next(): E = throw NoSuchElementException()
+    override fun remove() = throw NoSuchElementException()
+}
+
+@Suppress("FunctionName")
+private fun <E> EmptyMutableListIterator(): MutableListIterator<E> = object : MutableListIterator<E> {
+    override fun hasPrevious(): Boolean = false
+    override fun nextIndex(): Int = -1
+    override fun previous(): E = throw NoSuchElementException()
+    override fun previousIndex(): Int = -1
+    override fun add(element: E) = throw UnsupportedOperationException()
+    override fun hasNext(): Boolean = false
+    override fun next(): E = throw NoSuchElementException()
+    override fun remove() = throw NoSuchElementException()
+    override fun set(element: E) = throw UnsupportedOperationException()
+}
 
 /**
  * [MessageChain] 实现
@@ -431,7 +545,8 @@ internal inline class MessageChainImpl constructor(
 
 /**
  * 单个成员的不可修改的 [MessageChain].
- * 在连接时将会把它当做一个普通 [Message] 看待.
+ *
+ * 在连接时将会把它当做一个普通 [Message] 看待, 但它不能被 [plusAssign]
  */
 internal inline class SingleMessageChainImpl(
     private val delegate: Message
@@ -441,14 +556,16 @@ internal inline class SingleMessageChainImpl(
     override val stringValue: String get() = this.delegate.stringValue
 
     override operator fun contains(sub: String): Boolean = delegate.contains(sub)
-    override fun concat(tail: Message): MessageChain {
-        if (tail is MessageChain) tail.forEach { child -> this.concat(child) }
+    override fun concat(tail: Message): MessageChain =
+        if (tail is MessageChain) tail.apply { concat(delegate) }
         else MessageChain(delegate, tail)
-        return this
-    }
+
+    override fun plusAssign(message: Message) =
+        throw UnsupportedOperationException("SingleMessageChainImpl cannot be plusAssigned")
 
     override fun toString(): String = stringValue
     // endregion
+
     // region MutableList override
     override fun containsAll(elements: Collection<Message>): Boolean = elements.all { it === delegate }
 
@@ -484,7 +601,9 @@ internal inline class SingleMessageChainImpl(
         override fun set(element: Message) = throw UnsupportedOperationException()
     }
 
-    override fun listIterator(index: Int): MutableListIterator<Message> = if (index == 0) listIterator() else throw UnsupportedOperationException()
+    override fun listIterator(index: Int): MutableListIterator<Message> =
+        if (index == 0) listIterator() else throw UnsupportedOperationException()
+
     override fun remove(element: Message): Boolean = throw UnsupportedOperationException()
     override fun removeAll(elements: Collection<Message>): Boolean = throw UnsupportedOperationException()
     override fun removeAt(index: Int): Message = throw UnsupportedOperationException()
@@ -515,3 +634,4 @@ internal inline class SingleMessageChainImpl(
     override val size: Int get() = 1
     // endregion
 }
+// endregion
