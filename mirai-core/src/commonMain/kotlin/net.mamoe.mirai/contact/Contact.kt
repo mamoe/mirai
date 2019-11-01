@@ -65,7 +65,7 @@ inline class GroupInternalId(val value: UInt)
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
 class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, groupId.value) {
     val internalId = GroupId(id).toInternalId()
-    val members: ContactList<QQ>
+    val members: ContactList<Member>
         get() = TODO("Implementing group members is less important")
 
     override suspend fun sendMessage(message: MessageChain) {
@@ -75,6 +75,10 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
     companion object
 }
 
+/**
+ * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
+ * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpect]
+ */
 inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSession(block)
 
 /**

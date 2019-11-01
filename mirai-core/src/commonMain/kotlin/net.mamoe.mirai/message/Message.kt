@@ -417,7 +417,7 @@ class EmptyMessageChain : MessageChain {
  * Null 的 [MessageChain].
  * 它不包含任何元素, 也没有创建任何 list.
  *
- * - 所有 get 方法均抛出 [NoSuchElementException]
+ * - 所有 get 方法均抛出 [IndexOutOfBoundsException]
  * - 所有 add 方法均抛出 [UnsupportedOperationException]
  * - 其他判断类方法均 false 或 -1
  */
@@ -434,7 +434,7 @@ object NullMessageChain : MessageChain {
     override fun concat(tail: Message): MessageChain = MessageChainImpl(tail)
     override val size: Int = 0
     override fun containsAll(elements: Collection<Message>): Boolean = false
-    override fun get(index: Int): Message = throw NoSuchElementException()
+    override fun get(index: Int): Message = throw IndexOutOfBoundsException()
     override fun indexOf(element: Message): Int = -1
     override fun isEmpty(): Boolean = true
     override fun iterator(): MutableIterator<Message> = EmptyMutableIterator()

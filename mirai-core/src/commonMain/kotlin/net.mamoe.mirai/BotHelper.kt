@@ -50,7 +50,7 @@ inline fun <R> Bot.withSession(block: BotSession.() -> R): R = with(this.network
 suspend inline fun Bot.sendPacket(packet: OutgoingPacket) = this.network.sendPacket(packet)
 
 /**
- * 使用在默认配置基础上修改的配置登录
+ * 使用在默认配置基础上修改的配置进行登录
  */
 suspend inline fun Bot.login(noinline configuration: BotNetworkConfiguration.() -> Unit): LoginResult = this.network.login(BotNetworkConfiguration().apply(configuration))
 
