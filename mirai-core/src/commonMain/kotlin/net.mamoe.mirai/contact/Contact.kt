@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.contact
 
@@ -8,6 +8,7 @@ import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
+import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.withSession
 
 class ContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf()
@@ -40,9 +41,19 @@ sealed class Contact(val bot: Bot, val id: UInt) {
  * @see GroupInternalId.toId 由 [GroupInternalId] 转换为 [GroupId]
  * @see GroupId.toInternalId 由 [GroupId] 转换为 [GroupInternalId]
  */
-inline class GroupId(val value: UInt)
+inline class GroupId(inline val value: UInt)
 
+/**
+ * 将 [this] 转为 [GroupId].
+ */
 fun UInt.groupId(): GroupId = GroupId(this)
+
+/**
+ * 将无符号整数格式的 [Long] 转为 [GroupId].
+ *
+ * 注: 在 Java 中常用 [Long] 来表示 [UInt]
+ */
+fun Long.groupId(): GroupId = GroupId(this.coerceAtLeastOrFail(0).toUInt())
 
 /**
  * 一些群 API 使用的 ID. 在使用时会特别注明
@@ -52,7 +63,7 @@ fun UInt.groupId(): GroupId = GroupId(this)
  * @see GroupInternalId.toId 由 [GroupInternalId] 转换为 [GroupId]
  * @see GroupId.toInternalId 由 [GroupId] 转换为 [GroupInternalId]
  */
-inline class GroupInternalId(val value: UInt)
+inline class GroupInternalId(inline val value: UInt)
 
 /**
  * 群.
