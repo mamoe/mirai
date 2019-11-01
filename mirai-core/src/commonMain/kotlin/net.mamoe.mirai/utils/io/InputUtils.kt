@@ -75,8 +75,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         CAN_ADD_FRIEND -> ResponsePacket.Encrypted<CanAddFriendPacket.Response>(this)
         HEARTBEAT -> ResponsePacket.Encrypted<HeartbeatPacket.Response>(this)
         GROUP_IMAGE_ID -> ResponsePacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
-        FRIEND_IMAGE_ID
-        -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
+        FRIEND_IMAGE_ID -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
         // 0x01_BDu -> EventResponse.Encrypted<SubmitImageFilenamePacket.Response>(this)
 
         else -> UnknownServerPacket.Encrypted(this, PacketId(id), sequenceId)

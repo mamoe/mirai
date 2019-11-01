@@ -72,8 +72,9 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
 
                 0x00A6u -> FriendMessageEventPacket(input, eventIdentity)
 
-                // "对方正在输入..."
-                0x0210u -> IgnoredServerEventPacket(input, eventIdentity)
+                0x0079u,
+                0x0210u // "对方正在输入..."
+                -> IgnoredServerEventPacket(input, eventIdentity)
 
                 else -> {
                     UnknownServerEventPacket(type.toByteArray(), true, input, eventIdentity)
