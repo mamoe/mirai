@@ -1,5 +1,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult.SUCCESS
+
 /**
  * 登录结果. 除 [SUCCESS] 外均为失败.
  * @see LoginResult.requireSuccess 要求成功
@@ -60,8 +62,29 @@ fun LoginResult.requireSuccess(lazyMessage: (LoginResult) -> String) {
 
 
 /**
- * 如果 [this] 不为 [LoginResult.SUCCESS] 就抛出消息为 "Login failed $this" 的 [IllegalStateException]
+ * 检查 [this] 为 [LoginResult.SUCCESS].
+ * 失败则 [error]
  */
 fun LoginResult.requireSuccess() {
-    if (this != LoginResult.SUCCESS) error("Login failed: $this")
+    if (requireSuccessOrNull() === null)
+        error("Login failed: $this")
 }
+
+/**
+ * 检查 [this] 为 [LoginResult.SUCCESS].
+ * 失败则返回 `null`
+ *
+ * @return 成功时 [Unit], 失败时 `null`
+ */
+fun LoginResult.requireSuccessOrNull(): Unit? =
+    if (this != LoginResult.SUCCESS) Unit else null
+
+
+/**
+ * 检查 [this] 为 [LoginResult.SUCCESS].
+ * 失败则返回 `null`
+ *
+ * @return 成功时 [Unit], 失败时 `null`
+ */
+inline fun <R> LoginResult.ifFail(block: (LoginResult) -> R): R? =
+    if (this != LoginResult.SUCCESS) block(this) else null

@@ -1,11 +1,11 @@
 package net.mamoe.mirai.utils
 
+import io.ktor.util.cio.writeChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.readBytes
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -20,19 +20,23 @@ import kotlin.math.min
  * @return 用户输入得到的验证码
  */
 internal actual suspend fun solveCaptcha(captchaBuffer: IoBuffer): String? = captchaLock.withLock {
-    val captcha = captchaBuffer.readBytes()
+    val tempFile = File(System.getProperty("user.dir") + "/temp/Captcha.png").also {
+        withContext(Dispatchers.IO) {
+            it.createNewFile(); @Suppress("EXPERIMENTAL_API_USAGE")
+        it.writeChannel().writeFully(captchaBuffer)
+        }
+    }
     withContext(Dispatchers.IO) {
-        MiraiLogger.verbose(ImageIO.read(captcha.inputStream()).createCharImg())
+        MiraiLogger.info(ImageIO.read(tempFile.inputStream()).createCharImg())
     }
-    MiraiLogger.verbose("需要验证码登录, 验证码为 4 字母")
+    MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
     try {
-        File(System.getProperty("user.dir") + "/temp/Captcha.png")
-                .let { withContext(Dispatchers.IO) { it.createNewFile(); it.writeBytes(captcha) } }
-        MiraiLogger.verbose("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
+
+        MiraiLogger.info("若看不清字符图片, 请查看 Mirai 目录下 /temp/Captcha.png")
     } catch (e: Exception) {
-        MiraiLogger.verbose("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+        MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
     }
-    MiraiLogger.verbose("若要更换验证码, 请直接回车")
+    MiraiLogger.info("若要更换验证码, 请直接回车")
     readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
 }
 

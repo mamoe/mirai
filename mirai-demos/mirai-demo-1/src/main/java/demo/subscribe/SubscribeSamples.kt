@@ -13,7 +13,7 @@ import net.mamoe.mirai.login
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingRawPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
-import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
+import net.mamoe.mirai.network.protocol.tim.packet.login.ifFail
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.io.hexToBytes
@@ -21,6 +21,7 @@ import net.mamoe.mirai.utils.io.toByteArray
 import net.mamoe.mirai.utils.io.toUHexString
 import net.mamoe.mirai.utils.toExternalImage
 import java.io.File
+import kotlin.system.exitProcess
 
 private fun readTestAccount(): BotAccount? {
     val file = File("testAccount.txt")
@@ -48,7 +49,10 @@ suspend fun main() {
     // 覆盖默认的配置
     bot.login {
         randomDeviceName = false
-    }.requireSuccess()
+    }.ifFail {
+        bot.logger.error("Login failed: $it")
+        exitProcess(1)
+    }
 
     bot.messageDSL()
     directlySubscribe(bot)
