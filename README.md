@@ -47,16 +47,16 @@ JVM 平台:
 
 #### Libraries used
 Mirai 使用以下开源库:
-- kotlin-stdlib
-- kotlinx-coroutines
-- kotlinx-io
-- kotlin-reflect
-- pcap4j
-- atomicfu
-- ktor
-- klock
-- tornadofx
-- javafx
+- [kotlin-stdlib](https://github.com/JetBrains/kotlin)
+- [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+- [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
+- [kotlin-reflect](https://github.com/JetBrains/kotlin)
+- [pcap4j](https://github.com/kaitoy/pcap4j)
+- [atomicfu](https://github.com/Kotlin/kotlinx.atomicfu)
+- [ktor](https://github.com/ktorio/ktor)
+- [klock](https://github.com/korlibs/klock)
+- [tornadofx](https://github.com/edvin/tornadofx)
+- [javafx](https://github.com/openjdk/jfx)
 
 ## Development Guide - Kotlin
 
