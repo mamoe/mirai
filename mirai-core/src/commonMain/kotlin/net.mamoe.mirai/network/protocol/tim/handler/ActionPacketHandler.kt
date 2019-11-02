@@ -29,14 +29,8 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
 
 
     @ExperimentalStdlibApi
-    override suspend fun onPacketReceived(packet: ServerPacket) = with(session) {
+    override suspend fun onPacketReceived(packet: ServerPacket): Unit = with(session) {
         when (packet) {
-            //is AddFriendPacket.Response -> {
-            //    this.uploadImageSessions.forEach {
-            //        it.onPacketReceived(packet)
-            //    }
-            //}
-
             is RequestSKeyPacket.Response -> {
                 sKey = packet.sKey
                 cookies = "uin=o$qqAccount;skey=$sKey;"

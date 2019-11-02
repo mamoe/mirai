@@ -10,6 +10,7 @@ import io.ktor.http.userAgent
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.events.FriendImageIdObtainedEvent
 import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
@@ -254,6 +255,7 @@ object FriendImageIdRequestPacket : OutgoingPacketBuilder {
         }
     }
 
+    @CorrespondingEvent(FriendImageIdObtainedEvent::class)
     @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
     @PacketVersion(date = "2019.11.1", timVersion = "2.3.2.21173")
     class Response(input: ByteReadPacket) : ResponsePacket(input) {

@@ -186,8 +186,8 @@ internal class TIMBotNetworkHandler internal constructor(private val bot: Bot) :
         }
 
         private suspend inline fun <reified P : ServerPacket> expectPacket(): CompletableDeferred<P> {
-            val receiving = CompletableDeferred<P>()
-            subscribe<ServerPacketReceivedEvent> {
+            val receiving = CompletableDeferred<P>(coroutineContext[Job])
+            subscribe<ServerPacketReceivedEvent<*>> {
                 if (it.packet is P && it.bot === bot) {
                     receiving.complete(it.packet)
                     ListeningStatus.STOPPED

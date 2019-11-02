@@ -11,8 +11,6 @@ import kotlin.properties.Delegates
 
 /**
  * 好友在线状态改变
- *
- * TODO 真的是在线状态改变么
  */
 @AnnotatedId(KnownPacketId.SEND_FRIEND_MESSAGE)
 class FriendOnlineStatusChangedPacket(input: ByteReadPacket) : ServerPacket(input) {

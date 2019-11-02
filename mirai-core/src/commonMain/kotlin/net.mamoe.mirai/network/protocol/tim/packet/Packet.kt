@@ -38,17 +38,6 @@ val Packet.idHexString: String get() = (packetId.value.toInt().shl(16) or sequen
 // region Packet id
 
 /**
- * 包 ID
- */
-@Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.CLASS)
-annotation class AnnotatedId(
-    val id: KnownPacketId
-)
-
-inline val AnnotatedId.value: UShort get() = id.value
-
-/**
  * 通过 [value] 匹配一个 [KnownPacketId], 无匹配则返回一个 [UnknownPacketId].
  */
 @Suppress("FunctionName")
@@ -110,15 +99,6 @@ enum class KnownPacketId(override inline val value: UShort, internal inline val 
 
 // region Internal utils
 
-/**
- * 版本信息
- */
-@Suppress("unused")
-@MustBeDocumented
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.BINARY)
-internal annotation class PacketVersion(val date: String, val timVersion: String)
-
 private object PacketNameFormatter {
     private var longestNameLength: Int = 43
     fun adjustName(name: String): String =
@@ -159,13 +139,6 @@ private object IgnoreIdListInclude : List<String> by listOf(
     "\$FU",
     "RefVolatile"
 )
-
-/**
- * 带有这个注解的 [Packet], 将不会被记录在 log 中.
- */
-@Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class NoLog
 
 /**
  * 这个方法会翻倍内存占用, 考虑修改.

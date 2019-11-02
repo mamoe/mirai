@@ -58,21 +58,17 @@ abstract class ServerEventPacket(input: ByteReadPacket, val eventIdentity: Event
                     }
                 }
                 0x002Du -> ServerGroupUploadFileEventPacket(input, eventIdentity)
-
-                0x002Cu -> GroupMemberPermissionChangedPacket(input, eventIdentity)
-
+                0x002Cu -> GroupMemberPermissionChangedEventPacket(input, eventIdentity)
                 /*
                  *
     inline GROUP_MEMBER_NICK_CHANGED(0x002Fu, null),
     inline GROUP_MEMBER_PERMISSION_CHANGED(0x002Cu, null),
 
                  */
-
                 0x0052u -> GroupMessageEventPacket(input, eventIdentity)
-
                 0x00A6u -> FriendMessageEventPacket(input, eventIdentity)
+                0x0079u -> FriendConversationInitializedEventPacket(input, eventIdentity)
 
-                0x0079u,
                 0x0210u // "对方正在输入..."
                 -> IgnoredServerEventPacket(input, eventIdentity)
 
@@ -125,7 +121,7 @@ class IgnoredServerEventPacket(input: ByteReadPacket, eventIdentity: EventPacket
  * Unknown event
  */
 class UnknownServerEventPacket(
-    @Suppress("MemberVisibilityCanBePrivate")
+    @Suppress("MemberVisibilityCanBePrivate")// 让它能被日志记录
     val eventId: ByteArray,
     private val showData: Boolean = false,
     input: ByteReadPacket,

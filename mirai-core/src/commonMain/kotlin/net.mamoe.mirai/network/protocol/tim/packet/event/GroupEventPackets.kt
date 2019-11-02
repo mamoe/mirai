@@ -5,8 +5,12 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
+import net.mamoe.mirai.event.events.FriendConversationInitializedEvent
+import net.mamoe.mirai.event.events.MemberPermissionChangedEvent
+import net.mamoe.mirai.network.protocol.tim.packet.CorrespondingEvent
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.utils.io.readString
+import kotlin.properties.Delegates
 
 
 /**
@@ -32,30 +36,36 @@ class GroupMemberNickChangedEventPacket(input: ByteReadPacket, eventIdentity: Ev
     override fun decode() {
         //                                     GroupId VarInt
         // 00 00 00 08 00 0A 00 04 01 00 00 00 22 96 29 7B 01 01 00 00 F3 66 00 00 00 05 00 00 00 EE 00 00 00 05
-        // ? 数据中没有哪个人的昵称改变了
+        // TODO ? 数据中没有哪个人的昵称改变了
     }
 }
 
+/**
+ * 好友发起会话, 即在输入框输入了任意内容.
+ */
+@CorrespondingEvent(FriendConversationInitializedEvent::class)
 @PacketVersion(date = "2019.11.2", timVersion = "2.3.2.21173")
-class GroupMemberPermissionChangedPacket internal constructor(
+class FriendConversationInitializedEventPacket(input: ByteReadPacket, eventIdentity: EventPacketIdentity) :
+    ServerEventPacket(input, eventIdentity) {
+    var qq: UInt by Delegates.notNull()
+
+    // 00 00 00 00 3E 03 3F A2 00
+    override fun decode() = with(input) {
+        discardExact(4)// 00 00 00 00
+        qq = readUInt()
+    }
+}
+
+@CorrespondingEvent(MemberPermissionChangedEvent::class)
+@PacketVersion(date = "2019.11.2", timVersion = "2.3.2.21173")
+class GroupMemberPermissionChangedEventPacket internal constructor(
     input: ByteReadPacket,
     eventIdentity: EventPacketIdentity
 ) :
     ServerEventPacket(input, eventIdentity) {
     val groupId: UInt get() = eventIdentity.from
     var qq: UInt = 0u
-    lateinit var kind: Kind
-
-    enum class Kind {
-        /**
-         * 变成管理员
-         */
-        BECOME_OPERATOR,
-        /**
-         * 不再是管理员
-         */
-        NO_LONGER_OPERATOR,
-    } // TODO: 2019/11/2 变成群主的情况
+    lateinit var kind: MemberPermissionChangedEvent.Kind
 
     override fun decode(): Unit = with(input) {
         // 群里一个人变成管理员:
@@ -65,8 +75,8 @@ class GroupMemberPermissionChangedPacket internal constructor(
         discardExact(remaining - 5)
         qq = readUInt()
         kind = when (readByte().toInt()) {
-            0x00 -> Kind.NO_LONGER_OPERATOR
-            0x01 -> Kind.BECOME_OPERATOR
+            0x00 -> MemberPermissionChangedEvent.Kind.NO_LONGER_OPERATOR
+            0x01 -> MemberPermissionChangedEvent.Kind.BECOME_OPERATOR
             else -> {
                 error("Could not determine permission change kind")
             }
