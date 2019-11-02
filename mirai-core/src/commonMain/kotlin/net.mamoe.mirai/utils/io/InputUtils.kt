@@ -45,7 +45,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
                         135 -> {//包数据错误. 目前怀疑是 tlv0006
                             this.readRemainingBytes().cutTail(1).decryptBy(TIMProtocol.shareKey).read {
                                 discardExact(51)
-                                MiraiLogger.error("Internal error: " + readLVString())//抱歉，请重新输入密码。
+                                MiraiLogger.error("Internal error: " + readUShortLVString())//抱歉，请重新输入密码。
                             }
 
                             LoginResult.INTERNAL_ERROR
@@ -76,6 +76,7 @@ fun ByteReadPacket.parseServerPacket(size: Int): ServerPacket {
         HEARTBEAT -> ResponsePacket.Encrypted<HeartbeatPacket.Response>(this)
         GROUP_IMAGE_ID -> ResponsePacket.Encrypted<GroupImageIdRequestPacket.Response>(this)
         FRIEND_IMAGE_ID -> ResponsePacket.Encrypted<FriendImageIdRequestPacket.Response>(this)
+        REQUEST_PROFILE_DETAILS -> ResponsePacket.Encrypted<RequestProfileDetailsPacket.Response>(this)
         // 0x01_BDu -> EventResponse.Encrypted<SubmitImageFilenamePacket.Response>(this)
 
         else -> UnknownServerPacket.Encrypted(this, PacketId(id), sequenceId)
@@ -90,39 +91,38 @@ fun Input.readIP(): String = buildString(4 + 3) {
     }
 }
 
-fun Input.readLVString(): String = String(this.readLVByteArray())
+fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 
-fun Input.readLVByteArray(): ByteArray = this.readBytes(this.readShort().toInt())
+fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
-fun Input.readTLVMap(expectingEOF: Boolean = false): Map<Int, ByteArray> {
-    val map = mutableMapOf<Int, ByteArray>()
-    var type: UByte
+private inline fun <R> inline(block: () -> R): R = block()
 
-    try {
-        type = readUByte()
-    } catch (e: EOFException) {
-        if (expectingEOF) {
-            return map
-        }
-        throw e
-    }
+fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMap<UInt, ByteArray> {
+    val map = mutableMapOf<UInt, ByteArray>()
+    var type: UShort = 0u
 
-    while (type != UByte.MAX_VALUE) {
-        map[type.toInt()] = this.readLVByteArray()
-
-        try {
-            type = readUByte()
-        } catch (e: EOFException) {
-            if (expectingEOF) {
-                return map
+    while (inline {
+            try {
+                type = when (tagSize) {
+                    1 -> readUByte().toUShort()
+                    2 -> readUShort()
+                    else -> error("Unsupported tag size: $tagSize")
+                }
+            } catch (e: EOFException) {
+                if (expectingEOF) {
+                    return map
+                }
+                throw e
             }
-            throw e
-        }
+            type
+        }.toUByte() != UByte.MAX_VALUE) {
+
+        map[type.toUInt()] = this.readUShortLVByteArray()
     }
     return map
 }
 
-fun Map<Int, ByteArray>.printTLVMap(name: String) =
+fun Map<*, ByteArray>.printTLVMap(name: String) =
     debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() })
 
 fun Input.readString(length: Number): String = String(this.readBytes(length.toInt()))

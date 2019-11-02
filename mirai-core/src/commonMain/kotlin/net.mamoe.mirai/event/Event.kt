@@ -74,6 +74,7 @@ suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineCo
         EventLogger.debug(this::class.simpleName + " pre broadcast")
     }
     try {
+        @Suppress("EXPERIMENTAL_API_USAGE")
         return withContext(EventScope.newCoroutineContext(context)) { this@broadcast.broadcastInternal() }
     } finally {
         if (EventDebuggingFlag) {

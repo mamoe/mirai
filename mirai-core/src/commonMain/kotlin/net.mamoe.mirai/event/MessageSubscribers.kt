@@ -47,6 +47,7 @@ abstract class SenderAndMessage<TContact : Contact>(
     suspend inline fun Image.send() = this.sendTo(subject)
     suspend inline fun ImageId.send() = this.sendTo(subject)
     suspend inline fun Message.send() = this.sendTo(subject)
+    suspend inline fun String.send() = this.toMessage().sendTo(subject)
 
     // endregion
 }

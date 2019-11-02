@@ -22,7 +22,7 @@ object TIMProtocol {
     }()//不使用lazy, 在初始化时就加载.
 
     const val head = "02"
-    const val ver = "37 13"
+    const val ver = "37 13"// TIM 最新版中这个有时候是 38 03
     const val fixVer = "03 00 00 00 01 2E 01 00 00 68 52 00 00 00 00"
     const val tail = "03"
     /**

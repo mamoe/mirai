@@ -26,6 +26,11 @@ fun Int.toByteArray(): ByteArray = byteArrayOf(
 )
 
 /**
+ * 转 [ByteArray] 后再转 hex
+ */
+fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
+
+/**
  * 255 -> 00 FF
  */
 fun UShort.toByteArray(): ByteArray = with(toUInt()) {
@@ -34,6 +39,11 @@ fun UShort.toByteArray(): ByteArray = with(toUInt()) {
         (shr(0) and 255u).toByte()
     )
 }
+
+/**
+ * 转 [ByteArray] 后再转 hex
+ */
+fun UShort.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 /**
  * 255u -> 00 00 00 FF
@@ -48,7 +58,7 @@ fun UInt.toByteArray(): ByteArray = byteArrayOf(
 /**
  * 转 [ByteArray] 后再转 hex
  */
-fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
+fun UInt.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 /**
  * 转无符号十六进制表示, 并补充首位 `0`.
