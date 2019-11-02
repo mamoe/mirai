@@ -1,9 +1,11 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
+import Main.dataReceived
+import Main.dataSent
 import Main.localIp
 import Main.qq
 import Main.sessionKey
-import com.sun.jna.Platform
+import kotlinx.coroutines.*
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
@@ -23,6 +25,32 @@ import org.pcap4j.core.PcapNetworkInterface
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode
 import org.pcap4j.core.Pcaps
 
+suspend fun main() {
+    val nif: PcapNetworkInterface = Pcaps.findAllDevs()[0]
+    println(nif.name + "(" + nif.addresses + ")")
+
+    val sender = nif.openLive(65536, PromiscuousMode.PROMISCUOUS, 3000)
+    val sendListener = GlobalScope.launch {
+        sender.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
+        withContext(Dispatchers.IO) {
+            sender.loop(Int.MAX_VALUE, PacketListener {
+                dataSent(it.rawData.drop(42).toByteArray())
+            })
+        }
+    }
+
+    val receiver = nif.openLive(65536, PromiscuousMode.PROMISCUOUS, 3000)
+    val receiveListener = GlobalScope.launch {
+        receiver.setFilter("dst $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
+        withContext(Dispatchers.IO) {
+            receiver.loop(Int.MAX_VALUE, PacketListener {
+                dataReceived(it.rawData.drop(42).toByteArray())
+            })
+        }
+    }
+
+    joinAll(sendListener, receiveListener)
+}
 
 /**
  * 抓包分析器.
@@ -31,80 +59,21 @@ import org.pcap4j.core.Pcaps
  * @author Him188moe
  */
 object Main {
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val nif: PcapNetworkInterface = Pcaps.findAllDevs()[0]
-        println(nif.name + "(" + nif.description + ")")
-
-        val handle = nif.openLive(65536, PromiscuousMode.PROMISCUOUS, 3000)
-
-        handle.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
-
-        val listener = PacketListener {
-            println(it.rawData.toUHexString())
-            println()
-        }
-
-        handle.loop(Int.MAX_VALUE, listener)
-
-        val ps = handle.stats
-        println("ps_recv: " + ps.numPacketsReceived)
-        println("ps_drop: " + ps.numPacketsDropped)
-        println("ps_ifdrop: " + ps.numPacketsDroppedByIf)
-        if (Platform.isWindows()) {
-            println("bs_capt: " + ps.numPacketsCaptured)
-        }
-
-        handle.close()
-
-/*
-        while (true) {
-            assert(jpcap != null)
-            val pk = jpcap!!.packet ?: continue
-            if (pk is IPPacket && pk.version.toInt() == 4) {
-
-                if (pk is UDPPacket) {
-                    if (pk.dst_port != 8000 && pk.src_port != 8000) {
-                        continue
-                    }
-
-                    if (localIp in pk.dst_ip.hostAddress) {//接受
-                        try {
-                            dataReceived(pk.data)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    } else {
-                        try {
-                            //println("发出包全部=${pk.data.toUHexString()}")
-                            dataSent(pk.data)
-                            println()
-                        } catch (e: Throwable) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-
-                //pk.dst_ip
-            }
-        }
-*/
-
-    }
-
     /**
-     * 可从 TIM 内存中读取
+     * 会话密匙, 用于解密数据.
+     * 在一次登录中会话密匙不会改变.
      *
-     * 方法:
+     * 从 TIM 内存中读取, windows 方法:
      * 1. x32dbg 附加 TIM
      * 2. `符号` 中找到 common.dll
      * 3. 搜索函数 `oi_symmetry_encrypt2` (TEA 加密函数)
      * 4. 双击跳转
-     * 5. 断点并在TIM发送消息以触发
-     * 6. 运行到 `mov eax,dword ptr ss:[ebp+10]`
-     * 7. 查看内存, 从 `eax` 开始的 16 bytes 便是 `sessionKey`
+     * 5. 设置断点
+     * 6. 在 TIM 发送一条消息触发断点
+     * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
+     * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: ByteArray = "0D D7 C8 06 C6 C1 40 FE A8 3B CF 81 EE DF 69 83".hexToBytes()
+    val sessionKey: ByteArray = "98 BA DE 20 53 AB EC B5 F5 50 26 E9 6D 41 B6 05".hexToBytes()
     const val qq: UInt = 1040400290u
     const val localIp = "192.168.3.10"
 
@@ -240,8 +209,3 @@ object Main {
 
     }
 }
-
-fun main() {
-    println("00 01 00 23 24 8B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 4E 22 4E 25 4E 26 4E 27 4E 29 4E 2A 4E 2B 4E 2D 4E 2E 4E 2F 4E 30 4E 31 4E 33 4E 35 4E 36 4E 37 4E 38 4E 3F 4E 40 4E 41 4E 42 4E 43 4E 45 4E 49 4E 4B 4E 4F 4E 54 4E 5B 52 0B 52 0F 5D C2 5D C8 65 97 69 9D 69 A9 9D A5 A4 91 A4 93 A4 94 A4 9C A4 B5".hexToBytes().stringOfWitch())
-}
-
