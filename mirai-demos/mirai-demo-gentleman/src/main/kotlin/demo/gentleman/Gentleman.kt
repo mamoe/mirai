@@ -31,7 +31,6 @@ class Gentleman(private val contact: Contact) : Channel<GentleImage> by Channel(
         GlobalScope.launch {
             while (!isClosedForSend) {
                 send(GentleImage().apply {
-                    sample_url = "http://dev.itxtech.org:10322/randomImg.uue?tdsourcetag=s_pctim_aiomsg&size=large"
                     contact = this@Gentleman.contact
 
                     image// start downloading

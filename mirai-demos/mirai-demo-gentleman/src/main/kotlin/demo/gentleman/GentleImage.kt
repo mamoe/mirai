@@ -1,5 +1,6 @@
 package demo.gentleman
 
+import com.alibaba.fastjson.JSON
 import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.Image
@@ -8,7 +9,6 @@ import org.jsoup.Jsoup
 
 class GentleImage {
     lateinit var tags: String
-    lateinit var sample_url: String
     lateinit var author: String
     lateinit var file_url: String
 
@@ -39,7 +39,16 @@ class GentleImage {
         GlobalScope.async {
             delay((Math.random() * 5000L).toLong())
             withContext(Dispatchers.IO) {
-                Jsoup.connect(sample_url)
+                class Result {
+                    var id: String = ""
+                }
+
+                val result = JSON.parseObject(
+                    Jsoup.connect("http://dev.itxtech.org:10322/v2/randomImg.uue").ignoreContentType(true).get().body().text(),
+                    Result::class.java
+                )
+
+                Jsoup.connect("http://dev.itxtech.org:10322/img.uue?size=large&id=${result.id}")
                     .userAgent(UserAgent.randomUserAgent)
                     .timeout(20_0000)
                     .ignoreContentType(true)
@@ -49,5 +58,6 @@ class GentleImage {
             }.upload(contact)
         }
     }
+
 }
 
