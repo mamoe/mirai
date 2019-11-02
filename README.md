@@ -15,9 +15,22 @@ Mirai 在 JVM 平台采用插件模式运行，同时提供独立的跨平台核
 
 现在您可以开始体验低付出高效率的 Mirai
 
+```kotlin
+val bot = Bot(qqId, password).apply{ login().requireSuccess() } // 创建一个机器人实例并登录
+bot.subscribeMessages { // 订阅消息事件
+  "你好" reply "你好!" // 收到 "你好" 则回复 "你好!"
+  "profile" reply { sender.profile.await().toString() } // 收到 "profile" 则回复发送者的个人资料
+  contains("图片"){ File(imagePath).send() } // 收到消息包含 "图片" 就回复一张本地的图片
+}
+bot.subscribeAlways<MemberPermissionChangedEvent> {
+  if (it.kind == BECOME_OPERATOR)
+    it.group.sendMessage("${it.member.id} 成为了管理员")
+}
+```
+
 1. Clone
 2. Import as Gradle project
-3. Run demo main [Demo 1 Main](mirai-demos/mirai-demo-1/src/main/java/demo/subscribe/SubscribeSamples.kt)
+3. 运行 Demo 程序: [mirai-demo](#mirai-demo) 示例和演示程序
 
 **转到[开发文档](#Development-Guide---Kotlin)**
 
@@ -106,8 +119,9 @@ Mirai 的核心部分.
 - Jar 插件支持
 
 #### mirai-demo
-Samples and demos.
-目前仅有 [SubscribeSamples](mirai-demos/mirai-demo-1/src/main/java/demo/subscribe/SubscribeSamples.kt)
+Samples and demos.  
+监听事件示例 [SubscribeSamples](mirai-demos/mirai-demo-1/src/main/java/demo/subscribe/SubscribeSamples.kt)  
+随机图片发送 [Gentleman](mirai-demos/mirai-demo-gentleman/src/main/kotlin/demo/gentleman/Main.kt)  
 
 #### mirai-debug
 抓包工具和分析工具. 不会进行稳定性维护.  
