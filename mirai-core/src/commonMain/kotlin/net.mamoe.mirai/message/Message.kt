@@ -146,7 +146,7 @@ fun String.singleChain(): MessageChain = this.toMessage().singleChain()
  *
  * @param id 这个图片的 [ImageId]
  */
-inline class Image(val id: ImageId) : Message {
+inline class Image(inline val id: ImageId) : Message {
     override val stringValue: String get() = "[${id.value}]"
     override fun toString(): String = stringValue
 
@@ -161,7 +161,7 @@ inline class Image(val id: ImageId) : Message {
  * @see ExternalImage.groupImageId 群图片的 [ImageId] 获取
  * @see FriendImageIdRequestPacket.Response.imageId 好友图片的 [ImageId] 获取
  */
-inline class ImageId(val value: String)
+inline class ImageId(inline val value: String)
 
 fun ImageId.image(): Image = Image(this)
 

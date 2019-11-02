@@ -86,7 +86,8 @@ enum class KnownPacketId(override inline val value: UShort, internal inline val 
     inline GROUP_IMAGE_ID(0x0388u, GroupImageIdRequestPacket),
     inline FRIEND_IMAGE_ID(0x0352u, FriendImageIdRequestPacket),
 
-    inline REQUEST_PROFILE(0x00_31u, RequestProfilePicturePacket),
+    inline REQUEST_PROFILE_AVATAR(0x00_31u, RequestProfilePicturePacket),
+    inline REQUEST_PROFILE_DETAILS(0x00_3Cu, RequestProfilePicturePacket),
     @Suppress("DEPRECATION")
     inline SUBMIT_IMAGE_FILE_NAME(0x01_BDu, SubmitImageFilenamePacket),
 

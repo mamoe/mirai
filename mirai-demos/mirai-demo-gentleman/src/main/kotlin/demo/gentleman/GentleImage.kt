@@ -35,27 +35,30 @@ class GentleImage {
 
 
     lateinit var contact: Contact
+    // Deferred<Image?> 将导致 kotlin 内部错误
     val image: Deferred<Image> by lazy {
         GlobalScope.async {
-            delay((Math.random() * 5000L).toLong())
-            withContext(Dispatchers.IO) {
-                class Result {
-                    var id: String = ""
+            //delay((Math.random() * 5000L).toLong())
+            class Result {
+                var id: String = ""
+            }
+
+            withTimeoutOrNull(5 * 1000) {
+                withContext(Dispatchers.IO) {
+                    val result = JSON.parseObject(
+                        Jsoup.connect("http://dev.itxtech.org:10322/v2/randomImg.uue").ignoreContentType(true).timeout(10_0000).get().body().text(),
+                        Result::class.java
+                    )
+
+                    Jsoup.connect("http://dev.itxtech.org:10322/img.uue?size=large&id=${result.id}")
+                        .userAgent(UserAgent.randomUserAgent)
+                        .timeout(10_0000)
+                        .ignoreContentType(true)
+                        .maxBodySize(Int.MAX_VALUE)
+                        .execute()
+                        .bodyStream()
                 }
-
-                val result = JSON.parseObject(
-                    Jsoup.connect("http://dev.itxtech.org:10322/v2/randomImg.uue").ignoreContentType(true).get().body().text(),
-                    Result::class.java
-                )
-
-                Jsoup.connect("http://dev.itxtech.org:10322/img.uue?size=large&id=${result.id}")
-                    .userAgent(UserAgent.randomUserAgent)
-                    .timeout(20_0000)
-                    .ignoreContentType(true)
-                    .maxBodySize(Int.MAX_VALUE)
-                    .execute()
-                    .bodyStream()
-            }.upload(contact)
+            }?.upload(contact) ?: error("Unable to download image")
         }
     }
 

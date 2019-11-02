@@ -3,6 +3,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.contact.Gender
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.Tested
@@ -48,11 +49,6 @@ class LoginResponseKeyExchangeResponsePacket(input: ByteReadPacket) : ServerLogi
         fun decrypt(privateKey: ByteArray): LoginResponseKeyExchangeResponsePacket =
             LoginResponseKeyExchangeResponsePacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
     }
-}
-
-enum class Gender(val id: Boolean) {
-    MALE(false),
-    FEMALE(true);
 }
 
 @AnnotatedId(KnownPacketId.LOGIN)
@@ -119,7 +115,6 @@ class LoginResponseSuccessPacket(input: ByteReadPacket) : ServerLoginResponsePac
     class Encrypted(input: ByteReadPacket) : ServerPacket(input) {
         fun decrypt(privateKey: ByteArray): LoginResponseSuccessPacket = LoginResponseSuccessPacket(this.decryptBy(TIMProtocol.shareKey, privateKey)).applySequence(sequenceId)
     }
-
 }
 
 /**

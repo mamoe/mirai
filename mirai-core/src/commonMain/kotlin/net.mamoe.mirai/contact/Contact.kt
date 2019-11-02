@@ -1,13 +1,18 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.contact
 
+import com.soywiz.klock.Date
+import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
+import net.mamoe.mirai.network.protocol.tim.packet.action.RequestProfileDetailsPacket
+import net.mamoe.mirai.qqAccount
+import net.mamoe.mirai.utils.SuspendLazy
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.withSession
 
@@ -23,6 +28,9 @@ class ContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf()
  */
 sealed class Contact(val bot: Bot, val id: UInt) {
 
+    /**
+     * 向这个对象发送消息. 速度太快会被服务器拒绝(无响应)
+     */
     abstract suspend fun sendMessage(message: MessageChain)
 
 
@@ -102,10 +110,39 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSessi
  * @author Him188moe
  */
 open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
+    val profile: Deferred<Profile> by bot.network.SuspendLazy { updateProfile() }
+
     override suspend fun sendMessage(message: MessageChain) {
         bot.network[EventPacketHandler].sendFriendMessage(this, message)
     }
+
+    /**
+     * 更新个人资料.
+     *
+     * 这个方法会尽可能更新已有的 [Profile] 对象的值, 而不是用新的对象替换
+     * 若 [QQ.profile] 已经初始化, 则在获取到新的 profile 时通过 [Profile.copyFrom] 来更新已有的 [QQ.profile]. 仍然返回 [QQ.profile]
+     * 因此, 对于以下代码:
+     * ```kotlin
+     * val old = qq.profile
+     * qq.updateProfile() === old // true, 因为只是更新了 qq.profile 的值
+     * ```
+     */
+    suspend fun updateProfile(): Profile = bot.withSession {
+        RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
+            .sendAndExpect<RequestProfileDetailsPacket.Response, Profile> { it.profile }
+            .await().let {
+                @Suppress("UNCHECKED_CAST")
+                if ((::profile as SuspendLazy<Profile>).isInitialized()) {
+                    profile.await().apply { copyFrom(it) }
+                } else it
+            }
+    }
+
+    suspend fun QQ.addAsFriend() {
+
+    }
 }
+
 
 /**
  * 群成员
@@ -114,4 +151,39 @@ class Member internal constructor(bot: Bot, id: UInt, val group: Group) : QQ(bot
     init {
         TODO("Group member implementation")
     }
+}
+
+/**
+ * 个人资料
+ */
+class Profile// inline class Date
+    (qq: UInt, nickname: String, zipCode: String?, phone: String?, gender: Gender, var birthday: Date?) {
+
+    var qq: UInt = qq
+        internal set
+    var nickname: String = nickname
+        internal set
+    var zipCode: String? = zipCode
+        internal set
+    var phone: String? = phone
+        internal set
+    var gender: Gender = gender
+        internal set
+}
+
+fun Profile.copyFrom(another: Profile) {
+    this.qq = another.qq
+    this.nickname = another.nickname
+    this.zipCode = another.zipCode
+    this.phone = another.phone
+    this.gender = another.gender
+}
+
+/**
+ * 性别
+ */
+enum class Gender {
+    SECRET,
+    MALE,
+    FEMALE;
 }

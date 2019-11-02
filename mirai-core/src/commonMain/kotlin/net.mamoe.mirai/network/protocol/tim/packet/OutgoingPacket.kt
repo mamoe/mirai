@@ -8,7 +8,9 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.use
 import kotlinx.io.core.writeUShort
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
+import net.mamoe.mirai.utils.io.writeQQ
 import kotlin.jvm.JvmOverloads
 
 /**
@@ -55,6 +57,7 @@ interface OutgoingPacketBuilder {
 
 /**
  * 构造一个待发送给服务器的数据包.
+ *
  * 若不提供参数 [id], 则会通过注解 [AnnotatedId] 获取 id.
  */
 @JvmOverloads
@@ -75,5 +78,28 @@ fun OutgoingPacketBuilder.buildOutgoingPacket(
             writeHex(TIMProtocol.tail)
         }
         return OutgoingPacket(name, id, sequenceId, it.build())
+    }
+}
+
+
+/**
+ * 构造一个待发送给服务器的会话数据包.
+ *
+ * 若不提供参数 [id], 则会通过注解 [AnnotatedId] 获取 id.
+ */
+@JvmOverloads
+fun OutgoingPacketBuilder.buildSessionPacket(
+    bot: UInt,
+    sessionKey: ByteArray,
+    name: String? = null,
+    id: PacketId = this.annotatedId.id,
+    sequenceId: UShort = OutgoingPacketBuilder.atomicNextSequenceId(),
+    headerSizeHint: Int = 0,
+    block: BytePacketBuilder.() -> Unit
+): OutgoingPacket = buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {
+    writeQQ(bot)
+    writeHex(TIMProtocol.version0x02)
+    encryptAndWrite(sessionKey) {
+        block()
     }
 }

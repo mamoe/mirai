@@ -105,10 +105,10 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
          *
          * 注: 这个方法是线程安全的
          */
-        suspend fun getQQ(account: UInt): QQ =
-            if (qqs.containsKey(account)) qqs[account]!!
+        suspend fun getQQ(id: UInt): QQ =
+            if (qqs.containsKey(id)) qqs[id]!!
             else qqsLock.withLock {
-                qqs.getOrPut(account) { QQ(this@Bot, account) }
+                qqs.getOrPut(id) { QQ(this@Bot, id) }
             }
 
         /**
@@ -129,6 +129,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
                 groups.getOrPut(it) { Group(this@Bot, id) }
             }
         }
+
     }
 
     suspend inline fun Int.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0).toUInt())
@@ -151,3 +152,8 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         val instances: MutableList<Bot> = mutableListOf()
     }
 }
+
+/**
+ * 添加一个好友
+ */
+suspend fun ContactSystem.addFriend(id: UInt): Nothing = TODO()

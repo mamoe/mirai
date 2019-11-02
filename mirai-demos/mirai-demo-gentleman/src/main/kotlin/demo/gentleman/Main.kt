@@ -2,9 +2,9 @@
 
 package demo.gentleman
 
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.event.Event
@@ -13,6 +13,7 @@ import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
+import kotlin.random.Random
 
 private fun readTestAccount(): BotAccount? {
     val file = File("testAccount.txt")
@@ -46,6 +47,9 @@ suspend fun main() {
 
     bot.subscribeMessages {
         "你好" reply "你好!"
+        "profile" reply {
+            sender.profile.await().toString()
+        }
 
         /*
         has<Image> {
@@ -53,16 +57,15 @@ suspend fun main() {
         }*/
 
         startsWith("随机图片", removePrefix = true) {
-            withContext(Dispatchers.Default) {
-                try {
-                    repeat(it.toIntOrNull() ?: 1) {
-                        launch {
-                            Gentlemen.provide(subject).receive().image.await().send()
-                        }
+            try {
+                repeat(it.toIntOrNull() ?: 1) {
+                    GlobalScope.launch {
+                        delay(Random.Default.nextLong(100, 1000))
+                        Gentlemen.provide(subject).receive().image.await().send()
                     }
-                } catch (e: Exception) {
-                    reply(e.message ?: "exception: null")
                 }
+            } catch (e: Exception) {
+                reply(e.message ?: "exception: null")
             }
         }
 

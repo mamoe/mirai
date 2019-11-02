@@ -12,8 +12,8 @@ import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.printTLVMap
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.readLVByteArray
 import net.mamoe.mirai.utils.io.readTLVMap
+import net.mamoe.mirai.utils.io.readUShortLVByteArray
 import kotlin.properties.Delegates
 
 
@@ -43,13 +43,13 @@ class GroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketI
         qq = readUInt()
 
         discardExact(48)
-        readLVByteArray()
+        readUShortLVByteArray()
         discardExact(2)//2个0x00
         message = readMessageChain()
 
         val map = readTLVMap(true)
-        if (map.containsKey(18)) {
-            map.getValue(18).read {
+        if (map.containsKey(18u)) {
+            map.getValue(18u).read {
                 val tlv = readTLVMap(true)
                 //tlv.printTLVMap("消息结尾 tag=18 的 TLV")
                 ////群主的18: 05 00 04 00 00 00 03 08 00 04 00 00 00 04 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 08
@@ -61,7 +61,7 @@ class GroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketI
                 // 没有4, 群员
                 // 4=10, 管理员
 
-                senderPermission = when (tlv.takeIf { it.containsKey(0x04) }?.get(0x04)?.getOrNull(3)?.toUInt()) {
+                senderPermission = when (tlv.takeIf { it.containsKey(0x04u) }?.get(0x04u)?.getOrNull(3)?.toUInt()) {
                     null -> SenderPermission.MEMBER
                     0x08u -> SenderPermission.OWNER
                     0x10u -> SenderPermission.OPERATOR
@@ -73,8 +73,8 @@ class GroupMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacketI
                 }
 
                 senderName = when {
-                    tlv.containsKey(0x01) -> kotlinx.io.core.String(tlv.getValue(0x01))//这个人的qq昵称
-                    tlv.containsKey(0x02) -> kotlinx.io.core.String(tlv.getValue(0x02))//这个人的群名片
+                    tlv.containsKey(0x01u) -> kotlinx.io.core.String(tlv.getValue(0x01u))//这个人的qq昵称
+                    tlv.containsKey(0x02u) -> kotlinx.io.core.String(tlv.getValue(0x02u))//这个人的群名片
                     else -> {
                         tlv.printTLVMap("TLV(tag=18) Map")
                         MiraiLogger.warning("Could not determine senderName")
@@ -113,7 +113,7 @@ class FriendMessageEventPacket(input: ByteReadPacket, eventIdentity: EventPacket
         //java.io.EOFException: Only 49 bytes were discarded of 69 requested
         //抖动窗口消息
         discardExact(69)
-        readLVByteArray()//font
+        readUShortLVByteArray()//font
         discardExact(2)//2个0x00
         message = readMessageChain()
 

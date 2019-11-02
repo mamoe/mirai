@@ -3,6 +3,7 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Profile
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
@@ -35,3 +36,8 @@ class FriendConversationInitializedEvent(bot: Bot, sender: QQ) : FriendEvent(bot
  * 好友在线状态改变事件
  */
 class FriendOnlineStatusChangedEvent(bot: Bot, sender: QQ, val newStatus: OnlineStatus) : FriendEvent(bot, sender)
+
+/**
+ * 好友个人资料更新
+ */
+class FriendProfileUpdatedEvent(bot: Bot, qq: QQ, val profile: Profile) : FriendEvent(bot, qq)
