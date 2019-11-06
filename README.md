@@ -1,11 +1,11 @@
 # Mirai
 [![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
 
-一个以 **TIM PC协议(非web)** 驱动的跨平台开源 QQ 机器人服务端核心, 目前仅支持 JVM  
+一个以 **TIM PC协议(非web)** 驱动的跨平台开源 QQ 机器人服务端核心, 现有 JVM 和 AndroidLib 支持  
 Mirai 在 JVM 平台采用插件模式运行，同时提供独立的跨平台核心库.  
-未来会在 Native(Win32) 平台提供目前比较流行的几种机器人软件的 API 转接  
+未来会在 win32 平台提供目前比较流行的几种机器人软件的 API 转接  
   
-若您有任何意见或建议, 欢迎提交 issue.  
+若您有任何意见或建议, 请告诉我们.  
 
 部分协议来自网络上开源项目  
 
@@ -13,6 +13,7 @@ Mirai 在 JVM 平台采用插件模式运行，同时提供独立的跨平台核
 
 ## Try
 
+### On JVM or Android
 现在您可以开始体验低付出高效率的 Mirai
 
 ```kotlin
