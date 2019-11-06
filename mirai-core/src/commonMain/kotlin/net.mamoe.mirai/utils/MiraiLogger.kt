@@ -141,6 +141,25 @@ object Silent : PlatformLogger() {
     }
 }
 
+@Suppress("FunctionName")
+fun SimpleLogger(logger: (String?, Throwable?) -> Unit): SimpleLogger = SimpleLogger(null, logger)
+
+/**
+ * 简易日志记录, 所有类型日志都会被重定向 [logger]
+ */
+class SimpleLogger(override val identity: String?, private val logger: (String?, Throwable?) -> Unit) : MiraiLoggerPlatformBase() {
+    override fun verbose0(any: Any?) = logger(any?.toString(), null)
+    override fun verbose0(message: String?, e: Throwable?) = logger(message, e)
+    override fun debug0(any: Any?) = logger(any?.toString(), null)
+    override fun debug0(message: String?, e: Throwable?) = logger(message, e)
+    override fun info0(any: Any?) = logger(any?.toString(), null)
+    override fun info0(message: String?, e: Throwable?) = logger(message, e)
+    override fun warning0(any: Any?) = logger(any?.toString(), null)
+    override fun warning0(message: String?, e: Throwable?) = logger(message, e)
+    override fun error0(any: Any?) = logger(any?.toString(), null)
+    override fun error0(message: String?, e: Throwable?) = logger(message, e)
+}
+
 /**
  * 平台基类.
  * 实现了 [follower] 的调用传递.

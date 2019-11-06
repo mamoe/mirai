@@ -1,0 +1,22 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="net.mamoe.mirai.demo">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
+            android:name="net.mamoe.mirai.demo.MyApplication"
+            android:allowBackup="true"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
+
+        <activity
+                android:name="net.mamoe.mirai.demo.MainActivity"
+                android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>

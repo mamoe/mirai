@@ -2,7 +2,8 @@ apply plugin: "kotlin"
 apply plugin: "java"
 
 dependencies {
-    compile project(":mirai-core")
+    api project(":mirai-core")
+    runtime files("../../mirai-core/build/classes/kotlin/jvm/main") // mpp targeting android limitation
     api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
     api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
 }

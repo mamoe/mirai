@@ -9,9 +9,6 @@ import java.net.InetSocketAddress
 import java.nio.channels.DatagramChannel
 import java.nio.channels.ReadableByteChannel
 
-/**
- * 多平台适配的 DatagramChannel.
- */
 actual class PlatformDatagramChannel actual constructor(serverHost: String, serverPort: Short) : Closeable {
     private val serverAddress: InetSocketAddress = InetSocketAddress(serverHost, serverPort.toInt())
     private val channel: DatagramChannel = DatagramChannel.open().connect(serverAddress)

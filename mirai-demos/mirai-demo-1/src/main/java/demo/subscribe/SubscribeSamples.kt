@@ -11,15 +11,8 @@ import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingRawPacket
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 import net.mamoe.mirai.network.protocol.tim.packet.login.ifFail
-import net.mamoe.mirai.network.session
-import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.io.hexToBytes
-import net.mamoe.mirai.utils.io.toByteArray
-import net.mamoe.mirai.utils.io.toUHexString
 import net.mamoe.mirai.utils.suspendToExternalImage
 import java.io.File
 import kotlin.system.exitProcess
@@ -221,21 +214,6 @@ suspend fun directlySubscribe(bot: Bot) {
             "复读" in it.message -> it.sender.sendMessage(it.message)
 
             "发群消息" in it.message -> 580266363u.group().sendMessage(it.message.toString().substringAfter("发群消息"))
-
-            "直接发送包" in it.message -> {
-                val d =
-                    ("01 " + 1994701021u.toByteArray().toUHexString() + " 3E 03 3F A2 00 00 02 BB 00 0A 00 01 00 01 00 5E 4F 53 52 6F 6F 74 3A 43 3A 5C 55 73 65 72 73 5C 48 69 6D 31 38 5C 44 6F 63 75 6D 65 6E 74 73 5C 54 65 6E 63 65 6E 74 20 46 69 6C 65 73 5C 31 30 34 30 34 30 30 32 39 30 5C 49 6D 61 67 65 5C 43 32 43 5C 7B 47 47 42 7E 49 31 5A 4D 43 28 25 49 4D 5A 5F 47 55 51 36 35 5D 51 2E 6A 70 67 00 00 04 7D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 35 02")
-                        .hexToBytes()
-                it.bot.network.socket.sendPacket(
-                    OutgoingRawPacket(
-                        PacketId(0x01_BDu),
-                        it.bot.qqAccount,
-                        "00 00 00 01 2E 01 00 00 69 35".hexToBytes(),
-                        it.bot.network.session.sessionKey,
-                        d
-                    )
-                )
-            }
 
             "上传群图片" in it.message -> withTimeoutOrNull(5000) {
                 val filename = it.message.toString().substringAfter("上传群图片")
