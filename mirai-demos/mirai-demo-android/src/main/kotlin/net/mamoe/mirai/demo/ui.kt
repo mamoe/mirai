@@ -2,7 +2,6 @@
 
 package net.mamoe.mirai.demo
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Bundle
 import android.widget.LinearLayout
@@ -27,7 +26,6 @@ class MyApplication : Application()
 class MainActivity : AppCompatActivity() {
     private var rootLayout: LinearLayout by Delegates.notNull()
 
-    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

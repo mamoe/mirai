@@ -240,8 +240,6 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
     suspend fun content(filter: T.(String) -> Boolean, onEvent: @MessageDsl suspend T.(String) -> Unit) =
         subscriber { if (this.filter(message.stringValue)) onEvent(this) }
 
-    suspend infix fun String.caseReply(replier: String) = case(this, true) { this@case.reply(replier) }
-    suspend infix fun String.caseReply(replier: StringReplier<T>) = case(this, true) { this@case.reply(replier(this)) }
     suspend infix fun String.containsReply(replier: String) =
         content({ this@containsReply in it }) { this@content.reply(replier) }
 
