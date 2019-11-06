@@ -74,7 +74,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         configuration: BotNetworkConfiguration,
         cause: Throwable? = null
     ): LoginResult {
-        logger.warning("Reinitializing BotNetworkHandler")
+        logger.info("Initializing BotNetworkHandler")
         try {
             network.close(cause)
         } catch (e: Exception) {

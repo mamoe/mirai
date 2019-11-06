@@ -2,6 +2,6 @@
 
 package net.mamoe.mirai
 
-actual typealias MiraiEnvironment = MiraiEnvironmentJvm
-
-object MiraiEnvironmentJvm
+actual object MiraiEnvironment {
+    actual val platform: Platform get() = Platform.JVM
+}

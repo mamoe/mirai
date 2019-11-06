@@ -329,7 +329,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                 else -> {
                     error("No decrypter found")
                 }
-            } as D
+            } as? D ?: error("Internal error: could not cast decrypter found for factory to class Decrypter")
 
         suspend fun onPacketReceived(packet: Any) {//complex function, but it doesn't matter
             when (packet) {

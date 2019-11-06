@@ -158,6 +158,8 @@ enum class KnownPacketId(override inline val value: UShort, override inline val 
     override fun toString(): String = factory.let { it::class.simpleName } ?: this.name
 }
 
+// endregion
+
 object IgnoredPacket : Packet
 
 sealed class EventPacket {
@@ -195,7 +197,7 @@ sealed class EventPacket {
     ) : Packet
 
     @CorrespondingEvent(GroupMessageEvent::class)
-    class GroupMessage : Packet {
+    class GroupMessage : Packet { // TODO: 2019/11/6 改为 data class
         var groupNumber: UInt = 0u
             internal set
         var qq: UInt = 0u
@@ -231,7 +233,6 @@ object UnknownPacket : Packet {
  */
 object NoPacket : Packet
 
-// endregion
 
 // region Internal utils
 

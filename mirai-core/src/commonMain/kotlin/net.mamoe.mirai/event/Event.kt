@@ -3,9 +3,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.internal.broadcastInternal
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.coroutines.CoroutineContext
@@ -31,7 +29,7 @@ abstract class Event {
         } else throw UnsupportedOperationException()
 
     /**
-     * 取消事件. 事件需实现 [Cancellable] 才可以被取消, 否则调用这个方法将会得到 [UnsupportedOperationException]
+     * 取消事件. 事件需实现 [Cancellable] 才可以被取消
      *
      * @throws UnsupportedOperationException 如果事件没有实现 [Cancellable]
      */
@@ -48,7 +46,7 @@ abstract class Event {
 
 internal object EventLogger : MiraiLogger by DefaultLogger("Event")
 
-val EventDebuggingFlag: Boolean by lazy {
+private val EventDebuggingFlag: Boolean by lazy {
     false
 }
 
@@ -83,20 +81,8 @@ suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineCo
     }
 }
 
-/**
- * 事件协程调度器.
- *
- * JVM: 共享 [Dispatchers.Default]
- */
 internal expect val EventDispatcher: CoroutineDispatcher
 
-/**
- * 事件协程作用域.
- * 所有的事件 [broadcast] 过程均在此作用域下运行.
- *
- * 然而, 若在事件处理过程中使用到 [Contact.sendMessage] 等会 [发送数据包][BotNetworkHandler.sendPacket] 的方法,
- * 发送过程将会通过 [withContext] 将协程切换到 [BotNetworkHandler] 作用域下执行.
- */
 object EventScope : CoroutineScope {
     override val coroutineContext: CoroutineContext =
         EventDispatcher + CoroutineExceptionHandler { _, e ->
