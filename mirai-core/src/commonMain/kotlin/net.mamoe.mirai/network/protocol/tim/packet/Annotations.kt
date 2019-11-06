@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
 
 
 /**
- * 包 ID. 除特殊外, [OutgoingPacketBuilder] 都需要这个注解来指定包 ID.
+ * 包 ID. 除特殊外, [PacketFactory] 都需要这个注解来指定包 ID.
  */
 @MustBeDocumented
 @Retention(AnnotationRetention.RUNTIME)
@@ -21,7 +21,7 @@ inline val AnnotatedId.value: UShort get() = id.value
 
 /**
  * 标记这个包对应的事件.
- * 这个注解应该被标记在 [ServerPacket] 上
+ * 这个注解应该被标记在 [Packet] 上
  */
 @MustBeDocumented
 @Retention(AnnotationRetention.BINARY)
@@ -34,7 +34,7 @@ annotation class CorrespondingEvent(
  * 版本信息
  */
 @MustBeDocumented
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
 internal annotation class PacketVersion(val date: String, val timVersion: String)
 

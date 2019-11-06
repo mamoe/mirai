@@ -3,6 +3,7 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.network.protocol.tim.packet.DecrypterByteArray
 import net.mamoe.mirai.utils.io.*
 import kotlin.experimental.and
 import kotlin.experimental.xor
@@ -25,6 +26,8 @@ class DecryptionFailedException : Exception()
  * @throws DecryptionFailedException 解密错误时
  */
 fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key, sourceLength = length)
+
+fun ByteArray.encryptBy(key: DecrypterByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key.value, sourceLength = length)
 
 /**
  * 通过 [String.hexToBytes] 将 [keyHex] 转为 [ByteArray] 后用它解密 [this].

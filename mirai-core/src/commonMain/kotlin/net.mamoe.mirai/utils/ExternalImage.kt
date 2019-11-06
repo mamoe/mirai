@@ -21,7 +21,7 @@ fun ExternalImage(
     md5: ByteArray,
     format: String,
     data: ByteReadPacket
-) = ExternalImage(width, height, md5, format, data, data.remaining)
+): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining)
 
 /**
  * 外部图片. 图片数据还没有读取到内存.

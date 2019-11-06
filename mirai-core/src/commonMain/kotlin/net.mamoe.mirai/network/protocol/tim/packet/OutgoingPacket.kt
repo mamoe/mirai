@@ -1,8 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "unused", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.atomicfu.atomic
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.use
@@ -18,8 +17,8 @@ import kotlin.jvm.JvmOverloads
  */
 class OutgoingPacket(
     name: String?,
-    override val packetId: PacketId,
-    override val sequenceId: UShort,
+    val packetId: PacketId,
+    val sequenceId: UShort,
     internal val delegate: ByteReadPacket
 ) : Packet {
     private val name: String by lazy {
@@ -31,28 +30,15 @@ class OutgoingPacket(
     constructor(annotation: AnnotatedId, sequenceId: UShort, delegate: ByteReadPacket) :
             this(annotation.toString(), annotation.id, sequenceId, delegate)
 
-    override fun toString(): String = packetToString(name)
+    override fun toString(): String = packetToString(packetId.value, sequenceId, name)
 }
 
 /**
- * 发给服务器的数据包的构建器.
- * 应由一个 `object` 实现, 且实现 `operator fun invoke`
+ * 登录完成建立 session 之后发出的包.
+ * 均使用 sessionKey 加密
  */
-interface OutgoingPacketBuilder {
-    /**
-     * 2 Ubyte.
-     * 默认为读取注解 [AnnotatedId]
-     */
-    val annotatedId: AnnotatedId
-        get() = (this::class.annotations.firstOrNull { it is AnnotatedId } as? AnnotatedId)
-            ?: error("Annotation AnnotatedId not found")
-
-    companion object {
-        private val sequenceIdInternal = atomic(1)
-
-        @PublishedApi
-        internal fun atomicNextSequenceId(): UShort = sequenceIdInternal.getAndIncrement().toUShort()
-    }
+abstract class SessionPacketFactory<out TPacket : Packet> : PacketFactory<TPacket, SessionKey>(SessionKey) {
+    final override fun decrypt(input: ByteReadPacket, decrypter: SessionKey): ByteReadPacket = decrypter.decrypt(input)
 }
 
 /**
@@ -61,10 +47,10 @@ interface OutgoingPacketBuilder {
  * 若不提供参数 [id], 则会通过注解 [AnnotatedId] 获取 id.
  */
 @JvmOverloads
-fun OutgoingPacketBuilder.buildOutgoingPacket(
+fun PacketFactory<*, *>.buildOutgoingPacket(
     name: String? = null,
-    id: PacketId = this.annotatedId.id,
-    sequenceId: UShort = OutgoingPacketBuilder.atomicNextSequenceId(),
+    id: PacketId = this.id,
+    sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     headerSizeHint: Int = 0,
     block: BytePacketBuilder.() -> Unit
 ): OutgoingPacket {
@@ -88,12 +74,12 @@ fun OutgoingPacketBuilder.buildOutgoingPacket(
  * 若不提供参数 [id], 则会通过注解 [AnnotatedId] 获取 id.
  */
 @JvmOverloads
-fun OutgoingPacketBuilder.buildSessionPacket(
+fun PacketFactory<*, *>.buildSessionPacket(
     bot: UInt,
-    sessionKey: ByteArray,
+    sessionKey: SessionKey,
     name: String? = null,
-    id: PacketId = this.annotatedId.id,
-    sequenceId: UShort = OutgoingPacketBuilder.atomicNextSequenceId(),
+    id: PacketId = this.id,
+    sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     headerSizeHint: Int = 0,
     block: BytePacketBuilder.() -> Unit
 ): OutgoingPacket = buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {

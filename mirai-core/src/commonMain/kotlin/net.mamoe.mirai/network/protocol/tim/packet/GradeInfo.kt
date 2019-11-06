@@ -4,6 +4,7 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeUByte
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
@@ -15,11 +16,11 @@ import net.mamoe.mirai.utils.io.writeQQ
  * @author Him188moe
  */
 @AnnotatedId(KnownPacketId.ACCOUNT_INFO)
-object RequestAccountInfoPacket : OutgoingPacketBuilder {
+object RequestAccountInfoPacket : SessionPacketFactory<RequestAccountInfoPacket.Response>() {
     operator fun invoke(
         qq: UInt,
-        sessionKey: ByteArray
-    ) = buildOutgoingPacket {
+        sessionKey: SessionKey
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(qq)
         writeHex(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
@@ -29,10 +30,11 @@ object RequestAccountInfoPacket : OutgoingPacketBuilder {
         }
     }
 
-    @AnnotatedId(KnownPacketId.ACCOUNT_INFO)
-    class Response(input: ByteReadPacket) : ResponsePacket(input) {
+    object Response : Packet {
         //等级
         //升级剩余活跃天数
         //ignored
     }
+
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response
 }

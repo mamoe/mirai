@@ -2,7 +2,9 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
+import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeUByte
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.OnlineStatus
@@ -14,10 +16,10 @@ import net.mamoe.mirai.utils.io.writeQQ
  * 改变在线状态: "我在线上", "隐身" 等
  */
 @AnnotatedId(KnownPacketId.CHANGE_ONLINE_STATUS)
-object ChangeOnlineStatusPacket : OutgoingPacketBuilder {
+object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(NoDecrypter) {
     operator fun invoke(
         bot: UInt,
-        sessionKey: ByteArray,
+        sessionKey: SessionKey,
         loginStatus: OnlineStatus
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
@@ -28,4 +30,9 @@ object ChangeOnlineStatusPacket : OutgoingPacketBuilder {
             writeHex("00 01 00 01 00 04 00 00 00 00")
         }
     }
+
+    object ChangeOnlineStatusResponse : Packet
+
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): ChangeOnlineStatusResponse =
+        ChangeOnlineStatusResponse
 }

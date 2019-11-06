@@ -2,31 +2,6 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.readBytes
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.io.toUHexString
-
-class UnknownServerPacket(
-    input: ByteReadPacket,
-    override val packetId: PacketId,
-    override var sequenceId: UShort
-) : ServerPacket(input) {
-    override fun decode() {
-        val raw = this.input.readBytes()
-        MiraiLogger.debug("UnknownServerPacket data: " + raw.toUHexString())
-    }
-
-    class Encrypted(
-        input: ByteReadPacket,
-        override val packetId: PacketId,
-        override var sequenceId: UShort
-    ) : ServerPacket(input) {
-        fun decrypt(sessionKey: ByteArray): UnknownServerPacket =
-            UnknownServerPacket(this.decryptBy(sessionKey), this.packetId, this.sequenceId)
-    }
-}
-
 /*
 ID: 00 17
 

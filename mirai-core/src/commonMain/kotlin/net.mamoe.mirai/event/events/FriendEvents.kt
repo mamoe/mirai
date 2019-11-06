@@ -35,3 +35,8 @@ class FriendConversationInitializedEvent(bot: Bot, sender: QQ) : FriendEvent(bot
  * 好友在线状态改变事件
  */
 class FriendOnlineStatusChangedEvent(bot: Bot, sender: QQ, val newStatus: OnlineStatus) : FriendEvent(bot, sender)
+
+/**
+ * 机器人账号被 [sender] 删除好友
+ */
+class DeletedByFriendEvent(bot: Bot, qq: QQ) : FriendEvent(bot, qq)

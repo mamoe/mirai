@@ -33,8 +33,8 @@ private fun readTestAccount(): BotAccount? {
 suspend fun main() {
     val bot = Bot(
         readTestAccount() ?: BotAccount(
-            id = 1994701121u,
-            password = "123456"
+            id = 913366033u,
+            password = "a18260132383"
         )
     ).apply { login().requireSuccess() }
 

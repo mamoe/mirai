@@ -1,7 +1,7 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
 
 /**
  * 数据包(接受/发送)处理器
@@ -9,7 +9,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 abstract class PacketHandler(
         val session: BotSession
 ) {
-    abstract suspend fun onPacketReceived(packet: ServerPacket)
+    abstract suspend fun onPacketReceived(packet: Packet)
 
     interface Key<T : PacketHandler>
 

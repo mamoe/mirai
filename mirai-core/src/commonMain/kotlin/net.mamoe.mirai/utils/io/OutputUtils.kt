@@ -7,6 +7,8 @@ import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.DecrypterByteArray
+import net.mamoe.mirai.network.protocol.tim.packet.login.PrivateKey
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.coerceAtMostOrFail
 import kotlin.random.Random
@@ -20,6 +22,7 @@ fun BytePacketBuilder.writeQQ(qq: Long) = this.writeUInt(qq.toUInt())
 fun BytePacketBuilder.writeQQ(qq: UInt) = this.writeUInt(qq)
 fun BytePacketBuilder.writeGroup(groupId: GroupId) = this.writeUInt(groupId.value)
 fun BytePacketBuilder.writeGroup(groupInternalId: GroupInternalId) = this.writeUInt(groupInternalId.value)
+fun BytePacketBuilder.writeFully(value: DecrypterByteArray) = this.writeFully(value.value)
 
 fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
     this.writeShort(byteArray.size.toShort())
@@ -109,9 +112,11 @@ fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.
     encryptAndWrite(it, encoder)
 }
 
+fun BytePacketBuilder.encryptAndWrite(key: DecrypterByteArray, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.value, encoder)
+
 fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
 
-fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: ByteArray) {
+fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: PrivateKey) {
     val firstMD5 = md5(password)
     val secondMD5 = md5(firstMD5 + byteArrayOf(0, 0, 0, 0) + qq.toUInt().toByteArray())
 
@@ -130,7 +135,7 @@ fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, l
         writeZero(8)
         writeHex("00 10")//这两个hex是passwordSubmissionTLV2的末尾
         writeHex("15 74 C4 89 85 7A 19 F5 5E A9 C9 A3 5E 8A 5A 9B")//16
-        writeFully(privateKey)
+        writeFully(privateKey.value)
     }
 }
 

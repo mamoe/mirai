@@ -6,17 +6,16 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.*
 
-
-@AnnotatedId(KnownPacketId.SEND_GROUP_MESSAGE)
-object SendGroupMessagePacket : OutgoingPacketBuilder {
+object SendGroupMessagePacket : SessionPacketFactory<SendGroupMessagePacket.Response>() {
     operator fun invoke(
         botQQ: UInt,
         groupInternalId: GroupInternalId,
-        sessionKey: ByteArray,
+        sessionKey: SessionKey,
         message: MessageChain
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(botQQ)
@@ -46,6 +45,7 @@ object SendGroupMessagePacket : OutgoingPacketBuilder {
         }
     }
 
-    @AnnotatedId(KnownPacketId.SEND_GROUP_MESSAGE)
-    class Response(input: ByteReadPacket) : ResponsePacket(input)
+    object Response : Packet
+
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response
 }

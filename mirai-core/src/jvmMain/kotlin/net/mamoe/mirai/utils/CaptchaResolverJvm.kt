@@ -1,5 +1,6 @@
 package net.mamoe.mirai.utils
 
+import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.cio.writeChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -19,14 +20,15 @@ import kotlin.math.min
  *
  * @return 用户输入得到的验证码
  */
+@KtorExperimentalAPI
 internal actual suspend fun solveCaptcha(captchaBuffer: IoBuffer): String? = captchaLock.withLock {
     val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
     withContext(Dispatchers.IO) {
         tempFile.createNewFile()
         @Suppress("EXPERIMENTAL_API_USAGE")
+        MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
         try {
             tempFile.writeChannel().writeFully(captchaBuffer)
-            MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
             MiraiLogger.info("若看不清字符图片, 请查看 ${tempFile.absolutePath}")
         } catch (e: Exception) {
             MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")

@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.protocol.tim.handler
 
 import kotlinx.io.core.Closeable
@@ -6,7 +8,6 @@ import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -34,11 +35,6 @@ interface DataPacketSocketAdapter : Closeable {
      * 是否开启
      */
     val isOpen: Boolean
-
-    /**
-     * 分发数据包给 [PacketHandler]
-     */
-    suspend fun distributePacket(packet: ServerPacket)
 
     /**
      * 发送一个数据包(非异步).

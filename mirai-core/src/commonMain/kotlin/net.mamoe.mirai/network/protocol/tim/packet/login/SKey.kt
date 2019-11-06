@@ -4,6 +4,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
@@ -17,10 +18,10 @@ fun BotSession.RequestSKeyPacket(): OutgoingPacket = RequestSKeyPacket(qqAccount
  * SKey 用于 http api
  */
 @AnnotatedId(KnownPacketId.S_KEY)
-object RequestSKeyPacket : OutgoingPacketBuilder {
+object RequestSKeyPacket : SessionPacketFactory<SKey>() {
     operator fun invoke(
         bot: UInt,
-        sessionKey: ByteArray
+        sessionKey: SessionKey
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer2)
@@ -29,16 +30,15 @@ object RequestSKeyPacket : OutgoingPacketBuilder {
         }
     }
 
-    @AnnotatedId(KnownPacketId.S_KEY)
-    class Response(input: ByteReadPacket) : ResponsePacket(input) {
-        lateinit var sKey: String
-
-        override fun decode() = with(input) {
-            discardExact(4)
-            //debugDiscardExact(2)
-            sKey = this.readString(10)//16??
-            DebugLogger.warning("SKey=$sKey")
-            DebugLogger.warning("SKey 包后面${this.readRemainingBytes().toUHexString()}")
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): SKey {
+        discardExact(4)
+        // TODO: 2019/11/2 这里
+        return SKey(readString(10)).also {
+            DebugLogger.warning("SKey 包后面${readRemainingBytes().toUHexString()}")
         }
     }
 }
+
+inline class SKey(
+    val delegate: String
+) : Packet

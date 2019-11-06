@@ -12,7 +12,7 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.FriendImageIdObtainedEvent
 import net.mamoe.mirai.message.ImageId
-import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket.Response.State.*
 import net.mamoe.mirai.network.qqAccount
@@ -126,18 +126,19 @@ internal suspend inline fun HttpClient.postImage(
     imageInput.close()
 }
 
+/*
 /**
  * 似乎没有必要. 服务器的返回永远都是 01 00 00 00 02 00 00
  */
 @Deprecated("Useless packet")
 @AnnotatedId(KnownPacketId.SUBMIT_IMAGE_FILE_NAME)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-object SubmitImageFilenamePacket : OutgoingPacketBuilder {
+object SubmitImageFilenamePacket : PacketFactory {
     operator fun invoke(
         bot: UInt,
         target: UInt,
         filename: String,
-        sessionKey: ByteArray
+        sessionKey: SessionKey
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex(TIMProtocol.fixVer2)//?
@@ -166,9 +167,8 @@ object SubmitImageFilenamePacket : OutgoingPacketBuilder {
         //解密body=01 3E 03 3F A2 7C BC D3 C1 00 00 27 1C 00 0A 00 01 00 01 00 30 55 73 65 72 44 61 74 61 43 75 73 74 6F 6D 46 61 63 65 3A 31 5C 29 37 42 53 4B 48 32 44 35 54 51 28 5A 35 7D 35 24 56 5D 32 35 49 4E 2E 6A 70 67 00 00 03 73 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 2F 02
     }
 
-    @AnnotatedId(KnownPacketId.SUBMIT_IMAGE_FILE_NAME)
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
-    class Response(input: ByteReadPacket) : ResponsePacket(input) {
+    class Response {
         override fun decode() = with(input) {
             require(readBytes().contentEquals(expecting))
         }
@@ -177,7 +177,7 @@ object SubmitImageFilenamePacket : OutgoingPacketBuilder {
             private val expecting = byteArrayOf(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00)
         }
     }
-}
+}*/
 
 
 /**
@@ -188,10 +188,10 @@ object SubmitImageFilenamePacket : OutgoingPacketBuilder {
  */
 @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-object FriendImageIdRequestPacket : OutgoingPacketBuilder {
+object FriendImageIdRequestPacket : SessionPacketFactory<FriendImageIdRequestPacket.Response>() {
     operator fun invoke(
         bot: UInt,
-        sessionKey: ByteArray,
+        sessionKey: SessionKey,
         target: UInt,
         image: ExternalImage
     ) = buildOutgoingPacket {
@@ -256,9 +256,8 @@ object FriendImageIdRequestPacket : OutgoingPacketBuilder {
     }
 
     @CorrespondingEvent(FriendImageIdObtainedEvent::class)
-    @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
     @PacketVersion(date = "2019.11.1", timVersion = "2.3.2.21173")
-    class Response(input: ByteReadPacket) : ResponsePacket(input) {
+    class Response : Packet {
         /**
          * 访问 HTTP API 时需要使用的一个 key. 128 位
          */
@@ -285,29 +284,29 @@ object FriendImageIdRequestPacket : OutgoingPacketBuilder {
              */
             OVER_FILE_SIZE_MAX,
         }
+    }
 
-        override fun decode() = with(input) {
-            discardExact(6)
-            if (readUByte() != UByte.MIN_VALUE) {
-                discardExact(60)
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response().apply {
+        discardExact(6)
+        if (readUByte() != UByte.MIN_VALUE) {
+            discardExact(60)
 
-                @Suppress("ControlFlowWithEmptyBody")
-                while (readUByte().toUInt() != 0x4Au);
+            @Suppress("ControlFlowWithEmptyBody")
+            while (readUByte().toUInt() != 0x4Au);
 
-                uKey = readBytes(readUnsignedVarInt().toInt())//128
+            uKey = readBytes(readUnsignedVarInt().toInt())//128
 
-                discardExact(1)//52, id
-                imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
-                state = REQUIRE_UPLOAD
+            discardExact(1)//52, id
+            imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
+            state = REQUIRE_UPLOAD
+        } else {
+            val toDiscard = readUByte().toInt() - 37
+            if (toDiscard < 0) {
+                state = OVER_FILE_SIZE_MAX
             } else {
-                val toDiscard = readUByte().toInt() - 37
-                if (toDiscard < 0) {
-                    state = OVER_FILE_SIZE_MAX
-                } else {
-                    discardExact(toDiscard)
-                    imageId = ImageId(readString(37))
-                    state = ALREADY_EXISTS
-                }
+                discardExact(toDiscard)
+                imageId = ImageId(readString(37))
+                state = ALREADY_EXISTS
             }
         }
     }
@@ -319,12 +318,12 @@ object FriendImageIdRequestPacket : OutgoingPacketBuilder {
  */
 @AnnotatedId(KnownPacketId.GROUP_IMAGE_ID)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-object GroupImageIdRequestPacket : OutgoingPacketBuilder {
+object GroupImageIdRequestPacket : SessionPacketFactory<GroupImageIdRequestPacket.Response>() {
     operator fun invoke(
         bot: UInt,
         groupInternalId: GroupInternalId,
         image: ExternalImage,
-        sessionKey: ByteArray
+        sessionKey: SessionKey
     ) = buildOutgoingPacket {
         writeQQ(bot)
         writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
@@ -379,9 +378,8 @@ object GroupImageIdRequestPacket : OutgoingPacketBuilder {
 
     private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x36u, 0x35u, 0x36u)
 
-    @AnnotatedId(KnownPacketId.GROUP_IMAGE_ID)
     @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-    class Response(input: ByteReadPacket) : ResponsePacket(input) {
+    class Response : Packet {
         lateinit var state: State
 
         /**
@@ -403,19 +401,19 @@ object GroupImageIdRequestPacket : OutgoingPacketBuilder {
              */
             OVER_FILE_SIZE_MAX,
         }
+    }
 
-        override fun decode(): Unit = with(input) {
-            discardExact(6)//00 00 00 05 00 00
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response().apply {
+        discardExact(6)//00 00 00 05 00 00
 
-            val length = remaining - 128 - 14
-            if (length < 0) {
-                state = if (readUShort().toUInt() == 0x0025u) State.OVER_FILE_SIZE_MAX else State.ALREADY_EXISTS
-                return@with
-            }
-
-            discardExact(length)
-            uKey = readBytes(128)
-            state = State.REQUIRE_UPLOAD
+        val length = remaining - 128 - 14
+        if (length < 0) {
+            state = if (readUShort().toUInt() == 0x0025u) Response.State.OVER_FILE_SIZE_MAX else Response.State.ALREADY_EXISTS
+            return@apply
         }
+
+        discardExact(length)
+        uKey = readBytes(128)
+        state = Response.State.REQUIRE_UPLOAD
     }
 }

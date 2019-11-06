@@ -11,7 +11,8 @@ import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
 import net.mamoe.mirai.utils.getGTK
 import kotlin.coroutines.coroutineContext
 
@@ -21,7 +22,7 @@ import kotlin.coroutines.coroutineContext
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
 internal inline fun TIMBotNetworkHandler.BotSession(
     bot: Bot,
-    sessionKey: ByteArray,
+    sessionKey: SessionKey,
     socket: DataPacketSocketAdapter
 ) = BotSession(bot, sessionKey, socket, this)
 
@@ -33,7 +34,7 @@ internal inline fun TIMBotNetworkHandler.BotSession(
  */
 class BotSession(
     val bot: Bot,
-    val sessionKey: ByteArray,
+    val sessionKey: SessionKey,
     val socket: DataPacketSocketAdapter,
     val NetworkScope: CoroutineScope
 ) {
@@ -79,7 +80,10 @@ class BotSession(
      *
      * @see Bot.withSession 转换接收器 (receiver, 即 `this` 的指向) 为 [BotSession]
      */
-    suspend inline fun <reified P : ServerPacket, R> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true, noinline handler: suspend (P) -> R): CompletableDeferred<R> {
+    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(
+        checkSequence: Boolean = true,
+        noinline handler: suspend (P) -> R
+    ): CompletableDeferred<R> {
         val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
         bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession, checkSequence, coroutineContext + deferred).also {
             it.toSend(this)
@@ -92,13 +96,13 @@ class BotSession(
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
      * 您将能从本函数的返回值 [CompletableDeferred] 接收到所期待的 [P]
      */
-    suspend inline fun <reified P : ServerPacket> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): CompletableDeferred<P> = sendAndExpect<P, P>(checkSequence) { it }
+    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): CompletableDeferred<P> =
+        sendAndExpect<P, P>(checkSequence) { it }
 
     suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
 }
 
 
-suspend inline fun BotSession.distributePacket(packet: ServerPacket) = this.socket.distributePacket(packet)
 inline val BotSession.isOpen: Boolean get() = socket.isOpen
 inline val BotSession.qqAccount: UInt get() = bot.account.id
 
@@ -106,22 +110,22 @@ inline val BotSession.qqAccount: UInt get() = bot.account.id
  * 取得 [BotNetworkHandler] 的 [BotSession].
  * 实际上是一个捷径.
  */
-val BotNetworkHandler<*>.session get() = this[ActionPacketHandler].session
+val BotNetworkHandler<*>.session: BotSession get() = this[ActionPacketHandler].session
 
 /**
  * 取得 [BotNetworkHandler] 的 sessionKey.
  * 实际上是一个捷径.
  */
-inline val BotNetworkHandler<*>.sessionKey get() = this.session.sessionKey
+inline val BotNetworkHandler<*>.sessionKey: SessionKey get() = this.session.sessionKey
 
 /**
  * 取得 [Bot] 的 [BotSession].
  * 实际上是一个捷径.
  */
-inline val Bot.session get() = this.network.session
+inline val Bot.session: BotSession get() = this.network.session
 
 /**
  * 取得 [Bot] 的 `sessionKey`.
  * 实际上是一个捷径.
  */
-inline val Bot.sessionKey get() = this.session.sessionKey
+inline val Bot.sessionKey: SessionKey get() = this.session.sessionKey

@@ -10,13 +10,12 @@ import net.mamoe.mirai.getGroup
 import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.distributePacket
-import net.mamoe.mirai.network.protocol.tim.packet.FriendOnlineStatusChangedPacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.EventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.FriendStatusChanged
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.SendFriendMessagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.SendGroupMessagePacket
-import net.mamoe.mirai.network.protocol.tim.packet.event.*
 import net.mamoe.mirai.network.qqAccount
 
 /**
@@ -28,35 +27,29 @@ import net.mamoe.mirai.network.qqAccount
 class EventPacketHandler(session: BotSession) : PacketHandler(session) {
     companion object Key : PacketHandler.Key<EventPacketHandler>
 
-    override suspend fun onPacketReceived(packet: ServerPacket): Unit = with(session) {
+    override suspend fun onPacketReceived(packet: Packet): Unit = with(session) {
         when (packet) {
-            is ServerGroupUploadFileEventPacket -> {
-                //todo
+            is EventPacket.FriendMessage -> {
+                if (!packet.isPrevious) FriendMessageEvent(bot, bot.getQQ(packet.qq), packet.message) else null
             }
 
-            is FriendMessageEventPacket -> {
-                if (!packet.isPrevious) FriendMessageEvent(bot, bot.getQQ(packet.qq), packet.message).broadcast()
-            }
-
-            is GroupMessageEventPacket -> {
+            is EventPacket.GroupMessage -> {
                 if (packet.qq == bot.account.id) return
 
                 GroupMessageEvent(
                     bot, bot.getGroup(GroupId(packet.groupNumber)), bot.getQQ(packet.qq), packet.message, packet.senderPermission, packet.senderName
-                ).broadcast()
+                )
             }
 
-            is FriendConversationInitializedEventPacket -> FriendConversationInitializedEvent(bot, bot.getQQ(packet.qq)).broadcast()
-            is FriendOnlineStatusChangedPacket -> FriendOnlineStatusChangedEvent(bot, bot.getQQ(packet.qq), packet.status).broadcast()
+            is EventPacket.FriendConversationInitialize -> FriendConversationInitializedEvent(bot, bot.getQQ(packet.qq))
+            is FriendStatusChanged -> FriendOnlineStatusChangedEvent(bot, bot.getQQ(packet.qq), packet.status)
             is FriendImageIdRequestPacket.Response -> packet.imageId?.let { FriendImageIdObtainedEvent(bot, it) }
 
-            is GroupMemberPermissionChangedEventPacket -> MemberPermissionChangedEvent(
-                bot, bot.getGroup(packet.groupId.groupId()), bot.getQQ(packet.qq), packet.kind
-            ).broadcast()
+            is EventPacket.MemberPermissionChange ->
+                MemberPermissionChangedEvent(bot, bot.getGroup(packet.groupId.groupId()), bot.getQQ(packet.qq), packet.kind)
 
-
-            is FriendOnlineStatusChangedPacket.Encrypted -> distributePacket(packet.decrypt(sessionKey))
-        }
+            else -> null
+        }?.broadcast()
     }
 
     suspend fun sendFriendMessage(qq: QQ, message: MessageChain) {

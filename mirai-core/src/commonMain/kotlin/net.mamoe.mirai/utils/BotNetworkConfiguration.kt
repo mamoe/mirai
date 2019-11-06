@@ -2,7 +2,6 @@ package net.mamoe.mirai.utils
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import net.mamoe.mirai.network.protocol.tim.packet.login.TouchResponsePacket
 import kotlin.jvm.JvmField
 
 /**
@@ -10,7 +9,7 @@ import kotlin.jvm.JvmField
  */
 class BotNetworkConfiguration {
     /**
-     * 等待 [TouchResponsePacket] 的时间
+     * 等待 [TouchRespnose] 的时间
      */
     var touchTimeout: TimeSpan = 2.seconds
     /**

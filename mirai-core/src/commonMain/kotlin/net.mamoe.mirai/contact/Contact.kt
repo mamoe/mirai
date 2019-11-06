@@ -11,6 +11,7 @@ import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.action.RequestProfileDetailsPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.RequestProfileDetailsResponse
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.SuspendLazy
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
@@ -129,7 +130,7 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
      */
     suspend fun updateProfile(): Profile = bot.withSession {
         RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
-            .sendAndExpect<RequestProfileDetailsPacket.Response, Profile> { it.profile }
+            .sendAndExpect<RequestProfileDetailsResponse, Profile> { it.profile }
             .await().let {
                 @Suppress("UNCHECKED_CAST")
                 if ((::profile as SuspendLazy<Profile>).isInitialized()) {

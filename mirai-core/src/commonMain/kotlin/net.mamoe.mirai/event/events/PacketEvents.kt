@@ -4,7 +4,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Cancellable
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
 
 /* Abstract */
 
@@ -43,10 +42,10 @@ class BeforePacketSendEvent(bot: Bot, packet: OutgoingPacket) : OutgoingPacketEv
 /**
  * 来自服务器的数据包的相关事件
  */
-sealed class ServerPacketEvent<P : ServerPacket>(bot: Bot, packet: P) : PacketEvent<P>(bot, packet)
+sealed class ServerPacketEvent<P : Packet>(bot: Bot, packet: P) : PacketEvent<P>(bot, packet)
 
 /**
  * 服务器数据包接收事件. 此时包已经解密完成.
  */
-class ServerPacketReceivedEvent<P : ServerPacket>(bot: Bot, packet: P) : ServerPacketEvent<P>(bot, packet),
+class ServerPacketReceivedEvent<P : Packet>(bot: Bot, packet: P) : ServerPacketEvent<P>(bot, packet),
     Cancellable

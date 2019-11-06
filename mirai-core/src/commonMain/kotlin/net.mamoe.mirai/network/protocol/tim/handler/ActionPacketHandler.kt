@@ -8,11 +8,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.isOpen
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.RequestAccountInfoPacket
-import net.mamoe.mirai.network.protocol.tim.packet.ResponsePacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
-import net.mamoe.mirai.network.protocol.tim.packet.event.ServerEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.SKey
 import net.mamoe.mirai.network.qqAccount
 
 /**
@@ -29,10 +28,10 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
 
 
     @ExperimentalStdlibApi
-    override suspend fun onPacketReceived(packet: ServerPacket): Unit = with(session) {
+    override suspend fun onPacketReceived(packet: Packet): Unit = with(session) {
         when (packet) {
-            is RequestSKeyPacket.Response -> {
-                sKey = packet.sKey
+            is SKey -> {
+                sKey = packet.delegate
                 cookies = "uin=o$qqAccount;skey=$sKey;"
 
 
@@ -49,10 +48,6 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
                     }
                 }
             }
-
-            is ServerEventPacket.Raw.Encrypted -> socket.distributePacket(packet.decrypt(sessionKey))
-            is ServerEventPacket.Raw -> socket.distributePacket(packet.distribute())
-            is ResponsePacket.Encrypted<*> -> socket.distributePacket(packet.decrypt(sessionKey))
 
             else -> {
             }

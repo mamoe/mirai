@@ -6,7 +6,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.ServerPacket
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 
@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  *
  * @see BotSession.sendAndExpect
  */
-class TemporaryPacketHandler<P : ServerPacket, R>(
+class TemporaryPacketHandler<P : Packet, R>(
     private val expectationClass: KClass<P>,
     private val deferred: CompletableDeferred<R>,
     private val fromSession: BotSession,
@@ -54,10 +54,10 @@ class TemporaryPacketHandler<P : ServerPacket, R>(
         session.socket.sendPacket(toSend)
     }
 
-    internal fun filter(session: BotSession, packet: ServerPacket): Boolean =
-        expectationClass.isInstance(packet) && session === this.fromSession && if (checkSequence) packet.sequenceId == toSend.sequenceId else true
+    internal fun filter(session: BotSession, packet: Packet, sequenceId: UShort): Boolean =
+        expectationClass.isInstance(packet) && session === this.fromSession && if (checkSequence) sequenceId == toSend.sequenceId else true
 
-    internal suspend fun doReceiveWithoutExceptions(packet: ServerPacket) {
+    internal suspend fun doReceiveWithoutExceptions(packet: Packet) {
         @Suppress("UNCHECKED_CAST")
         val ret = try {
             withContext(callerContext) {

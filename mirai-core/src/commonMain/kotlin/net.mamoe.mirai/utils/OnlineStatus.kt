@@ -19,11 +19,20 @@ enum class OnlineStatus(
     /**
      * 忙碌
      */
-    BUSY(0x32u);
+    BUSY(0x32u),
 
+    /**
+     * 离线 ? 也可能是被删好友 TODO confirm that
+     */
+    OFFLINE(0x02u),
+
+    /**
+     * ?
+     */
+    UNKNOWN(0x20u)
+    ;
 
     // TODO: 2019/10/29  what is 0x20u
-
     companion object {
         fun ofId(id: UByte): OnlineStatus? = values().firstOrNull { it.id == id }
     }
