@@ -111,8 +111,8 @@ Mirai 的模块组成
 Mirai 的核心部分.
 
 - 独立的跨平台设计, 可以被以库的形式内置在任意项目内.
-- 现有 JVM 支持
-- 未来计划 Android, Native 支持 
+- 现有 JVM 与 AndroidLib 支持
+- 未来计划 Native 支持 
 
 #### mirai-console
 - 仅 JVM 平台
