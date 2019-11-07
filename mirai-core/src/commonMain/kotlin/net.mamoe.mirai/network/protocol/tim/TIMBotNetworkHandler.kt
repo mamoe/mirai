@@ -22,10 +22,9 @@ import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.solveCaptcha
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
@@ -66,7 +65,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
         temporaryPacketHandler.send(this[ActionPacketHandler].session)
     }
 
-    override suspend fun login(configuration: BotNetworkConfiguration): LoginResult =
+    override suspend fun login(configuration: BotConfiguration): LoginResult =
         withContext(this.coroutineContext) {
             TIMProtocol.SERVER_IP.forEach { ip ->
                 bot.logger.info("Connecting server $ip")
@@ -124,7 +123,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
 
     override suspend fun sendPacket(packet: OutgoingPacket) = socket.sendPacket(packet)
 
-    internal inner class BotSocketAdapter(override val serverIp: String, val configuration: BotNetworkConfiguration) :
+    internal inner class BotSocketAdapter(override val serverIp: String, val configuration: BotConfiguration) :
         DataPacketSocketAdapter {
 
         override val channel: PlatformDatagramChannel = PlatformDatagramChannel(serverIp, 8000)
@@ -290,7 +289,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
     /**
      * 处理登录过程
      */
-    inner class LoginHandler(private val configuration: BotNetworkConfiguration) {
+    inner class LoginHandler(private val configuration: BotConfiguration) {
         private lateinit var token00BA: ByteArray
         private lateinit var token0825: ByteArray//56
         private var loginTime: Int = 0
@@ -329,7 +328,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                 else -> {
                     error("No decrypter found")
                 }
-            } as? D ?: error("Internal error: could not cast decrypter found for factory to class Decrypter")
+            } as? D ?: error("Internal error: could not cast decrypter which is found for factory to class Decrypter")
 
         suspend fun onPacketReceived(packet: Any) {//complex function, but it doesn't matter
             when (packet) {
@@ -412,10 +411,10 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                     this.token00BA = packet.token00BA
 
                     if (packet.transmissionCompleted) {
-                        val code = solveCaptcha(captchaCache!!)
+                        val code = configuration.captchaSolver(bot, captchaCache!!)
 
                         this.captchaCache = null
-                        if (code == null) {
+                        if (code == null || code.length != 4) {
                             this.captchaSectionId = 1//意味着正在刷新验证码
                             socket.sendPacket(CaptchaPacket.Refresh(bot.qqAccount, token0825))
                         } else {

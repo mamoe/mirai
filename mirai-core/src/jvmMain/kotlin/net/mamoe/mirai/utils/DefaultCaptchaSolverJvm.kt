@@ -6,42 +6,40 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.io.core.IoBuffer
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import kotlin.math.max
-import kotlin.math.min
-
 
 /**
- * 让用户处理验证码
+ * 平台默认的验证码识别器.
  *
- * @return 用户输入得到的验证码
+ * 可被修改, 除覆盖配置外全局生效.
  */
 @KtorExperimentalAPI
-internal actual suspend fun solveCaptcha(captchaBuffer: IoBuffer): String? = captchaLock.withLock {
-    val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
-    withContext(Dispatchers.IO) {
-        tempFile.createNewFile()
-        @Suppress("EXPERIMENTAL_API_USAGE")
-        MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
-        try {
-            tempFile.writeChannel().writeFully(captchaBuffer)
-            MiraiLogger.info("若看不清字符图片, 请查看 ${tempFile.absolutePath}")
-        } catch (e: Exception) {
-            MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
-        }
+actual var DefaultCaptchaSolver: CaptchaSolver = {
+    captchaLock.withLock {
+        val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
+        withContext(Dispatchers.IO) {
+            tempFile.createNewFile()
+            @Suppress("EXPERIMENTAL_API_USAGE")
+            MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
+            try {
+                tempFile.writeChannel().writeFully(it)
+                MiraiLogger.info("若看不清字符图片, 请查看 ${tempFile.absolutePath}")
+            } catch (e: Exception) {
+                MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+            }
 
-        MiraiLogger.info(ImageIO.read(tempFile.inputStream()).createCharImg())
+            MiraiLogger.info(ImageIO.read(tempFile.inputStream()).createCharImg())
+        }
+        MiraiLogger.info("若要更换验证码, 请直接回车")
+        readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
     }
-    MiraiLogger.info("若要更换验证码, 请直接回车")
-    readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
 }
 
-private val captchaLock = Mutex()
 
+private val captchaLock = Mutex()
 
 /**
  * @author NaturalHG
@@ -60,7 +58,7 @@ internal fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Dou
         return (r * 30 + g * 59 + b * 11 + 50) / 100
     }
 
-    fun grayCompare(g1: Int, g2: Int): Boolean = min(g1, g2).toDouble() / max(g1, g2) >= ignoreRate
+    fun grayCompare(g1: Int, g2: Int): Boolean = kotlin.math.min(g1, g2).toDouble() / kotlin.math.max(g1, g2) >= ignoreRate
 
     val background = gray(image.getRGB(0, 0))
 

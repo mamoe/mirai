@@ -13,7 +13,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
-import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -62,7 +62,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果
      * 本函数将挂起直到登录成功.
      */
-    suspend fun login(configuration: BotNetworkConfiguration): LoginResult
+    suspend fun login(configuration: BotConfiguration): LoginResult
 
     /**
      * 添加一个临时包处理器, 并发送相应的包

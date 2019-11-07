@@ -8,7 +8,7 @@ import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.session
-import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 
@@ -52,12 +52,12 @@ suspend inline fun Bot.sendPacket(packet: OutgoingPacket) = this.network.sendPac
 /**
  * 使用在默认配置基础上修改的配置进行登录
  */
-suspend inline fun Bot.login(noinline configuration: BotNetworkConfiguration.() -> Unit): LoginResult = this.network.login(BotNetworkConfiguration().apply(configuration))
+suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit): LoginResult = this.network.login(BotConfiguration().apply(configuration))
 
 /**
- * 使用默认的配置 ([BotNetworkConfiguration.Default]) 登录
+ * 使用默认的配置 ([BotConfiguration.Default]) 登录
  */
-suspend inline fun Bot.login(): LoginResult = this.network.login(BotNetworkConfiguration.Default)
+suspend inline fun Bot.login(): LoginResult = this.network.login(BotConfiguration.Default)
 
 /**
  * 取得机器人的 QQ 号

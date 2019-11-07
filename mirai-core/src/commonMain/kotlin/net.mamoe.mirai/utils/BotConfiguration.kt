@@ -2,14 +2,29 @@ package net.mamoe.mirai.utils
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
+import kotlinx.io.core.IoBuffer
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.network.protocol.tim.packet.login.TouchPacket.TouchResponse
 import kotlin.jvm.JvmField
+
+/**
+ * 验证码处理器. 需阻塞直到处理完成验证码.
+ *
+ * 返回
+ */
+typealias CaptchaSolver = suspend Bot.(IoBuffer) -> String?
+
+/**
+ * 在各平台实现的默认的验证码处理器.
+ */
+expect var DefaultCaptchaSolver: CaptchaSolver
 
 /**
  * 网络和连接配置
  */
-class BotNetworkConfiguration {
+class BotConfiguration {
     /**
-     * 等待 [TouchRespnose] 的时间
+     * 等待 [TouchResponse] 的时间
      */
     var touchTimeout: TimeSpan = 2.seconds
     /**
@@ -28,11 +43,16 @@ class BotNetworkConfiguration {
      */
     var heartbeatTimeout: TimeSpan = 2.seconds
 
+    /**
+     * 验证码处理器
+     */
+    var captchaSolver: CaptchaSolver = DefaultCaptchaSolver
+
     companion object {
         /**
          * 默认的配置实例
          */
         @JvmField
-        val Default = BotNetworkConfiguration()
+        val Default = BotConfiguration()
     }
 }

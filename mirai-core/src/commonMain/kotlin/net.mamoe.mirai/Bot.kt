@@ -10,7 +10,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.BotNetworkConfiguration
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
@@ -71,7 +71,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
      */
     @JvmOverloads
     suspend fun reinitializeNetworkHandler(
-        configuration: BotNetworkConfiguration,
+        configuration: BotConfiguration,
         cause: Throwable? = null
     ): LoginResult {
         logger.info("Initializing BotNetworkHandler")

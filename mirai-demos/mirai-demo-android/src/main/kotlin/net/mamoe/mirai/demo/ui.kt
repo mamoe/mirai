@@ -41,7 +41,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val bot = Bot(qq, password).apply { login().requireSuccess() }
+        val bot = Bot(qq, password).apply {
+            login {
+                captchaSolver = {
+
+                    "ABCD"
+                }
+            }.requireSuccess()
+        }
 
         bot.subscribeFriendMessages {
             "Hello" reply "Hello Mirai!"
