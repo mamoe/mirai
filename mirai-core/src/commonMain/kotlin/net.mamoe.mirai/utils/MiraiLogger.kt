@@ -17,7 +17,7 @@ var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger() }
  *
  * 不应该直接构造这个类的实例. 请使用 [DefaultLogger]
  */
-expect open class PlatformLogger @JvmOverloads internal constructor(identity: String? = null) : MiraiLoggerPlatformBase
+expect open class PlatformLogger @JvmOverloads internal constructor(identity: String? = "Mirai") : MiraiLoggerPlatformBase
 
 
 /**
@@ -32,7 +32,7 @@ interface MiraiLogger {
     /**
      * 顶层日志记录器
      */
-    companion object : MiraiLogger by DefaultLogger("TOP Level")
+    companion object : MiraiLogger by DefaultLogger("Mirai")
 
     val identity: String?
 

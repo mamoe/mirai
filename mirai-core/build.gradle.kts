@@ -68,6 +68,8 @@ kotlin {
             dependsOn(commonMain)
             implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
+
             implementation("io.ktor:ktor-client-android:$ktorVersion")
 
         }

@@ -2,6 +2,7 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
+import net.mamoe.mirai.utils.decryptBy
 
 
 /**

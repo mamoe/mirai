@@ -8,13 +8,11 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BeforePacketSendEvent
 import net.mamoe.mirai.event.events.BotLoginSucceedEvent
 import net.mamoe.mirai.event.events.PacketSentEvent
 import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
-import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.handler.*
@@ -33,7 +31,7 @@ import kotlin.properties.Delegates
  *
  * JVM: 独立的 4 thread 调度器
  */
-expect val NetworkDispatcher: CoroutineDispatcher
+internal expect val NetworkDispatcher: CoroutineDispatcher
 
 /**
  * [BotNetworkHandler] 的 TIM PC 协议实现
@@ -75,7 +73,6 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
 
                 socket.resendTouch().takeIf { it != LoginResult.TIMEOUT }?.let { return@withContext it }
 
-                println()
                 bot.logger.warning("Timeout. Retrying next server")
 
                 socket.close()
@@ -91,7 +88,6 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
         require(size == 0) { "Already logged in" }
         val session = BotSession(bot, sessionKey, socket)
 
-        add(EventPacketHandler(session).asNode(EventPacketHandler))
         add(ActionPacketHandler(session).asNode(ActionPacketHandler))
         bot.logger.info("Successfully logged in")
     }
@@ -144,6 +140,8 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                 } catch (e: ReadPacketInternalException) {
                     bot.logger.error("Socket channel read failed: ${e.message}")
                     continue
+                } catch (e: CancellationException) {
+                    return
                 } catch (e: Throwable) {
                     bot.logger.error("Caught unexpected exceptions", e)
                     continue
@@ -154,6 +152,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                         continue
                     }// sometimes exceptions are thrown without this `if` clause
                 }
+
                 //buffer.resetForRead()
                 launch {
                     // `.use`: Ensure that the packet is consumed **totally**
@@ -164,9 +163,27 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                         buffer.resetForWrite()
                         buffer.writeFully(it, 0, length)
                     }
-                    ByteReadPacket(buffer, IoBuffer.Pool).use {
+                    ByteReadPacket(buffer, IoBuffer.Pool).use { input ->
                         try {
-                            processPacket(it)
+                            input.discardExact(3)
+
+                            val id = matchPacketId(input.readUShort())
+                            val sequenceId = input.readUShort()
+
+                            input.discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00
+
+                            val packet = try {
+                                with(id.factory) {
+                                    loginHandler.provideDecrypter(id.factory)
+                                        .decrypt(input)
+                                        .decode(id, sequenceId, this@TIMBotNetworkHandler)
+                                }
+                            } finally {
+                                input.close()
+                            }
+
+
+                            handlePacket0(sequenceId, packet, id.factory)
                         } catch (e: Exception) {
                             bot.logger.error(e)
                         }
@@ -205,25 +222,19 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
             return receiving
         }
 
-        private suspend inline fun processPacket(input: ByteReadPacket) = with(input) {
-            discardExact(3)
-
-            val id = PacketId(readUShort())
-            val sequenceId = readUShort()
-
-            discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00. 但更可能是应该 discard 8
-
-            val packet: Packet = with(id.factory) {
-                try {
-                    loginHandler.provideDecrypter(id.factory)
-                        .decrypt(input)
-                        .decode(id, sequenceId, this@TIMBotNetworkHandler)
-                } finally {
-                    input.close()
-                }
+        private suspend fun <TPacket : Packet> handlePacket0(
+            sequenceId: UShort,
+            packet: TPacket,
+            factory: PacketFactory<TPacket, *>
+        ) {
+            if (!packet::class.annotations.filterIsInstance<NoLog>().any()) {
+                bot.logger.verbose("Packet received: $packet")
             }
 
-            bot.logger.verbose("Packet received: $packet")
+            when (packet) {
+                is Cancellable -> if ((packet as Cancellable).broadcast(coroutineContext).cancelled) return
+                is Subscribable -> packet.broadcast(coroutineContext)
+            }
 
             // Remove first to release the lock
             handlersLock.withLock {
@@ -235,6 +246,12 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
 
             if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled)
                 return
+
+            if (factory is SessionPacketFactory<*>) {
+                with(factory as SessionPacketFactory<TPacket>) {
+                    processPacket(packet)
+                }
+            }
 
             // They should be called in sequence because packet is lock-free
             loginHandler.onPacketReceived(packet)
@@ -270,7 +287,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                     it::class.annotations.filterIsInstance<NoLog>().any()
                 }
             }?.let {
-                bot.logger.verbose("Packet sent:     $it")
+                bot.logger.verbose("Packet sent:     ${it::class.simpleName ?: "[OutgoingPacket]"}")
             }
 
             PacketSentEvent(bot, packet).broadcast()
@@ -455,7 +472,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的可能之一
                 is SubmitPasswordPacket.LoginResponse.KeyExchange -> {
-                    this.privateKey = packet.privateKeyUpdate!!
+                    this.privateKey = packet.privateKeyUpdate
 
                     socket.sendPacket(
                         SubmitPasswordPacket(

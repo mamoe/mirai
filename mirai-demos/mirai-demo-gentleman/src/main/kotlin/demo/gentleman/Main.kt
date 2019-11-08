@@ -7,7 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
@@ -41,7 +41,7 @@ suspend fun main() {
     /**
      * 监听所有事件
      */
-    subscribeAlways<Event> {
+    subscribeAlways<Subscribable> {
         //bot.logger.verbose("收到了一个事件: ${it::class.simpleName}")
     }
     bot.subscribeMessages {

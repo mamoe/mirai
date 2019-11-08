@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.Subscribable
 import kotlin.reflect.KClass
 
 
@@ -27,11 +27,11 @@ inline val AnnotatedId.value: UShort get() = id.value
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS)
 annotation class CorrespondingEvent(
-    val eventClass: KClass<out Event>
+    val eventClass: KClass<out Subscribable>
 )
 
 /**
- * 版本信息
+ * 包的最后一次修改时间, 和分析时使用的 TIM 版本
  */
 @MustBeDocumented
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)

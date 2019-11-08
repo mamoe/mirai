@@ -110,7 +110,7 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
     }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): CaptchaResponse =
-        when (val id = readByte().toUInt()) {
+        when (val flag = readByte().toUInt()) {
             0x14u -> {//00 05 00 00 00 00 00 00 38
                 CaptchaResponse.Correct().apply {
                     discardExact(9)
@@ -134,7 +134,7 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
                 }
             }
 
-            else -> error("Unable to analyze RequestCaptchaTransmissionPacket, unknown id: $id")
+            else -> error("Unable to analyze RequestCaptchaTransmissionPacket, unknown id: $flag")
         }
 }
 /*

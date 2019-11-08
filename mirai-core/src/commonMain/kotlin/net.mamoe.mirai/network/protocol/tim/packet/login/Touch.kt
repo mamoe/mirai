@@ -57,7 +57,7 @@ object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey
     }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): TouchResponse = TouchResponse().apply {
-        when (val id = readByte().toUByte().toInt()) {
+        when (val flag = readByte().toUByte().toInt()) {
             0xFE -> {
                 discardExact(94)
                 serverIP = readIP()
@@ -71,7 +71,7 @@ object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey
                 loginIP = readIP()
             }
 
-            else -> throw IllegalStateException(id.toByte().toUHexString())
+            else -> throw IllegalStateException(flag.toByte().toUHexString())
         }
     }
 }

@@ -11,13 +11,20 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmOverloads
 
 /**
+ * 可被监听的.
+ *
+ * 可以是任何 class 或 object.
+ */
+interface Subscribable
+
+/**
  * 所有事件的基类.
  * 若监听这个类, 监听器将会接收所有事件的广播.
  *
  * @see [broadcast] 广播事件
  * @see [subscribe] 监听事件
  */
-abstract class Event {
+abstract class Event : Subscribable {
 
     /**
      * 事件是否已取消. 事件需实现 [Cancellable] 才可以被取消, 否则这个字段为常量值 false
@@ -51,9 +58,9 @@ private val EventDebuggingFlag: Boolean by lazy {
 }
 
 /**
- * 实现这个接口的事件可以被取消.
+ * 实现这个接口的事件可以被取消. 在广播中取消不会影响广播过程.
  */
-interface Cancellable {
+interface Cancellable : Subscribable {
     val cancelled: Boolean
 
     fun cancel()
@@ -67,7 +74,7 @@ interface Cancellable {
  */
 @Suppress("UNCHECKED_CAST")
 @JvmOverloads
-suspend fun <E : Event> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
+suspend fun <E : Subscribable> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
     if (EventDebuggingFlag) {
         EventLogger.debug(this::class.simpleName + " pre broadcast")
     }

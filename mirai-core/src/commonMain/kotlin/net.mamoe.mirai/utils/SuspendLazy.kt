@@ -11,7 +11,7 @@ import net.mamoe.mirai.contact.QQ
 /**
  * 创建一个在当前 [CoroutineScope] 下执行的 [SuspendLazy]
  */
-fun <R> CoroutineScope.SuspendLazy(initializer: suspend () -> R): SuspendLazy<R> = SuspendLazy(this, initializer)
+fun <R> CoroutineScope.SuspendLazy(initializer: suspend () -> R): Lazy<Deferred<R>> = SuspendLazy(this, initializer)
 
 /**
  * 挂起初始化的 [lazy], 是属性不能 `suspend` 的替代品.
@@ -26,7 +26,8 @@ fun <R> CoroutineScope.SuspendLazy(initializer: suspend () -> R): SuspendLazy<R>
  *
  * @sample QQ.profile
  */
-class SuspendLazy<R>(scope: CoroutineScope, val initializer: suspend () -> R) : Lazy<Deferred<R>> {
+@PublishedApi
+internal class SuspendLazy<R>(scope: CoroutineScope, val initializer: suspend () -> R) : Lazy<Deferred<R>> {
     private val valueUpdater: Deferred<R> by lazy { scope.async { initializer() } }
 
     @Suppress("EXPERIMENTAL_API_USAGE")

@@ -4,6 +4,7 @@ apply plugin: "java"
 dependencies {
     api project(":mirai-core")
     runtime files("../../mirai-core/build/classes/kotlin/jvm/main") // mpp targeting android limitation
+    //runtime files("../../mirai-core/build/classes/atomicfu/jvm/main") // mpp targeting android limitation
     api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
     api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
 

@@ -47,5 +47,4 @@ sealed class ServerPacketEvent<P : Packet>(bot: Bot, packet: P) : PacketEvent<P>
 /**
  * 服务器数据包接收事件. 此时包已经解密完成.
  */
-class ServerPacketReceivedEvent<P : Packet>(bot: Bot, packet: P) : ServerPacketEvent<P>(bot, packet),
-    Cancellable
+class ServerPacketReceivedEvent<P : Packet>(bot: Bot, packet: P) : ServerPacketEvent<P>(bot, packet), Cancellable

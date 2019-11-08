@@ -9,6 +9,6 @@ import kotlinx.coroutines.runBlocking
  */
 object Events {
     @JvmStatic
-    fun <E : Event> subscribe(type: Class<E>, handler: suspend (E) -> ListeningStatus) =
+    fun <E : Subscribable> subscribe(type: Class<E>, handler: suspend (E) -> ListeningStatus) =
         runBlocking { type.kotlin.subscribe(handler) }
 }

@@ -9,10 +9,13 @@ import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.protocol.tim.handler.EventPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.action.RequestProfileDetailsPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.RequestProfileDetailsResponse
+import net.mamoe.mirai.network.protocol.tim.packet.action.SendFriendMessagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.SendGroupMessagePacket
+import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
+import net.mamoe.mirai.sendPacket
 import net.mamoe.mirai.utils.SuspendLazy
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.withSession
@@ -89,7 +92,7 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
         get() = TODO("Implementing group members is less important")
 
     override suspend fun sendMessage(message: MessageChain) {
-        bot.network[EventPacketHandler].sendGroupMessage(this, message)
+        bot.sendPacket(SendGroupMessagePacket(bot.qqAccount, internalId, bot.sessionKey, message))
     }
 
     companion object
@@ -114,7 +117,7 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
     val profile: Deferred<Profile> by bot.network.SuspendLazy { updateProfile() }
 
     override suspend fun sendMessage(message: MessageChain) {
-        bot.network[EventPacketHandler].sendFriendMessage(this, message)
+        bot.sendPacket(SendFriendMessagePacket(bot.qqAccount, id, bot.sessionKey, message))
     }
 
     /**
@@ -152,6 +155,24 @@ class Member internal constructor(bot: Bot, id: UInt, val group: Group) : QQ(bot
     init {
         TODO("Group member implementation")
     }
+}
+
+/**
+ * 群成员的权限
+ */
+enum class MemberPermission {
+    /**
+     * 群主
+     */
+    OWNER,
+    /**
+     * 管理员
+     */
+    OPERATOR,
+    /**
+     * 一般群成员
+     */
+    MEMBER;
 }
 
 /**

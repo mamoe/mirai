@@ -19,11 +19,14 @@ internal fun getGTK(sKey: String): Int {
 }
 
 @Tested
-fun BytePacketBuilder.writeCRC32() = writeCRC32(getRandomByteArray(16))
+@PublishedApi
+internal fun BytePacketBuilder.writeCRC32() = writeCRC32(getRandomByteArray(16))
 
-fun BytePacketBuilder.writeCRC32(key: ByteArray) {
+@PublishedApi
+internal fun BytePacketBuilder.writeCRC32(key: ByteArray) {
     writeFully(key)//key
     writeInt(crc32(key))
 }
 
-fun md5(str: String): ByteArray = md5(str.toByteArray())
+@PublishedApi
+internal fun md5(str: String): ByteArray = md5(str.toByteArray())

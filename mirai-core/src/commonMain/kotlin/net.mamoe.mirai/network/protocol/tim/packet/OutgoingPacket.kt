@@ -6,6 +6,7 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.use
 import kotlinx.io.core.writeUShort
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
@@ -24,21 +25,19 @@ class OutgoingPacket(
     private val name: String by lazy {
         name ?: packetId.toString()
     }
-
-    constructor(id: PacketId, sequenceId: UShort, delegate: ByteReadPacket) : this(null, id, sequenceId, delegate)
-
-    constructor(annotation: AnnotatedId, sequenceId: UShort, delegate: ByteReadPacket) :
-            this(annotation.toString(), annotation.id, sequenceId, delegate)
-
-    override fun toString(): String = packetToString(packetId.value, sequenceId, name)
 }
 
 /**
  * 登录完成建立 session 之后发出的包.
  * 均使用 sessionKey 加密
+ *
+ * @param TPacket invariant
  */
-abstract class SessionPacketFactory<out TPacket : Packet> : PacketFactory<TPacket, SessionKey>(SessionKey) {
-    final override fun decrypt(input: ByteReadPacket, decrypter: SessionKey): ByteReadPacket = decrypter.decrypt(input)
+abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, SessionKey>(SessionKey) {
+    /**
+     * 在 [BotNetworkHandler] 下处理这个包. 广播事件等.
+     */
+    open suspend fun BotNetworkHandler<*>.processPacket(packet: TPacket) {}
 }
 
 /**

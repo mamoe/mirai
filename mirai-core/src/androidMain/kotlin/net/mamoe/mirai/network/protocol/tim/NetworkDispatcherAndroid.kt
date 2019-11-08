@@ -9,4 +9,4 @@ import java.util.concurrent.Executors
  *
  * JVM: 独立的 4 thread 调度器
  */
-actual val NetworkDispatcher: CoroutineDispatcher = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
+internal actual val NetworkDispatcher: CoroutineDispatcher = Executors.newFixedThreadPool(4).asCoroutineDispatcher()

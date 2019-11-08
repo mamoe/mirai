@@ -1,22 +1,27 @@
 package net.mamoe.mirai.utils
 
-import io.ktor.util.KtorExperimentalAPI
-import io.ktor.util.cio.writeChannel
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.io.ByteWriteChannel
+import kotlinx.coroutines.io.jvm.nio.copyTo
+import kotlinx.coroutines.io.reader
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.use
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
+import java.io.RandomAccessFile
 import javax.imageio.ImageIO
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 平台默认的验证码识别器.
  *
  * 可被修改, 除覆盖配置外全局生效.
  */
-@KtorExperimentalAPI
 actual var DefaultCaptchaSolver: CaptchaSolver = {
     captchaLock.withLock {
         val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
@@ -37,6 +42,16 @@ actual var DefaultCaptchaSolver: CaptchaSolver = {
         readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
     }
 }
+
+// Copied from Ktor CIO
+private fun File.writeChannel(
+    coroutineContext: CoroutineContext = Dispatchers.IO
+): ByteWriteChannel = GlobalScope.reader(CoroutineName("file-writer") + coroutineContext, autoFlush = true) {
+    RandomAccessFile(this@writeChannel, "rw").use { file ->
+        val copied = channel.copyTo(file.channel)
+        file.setLength(copied) // truncate tail that could remain from the previously written data
+    }
+}.channel
 
 
 private val captchaLock = Mutex()

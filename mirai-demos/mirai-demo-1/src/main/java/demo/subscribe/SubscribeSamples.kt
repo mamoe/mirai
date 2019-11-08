@@ -8,10 +8,11 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
+import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
+import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
 import net.mamoe.mirai.network.protocol.tim.packet.login.ifFail
 import net.mamoe.mirai.utils.suspendToExternalImage
 import java.io.File
@@ -52,7 +53,7 @@ suspend fun main() {
     directlySubscribe(bot)
 
     //DSL 监听
-    subscribeAll<FriendMessageEvent> {
+    subscribeAll<FriendMessage> {
         always {
             //获取第一个纯文本消息
             val firstText = it.message.firstOrNull<PlainText>()
@@ -102,7 +103,7 @@ suspend fun Bot.messageDSL() {
             // sender: QQ
             // it: String (MessageChain.toString)
 
-            if (this is GroupSenderAndMessage) {
+            if (this is GroupMessage) {
                 //如果是群消息
                 // group: Group
                 this.group.sendMessage("你在一个群里")
@@ -196,7 +197,7 @@ suspend fun directlySubscribe(bot: Bot) {
     // 手动处理消息
     // 使用 Bot 的扩展方法监听, 将在处理事件时得到一个 this: Bot.
     // 这样可以调用 Bot 内的一些扩展方法如 UInt.qq():QQ
-    bot.subscribeAlways<FriendMessageEvent> {
+    bot.subscribeAlways<FriendMessage> {
         // this: Bot
         // it: FriendMessageEvent
 
@@ -257,9 +258,9 @@ suspend fun directlySubscribe(bot: Bot) {
  * 对机器人说 "停止", 机器人停止
  */
 suspend fun demo2() {
-    subscribeAlways<FriendMessageEvent> { event ->
+    subscribeAlways<FriendMessage> { event ->
         if (event.message eq "记笔记") {
-            subscribeUntilFalse<FriendMessageEvent> {
+            subscribeUntilFalse<FriendMessage> {
                 it.reply("你发送了 ${it.message}")
 
                 it.message eq "停止"

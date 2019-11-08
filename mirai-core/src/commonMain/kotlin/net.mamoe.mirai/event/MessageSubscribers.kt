@@ -3,83 +3,21 @@
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.GroupMessageEvent
-import net.mamoe.mirai.message.*
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.sendTo
-import net.mamoe.mirai.utils.upload
+import net.mamoe.mirai.message.Message
+import net.mamoe.mirai.message.any
+import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
+import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
+import net.mamoe.mirai.network.protocol.tim.packet.event.MessageEventPacket
 import kotlin.jvm.JvmName
-
-/**
- * 消息事件时创建的临时容器.
- */
-abstract class SenderAndMessage<TContact : Contact>(
-    /**
-     * 发送这条消息的用户.
-     */
-    val sender: QQ,
-    /**
-     * 消息事件主体. 对于好友消息, 这个属性为 [QQ] 的实例;  对于群消息, 这个属性为 [Group] 的实例
-     */
-    val subject: TContact,
-    val message: MessageChain
-) {
-    /**
-     * 给这个消息事件的主体发送消息
-     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
-     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
-     */
-    suspend inline fun reply(message: MessageChain) = subject.sendMessage(message)
-
-    suspend fun reply(message: Message) = subject.sendMessage(message.singleChain())
-    suspend fun reply(plain: String) = subject.sendMessage(plain.toMessage())
-
-
-    // region Send to subject
-    suspend inline fun ExternalImage.send() = this.sendTo(subject)
-
-    suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
-    suspend inline fun Image.send() = this.sendTo(subject)
-    suspend inline fun ImageId.send() = this.sendTo(subject)
-    suspend inline fun Message.send() = this.sendTo(subject)
-    suspend inline fun String.send() = this.toMessage().sendTo(subject)
-
-    // endregion
-}
-
-/**
- * [subject] = [sender] = [QQ]
- */
-class FriendSenderAndMessage(
-    sender: QQ,
-    message: MessageChain
-) : SenderAndMessage<QQ>(sender, sender, message)
-
-/**
- * [subject] = [group] = [Group]
- */
-class GroupSenderAndMessage(
-    val group: Group,
-    sender: QQ,
-    message: MessageChain
-) : SenderAndMessage<Group>(sender, group, message)
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
 @MessageDsl
-suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<SenderAndMessage<*>>.() -> Unit) {
-    MessageSubscribersBuilder<SenderAndMessage<*>> { listener ->
-        subscribeAlways<BotEvent> {
-            when (it) {
-                is FriendMessageEvent -> listener(FriendSenderAndMessage(it.sender, it.message))
-                is GroupMessageEvent -> listener(GroupSenderAndMessage(it.group, it.sender, it.message))
-            }
+suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessageEventPacket<*>>.() -> Unit) {
+    MessageSubscribersBuilder<MessageEventPacket<*>> { listener ->
+        subscribeAlways<MessageEventPacket<*>> {
+            listener(it)
         }
     }.apply { listeners() }
 }
@@ -88,10 +26,10 @@ suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubsc
  * 订阅来自所有 [Bot] 的所有群消息事件
  */
 @MessageDsl
-suspend inline fun subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupSenderAndMessage>.() -> Unit) {
-    MessageSubscribersBuilder<GroupSenderAndMessage> { listener ->
-        subscribeAlways<GroupMessageEvent> {
-            listener(GroupSenderAndMessage(it.group, it.sender, it.message))
+suspend inline fun subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+    MessageSubscribersBuilder<GroupMessage> { listener ->
+        subscribeAlways<GroupMessage> {
+            listener(it)
         }
     }.apply { listeners() }
 }
@@ -100,10 +38,10 @@ suspend inline fun subscribeGroupMessages(crossinline listeners: suspend Message
  * 订阅来自所有 [Bot] 的所有好友消息事件
  */
 @MessageDsl
-suspend inline fun subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendSenderAndMessage>.() -> Unit) {
-    MessageSubscribersBuilder<FriendSenderAndMessage> { listener ->
-        subscribeAlways<FriendMessageEvent> {
-            listener(FriendSenderAndMessage(it.sender, it.message))
+suspend inline fun subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+    MessageSubscribersBuilder<FriendMessage> { listener ->
+        subscribeAlways<FriendMessage> {
+            listener(it)
         }
     }.apply { listeners() }
 }
@@ -112,13 +50,10 @@ suspend inline fun subscribeFriendMessages(crossinline listeners: suspend Messag
  * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
 @MessageDsl
-suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<SenderAndMessage<*>>.() -> Unit) {
-    MessageSubscribersBuilder<SenderAndMessage<*>> { listener ->
-        this.subscribeAlways<BotEvent> {
-            when (it) {
-                is FriendMessageEvent -> listener(FriendSenderAndMessage(it.sender, it.message))
-                is GroupMessageEvent -> listener(GroupSenderAndMessage(it.group, it.sender, it.message))
-            }
+suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessageEventPacket<*>>.() -> Unit) {
+    MessageSubscribersBuilder<MessageEventPacket<*>> { listener ->
+        this.subscribeAlways<MessageEventPacket<*>> {
+            listener(it)
         }
     }.apply { listeners() }
 }
@@ -127,10 +62,10 @@ suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageS
  * 订阅来自这个 [Bot] 的所有群消息事件
  */
 @MessageDsl
-suspend inline fun Bot.subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupSenderAndMessage>.() -> Unit) {
-    MessageSubscribersBuilder<GroupSenderAndMessage> { listener ->
-        this.subscribeAlways<GroupMessageEvent> {
-            listener(GroupSenderAndMessage(it.group, it.sender, it.message))
+suspend inline fun Bot.subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+    MessageSubscribersBuilder<GroupMessage> { listener ->
+        this.subscribeAlways<GroupMessage> {
+            listener(it)
         }
     }.apply { listeners() }
 }
@@ -139,10 +74,10 @@ suspend inline fun Bot.subscribeGroupMessages(crossinline listeners: suspend Mes
  * 订阅来自这个 [Bot] 的所有好友消息事件.
  */
 @MessageDsl
-suspend inline fun Bot.subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendSenderAndMessage>.() -> Unit) {
-    MessageSubscribersBuilder<FriendSenderAndMessage> { listener ->
-        this.subscribeAlways<FriendMessageEvent> {
-            listener(FriendSenderAndMessage(it.sender, it.message))
+suspend inline fun Bot.subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+    MessageSubscribersBuilder<FriendMessage> { listener ->
+        this.subscribeAlways<FriendMessage> {
+            listener(it)
         }
     }.apply { listeners() }
 }
@@ -151,11 +86,11 @@ internal typealias MessageReplier<T> = @MessageDsl suspend T.(String) -> Message
 
 internal typealias StringReplier<T> = @MessageDsl suspend T.(String) -> String
 
-internal suspend inline operator fun <T : SenderAndMessage<*>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
+internal suspend inline operator fun <T : MessageEventPacket<*>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
     this.invoke(t, t.message.stringValue)
 
 @JvmName("invoke1") //Avoid Platform declaration clash
-internal suspend inline operator fun <T : SenderAndMessage<*>> StringReplier<T>.invoke(t: T): String =
+internal suspend inline operator fun <T : MessageEventPacket<*>> StringReplier<T>.invoke(t: T): String =
     this.invoke(t, t.message.stringValue)
 
 /**
@@ -166,7 +101,7 @@ internal suspend inline operator fun <T : SenderAndMessage<*>> StringReplier<T>.
  */
 @Suppress("unused")
 @MessageDsl
-class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
+class MessageSubscribersBuilder<T : MessageEventPacket<*>>(
     inline val subscriber: suspend (@MessageDsl suspend T.(String) -> Unit) -> Unit
 ) {
     /**
@@ -221,7 +156,7 @@ class MessageSubscribersBuilder<T : SenderAndMessage<*>>(
      * 如果是来自这个群的消息, 就执行 [onEvent]
      */
     suspend fun sentFrom(id: UInt, onEvent: @MessageDsl suspend T.(String) -> Unit) =
-        content({ if (this is GroupSenderAndMessage) group.id == id else false }, onEvent)
+        content({ if (this is GroupMessage) group.id == id else false }, onEvent)
 
     /**
      * 如果是来自这个群的消息, 就执行 [onEvent]

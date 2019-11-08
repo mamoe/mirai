@@ -25,9 +25,11 @@ class DecryptionFailedException : Exception()
  * @param key 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key, sourceLength = length)
+@PublishedApi
+internal fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key, sourceLength = length)
 
-fun ByteArray.encryptBy(key: DecrypterByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key.value, sourceLength = length)
+@PublishedApi
+internal fun ByteArray.encryptBy(key: DecrypterByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key.value, sourceLength = length)
 
 /**
  * 通过 [String.hexToBytes] 将 [keyHex] 转为 [ByteArray] 后用它解密 [this].
@@ -36,7 +38,8 @@ fun ByteArray.encryptBy(key: DecrypterByteArray, length: Int = this.size): ByteA
  * @param keyHex 长度至少为 16 bytes
  * @throws DecryptionFailedException 解密错误时
  */
-fun ByteArray.encryptBy(keyHex: String, length: Int = this.size): ByteArray = encryptBy(keyHex.hexToBytes(withCache = true), length = length)
+@PublishedApi
+internal fun ByteArray.encryptBy(keyHex: String, length: Int = this.size): ByteArray = encryptBy(keyHex.hexToBytes(withCache = true), length = length)
 
 /**
  * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 加密.
@@ -45,7 +48,8 @@ fun ByteArray.encryptBy(keyHex: String, length: Int = this.size): ByteArray = en
  * @consumer 由于缓存需要被回收, 需在方法内执行解密后明文的消耗过程
  * @throws DecryptionFailedException 解密错误时
  */
-inline fun ByteReadPacket.encryptBy(key: ByteArray, offset: Int = 0, length: Int = remaining.toInt() - offset, consumer: (ByteArray) -> Unit) {
+@PublishedApi
+internal inline fun ByteReadPacket.encryptBy(key: ByteArray, offset: Int = 0, length: Int = remaining.toInt() - offset, consumer: (ByteArray) -> Unit) {
     ByteArrayPool.useInstance {
         this.readFully(it, offset, length)
         consumer(it.encryptBy(key, length = length))
@@ -63,7 +67,9 @@ inline fun ByteReadPacket.encryptBy(key: ByteArray, offset: Int = 0, length: Int
  * @param key 固定长度 16
  * @throws DecryptionFailedException 解密错误时
  */
-fun ByteArray.decryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.decrypt(checkDataLengthAndReturnSelf(length), key, sourceLength = length)
+@PublishedApi
+internal fun ByteArray.decryptBy(key: ByteArray, length: Int = this.size): ByteArray =
+    TEA.decrypt(checkDataLengthAndReturnSelf(length), key, sourceLength = length)
 
 /**
  * 使用 [key] 解密 [this].
@@ -73,7 +79,8 @@ fun ByteArray.decryptBy(key: ByteArray, length: Int = this.size): ByteArray = TE
  * @param key 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteArray {
+@PublishedApi
+internal fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteArray {
     checkDataLengthAndReturnSelf(length)
     return ByteArrayPool.useInstance { keyBuffer ->
         key.readFully(keyBuffer, 0, key.readRemaining)
@@ -88,7 +95,8 @@ fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteArray {
  * @param keyHex 长度至少为 16 bytes
  * @throws DecryptionFailedException 解密错误时
  */
-fun ByteArray.decryptBy(keyHex: String, length: Int = this.size): ByteArray = decryptBy(keyHex.hexToBytes(withCache = true), length = length)
+@PublishedApi
+internal fun ByteArray.decryptBy(keyHex: String, length: Int = this.size): ByteArray = decryptBy(keyHex.hexToBytes(withCache = true), length = length)
 
 /**
  * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 解密.
@@ -96,7 +104,8 @@ fun ByteArray.decryptBy(keyHex: String, length: Int = this.size): ByteArray = de
  * @param key 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemaining - offset): ByteArray {
+@PublishedApi
+internal fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemaining - offset): ByteArray {
     return ByteArrayPool.useInstance {
         this.readFully(it, offset, length)
         it.checkDataLengthAndReturnSelf(length)
@@ -110,12 +119,45 @@ fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemain
  * @param keyHex 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-fun IoBuffer.decryptBy(keyHex: String, offset: Int = 0, length: Int = readRemaining - offset): ByteArray =
+@PublishedApi
+internal fun IoBuffer.decryptBy(keyHex: String, offset: Int = 0, length: Int = readRemaining - offset): ByteArray =
     decryptBy(keyHex.hexToBytes(withCache = true), offset = offset, length = length)
 
 
 // endregion
 
+// region ByteReadPacket extension
+
+@PublishedApi
+internal fun ByteReadPacket.decryptBy(key: ByteArray): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+
+@PublishedApi
+internal fun ByteReadPacket.decryptBy(key: IoBuffer): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+
+@PublishedApi
+internal fun ByteReadPacket.decryptBy(keyHex: String): ByteReadPacket = decryptBy(keyHex.hexToBytes())
+
+@PublishedApi
+internal inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
+    ByteArrayPool.useInstance {
+        val length = remaining.toInt()
+        readFully(it, 0, length)
+        consumer(it.decryptBy(key, length))
+    }.also { close() }
+
+@PublishedApi
+internal inline fun <R> ByteReadPacket.decryptAsByteArray(keyHex: String, consumer: (ByteArray) -> R): R =
+    this.decryptAsByteArray(keyHex.hexToBytes(), consumer)
+
+@PublishedApi
+internal inline fun <R> ByteReadPacket.decryptAsByteArray(key: IoBuffer, consumer: (ByteArray) -> R): R =
+    ByteArrayPool.useInstance {
+        val length = remaining.toInt()
+        readFully(it, 0, length)
+        consumer(it.decryptBy(key, length))
+    }.also { close() }
+
+// endregion
 private object TEA {
     private const val UINT32_MASK = 0xffffffffL
 
@@ -362,9 +404,4 @@ private object TEA {
 private fun ByteArray.checkDataLengthAndReturnSelf(length: Int = this.size): ByteArray {
     require(length % 8 == 0 && length >= 16) { "data must len % 8 == 0 && len >= 16 but given (length=$length) ${this.toUHexString()}" }
     return this
-}
-
-
-fun main() {
-    println("A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D".hexToBytes().encryptBy("A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D").decryptBy("A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D").toUHexString() == "A4 F1 91 88 C9 82 14 99 0C 9E 56 55 91 23 C8 3D")
 }

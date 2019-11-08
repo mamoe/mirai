@@ -31,7 +31,9 @@ object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeO
         }
     }
 
-    object ChangeOnlineStatusResponse : Packet
+    object ChangeOnlineStatusResponse : Packet {
+        override fun toString(): String = this::class.simpleName!!
+    }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): ChangeOnlineStatusResponse =
         ChangeOnlineStatusResponse

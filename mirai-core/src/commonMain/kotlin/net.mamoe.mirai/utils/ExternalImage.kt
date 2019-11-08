@@ -25,6 +25,9 @@ fun ExternalImage(
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
+ *
+ * 在 JVM, 请查看 'ExternalImageJvm.kt'
+ *
  * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */

@@ -162,6 +162,11 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.AddFriendResponse>
         }
     }
 
+    override suspend fun BotNetworkHandler<*>.processPacket(packet: AddFriendResponse) {
+
+    }
+
+
     class AddFriendResponse : Packet
 
 

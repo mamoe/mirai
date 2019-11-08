@@ -92,7 +92,8 @@ fun String.hexToUBytes(withCache: Boolean = true): UByteArray =
 /**
  * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
  */
-fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
+@PublishedApi
+internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
 
 /**
  * 随机生成长度为 [length] 的 [String].

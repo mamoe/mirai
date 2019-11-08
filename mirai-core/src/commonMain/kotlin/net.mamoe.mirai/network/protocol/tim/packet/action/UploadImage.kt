@@ -10,11 +10,10 @@ import io.ktor.http.userAgent
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.events.FriendImageIdObtainedEvent
 import net.mamoe.mirai.message.ImageId
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket.Response.State.*
+import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.*
@@ -40,20 +39,20 @@ suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
     GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey)
         .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
             withContext(userContext) {
-                when (it.state) {
-                    GroupImageIdRequestPacket.Response.State.REQUIRE_UPLOAD -> httpClient.postImage(
+                when (it) {
+                    is GroupImageIdRequestPacket.Response.RequireUpload -> httpClient.postImage(
                         htcmd = "0x6ff0071",
                         uin = bot.qqAccount,
                         groupId = GroupId(id),
                         imageInput = image.input,
                         inputSize = image.inputSize,
-                        uKeyHex = it.uKey!!.toUHexString("")
+                        uKeyHex = it.uKey.toUHexString("")
                     )
 
-                    GroupImageIdRequestPacket.Response.State.ALREADY_EXISTS -> {
+                    is GroupImageIdRequestPacket.Response.AlreadyExists -> {
                     }
 
-                    GroupImageIdRequestPacket.Response.State.OVER_FILE_SIZE_MAX -> throw OverFileSizeMaxException()
+                    is GroupImageIdRequestPacket.Response.OverFileSizeMax -> throw OverFileSizeMaxException()
                 }
             }
         }.join()
@@ -71,23 +70,23 @@ suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
 suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
     FriendImageIdRequestPacket(qqAccount, sessionKey, id, image)
         .sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
-            when (it.state) {
-                REQUIRE_UPLOAD -> httpClient.postImage(
-                    htcmd = "0x6ff0070",
-                    uin = bot.qqAccount,
-                    groupId = null,
-                    uKeyHex = it.uKey!!.toUHexString(""),
-                    imageInput = image.input,
-                    inputSize = image.inputSize
-                )
-
-                ALREADY_EXISTS -> {
+            return@sendAndExpect when (it) {
+                is FriendImageIdRequestPacket.Response.RequireUpload -> {
+                    httpClient.postImage(
+                        htcmd = "0x6ff0070",
+                        uin = bot.qqAccount,
+                        groupId = null,
+                        uKeyHex = it.uKey.toUHexString(""),
+                        imageInput = image.input,
+                        inputSize = image.inputSize
+                    )
+                    it.imageId
                 }
 
-                OVER_FILE_SIZE_MAX -> throw OverFileSizeMaxException()
-            }
+                is FriendImageIdRequestPacket.Response.AlreadyExists -> it.imageId
 
-            it.imageId!!
+                is FriendImageIdRequestPacket.Response.OverFileSizeMax -> throw OverFileSizeMaxException()
+            }
         }.await()
 }
 
@@ -187,14 +186,14 @@ object SubmitImageFilenamePacket : PacketFactory {
  * - 服务器未存有, 返回一个 key 用于客户端上传
  */
 @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
-@PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.11.1", timVersion = "2.3.2.21173")
 object FriendImageIdRequestPacket : SessionPacketFactory<FriendImageIdRequestPacket.Response>() {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey,
         target: UInt,
         image: ExternalImage
-    ) = buildOutgoingPacket {
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex("04 00 00 00 01 2E 01 00 00 69 35 00 00 00 00 00 00 00 00")
 
@@ -255,58 +254,73 @@ object FriendImageIdRequestPacket : SessionPacketFactory<FriendImageIdRequestPac
         }
     }
 
-    @CorrespondingEvent(FriendImageIdObtainedEvent::class)
-    @PacketVersion(date = "2019.11.1", timVersion = "2.3.2.21173")
-    class Response : Packet {
-        /**
-         * 访问 HTTP API 时需要使用的一个 key. 128 位
-         */
-        var uKey: ByteArray? = null
+
+    sealed class Response : EventPacket {
+        data class RequireUpload(
+            /**
+             * 访问 HTTP API 时需要使用的一个 key. 128 位
+             */
+            val uKey: ByteArray,
+            /**
+             * 发送消息时使用的 id
+             */
+            val imageId: ImageId
+        ) : Response() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is RequireUpload) return false
+
+                if (!uKey.contentEquals(other.uKey)) return false
+                if (imageId != other.imageId) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = uKey.contentHashCode()
+                result = 31 * result + imageId.hashCode()
+                return result
+            }
+        }
+
+        data class AlreadyExists(
+            /**
+             * 发送消息时使用的 id
+             */
+            val imageId: ImageId
+        ) : Response()
 
         /**
-         * 发送消息时使用的 id
+         * 超过文件大小上限
          */
-        var imageId: ImageId? = null
-
-        lateinit var state: State
-
-        enum class State {
-            /**
-             * 需要上传. 此时 [uKey], [imageId] 均不为 `null`
-             */
-            REQUIRE_UPLOAD,
-            /**
-             * 服务器已有这个图片. 此时 [uKey] 为 `null`, [imageId] 不为 `null`
-             */
-            ALREADY_EXISTS,
-            /**
-             * 图片过大. 此时 [uKey], [imageId] 均为 `null`
-             */
-            OVER_FILE_SIZE_MAX,
+        object OverFileSizeMax : Response() {
+            override fun toString(): String = this::class.simpleName!!
         }
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response().apply {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response {
         discardExact(6)
+
         if (readUByte() != UByte.MIN_VALUE) {
             discardExact(60)
 
             @Suppress("ControlFlowWithEmptyBody")
             while (readUByte().toUInt() != 0x4Au);
 
-            uKey = readBytes(readUnsignedVarInt().toInt())//128
+            val uKey = readBytes(readUnsignedVarInt().toInt())//128
 
             discardExact(1)//52, id
-            imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
-            state = REQUIRE_UPLOAD
+            val imageId = ImageId(readString(readUnsignedVarInt().toInt()))//37
+            return Response.RequireUpload(uKey, imageId)
         } else {
             val toDiscard = readUByte().toInt() - 37
-            if (toDiscard < 0) {
-                state = OVER_FILE_SIZE_MAX
+
+            return if (toDiscard < 0) {
+                Response.OverFileSizeMax
             } else {
                 discardExact(toDiscard)
-                imageId = ImageId(readString(37))
-                state = ALREADY_EXISTS
+                val imageId = ImageId(readString(37))
+                Response.AlreadyExists(imageId)
             }
         }
     }
@@ -378,42 +392,44 @@ object GroupImageIdRequestPacket : SessionPacketFactory<GroupImageIdRequestPacke
 
     private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x36u, 0x35u, 0x36u)
 
-    @PacketVersion(date = "2019.10.26", timVersion = "2.3.2.21173")
-    class Response : Packet {
-        lateinit var state: State
+    sealed class Response : EventPacket {
+        data class RequireUpload(
+            /**
+             * 访问 HTTP API 时需要使用的一个 key. 128 位
+             */
+            val uKey: ByteArray
+        ) : Response() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is RequireUpload) return false
+                if (!uKey.contentEquals(other.uKey)) return false
+                return true
+            }
+
+            override fun hashCode(): Int = uKey.contentHashCode()
+        }
+
+        object AlreadyExists : Response() {
+            override fun toString(): String = this::class.simpleName!!
+        }
 
         /**
-         * 访问 HTTP API 时需要使用的一个 key. 128 位
+         * 超过文件大小上限
          */
-        var uKey: ByteArray? = null
-
-        enum class State {
-            /**
-             * 需要上传. 此时 [uKey] 不为 `null`
-             */
-            REQUIRE_UPLOAD,
-            /**
-             * 服务器已有这个图片. 此时 [uKey] 为 `null`
-             */
-            ALREADY_EXISTS,
-            /**
-             * 图片过大. 此时 [uKey] 为 `null`
-             */
-            OVER_FILE_SIZE_MAX,
+        object OverFileSizeMax : Response() {
+            override fun toString(): String = this::class.simpleName!!
         }
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response().apply {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response {
         discardExact(6)//00 00 00 05 00 00
 
         val length = remaining - 128 - 14
         if (length < 0) {
-            state = if (readUShort().toUInt() == 0x0025u) Response.State.OVER_FILE_SIZE_MAX else Response.State.ALREADY_EXISTS
-            return@apply
+            return if (readUShort().toUInt() == 0x0025u) Response.OverFileSizeMax else Response.AlreadyExists
         }
 
         discardExact(length)
-        uKey = readBytes(128)
-        state = Response.State.REQUIRE_UPLOAD
+        return Response.RequireUpload(readBytes(128))
     }
 }

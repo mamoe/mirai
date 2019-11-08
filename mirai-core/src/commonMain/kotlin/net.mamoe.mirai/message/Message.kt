@@ -6,6 +6,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
 import net.mamoe.mirai.utils.ExternalImage
+import kotlin.jvm.Volatile
 
 // region Message Base
 /**
@@ -210,20 +211,24 @@ inline class Face(val id: FaceID) : Message {
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 8
  */
 @Suppress("FunctionName")
-fun MessageChain(): MessageChain = MessageChainImpl(ArrayList(8))
+fun MessageChain(): MessageChain = EmptyMessageChain()
 
 /**
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 [initialCapacity]
  */
 @Suppress("FunctionName")
-fun MessageChain(initialCapacity: Int): MessageChain = MessageChainImpl(ArrayList(initialCapacity))
+fun MessageChain(initialCapacity: Int): MessageChain =
+    if (initialCapacity == 0) EmptyMessageChain()
+    else MessageChainImpl(ArrayList(initialCapacity))
 
 /**
  * 构造 [MessageChain]
  * 若仅提供一个参数, 请考虑使用 [Message.toChain] 以优化性能
  */
 @Suppress("FunctionName")
-fun MessageChain(vararg messages: Message): MessageChain = MessageChainImpl(messages.toMutableList())
+fun MessageChain(vararg messages: Message): MessageChain =
+    if (messages.isEmpty()) EmptyMessageChain()
+    else MessageChainImpl(messages.toMutableList())
 
 /**
  * 构造 [MessageChain]
@@ -351,15 +356,17 @@ interface MessageChain : Message, MutableList<Message> {
 /**
  * 空的 [Message].
  *
- * 它不包含任何元素, 但维护一个 'lazy' 的 [delegate].
+ * 它不包含任何元素, 但维护一个 'lazy' 的 [MessageChainImpl].
  *
- * 只有在必要的时候才会创建 list, 如迭代([iterator]), 插入([add]), 连接([concat], [plus], [plusAssign])时.
+ * 只有在必要的时候(如迭代([iterator]), 插入([add]), 连接([concat], [plus], [plusAssign]))才会创建这个对象代表的 list
  *
- * 它是一个正常的 [Message] 和 [Message]. 可以做所有 [Message] 能做的事.
+ * 它是一个正常的 [Message] 和 [MessageChain]. 可以做所有 [Message] 能做的事.
  */
 class EmptyMessageChain : MessageChain {
-    private val delegate: MessageChainImpl by lazy { MessageChainImpl() }
-    private inline val initialized: Boolean get() = (::delegate as Lazy<*>).isInitialized()
+    private val delegate: MessageChain by lazy { MessageChainImpl().also { initialized = true } }
+
+    @Volatile
+    private var initialized: Boolean = false
 
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> =
         if (initialized) delegate.subList(
@@ -498,8 +505,9 @@ internal inline class MessageChainImpl constructor(
      */
     private val delegate: MutableList<Message>
 ) : Message, MutableList<Message>, MessageChain {
-    constructor() : this(ArrayList(8))
+    //constructor() : this(ArrayList(8))
     constructor(initialCapacity: Int) : this(ArrayList(initialCapacity))
+
     constructor(vararg messages: Message) : this(messages.toMutableList())
     constructor(messages: Iterable<Message>) : this(messages.toMutableList())
 
