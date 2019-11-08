@@ -30,6 +30,7 @@ object RequestAccountInfoPacket : SessionPacketFactory<RequestAccountInfoPacket.
         }
     }
 
+    @NoLog
     object Response : Packet {
         //等级
         //升级剩余活跃天数

@@ -45,6 +45,7 @@ object SendGroupMessagePacket : SessionPacketFactory<SendGroupMessagePacket.Resp
         }
     }
 
+    @NoLog
     object Response : Packet
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response
