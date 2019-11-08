@@ -1,10 +1,12 @@
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
-package net.mamoe.mirai.network.protocol.tim.packet
+package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
@@ -29,4 +31,4 @@ object HeartbeatPacket : SessionPacketFactory<HeartbeatPacketResponse>() {
 
 @NoLog
 @AnnotatedId(KnownPacketId.HEARTBEAT)
-object HeartbeatPacketResponse : Packet
+object HeartbeatPacketResponse : Packet, Subscribable
