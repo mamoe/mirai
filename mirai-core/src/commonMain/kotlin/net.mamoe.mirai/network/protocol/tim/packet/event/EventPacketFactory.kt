@@ -39,6 +39,7 @@ fun matchEventPacketFactory(value: UShort): EventParserAndHandler<*> =
 /**
  * 事件包, 它将会分析事件 ID 并解析事件为 [Packet]
  */
+@NoLog
 @Suppress("FunctionName")
 object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Packet {
