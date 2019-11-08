@@ -17,7 +17,7 @@ inline class SessionKey(override val value: ByteArray) : DecrypterByteArray {
  */
 interface DecrypterByteArray : Decrypter {
     val value: ByteArray
-    override fun decrypt(packet: ByteReadPacket): ByteReadPacket = packet.decryptBy(value)
+    override fun decrypt(input: ByteReadPacket): ByteReadPacket = input.decryptBy(value)
 }
 
 /**
@@ -25,25 +25,25 @@ interface DecrypterByteArray : Decrypter {
  */
 interface DecrypterIoBuffer : Decrypter {
     val value: IoBuffer
-    override fun decrypt(packet: ByteReadPacket): ByteReadPacket = packet.decryptBy(value)
+    override fun decrypt(input: ByteReadPacket): ByteReadPacket = input.decryptBy(value)
 }
 
 /**
  * 连接在一起的解密器
  */
 inline class LinkedDecrypter(inline val block: (ByteReadPacket) -> ByteReadPacket) : Decrypter {
-    override fun decrypt(packet: ByteReadPacket): ByteReadPacket = block(packet)
+    override fun decrypt(input: ByteReadPacket): ByteReadPacket = block(input)
 }
 
 object NoDecrypter : Decrypter, DecrypterType<NoDecrypter> {
-    override fun decrypt(packet: ByteReadPacket): ByteReadPacket = packet
+    override fun decrypt(input: ByteReadPacket): ByteReadPacket = input
 }
 
 /**
  * 解密器
  */
 interface Decrypter {
-    fun decrypt(packet: ByteReadPacket): ByteReadPacket
+    fun decrypt(input: ByteReadPacket): ByteReadPacket
     /**
      * 连接后将会先用 this 解密, 再用 [another] 解密
      */

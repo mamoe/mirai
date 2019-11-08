@@ -8,8 +8,11 @@ plugins {
 javafx {
     version = "11"
     modules = listOf("javafx.controls")
-
     //mainClassName = "Application"
+}
+
+application {
+    mainClassName = "Application"
 }
 
 val kotlinVersion = rootProject.ext["kotlin_version"].toString()

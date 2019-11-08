@@ -18,7 +18,7 @@ object PacketFactoryList : MutableList<PacketFactory<*, *>> by mutableListOf()
  * @param TPacket 服务器回复包解析结果
  * @param TDecrypter 服务器回复包解密器
  */
-abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(internal val decrypterType: DecrypterType<TDecrypter>) {
+abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
 
     /**
      * 2 Ubyte.

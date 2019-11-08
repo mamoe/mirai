@@ -6,12 +6,25 @@ import Main.localIp
 import Main.qq
 import Main.sessionKey
 import kotlinx.coroutines.*
-import kotlinx.coroutines.io.packet.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
+import kotlinx.io.core.readUShort
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.internal.readMessageChain
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
+import net.mamoe.mirai.network.protocol.tim.handler.PacketHandler
+import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
+import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.UnknownEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.login.CaptchaKey
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.tim.packet.login.ShareKey
+import net.mamoe.mirai.network.protocol.tim.packet.login.TouchKey
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DecryptionFailedException
 import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.*
@@ -20,6 +33,7 @@ import org.pcap4j.core.PacketListener
 import org.pcap4j.core.PcapNetworkInterface
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode
 import org.pcap4j.core.Pcaps
+import kotlin.coroutines.CoroutineContext
 
 suspend fun main() {
     val nif: PcapNetworkInterface = Pcaps.findAllDevs()[0]
@@ -40,7 +54,9 @@ suspend fun main() {
         receiver.setFilter("dst $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
         withContext(Dispatchers.IO) {
             receiver.loop(Int.MAX_VALUE, PacketListener {
-                dataReceived(it.rawData.drop(42).toByteArray())
+                runBlocking {
+                    dataReceived(it.rawData.drop(42).toByteArray())
+                }
             })
         }
     }
@@ -73,7 +89,7 @@ object Main {
     const val qq: UInt = 1040400290u
     const val localIp = "192.168.3.10"
 
-    fun dataReceived(data: ByteArray) {
+    suspend fun dataReceived(data: ByteArray) {
         //println("raw = " + data.toUHexString())
         data.read {
             discardExact(3)
@@ -94,7 +110,22 @@ object Main {
                 val decrypted = remaining.decryptBy(sessionKey)
                 println("解密body=${decrypted.toUHexString()}")
 
-                packetReceived(data.read { parseServerPacket(data.size, sessionKey) })
+                discardExact(3)
+
+                val id = matchPacketId(readUShort())
+                val sequenceId = readUShort()
+
+                discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00
+
+                val packet = use {
+                    with(id.factory) {
+                        provideDecrypter(id.factory)
+                            .decrypt(this@read)
+                            .decode(id, sequenceId, DebugNetworkHandler)
+                    }
+                }
+
+                handlePacket(id, sequenceId, packet, id.factory)
             } catch (e: DecryptionFailedException) {
                 println("密文body=" + remaining.toUHexString())
                 println("解密body=解密失败")
@@ -102,27 +133,43 @@ object Main {
         }
     }
 
-    fun packetReceived(packet: ServerPacket) {
+    @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
+    internal fun <D : Decrypter> provideDecrypter(factory: PacketFactory<*, D>): D =
+        when (factory.decrypterType) {
+            TouchKey -> TouchKey
+            CaptchaKey -> CaptchaKey
+            ShareKey -> ShareKey
+
+            NoDecrypter -> NoDecrypter
+
+            SessionKey -> sessionKey
+
+            else -> error("No decrypter is found")
+        } as? D ?: error("Internal error: could not cast decrypter which is found for factory to class Decrypter")
+
+    @Suppress("UNUSED_PARAMETER")
+    fun <TPacket : Packet> handlePacket(
+        id: PacketId,
+        sequenceId: UShort,
+        packet: TPacket,
+        factory: PacketFactory<TPacket, *>
+    ) {
         when (packet) {
-            is ServerEventPacket.Raw.Encrypted -> {
-                packetReceived(packet.decrypt(sessionKey))
-            }
-
-            is ServerEventPacket.Raw -> packetReceived(packet.distribute())
-
-            is UnknownServerEventPacket -> {
+            is UnknownEventPacket -> {
                 println("--------------")
-                println("未知事件ID=" + packet.idHexString)
-                println("未知事件: " + packet.input.readBytes().toUHexString())
+                println("未知事件ID=$id")
+                println("未知事件: $packet")
             }
 
-            is ServerEventPacket -> {
+            is UnknownPacket -> {
+                println("--------------")
+                println("未知包ID=$id")
+                println("未知包: $packet")
+            }
+
+            is EventPacket -> {
                 println("事件")
                 println(packet)
-            }
-
-            is UnknownServerPacket -> {
-                //ignore
             }
 
             else -> {
@@ -204,4 +251,45 @@ object Main {
         }
 
     }
+}
+
+
+internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter> {
+    override val socket: DataPacketSocketAdapter
+        get() = object : DataPacketSocketAdapter {
+            override val serverIp: String
+                get() = ""
+            override val channel: PlatformDatagramChannel
+                get() = error("UNSUPPORTED")
+            override val isOpen: Boolean
+                get() = true
+
+            override suspend fun sendPacket(packet: OutgoingPacket) {
+
+            }
+
+            override fun close() {
+            }
+
+            override val owner: Bot
+                get() = bot
+
+        }
+    override val bot: Bot = Bot(0u, "")
+
+    override fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T = error("UNSUPPORTED")
+
+    override suspend fun login(configuration: BotConfiguration): LoginResult = error("UNSUPPORTED")
+
+    override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
+    }
+
+    override suspend fun sendPacket(packet: OutgoingPacket) {
+    }
+
+    override suspend fun awaitDisconnection() {
+    }
+
+    override val coroutineContext: CoroutineContext
+        get() = GlobalScope.coroutineContext
 }

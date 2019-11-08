@@ -1,5 +1,6 @@
 apply plugin: "kotlin"
 apply plugin: "java"
+apply plugin: "application"
 
 dependencies {
     api project(":mirai-core")
@@ -11,3 +12,5 @@ dependencies {
     compile group: 'com.alibaba', name: 'fastjson', version: '1.2.62'
     implementation 'org.jsoup:jsoup:1.12.1'
 }
+
+mainClassName = "demo.gentleman.MainKt"

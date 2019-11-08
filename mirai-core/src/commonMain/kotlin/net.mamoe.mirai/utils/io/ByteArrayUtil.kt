@@ -35,6 +35,6 @@ fun UByteArray.toUHexString(separator: String = " "): String = this.joinToString
 
 fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size) = ByteReadPacket(this, offset = offset, length = length)
 
-fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R = this.toReadPacket().use(t)
+inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R = this.toReadPacket().use(t)
 
 fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)
