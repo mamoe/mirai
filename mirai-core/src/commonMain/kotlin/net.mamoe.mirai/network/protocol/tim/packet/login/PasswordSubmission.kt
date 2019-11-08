@@ -255,6 +255,7 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
 inline class SessionResponseDecryptionKey(private val delegate: IoBuffer) : Decrypter {
     override fun decrypt(packet: ByteReadPacket): ByteReadPacket = packet.decryptBy(delegate)
 
+    override fun toString(): String = "SessionResponseDecryptionKey"
     companion object Type : DecrypterType<SessionResponseDecryptionKey>
 }
 

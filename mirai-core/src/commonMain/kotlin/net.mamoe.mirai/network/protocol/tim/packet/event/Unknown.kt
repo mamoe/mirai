@@ -14,7 +14,9 @@ import net.mamoe.mirai.utils.io.toUHexString
 data class UnknownEventPacket(
     val id: UShort,
     val body: ByteReadPacket
-) : EventPacket
+) : EventPacket {
+    override fun toString(): String = "UnknownEventPacket(id=${id.toUHexString()})"
+}
 
 //TODO This class should be declared with `inline`, but a CompilationException will be thrown
 class UnknownEventParserAndHandler(override val id: UShort) : EventParserAndHandler<UnknownEventPacket> {
