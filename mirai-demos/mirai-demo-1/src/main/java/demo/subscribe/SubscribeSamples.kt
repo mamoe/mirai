@@ -92,13 +92,13 @@ suspend fun Bot.messageDSL() {
             // 在回复的时候, 一般使用 subject 来作为回复对象.
             // 因为当群消息时, subject 为这个群.
             // 当好友消息时, subject 为这个好友.
-            // 所有在 SenderAndMessage(也就是此时的 this 指代的对象) 中实现的扩展方法, 如刚刚的 "reply", 都是以 subject 作为目标
+            // 所有在 MessagePacket(也就是此时的 this 指代的对象) 中实现的扩展方法, 如刚刚的 "reply", 都是以 subject 作为目标
         }
 
 
         // 当消息里面包含这个类型的消息时
         has<Image> {
-            // this: SenderAndMessage
+            // this: MessagePacket
             // message: MessageChain
             // sender: QQ
             // it: String (MessageChain.toString)
@@ -161,7 +161,7 @@ suspend fun Bot.messageDSL() {
 
     subscribeMessages {
         case("你好") {
-            // this: SenderAndMessage
+            // this: MessagePacket
             // message: MessageChain
             // sender: QQ
             // it: String (来自 MessageChain.toString)
@@ -172,7 +172,7 @@ suspend fun Bot.messageDSL() {
 
     subscribeFriendMessages {
         contains("A") {
-            // this: FriendSenderAndMessage
+            // this: FriendMessage
             // message: MessageChain
             // sender: QQ
             // it: String (来自 MessageChain.toString)
@@ -181,7 +181,7 @@ suspend fun Bot.messageDSL() {
     }
 
     subscribeGroupMessages {
-        // this: FriendSenderAndMessage
+        // this: FriendMessage
         // message: MessageChain
         // sender: QQ
         // it: String (来自 MessageChain.toString)
