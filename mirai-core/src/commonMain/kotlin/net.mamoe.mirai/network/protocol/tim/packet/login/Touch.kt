@@ -44,31 +44,50 @@ object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey
         }
     }
 
-    class TouchResponse : Packet {
-        var serverIP: String? = null
-            internal set
-        var loginTime: Int = 0
-            internal set
+    sealed class TouchResponse : Packet {
+        data class OK(
+            var loginTime: Int,
+            val loginIP: String,
+            val token0825: ByteArray
+        ) : TouchResponse() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is OK) return false
 
-        lateinit var loginIP: String
-            internal set
-        lateinit var token0825: ByteArray
-            internal set
+                if (loginTime != other.loginTime) return false
+                if (loginIP != other.loginIP) return false
+                if (!token0825.contentEquals(other.token0825)) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = loginTime
+                result = 31 * result + loginIP.hashCode()
+                result = 31 * result + token0825.contentHashCode()
+                return result
+            }
+        }
+
+        data class Redirection(
+            val serverIP: String? = null
+        ) : TouchResponse()
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): TouchResponse = TouchResponse().apply {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): TouchResponse {
         when (val flag = readByte().toUByte().toInt()) {
             0xFE -> {
                 discardExact(94)
-                serverIP = readIP()
+                return TouchResponse.Redirection(readIP())
             }
             0x00 -> {
                 discardExact(4)
-                token0825 = readBytes(56)
+                val token0825 = readBytes(56)
                 discardExact(6)
 
-                loginTime = readInt()
-                loginIP = readIP()
+                val loginTime = readInt()
+                val loginIP = readIP()
+                return TouchResponse.OK(loginTime, loginIP, token0825)
             }
 
             else -> throw IllegalStateException(flag.toByte().toUHexString())

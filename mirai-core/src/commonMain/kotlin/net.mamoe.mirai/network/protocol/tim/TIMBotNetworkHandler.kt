@@ -357,31 +357,31 @@ internal class TIMBotNetworkHandler internal constructor(override inline val bot
 
         suspend fun onPacketReceived(packet: Any) {//complex function, but it doesn't matter
             when (packet) {
-                is TouchPacket.TouchResponse -> {
-                    if (packet.serverIP != null) {//redirection
-                        withContext(userContext) {
-                            socket.close()
-                            socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
-                            bot.logger.info("Redirecting to ${packet.serverIP}")
-                            loginResult.complete(socket.resendTouch())
-                        }
-                    } else {//password submission
-                        this.loginIP = packet.loginIP
-                        this.loginTime = packet.loginTime
-                        this.token0825 = packet.token0825
+                is TouchPacket.TouchResponse.OK -> {
+                    loginIP = packet.loginIP
+                    loginTime = packet.loginTime
+                    token0825 = packet.token0825
 
-                        socket.sendPacket(
-                            SubmitPasswordPacket(
-                                bot = bot.qqAccount,
-                                password = bot.account.password,
-                                loginTime = loginTime,
-                                loginIP = loginIP,
-                                privateKey = privateKey,
-                                token0825 = token0825,
-                                token00BA = null,
-                                randomDeviceName = socket.configuration.randomDeviceName
-                            )
+                    socket.sendPacket(
+                        SubmitPasswordPacket(
+                            bot = bot.qqAccount,
+                            password = bot.account.password,
+                            loginTime = loginTime,
+                            loginIP = loginIP,
+                            privateKey = privateKey,
+                            token0825 = token0825,
+                            token00BA = null,
+                            randomDeviceName = socket.configuration.randomDeviceName
                         )
+                    )
+                }
+
+                is TouchPacket.TouchResponse.Redirection -> {
+                    withContext(userContext) {
+                        socket.close()
+                        socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
+                        bot.logger.info("Redirecting to ${packet.serverIP}")
+                        loginResult.complete(socket.resendTouch())
                     }
                 }
 
