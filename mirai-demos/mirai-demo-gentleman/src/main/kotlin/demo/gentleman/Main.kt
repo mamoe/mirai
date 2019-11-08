@@ -44,6 +44,7 @@ suspend fun main() {
     subscribeAlways<Subscribable> {
         //bot.logger.verbose("收到了一个事件: ${it::class.simpleName}")
     }
+
     bot.subscribeMessages {
         "你好" reply "你好!"
         "profile" reply {

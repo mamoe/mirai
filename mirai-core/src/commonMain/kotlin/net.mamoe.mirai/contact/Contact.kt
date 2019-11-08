@@ -118,6 +118,7 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSessi
  * @author Him188moe
  */
 open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
+    // TODO: 2019/11/8 should be suspend val if kotlin supports
     val profile: Deferred<Profile> by bot.network.SuspendLazy { updateProfile() }
 
     override suspend fun sendMessage(message: MessageChain) {
@@ -190,27 +191,29 @@ enum class MemberPermission {
 /**
  * 个人资料
  */
-class Profile// inline class Date
-    (qq: UInt, nickname: String, zipCode: String?, phone: String?, gender: Gender, var birthday: Date?) {
+// FIXME: 2019/11/8 should be `data class Profile`
+@Suppress("PropertyName")
+class Profile(qq: UInt, nickname: String, zipCode: String?, phone: String?, gender: Gender, var birthday: Date?) {
 
-    var qq: UInt = qq
-        internal set
-    var nickname: String = nickname
-        internal set
-    var zipCode: String? = zipCode
-        internal set
-    var phone: String? = phone
-        internal set
-    var gender: Gender = gender
-        internal set
+    internal var _qq: UInt = qq
+    internal var _nickname: String = nickname
+    internal var _zipCode: String? = zipCode
+    internal var _phone: String? = phone
+    internal var _gender: Gender = gender
+
+    val qq: UInt = _qq
+    val nickname: String = _nickname
+    val zipCode: String? = _zipCode
+    val phone: String? = _phone
+    val gender: Gender = _gender
 }
 
 fun Profile.copyFrom(another: Profile) {
-    this.qq = another.qq
-    this.nickname = another.nickname
-    this.zipCode = another.zipCode
-    this.phone = another.phone
-    this.gender = another.gender
+    this._qq = another.qq
+    this._nickname = another.nickname
+    this._zipCode = another.zipCode
+    this._phone = another.phone
+    this._gender = another.gender
 }
 
 /**
