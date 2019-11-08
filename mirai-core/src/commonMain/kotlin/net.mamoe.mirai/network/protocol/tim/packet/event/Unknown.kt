@@ -13,9 +13,10 @@ import net.mamoe.mirai.utils.io.toUHexString
 
 data class UnknownEventPacket(
     val id: UShort,
+    val identity: EventPacketIdentity,
     val body: ByteReadPacket
 ) : EventPacket {
-    override fun toString(): String = "UnknownEventPacket(id=${id.toUHexString()})"
+    override fun toString(): String = "UnknownEventPacket(id=${id.toUHexString()}, identity=$identity)"
 }
 
 //TODO This class should be declared with `inline`, but a CompilationException will be thrown
@@ -23,7 +24,7 @@ class UnknownEventParserAndHandler(override val id: UShort) : EventParserAndHand
 
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): UnknownEventPacket {
         MiraiLogger.debug("UnknownEventPacket(${id.toUHexString()}) = ${readBytes().toUHexString()}")
-        return UnknownEventPacket(id, this) //TODO the cause is that `this` reference.
+        return UnknownEventPacket(id, identity, this) //TODO the cause is that `this` reference.
     }
 
     override suspend fun BotNetworkHandler<*>.handlePacket(packet: UnknownEventPacket) {

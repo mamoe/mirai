@@ -9,11 +9,11 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 
 
-@PacketVersion(date = "2019.11.2", timVersion = "2.3.2.21173")
 data class FriendConversationInitialize(
     val qq: UInt
 ) : EventPacket
 
+@PacketVersion(date = "2019.11.2", timVersion = "2.3.2.21173")
 object FriendConversationInitializedEventParserAndHandler : KnownEventParserAndHandler<FriendConversationInitialize>(0x0079u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): FriendConversationInitialize {
         discardExact(4)// 00 00 00 00

@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.isOpen
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
-import net.mamoe.mirai.network.protocol.tim.packet.RequestAccountInfoPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.RequestAccountInfoPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.SKey
 import net.mamoe.mirai.network.qqAccount

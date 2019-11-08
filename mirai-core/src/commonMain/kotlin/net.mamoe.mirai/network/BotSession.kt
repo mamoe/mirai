@@ -62,7 +62,7 @@ class BotSession(
 
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
-     * 这个方法会立即返回.
+     * 这个方法会立即发出这个数据包然后返回一个 [CompletableDeferred].
      *
      * 实现方法:
      * ```kotlin
@@ -74,9 +74,9 @@ class BotSession(
      * ```
      * @sample net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
      *
-     * @param checkSequence 是否期待 [ServerPacket.sequenceId] 与 [OutgoingPacket.sequenceId] 相同的包.
+     * @param checkSequence 是否筛选 `sequenceId`, 即是否筛选发出的包对应的返回包.
      * @param P 期待的包
-     * @param handler 处理期待的包. 将会在调用 [sendAndExpect] 的函数所在 [coroutineContext] 下执行.
+     * @param handler 处理期待的包. 将会在调用本函数的 [coroutineContext] 下执行.
      *
      * @see Bot.withSession 转换接收器 (receiver, 即 `this` 的指向) 为 [BotSession]
      */

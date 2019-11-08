@@ -1,11 +1,12 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.network.protocol.tim.packet
+package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeUByte
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ

@@ -49,6 +49,12 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
             type
         }.toUByte() != UByte.MAX_VALUE) {
 
+        check(!map.containsKey(type.toUInt())) {
+            "Count not readTLVMap: duplicated key 0x${type.toUInt().toUHexString("")}. " +
+                    "map=$map" +
+                    ", duplicating value=${this.readUShortLVByteArray()}" +
+                    ", remaining=" + if (expectingEOF) this.readBytes().toUHexString() else "[Not expecting EOF]"
+        }
         map[type.toUInt()] = this.readUShortLVByteArray()
     }
     return map

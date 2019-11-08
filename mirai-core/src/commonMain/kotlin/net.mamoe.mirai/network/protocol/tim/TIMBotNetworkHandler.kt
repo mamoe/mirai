@@ -233,6 +233,9 @@ internal class TIMBotNetworkHandler internal constructor(override inline val bot
             packet: TPacket,
             factory: PacketFactory<TPacket, *>
         ) {
+            if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled)
+                return
+
             if (!packet::class.annotations.filterIsInstance<NoLog>().any()) {
                 bot.logger.verbose("Packet received: $packet")
             }
@@ -249,9 +252,6 @@ internal class TIMBotNetworkHandler internal constructor(override inline val bot
             }.forEach {
                 it.doReceiveWithoutExceptions(packet)
             }
-
-            if (ServerPacketReceivedEvent(bot, packet).broadcast().cancelled)
-                return
 
             if (factory is SessionPacketFactory<*>) {
                 with(factory as SessionPacketFactory<TPacket>) {

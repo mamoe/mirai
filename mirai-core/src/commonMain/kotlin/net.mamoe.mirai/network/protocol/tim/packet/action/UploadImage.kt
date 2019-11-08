@@ -338,7 +338,7 @@ object GroupImageIdRequestPacket : SessionPacketFactory<GroupImageIdRequestPacke
         groupInternalId: GroupInternalId,
         image: ExternalImage,
         sessionKey: SessionKey
-    ) = buildOutgoingPacket {
+    ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
         writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
 

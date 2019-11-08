@@ -10,8 +10,8 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendResponse.State
+import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
 import net.mamoe.mirai.utils.io.*
-import kotlin.properties.Delegates
 
 
 // 01BC 曾用名查询. 查到的是这个人的
@@ -119,8 +119,8 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
 
 }
 
-class CanAddFriendResponse : Packet {
-    var qq: UInt by Delegates.notNull()
+class CanAddFriendResponse : EventPacket {
+    var qq: UInt = 0u
     lateinit var state: State
 
     enum class State {
