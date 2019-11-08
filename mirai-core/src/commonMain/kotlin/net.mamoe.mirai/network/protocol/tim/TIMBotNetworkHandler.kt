@@ -38,7 +38,7 @@ internal expect val NetworkDispatcher: CoroutineDispatcher
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) :
+internal class TIMBotNetworkHandler internal constructor(override inline val bot: Bot) :
     BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
     override val coroutineContext: CoroutineContext =
@@ -55,6 +55,8 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
 
     private var heartbeatJob: Job? = null
 
+    private lateinit var userContext: CoroutineContext
+
 
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
         handlersLock.withLock {
@@ -63,8 +65,9 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
         temporaryPacketHandler.send(this[ActionPacketHandler].session)
     }
 
-    override suspend fun login(configuration: BotConfiguration): LoginResult =
-        withContext(this.coroutineContext) {
+    override suspend fun login(configuration: BotConfiguration): LoginResult {
+        userContext = coroutineContext
+        return withContext(this.coroutineContext) {
             TIMProtocol.SERVER_IP.forEach { ip ->
                 bot.logger.info("Connecting server $ip")
                 socket = BotSocketAdapter(ip, configuration)
@@ -79,6 +82,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
             }
             return@withContext LoginResult.TIMEOUT
         }
+    }
 
     internal var loginResult: CompletableDeferred<LoginResult> = CompletableDeferred()
 
@@ -135,7 +139,9 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                 try {
                     channel.read(buffer)// JVM: withContext(IO)
                 } catch (e: ClosedChannelException) {
-                    close()
+                    withContext(userContext) {
+                        close()
+                    }
                     return
                 } catch (e: ReadPacketInternalException) {
                     bot.logger.error("Socket channel read failed: ${e.message}")
@@ -154,7 +160,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                 }
 
                 //buffer.resetForRead()
-                launch {
+                launch(CoroutineName("handleServerPacket")) {
                     // `.use`: Ensure that the packet is consumed **totally**
                     // so that all the buffers are released
                     ByteArrayPool.useInstance {
@@ -260,7 +266,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
             }
         }
 
-        override suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext) {
+        override suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext + CoroutineName("sendPacket")) {
             check(channel.isOpen) { "channel is not open" }
 
             if (BeforePacketSendEvent(bot, packet).broadcast().cancelled) {
@@ -275,7 +281,10 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                     check(channel.send(buffer) == shouldBeSent) { "Buffer is not entirely sent. Required sent length=$shouldBeSent, but after channel.send, buffer remains ${buffer.readBytes().toUHexString()}" }//JVM: withContext(IO)
                 } catch (e: SendPacketInternalException) {
                     bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
-                    bot.reinitializeNetworkHandler(configuration, e)
+
+                    withContext(userContext) {
+                        bot.reinitializeNetworkHandler(configuration, e)
+                    }
                     return@withContext
                 } finally {
                     buffer.release(IoBuffer.Pool)
@@ -342,19 +351,20 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                 SubmitPasswordResponseDecrypter -> SubmitPasswordResponseDecrypter(privateKey)
                 PrivateKey -> privateKey
                 SessionKey -> sessionKey
-                else -> {
-                    error("No decrypter found")
-                }
+
+                else -> error("No decrypter is found")
             } as? D ?: error("Internal error: could not cast decrypter which is found for factory to class Decrypter")
 
         suspend fun onPacketReceived(packet: Any) {//complex function, but it doesn't matter
             when (packet) {
                 is TouchPacket.TouchResponse -> {
                     if (packet.serverIP != null) {//redirection
-                        socket.close()
-                        socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
-                        bot.logger.info("Redirecting to ${packet.serverIP}")
-                        loginResult.complete(socket.resendTouch())
+                        withContext(userContext) {
+                            socket.close()
+                            socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
+                            bot.logger.info("Redirecting to ${packet.serverIP}")
+                            loginResult.complete(socket.resendTouch())
+                        }
                     } else {//password submission
                         this.loginIP = packet.loginIP
                         this.loginTime = packet.loginTime
@@ -490,7 +500,7 @@ internal class TIMBotNetworkHandler internal constructor(override val bot: Bot) 
                 }
 
                 is RequestSessionPacket.SessionKeyResponse -> {
-                    sessionKey = packet.sessionKey!!
+                    sessionKey = packet.sessionKey
                     bot.logger.info("sessionKey = ${sessionKey.value.toUHexString()}")
 
                     heartbeatJob = launch {
