@@ -5,7 +5,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.EventLogger
+import net.mamoe.mirai.event.EventDebugLogger
 import net.mamoe.mirai.event.EventScope
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.Subscribable
@@ -27,7 +27,7 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeInternal(listener: Li
     if (mainMutex.tryLock(listener)) {//能锁则代表这个事件目前没有正在广播.
         try {
             add(listener)//直接修改主监听者列表
-            EventLogger.debug("Added a listener to ${this@subscribeInternal.simpleName}")
+            EventDebugLogger.debug("Added a listener to ${this@subscribeInternal.simpleName}")
         } finally {
             mainMutex.unlock(listener)
         }
@@ -37,7 +37,7 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeInternal(listener: Li
     //不能锁住, 则这个事件正在广播, 那么要将新的监听者放入缓存
     cacheMutex.withLock {
         cache.add(listener)
-        EventLogger.debug("Added a listener to cache of ${this@subscribeInternal.simpleName}")
+        EventDebugLogger.debug("Added a listener to cache of ${this@subscribeInternal.simpleName}")
     }
 
     EventScope.launch {
@@ -48,7 +48,7 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeInternal(listener: Li
                 if (cache.size != 0) {
                     addAll(cache)
                     cache.clear()
-                    EventLogger.debug("Cache of ${this@subscribeInternal.simpleName} is now transferred to main")
+                    EventDebugLogger.debug("Cache of ${this@subscribeInternal.simpleName} is now transferred to main")
                 }
             }
         }

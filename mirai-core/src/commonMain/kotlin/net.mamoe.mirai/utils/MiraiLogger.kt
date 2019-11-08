@@ -19,6 +19,11 @@ var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger() }
  */
 expect open class PlatformLogger @JvmOverloads internal constructor(identity: String? = "Mirai") : MiraiLoggerPlatformBase
 
+/**
+ * 给这个 logger 添加一个开关, 用于控制是否记录 log
+ */
+@JvmOverloads
+fun MiraiLogger.withSwitch(default: Boolean = true): MiraiLoggerWithSwitch = MiraiLoggerWithSwitch(this, default)
 
 /**
  * 日志记录器. 所有的输出均依赖于它.
@@ -161,9 +166,45 @@ class SimpleLogger(override val identity: String?, private val logger: (String?,
 }
 
 /**
- * 平台基类.
+ * 带有开关的 Logger. 仅能通过 [MiraiLogger.withSwitch] 构造
+ *
+ * @see enable 开启
+ * @see disable 关闭
+ */
+@Suppress("MemberVisibilityCanBePrivate")
+class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogger, default: Boolean) : MiraiLoggerPlatformBase() {
+    override val identity: String? get() = delegate.identity
+
+    private var switch: Boolean = default
+
+    fun enable() {
+        switch = true
+    }
+
+    fun disable() {
+        switch = false
+    }
+
+    override fun verbose0(any: Any?) = delegate.verbose(any)
+    override fun verbose0(message: String?, e: Throwable?) = delegate.verbose(message, e)
+    override fun debug0(any: Any?) = delegate.debug(any)
+    override fun debug0(message: String?, e: Throwable?) = delegate.debug(message, e)
+    override fun info0(any: Any?) = delegate.info(any)
+    override fun info0(message: String?, e: Throwable?) = delegate.info(message, e)
+    override fun warning0(any: Any?) = delegate.warning(any)
+    override fun warning0(message: String?, e: Throwable?) = delegate.warning(message, e)
+    override fun error0(any: Any?) = delegate.error(any)
+    override fun error0(message: String?, e: Throwable?) = delegate.error(message, e)
+
+}
+
+/**
+ * 平台日志基类.
  * 实现了 [follower] 的调用传递.
- * 若要自行实现日志记录, 请优先考虑继承 [PlatformLogger]
+ *
+ * 若要自行实现日志记录, 请优先考虑继承 [PlatformLogger].
+ *
+ * 它不应该被用作变量的类型定义. 只应被继承
  */
 abstract class MiraiLoggerPlatformBase : MiraiLogger {
     final override var follower: MiraiLogger? = null

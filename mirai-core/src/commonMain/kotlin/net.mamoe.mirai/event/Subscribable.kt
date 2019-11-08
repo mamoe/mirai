@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.withSwitch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmOverloads
@@ -46,14 +47,15 @@ abstract class Event : Subscribable {
 
     init {
         if (EventDebuggingFlag) {
-            EventLogger.debug(this::class.simpleName + " created")
+            EventDebugLogger.debug(this::class.simpleName + " created")
         }
     }
 }
 
-internal object EventLogger : MiraiLogger by DefaultLogger("Event")
+internal object EventDebugLogger : MiraiLogger by DefaultLogger("Event").withSwitch(EventDebuggingFlag)
 
 private val EventDebuggingFlag: Boolean by lazy {
+    // avoid 'Condition is always true'
     false
 }
 
@@ -76,14 +78,14 @@ interface Cancellable : Subscribable {
 @JvmOverloads
 suspend fun <E : Subscribable> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
     if (EventDebuggingFlag) {
-        EventLogger.debug(this::class.simpleName + " pre broadcast")
+        EventDebugLogger.debug(this::class.simpleName + " pre broadcast")
     }
     try {
         @Suppress("EXPERIMENTAL_API_USAGE")
         return withContext(EventScope.newCoroutineContext(context)) { this@broadcast.broadcastInternal() }
     } finally {
         if (EventDebuggingFlag) {
-            EventLogger.debug(this::class.simpleName + " after broadcast")
+            EventDebugLogger.debug(this::class.simpleName + " after broadcast")
         }
     }
 }
