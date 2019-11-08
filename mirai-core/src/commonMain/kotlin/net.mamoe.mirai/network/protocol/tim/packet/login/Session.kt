@@ -59,30 +59,29 @@ object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyRespo
         }
     }
 
-    class SessionKeyResponse : Packet {
-        var sessionKey: SessionKey? = null
-        lateinit var tlv0105: ByteReadPacket
-    }
+    data class SessionKeyResponse(
+        val sessionKey: SessionKey,
+        val tlv0105: ByteReadPacket? = null
+    ) : Packet
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): SessionKeyResponse =
-        SessionKeyResponse().apply {
-            when (remaining) {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): SessionKeyResponse {
+        when (remaining) {
             407L -> {
                 discardExact(25)//todo test
-                sessionKey = SessionKey(readBytes(16))
+                return SessionKeyResponse(SessionKey(readBytes(16)))
             }
 
             439L -> {
                 discardExact(63)
-                sessionKey = SessionKey(readBytes(16))
+                return SessionKeyResponse(SessionKey(readBytes(16)))
             }
 
             502L,//?
             512L,
             527L -> {
                 discardExact(63)//00 00 0D 00 06 00 01 00 00 00 00 00 1F 00 22 00 01 D7 EC FC 38 1B 74 6F 91 42 00 B9 DB 69 32 43 EC 8C 02 DC E0 07 35 58 8C 6C FE 43 5D AA 6A 88 E0 00 14 00 04 00 01 00 3C 01 0C 00 73 00 01
-                sessionKey = SessionKey(readBytes(16))
-                tlv0105 = buildPacket {
+                val sessionKey = SessionKey(readBytes(16))
+                val tlv0105 = buildPacket {
                     writeHex("01 05 00 88 00 01 01 02 00 40 02 01 03 3C 01 03 00 00")
                     discardExact(remaining - 122 - 1)
                     writeFully(readIoBuffer(56))
@@ -90,7 +89,7 @@ object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyRespo
                     discardExact(11)
                     writeFully(readIoBuffer(56))
                 } //todo 这个 tlv0105似乎可以保存起来然后下次登录时使用.
-
+                return SessionKeyResponse(sessionKey, tlv0105)
                 /*
                     Discarded(63) =00 00 0D 00 06 00 01 00 00 00 00 00 1F 00 22 00 01 F7 AB 01 4B 23 B5 47 FC 79 02 09 E0 19 EF 61 91 14 AD 8F 38 2E 8B D7 47 39 DE FE 84 A7 E5 6E 3D 00 14 00 04 00 01 00 3C 01 0C 00 73 00 01
                     sessionKey=7E 8C 1D AC 52 64 B8 D0 9A 55 3A A6 DF 53 88 C8
@@ -100,7 +99,7 @@ object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyRespo
                  */
             }
 
-                else -> throw IllegalArgumentException(remaining.toString())
+            else -> throw IllegalArgumentException(remaining.toString())
         }
     }
 }
