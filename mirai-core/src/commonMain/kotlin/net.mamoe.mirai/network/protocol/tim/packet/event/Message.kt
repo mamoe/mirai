@@ -140,7 +140,7 @@ data class FriendMessage(
     /**
      * 是否是在这次登录之前的消息, 即消息记录
      */
-    val isPrevious: Boolean,
+    val previous: Boolean,
     override val sender: QQ,
     override val message: MessageChain
 ) : MessagePacket<QQ>() {
@@ -164,7 +164,7 @@ object FriendMessageEventParserAndHandler : KnownEventParserAndHandler<FriendMes
         discardExact(2)//2个0x00
         val message = readMessageChain()
         return FriendMessage(
-            isPrevious = previous,
+            previous = previous,
             sender = bot.getQQ(identity.from),
             message = message
         )
