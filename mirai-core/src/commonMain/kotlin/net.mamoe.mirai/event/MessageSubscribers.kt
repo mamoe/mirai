@@ -7,16 +7,16 @@ import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.any
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
-import net.mamoe.mirai.network.protocol.tim.packet.event.MessageEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.MessagePacket
 import kotlin.jvm.JvmName
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
 @MessageDsl
-suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessageEventPacket<*>>.() -> Unit) {
-    MessageSubscribersBuilder<MessageEventPacket<*>> { listener ->
-        subscribeAlways<MessageEventPacket<*>> {
+suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessagePacket<*>>.() -> Unit) {
+    MessageSubscribersBuilder<MessagePacket<*>> { listener ->
+        subscribeAlways<MessagePacket<*>> {
             listener(it)
         }
     }.apply { listeners() }
@@ -50,9 +50,9 @@ suspend inline fun subscribeFriendMessages(crossinline listeners: suspend Messag
  * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
 @MessageDsl
-suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessageEventPacket<*>>.() -> Unit) {
-    MessageSubscribersBuilder<MessageEventPacket<*>> { listener ->
-        this.subscribeAlways<MessageEventPacket<*>> {
+suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessagePacket<*>>.() -> Unit) {
+    MessageSubscribersBuilder<MessagePacket<*>> { listener ->
+        this.subscribeAlways<MessagePacket<*>> {
             listener(it)
         }
     }.apply { listeners() }
@@ -86,11 +86,11 @@ internal typealias MessageReplier<T> = @MessageDsl suspend T.(String) -> Message
 
 internal typealias StringReplier<T> = @MessageDsl suspend T.(String) -> String
 
-internal suspend inline operator fun <T : MessageEventPacket<*>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
+internal suspend inline operator fun <T : MessagePacket<*>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
     this.invoke(t, t.message.stringValue)
 
 @JvmName("invoke1") //Avoid Platform declaration clash
-internal suspend inline operator fun <T : MessageEventPacket<*>> StringReplier<T>.invoke(t: T): String =
+internal suspend inline operator fun <T : MessagePacket<*>> StringReplier<T>.invoke(t: T): String =
     this.invoke(t, t.message.stringValue)
 
 /**
@@ -101,7 +101,7 @@ internal suspend inline operator fun <T : MessageEventPacket<*>> StringReplier<T
  */
 @Suppress("unused")
 @MessageDsl
-class MessageSubscribersBuilder<T : MessageEventPacket<*>>(
+class MessageSubscribersBuilder<T : MessagePacket<*>>(
     inline val subscriber: suspend (@MessageDsl suspend T.(String) -> Unit) -> Unit
 ) {
     /**

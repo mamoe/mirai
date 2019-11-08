@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.io.readUShortLVByteArray
 import net.mamoe.mirai.utils.sendTo
 import net.mamoe.mirai.utils.upload
 
-sealed class MessageEventPacket<TSubject : Contact> : EventPacket, BotEvent() {
+sealed class MessagePacket<TSubject : Contact> : EventPacket, BotEvent() {
     internal lateinit var botVar: Bot
 
     override val bot: Bot get() = botVar
@@ -82,7 +82,7 @@ data class GroupMessage(
     val permission: MemberPermission,
     override val sender: QQ,
     override val message: MessageChain = NullMessageChain
-) : MessageEventPacket<Group>() {
+) : MessagePacket<Group>() {
     override val subject: Group get() = group
 }
 
@@ -143,7 +143,7 @@ data class FriendMessage(
     val isPrevious: Boolean,
     override val sender: QQ,
     override val message: MessageChain
-) : MessageEventPacket<QQ>() {
+) : MessagePacket<QQ>() {
     override val subject: QQ get() = sender
 }
 
