@@ -296,7 +296,7 @@ internal class TIMBotNetworkHandler internal constructor(override inline val bot
                     it::class.annotations.filterIsInstance<NoLog>().any()
                 }
             }?.let {
-                bot.logger.verbose("Packet sent:     ${it::class.simpleName ?: "[OutgoingPacket]"}")
+                bot.logger.verbose("Packet sent:     ${it.packetId}")
             }
 
             PacketSentEvent(bot, packet).broadcast()

@@ -6,6 +6,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacketFactory
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendOnlineStatusChangedPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
+import net.mamoe.mirai.utils.io.toUHexString
 
 
 /**
@@ -29,6 +30,7 @@ interface PacketId {
 object NullPacketId : PacketId {
     override val factory: PacketFactory<*, *> get() = error("uninitialized")
     override val value: UShort get() = error("uninitialized")
+    override fun toString(): String = "NullPacketId"
 }
 
 /**
@@ -36,6 +38,7 @@ object NullPacketId : PacketId {
  */
 inline class UnknownPacketId(override inline val value: UShort) : PacketId {
     override val factory: PacketFactory<*, *> get() = UnknownPacketFactory
+    override fun toString(): String = "UnknownPacketId(${value.toUHexString()})"
 }
 
 object IgnoredPacketIds : List<IgnoredPacketId> by {
@@ -45,6 +48,7 @@ object IgnoredPacketIds : List<IgnoredPacketId> by {
 
 inline class IgnoredPacketId constructor(override val value: UShort) : PacketId {
     override val factory: PacketFactory<*, *> get() = IgnoredPacketFactory
+    override fun toString(): String = "IgnoredPacketId(${value.toUHexString()})"
 }
 
 /**
@@ -78,5 +82,5 @@ enum class KnownPacketId(override inline val value: UShort, override inline val 
 
     ;
 
-    override fun toString(): String = factory.let { it::class.simpleName } ?: this.name
+    override fun toString(): String = factory::class.simpleName ?: this.name
 }
