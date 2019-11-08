@@ -8,9 +8,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
 import net.mamoe.mirai.network.protocol.tim.handler.*
-import net.mamoe.mirai.network.protocol.tim.packet.HeartbeatPacket
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import net.mamoe.mirai.network.protocol.tim.packet.login.HeartbeatPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
 import net.mamoe.mirai.utils.BotConfiguration

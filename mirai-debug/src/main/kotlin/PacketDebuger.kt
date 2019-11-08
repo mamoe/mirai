@@ -93,29 +93,19 @@ object Main {
         //println("raw = " + data.toUHexString())
         data.read {
             discardExact(3)
-            val idHex = readInt().toUHexString(" ")
-            if (idHex.startsWith("00 81")) {
+            val id = matchPacketId(readUShort())
+            val sequenceId = readUShort()
+            if (id == KnownPacketId.HEARTBEAT || readUInt() != qq)
                 return@read
-            }
-            if (readUInt() != qq) {
-                return@read
-            }
             println("--------------")
             println("接收数据包")
 
             discardExact(3)//0x00 0x00 0x00. 但更可能是应该 discard 8
-            println("id=$idHex")
+            println("id=$id, sequence=${sequenceId.toUHexString()}")
             val remaining = this.readRemainingBytes().cutTail(1)
             try {
                 val decrypted = remaining.decryptBy(sessionKey)
                 println("解密body=${decrypted.toUHexString()}")
-
-                discardExact(3)
-
-                val id = matchPacketId(readUShort())
-                val sequenceId = readUShort()
-
-                discardExact(7)//4 for qq number, 3 for 0x00 0x00 0x00
 
                 val packet = use {
                     with(id.factory) {

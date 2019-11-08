@@ -52,10 +52,10 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
 }
 
 object UnknownPacketFactory : SessionPacketFactory<UnknownPacket>() {
-    override suspend fun BotNetworkHandler<*>.processPacket(packet: UnknownPacket) {
+    override suspend fun BotNetworkHandler<*>.handlePacket(packet: UnknownPacket) {
         ByteArrayPool.useInstance {
             packet.body.readAvailable(it)
-            bot.logger.debug("Unknown packet(${packet.id.value}) body = " + it.toUHexString())
+            bot.logger.debug("UnknownPacket(${packet.id.value.toUHexString()}) = " + it.toUHexString())
         }
         packet.body.close()
     }
@@ -66,7 +66,7 @@ object UnknownPacketFactory : SessionPacketFactory<UnknownPacket>() {
 }
 
 object IgnoredPacketFactory : SessionPacketFactory<IgnoredPacket>() {
-    override suspend fun BotNetworkHandler<*>.processPacket(packet: IgnoredPacket) {
+    override suspend fun BotNetworkHandler<*>.handlePacket(packet: IgnoredPacket) {
     }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): IgnoredPacket = IgnoredPacket

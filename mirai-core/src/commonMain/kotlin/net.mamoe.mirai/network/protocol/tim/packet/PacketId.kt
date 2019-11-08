@@ -82,5 +82,5 @@ enum class KnownPacketId(override inline val value: UShort, override inline val 
 
     ;
 
-    override fun toString(): String = factory::class.simpleName ?: this.name
+    override fun toString(): String = (factory::class.simpleName ?: this.name) + "(${value.toUHexString()})"
 }

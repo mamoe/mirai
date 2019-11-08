@@ -255,7 +255,7 @@ internal class TIMBotNetworkHandler internal constructor(override inline val bot
 
             if (factory is SessionPacketFactory<*>) {
                 with(factory as SessionPacketFactory<TPacket>) {
-                    processPacket(packet)
+                    handlePacket(packet)
                 }
             }
 

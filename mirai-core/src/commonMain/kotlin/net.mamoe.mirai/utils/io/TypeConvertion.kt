@@ -41,9 +41,12 @@ fun UShort.toByteArray(): ByteArray = with(toUInt()) {
 }
 
 /**
- * 转 [ByteArray] 后再转 hex
+ * 转 [ByteArray] 后再转 hex.
+ *
+ * @return 2 位 Unsigned Hex
  */
-fun UShort.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
+fun UShort.toUHexString(separator: String = " "): String =
+    (this.toInt().shr(8).toUShort() and 255u).toByte().toUHexString() + separator + (this and 255u).toByte().toUHexString()
 
 /**
  * 255u -> 00 00 00 FF
@@ -108,7 +111,8 @@ fun getRandomString(length: Int, charRange: CharRange): String = String(CharArra
 /**
  * 根据所给 [charRanges] 随机生成长度为 [length] 的 [String].
  */
-fun getRandomString(length: Int, vararg charRanges: CharRange): String = String(CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() })
+fun getRandomString(length: Int, vararg charRanges: CharRange): String =
+    String(CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() })
 
 /**
  * 将 [this] 前 4 个 [Byte] 的 bits 合并为一个 [Int]
@@ -118,7 +122,8 @@ fun getRandomString(length: Int, vararg charRanges: CharRange): String = String(
  * 一个 [Int] 有 32 bits
  * 本函数将 4 个 [Byte] 的 bits 连接得到 [Int]
  */
-fun ByteArray.toUInt(): UInt = this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
+fun ByteArray.toUInt(): UInt =
+    this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
 
 /**
  * 从 [IoBuffer.Pool] [borrow][ObjectPool.borrow] 一个 [IoBuffer] 然后将 [this] 写入.

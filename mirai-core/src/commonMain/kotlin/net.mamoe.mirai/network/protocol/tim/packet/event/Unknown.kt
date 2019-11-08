@@ -22,8 +22,7 @@ data class UnknownEventPacket(
 class UnknownEventParserAndHandler(override val id: UShort) : EventParserAndHandler<UnknownEventPacket> {
 
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): UnknownEventPacket {
-        MiraiLogger.debug("UnknownEventPacket type = ${id.toUHexString()}")
-        MiraiLogger.debug("UnknownEventPacket data = ${readBytes().toUHexString()}")
+        MiraiLogger.debug("UnknownEventPacket(${id.toUHexString()}) = ${readBytes().toUHexString()}")
         return UnknownEventPacket(id, this) //TODO the cause is that `this` reference.
     }
 

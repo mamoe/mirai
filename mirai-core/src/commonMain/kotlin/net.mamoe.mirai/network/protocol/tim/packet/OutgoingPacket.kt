@@ -37,7 +37,7 @@ abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, S
     /**
      * 在 [BotNetworkHandler] 下处理这个包. 广播事件等.
      */
-    open suspend fun BotNetworkHandler<*>.processPacket(packet: TPacket) {}
+    open suspend fun BotNetworkHandler<*>.handlePacket(packet: TPacket) {}
 }
 
 /**
