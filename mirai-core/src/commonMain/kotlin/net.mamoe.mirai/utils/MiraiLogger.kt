@@ -185,16 +185,16 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
         switch = false
     }
 
-    override fun verbose0(any: Any?) = delegate.verbose(any)
-    override fun verbose0(message: String?, e: Throwable?) = delegate.verbose(message, e)
-    override fun debug0(any: Any?) = delegate.debug(any)
-    override fun debug0(message: String?, e: Throwable?) = delegate.debug(message, e)
-    override fun info0(any: Any?) = delegate.info(any)
-    override fun info0(message: String?, e: Throwable?) = delegate.info(message, e)
-    override fun warning0(any: Any?) = delegate.warning(any)
-    override fun warning0(message: String?, e: Throwable?) = delegate.warning(message, e)
-    override fun error0(any: Any?) = delegate.error(any)
-    override fun error0(message: String?, e: Throwable?) = delegate.error(message, e)
+    override fun verbose0(any: Any?) = if (switch) delegate.verbose(any) else Unit
+    override fun verbose0(message: String?, e: Throwable?) = if (switch) delegate.verbose(message, e) else Unit
+    override fun debug0(any: Any?) = if (switch) delegate.debug(any) else Unit
+    override fun debug0(message: String?, e: Throwable?) = if (switch) delegate.debug(message, e) else Unit
+    override fun info0(any: Any?) = if (switch) delegate.info(any) else Unit
+    override fun info0(message: String?, e: Throwable?) = if (switch) delegate.info(message, e) else Unit
+    override fun warning0(any: Any?) = if (switch) delegate.warning(any) else Unit
+    override fun warning0(message: String?, e: Throwable?) = if (switch) delegate.warning(message, e) else Unit
+    override fun error0(any: Any?) = if (switch) delegate.error(any) else Unit
+    override fun error0(message: String?, e: Throwable?) = if (switch) delegate.error(message, e) else Unit
 
 }
 
