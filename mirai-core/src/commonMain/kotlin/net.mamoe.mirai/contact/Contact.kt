@@ -95,6 +95,10 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
         bot.sendPacket(SendGroupMessagePacket(bot.qqAccount, internalId, bot.sessionKey, message))
     }
 
+    override fun toString(): String {
+        return "Group(${this.id})"
+    }
+
     companion object
 }
 
@@ -145,6 +149,10 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
     suspend fun QQ.addAsFriend() {
 
     }
+
+    override fun toString(): String {
+        return "QQ(${this.id})"
+    }
 }
 
 
@@ -154,6 +162,10 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
 class Member internal constructor(bot: Bot, id: UInt, val group: Group) : QQ(bot, id) {
     init {
         TODO("Group member implementation")
+    }
+
+    override fun toString(): String {
+        return "Member(${this.id})"
     }
 }
 
