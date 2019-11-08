@@ -66,7 +66,8 @@ kotlin {
     sourceSets["androidMain"].apply {
         dependencies {
             dependsOn(commonMain)
-            implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+
+            api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
 
@@ -79,12 +80,14 @@ kotlin {
     sourceSets["jvmMain"].apply {
         dependencies {
             dependsOn(commonMain)
+
             implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
             implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
 
-            implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+            api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
             implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+            implementation("org.jetbrains.kotlinx:kotlinx-io-jvm:$kotlinXIoVersion")
 
         }
     }

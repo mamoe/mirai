@@ -6,6 +6,7 @@ import Main.localIp
 import Main.qq
 import Main.sessionKey
 import kotlinx.coroutines.*
+import kotlinx.coroutines.io.packet.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
