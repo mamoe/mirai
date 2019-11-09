@@ -6,6 +6,12 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.GroupId
+import net.mamoe.mirai.contact.GroupInternalId
+import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.getGroup
+import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
@@ -13,7 +19,10 @@ import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
+import net.mamoe.mirai.sendPacket
 import net.mamoe.mirai.utils.getGTK
+import net.mamoe.mirai.utils.internal.PositiveNumbers
+import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -100,6 +109,17 @@ class BotSession(
         sendAndExpect<P, P>(checkSequence) { it }
 
     suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
+
+
+    suspend inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.qq(): QQ = bot.getQQ(this)
+
+    suspend inline fun Int.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.group(): Group = bot.getGroup(GroupId(this))
+    suspend inline fun GroupId.group(): Group = bot.getGroup(this)
+    suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
 }
 
 
@@ -129,3 +149,19 @@ inline val Bot.session: BotSession get() = this.network.session
  * 实际上是一个捷径.
  */
 inline val Bot.sessionKey: SessionKey get() = this.session.sessionKey
+
+
+/**
+ * 发送数据包
+ * @throws IllegalStateException 当 [BotNetworkHandler.socket] 未开启时
+ */
+suspend inline fun BotSession.sendPacket(packet: OutgoingPacket) = this.bot.sendPacket(packet)
+
+
+suspend inline fun BotSession.getQQ(@PositiveNumbers number: Long): QQ = this.bot.getQQ(number)
+suspend inline fun BotSession.getQQ(number: UInt): QQ = this.bot.getQQ(number)
+
+suspend inline fun BotSession.getGroup(id: UInt): Group = this.bot.getGroup(id)
+suspend inline fun BotSession.getGroup(@PositiveNumbers id: Long): Group = this.bot.getGroup(id)
+suspend inline fun BotSession.getGroup(id: GroupId): Group = this.bot.getGroup(id)
+suspend inline fun BotSession.getGroup(internalId: GroupInternalId): Group = this.bot.getGroup(internalId)

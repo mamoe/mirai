@@ -9,7 +9,10 @@ import net.mamoe.mirai.Bot.ContactSystem
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendResponse
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
@@ -90,6 +93,8 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
      * @see Bot.contacts
      */
     inner class ContactSystem internal constructor() {
+        inline val bot: Bot get() = this@Bot
+
         private val _groups = ContactList<Group>()
         private lateinit var groupsUpdater: Job
         val groups = ContactList<Group>()
@@ -108,7 +113,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         suspend fun getQQ(id: UInt): QQ =
             if (qqs.containsKey(id)) qqs[id]!!
             else qqsLock.withLock {
-                qqs.getOrPut(id) { QQ(this@Bot, id) }
+                qqs.getOrPut(id) { QQ(bot, id) }
             }
 
         /**
@@ -126,7 +131,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         suspend fun getGroup(id: GroupId): Group = id.value.let {
             if (groups.containsKey(it)) groups[it]!!
             else groupsLock.withLock {
-                groups.getOrPut(it) { Group(this@Bot, id) }
+                groups.getOrPut(it) { Group(bot, id) }
             }
         }
 
@@ -153,7 +158,19 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
     }
 }
 
+suspend fun ContactSystem.canAddFriend(id: UInt): CanAddFriendResponse =
+    bot.withSession {
+        CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>().await()
+    }
+
 /**
  * 添加一个好友
+ *
+ * @param lazyMessage 若需要验证请求时的验证消息.
  */
-suspend fun ContactSystem.addFriend(id: UInt): Nothing = TODO()
+suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }): Boolean = when (this.canAddFriend(id)) {
+    is CanAddFriendResponse.AlreadyAdded -> false
+    is CanAddFriendResponse.Rejected -> false
+    is CanAddFriendResponse.RequireVerification -> TODO()
+    is CanAddFriendResponse.ReadyToAdd -> TODO()
+}

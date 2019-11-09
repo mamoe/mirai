@@ -6,11 +6,13 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendResponse
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import kotlin.jvm.JvmOverloads
 
 /*
  * 在 [Bot] 中的方法的捷径
@@ -18,6 +20,7 @@ import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 
 //Contacts
 suspend inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number.coerceAtLeastOrFail(0).toUInt())
+
 suspend inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
 
 suspend inline fun Bot.getGroup(id: UInt): Group = this.contacts.getGroup(GroupId(id))
@@ -58,6 +61,17 @@ suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit
  * 使用默认的配置 ([BotConfiguration.Default]) 登录
  */
 suspend inline fun Bot.login(): LoginResult = this.network.login(BotConfiguration.Default)
+
+/**
+ * 得到可否添加这个人为好友
+ */
+suspend inline fun Bot.canAddFriend(id: UInt): CanAddFriendResponse = this.contacts.canAddFriend(id)
+
+/**
+ * 添加好友
+ */
+@JvmOverloads
+suspend inline fun Bot.addFriend(id: UInt, noinline lazyMessage: () -> String = { "" }) = this.contacts.addFriend(id, lazyMessage)
 
 /**
  * 取得机器人的 QQ 号
