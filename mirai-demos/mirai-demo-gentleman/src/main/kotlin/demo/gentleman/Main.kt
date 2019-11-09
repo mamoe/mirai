@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.addFriend
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
@@ -67,6 +68,10 @@ suspend fun main() {
             } catch (e: Exception) {
                 reply(e.message ?: "exception: null")
             }
+        }
+
+        startsWith("添加好友", removePrefix = true) {
+            reply(bot.addFriend(it.toUInt()).toString())
         }
 
     }

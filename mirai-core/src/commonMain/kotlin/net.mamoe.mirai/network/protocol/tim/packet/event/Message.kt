@@ -10,6 +10,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.getGroup
 import net.mamoe.mirai.getQQ
@@ -143,7 +144,12 @@ data class FriendMessage(
     val previous: Boolean,
     override val sender: QQ,
     override val message: MessageChain
-) : MessagePacket<QQ>() {
+) : MessagePacket<QQ>(), BroadcastControllable {
+    /**
+     * 是否应被自动广播. 此为内部 API
+     */
+    override val shouldBroadcast: Boolean get() = !previous
+
     override val subject: QQ get() = sender
 }
 

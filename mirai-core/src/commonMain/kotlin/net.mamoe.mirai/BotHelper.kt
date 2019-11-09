@@ -6,7 +6,6 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendResponse
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.BotConfiguration
@@ -63,15 +62,10 @@ suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit
 suspend inline fun Bot.login(): LoginResult = this.network.login(BotConfiguration.Default)
 
 /**
- * 得到可否添加这个人为好友
- */
-suspend inline fun Bot.canAddFriend(id: UInt): CanAddFriendResponse = this.contacts.canAddFriend(id)
-
-/**
  * 添加好友
  */
 @JvmOverloads
-suspend inline fun Bot.addFriend(id: UInt, noinline lazyMessage: () -> String = { "" }) = this.contacts.addFriend(id, lazyMessage)
+suspend inline fun Bot.addFriend(id: UInt, noinline lazyMessage: () -> String = { "" }): AddFriendResult = this.contacts.addFriend(id, lazyMessage)
 
 /**
  * 取得机器人的 QQ 号

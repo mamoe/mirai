@@ -98,3 +98,11 @@ object EventScope : CoroutineScope {
             MiraiLogger.error("An exception is thrown in EventScope", e)
         }
 }
+
+/**
+ * 可控制是否需要广播这个事件包
+ */
+interface BroadcastControllable : Subscribable {
+    val shouldBroadcast: Boolean
+        get() = true
+}

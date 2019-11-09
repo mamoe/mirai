@@ -242,7 +242,7 @@ internal class TIMBotNetworkHandler internal constructor(override inline val bot
 
             when (packet) {
                 is Cancellable -> if ((packet as Cancellable).broadcast(coroutineContext).cancelled) return
-                is Subscribable -> packet.broadcast(coroutineContext)
+                is Subscribable -> if ((packet as? BroadcastControllable)?.shouldBroadcast != false) packet.broadcast(coroutineContext)
             }
 
             // Remove first to release the lock

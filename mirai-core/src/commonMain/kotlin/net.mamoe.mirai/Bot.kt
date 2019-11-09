@@ -9,6 +9,7 @@ import net.mamoe.mirai.Bot.ContactSystem
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.packet.action.AddFriendPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendResponse
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
@@ -66,7 +67,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
         instances.add(this)
     }
 
-    override fun toString(): String = "Bot{qq=${account.id}}"
+    override fun toString(): String = "Bot(${account.id})"
 
     /**
      * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
@@ -158,19 +159,46 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
     }
 }
 
-suspend fun ContactSystem.canAddFriend(id: UInt): CanAddFriendResponse =
-    bot.withSession {
-        CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>().await()
+@Suppress("ClassName")
+sealed class AddFriendResult {
+
+    open class SUCCESS internal constructor() : AddFriendResult() {
+        companion object : SUCCESS()
+
+        override fun toString(): String = "AddFriendResult(Success)"
     }
+
+    /**
+     * 对方拒绝添加好友
+     */
+    object REJECTED : AddFriendResult() {
+        override fun toString(): String = "AddFriendResult(Rejected)"
+    }
+
+    /**
+     * 这个人已经是好友
+     */
+    object ALREADY_ADDED : SUCCESS() {
+        override fun toString(): String = "AddFriendResult(AlreadyAdded)"
+    }
+}
 
 /**
  * 添加一个好友
  *
  * @param lazyMessage 若需要验证请求时的验证消息.
  */
-suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }): Boolean = when (this.canAddFriend(id)) {
-    is CanAddFriendResponse.AlreadyAdded -> false
-    is CanAddFriendResponse.Rejected -> false
-    is CanAddFriendResponse.RequireVerification -> TODO()
-    is CanAddFriendResponse.ReadyToAdd -> TODO()
+suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }): AddFriendResult = bot.withSession {
+    when (CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>().await()) {
+        is CanAddFriendResponse.AlreadyAdded -> AddFriendResult.ALREADY_ADDED
+        is CanAddFriendResponse.Rejected -> AddFriendResult.REJECTED
+        is CanAddFriendResponse.RequireVerification -> {
+
+            TODO()
+        }
+        is CanAddFriendResponse.ReadyToAdd -> {
+            AddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<AddFriendPacket.AddFriendResponse>().await()
+            TODO()
+        }
+    }
 }

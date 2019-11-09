@@ -4,12 +4,12 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
-import kotlinx.io.core.readUShort
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendResponse.State
 import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
 import net.mamoe.mirai.utils.io.*
 
@@ -98,49 +98,55 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
         writeQQ(qq)
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): CanAddFriendResponse =
-        CanAddFriendResponse().apply {
-            if (remaining > 20) {//todo check
-                state = State.ALREADY_ADDED
-                return@apply
-            }
-            qq = readUInt()
-
-            state = when (val state = readUShort().toUInt()) {
-                0x00u -> State.NOT_REQUIRE_VERIFICATION
-                0x01u -> State.REQUIRE_VERIFICATION//需要验证信息
-                0x99u -> State.ALREADY_ADDED
-
-                0x03u,
-                0x04u -> State.FAILED
-                else -> throw IllegalStateException(state.toString())
-            }
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): CanAddFriendResponse = with(handler.bot) {
+        if (remaining > 20) {//todo check
+            return CanAddFriendResponse.AlreadyAdded(readUInt().qq())
         }
+        val qq: QQ = readUInt().qq()
+
+        return when (val state = readUByte().toUInt()) {
+            0x00u -> CanAddFriendResponse.ReadyToAdd(qq)
+            0x01u -> CanAddFriendResponse.RequireVerification(qq)
+            0x99u -> CanAddFriendResponse.AlreadyAdded(qq)
+
+            0x03u,
+            0x04u -> CanAddFriendResponse.Rejected(qq)
+            else -> error(state.toString())
+        }
+    }
 
 }
 
-class CanAddFriendResponse : EventPacket {
-    var qq: UInt = 0u
-    lateinit var state: State
+sealed class CanAddFriendResponse : EventPacket {
+    abstract val qq: QQ
 
-    enum class State {
-        /**
-         * 已经添加
-         */
-        ALREADY_ADDED,
-        /**
-         * 需要验证信息
-         */
-        REQUIRE_VERIFICATION,
-        /**
-         * 不需要验证信息
-         */
-        NOT_REQUIRE_VERIFICATION,
-        /**
-         * 对方拒绝添加
-         */
-        FAILED,
-    }
+    /**
+     * 已经添加
+     */
+    data class AlreadyAdded(
+        override val qq: QQ
+    ) : CanAddFriendResponse()
+
+    /**
+     * 需要验证信息
+     */
+    data class RequireVerification(
+        override val qq: QQ
+    ) : CanAddFriendResponse()
+
+    /**
+     * 不需要验证信息
+     */
+    data class ReadyToAdd(
+        override val qq: QQ
+    ) : CanAddFriendResponse()
+
+    /**
+     * 对方拒绝添加
+     */
+    data class Rejected(
+        override val qq: QQ
+    ) : CanAddFriendResponse()
 }
 
 
