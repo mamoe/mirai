@@ -1,11 +1,10 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-import Main.dataReceived
-import Main.dataSent
-import Main.localIp
-import Main.qq
-import Main.sessionKey
-import kotlinx.coroutines.*
+import PacketDebugger.dataSent
+import PacketDebugger.localIp
+import PacketDebugger.qq
+import PacketDebugger.sessionKey
+import kotlinx.coroutines.GlobalScope
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
@@ -30,38 +29,61 @@ import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.*
 import org.pcap4j.core.BpfProgram.BpfCompileMode
 import org.pcap4j.core.PacketListener
-import org.pcap4j.core.PcapNetworkInterface
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode
 import org.pcap4j.core.Pcaps
+import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 
-suspend fun main() {
-    val nif: PcapNetworkInterface = Pcaps.findAllDevs()[0]
-    println(nif.name + "(" + nif.addresses + ")")
+/**
+ * 需使用 32 位 JDK
+ */
+fun main() {
+    /*
+    check(System.getProperty("os.arch") == "x86") { "Jpcap can only work with x86 JDK" }
 
-    val sender = nif.openLive(65536, PromiscuousMode.PROMISCUOUS, 3000)
-    val sendListener = GlobalScope.launch {
-        sender.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
-        withContext(Dispatchers.IO) {
-            sender.loop(Int.MAX_VALUE, PacketListener {
-                dataSent(it.rawData.drop(42).toByteArray())
-            })
-        }
+    JpcapCaptor.getDeviceList().forEach {
+        println(it)
     }
+    JpcapCaptor.openDevice(JpcapCaptor.getDeviceList()[0], 65535, true, 1000).loopPacket(Int.MAX_VALUE) {
+        println(it)
+    }*/
 
-    val receiver = nif.openLive(65536, PromiscuousMode.PROMISCUOUS, 3000)
-    val receiveListener = GlobalScope.launch {
-        receiver.setFilter("dst $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
-        withContext(Dispatchers.IO) {
-            receiver.loop(Int.MAX_VALUE, PacketListener {
-                runBlocking {
-                    dataReceived(it.rawData.drop(42).toByteArray())
+    listenDevice()
+}
+
+private fun listenDevice() {
+    thread {
+        val sender = Pcaps.findAllDevs().first { it.addresses.any { it.address.hostAddress == localIp } }.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
+        sender.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
+        println("sendListener started")
+        try {
+            sender.loop(999999, PacketListener {
+                if (it.length() == 0) {
+                    println("EMPTY PACKET!")
+                }
+                try {
+                    println(it.rawData.toUHexString())
+                    dataSent(it.rawData.drop(42).toByteArray())
+                } catch (e: Throwable) {
+                    e.printStackTrace()
                 }
             })
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    joinAll(sendListener, receiveListener)
+    /*
+    thread {
+        val receiver = Pcaps.findAllDevs().first { it.addresses.any { it.address.hostAddress == localIp } }.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
+        receiver.setFilter("dst $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
+        println("receiveListener started")
+        receiver.loop(Int.MAX_VALUE, PacketListener {
+            runBlocking {
+                dataReceived(it.rawData.drop(42).toByteArray())
+            }
+        })
+    }*/
 }
 
 /**
@@ -70,7 +92,7 @@ suspend fun main() {
  *
  * @author Him188moe
  */
-object Main {
+object PacketDebugger {
     /**
      * 会话密匙, 用于解密数据.
      * 在一次登录中会话密匙不会改变.
@@ -85,7 +107,7 @@ object Main {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: ByteArray = "98 BA DE 20 53 AB EC B5 F5 50 26 E9 6D 41 B6 05".hexToBytes()
+    val sessionKey: ByteArray = "F9 37 23 8F E7 04 AF 52 6D B9 94 13 E1 3A BD 4A".hexToBytes()
     const val qq: UInt = 1040400290u
     const val localIp = "192.168.3.10"
 
