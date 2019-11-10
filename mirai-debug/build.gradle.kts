@@ -34,14 +34,13 @@ kotlin {
 
 dependencies {
     api(project(":mirai-core"))
-    runtimeOnly(files("../../mirai-core/build/classes/kotlin/jvm/main")) // mpp targeting android limitation
+    runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // mpp targeting android limitation
 
     api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     implementation("org.pcap4j:pcap4j-distribution:1.8.2")
     implementation("no.tornado:tornadofx:1.7.17")
     compile(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-javafx", version = "1.3.2")
-    implementation(files("./lib/jpcap.jar"))
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
