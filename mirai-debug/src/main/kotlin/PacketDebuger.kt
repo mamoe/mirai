@@ -58,11 +58,7 @@ private fun listenDevice() {
         println("sendListener started")
         try {
             sender.loop(999999, PacketListener {
-                if (it.length() == 0) {
-                    println("EMPTY PACKET!")
-                }
                 try {
-                    println(it.rawData.toUHexString())
                     dataSent(it.rawData.drop(42).toByteArray())
                 } catch (e: Throwable) {
                     e.printStackTrace()
