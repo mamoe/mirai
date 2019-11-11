@@ -3,6 +3,7 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.network.protocol.tim.packet.Decrypter
 import net.mamoe.mirai.network.protocol.tim.packet.DecrypterByteArray
 import net.mamoe.mirai.utils.io.*
 import kotlin.experimental.and
@@ -122,6 +123,8 @@ fun IoBuffer.decryptBy(keyHex: String, offset: Int = 0, length: Int = readRemain
 fun ByteReadPacket.decryptBy(key: ByteArray): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
 
 fun ByteReadPacket.decryptBy(key: IoBuffer): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+
+fun ByteReadPacket.decryptBy(key: Decrypter): ByteReadPacket = key.decrypt(this)
 
 fun ByteReadPacket.decryptBy(keyHex: String): ByteReadPacket = decryptBy(keyHex.hexToBytes())
 

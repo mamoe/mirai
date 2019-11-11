@@ -4,15 +4,13 @@ import PacketDebugger.dataSent
 import PacketDebugger.localIp
 import PacketDebugger.qq
 import PacketDebugger.sessionKey
-import kotlinx.coroutines.GlobalScope
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
-import kotlinx.io.core.readUShort
+import kotlinx.coroutines.*
+import kotlinx.io.core.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.PacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
@@ -29,10 +27,13 @@ import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.*
 import org.pcap4j.core.BpfProgram.BpfCompileMode
 import org.pcap4j.core.PacketListener
+import org.pcap4j.core.PcapNetworkInterface
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode
 import org.pcap4j.core.Pcaps
+import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
+import kotlin.io.use
 
 /**
  * 需使用 32 位 JDK
@@ -47,39 +48,58 @@ fun main() {
     JpcapCaptor.openDevice(JpcapCaptor.getDeviceList()[0], 65535, true, 1000).loopPacket(Int.MAX_VALUE) {
         println(it)
     }*/
-
-    listenDevice()
+    Pcaps.findAllDevs().forEach {
+        listenDevice(it)
+    }
 }
 
-private fun listenDevice() {
+/**
+ * 避免 print 重叠. 单线程处理足够调试
+ */
+val DISPATCHER = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+
+private fun listenDevice(device: PcapNetworkInterface) {
+    val sender = device.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
     thread {
-        val sender = Pcaps.findAllDevs().first { it.addresses.any { it.address.hostAddress == localIp } }.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
         sender.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
         println("sendListener started")
         try {
-            sender.loop(999999, PacketListener {
-                try {
-                    dataSent(it.rawData.drop(42).toByteArray())
-                } catch (e: Throwable) {
-                    e.printStackTrace()
+            sender.loop(Int.MAX_VALUE, PacketListener {
+                runBlocking {
+                    withContext(DISPATCHER) {
+                        try {
+                            dataSent(it.rawData.drop(42).toByteArray())
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                        }
+                    }
                 }
             })
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             e.printStackTrace()
         }
     }
 
-    /*
+    val receiver = device.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
     thread {
-        val receiver = Pcaps.findAllDevs().first { it.addresses.any { it.address.hostAddress == localIp } }.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
         receiver.setFilter("dst $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
         println("receiveListener started")
-        receiver.loop(Int.MAX_VALUE, PacketListener {
-            runBlocking {
-                dataReceived(it.rawData.drop(42).toByteArray())
-            }
-        })
-    }*/
+        try {
+            receiver.loop(Int.MAX_VALUE, PacketListener {
+                runBlocking {
+                    withContext(DISPATCHER) {
+                        try {
+                            PacketDebugger.dataReceived(it.rawData.drop(42).toByteArray())
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            })
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
 }
 
 /**
@@ -103,9 +123,15 @@ object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: ByteArray = "F9 37 23 8F E7 04 AF 52 6D B9 94 13 E1 3A BD 4A".hexToBytes()
+    val sessionKey: SessionKey = SessionKey("9B AA 9C 93 78 47 7B 6F C4 57 F2 13 76 AC C7 72".hexToBytes())
     const val qq: UInt = 1040400290u
-    const val localIp = "192.168.3.10"
+    val localIp: String = "10.162.12.231".also { println("Local IP: $it") }
+
+    val IgnoredPacketIdList: List<PacketId> = listOf(
+        KnownPacketId.FRIEND_ONLINE_STATUS_CHANGE,
+        KnownPacketId.CHANGE_ONLINE_STATUS,
+        KnownPacketId.HEARTBEAT
+    )
 
     suspend fun dataReceived(data: ByteArray) {
         //println("raw = " + data.toUHexString())
@@ -115,28 +141,34 @@ object PacketDebugger {
             val sequenceId = readUShort()
             if (id == KnownPacketId.HEARTBEAT || readUInt() != qq)
                 return@read
+
+            if (IgnoredPacketIdList.contains(id)) {
+                return
+            }
+
+
             println("--------------")
-            println("接收数据包")
 
             discardExact(3)//0x00 0x00 0x00. 但更可能是应该 discard 8
-            println("id=$id, sequence=${sequenceId.toUHexString()}")
-            val remaining = this.readRemainingBytes().cutTail(1)
+            println(
+                "接收包id=$id, " +
+                        "\nsequence=${sequenceId.toUHexString()}"
+            )
+            // val remaining = this.readRemainingBytes().cutTail(1)
             try {
-                val decrypted = remaining.decryptBy(sessionKey)
-                println("解密body=${decrypted.toUHexString()}")
-
                 val packet = use {
                     with(id.factory) {
                         provideDecrypter(id.factory)
-                            .decrypt(this@read)
+                            .decrypt(this@read.readRemainingBytes().let { ByteReadPacket(it, 0, it.size - 1) })
                             .decode(id, sequenceId, DebugNetworkHandler)
                     }
                 }
+                println("  解析body=$packet")
 
                 handlePacket(id, sequenceId, packet, id.factory)
             } catch (e: DecryptionFailedException) {
-                println("密文body=" + remaining.toUHexString())
-                println("解密body=解密失败")
+                // println("密文body=" + remaining.toUHexString())
+                println("  解密body=解密失败")
             }
         }
     }
@@ -162,6 +194,7 @@ object PacketDebugger {
         packet: TPacket,
         factory: PacketFactory<TPacket, *>
     ) {
+        return
         when (packet) {
             is UnknownEventPacket -> {
                 println("--------------")
@@ -195,16 +228,21 @@ object PacketDebugger {
         // 01 BD 63 D6
         // 3E 03 3F A2 02 00 00 00 01 2E 01 00 00 69 35
 
-        println("---------------------------")
         discardExact(3)//head
-        val idHex = readBytes(4).toUHexString()
-        println("发出包ID = $idHex")
+        val id = matchPacketId(readUShort())
+        val sequence = readUShort()
+        if (IgnoredPacketIdList.contains(id)) {
+            return
+        }
         if (readUInt() != qq) {
             return@read
         }
+        println("---------------------------")
+        println("发出包ID = $id")
+        println("sequence = $sequence")
 
         println(
-            "fixVer2=" + when (val flag = readByte().toInt()) {
+            "  fixVer2=" + when (val flag = readByte().toInt()) {
                 2 -> byteArrayOf(2) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1)
                 4 -> byteArrayOf(4) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1 + 8)//8个0
                 0 -> byteArrayOf(0) + readBytes(2)
@@ -216,78 +254,82 @@ object PacketDebugger {
 
         val encryptedBody = readRemainingBytes()
         try {
-            println("解密body=${encryptedBody.decryptBy(sessionKey).toUHexString()}")
+            println("  解密body=${encryptedBody.decryptBy(sessionKey.value).toUHexString()}")
         } catch (e: DecryptionFailedException) {
-            println("密文=" + encryptedBody.toUHexString())
-            println("解密body=解密失败")
+            println("  密文=" + encryptedBody.toUHexString())
+            println("  解密body=解密失败")
         }
 
         encryptedBody.read {
 
-            when (idHex.substring(0, 5)) {
-                "00 CD" -> {
-                    println("好友消息")
+            /*
+when (idHex.substring(0, 5)) {
+   "00 CD" -> {
+       println("好友消息")
 
-                    val raw = readRemainingBytes()
-                    //println("解密前数据: " + raw.toUHexString())
-                    val messageData = raw.decryptBy(sessionKey)
-                    //println("解密结果: " + messageData.toUHexString())
-                    println("尝试解消息")
+       val raw = readRemainingBytes()
+       //println("解密前数据: " + raw.toUHexString())
+       val messageData = raw.decryptBy(sessionKey.value)
+       //println("解密结果: " + messageData.toUHexString())
+       println("尝试解消息")
 
-                    try {
-                        messageData.read {
-                            discardExact(
-                                4 + 4 + 12 + 2 + 4 + 4 + 16 + 2 + 2 + 4 + 2 + 16 + 4 + 4 + 7 + 15 + 2
-                                        + 1
-                            )
-                            val chain = readMessageChain()
-                            println(chain)
-                        }
-                    } catch (e: Exception) {
-                        println("失败")
-                    }
-                }
+       try {
+           messageData.read {
+               discardExact(
+                   4 + 4 + 12 + 2 + 4 + 4 + 16 + 2 + 2 + 4 + 2 + 16 + 4 + 4 + 7 + 15 + 2
+                           + 1
+               )
+               val chain = readMessageChain()
+               println(chain)
+           }
+       } catch (e: Exception) {
+           println("失败")
+       }
+   }*/
 
-                "03 88" -> {
-                    println("0388上传图片-获取图片ID")
-                    discardExact(8)
+            /*
+            "03 88" -> {
+                println("0388上传图片-获取图片ID")
+                discardExact(8)
 
-                    //val body = readRemainingBytes().decryptBy(sessionKey)
-                    //println(body.toUHexString())
-                }
+                //val body = readRemainingBytes().decryptBy(sessionKey)
+                //println(body.toUHexString())
             }
+        }*/
         }
 
     }
 }
 
 
-internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter> {
-    override val socket: DataPacketSocketAdapter
-        get() = object : DataPacketSocketAdapter {
-            override val serverIp: String
-                get() = ""
-            override val channel: PlatformDatagramChannel
-                get() = error("UNSUPPORTED")
-            override val isOpen: Boolean
-                get() = true
+internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>, CoroutineScope {
+    override val socket: DataPacketSocketAdapter = object : DataPacketSocketAdapter {
+        override val serverIp: String
+            get() = ""
+        override val channel: PlatformDatagramChannel
+            get() = error("UNSUPPORTED")
+        override val isOpen: Boolean
+            get() = true
 
-            override suspend fun sendPacket(packet: OutgoingPacket) {
-
-            }
-
-            override fun close() {
-            }
-
-            override val owner: Bot
-                get() = bot
+        override suspend fun sendPacket(packet: OutgoingPacket) {
 
         }
+
+        override fun close() {
+        }
+
+        override val owner: Bot
+            get() = bot
+
+    }
     override val bot: Bot = Bot(0u, "")
+    val session = BotSession(bot, sessionKey, socket, this)
+    val action = ActionPacketHandler(session)
 
-    override fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T = error("UNSUPPORTED")
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T = action as? T ?: error("UNSUPPORTED")
 
-    override suspend fun login(configuration: BotConfiguration): LoginResult = error("UNSUPPORTED")
+    override suspend fun login(configuration: BotConfiguration): LoginResult = LoginResult.SUCCESS
 
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
     }
