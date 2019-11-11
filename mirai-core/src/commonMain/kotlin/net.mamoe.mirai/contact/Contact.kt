@@ -193,19 +193,44 @@ enum class MemberPermission {
  */
 // FIXME: 2019/11/8 should be `data class Profile`
 @Suppress("PropertyName")
-class Profile(qq: UInt, nickname: String, zipCode: String?, phone: String?, gender: Gender, var birthday: Date?) {
+class Profile(
+    internal var _qq: UInt,
+    internal var _nickname: String,
+    internal var _zipCode: String?,
+    internal var _phone: String?,
+    internal var _gender: Gender,
+    internal var _birthday: Date?,
+    internal var _personalStatus: String?,
+    internal var _school: String?,
+    internal var _homepage: String?,
+    internal var _email: String?,
+    internal var _company: String?
+) {
 
-    internal var _qq: UInt = qq
-    internal var _nickname: String = nickname
-    internal var _zipCode: String? = zipCode
-    internal var _phone: String? = phone
-    internal var _gender: Gender = gender
+    val qq: UInt get() = _qq
+    val nickname: String get() = _nickname
+    val zipCode: String? get() = _zipCode
+    val phone: String? get() = _phone
+    val gender: Gender get() = _gender
+    /**
+     * 个性签名
+     */
+    val personalStatus: String? get() = _personalStatus
+    val school: String? get() = _school
+    val company: String? get() = _company
 
-    val qq: UInt = _qq
-    val nickname: String = _nickname
-    val zipCode: String? = _zipCode
-    val phone: String? = _phone
-    val gender: Gender = _gender
+    /**
+     * 主页
+     */
+    val homepage: String? get() = _homepage
+    val email: String? get() = _email
+    val birthday: Date? get() = _birthday
+
+    override fun toString(): String = "Profile(" +
+            "qq=$qq, nickname=$nickname, zipCode=$zipCode, phone=$phone, " +
+            "gender=$gender, birthday=$birthday, personalStatus=$personalStatus, school=$school, " +
+            "homepage=$homepage, email=$email, company=$company" +
+            ")"
 }
 
 fun Profile.copyFrom(another: Profile) {
@@ -214,6 +239,12 @@ fun Profile.copyFrom(another: Profile) {
     this._zipCode = another.zipCode
     this._phone = another.phone
     this._gender = another.gender
+    this._birthday = another.birthday
+    this._personalStatus = another.personalStatus
+    this._school = another.school
+    this._homepage = another.homepage
+    this._email = another.email
+    this._company = another.company
 }
 
 /**

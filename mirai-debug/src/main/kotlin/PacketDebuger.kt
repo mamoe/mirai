@@ -1,7 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 import PacketDebugger.dataSent
-import PacketDebugger.localIp
 import PacketDebugger.qq
 import PacketDebugger.sessionKey
 import kotlinx.coroutines.*
@@ -15,8 +14,6 @@ import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.PacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
-import net.mamoe.mirai.network.protocol.tim.packet.event.UnknownEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.CaptchaKey
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.ShareKey
@@ -48,8 +45,11 @@ fun main() {
     JpcapCaptor.openDevice(JpcapCaptor.getDeviceList()[0], 65535, true, 1000).loopPacket(Int.MAX_VALUE) {
         println(it)
     }*/
+    val localIp = Pcaps.findAllDevs()[0].addresses[0].address.hostAddress
+    println("LocalIp = $localIp")
+
     Pcaps.findAllDevs().forEach {
-        listenDevice(it)
+        listenDevice(localIp, it)
     }
 }
 
@@ -58,7 +58,7 @@ fun main() {
  */
 val DISPATCHER = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
 
-private fun listenDevice(device: PcapNetworkInterface) {
+private fun listenDevice(localIp: String, device: PcapNetworkInterface) {
     val sender = device.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
     thread {
         sender.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
@@ -104,7 +104,7 @@ private fun listenDevice(device: PcapNetworkInterface) {
 
 /**
  * 抓包分析器.
- * 设置好 [sessionKey], [localIp] 和 [qq] 后运行即可开始抓包和自动解密
+ * 设置好 [sessionKey], 和 [qq] 后运行即可开始抓包和自动解密
  *
  * @author Him188moe
  */
@@ -123,9 +123,8 @@ object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("9B AA 9C 93 78 47 7B 6F C4 57 F2 13 76 AC C7 72".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("7F 32 DB 6D 24 73 13 06 DF 11 25 CB B0 07 FF F3".hexToBytes())
     const val qq: UInt = 1040400290u
-    val localIp: String = "10.162.12.231".also { println("Local IP: $it") }
 
     val IgnoredPacketIdList: List<PacketId> = listOf(
         KnownPacketId.FRIEND_ONLINE_STATUS_CHANGE,
@@ -160,10 +159,12 @@ object PacketDebugger {
                     with(id.factory) {
                         provideDecrypter(id.factory)
                             .decrypt(this@read.readRemainingBytes().let { ByteReadPacket(it, 0, it.size - 1) })
+                            .let {
+                                it.debugPrint("  解密body", it.remaining)
+                            }
                             .decode(id, sequenceId, DebugNetworkHandler)
                     }
                 }
-                println("  解析body=$packet")
 
                 handlePacket(id, sequenceId, packet, id.factory)
             } catch (e: DecryptionFailedException) {
@@ -173,6 +174,15 @@ object PacketDebugger {
         }
     }
 
+    internal fun ByteReadPacket.debugPrint(name: String = "", length: Long = this.remaining): ByteReadPacket {
+        val bytes = this.readBytes(length.toInt())
+        println("$name=" + bytes.toUHexString())
+        return bytes.toReadPacket()
+    }
+
+    /**
+     * 提供解密密匙. 无需修改
+     */
     @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
     internal fun <D : Decrypter> provideDecrypter(factory: PacketFactory<*, D>): D =
         when (factory.decrypterType) {
@@ -187,6 +197,9 @@ object PacketDebugger {
             else -> error("No decrypter is found")
         } as? D ?: error("Internal error: could not cast decrypter which is found for factory to class Decrypter")
 
+    /**
+     * 处理一个包
+     */
     @Suppress("UNUSED_PARAMETER")
     fun <TPacket : Packet> handlePacket(
         id: PacketId,
@@ -194,28 +207,8 @@ object PacketDebugger {
         packet: TPacket,
         factory: PacketFactory<TPacket, *>
     ) {
+        println("  解析body=$packet")
         return
-        when (packet) {
-            is UnknownEventPacket -> {
-                println("--------------")
-                println("未知事件ID=$id")
-                println("未知事件: $packet")
-            }
-
-            is UnknownPacket -> {
-                println("--------------")
-                println("未知包ID=$id")
-                println("未知包: $packet")
-            }
-
-            is EventPacket -> {
-                println("事件")
-                println(packet)
-            }
-
-            else -> {
-            }
-        }
     }
 
     fun dataSent(rawPacket: ByteArray) = rawPacket.cutTail(1).read {
@@ -230,7 +223,7 @@ object PacketDebugger {
 
         discardExact(3)//head
         val id = matchPacketId(readUShort())
-        val sequence = readUShort()
+        val sequence = readUShort().toUHexString()
         if (IgnoredPacketIdList.contains(id)) {
             return
         }

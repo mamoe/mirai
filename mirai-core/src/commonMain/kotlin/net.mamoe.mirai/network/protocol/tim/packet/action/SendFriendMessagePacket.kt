@@ -65,7 +65,9 @@ object SendFriendMessagePacket : SessionPacketFactory<SendFriendMessagePacket.Re
     }
 
     @NoLog
-    object Response : Packet
+    object Response : Packet {
+        override fun toString(): String = "SendFriendMessagePacket.Response"
+    }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response
 }

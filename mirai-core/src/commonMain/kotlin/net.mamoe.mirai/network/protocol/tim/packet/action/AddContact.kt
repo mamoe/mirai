@@ -104,8 +104,11 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
         }
         val qq: QQ = readUInt().qq()
 
+
         return when (val state = readUByte().toUInt()) {
+            //09 4E A4 B1 00 03
             0x00u -> CanAddFriendResponse.ReadyToAdd(qq)
+
             0x01u -> CanAddFriendResponse.RequireVerification(qq)
             0x99u -> CanAddFriendResponse.AlreadyAdded(qq)
 

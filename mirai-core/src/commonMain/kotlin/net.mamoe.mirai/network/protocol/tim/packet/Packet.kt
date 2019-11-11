@@ -21,4 +21,6 @@ class UnknownPacket(val id: PacketId, val body: ByteReadPacket) : Packet {
 /**
  * 仅用于替换类型应为 [Unit] 的情况
  */
-object NoPacket : Packet
+object NoPacket : Packet {
+    override fun toString(): String = "NoPacket"
+}

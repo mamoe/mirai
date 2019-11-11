@@ -61,18 +61,23 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
         discardExact(6)
         val map = readTLVMap(tagSize = 2, expectingEOF = true)
         val profile = Profile(
-            qq = qq,
-            nickname = (map[0x4E22u] ?: error("Cannot determine nickname")).stringOfWitch(),
-            zipCode = map[0x4E25u]?.stringOfWitch(),
-            phone = map[0x4E27u]?.stringOfWitch(),
-            gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {
-                null -> error("Cannot determine gender, entry 0x4E29u not found")
+            _qq = qq,
+            _nickname = map[0x4E22u]?.stringOfWitch() ?: "",//error("Cannot determine nickname")
+            _zipCode = map[0x4E25u]?.stringOfWitch(),
+            _phone = map[0x4E27u]?.stringOfWitch(),
+            _gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {
+                null -> Gender.SECRET //error("Cannot determine gender, entry 0x4E29u not found")
                 0x02u -> Gender.FEMALE
                 0x01u -> Gender.MALE
                 else -> Gender.SECRET // 猜的
                 //else -> error("Cannot determine gender, bad value of 0x4E29u: ${map[0x4729u]!![0].toUHexString()}")
             },
-            birthday = map[0x4E3Fu]?.let { Date(it.toUInt().toInt()) }
+            _birthday = map[0x4E3Fu]?.let { Date(it.toUInt().toInt()) },
+            _personalStatus = map[0x4E33u]?.stringOfWitch(),
+            _homepage = map[0x4E2Du]?.stringOfWitch(),
+            _company = map[0x5DC8u]?.stringOfWitch(),
+            _school = map[0x4E35u]?.stringOfWitch(),
+            _email = map[0x4E2Bu]?.stringOfWitch()
         )
         map.clear()
 
@@ -141,21 +146,4 @@ data class RequestProfileDetailsResponse(
     00 01 00 76 E4 B8 DD 00 00 00 00 00 29
     4E 22 00 0E 73 74 65 61 6D 63 68 69 6E 61 2E 66 75 6E 4E 25 00 06 34 33 33 31 30 30 4E 26 00 09 E4 B8 8D E7 9F A5 E9 81 93 4E 27 00 0A 31 33 38 2A 2A 2A 2A 2A 2A 2A 4E 29 00 01 01 4E 2A 00 00 4E 2B 00 00 4E 2D 00 23 68 74 74 70 3A 2F 2F 77 77 77 2E 34 33 39 39 2E 63 6F 6D 2F 66 6C 61 73 68 2F 33 32 39 37 39 2E 68 74 6D 4E 2E 00 02 31 00 4E 2F 00 04 36 30 33 00 4E 30 00 00 4E 31 00 01 00 4E 33 00 00 4E 35 00 00 4E 36 00 01 0A 4E 37 00 01 06 4E 38 00 01 00 4E 3F 00 04 07 DD 0B 13 4E 40 00 0C 00 41 42 57 00 00 00 00 00 00 00 00 4E 41 00 02 08 04 4E 42 00 02 00 00 4E 43 00 02 0C 04 4E 45 00 01 05 4E 49 00 04 00 00 00 00 4E 4B 00 04 00 00 00 00 4E 4F 00 01 06 4E 54 00 00 4E 5B 00 04 00 00 00 00 52 0B 00 04 13 80 02 00 52 0F 00 14 01 00 00 00 00 00 00 00 52 00 40 48 89 50 80 02 00 00 03 00 5D C2 00 0C 00 41 42 57 00 00 00 00 00 00 00 00 5D C8 00 00 65 97 00 01 07 69 9D 00 04 00 00 00 00 69 A9 00 00 9D A5 00 02 00 01 A4 91 00 02 00 00 A4 93 00 02 00 01 A4 94 00 02 00 00 A4 9C 00 02 00 00 A4 B5 00 02 00 00
      */
-}
-
-fun main() {
-    val mapFemale =
-        "4E 22 00 0E 73 74 65 61 6D 63 68 69 6E 61 2E 66 75 6E 4E 25 00 06 34 33 33 31 30 30 4E 26 00 09 E4 B8 8D E7 9F A5 E9 81 93 4E 27 00 0A 31 33 38 2A 2A 2A 2A 2A 2A 2A 4E 29 00 01 02 4E 2A 00 00 4E 2B 00 00 4E 2D 00 23 68 74 74 70 3A 2F 2F 77 77 77 2E 34 33 39 39 2E 63 6F 6D 2F 66 6C 61 73 68 2F 33 32 39 37 39 2E 68 74 6D 4E 2E 00 02 31 00 4E 2F 00 04 36 30 33 00 4E 30 00 00 4E 31 00 01 00 4E 33 00 00 4E 35 00 00 4E 36 00 01 0A 4E 37 00 01 06 4E 38 00 01 00 4E 3F 00 04 07 DD 0B 13 4E 40 00 0C 00 41 42 57 00 00 00 00 00 00 00 00 4E 41 00 02 08 04 4E 42 00 02 00 00 4E 43 00 02 0C 04 4E 45 00 01 05 4E 49 00 04 00 00 00 00 4E 4B 00 04 00 00 00 00 4E 4F 00 01 06 4E 54 00 00 4E 5B 00 04 00 00 00 00 52 0B 00 04 13 80 02 00 52 0F 00 14 01 00 00 00 00 00 00 00 52 00 40 48 89 50 80 02 00 00 03 00 5D C2 00 0C 00 41 42 57 00 00 00 00 00 00 00 00 5D C8 00 00 65 97 00 01 07 69 9D 00 04 00 00 00 00 69 A9 00 00 9D A5 00 02 00 01 A4 91 00 02 00 00 A4 93 00 02 00 01 A4 94 00 02 00 00 A4 9C 00 02 00 00 A4 B5 00 02 00 00".hexToBytes()
-            .read {
-                readTLVMap(tagSize = 2, expectingEOF = true)
-            }
-    val mapMale =
-        "4E 22 00 0E 73 74 65 61 6D 63 68 69 6E 61 2E 66 75 6E 4E 25 00 06 34 33 33 31 30 30 4E 26 00 09 E4 B8 8D E7 9F A5 E9 81 93 4E 27 00 0A 31 33 38 2A 2A 2A 2A 2A 2A 2A 4E 29 00 01 01 4E 2A 00 00 4E 2B 00 00 4E 2D 00 23 68 74 74 70 3A 2F 2F 77 77 77 2E 34 33 39 39 2E 63 6F 6D 2F 66 6C 61 73 68 2F 33 32 39 37 39 2E 68 74 6D 4E 2E 00 02 31 00 4E 2F 00 04 36 30 33 00 4E 30 00 00 4E 31 00 01 00 4E 33 00 00 4E 35 00 00 4E 36 00 01 0A 4E 37 00 01 06 4E 38 00 01 00 4E 3F 00 04 07 DD 0B 13 4E 40 00 0C 00 41 42 57 00 00 00 00 00 00 00 00 4E 41 00 02 08 04 4E 42 00 02 00 00 4E 43 00 02 0C 04 4E 45 00 01 05 4E 49 00 04 00 00 00 00 4E 4B 00 04 00 00 00 00 4E 4F 00 01 06 4E 54 00 00 4E 5B 00 04 00 00 00 00 52 0B 00 04 13 80 02 00 52 0F 00 14 01 00 00 00 00 00 00 00 52 00 40 48 89 50 80 02 00 00 03 00 5D C2 00 0C 00 41 42 57 00 00 00 00 00 00 00 00 5D C8 00 00 65 97 00 01 07 69 9D 00 04 00 00 00 00 69 A9 00 00 9D A5 00 02 00 01 A4 91 00 02 00 00 A4 93 00 02 00 01 A4 94 00 02 00 00 A4 9C 00 02 00 00 A4 B5 00 02 00 00".hexToBytes()
-            .read {
-                readTLVMap(tagSize = 2, expectingEOF = true)
-            }
-
-    mapFemale.filter { (key, value) -> !mapMale.containsKey(key) || !mapMale[key]!!.contentEquals(value) }.forEach {
-        println("id=" + it.key.toUShort().toUHexString() + ", valueFemale=" + it.value.toUHexString() + ",valueMale=" + mapMale[it.key]!!.toUHexString())
-    }
 }
