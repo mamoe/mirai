@@ -147,10 +147,6 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
             }
     }
 
-    suspend fun QQ.addAsFriend() {
-
-    }
-
     override fun toString(): String {
         return "QQ(${this.id})"
     }

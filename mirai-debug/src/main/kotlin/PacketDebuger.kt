@@ -32,9 +32,6 @@ import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.use
 
-/**
- * 需使用 32 位 JDK
- */
 fun main() {
     /*
     check(System.getProperty("os.arch") == "x86") { "Jpcap can only work with x86 JDK" }

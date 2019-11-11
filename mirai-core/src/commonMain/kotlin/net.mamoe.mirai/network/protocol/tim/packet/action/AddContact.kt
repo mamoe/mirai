@@ -2,27 +2,13 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readUByte
-import kotlinx.io.core.readUInt
+import kotlinx.io.core.*
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
 import net.mamoe.mirai.utils.io.*
 
-
-// 01BC 曾用名查询. 查到的是这个人的
-// 发送  00 00
-//       3E 03 3F A2 //bot
-//       59 17 3E 05 //目标
-//
-// 接受: 00 00 00 03
-//      [00 00 00 0C] E6 A5 BC E4 B8 8A E5 B0 8F E7 99 BD
-//      [00 00 00 10] 68 69 6D 31 38 38 E7 9A 84 E5 B0 8F 64 69 63 6B
-//      [00 00 00 0F] E4 B8 B6 E6 9A 97 E8 A3 94 E5 89 91 E9 AD 94
 
 /**
  * 查询某人与机器人账号有关的曾用名 (备注).
@@ -31,8 +17,9 @@ import net.mamoe.mirai.utils.io.*
  * - 昵称
  * - 共同群内的群名片
  */
-@PacketVersion(date = "2019.11.02", timVersion = "2.3.2.21173")
-object QueryPreviousNamePacket : SessionPacketFactory<QueryPreviousNameResponse>() {
+@AnnotatedId(KnownPacketId.QUERY_PREVIOUS_NAME)
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
+object QueryPreviousNamePacket : SessionPacketFactory<PreviousNameList>() {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey,
@@ -43,17 +30,29 @@ object QueryPreviousNamePacket : SessionPacketFactory<QueryPreviousNameResponse>
         writeQQ(target)
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): QueryPreviousNameResponse =
-        QueryPreviousNameResponse().apply {
-            names = Array(readUInt().toInt()) {
+    // 01BC 曾用名查询. 查到的是这个人的
+    // 发送  00 00
+    //       3E 03 3F A2 //bot
+    //       59 17 3E 05 //目标
+    //
+    // 接受: 00 00 00 03
+    //      [00 00 00 0C] E6 A5 BC E4 B8 8A E5 B0 8F E7 99 BD
+    //      [00 00 00 10] 68 69 6D 31 38 38 E7 9A 84 E5 B0 8F 64 69 63 6B
+    //      [00 00 00 0F] E4 B8 B6 E6 9A 97 E8 A3 94 E5 89 91 E9 AD 94
+
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): PreviousNameList =
+        PreviousNameList(ArrayList<String>(readUInt().toInt()).apply {
+            repeat(size) {
                 discardExact(2)
-                readUShortLVString()
+                add(readUShortLVString())
             }
-        }
+        })
 }
 
-class QueryPreviousNameResponse : Packet {
-    lateinit var names: Array<String>
+class PreviousNameList(
+    list: List<String>
+) : Packet, List<String> by list {
+    override fun toString(): String = this.joinToString(prefix = "PreviousNameList(", postfix = ")", separator = ", ")
 }
 
 // 需要验证消息
@@ -89,6 +88,7 @@ enum class AddFriendResult {
  * @author Him188moe
  */
 @AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
 object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
     operator fun invoke(
         bot: UInt,
@@ -104,6 +104,7 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
         }
         val qq: QQ = readUInt().qq()
 
+        discardExact(0)
 
         return when (val state = readUByte().toUInt()) {
             //09 4E A4 B1 00 03
@@ -152,34 +153,103 @@ sealed class CanAddFriendResponse : EventPacket {
     ) : CanAddFriendResponse()
 }
 
+/*
+包ID 0115, 在点击提交好友申请时
+发出 03 5D 12 93 30
+接受 03 00 00 00 00 01 30 5D 12 93 30 00 14 00 00 00 00 10 30 36 35 39 E4 B8 80 E7 BE 8E E5 A4 A9 E9 9D 99 02 0A 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 1E
+ */
+
+inline class FriendAdditionKey(val value: IoBuffer)
 
 /**
- * 请求添加好友
+ * 请求一个 32 位 Key, 在添加好友时发出
  */
-@AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
-object AddFriendPacket : SessionPacketFactory<AddFriendPacket.AddFriendResponse>() {
+@AnnotatedId(KnownPacketId.REQUEST_FRIEND_ADDITION_KEY)
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
+object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditionKeyPacket.Response>() {
     operator fun invoke(
         bot: UInt,
         qq: UInt,
         sessionKey: SessionKey
-    ): OutgoingPacket = buildOutgoingPacket {
-        writeQQ(bot)
-        writeHex(TIMProtocol.fixVer2)
-        encryptAndWrite(sessionKey) {
-            writeHex("01 00 01")
-            writeQQ(qq)
+    ) = buildSessionPacket(bot, sessionKey) {
+        //01 00 01 02 B3 74 F6
+        writeHex("01 00 01")
+        writeQQ(qq)
+    }
+
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response {
+        //01 00 01 00 00 20 01 C2 76 47 98 38 A1 FF AB 64 04 A9 81 1F CC 2B 2B A6 29 FC 97 80 A6 90 2D 26 C8 37 EE 1D 8A FA
+        discardExact(4)
+        return Response(FriendAdditionKey(readIoBuffer(readUShort().toInt())))
+    }
+
+    data class Response(
+        val key: FriendAdditionKey
+    ) : Packet
+}
+
+/**
+ * 请求添加好友
+ */
+@AnnotatedId(KnownPacketId.ADD_FRIEND)
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
+object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
+    operator fun invoke(
+        bot: UInt,
+        qq: UInt,
+        sessionKey: SessionKey,
+        /**
+         * 验证消息
+         */
+        message: String,
+        /**
+         * 备注名
+         */
+        remark: String,
+        key: FriendAdditionKey
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey) {
+
+        //02 5D 12 93 30
+        // 00
+        // 00 [00 20] 3C 00 0C 44 17 C2 15 99 F9 94 96 DC 1C D5 E3 45 41 4B DB C5 B6 B6 52 85 14 D5 89 D2 06 72 BC C3
+        // 01 [00 1E] E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A
+        // 00 2A 00 01 00 01 00 00 00 1B E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A 00 05 00 00 00 00 01 00
+
+
+        //02 02 B3 74 F6
+        // 00 00
+        // [00 20] 06 51 61 A0 CE 33 FE 3E B1 32 41 AF 9A F0 EB FD 16 D5 3A 71 89 3A A4 5C 00 0F C4 57 31 A3 35 76
+        // 01 00 00 00 0F 00 01 00 01 00 00 00 00 00 05 00 00 00 00 01 00
+
+        //02 02 B3 74 F6
+        // 00
+        // 00 [00 20] 01 C2 76 47 98 38 A1 FF AB 64 04 A9 81 1F CC 2B 2B A6 29 FC 97 80 A6 90 2D 26 C8 37 EE 1D 8A FA
+        // 01 [00 00]
+        // 00 0F 00 01 00 01 00 00 00 00 00 05 00 00 00 00 01 00
+        writeUByte(0x02u)
+        writeQQ(qq)
+        writeByte(0)
+        writeByte(0); writeShort(key.value.readRemaining.toShort()); writeFully(key.value)
+        writeByte(1); writeShortLVString(message)
+        writeShortLVPacket {
+            //00 01 00 01 00 00 00 1B E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A 00 05 00 00 00 00 01
+
+            //00 01 00 01 00 00 00 00 00 05 00 00 00 00 01
+            writeHex("00 01 00 01 00 00")// TODO: 2019/11/11 这里面或者下面那个hex可能包含分组信息. 这两次测试都是用的默认分组即我的好友
+            writeShortLVString(remark)
+            writeHex("00 05 00 00 00 00 01")
         }
+        writeByte(0)
+        //  write
     }
 
-    override suspend fun BotNetworkHandler<*>.handlePacket(packet: AddFriendResponse) {
-
+    object Response : Packet {
+        override fun toString(): String = "AddFriendPacket.Response"
     }
 
 
-    class AddFriendResponse : Packet
-
-
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): AddFriendResponse {
-        TODO()
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response {
+        //02 02 B3 74 F6 00 //02 B3 74 F6 是QQ号
+        return Response
     }
 }

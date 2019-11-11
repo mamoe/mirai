@@ -102,7 +102,7 @@ class BotSession(
 
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
-     * 您将能从本函数的返回值 [CompletableDeferred] 接收到所期待的 [P]
+     * 将能从本函数的返回值 [CompletableDeferred] 接收到所期待的 [P]
      */
     suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): CompletableDeferred<P> =
         sendAndExpect<P, P>(checkSequence) { it }

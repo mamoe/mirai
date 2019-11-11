@@ -72,11 +72,15 @@ enum class KnownPacketId(override inline val value: UShort, override inline val 
     inline SEND_GROUP_MESSAGE(0x0002u, SendGroupMessagePacket),
     inline SEND_FRIEND_MESSAGE(0x00CDu, SendFriendMessagePacket),
     inline CAN_ADD_FRIEND(0x00A7u, CanAddFriendPacket),
+    inline ADD_FRIEND(0x00A8u, AddFriendPacket),
+    inline REQUEST_FRIEND_ADDITION_KEY(0x00AEu, RequestFriendAdditionKeyPacket),
     inline GROUP_IMAGE_ID(0x0388u, GroupImageIdRequestPacket),
     inline FRIEND_IMAGE_ID(0x0352u, FriendImageIdRequestPacket),
 
     inline REQUEST_PROFILE_AVATAR(0x0031u, RequestProfileAvatarPacket),
     inline REQUEST_PROFILE_DETAILS(0x003Cu, RequestProfileDetailsPacket),
+
+    inline QUERY_PREVIOUS_NAME(0x01BCu, QueryPreviousNamePacket),
     // @Suppress("DEPRECATION")
     // inline SUBMIT_IMAGE_FILE_NAME(0x01BDu, SubmitImageFilenamePacket),
 
