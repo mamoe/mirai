@@ -33,7 +33,7 @@ internal inline fun TIMBotNetworkHandler.BotSession(
     bot: Bot,
     sessionKey: SessionKey,
     socket: DataPacketSocketAdapter
-) = BotSession(bot, sessionKey, socket, this)
+): BotSession = BotSession(bot, sessionKey, socket, this)
 
 /**
  * 登录会话. 当登录完成后, 客户端会拿到 sessionKey.

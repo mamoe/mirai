@@ -58,6 +58,8 @@ interface Message {
      * [@123456789]
      * [face123]
      * ```
+     *
+     * 使用 [toString] 将得到同样的值
      */
     val stringValue: String
 
