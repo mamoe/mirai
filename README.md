@@ -37,18 +37,7 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 ## Update log
 
-- 发送好友/群消息(10/14)
-- 接受解析好友消息(10/14)
-- 接收解析群消息(10/14)
-  - 成员昵称(10/18)
-  - 成员权限(11/2)
-- 好友在线状态改变(10/14)
-- Android客户端上线/下线(10/18)
-- 上传并发送好友/群图片(10/21, 10/26)
-- 群员权限改变(11/2)
-- 发起会话(11/2)
-- 个人资料(11/2)
-- 添加好友(11/11) (unstable)
+在 [Project](https://github.com/mamoe/mirai/projects/1) 查看
 
 ## Requirements
 
