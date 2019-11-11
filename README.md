@@ -48,8 +48,7 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 - 群员权限改变(11/2)
 - 发起会话(11/2)
 - 个人资料(11/2)
-
-计划中: 添加好友
+- 添加好友(11/11) (unstable)
 
 ## Requirements
 
