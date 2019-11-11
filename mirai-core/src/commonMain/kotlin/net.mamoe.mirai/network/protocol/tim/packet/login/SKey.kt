@@ -32,7 +32,6 @@ object RequestSKeyPacket : SessionPacketFactory<SKey>() {
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): SKey {
         discardExact(4)
-        // TODO: 2019/11/2 这里
         return SKey(readString(10)).also {
             DebugLogger.warning("SKey 包后面${readRemainingBytes().toUHexString()}")
         }

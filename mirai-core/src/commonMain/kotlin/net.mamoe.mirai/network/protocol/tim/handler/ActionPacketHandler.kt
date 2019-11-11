@@ -27,7 +27,6 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
     private var sKeyRefresherJob: Job? = null
 
 
-    @ExperimentalStdlibApi
     override suspend fun onPacketReceived(packet: Packet): Unit = with(session) {
         when (packet) {
             is SKey -> {

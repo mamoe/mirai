@@ -22,11 +22,10 @@ import net.mamoe.mirai.utils.io.PlatformDatagramChannel
  *
  * [BotNetworkHandler] 由 2 个模块构成:
  * - [BotSocketAdapter]: 处理数据包底层的发送([ByteArray])
- * - [PacketHandler]: 制作 [OutgoingPacket] 并传递给 [BotSocketAdapter] 发送; 分析 [ServerPacket] 并处理
+ * - [PacketHandler]: 制作 [OutgoingPacket] 并传递给 [BotSocketAdapter] 发送; 分析 [Packet] 并处理
  *
  * 其中, [PacketHandler] 由 3 个子模块构成:
  * - [LoginHandler] 处理 sendTouch/login/verification code 相关
- * - [EventPacketHandler] 处理消息相关(群消息/好友消息)([ServerEventPacket])
  * - [ActionPacketHandler] 处理动作相关(踢人/加入群/好友列表等)
  *
  *

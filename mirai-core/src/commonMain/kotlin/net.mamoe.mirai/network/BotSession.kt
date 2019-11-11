@@ -56,7 +56,6 @@ class BotSession(
     /**
      * Web api 使用
      */
-    @ExperimentalStdlibApi
     var sKey: String = ""
         internal set(value) {
             field = value

@@ -7,10 +7,9 @@ import net.mamoe.mirai.utils.io.getRandomByteArray
 
 private const val GTK_BASE_VALUE: Int = 5381
 
-@ExperimentalStdlibApi
 internal fun getGTK(sKey: String): Int {
     var value = GTK_BASE_VALUE
-    for (c in sKey.toCharArray()) {
+    for (c in sKey.toByteArray()) {
         value += (value shl 5) + c.toInt()
     }
 

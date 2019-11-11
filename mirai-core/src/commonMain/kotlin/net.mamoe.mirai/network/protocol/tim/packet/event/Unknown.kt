@@ -7,7 +7,6 @@ import kotlinx.io.core.readBytes
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toUHexString
 
@@ -16,14 +15,14 @@ data class UnknownEventPacket(
     val identity: EventPacketIdentity,
     val body: ByteReadPacket
 ) : EventPacket {
-    override fun toString(): String = "UnknownEventPacket(id=${id.toUHexString()}, identity=$identity)"
+    override fun toString(): String = "UnknownEventPacket(id=${id.toUHexString()}, identity=$identity)\n = ${body.readBytes().toUHexString()}"
 }
 
 //TODO This class should be declared with `inline`, but a CompilationException will be thrown
 class UnknownEventParserAndHandler(override val id: UShort) : EventParserAndHandler<UnknownEventPacket> {
 
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): UnknownEventPacket {
-        MiraiLogger.debug("UnknownEventPacket(${id.toUHexString()}) = ${readBytes().toUHexString()}")
+        // MiraiLogger.debug("UnknownEventPacket(${id.toUHexString()}) = ${readBytes().toUHexString()}")
         return UnknownEventPacket(id, identity, this) //TODO the cause is that `this` reference.
     }
 
