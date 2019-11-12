@@ -37,7 +37,7 @@ class OverFileSizeMaxException : IllegalStateException()
 suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
     val userContext = coroutineContext
     GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey)
-        .sendAndExpect<GroupImageIdRequestPacket.Response, Unit> {
+        .sendAndExpectAsync<GroupImageIdRequestPacket.Response, Unit> {
             withContext(userContext) {
                 when (it) {
                     is GroupImageIdRequestPacket.Response.RequireUpload -> httpClient.postImage(
@@ -69,8 +69,8 @@ suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
  */
 suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
     FriendImageIdRequestPacket(qqAccount, sessionKey, id, image)
-        .sendAndExpect<FriendImageIdRequestPacket.Response, ImageId> {
-            return@sendAndExpect when (it) {
+        .sendAndExpectAsync<FriendImageIdRequestPacket.Response, ImageId> {
+            return@sendAndExpectAsync when (it) {
                 is FriendImageIdRequestPacket.Response.RequireUpload -> {
                     httpClient.postImage(
                         htcmd = "0x6ff0070",

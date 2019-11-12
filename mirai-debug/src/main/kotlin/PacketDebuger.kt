@@ -312,7 +312,7 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
             get() = bot
 
     }
-    override val bot: Bot = Bot(0u, "")
+    override val bot: Bot = Bot(qq, "")
     val session = BotSession(bot, sessionKey, socket, this)
     val action = ActionPacketHandler(session)
 

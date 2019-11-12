@@ -213,14 +213,14 @@ Mirai 22:04:48 : Packet received: UnknownEventPacket(id=00 D6, identity=(2092749
  * @param lazyMessage 若需要验证请求时的验证消息.
  */
 suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }, lazyRemark: () -> String = { "" }): AddFriendResult = bot.withSession {
-    when (CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>().await()) {
+    when (CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>()) {
         is CanAddFriendResponse.AlreadyAdded -> AddFriendResult.ALREADY_ADDED
         is CanAddFriendResponse.Rejected -> AddFriendResult.REJECTED
 
         is CanAddFriendResponse.ReadyToAdd,
         is CanAddFriendResponse.RequireVerification -> {
-            val key = RequestFriendAdditionKeyPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().await().key
-            AddFriendPacket(bot.qqAccount, id, sessionKey, lazyMessage(), lazyRemark(), key).sendAndExpect<AddFriendPacket.Response>().await()
+            val key = RequestFriendAdditionKeyPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
+            AddFriendPacket(bot.qqAccount, id, sessionKey, lazyMessage(), lazyRemark(), key).sendAndExpect<AddFriendPacket.Response>()
             return AddFriendResult.WAITING_FOR_APPROVE
         }
         //这个做的是需要验证消息的情况, 不确定 ReadyToAdd 的是啥
@@ -232,12 +232,11 @@ suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }
         /*is CanAddFriendResponse.ReadyToAdd -> {
             // TODO: 2019/11/11 这不需要验证信息的情况
 
-            //AddFriendPacket(bot.qqAccount, id, bot.sessionKey, ).sendAndExpect<AddFriendPacket.Response>().await()
+            //AddFriendPacket(bot.qqAccount, id, bot.sessionKey, ).sendAndExpectAsync<AddFriendPacket.Response>().await()
             TODO()
         }*/
     }
 }
-
 
 /*
 1494695429 同意好友请求后收到以下包:

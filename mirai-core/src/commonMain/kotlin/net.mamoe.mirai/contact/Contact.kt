@@ -104,7 +104,7 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
 
 /**
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
- * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpect]
+ * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpectAsync]
  */
 inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSession(block)
 
@@ -138,7 +138,7 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
      */
     suspend fun updateProfile(): Profile = bot.withSession {
         RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
-            .sendAndExpect<RequestProfileDetailsResponse, Profile> { it.profile }
+            .sendAndExpectAsync<RequestProfileDetailsResponse, Profile> { it.profile }
             .await().let {
                 @Suppress("UNCHECKED_CAST")
                 if ((::profile as SuspendLazy<Profile>).isInitialized()) {

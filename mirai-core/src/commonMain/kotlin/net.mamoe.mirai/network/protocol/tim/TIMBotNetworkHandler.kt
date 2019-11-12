@@ -513,7 +513,7 @@ internal class TIMBotNetworkHandler internal constructor(override inline val bot
                                         HeartbeatPacket(
                                             bot.qqAccount,
                                             sessionKey
-                                        ).sendAndExpect<HeartbeatPacketResponse>().join()
+                                        ).sendAndExpectAsync<HeartbeatPacketResponse>().join()
                                     } == null) {
                                     bot.logger.warning("Heartbeat timed out")
                                     bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())

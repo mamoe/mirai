@@ -66,7 +66,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
     /**
      * 添加一个临时包处理器, 并发送相应的包
      *
-     * @see [BotSession.sendAndExpect] 发送并期待一个包
+     * @see [BotSession.sendAndExpectAsync] 发送并期待一个包
      * @see [TemporaryPacketHandler] 临时包处理器
      */
     suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>)

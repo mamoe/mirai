@@ -41,7 +41,7 @@ inline val Bot.qqs: ContactList<QQ>
 
 /**
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
- * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpect]
+ * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpectAsync]
  */
 inline fun <R> Bot.withSession(block: BotSession.() -> R): R = with(this.network.session) { block() }
 

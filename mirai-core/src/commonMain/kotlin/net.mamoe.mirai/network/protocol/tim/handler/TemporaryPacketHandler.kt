@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  * }
  * ```
  *
- * @see BotSession.sendAndExpect
+ * @see BotSession.sendAndExpectAsync
  */
 class TemporaryPacketHandler<P : Packet, R>(
     private val expectationClass: KClass<P>,

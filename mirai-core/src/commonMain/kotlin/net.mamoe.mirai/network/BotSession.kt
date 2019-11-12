@@ -4,6 +4,7 @@ package net.mamoe.mirai.network
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
@@ -75,7 +76,7 @@ class BotSession(
      * 实现方法:
      * ```kotlin
      * with(session){
-     *  ClientPacketXXX(...).sendAndExpect<ServerPacketXXX> {
+     *  ClientPacketXXX(...).sendAndExpectAsync<ServerPacketXXX> {
      *   //it: ServerPacketXXX
      *  }
      * }
@@ -84,14 +85,14 @@ class BotSession(
      *
      * @param checkSequence 是否筛选 `sequenceId`, 即是否筛选发出的包对应的返回包.
      * @param P 期待的包
-     * @param handler 处理期待的包. 将会在调用本函数的 [coroutineContext] 下执行.
+     * @param handler 处理期待的包. **将会在调用本函数的 [coroutineContext] 下执行.**
      *
-     * @see Bot.withSession 转换接收器 (receiver, 即 `this` 的指向) 为 [BotSession]
+     * @see Bot.withSession 转换 receiver, 即 `this` 的指向, 为 [BotSession]
      */
-    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(
+    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpectAsync(
         checkSequence: Boolean = true,
         noinline handler: suspend (P) -> R
-    ): CompletableDeferred<R> {
+    ): Deferred<R> {
         val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
         bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession, checkSequence, coroutineContext + deferred).also {
             it.toSend(this)
@@ -103,9 +104,36 @@ class BotSession(
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
      * 将能从本函数的返回值 [CompletableDeferred] 接收到所期待的 [P]
+     * 本函数将能帮助实现清晰的包处理逻辑
+     *
+     * 实现方法:
+     * ```kotlin
+     * with(session){
+     *  val deferred = ClientPacketXXX(...).sendAndExpectAsync<ServerPacketXXX>()
+     *  // do something
+     *
+     *  deferred.await() // or deferred.join()
+     * }
+     * ```
      */
-    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): CompletableDeferred<P> =
-        sendAndExpect<P, P>(checkSequence) { it }
+    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpectAsync(checkSequence: Boolean = true): Deferred<P> =
+        sendAndExpectAsync<P, P>(checkSequence) { it }
+
+    /**
+     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
+     * 将调用 [CompletableDeferred.await], 挂起等待接收到指定的包后才返回.
+     * 本函数将能帮助实现清晰的包处理逻辑
+     *
+     * 实现方法:
+     * ```kotlin
+     * with(session){
+     *  val packet:AddFriendPacket.Response = AddFriendPacket(...).sendAndExpect<AddFriendPacket.Response>()
+     * }
+     * ```
+     * @sample Bot.addFriend 添加好友
+     */
+    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): P =
+        sendAndExpectAsync<P, P>(checkSequence) { it }.await()
 
     suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
 
