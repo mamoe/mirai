@@ -30,7 +30,7 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
     override suspend fun onPacketReceived(packet: Packet): Unit = with(session) {
         when (packet) {
             is SKey -> {
-                sKey = packet.delegate
+                _sKey = packet.delegate
                 cookies = "uin=o$qqAccount;skey=$sKey;"
 
 
@@ -55,14 +55,14 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
 
     private suspend fun requestSKey() = with(session) {
         withContext(NetworkScope.coroutineContext) {
-            socket.sendPacket(RequestSKeyPacket())
+            RequestSKeyPacket().send()
         }
     }
 
 
     suspend fun requestAccountInfo() = with(session) {
         withContext(NetworkScope.coroutineContext) {
-            socket.sendPacket(RequestAccountInfoPacket(qqAccount, sessionKey))
+            RequestAccountInfoPacket(qqAccount, sessionKey).send()
         }
     }
 

@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai
 
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot.ContactSystem
@@ -19,6 +19,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmOverloads
 
 data class BotAccount(
@@ -56,7 +57,9 @@ data class BotAccount(
  * @author NaturalHG
  * @see Contact
  */
-class Bot(val account: BotAccount, val logger: MiraiLogger) {
+class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
+    override val coroutineContext: CoroutineContext = SupervisorJob()
+
     constructor(qq: UInt, password: String) : this(BotAccount(qq, password))
     constructor(account: BotAccount) : this(account, DefaultLogger("Bot(" + account.id + ")"))
 
@@ -65,7 +68,9 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
     var network: BotNetworkHandler<*> = TIMBotNetworkHandler(this)
 
     init {
-        instances.add(this)
+        launch {
+            addInstance(this@Bot)
+        }
     }
 
     override fun toString(): String = "Bot(${account.id})"
@@ -150,13 +155,23 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) {
     suspend inline fun GroupInternalId.group(): Group = getGroup(this)
 
     suspend fun close() {
-        this.network.close()
-        this.contacts.groups.clear()
-        this.contacts.qqs.clear()
+        network.close()
+        this.coroutineContext.cancelChildren()
+        contacts.groups.clear()
+        contacts.qqs.clear()
     }
 
     companion object {
-        val instances: MutableList<Bot> = mutableListOf()
+        @Suppress("ObjectPropertyName")
+        private val _instances: MutableList<Bot> = mutableListOf()
+        private val instanceLock: Mutex = Mutex()
+
+        val instances: List<Bot> get() = _instances
+
+
+        internal suspend fun addInstance(bot: Bot) = instanceLock.withLock {
+            _instances += bot
+        }
     }
 }
 

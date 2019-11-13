@@ -1,14 +1,20 @@
 package net.mamoe.mirai.network.protocol.tim.handler
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * 数据包(接受/发送)处理器
  */
 abstract class PacketHandler(
-        val session: BotSession
-) {
+    val session: BotSession
+) : CoroutineScope {
+    override val coroutineContext: CoroutineContext
+        get() = EmptyCoroutineContext
+
     abstract suspend fun onPacketReceived(packet: Packet)
 
     interface Key<T : PacketHandler>

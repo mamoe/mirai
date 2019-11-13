@@ -35,7 +35,7 @@ class GentleImage {
 
 
     lateinit var contact: Contact
-    // Deferred<Image?> 将导致 kotlin 内部错误
+    // `Deferred<Image?>`  causes a runtime ClassCastException
     val image: Deferred<Image> by lazy {
         GlobalScope.async {
             //delay((Math.random() * 5000L).toLong())

@@ -93,8 +93,11 @@ kotlin {
     }
 
     sourceSets["jvmTest"].apply {
+        dependencies {
+        }
         kotlin.outputDir = file("build/classes/kotlin/jvm/test")
         kotlin.setSrcDirs(listOf("src/$name/kotlin"))
+
     }
 
     sourceSets.all {

@@ -25,6 +25,7 @@ import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import kotlin.coroutines.coroutineContext
+import kotlin.jvm.JvmField
 
 /**
  * 构造 [BotSession] 的捷径
@@ -57,17 +58,23 @@ class BotSession(
     /**
      * Web api 使用
      */
-    var sKey: String = ""
-        internal set(value) {
+    val sKey: String get() = _sKey
+
+    @JvmField
+    @Suppress("PropertyName")
+    internal var _sKey: String = ""
+        set(value) {
             field = value
-            gtk = getGTK(value)
+            _gtk = getGTK(value)
         }
 
     /**
      * Web api 使用
      */
-    var gtk: Int = 0
-        private set
+    val gtk: Int get() = _gtk
+
+    @JvmField
+    private var _gtk: Int = 0
 
     /**
      * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
