@@ -3,6 +3,7 @@
 package net.mamoe.mirai.contact
 
 import com.soywiz.klock.Date
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Message
@@ -17,6 +18,7 @@ import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.sendPacket
 import net.mamoe.mirai.utils.SuspendLazy
+import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.withSession
 
@@ -33,7 +35,9 @@ class ContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf()
 sealed class Contact(val bot: Bot, val id: UInt) {
 
     /**
-     * 向这个对象发送消息. 速度太快会被服务器拒绝(无响应)
+     * 向这个对象发送消息.
+     *
+     * 速度太快会被服务器拒绝(无响应). 在测试中不延迟地发送 6 条消息就会被屏蔽之后的数据包 1 秒左右.
      */
     abstract suspend fun sendMessage(message: MessageChain)
 
@@ -65,7 +69,7 @@ fun UInt.groupId(): GroupId = GroupId(this)
  *
  * 注: 在 Java 中常用 [Long] 来表示 [UInt]
  */
-fun Long.groupId(): GroupId = GroupId(this.coerceAtLeastOrFail(0).toUInt())
+fun @receiver:PositiveNumbers Long.groupId(): GroupId = GroupId(this.coerceAtLeastOrFail(0).toUInt())
 
 /**
  * 一些群 API 使用的 ID. 在使用时会特别注明
@@ -95,9 +99,7 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
         bot.sendPacket(SendGroupMessagePacket(bot.qqAccount, internalId, bot.sessionKey, message))
     }
 
-    override fun toString(): String {
-        return "Group(${this.id})"
-    }
+    override fun toString(): String = "Group(${this.id})"
 
     companion object
 }
@@ -111,6 +113,9 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSessi
 /**
  * QQ 对象.
  * 注意: 一个 [QQ] 实例并不是独立的, 它属于一个 [Bot].
+ * 它不能被直接构造. 任何时候都应从 [Bot.qq], [Bot.ContactSystem.getQQ], [BotSession.qq] 或事件中获取.
+ *
+ * 对于同一个 [Bot] 任何一个人的 [QQ] 实例都是单一的.
  *
  * A QQ instance helps you to receive event from or sendPacket event to.
  * Notice that, one QQ instance belong to one [Bot], that is, QQ instances from different [Bot] are NOT the same.
@@ -118,12 +123,17 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSessi
  * @author Him188moe
  */
 open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
-    // TODO: 2019/11/8 should be suspend val if kotlin supports
-    val profile: Deferred<Profile> by bot.network.SuspendLazy { updateProfile() }
+    private var _profile: Profile? = null
+    private val _initialProfile by bot.network.SuspendLazy { updateProfile() }
 
-    override suspend fun sendMessage(message: MessageChain) {
+    /**
+     * 用户资料.
+     */
+    val profile: Deferred<Profile>
+        get() = if (_profile == null) _initialProfile else CompletableDeferred(_profile!!)
+
+    override suspend fun sendMessage(message: MessageChain) =
         bot.sendPacket(SendFriendMessagePacket(bot.qqAccount, id, bot.sessionKey, message))
-    }
 
     /**
      * 更新个人资料.
@@ -137,19 +147,13 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
      * ```
      */
     suspend fun updateProfile(): Profile = bot.withSession {
-        RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
-            .sendAndExpectAsync<RequestProfileDetailsResponse, Profile> { it.profile }
-            .await().let {
-                @Suppress("UNCHECKED_CAST")
-                if ((::profile as SuspendLazy<Profile>).isInitialized()) {
-                    profile.await().apply { copyFrom(it) }
-                } else it
-            }
+        _profile = RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
+            .sendAndExpect<RequestProfileDetailsResponse, Profile> { it.profile }
+
+        return _profile!!
     }
 
-    override fun toString(): String {
-        return "QQ(${this.id})"
-    }
+    override fun toString(): String = "QQ(${this.id})"
 }
 
 
@@ -161,9 +165,7 @@ class Member internal constructor(bot: Bot, id: UInt, val group: Group) : QQ(bot
         TODO("Group member implementation")
     }
 
-    override fun toString(): String {
-        return "Member(${this.id})"
-    }
+    override fun toString(): String = "Member(${this.id})"
 }
 
 /**
@@ -187,61 +189,20 @@ enum class MemberPermission {
 /**
  * 个人资料
  */
-// FIXME: 2019/11/8 should be `data class Profile`
 @Suppress("PropertyName")
-class Profile(
-    internal var _qq: UInt,
-    internal var _nickname: String,
-    internal var _zipCode: String?,
-    internal var _phone: String?,
-    internal var _gender: Gender,
-    internal var _birthday: Date?,
-    internal var _personalStatus: String?,
-    internal var _school: String?,
-    internal var _homepage: String?,
-    internal var _email: String?,
-    internal var _company: String?
-) {
-
-    val qq: UInt get() = _qq
-    val nickname: String get() = _nickname
-    val zipCode: String? get() = _zipCode
-    val phone: String? get() = _phone
-    val gender: Gender get() = _gender
-    /**
-     * 个性签名
-     */
-    val personalStatus: String? get() = _personalStatus
-    val school: String? get() = _school
-    val company: String? get() = _company
-
-    /**
-     * 主页
-     */
-    val homepage: String? get() = _homepage
-    val email: String? get() = _email
-    val birthday: Date? get() = _birthday
-
-    override fun toString(): String = "Profile(" +
-            "qq=$qq, nickname=$nickname, zipCode=$zipCode, phone=$phone, " +
-            "gender=$gender, birthday=$birthday, personalStatus=$personalStatus, school=$school, " +
-            "homepage=$homepage, email=$email, company=$company" +
-            ")"
-}
-
-fun Profile.copyFrom(another: Profile) {
-    this._qq = another.qq
-    this._nickname = another.nickname
-    this._zipCode = another.zipCode
-    this._phone = another.phone
-    this._gender = another.gender
-    this._birthday = another.birthday
-    this._personalStatus = another.personalStatus
-    this._school = another.school
-    this._homepage = another.homepage
-    this._email = another.email
-    this._company = another.company
-}
+data class Profile(
+    val qq: UInt,
+    val nickname: String,
+    val zipCode: String?,
+    val phone: String?,
+    val gender: Gender,
+    val birthday: Date?,
+    val personalStatus: String?,
+    val school: String?,
+    val homepage: String?,
+    val email: String?,
+    val company: String?
+)
 
 /**
  * 性别

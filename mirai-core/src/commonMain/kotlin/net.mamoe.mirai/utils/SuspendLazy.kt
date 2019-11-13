@@ -27,7 +27,7 @@ fun <R> CoroutineScope.SuspendLazy(initializer: suspend () -> R): Lazy<Deferred<
  * @sample QQ.profile
  */
 @PublishedApi
-internal class SuspendLazy<R>(scope: CoroutineScope, val initializer: suspend () -> R) : Lazy<Deferred<R>> {
+internal class SuspendLazy<R>(scope: CoroutineScope, initializer: suspend () -> R) : Lazy<Deferred<R>> {
     private val valueUpdater: Deferred<R> by lazy { scope.async { initializer() } }
 
     @Suppress("EXPERIMENTAL_API_USAGE")

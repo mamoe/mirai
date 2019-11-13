@@ -61,23 +61,23 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
         discardExact(6)
         val map = readTLVMap(tagSize = 2, expectingEOF = true)
         val profile = Profile(
-            _qq = qq,
-            _nickname = map[0x4E22u]?.stringOfWitch() ?: "",//error("Cannot determine nickname")
-            _zipCode = map[0x4E25u]?.stringOfWitch(),
-            _phone = map[0x4E27u]?.stringOfWitch(),
-            _gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {
+            qq = qq,
+            nickname = map[0x4E22u]?.stringOfWitch() ?: "",//error("Cannot determine nickname")
+            zipCode = map[0x4E25u]?.stringOfWitch(),
+            phone = map[0x4E27u]?.stringOfWitch(),
+            gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {
                 null -> Gender.SECRET //error("Cannot determine gender, entry 0x4E29u not found")
                 0x02u -> Gender.FEMALE
                 0x01u -> Gender.MALE
                 else -> Gender.SECRET // 猜的
                 //else -> error("Cannot determine gender, bad value of 0x4E29u: ${map[0x4729u]!![0].toUHexString()}")
             },
-            _birthday = map[0x4E3Fu]?.let { Date(it.toUInt().toInt()) },
-            _personalStatus = map[0x4E33u]?.stringOfWitch(),
-            _homepage = map[0x4E2Du]?.stringOfWitch(),
-            _company = map[0x5DC8u]?.stringOfWitch(),
-            _school = map[0x4E35u]?.stringOfWitch(),
-            _email = map[0x4E2Bu]?.stringOfWitch()
+            birthday = map[0x4E3Fu]?.let { Date(it.toUInt().toInt()) },
+            personalStatus = map[0x4E33u]?.stringOfWitch(),
+            homepage = map[0x4E2Du]?.stringOfWitch(),
+            company = map[0x5DC8u]?.stringOfWitch(),
+            school = map[0x4E35u]?.stringOfWitch(),
+            email = map[0x4E2Bu]?.stringOfWitch()
         )
         map.clear()
 

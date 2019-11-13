@@ -65,7 +65,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
 
     val contacts = ContactSystem()
 
-    var network: BotNetworkHandler<*> = TIMBotNetworkHandler(this)
+    var network: BotNetworkHandler<*> = TIMBotNetworkHandler(this.coroutineContext, this)
 
     init {
         launch {
@@ -90,7 +90,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
         } catch (e: Exception) {
             logger.error(e)
         }
-        network = TIMBotNetworkHandler(this)
+        network = TIMBotNetworkHandler(this.coroutineContext, this)
         return network.login(configuration)
     }
 

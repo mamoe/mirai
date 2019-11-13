@@ -29,7 +29,7 @@ class TemporaryPacketHandler<P : Packet, R>(
     private val fromSession: BotSession,
     private val checkSequence: Boolean,
     /**
-     * 调用者的 [CoroutineContext]
+     * 调用者的 [CoroutineContext]. 包处理过程将会在这个 context 下运行
      */
     private val callerContext: CoroutineContext
 ) {

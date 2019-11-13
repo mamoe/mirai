@@ -8,10 +8,16 @@ enum class MessageType(val value: UByte) {
     PLAIN_TEXT(0x01u),
     AT(0x06u),
     FACE(0x02u),
-    GROUP_IMAGE(0x03u),
-    FRIEND_IMAGE(0x06u),
+    /**
+     * [ImageId.value] 长度为 42 的图片
+     */
+    IMAGE_42(0x03u),
+    /**
+     * [ImageId.value] 长度为 37 的图片
+     */
+    IMAGE_37(0x06u),
     ;
 
 
-    val intValue: Int = this.value.toInt()
+    inline val intValue: Int get() = this.value.toInt()
 }

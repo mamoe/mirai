@@ -52,7 +52,7 @@ object SendFriendMessagePacket : SessionPacketFactory<SendFriendMessagePacket.Re
         writeHex(TIMProtocol.messageConstNewest)
         writeZero(2)
 
-        writePacket(message.toPacket(false))
+        writePacket(message.toPacket())
 
         /*
             //Plain text

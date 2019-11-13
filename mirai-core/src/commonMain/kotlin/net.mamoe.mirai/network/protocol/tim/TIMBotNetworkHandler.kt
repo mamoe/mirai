@@ -38,11 +38,11 @@ internal expect val NetworkDispatcher: CoroutineDispatcher
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler internal constructor(override inline val bot: Bot) :
+internal class TIMBotNetworkHandler internal constructor(coroutineContext: CoroutineContext, override inline val bot: Bot) :
     BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
     override val coroutineContext: CoroutineContext =
-        NetworkDispatcher + CoroutineExceptionHandler { _, e ->
+        coroutineContext + NetworkDispatcher + CoroutineExceptionHandler { _, e ->
             bot.logger.error("An exception was thrown in a coroutine under TIMBotNetworkHandler", e)
         } + SupervisorJob()
 

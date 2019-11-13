@@ -145,7 +145,7 @@ fun ByteReadPacket.readMessageChain(): MessageChain {
     return chain
 }
 
-fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
+fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
     this@toPacket.forEach { message ->
         writePacket(with(message) {
             when (this) {
@@ -170,7 +170,7 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
                     when (id.value.length) {
                         //   "{F61593B5-5B98-1798-3F47-2A91D32ED2FC}.jpg"
                         42 -> {
-                            writeUByte(MessageType.GROUP_IMAGE.value)
+                            writeUByte(MessageType.IMAGE_42.value)
 
                             //00 00 03 00 CB 02 00 2A 7B 46 36 31 35 39 33 42 35 2D 35 42 39 38 2D 31 37 39 38 2D 33 46 34 37 2D 32 41 39 31 44 33 32 45 44 32 46 43 7D 2E 6A 70 67
                             // 04 00 04 87 E5 09 3B 05 00 04 D2 C4 C0 B7 06 00 04 00 00 00 50 07 00 01 43 08 00 00 09 00 01 01 0B 00 00 14 00 04 00 00 00 00 15 00 04 00 00 01 ED 16 00 04 00 00 02 17 18 00 04 00 00 EB 34 FF 00 5C 15 36 20 39 32 6B 41 31 43 38 37 65 35 30 39 33 62 64 32 63 34 63 30 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20
@@ -191,7 +191,7 @@ fun MessageChain.toPacket(forGroup: Boolean): ByteReadPacket = buildPacket {
 
                         //   "/01ee6426-5ff1-4cf0-8278-e8634d2909ef"
                         37 -> {
-                            writeUByte(MessageType.FRIEND_IMAGE.value)
+                            writeUByte(MessageType.IMAGE_37.value)
 
                             // 00 00 06 00 F3 02
                             // 00 1B 24 5B 56 54 4A 38 60 4C 5A 4E 46 7D 53 39 4F 52 36 25 45 60 42 55 53 2E 6A 70 67

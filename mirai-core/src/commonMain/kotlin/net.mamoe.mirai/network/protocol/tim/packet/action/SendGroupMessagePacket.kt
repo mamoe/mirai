@@ -35,7 +35,7 @@ object SendGroupMessagePacket : SessionPacketFactory<SendGroupMessagePacket.Resp
                 writeHex(TIMProtocol.messageConst1)
                 writeZero(2)
 
-                writePacket(message.toPacket(true))
+                writePacket(message.toPacket())
             }
             /*it.writeByte(0x01)
             it.writeShort(bytes.size + 3)

@@ -25,7 +25,6 @@ import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmField
 
 /**
  * 构造 [BotSession] 的捷径
@@ -60,7 +59,6 @@ class BotSession(
      */
     val sKey: String get() = _sKey
 
-    @JvmField
     @Suppress("PropertyName")
     internal var _sKey: String = ""
         set(value) {
@@ -73,7 +71,6 @@ class BotSession(
      */
     val gtk: Int get() = _gtk
 
-    @JvmField
     private var _gtk: Int = 0
 
     /**
@@ -139,6 +136,9 @@ class BotSession(
      * ```
      * @sample Bot.addFriend 添加好友
      */
+    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true, crossinline block: (P) -> R): R =
+        sendAndExpectAsync<P, R>(checkSequence) { block(it) }.await()
+
     suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): P =
         sendAndExpectAsync<P, P>(checkSequence) { it }.await()
 
