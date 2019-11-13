@@ -36,27 +36,27 @@ class OverFileSizeMaxException : IllegalStateException()
  */
 suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
     val userContext = coroutineContext
-    GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey)
-        .sendAndExpectAsync<GroupImageIdRequestPacket.Response, Unit> {
-            withContext(userContext) {
-                when (it) {
-                    is GroupImageIdRequestPacket.Response.RequireUpload -> httpClient.postImage(
-                        htcmd = "0x6ff0071",
-                        uin = bot.qqAccount,
-                        groupId = GroupId(id),
-                        imageInput = image.input,
-                        inputSize = image.inputSize,
-                        uKeyHex = it.uKey.toUHexString("")
-                    )
+    val response = GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey).sendAndExpect<GroupImageIdRequestPacket.Response>()
 
-                    is GroupImageIdRequestPacket.Response.AlreadyExists -> {
-                    }
+    withContext(userContext) {
+        when (response) {
+            is GroupImageIdRequestPacket.Response.RequireUpload -> httpClient.postImage(
+                htcmd = "0x6ff0071",
+                uin = bot.qqAccount,
+                groupId = GroupId(id),
+                imageInput = image.input,
+                inputSize = image.inputSize,
+                uKeyHex = response.uKey.toUHexString("")
+            )
 
-                    is GroupImageIdRequestPacket.Response.OverFileSizeMax -> throw OverFileSizeMaxException()
-                }
+            is GroupImageIdRequestPacket.Response.AlreadyExists -> {
             }
-        }.join()
-    image.groupImageId
+
+            is GroupImageIdRequestPacket.Response.OverFileSizeMax -> throw OverFileSizeMaxException()
+        }
+    }
+
+    return image.groupImageId
 }
 
 /**
