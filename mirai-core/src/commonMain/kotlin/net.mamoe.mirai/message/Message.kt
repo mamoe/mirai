@@ -4,10 +4,7 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.download
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.Http
 import kotlin.js.JsName
 import kotlin.jvm.Volatile
 
@@ -165,18 +162,9 @@ inline class Image(inline val id: ImageId) : Message {
  * 对于好友, [value] 类似于 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef`, 由服务器返回.
  *
  * @see ExternalImage.groupImageId 群图片的 [ImageId] 获取
- * @see FriendImageIdRequestPacket.Response.RequireUpload.imageId 好友图片的 [ImageId] 获取
+ * @see FriendImagePacket 好友图片的 [ImageId] 获取
  */
 inline class ImageId(inline val value: String)
-
-/**
- * 图片数据地址.
- */
-inline class ImageLink(inline val value: String) {
-
-    // TODO: 2019/11/15 应添加更多方法. 避免使用 byte[]
-    suspend fun downloadAsByteArray(): ByteArray = Http.download(value)
-}
 
 fun ImageId.checkLength() = check(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
 fun ImageId.requireLength() = require(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
@@ -281,7 +269,7 @@ fun SingleMessageChain(delegate: Message): MessageChain {
  *
  * @see SingleMessageChain
  * @see SingleMessageChainImpl
- */
+ */ // TODO: 2019/11/15 有歧义
 fun Message.singleChain(): MessageChain = if (this is MessageChain) this else SingleMessageChain(this)
 
 /**

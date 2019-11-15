@@ -5,28 +5,33 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
-import net.mamoe.mirai.Bot
+import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.getGroup
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
+import net.mamoe.mirai.network.sessionKey
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.printTLVMap
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readTLVMap
 import net.mamoe.mirai.utils.io.readUShortLVByteArray
-import net.mamoe.mirai.utils.sendTo
-import net.mamoe.mirai.utils.upload
 
-sealed class MessagePacket<TSubject : Contact> : EventPacket, BotEvent() {
+/**
+ * 平台相关扩展
+ */
+@UseExperimental(InternalAPI::class)
+expect sealed class MessagePacket<TSubject : Contact>() : MessagePacketBase<TSubject>
+
+@InternalAPI
+abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
     internal lateinit var botVar: Bot
 
     override val bot: Bot get() = botVar
@@ -69,6 +74,13 @@ sealed class MessagePacket<TSubject : Contact> : EventPacket, BotEvent() {
     suspend inline fun Message.send() = this.sendTo(subject)
     suspend inline fun String.send() = this.toMessage().sendTo(subject)
 
+    // endregion
+
+    // region Image download
+
+    suspend fun Image.getLink(): ImageLink = bot.withSession { FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect() }
+    suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
+    suspend inline fun Image.download(): ByteReadPacket = getLink().download()
     // endregion
 }
 
