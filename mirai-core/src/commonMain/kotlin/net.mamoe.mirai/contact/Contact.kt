@@ -137,14 +137,7 @@ open class QQ internal constructor(bot: Bot, id: UInt) : Contact(bot, id) {
 
     /**
      * 更新个人资料.
-     *
-     * 这个方法会尽可能更新已有的 [Profile] 对象的值, 而不是用新的对象替换
-     * 若 [QQ.profile] 已经初始化, 则在获取到新的 profile 时通过 [Profile.copyFrom] 来更新已有的 [QQ.profile]. 仍然返回 [QQ.profile]
-     * 因此, 对于以下代码:
-     * ```kotlin
-     * val old = qq.profile
-     * qq.updateProfile() === old // true, 因为只是更新了 qq.profile 的值
-     * ```
+     * 将会同步更新 property [profile]
      */
     suspend fun updateProfile(): Profile = bot.withSession {
         _profile = RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
@@ -205,7 +198,24 @@ data class Profile(
     val homepage: String?,
     val email: String?,
     val company: String?
-)
+) {
+
+    override fun toString(): String = "Profile(qq=$qq, " +
+            "nickname=$nickname, " +
+            "gender=$gender, " +
+            (englishName?.plus("englishName=$englishName, ") ?: "") +
+            (chineseName?.plus("chineseName=$chineseName, ") ?: "") +
+            (qAge?.toString()?.plus("qAge=$qAge, ") ?: "") +
+            (zipCode?.plus("zipCode=$zipCode, ") ?: "") +
+            (phone?.plus("phone=$phone, ") ?: "") +
+            (birthday?.toString()?.plus("birthday=$birthday, ") ?: "") +
+            (personalStatement?.plus("personalStatement=$personalStatement, ") ?: "") +
+            (school?.plus("school=$school, ") ?: "") +
+            (homepage?.plus("homepage=$homepage, ") ?: "") +
+            (email?.plus("email=$email, ") ?: "") +
+            (company?.plus("company=$company?,") ?: "") +
+            ")"// 最终会是 ", )", 但这并不影响什么.
+}
 
 /**
  * 性别
