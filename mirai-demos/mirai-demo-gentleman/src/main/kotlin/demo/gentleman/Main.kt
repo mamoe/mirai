@@ -12,14 +12,12 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.Image
+import net.mamoe.mirai.message.getValue
 import net.mamoe.mirai.message.sendAsImageTo
-import net.mamoe.mirai.network.protocol.tim.packet.action.download
-import net.mamoe.mirai.network.protocol.tim.packet.action.downloadAsByteArray
-import net.mamoe.mirai.network.protocol.tim.packet.action.downloadTo
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
-import net.mamoe.mirai.utils.currentTime
 import java.io.File
+import java.util.*
 import javax.swing.filechooser.FileSystemView
 import kotlin.random.Random
 
@@ -62,16 +60,17 @@ suspend fun main() {
                 bot.getQQ(account.toUInt())
             } else {
                 sender
-            }.profile.await().toString()
+            }.profile.await().toString().reply()
         }
 
         has<Image> {
             if (this is FriendMessage) {
                 withContext(IO) {
-                    reply(message[Image] + " downloading")
+                    val image: Image by message
 
-                    sender.downloadTo(message[Image], File(System.getProperty("user.dir"), "testDownloadedImage${currentTime}.png").also { it.createNewFile() })
-                    reply(message[Image].id.value + " downloaded")
+                    reply(image + " downloading")
+                    image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
+                    reply(image.id.value + " downloaded")
                 }
             }
         }
@@ -104,3 +103,6 @@ suspend fun main() {
 
     bot.network.awaitDisconnection()//等到直到断开连接
 }
+
+private fun newTestTempFile(filename: String = "${UUID.randomUUID()}", suffix: String = ".tmp"): File =
+    File(System.getProperty("user.dir"), filename + suffix).also { it.createNewFile(); it.deleteOnExit() }

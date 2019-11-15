@@ -4,9 +4,11 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
 import net.mamoe.mirai.utils.ExternalImage
 import kotlin.js.JsName
 import kotlin.jvm.Volatile
+import kotlin.reflect.KProperty
 
 // region Message Base
 /**
@@ -156,6 +158,8 @@ inline class Image(inline val id: ImageId) : Message {
     companion object Key : Message.Key<Image>
 }
 
+inline val Image.idValue: String get() = id.value
+
 /**
  * 图片的标识符. 由图片的数据产生.
  * 对于群, [value] 类似于 `{F61593B5-5B98-1798-3F47-2A91D32ED2FC}.jpg`, 由图片文件 MD5 直接产生.
@@ -171,7 +175,7 @@ fun ImageId.requireLength() = require(value.length == 37 || value.length == 42) 
 
 fun ImageId.image(): Image = Image(this)
 
-suspend fun ImageId.sendTo(contact: Contact) = contact.sendMessage(this.image())
+suspend inline fun ImageId.sendTo(contact: Contact) = contact.sendMessage(this.image())
 
 // endregion
 
@@ -281,18 +285,18 @@ fun List<Message>.toMessageChain(): MessageChain = MessageChain(this)
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-inline fun <reified M : Message> MessageChain.firstOrNull(): Message? = this.firstOrNull { M::class.isInstance(it) }
+inline fun <reified M : Message> MessageChain.firstOrNull(): Message? = this.firstOrNull { it is M }
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
-inline fun <reified M : Message> MessageChain.first(): Message = this.first { M::class.isInstance(it) }
+inline fun <reified M : Message> MessageChain.first(): Message = this.first { it is M }
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-inline fun <reified M : Message> MessageChain.any(): Boolean = this.firstOrNull { M::class.isInstance(it) } !== null
+inline fun <reified M : Message> MessageChain.any(): Boolean = this.firstOrNull { it is M } !== null
 
 
 /**
@@ -355,7 +359,10 @@ interface MessageChain : Message, MutableList<Message> {
      */
     @Suppress("UNCHECKED_CAST")
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
+
 }
+
+inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T = this.first<T>() as T
 
 /**
  * 空的 [Message].

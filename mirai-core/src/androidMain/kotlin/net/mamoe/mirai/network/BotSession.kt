@@ -11,12 +11,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
-import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.InternalAPI
-import net.mamoe.mirai.utils.toExternalImage
-import java.io.File
 import java.io.InputStream
-import java.io.OutputStream
 
 /**
  * Android 平台相关扩展. 详情查看 [BotSessionBase]
@@ -33,8 +29,6 @@ actual class BotSession actual constructor(
 
     suspend inline fun Image.downloadAsStream(): InputStream = download().inputStream()
     suspend inline fun Image.downloadAsBitmap(): Bitmap = withContext(Dispatchers.IO) { downloadAsStream().use { BitmapFactory.decodeStream(it) } }
-    suspend inline fun Image.downloadAsExternalImage(): ExternalImage = download().use { it.toExternalImage() }
+    //suspend inline fun Image.downloadAsExternalImage(): ExternalImage = download().use { it.toExternalImage() }
 
-    suspend inline fun Image.downloadTo(file: File) = file.outputStream().use { downloadTo(it) }
-    suspend inline fun Image.downloadTo(output: OutputStream) = download().inputStream().use { input -> withContext(Dispatchers.IO) { input.copyTo(output) } }
 }

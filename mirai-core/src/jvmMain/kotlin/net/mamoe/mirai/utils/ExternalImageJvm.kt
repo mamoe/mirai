@@ -121,7 +121,7 @@ suspend fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO
 fun Input.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().use {
-        this.asStream()
+        this.asStream().transferTo(it)
     }
     return file.toExternalImage()
 }

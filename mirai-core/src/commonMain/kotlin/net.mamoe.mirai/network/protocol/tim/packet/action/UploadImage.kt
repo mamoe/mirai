@@ -227,6 +227,7 @@ object ImageOverFileSizeMax : ImageResponse {
 @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
 @PacketVersion(date = "2019.11.16", timVersion = "2.3.2 (21173)")
 object FriendImagePacket : SessionPacketFactory<ImageResponse>() {
+    @Suppress("FunctionName")
     fun RequestImageId(
         bot: UInt,
         sessionKey: SessionKey,
@@ -272,6 +273,7 @@ object FriendImagePacket : SessionPacketFactory<ImageResponse>() {
 
     }
 
+    @Suppress("FunctionName")
     fun RequestImageLink(
         bot: UInt,
         sessionKey: SessionKey,
@@ -416,7 +418,7 @@ object FriendImagePacket : SessionPacketFactory<ImageResponse>() {
                     discardExact(1)
                     discardExact(2)// [A4 04] 后文长度
                     check(readUByte().toUInt() == 0x0Au) { "Illegal identity. Required 0x0Au" }
-                    val imageId = ImageId(readString(readUByte().toInt()))
+                    /* val imageId = */ImageId(readString(readUByte().toInt()))
 
                     check(readUByte().toUInt() == 0x18u) { "Illegal identity. Required 0x18u" }
                     check(readUShort().toUInt() == 0x0032u) { "Illegal identity. Required 0x0032u" }

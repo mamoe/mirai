@@ -67,7 +67,7 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
             nickname = map[0x4E22u]?.encodeToString() ?: "",//error("Cannot determine nickname")
             englishName = map[0x4E54u]?.encodeToString(),
             chineseName = map[0x4E2Au]?.encodeToString(),
-            qAge = map[0x6597u]?.toUInt()?.toInt(),
+            qAge = map[0x6597u]?.get(0)?.toInt(),
             zipCode = map[0x4E25u]?.encodeToString(),
             phone = map[0x4E27u]?.encodeToString(),
             gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {

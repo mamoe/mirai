@@ -203,17 +203,17 @@ data class Profile(
     override fun toString(): String = "Profile(qq=$qq, " +
             "nickname=$nickname, " +
             "gender=$gender, " +
-            (englishName?.plus("englishName=$englishName, ") ?: "") +
-            (chineseName?.plus("chineseName=$chineseName, ") ?: "") +
-            (qAge?.toString()?.plus("qAge=$qAge, ") ?: "") +
-            (zipCode?.plus("zipCode=$zipCode, ") ?: "") +
-            (phone?.plus("phone=$phone, ") ?: "") +
-            (birthday?.toString()?.plus("birthday=$birthday, ") ?: "") +
-            (personalStatement?.plus("personalStatement=$personalStatement, ") ?: "") +
-            (school?.plus("school=$school, ") ?: "") +
-            (homepage?.plus("homepage=$homepage, ") ?: "") +
-            (email?.plus("email=$email, ") ?: "") +
-            (company?.plus("company=$company?,") ?: "") +
+            (englishName?.let { "englishName=$englishName, " } ?: "") +
+            (chineseName?.let { "chineseName=$chineseName, " } ?: "") +
+            (qAge?.toString()?.let { "qAge=$qAge, " } ?: "") +
+            (zipCode?.let { "zipCode=$zipCode, " } ?: "") +
+            (phone?.let { "phone=$phone, " } ?: "") +
+            (birthday?.toString()?.let { "birthday=$birthday, " } ?: "") +
+            (personalStatement?.let { "personalStatement=$personalStatement, " } ?: "") +
+            (school?.let { "school=$school, " } ?: "") +
+            (homepage?.let { "homepage=$homepage, " } ?: "") +
+            (email?.let { "email=$email, " } ?: "") +
+            (company?.let { "company=$company?," } ?: "") +
             ")"// 最终会是 ", )", 但这并不影响什么.
 }
 

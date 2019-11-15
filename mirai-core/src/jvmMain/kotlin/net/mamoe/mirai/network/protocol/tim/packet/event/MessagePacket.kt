@@ -2,20 +2,28 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
+import kotlinx.io.core.use
+import kotlinx.io.streams.inputStream
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.*
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.InternalAPI
+import net.mamoe.mirai.utils.toExternalImage
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
+import javax.imageio.ImageIO
 
 /**
- * 平台相关扩展
+ * JVM 平台相关扩展
  */
 @UseExperimental(InternalAPI::class)
-actual sealed class MessagePacket<TSubject : Contact> : MessagePacketBase<TSubject>() {
+actual abstract class MessagePacket<TSubject : Contact> : MessagePacketBase<TSubject>() {
     suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
     suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
     suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)
@@ -39,4 +47,12 @@ actual sealed class MessagePacket<TSubject : Contact> : MessagePacketBase<TSubje
     suspend inline fun Input.sendAsImage() = sendAsImageTo(subject)
     suspend inline fun InputStream.sendAsImage() = sendAsImageTo(subject)
     suspend inline fun File.sendAsImage() = sendAsImageTo(subject)
+
+    suspend inline fun Image.downloadTo(file: File): Long = file.outputStream().use { downloadTo(it) }
+    suspend inline fun Image.downloadTo(output: OutputStream): Long =
+        download().inputStream().use { input -> withContext(Dispatchers.IO) { input.copyTo(output) } }
+
+    suspend inline fun Image.downloadAsStream(): InputStream = download().inputStream()
+    suspend inline fun Image.downloadAsExternalImage(): ExternalImage = withContext(Dispatchers.IO) { download().toExternalImage() }
+    suspend inline fun Image.downloadAsBufferedImage(): BufferedImage = withContext(Dispatchers.IO) { ImageIO.read(downloadAsStream()) }
 }

@@ -23,12 +23,13 @@ import net.mamoe.mirai.utils.io.printTLVMap
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readTLVMap
 import net.mamoe.mirai.utils.io.readUShortLVByteArray
+import kotlin.jvm.JvmName
 
 /**
  * 平台相关扩展
  */
 @UseExperimental(InternalAPI::class)
-expect sealed class MessagePacket<TSubject : Contact>() : MessagePacketBase<TSubject>
+expect abstract class MessagePacket<TSubject : Contact>() : MessagePacketBase<TSubject>
 
 @InternalAPI
 abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
@@ -63,8 +64,17 @@ abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
      */
     suspend inline fun reply(message: MessageChain) = subject.sendMessage(message)
 
-    suspend fun reply(message: Message) = subject.sendMessage(message.singleChain())
-    suspend fun reply(plain: String) = subject.sendMessage(plain.toMessage())
+    suspend inline fun reply(message: Message) = subject.sendMessage(message.singleChain())
+    suspend inline fun reply(plain: String) = subject.sendMessage(plain.toMessage())
+
+    @JvmName("reply1")
+    suspend inline fun String.reply() = reply(this)
+
+    @JvmName("reply1")
+    suspend inline fun Message.reply() = reply(this)
+
+    @JvmName("reply1")
+    suspend inline fun MessageChain.reply() = reply(this)
 
     suspend inline fun ExternalImage.send() = this.sendTo(subject)
 
