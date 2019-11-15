@@ -2,10 +2,10 @@ buildscript {
     ext.kotlin_version = '1.3.50'
 
     repositories {
+        maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
         mavenLocal()
         jcenter()
         google()
-        maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
     }
 
     dependencies {
@@ -20,9 +20,11 @@ allprojects {
     version = getProperty("mirai_version")
 
     repositories {
+        maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
         mavenLocal()
         jcenter()
         google()
-        maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
+        maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
+        maven { url "https://dl.bintray.com/kotlin/kotlin-dev" }
     }
 }

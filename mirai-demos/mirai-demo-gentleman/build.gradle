@@ -14,3 +14,8 @@ dependencies {
 }
 
 mainClassName = "demo.gentleman.MainKt"
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-XXLanguage:+InlineClasses"]
+    }
+}

@@ -13,7 +13,7 @@ kotlin {
         binaries {
             executable {
                 // Change to specify fully qualified name of your application's entry point:
-                entryPoint = 'main'
+                entryPoint = 'hex.main'
                 // Specify command-line arguments, if necessary:
                 runTask?.args('')
             }
