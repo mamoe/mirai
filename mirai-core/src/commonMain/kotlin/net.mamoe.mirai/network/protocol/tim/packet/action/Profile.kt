@@ -60,8 +60,8 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
         val qq = readUInt()
         discardExact(6)
         val map = readTLVMap(tagSize = 2, expectingEOF = true)
-        map.printTLVMap("Profile(qq=$qq) raw=")
-        map.mapValues { it.value.encodeToString() }.printTLVMap("Profile(qq=$qq) str=")
+        //map.printTLVMap("Profile(qq=$qq) raw=")
+        //map.mapValues { it.value.encodeToString() }.printTLVMap("Profile(qq=$qq) str=")
         val profile = Profile(
             qq = qq,
             nickname = map[0x4E22u]?.encodeToString() ?: "",//error("Cannot determine nickname")
