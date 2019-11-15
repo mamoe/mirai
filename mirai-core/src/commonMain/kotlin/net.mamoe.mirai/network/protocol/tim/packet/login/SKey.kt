@@ -32,6 +32,8 @@ object RequestSKeyPacket : SessionPacketFactory<SKey>() {
     }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): SKey {
+        //11 00 97 D7 0F 1C FD 50 7A 41 DD 4D 66 93 EF 8C 85 D1 84 3D 66 95 9D E5 B4 96 A5 E3 92 37 28 D8 80 DA EF 8C 85 D1 84 3D 66 95 9D E5 B4 96 A5 E3 92 37 28 D8 80 DA
+
         discardExact(4)
         return SKey(readString(10)).also {
             DebugLogger.warning("SKey 包后面${readRemainingBytes().toUHexString()}")
@@ -40,5 +42,5 @@ object RequestSKeyPacket : SessionPacketFactory<SKey>() {
 }
 
 inline class SKey(
-    val delegate: String
+    val value: String
 ) : Packet
