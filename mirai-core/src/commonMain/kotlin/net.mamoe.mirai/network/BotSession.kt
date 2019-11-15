@@ -6,13 +6,13 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
-import net.mamoe.mirai.Bot
+import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.getGroup
-import net.mamoe.mirai.getQQ
+import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
@@ -20,7 +20,9 @@ import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
-import net.mamoe.mirai.sendPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
+import net.mamoe.mirai.utils.InternalAPI
 import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
@@ -39,9 +41,23 @@ internal inline fun TIMBotNetworkHandler.BotSession(
  * 登录会话. 当登录完成后, 客户端会拿到 sessionKey.
  * 此时建立 session, 然后开始处理事务.
  *
+ * 本类中含有各平台相关扩展函数等.
+ *
  * @author Him188moe
  */
-data class BotSession(
+@UseExperimental(InternalAPI::class)
+expect class BotSession(
+    bot: Bot,
+    sessionKey: SessionKey,
+    socket: DataPacketSocketAdapter,
+    NetworkScope: CoroutineScope
+) : BotSessionBase
+
+/**
+ * [BotSession] 平台通用基础
+ */
+@InternalAPI
+abstract class BotSessionBase(
     val bot: Bot,
     val sessionKey: SessionKey,
     val socket: DataPacketSocketAdapter,
@@ -97,7 +113,7 @@ data class BotSession(
         noinline handler: suspend (P) -> R
     ): Deferred<R> {
         val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
-        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSession, checkSequence, coroutineContext + deferred).also {
+        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSessionBase as BotSession, checkSequence, coroutineContext + deferred).also {
             it.toSend(this)
             it.onExpect(handler)
         })
@@ -125,6 +141,10 @@ data class BotSession(
     suspend inline fun UInt.group(): Group = bot.getGroup(GroupId(this))
     suspend inline fun GroupId.group(): Group = bot.getGroup(this)
     suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
+
+    suspend fun Image.getLink(): ImageLink = FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect()
+    suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
+    suspend inline fun Image.download(): ByteReadPacket = getLink().download()
 }
 
 
