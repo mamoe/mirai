@@ -8,7 +8,6 @@ import net.mamoe.mirai.utils.solveIpAddress
 object TIMProtocol {
     val SERVER_IP: List<String> = {
         //add("183.60.56.29")
-        val list = mutableListOf<String>()
         arrayOf(
             "sz3.tencent.com",
             "sz4.tencent.com",
@@ -17,9 +16,7 @@ object TIMProtocol {
             "sz8.tencent.com",
             "sz9.tencent.com",
             "sz2.tencent.com"
-        ).forEach { list.add(solveIpAddress(it)) } // 需 IPv4 地址
-
-        list.toList()
+        ).map { solveIpAddress(it) } // 需 IPv4 地址
     }()//不使用lazy, 在初始化时就加载.
 
     val head = "02".hexToBytes()
