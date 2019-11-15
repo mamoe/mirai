@@ -25,7 +25,7 @@ inline val AnnotatedId.value: UShort get() = id.value
  * 这个注解应该被标记在 [Packet] 上
  */
 @MustBeDocumented
-@Retention(AnnotationRetention.BINARY)
+@Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
 annotation class CorrespondingEvent(
     val eventClass: KClass<out Subscribable>

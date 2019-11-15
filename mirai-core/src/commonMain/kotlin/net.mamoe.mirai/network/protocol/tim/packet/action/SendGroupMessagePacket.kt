@@ -3,6 +3,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
@@ -19,7 +20,7 @@ object SendGroupMessagePacket : SessionPacketFactory<SendGroupMessagePacket.Resp
         message: MessageChain
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(botQQ)
-        writeHex(TIMProtocol.fixVer2)
+        writeFully(TIMProtocol.fixVer2)
 
         encryptAndWrite(sessionKey) {
             writeByte(0x2A)
@@ -32,7 +33,7 @@ object SendGroupMessagePacket : SessionPacketFactory<SendGroupMessagePacket.Resp
                 writeTime()
                 writeRandom(4)
                 writeHex("00 00 00 00 09 00 86")
-                writeHex(TIMProtocol.messageConst1)
+                writeFully(TIMProtocol.messageConst1)
                 writeZero(2)
 
                 writePacket(message.toPacket())

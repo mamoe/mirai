@@ -3,12 +3,12 @@
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.writeFully
 import kotlinx.io.core.writeUByte
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.encryptAndWrite
-import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 
 /**
@@ -23,7 +23,7 @@ object RequestAccountInfoPacket : SessionPacketFactory<RequestAccountInfoPacket.
         sessionKey: SessionKey
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(qq)
-        writeHex(TIMProtocol.fixVer2)
+        writeFully(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
             writeUByte(0x88u)
             writeQQ(qq)
