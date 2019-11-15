@@ -120,7 +120,7 @@ object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("7F 32 DB 6D 24 73 13 06 DF 11 25 CB B0 07 FF F3".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("52 A2 10 EC C7 A8 80 44 FF 65 6C 70 43 A6 E7 73".hexToBytes())
     const val qq: UInt = 1040400290u
 
     val IgnoredPacketIdList: List<PacketId> = listOf(
@@ -233,8 +233,9 @@ object PacketDebugger {
 
         println(
             "  fixVer2=" + when (val flag = readByte().toInt()) {
-                2 -> byteArrayOf(2) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1)
-                4 -> byteArrayOf(4) + readBytes(TIMProtocol.fixVer2.hexToBytes().size - 1 + 8)//8个0
+                2 -> byteArrayOf(2) + readBytes(TIMProtocol.fixVer2.size - 1)
+                3 -> byteArrayOf(3) + readBytes(TIMProtocol.fixVer2.size - 1 + 4)//4 个0
+                4 -> byteArrayOf(4) + readBytes(TIMProtocol.fixVer2.size - 1 + 8)//8 个 0
                 0 -> byteArrayOf(0) + readBytes(2)
                 else -> error("unknown fixVer2 flag=$flag. Remaining =${readBytes().toUHexString()}")
             }.toUHexString()
