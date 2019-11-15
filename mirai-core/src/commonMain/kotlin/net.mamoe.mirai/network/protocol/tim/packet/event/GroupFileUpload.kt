@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.io.readString
 
 data class GroupFileUploadPacket(inline val xmlMessage: String) : EventPacket
 
-@PacketVersion(date = "2019.7.1", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.7.1", timVersion = "2.3.2 (21173)")
 object GroupFileUploadEventFactory : KnownEventParserAndHandler<GroupFileUploadPacket>(0x002Du) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): GroupFileUploadPacket {
         discardExact(60)

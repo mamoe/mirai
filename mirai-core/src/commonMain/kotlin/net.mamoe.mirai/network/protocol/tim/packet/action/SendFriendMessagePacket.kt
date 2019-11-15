@@ -12,7 +12,7 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.md5
 
 @AnnotatedId(KnownPacketId.SEND_FRIEND_MESSAGE)
-@PacketVersion(date = "2019.10.19", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.10.19", timVersion = "2.3.2 (21173)")
 object SendFriendMessagePacket : SessionPacketFactory<SendFriendMessagePacket.Response>() {
     operator fun invoke(
         botQQ: UInt,
