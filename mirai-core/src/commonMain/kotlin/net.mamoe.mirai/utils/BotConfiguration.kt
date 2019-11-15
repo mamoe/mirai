@@ -8,9 +8,9 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.TouchPacket.TouchRespon
 import kotlin.jvm.JvmField
 
 /**
- * 验证码处理器. 需阻塞直到处理完成验证码.
+ * 验证码处理器. 需挂起(阻塞)直到处理完成验证码.
  *
- * 返回
+ * 返回长度为 4 的验证码. 为空则刷新验证码
  */
 typealias CaptchaSolver = suspend Bot.(IoBuffer) -> String?
 

@@ -81,7 +81,7 @@ suspend fun Bot.messageDSL() {
         // 当接收到消息 == "你好" 时就回复 "你好!"
         "你好" reply "你好!"
 
-        // 当消息 == "查看 subject" 时, 执行 lambda 并回复 lambda 的返回值
+        // 当消息 == "查看 subject" 时, 执行 lambda
         case("查看 subject") {
             if (subject is QQ) {
                 reply("消息主体为 QQ, 你在跟发私聊消息")
