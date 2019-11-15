@@ -46,7 +46,7 @@ fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
 }
 
 @Suppress("unused")
-suspend fun BufferedImage.suspendToExternalImage() = withContext(IO) { toExternalImage() }
+suspend fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 读取文件头识别图片属性, 然后构造 [ExternalImage]
@@ -73,7 +73,7 @@ fun File.toExternalImage(): ExternalImage {
  * 在 [IO] 中进行 [File.toExternalImage]
  */
 @Suppress("unused")
-suspend fun File.suspendToExternalImage() = withContext(IO) { toExternalImage() }
+suspend fun File.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 下载文件到临时目录然后调用 [File.toExternalImage]
@@ -93,7 +93,7 @@ fun URL.toExternalImage(): ExternalImage {
  * 在 [IO] 中进行 [URL.toExternalImage]
  */
 @Suppress("unused")
-suspend fun URL.suspendToExternalImage() = withContext(IO) { toExternalImage() }
+suspend fun URL.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 保存为临时文件然后调用 [File.toExternalImage]
@@ -112,7 +112,7 @@ fun InputStream.toExternalImage(): ExternalImage {
  * 在 [IO] 中进行 [InputStream.toExternalImage]
  */
 @Suppress("unused")
-suspend fun InputStream.suspendToExternalImage() = withContext(IO) { toExternalImage() }
+suspend fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 保存为临时文件然后调用 [File.toExternalImage]
@@ -130,4 +130,4 @@ fun Input.toExternalImage(): ExternalImage {
  * 在 [IO] 中进行 [Input.toExternalImage]
  */
 @Suppress("unused")
-suspend fun Input.suspendToExternalImage() = withContext(IO) { toExternalImage() }
+suspend fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
