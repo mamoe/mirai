@@ -36,7 +36,7 @@ annotation class CorrespondingEvent(
  */
 @MustBeDocumented
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.BINARY)
+@Retention(AnnotationRetention.SOURCE)
 internal annotation class PacketVersion(val date: String, val timVersion: String)
 
 /**
