@@ -43,6 +43,7 @@ expect fun localIpAddress(): String
 /**
  * Ktor HttpClient. 不同平台使用不同引擎.
  */
+@PublishedApi
 internal expect val Http: HttpClient
 
 
