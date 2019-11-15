@@ -1,5 +1,6 @@
 package net.mamoe.mirai.utils
 
+import io.ktor.util.cio.use
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -10,6 +11,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.use
+import kotlinx.io.core.writeFully
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -30,13 +32,15 @@ actual var DefaultCaptchaSolver: CaptchaSolver = {
             @Suppress("EXPERIMENTAL_API_USAGE")
             MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
             try {
-                tempFile.writeChannel().writeFully(it)
+                tempFile.writeChannel().use { it.writeFully(it) }
                 MiraiLogger.info("若看不清字符图片, 请查看 ${tempFile.absolutePath}")
             } catch (e: Exception) {
                 MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
             }
 
-            MiraiLogger.info(ImageIO.read(tempFile.inputStream()).createCharImg())
+            tempFile.inputStream().use {
+                MiraiLogger.info(ImageIO.read(it).createCharImg())
+            }
         }
         MiraiLogger.info("若要更换验证码, 请直接回车")
         readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
@@ -60,7 +64,7 @@ private val captchaLock = Mutex()
  * @author NaturalHG
  */
 @JvmOverloads
-internal fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
+private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
     val newHeight = (this.height * (outputWidth.toDouble() / this.width)).toInt()
     val tmp = this.getScaledInstance(outputWidth, newHeight, Image.SCALE_SMOOTH)
     val image = BufferedImage(outputWidth, newHeight, BufferedImage.TYPE_INT_ARGB)
