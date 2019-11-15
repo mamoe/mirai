@@ -3,6 +3,8 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.core.*
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.internal.printColorize
+import net.mamoe.mirai.utils.internal.printCompareHex
 
 
 internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug")
@@ -62,7 +64,7 @@ internal fun BytePacketBuilder.debugPrintThis(name: String = "") {
 }
 
 internal fun String.printStringFromHex() {
-    println(this.hexToBytes().stringOfWitch())
+    println(this.hexToBytes().encodeToString())
 }
 
 internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstConst: Boolean = false, compareTo: String? = null) {

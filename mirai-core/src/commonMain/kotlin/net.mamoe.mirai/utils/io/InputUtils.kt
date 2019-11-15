@@ -3,6 +3,8 @@
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
+import kotlinx.io.pool.useInstance
+import kotlin.jvm.JvmName
 
 
 fun ByteReadPacket.readRemainingBytes(
@@ -23,7 +25,11 @@ fun Input.readIP(): String = buildString(4 + 3) {
     }
 }
 
+fun Input.readUVarIntLVString(): String = String(this.readUVarIntByteArray())
+
 fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
+
+fun Input.readUVarIntByteArray(): ByteArray = this.readBytes(this.readUVarInt().toInt())
 
 fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
@@ -63,7 +69,33 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
 fun Map<*, ByteArray>.printTLVMap(name: String) =
     debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() })
 
-fun Input.readString(length: Number): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: Int): String = String(this.readBytes(length))
+fun Input.readString(length: Long): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: Short): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: UShort): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: Byte): String = String(this.readBytes(length.toInt()))
+
+fun Input.readStringUntil(stopSignalExclude: UByte, expectingEOF: Boolean = false): String = readStringUntil(stopSignalExclude.toByte(), expectingEOF)
+
+// TODO 应标记 JvmSynthetic 但 kotlin 有bug
+@JvmName("readStringUntil0")
+fun Input.readStringUntil(stopSignalExclude: Byte, expectingEOF: Boolean = false): String {
+    ByteArrayPool.useInstance {
+        var count = 0
+
+        val buffer = byteArrayOf(1)
+        while (readAvailable(buffer, 1) == 1) {
+            if (buffer[0] == stopSignalExclude) {
+                return buffer.encodeToString()
+            }
+            it[count++] = buffer[0]
+        }
+        if (!expectingEOF) {
+            throw EOFException("Early EOF")
+        }
+        return buffer.encodeToString()
+    }
+}
 
 private const val TRUE_BYTE_VALUE: Byte = 1
 fun Input.readBoolean(): Boolean = this.readByte() == TRUE_BYTE_VALUE

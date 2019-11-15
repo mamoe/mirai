@@ -5,7 +5,9 @@ import kotlinx.io.core.IoBuffer
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.network.protocol.tim.packet.Decrypter
 import net.mamoe.mirai.network.protocol.tim.packet.DecrypterByteArray
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.toByteArray
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.experimental.and
 import kotlin.experimental.xor
 import kotlin.jvm.JvmStatic
@@ -29,15 +31,6 @@ class DecryptionFailedException : Exception()
 fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key, sourceLength = length)
 
 fun ByteArray.encryptBy(key: DecrypterByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key.value, sourceLength = length)
-
-/**
- * 通过 [String.hexToBytes] 将 [keyHex] 转为 [ByteArray] 后用它解密 [this].
- * 将会使用 [HexCache]
- *
- * @param keyHex 长度至少为 16 bytes
- * @throws DecryptionFailedException 解密错误时
- */
-fun ByteArray.encryptBy(keyHex: String, length: Int = this.size): ByteArray = encryptBy(keyHex.hexToBytes(withCache = true), length = length)
 
 /**
  * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 加密.
@@ -84,15 +77,6 @@ fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteArray {
 }
 
 /**
- * 通过 [String.hexToBytes] 将 [keyHex] 转为 [ByteArray] 后用它解密 [this]
- * 将会使用 [HexCache]
- *
- * @param keyHex 长度至少为 16 bytes
- * @throws DecryptionFailedException 解密错误时
- */
-fun ByteArray.decryptBy(keyHex: String, length: Int = this.size): ByteArray = decryptBy(keyHex.hexToBytes(withCache = true), length = length)
-
-/**
  * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 解密.
  *
  * @param key 长度至少为 16
@@ -106,16 +90,6 @@ fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemain
     }
 }
 
-/**
- * 在 [ByteArrayPool] 缓存 [this], 然后使用 [keyHex] 解密.
- *
- * @param keyHex 长度至少为 16
- * @throws DecryptionFailedException 解密错误时
- */
-fun IoBuffer.decryptBy(keyHex: String, offset: Int = 0, length: Int = readRemaining - offset): ByteArray =
-    decryptBy(keyHex.hexToBytes(withCache = true), offset = offset, length = length)
-
-
 // endregion
 
 // region ByteReadPacket extension
@@ -126,17 +100,12 @@ fun ByteReadPacket.decryptBy(key: IoBuffer): ByteReadPacket = decryptAsByteArray
 
 fun ByteReadPacket.decryptBy(key: Decrypter): ByteReadPacket = key.decrypt(this)
 
-fun ByteReadPacket.decryptBy(keyHex: String): ByteReadPacket = decryptBy(keyHex.hexToBytes())
-
 inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
         val length = remaining.toInt()
         readFully(it, 0, length)
         consumer(it.decryptBy(key, length))
     }.also { close() }
-
-inline fun <R> ByteReadPacket.decryptAsByteArray(keyHex: String, consumer: (ByteArray) -> R): R =
-    this.decryptAsByteArray(keyHex.hexToBytes(), consumer)
 
 inline fun <R> ByteReadPacket.decryptAsByteArray(key: IoBuffer, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {

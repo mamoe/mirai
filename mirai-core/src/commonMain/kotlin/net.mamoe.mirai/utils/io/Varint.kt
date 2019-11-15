@@ -1,12 +1,13 @@
 @file:JvmName("Varint")
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.io
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.Output
 import kotlin.experimental.or
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * Tool class for VarInt or VarLong operations.
@@ -17,70 +18,72 @@ import kotlin.jvm.JvmName
  * @author lmlstarqaq of Nukkit Project
  */
 
-fun encodeZigZag32(signedInt: Int): Long {
+internal fun encodeZigZag32(signedInt: Int): Long {
     return (signedInt shl 1 xor (signedInt shr 31)).toLong()
 }
 
-
-//@JvmSynthetic
-fun decodeZigZag32(uint: UInt): Int {
+@JvmSynthetic
+internal fun decodeZigZag32(uint: UInt): Int {
     return decodeZigZag32(uint.toLong())
 }
 
-fun decodeZigZag32(uint: Long): Int {
+internal fun decodeZigZag32(uint: Long): Int {
     return (uint shr 1).toInt() xor -(uint and 1).toInt()
 }
 
-fun encodeZigZag64(signedLong: Long): Long {
+internal fun encodeZigZag64(signedLong: Long): Long {
     return signedLong shl 1 xor (signedLong shr 63)
 }
 
-fun decodeZigZag64(signedLong: Long): Long {
+internal fun decodeZigZag64(signedLong: Long): Long {
     return signedLong.ushr(1) xor -(signedLong and 1)
 }
 
 
-fun ByteReadPacket.readVarInt(): Int {
-    return decodeZigZag32(this.readUnsignedVarInt())
+fun Input.readVarInt(): Int {
+    return decodeZigZag32(this.readUVarInt())
 }
 
 
-fun ByteReadPacket.readUnsignedVarInt(): UInt {
+@JvmSynthetic
+fun Input.readUVarInt(): UInt {
     return read(this, 5).toUInt()
 }
 
 
-fun ByteReadPacket.readVarLong(): Long {
-    return decodeZigZag64(readUnsignedVarLong().toLong())
+fun Input.readVarLong(): Long {
+    return decodeZigZag64(readUVarLong().toLong())
 }
 
 
-fun ByteReadPacket.readUnsignedVarLong(): ULong {
+@JvmSynthetic
+fun Input.readUVarLong(): ULong {
     return read(this, 10).toULong()
 }
 
-fun BytePacketBuilder.writeVarInt(signedInt: Int) {
+fun Output.writeVarInt(signedInt: Int) {
     this.writeUVarInt(encodeZigZag32(signedInt))
 }
 
-fun BytePacketBuilder.writeUVarInt(uint: UInt) {
+@JvmSynthetic
+fun Output.writeUVarInt(uint: UInt) {
     return writeUVarInt(uint.toLong())
 }
 
-fun BytePacketBuilder.writeUVarInt(uint: Long) {
+fun Output.writeUVarInt(uint: Long) {
     this.write0(uint)
 }
 
-fun BytePacketBuilder.writeVarLong(signedLong: Long) {
+fun Output.writeVarLong(signedLong: Long) {
     this.writeUVarLong(encodeZigZag64(signedLong))
 }
 
-fun BytePacketBuilder.writeUVarLong(ulong: Long) {
+fun Output.writeUVarLong(ulong: Long) {
     this.write0(ulong)
 }
 
 
-private fun BytePacketBuilder.write0(long: Long) {
+private fun Output.write0(long: Long) {
     var value = long
     do {
         var temp = (value and 127).toByte()
@@ -92,7 +95,7 @@ private fun BytePacketBuilder.write0(long: Long) {
     } while (value != 0L)
 }
 
-private fun read(stream: ByteReadPacket, maxSize: Int): Long {
+private fun read(stream: Input, maxSize: Int): Long {
     var value: Long = 0
     var size = 0
     var b = stream.readByte().toInt()

@@ -1,11 +1,12 @@
 @file:Suppress("ObjectPropertyName", "MayBeConstant", "NonAsciiCharacters", "SpellCheckingInspection", "unused")
 
-package net.mamoe.mirai.utils.io
+package net.mamoe.mirai.utils.internal
 
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.math.max
-import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
 
 /**
  * 匹配已知 hex 常量并格式化后打印到控制台.
@@ -19,7 +20,7 @@ internal fun String.printColorize(ignoreUntilFirstConst: Boolean): String = with
  *
  * 低效率, 仅调试使用.
  */
-internal fun printCompareHex(hex1s: String, hex2s: String): String = with(HexComparator) { compare(hex1s, hex2s) }
+fun printCompareHex(hex1s: String, hex2s: String): String = with(HexComparator) { compare(hex1s.toUpperCase(), hex2s.toUpperCase()) }
 
 data class NamedHexElement(
     val name: String,
@@ -35,8 +36,8 @@ private fun LinkedHashSet<NamedHexElement>.initConstFileds() {
         TIMProtocol,
         PacketIds
     ).forEach { obj ->
-        obj::class.members.filterIsInstance<KProperty<*>>().forEach { property ->
-            add(NamedHexElement(property.name, property.getter.call().toString()))
+        obj::class.members.filterIsInstance<KProperty0<*>>().forEach { property ->
+            property.get()?.let { add(NamedHexElement(property.name, it.toString())) }
         }
     }
 }
@@ -107,9 +108,14 @@ private object HexComparator {
         private class Match internal constructor(val range: IntRange, val constName: String)
 
         init {
-            TIMProtocol::class.members.filterIsInstance<KProperty<*>>().forEach {
-                for (match in match(hex, it.getter.call().toString())) {
-                    matches.add(Match(match, it.getter.call().toString()))
+            CONST_FIELDS.forEach { (name, value) ->
+                for (match in match(hex, value)) {
+                    matches.add(Match(match, name))
+                }
+            }
+            TIMProtocol::class.members.filterIsInstance<KProperty0<*>>().mapNotNull { it()?.toString() }.forEach {
+                for (match in match(hex, it)) {
+                    matches.add(Match(match, it))
                 }
             }
         }
@@ -118,10 +124,10 @@ private object HexComparator {
             val CONST_FIELDS: Set<NamedHexElement> = linkedSetOf<NamedHexElement>().apply { initConstFileds() }
         }
 
-        private fun match(hex: String, field: String): Set<IntRange> {
+        private fun match(hex: String, value: String): Set<IntRange> {
             val constValue: String
             try {
-                constValue = field.trim { it <= ' ' }
+                constValue = value.trim { it <= ' ' }
                 if (constValue.length / 3 <= 3) {//Minimum numbers of const hex bytes
                     return linkedSetOf()
                 }

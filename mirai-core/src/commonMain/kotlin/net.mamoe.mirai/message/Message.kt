@@ -174,7 +174,7 @@ inline class Image(inline val id: ImageId) : Message {
  * 对于好友, [value] 类似于 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef`, 由服务器返回.
  *
  * @see ExternalImage.groupImageId 群图片的 [ImageId] 获取
- * @see FriendImageIdRequestPacket.Response.imageId 好友图片的 [ImageId] 获取
+ * @see FriendImageIdRequestPacket.Response.RequireUpload.imageId 好友图片的 [ImageId] 获取
  */
 inline class ImageId(inline val value: String)
 

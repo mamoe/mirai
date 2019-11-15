@@ -5,7 +5,6 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.writeFully
 import kotlinx.io.pool.ObjectPool
-import kotlin.jvm.Synchronized
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -75,9 +74,8 @@ fun Byte.toUHexString(): String = this.toUByte().toString(16).toUpperCase().let 
 /**
  * 将无符号 Hex 转为 [ByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
  */
-fun String.hexToBytes(withCache: Boolean = true): ByteArray =
-    if (withCache) HexCache.getCacheOrConvert(this)
-    else this.split(" ")
+fun String.hexToBytes(): ByteArray =
+    this.split(" ")
         .filterNot { it.isEmpty() }
         .map { s -> s.toUByte(16).toByte() }
         .toByteArray()
@@ -85,9 +83,8 @@ fun String.hexToBytes(withCache: Boolean = true): ByteArray =
 /**
  * 将无符号 Hex 转为 [UByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
  */
-fun String.hexToUBytes(withCache: Boolean = true): UByteArray =
-    if (withCache) HexCache.getUCacheOrConvert(this)
-    else this.split(" ")
+fun String.hexToUBytes(): UByteArray =
+    this.split(" ")
         .filterNot { it.isEmpty() }
         .map { s -> s.toUByte(16) }
         .toUByteArray()
@@ -130,37 +127,3 @@ fun ByteArray.toUInt(): UInt =
  * 注意回收 ([ObjectPool.recycle])
  */
 fun ByteArray.toIoBuffer(): IoBuffer = IoBuffer.Pool.borrow().let { it.writeFully(this); it }
-
-/**
- * Hex 转换 [ByteArray] 和 [UByteArray] 缓存.
- * 为 [net.mamoe.mirai.network.protocol.tim.TIMProtocol] 的 hex 常量使用
- */
-internal object HexCache {
-    private val hexToByteArrayCacheMap: MutableMap<Int, ByteArray> = mutableMapOf()
-
-    @Synchronized
-    internal fun getCacheOrConvert(hex: String): ByteArray = hex.hashCode().let { id ->
-        if (hexToByteArrayCacheMap.containsKey(id)) {
-            return hexToByteArrayCacheMap[id]!!
-        } else {
-            hex.hexToBytes(withCache = false).let {
-                hexToByteArrayCacheMap[id] = it
-                return it
-            }
-        }
-    }
-
-    private val hexToUByteArrayCacheMap: MutableMap<Int, UByteArray> = mutableMapOf()
-
-    @Synchronized
-    internal fun getUCacheOrConvert(hex: String): UByteArray = hex.hashCode().let { id ->
-        if (hexToUByteArrayCacheMap.containsKey(id)) {
-            return hexToUByteArrayCacheMap[id]!!
-        } else {
-            hex.hexToUBytes(withCache = false).let {
-                hexToUByteArrayCacheMap[id] = it
-                return it
-            }
-        }
-    }
-}

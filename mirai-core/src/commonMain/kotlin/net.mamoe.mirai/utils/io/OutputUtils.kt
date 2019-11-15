@@ -29,38 +29,33 @@ fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
     this.writeFully(byteArray)
 }
 
-
 fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
-    with(BytePacketBuilder().apply(builder).build()) {
-        if (tag != null) {
-            writeUByte(tag)
-        }
-        writeUShort((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL).toUShort())
-        writePacket(this)
-        this.release()
+    BytePacketBuilder().apply(builder).build().use {
+        if (tag != null) writeUByte(tag)
+        writeUShort((lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL).toUShort())
+        writePacket(it)
     }
 
-fun BytePacketBuilder.writeUVarintLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
-    with(BytePacketBuilder().apply(builder).build()) {
-        if (tag != null) {
-            writeUByte(tag)
-        }
-        writeUVarInt((lengthOffset?.invoke(remaining) ?: remaining).coerceAtMostOrFail(0xFFFFL))
-        writePacket(this)
-        this.release()
+fun BytePacketBuilder.writeUVarIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
+    BytePacketBuilder().apply(builder).build().use {
+        if (tag != null) writeUByte(tag)
+        writeUVarInt((lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL))
+        writePacket(it)
     }
 
-@Suppress("DEPRECATION")
-fun BytePacketBuilder.writeShortLVString(str: String) = this.writeShortLVByteArray(str.toByteArray())
-
-@Suppress("DEPRECATION")
-fun BytePacketBuilder.writeLVHex(hex: String) = this.writeShortLVByteArray(hex.hexToBytes())
+fun BytePacketBuilder.writeShortLVString(str: String) = writeShortLVByteArray(str.toByteArray())
 
 fun BytePacketBuilder.writeIP(ip: String) = writeFully(ip.trim().split(".").map { it.toUByte() }.toUByteArray())
 
 fun BytePacketBuilder.writeTime() = this.writeInt(currentTime.toInt())
 
-fun BytePacketBuilder.writeHex(uHex: String) = this.writeFully(uHex.hexToUBytes())
+fun BytePacketBuilder.writeHex(uHex: String) {
+    uHex.split(" ").forEach {
+        if (it.isNotBlank()) {
+            writeUByte(it.toUByte(16))
+        }
+    }
+}
 
 fun BytePacketBuilder.writeTLV(tag: UByte, values: UByteArray) {
     writeUByte(tag)
@@ -80,6 +75,11 @@ fun BytePacketBuilder.writeTHex(tag: UByte, uHex: String) {
 }
 
 fun BytePacketBuilder.writeTV(tagValue: UShort) = writeUShort(tagValue)
+
+fun BytePacketBuilder.writeTV(tag: UByte, value: UByte) {
+    writeUByte(tag)
+    writeUByte(value)
+}
 
 fun BytePacketBuilder.writeTUbyte(tag: UByte, value: UByte) {
     this.writeUByte(tag)
@@ -124,7 +124,7 @@ fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, l
         writeRandom(4)
         writeHex("00 02")
         writeQQ(qq)
-        writeHex(TIMProtocol.constantData2)
+        writeFully(TIMProtocol.constantData2)
         writeHex("00 00 01")
 
         writeFully(firstMD5)
@@ -151,5 +151,5 @@ fun BytePacketBuilder.writeDeviceName(random: Boolean) {
     }
     this.writeShort((deviceName.length + 2).toShort())
     this.writeShort(deviceName.length.toShort())
-    this.writeStringUtf8(deviceName)//TODO TEST?
+    this.writeStringUtf8(deviceName)
 }
