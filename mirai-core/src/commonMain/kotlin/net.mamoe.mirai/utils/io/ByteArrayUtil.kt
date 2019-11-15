@@ -8,6 +8,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
 import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 @JvmOverloads
 fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(separator) {
@@ -21,9 +22,9 @@ fun ByteArray.toHexString(separator: String = " "): String = this.joinToString(s
 @JvmOverloads
 fun ByteArray.toUHexString(separator: String = " "): String = this.toUByteArray().toUHexString(separator)
 
-fun ByteArray.stringOfWitch(charset: Charset = Charsets.UTF_8): String = String(this, charset = charset)
+fun ByteArray.encodeToString(charset: Charset = Charsets.UTF_8): String = String(this, charset = charset)
 
-//@JvmSynthetic TODO 等待 kotlin 修复 bug 后添加这个注解
+@JvmSynthetic
 @JvmOverloads
 fun UByteArray.toUHexString(separator: String = " "): String = this.joinToString(separator) {
     var ret = it.toString(16).toUpperCase()
