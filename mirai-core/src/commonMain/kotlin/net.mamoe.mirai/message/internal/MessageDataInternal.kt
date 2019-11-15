@@ -12,7 +12,7 @@ internal fun IoBuffer.parseMessageFace(): Face {
     discardExact(1)
 
     val id1 = FaceID.ofId(readLVNumber().toInt().toUByte())//可能这个是id, 也可能下面那个
-    discardExact(readByte().toLong())
+    discardExact(readByte().toLong()) // -1
     readLVNumber()//某id?
     return Face(id1)
 }

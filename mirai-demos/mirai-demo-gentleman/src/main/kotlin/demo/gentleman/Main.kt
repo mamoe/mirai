@@ -54,6 +54,7 @@ suspend fun main() {
 
     bot.subscribeMessages {
         "你好" reply "你好!"
+
         "profile" reply {
             sender.profile.await().toString()
         }

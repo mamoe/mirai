@@ -104,7 +104,7 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
         }
         val qq: QQ = readUInt().qq()
 
-        discardExact(1)
+        // debugDiscardExact(1)
 
         return when (val state = readUByte().toUInt()) {
             //09 4E A4 B1 00 03

@@ -59,13 +59,13 @@ fun BytePacketBuilder.writeHex(uHex: String) {
 
 fun BytePacketBuilder.writeTLV(tag: UByte, values: UByteArray) {
     writeUByte(tag)
-    writeVarInt(values.size)
+    writeUVarInt(values.size.toUInt())
     writeFully(values)
 }
 
 fun BytePacketBuilder.writeTLV(tag: UByte, values: ByteArray) {
     writeUByte(tag)
-    writeVarInt(values.size)
+    writeUVarInt(values.size.toUInt())
     writeFully(values)
 }
 
