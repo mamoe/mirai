@@ -18,7 +18,7 @@ import net.mamoe.mirai.utils.io.*
  * - 共同群内的群名片
  */
 @AnnotatedId(KnownPacketId.QUERY_PREVIOUS_NAME)
-@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 object QueryPreviousNamePacket : SessionPacketFactory<PreviousNameList>() {
     operator fun invoke(
         bot: UInt,
@@ -88,7 +88,7 @@ enum class AddFriendResult {
  * @author Him188moe
  */
 @AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
-@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
     operator fun invoke(
         bot: UInt,
@@ -104,7 +104,7 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
         }
         val qq: QQ = readUInt().qq()
 
-        discardExact(0)
+        discardExact(1)
 
         return when (val state = readUByte().toUInt()) {
             //09 4E A4 B1 00 03
@@ -165,7 +165,7 @@ inline class FriendAdditionKey(val value: IoBuffer)
  * 请求一个 32 位 Key, 在添加好友时发出
  */
 @AnnotatedId(KnownPacketId.REQUEST_FRIEND_ADDITION_KEY)
-@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditionKeyPacket.Response>() {
     operator fun invoke(
         bot: UInt,
@@ -192,7 +192,7 @@ object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditi
  * 请求添加好友
  */
 @AnnotatedId(KnownPacketId.ADD_FRIEND)
-@PacketVersion(date = "2019.11.11", timVersion = "2.3.2.21173")
+@PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
     operator fun invoke(
         bot: UInt,
