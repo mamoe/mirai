@@ -9,6 +9,7 @@ import kotlin.reflect.KClass
 /**
  * 包 ID. 除特殊外, [PacketFactory] 都需要这个注解来指定包 ID.
  */
+@Deprecated("Reflection is not supported in JS. Consider to remove")
 @MustBeDocumented
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
