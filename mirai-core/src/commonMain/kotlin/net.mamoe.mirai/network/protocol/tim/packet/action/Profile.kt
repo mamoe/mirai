@@ -62,9 +62,9 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
         val map = readTLVMap(tagSize = 2, expectingEOF = true)
         val profile = Profile(
             qq = qq,
-            nickname = map[0x4E22u]?.stringOfWitch() ?: "",//error("Cannot determine nickname")
-            zipCode = map[0x4E25u]?.stringOfWitch(),
-            phone = map[0x4E27u]?.stringOfWitch(),
+            nickname = map[0x4E22u]?.encodeToString() ?: "",//error("Cannot determine nickname")
+            zipCode = map[0x4E25u]?.encodeToString(),
+            phone = map[0x4E27u]?.encodeToString(),
             gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {
                 null -> Gender.SECRET //error("Cannot determine gender, entry 0x4E29u not found")
                 0x02u -> Gender.FEMALE
@@ -73,11 +73,11 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
                 //else -> error("Cannot determine gender, bad value of 0x4E29u: ${map[0x4729u]!![0].toUHexString()}")
             },
             birthday = map[0x4E3Fu]?.let { Date(it.toUInt().toInt()) },
-            personalStatus = map[0x4E33u]?.stringOfWitch(),
-            homepage = map[0x4E2Du]?.stringOfWitch(),
-            company = map[0x5DC8u]?.stringOfWitch(),
-            school = map[0x4E35u]?.stringOfWitch(),
-            email = map[0x4E2Bu]?.stringOfWitch()
+            personalStatus = map[0x4E33u]?.encodeToString(),
+            homepage = map[0x4E2Du]?.encodeToString(),
+            company = map[0x5DC8u]?.encodeToString(),
+            school = map[0x4E35u]?.encodeToString(),
+            email = map[0x4E2Bu]?.encodeToString()
         )
         map.clear()
 

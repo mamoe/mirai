@@ -3,6 +3,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.writeFully
 import kotlinx.io.core.writeUByte
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
@@ -23,7 +24,7 @@ object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeO
         loginStatus: OnlineStatus
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
-        writeHex(TIMProtocol.fixVer2)
+        writeFully(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
             writeHex("01 00")
             writeUByte(loginStatus.id)

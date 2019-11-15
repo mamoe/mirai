@@ -4,6 +4,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
@@ -24,7 +25,7 @@ object RequestSKeyPacket : SessionPacketFactory<SKey>() {
         sessionKey: SessionKey
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
-        writeHex(TIMProtocol.fixVer2)
+        writeFully(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
             writeHex("33 00 05 00 08 74 2E 71 71 2E 63 6F 6D 00 0A 71 75 6E 2E 71 71 2E 63 6F 6D 00 0C 71 7A 6F 6E 65 2E 71 71 2E 63 6F 6D 00 0C 6A 75 62 61 6F 2E 71 71 2E 63 6F 6D 00 09 6B 65 2E 71 71 2E 63 6F 6D")
         }

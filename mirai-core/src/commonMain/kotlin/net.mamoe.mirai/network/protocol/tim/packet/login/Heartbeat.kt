@@ -3,6 +3,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
@@ -19,7 +20,7 @@ object HeartbeatPacket : SessionPacketFactory<HeartbeatPacketResponse>() {
         sessionKey: SessionKey
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
-        writeHex(TIMProtocol.fixVer)
+        writeFully(TIMProtocol.fixVer)
         encryptAndWrite(sessionKey) {
             writeHex("00 01 00 01")
         }

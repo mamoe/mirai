@@ -49,7 +49,7 @@ object SendFriendMessagePacket : SessionPacketFactory<SendFriendMessagePacket.Re
         writeTime()
         writeRandom(4)
         writeHex("00 00 00 00 0C 00 86")
-        writeHex(TIMProtocol.messageConstNewest)
+        writeFully(TIMProtocol.messageConstNewest)
         writeZero(2)
 
         writePacket(message.toPacket())

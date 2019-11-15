@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.writeCRC32
 
 object ShareKey : DecrypterByteArray, DecrypterType<ShareKey> {
-    override val value: ByteArray = TIMProtocol.shareKey.hexToBytes(withCache = false)
+    override val value: ByteArray = TIMProtocol.shareKey
 }
 
 inline class PrivateKey(override val value: ByteArray) : DecrypterByteArray {
@@ -58,10 +58,10 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
         tlv0006: IoBuffer? = null
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
-        writeHex(TIMProtocol.passwordSubmissionTLV1)
-        writeShort(25); writeHex(TIMProtocol.publicKey)//=25
+        writeFully(TIMProtocol.passwordSubmissionTLV1)
+        writeShort(25); writeFully(TIMProtocol.publicKey)//=25
         writeZero(2)
-        writeShort(16); writeHex(TIMProtocol.key0836)//=16
+        writeShort(16); writeFully(TIMProtocol.key0836)//=16
 
         // shareKey 极大可能为 publicKey, key0836 计算得到
         encryptAndWrite(TIMProtocol.shareKey) {
@@ -286,12 +286,12 @@ private fun BytePacketBuilder.writePart1(
         this.writeTLV0006(qq, password, loginTime, loginIP, privateKey)
     }
     //fix
-    this.writeHex(TIMProtocol.passwordSubmissionTLV2)
+    this.writeFully(TIMProtocol.passwordSubmissionTLV2)
     this.writeHex("00 1A")//tag
     this.writeHex("00 40")//length
-    this.writeFully(TIMProtocol.passwordSubmissionTLV2.hexToBytes().encryptBy(privateKey))
-    this.writeHex(TIMProtocol.constantData1)
-    this.writeHex(TIMProtocol.constantData2)
+    this.writeFully(TIMProtocol.passwordSubmissionTLV2.encryptBy(privateKey))
+    this.writeFully(TIMProtocol.constantData1)
+    this.writeFully(TIMProtocol.constantData2)
     this.writeQQ(qq)
     this.writeZero(4)
 

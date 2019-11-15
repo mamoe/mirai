@@ -6,10 +6,13 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.io.encryptAndWrite
+import net.mamoe.mirai.utils.io.readIoBuffer
+import net.mamoe.mirai.utils.io.writeHex
+import net.mamoe.mirai.utils.io.writeQQ
 
 object CaptchaKey : DecrypterByteArray, DecrypterType<CaptchaKey> {
-    override val value: ByteArray = TIMProtocol.key00BA.hexToBytes(withCache = false)
+    override val value: ByteArray = TIMProtocol.key00BA
 }
 
 @AnnotatedId(KnownPacketId.CAPTCHA)
@@ -24,21 +27,21 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
         token00BA: ByteArray
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
-        writeHex(TIMProtocol.fixVer)
-        writeHex(TIMProtocol.key00BA)
+        writeFully(TIMProtocol.fixVer)
+        writeFully(TIMProtocol.key00BA)
         encryptAndWrite(TIMProtocol.key00BA) {
             writeHex("00 02 00 00 08 04 01 E0")
-            writeHex(TIMProtocol.constantData2)
+            writeFully(TIMProtocol.constantData2)
             writeHex("00 00 38")
             writeFully(token0825)
             writeHex("01 03 00 19")
-            writeHex(TIMProtocol.publicKey)
+            writeFully(TIMProtocol.publicKey)
             writeHex("13 00 05 00 00 00 00")
             writeUByte(captchaSequence.toUByte())
             writeHex("00 28")
             writeFully(token00BA)
             writeHex("00 10")
-            writeHex(TIMProtocol.key00BAFix)
+            writeFully(TIMProtocol.key00BAFix)
         }
     }
 
@@ -50,17 +53,17 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
         token0825: ByteArray
     ): OutgoingPacket = buildOutgoingPacket {
         writeQQ(bot)
-        writeHex(TIMProtocol.fixVer)
-        writeHex(TIMProtocol.key00BA)
+        writeFully(TIMProtocol.fixVer)
+        writeFully(TIMProtocol.key00BA)
         encryptAndWrite(TIMProtocol.key00BA) {
             writeHex("00 02 00 00 08 04 01 E0")
-            writeHex(TIMProtocol.constantData2)
+            writeFully(TIMProtocol.constantData2)
             writeHex("00 00 38")
             writeFully(token0825)
             writeHex("01 03 00 19")
-            writeHex(TIMProtocol.publicKey)
+            writeFully(TIMProtocol.publicKey)
             writeHex("13 00 05 00 00 00 00 00 00 00 00 10")
-            writeHex(TIMProtocol.key00BAFix)
+            writeFully(TIMProtocol.key00BAFix)
         }
     }
 
@@ -75,17 +78,17 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
     ): OutgoingPacket = buildOutgoingPacket {
         require(captcha.length == 4) { "captcha.length must == 4" }
         writeQQ(bot)
-        writeHex(TIMProtocol.fixVer)
-        writeHex(TIMProtocol.key00BA)
+        writeFully(TIMProtocol.fixVer)
+        writeFully(TIMProtocol.key00BA)
         encryptAndWrite(TIMProtocol.key00BA) {
             writeHex("00 02 00 00 08 04 01 E0")
-            writeHex(TIMProtocol.constantData2)
+            writeFully(TIMProtocol.constantData2)
             writeHex("01 00 38")
             writeFully(token0825)
             writeHex("01 03")
 
             writeShort(25)
-            writeHex(TIMProtocol.publicKey)//25
+            writeFully(TIMProtocol.publicKey)//25
 
             writeHex("14 00 05 00 00 00 00 00 04")
             writeStringUtf8(captcha.toUpperCase())
@@ -93,7 +96,7 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
             writeFully(captchaToken)
 
             writeShort(16)
-            writeHex(TIMProtocol.key00BAFix)//16
+            writeFully(TIMProtocol.key00BAFix)//16
         }
     }
 

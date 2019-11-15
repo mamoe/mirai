@@ -2,14 +2,10 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.use
-import kotlinx.io.core.writeUShort
+import kotlinx.io.core.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.io.encryptAndWrite
-import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 import kotlin.jvm.JvmOverloads
 
@@ -55,12 +51,12 @@ fun PacketFactory<*, *>.buildOutgoingPacket(
 ): OutgoingPacket {
     BytePacketBuilder(headerSizeHint).use {
         with(it) {
-            writeHex(TIMProtocol.head)
-            writeHex(TIMProtocol.ver)
+            writeFully(TIMProtocol.head)
+            writeFully(TIMProtocol.ver)
             writeUShort(id.value)
             writeUShort(sequenceId)
             block(this)
-            writeHex(TIMProtocol.tail)
+            writeFully(TIMProtocol.tail)
         }
         return OutgoingPacket(name, id, sequenceId, it.build())
     }
@@ -80,10 +76,11 @@ fun PacketFactory<*, *>.buildSessionPacket(
     id: PacketId = this.id,
     sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     headerSizeHint: Int = 0,
+    version: ByteArray = TIMProtocol.version0x02,
     block: BytePacketBuilder.() -> Unit
 ): OutgoingPacket = buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {
     writeQQ(bot)
-    writeHex(TIMProtocol.version0x02)
+    writeFully(version)
     encryptAndWrite(sessionKey) {
         block()
     }

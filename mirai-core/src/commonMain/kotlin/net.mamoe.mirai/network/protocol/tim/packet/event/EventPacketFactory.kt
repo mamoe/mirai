@@ -11,7 +11,6 @@ import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.readIoBuffer
-import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 
 /**
@@ -77,7 +76,7 @@ object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
         identity: EventPacketIdentity
     ): OutgoingPacket = buildOutgoingPacket(name = "EventPacket", id = id, sequenceId = sequenceId) {
         writeQQ(bot)
-        writeHex(TIMProtocol.fixVer2)
+        writeFully(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
             writeEventPacketIdentity(identity)
         }
