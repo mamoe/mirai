@@ -12,7 +12,6 @@ import kotlinx.io.errors.IOException
 import kotlinx.io.streams.asInput
 import java.awt.image.BufferedImage
 import java.io.File
-import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URL
@@ -63,7 +62,7 @@ fun File.toExternalImage(): ExternalImage {
     return ExternalImage(
         width = image.getWidth(0),
         height = image.getHeight(0),
-        md5 = this.inputStream().md5(),
+        md5 = this.inputStream().use { it.md5() },
         imageFormat = image.formatName,
         input = this.inputStream().asInput(IoBuffer.Pool),
         inputSize = this.length()
@@ -82,7 +81,11 @@ suspend fun File.suspendToExternalImage() = withContext(IO) { toExternalImage() 
 @Throws(IOException::class)
 fun URL.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    openStream().transferTo(FileOutputStream(file))
+    file.outputStream().use { output ->
+        openStream().use { input ->
+            input.transferTo(output)
+        }
+    }
     return file.toExternalImage()
 }
 
@@ -98,7 +101,9 @@ suspend fun URL.suspendToExternalImage() = withContext(IO) { toExternalImage() }
 @Throws(IOException::class)
 fun InputStream.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    this.transferTo(FileOutputStream(file))
+    file.outputStream().use {
+        this.transferTo(it)
+    }
     this.close()
     return file.toExternalImage()
 }
@@ -115,7 +120,9 @@ suspend fun InputStream.suspendToExternalImage() = withContext(IO) { toExternalI
 @Throws(IOException::class)
 fun Input.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    this.asStream().transferTo(FileOutputStream(file))
+    file.outputStream().use {
+        this.asStream()
+    }
     return file.toExternalImage()
 }
 
