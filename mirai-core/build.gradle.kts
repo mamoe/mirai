@@ -27,7 +27,7 @@ val ktorVersion = rootProject.ext["ktor_version"].toString()
 kotlin {
     android("android") {
         project.plugins.apply("com.android.library")
-        publishLibraryVariants("release", "debug")
+        //publishLibraryVariants("release", "debug")
         project.android {
             compileSdkVersion(29)
             buildToolsVersion("29.0.2")
@@ -134,12 +134,13 @@ kotlin {
     }
 }
 
+/*
 publishing {
     publications.withType<MavenPublication>().apply {
         val jvm by getting {}
         val metadata by getting { }
     }
-}
+}*/
 
 /*
 publishing {
