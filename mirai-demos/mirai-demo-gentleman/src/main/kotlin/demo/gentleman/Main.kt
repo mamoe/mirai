@@ -7,13 +7,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.addFriend
+import net.mamoe.mirai.*
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.login
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.network.protocol.tim.packet.action.downloadAsByteArray
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
@@ -55,8 +52,13 @@ suspend fun main() {
     bot.subscribeMessages {
         "你好" reply "你好!"
 
-        "profile" reply {
-            sender.profile.await().toString()
+        startsWith("profile", removePrefix = true) {
+            val account = it.trim()
+            if (account.isNotEmpty()) {
+                bot.getQQ(account.toUInt())
+            } else {
+                sender
+            }.profile.await().toString()
         }
 
         has<Image> {

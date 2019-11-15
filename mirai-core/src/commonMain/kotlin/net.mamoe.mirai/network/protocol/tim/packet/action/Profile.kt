@@ -60,9 +60,14 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
         val qq = readUInt()
         discardExact(6)
         val map = readTLVMap(tagSize = 2, expectingEOF = true)
+        map.printTLVMap("Profile(qq=$qq) raw=")
+        map.mapValues { it.value.encodeToString() }.printTLVMap("Profile(qq=$qq) str=")
         val profile = Profile(
             qq = qq,
             nickname = map[0x4E22u]?.encodeToString() ?: "",//error("Cannot determine nickname")
+            englishName = map[0x4E54u]?.encodeToString(),
+            chineseName = map[0x4E2Au]?.encodeToString(),
+            qAge = map[0x6597u]?.toUInt()?.toInt(),
             zipCode = map[0x4E25u]?.encodeToString(),
             phone = map[0x4E27u]?.encodeToString(),
             gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {
@@ -73,7 +78,7 @@ object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsR
                 //else -> error("Cannot determine gender, bad value of 0x4E29u: ${map[0x4729u]!![0].toUHexString()}")
             },
             birthday = map[0x4E3Fu]?.let { Date(it.toUInt().toInt()) },
-            personalStatus = map[0x4E33u]?.encodeToString(),
+            personalStatement = map[0x4E33u]?.encodeToString(),
             homepage = map[0x4E2Du]?.encodeToString(),
             company = map[0x5DC8u]?.encodeToString(),
             school = map[0x4E35u]?.encodeToString(),

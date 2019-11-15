@@ -66,8 +66,12 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
     return map
 }
 
-fun Map<*, ByteArray>.printTLVMap(name: String) =
-    debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() })
+fun Map<UInt, ByteArray>.printTLVMap(name: String) =
+    debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() }.mapKeys { it.key.toInt().toUShort().toUHexString() })
+
+@JvmName("printTLVStringMap")
+fun Map<UInt, String>.printTLVMap(name: String) =
+    debugPrintln("TLVMap $name= " + this.mapKeys { it.key.toInt().toUShort().toUHexString() })
 
 fun Input.readString(length: Int): String = String(this.readBytes(length))
 fun Input.readString(length: Long): String = String(this.readBytes(length.toInt()))

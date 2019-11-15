@@ -120,7 +120,10 @@ fun getRandomString(length: Int, vararg charRanges: CharRange): String =
  * 本函数将 4 个 [Byte] 的 bits 连接得到 [Int]
  */
 fun ByteArray.toUInt(): UInt =
-    this[0].toUInt().and(255u).shl(24) + this[1].toUInt().and(255u).shl(16) + this[2].toUInt().and(255u).shl(8) + this[3].toUInt().and(255u).shl(0)
+    (this[0].toUInt().and(255u) shl 24) + (this[1].toUInt().and(255u) shl 16) + (this[2].toUInt().and(255u) shl 8) + (this[3].toUInt().and(255u) shl 0)
+
+fun ByteArray.toUShort(): UShort =
+    ((this[0].toUInt().and(255u) shl 8) + (this[1].toUInt().and(255u) shl 0)).toUShort()
 
 /**
  * 从 [IoBuffer.Pool] [borrow][ObjectPool.borrow] 一个 [IoBuffer] 然后将 [this] 写入.

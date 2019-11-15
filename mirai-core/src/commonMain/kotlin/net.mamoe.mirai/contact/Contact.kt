@@ -193,11 +193,14 @@ enum class MemberPermission {
 data class Profile(
     val qq: UInt,
     val nickname: String,
+    val englishName: String?,
+    val chineseName: String?,
+    val qAge: Int?, // q 龄
     val zipCode: String?,
     val phone: String?,
     val gender: Gender,
     val birthday: Date?,
-    val personalStatus: String?,
+    val personalStatement: String?,// 个人说明
     val school: String?,
     val homepage: String?,
     val email: String?,
