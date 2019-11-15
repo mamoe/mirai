@@ -147,7 +147,7 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): LoginResponse {
         val size = remaining.toInt()
         return when {
-            size == 229 || size == 271 || size == 207 -> {
+            size == 229 || size == 271 || size == 207 || size == 165 /* TODO CHECK 165 */ -> {
                 discardExact(5)//01 00 1E 00 10
                 val privateKeyUpdate = PrivateKey(readBytes(0x10))
                 discardExact(4)//00 06 00 78
@@ -242,6 +242,8 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
                 263 -> LoginResult.UNKNOWN_QQ_NUMBER
                 279, 495, 551, 487 -> LoginResult.DEVICE_LOCK
                 343, 359 -> LoginResult.TAKEN_BACK
+
+                // 165: 01 00 1E 00 10 72 36 7B 6B 6D 78 3A 4B 63 7B 47 5B 68 3E 21 59 00 06 00 78 34 F6 F9 49 AA 13 F5 F5 01 36 13 E1 4C F7 0F 25 C1 2C 10 75 CA 69 E9 12 B3 6D F4 A7 59 60 FF 01 03 73 28 47 A3 2A B8 46 C3 92 24 D5 8A AE 8B C2 45 0C 31 27 B5 17 9E 22 13 59 AF B4 CC F6 E3 3A 91 60 13 21 11 3C 25 D9 50 F4 23 C6 06 1D F4 15 41 BA 5D 7B 66 26 96 EB 0E 04 14 8E 5B D4 33 6E B8 5D E7 10 3A 0E EF 96 B1 D4 22 E4 74 48 A7 1D 3A 46 7D E6 EF 1F 6B 69 01 15 00 10 6F 99 48 5E 98 AE D3 4B F8 35 63 1D 70 EE 6D 82
 
                 else -> {
                     MiraiLogger.error("login response packet size = $size, data=${this.readRemainingBytes().toUHexString()}")

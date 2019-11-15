@@ -9,6 +9,8 @@ dependencies {
     api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
     api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
 
+    implementation("org.jetbrains.kotlinx:kotlinx-io:$kotlinxio_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-io:$coroutinesio_version")
     compile group: 'com.alibaba', name: 'fastjson', version: '1.2.62'
     implementation 'org.jsoup:jsoup:1.12.1'
 }

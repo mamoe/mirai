@@ -36,5 +36,5 @@ internal fun <T : PacketHandler> T.asNode(key: PacketHandler.Key<T>): PacketHand
 
 internal open class PacketHandlerList : MutableList<PacketHandlerNode<*>> by mutableListOf() {
     @Suppress("UNCHECKED_CAST")
-    operator fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T = this.first { it.key === key }.instance as T
+    operator fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T = this.first { it.key == key }.instance as T
 }

@@ -43,7 +43,7 @@ expect fun localIpAddress(): String
 /**
  * Ktor HttpClient. 不同平台使用不同引擎.
  */
-internal expect val httpClient: HttpClient
+internal expect val Http: HttpClient
 
 
 // FIXME: 2019/10/28 这个方法不是很好的实现

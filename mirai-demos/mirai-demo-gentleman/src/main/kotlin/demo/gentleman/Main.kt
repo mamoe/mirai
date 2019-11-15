@@ -2,9 +2,11 @@
 
 package demo.gentleman
 
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.addFriend
@@ -12,7 +14,11 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
+import net.mamoe.mirai.message.Image
+import net.mamoe.mirai.network.protocol.tim.packet.action.downloadAsByteArray
+import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
+import net.mamoe.mirai.utils.currentTime
 import java.io.File
 import kotlin.random.Random
 
@@ -52,21 +58,23 @@ suspend fun main() {
             sender.profile.await().toString()
         }
 
-        /*
         has<Image> {
-            reply(message)
-        }*/
+            if (this is FriendMessage) {
+                withContext(IO) {
+                    reply(message[Image] + " downloading")
+                    sender.downloadAsByteArray(message[Image]).inputStream()
+                        .transferTo(File(System.getProperty("user.dir", "testDownloadedImage${currentTime}.png")).outputStream())
+                    reply(message[Image] + " downloaded")
+                }
+            }
+        }
 
         startsWith("随机图片", removePrefix = true) {
-            try {
-                repeat(it.toIntOrNull() ?: 1) {
-                    GlobalScope.launch {
-                        delay(Random.Default.nextLong(100, 1000))
-                        Gentlemen.provide(subject).receive().image.await().send()
-                    }
+            repeat(it.toIntOrNull() ?: 1) {
+                GlobalScope.launch {
+                    delay(Random.Default.nextLong(100, 1000))
+                    Gentlemen.provide(subject).receive().image.await().send()
                 }
-            } catch (e: Exception) {
-                reply(e.message ?: "exception: null")
             }
         }
 

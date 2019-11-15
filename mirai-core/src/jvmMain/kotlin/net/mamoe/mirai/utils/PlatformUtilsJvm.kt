@@ -55,7 +55,7 @@ actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(host
 
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
-internal actual val httpClient: HttpClient = HttpClient(CIO)
+internal actual val Http: HttpClient = HttpClient(CIO)
 
 internal actual fun HttpRequestBuilder.configureBody(
     inputSize: Long,

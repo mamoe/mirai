@@ -205,7 +205,7 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
         /**
          * 备注名
          */
-        remark: String,
+        remark: String, //// TODO: 2019/11/15 无备注的情况
         key: FriendAdditionKey
     ): OutgoingPacket = buildSessionPacket(bot, sessionKey) {
 

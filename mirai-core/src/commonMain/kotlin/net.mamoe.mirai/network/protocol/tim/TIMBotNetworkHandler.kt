@@ -62,7 +62,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
         handlersLock.withLock {
             temporaryPacketHandlers.add(temporaryPacketHandler)
         }
-        temporaryPacketHandler.send(this[ActionPacketHandler].session)
+        temporaryPacketHandler.send(this.session)
     }
 
     override suspend fun login(configuration: BotConfiguration): LoginResult {
@@ -90,7 +90,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
     //private | internal
     private fun onLoggedIn() {
         require(size == 0) { "Already logged in" }
-        val session = BotSession(bot, sessionKey, socket)
+        val session = BotSession(sessionKey, socket)
 
         add(ActionPacketHandler(session).asNode(ActionPacketHandler))
         bot.logger.info("Successfully logged in")

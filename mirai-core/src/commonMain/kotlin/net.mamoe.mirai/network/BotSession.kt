@@ -31,7 +31,6 @@ import kotlin.coroutines.coroutineContext
  */
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
 internal inline fun TIMBotNetworkHandler.BotSession(
-    bot: Bot,
     sessionKey: SessionKey,
     socket: DataPacketSocketAdapter
 ): BotSession = BotSession(bot, sessionKey, socket, this)
@@ -42,7 +41,7 @@ internal inline fun TIMBotNetworkHandler.BotSession(
  *
  * @author Him188moe
  */
-class BotSession(
+data class BotSession(
     val bot: Bot,
     val sessionKey: SessionKey,
     val socket: DataPacketSocketAdapter,
@@ -105,39 +104,11 @@ class BotSession(
         return deferred
     }
 
-    /**
-     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
-     * 将能从本函数的返回值 [CompletableDeferred] 接收到所期待的 [P]
-     * 本函数将能帮助实现清晰的包处理逻辑
-     *
-     * 实现方法:
-     * ```kotlin
-     * with(session){
-     *  val deferred = ClientPacketXXX(...).sendAndExpectAsync<ServerPacketXXX>()
-     *  // do something
-     *
-     *  deferred.await() // or deferred.join()
-     * }
-     * ```
-     */
     suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpectAsync(checkSequence: Boolean = true): Deferred<P> =
         sendAndExpectAsync<P, P>(checkSequence) { it }
 
-    /**
-     * 发送一个数据包, 并期待接受一个特定的 [ServerPacket][P].
-     * 将调用 [CompletableDeferred.await], 挂起等待接收到指定的包后才返回.
-     * 本函数将能帮助实现清晰的包处理逻辑
-     *
-     * 实现方法:
-     * ```kotlin
-     * with(session){
-     *  val packet:AddFriendPacket.Response = AddFriendPacket(...).sendAndExpect<AddFriendPacket.Response>()
-     * }
-     * ```
-     * @sample Bot.addFriend 添加好友
-     */
-    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true, crossinline block: (P) -> R): R =
-        sendAndExpectAsync<P, R>(checkSequence) { block(it) }.await()
+    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true, crossinline mapper: (P) -> R): R =
+        sendAndExpectAsync<P, R>(checkSequence) { mapper(it) }.await()
 
     suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): P =
         sendAndExpectAsync<P, P>(checkSequence) { it }.await()

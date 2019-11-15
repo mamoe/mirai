@@ -226,6 +226,7 @@ Mirai 22:04:48 : Packet received: UnknownEventPacket(id=00 D6, identity=(2092749
  * 添加一个好友
  *
  * @param lazyMessage 若需要验证请求时的验证消息.
+ * @param lazyRemark 好友备注
  */
 suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }, lazyRemark: () -> String = { "" }): AddFriendResult = bot.withSession {
     when (CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>()) {

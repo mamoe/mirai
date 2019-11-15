@@ -25,7 +25,7 @@ actual val deviceName: String get() = InetAddress.getLocalHost().hostName
  * Ktor HttpClient. 不同平台使用不同引擎.
  */
 @KtorExperimentalAPI
-internal actual val httpClient: HttpClient
+internal actual val Http: HttpClient
     get() = HttpClient(CIO)
 
 /**

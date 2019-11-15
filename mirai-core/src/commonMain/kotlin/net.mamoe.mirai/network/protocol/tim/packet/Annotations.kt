@@ -9,11 +9,10 @@ import kotlin.reflect.KClass
 /**
  * 包 ID. 除特殊外, [PacketFactory] 都需要这个注解来指定包 ID.
  */
-@Deprecated("Reflection is not supported in JS. Consider to remove")
 @MustBeDocumented
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
-annotation class AnnotatedId(
+annotation class AnnotatedId( // 注解无法在 JS 平台使用, 但现在暂不需要考虑 JS
     val id: KnownPacketId
 )
 
@@ -40,7 +39,7 @@ annotation class CorrespondingEvent(
 internal annotation class PacketVersion(val date: String, val timVersion: String)
 
 /**
- * 带有这个注解的 [Packet], 将不会被记录在 log 中.
+ * 带有这个注解的 [Packet] 将不会被记录在 log 中.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

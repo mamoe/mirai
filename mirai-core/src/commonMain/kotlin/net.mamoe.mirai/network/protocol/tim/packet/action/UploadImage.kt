@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.ImageId
+import net.mamoe.mirai.message.ImageLink
 import net.mamoe.mirai.message.requireLength
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
@@ -22,8 +23,8 @@ import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.Http
 import net.mamoe.mirai.utils.configureBody
-import net.mamoe.mirai.utils.httpClient
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
 import kotlin.coroutines.coroutineContext
@@ -47,7 +48,7 @@ suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
 
     withContext(userContext) {
         when (response) {
-            is GroupImageIdRequestPacket.Response.RequireUpload -> httpClient.postImage(
+            is GroupImageIdRequestPacket.Response.RequireUpload -> Http.postImage(
                 htcmd = "0x6ff0071",
                 uin = bot.qqAccount,
                 groupId = GroupId(id),
@@ -79,7 +80,7 @@ suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
         .sendAndExpectAsync<FriendImageIdRequestPacket.Response, ImageId> {
             return@sendAndExpectAsync when (it) {
                 is FriendImageIdRequestPacket.Response.RequireUpload -> {
-                    httpClient.postImage(
+                    Http.postImage(
                         htcmd = "0x6ff0070",
                         uin = bot.qqAccount,
                         groupId = null,
@@ -132,10 +133,10 @@ internal suspend inline fun HttpClient.postImage(
     imageInput.close()
 }
 
-
 internal suspend inline fun HttpClient.download(
     url: String
 ): ByteArray = get<HttpResponse>(url).readBytes() // TODO 不知道为什么找不到 `ByteReadChannel`.
+
 
 /*
 /**
@@ -195,7 +196,7 @@ object SubmitImageFilenamePacket : PacketFactory {
  */
 @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
 @PacketVersion(date = "2019.11.14", timVersion = "2.3.2 (21173)")
-object FriendImageIdDownloadLinkRequestPacket : SessionPacketFactory<FriendImageIdDownloadLinkRequestPacket.DownloadLink>() {
+object FriendImageIdDownloadLinkRequestPacket : SessionPacketFactory<FriendImageIdDownloadLinkRequestPacket.ImageLinkResponse>() {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey,
@@ -239,14 +240,14 @@ object FriendImageIdDownloadLinkRequestPacket : SessionPacketFactory<FriendImage
     /**
      * 图片下载链接. 直接 'get' 请求即可
      */
-    data class DownloadLink(
+    data class ImageLinkResponse(
         val imageId: ImageId,
-        val link: String
+        val link: ImageLink
     ) : Packet
 
     // TODO: 2019/11/14 需要跟 RequestId packet 合并. 因为现行结构无法分别处理; 或者考虑修改结构(不推荐)
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): DownloadLink {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): ImageLinkResponse {
         //00 00 00 08 00 00
         // [02 2B]
         // 12 [06] 98 01 02 A0 01 00
@@ -282,7 +283,7 @@ object FriendImageIdDownloadLinkRequestPacket : SessionPacketFactory<FriendImage
 
         val link = readUVarIntLVString()
         discard()
-        return DownloadLink(imageId, link)
+        return ImageLinkResponse(imageId, ImageLink(link))
     }
 }
 

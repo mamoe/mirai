@@ -26,7 +26,7 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
      */
     private val annotatedId: AnnotatedId
         get() = (this::class.annotations.firstOrNull { it is AnnotatedId } as? AnnotatedId)
-            ?: error("Annotation AnnotatedId not found")
+            ?: error("Annotation AnnotatedId not found for class ${this::class.simpleName}")
 
     /**
      * 包 ID.

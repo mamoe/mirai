@@ -5,7 +5,9 @@ package net.mamoe.mirai.message
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.download
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.Http
 import kotlin.js.JsName
 import kotlin.jvm.Volatile
 
@@ -154,17 +156,6 @@ inline class Image(inline val id: ImageId) : Message {
     override val stringValue: String get() = "[${id.value}]"
     override fun toString(): String = stringValue
 
-    /**
-     * 下载这个图片
-     */
-    suspend fun download(): ExternalImage {
-        // http://101.89.39.21/offpic_new/892185277C8A24AB9BB91AE888A6BC910C4D48CBA84BBB2F0D800761F1DD2F71F205364442C451A82D2F6FAD38CF71A9D65B6873409BD10CCF22BBF7DFA73DD7DA06FBB7386E31E4/0?vuin=1040400290&term=255&srvver=26933&rf=naio
-        // http://61.151.234.54/offpic_new/A47CAC5D3C5EF955A77ECE13DA969A69238167886464C00FD75FFC49A76EF15A1F05ED04BC2DE91190A40048AAF97BB6DFDB25BFB0EFE6A9516DC3BE0532A9A93A87A4C8D2E9729C/0?vuin=1040400290&term=255&srvver=26933&rf=naio
-
-
-        TODO()
-    }
-
     companion object Key : Message.Key<Image>
 }
 
@@ -181,7 +172,11 @@ inline class ImageId(inline val value: String)
 /**
  * 图片数据地址.
  */
-inline class ImageLink(inline val value: String)
+inline class ImageLink(inline val value: String) {
+
+    // TODO: 2019/11/15 应添加更多方法. 避免使用 byte[]
+    suspend fun downloadAsByteArray(): ByteArray = Http.download(value)
+}
 
 fun ImageId.checkLength() = check(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
 fun ImageId.requireLength() = require(value.length == 37 || value.length == 42) { "Illegal ImageId length" }

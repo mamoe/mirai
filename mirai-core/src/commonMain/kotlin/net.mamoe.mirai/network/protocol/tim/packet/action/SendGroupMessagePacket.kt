@@ -12,6 +12,8 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.*
 
+@AnnotatedId(KnownPacketId.SEND_GROUP_MESSAGE)
+@PacketVersion(date = "2019.10.19", timVersion = "2.3.2 (21173)")
 object SendGroupMessagePacket : SessionPacketFactory<SendGroupMessagePacket.Response>() {
     operator fun invoke(
         botQQ: UInt,
