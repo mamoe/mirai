@@ -35,6 +35,7 @@ fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().
 
 private inline fun <R> inline(block: () -> R): R = block()
 
+@Suppress("DuplicatedCode")
 fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMap<UInt, ByteArray> {
     val map = mutableMapOf<UInt, ByteArray>()
     var type: UShort = 0u
@@ -62,6 +63,42 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
                     ", remaining=" + if (expectingEOF) this.readBytes().toUHexString() else "[Not expecting EOF]"
         }
         map[type.toUInt()] = this.readUShortLVByteArray()
+    }
+    return map
+}
+
+/**
+ * 读扁平的 tag-UVarInt map. 重复的 tag 将不会只保留最后一个
+ *
+ * tag: UByte
+ * value: UVarint
+ */
+@Suppress("DuplicatedCode")
+fun Input.readFlatTUVarIntMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMap<UInt, UInt> {
+    val map = mutableMapOf<UInt, UInt>()
+    var type: UShort = 0u
+
+    while (inline {
+            try {
+                type = when (tagSize) {
+                    1 -> readUByte().toUShort()
+                    2 -> readUShort()
+                    else -> error("Unsupported tag size: $tagSize")
+                }
+            } catch (e: EOFException) {
+                if (expectingEOF) {
+                    return map
+                }
+                throw e
+            }
+            type
+        }.toUByte() != UByte.MAX_VALUE) {
+
+        if (map.containsKey(type.toUInt())) {
+            map[type.toUInt()] = this.readUVarInt()
+        } else {
+            map[type.toUInt()] = this.readUVarInt()
+        }
     }
     return map
 }

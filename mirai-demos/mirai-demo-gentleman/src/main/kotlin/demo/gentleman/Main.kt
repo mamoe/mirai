@@ -12,11 +12,15 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.Image
+import net.mamoe.mirai.message.sendAsImageTo
+import net.mamoe.mirai.network.protocol.tim.packet.action.download
 import net.mamoe.mirai.network.protocol.tim.packet.action.downloadAsByteArray
+import net.mamoe.mirai.network.protocol.tim.packet.action.downloadTo
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import net.mamoe.mirai.utils.currentTime
 import java.io.File
+import javax.swing.filechooser.FileSystemView
 import kotlin.random.Random
 
 private fun readTestAccount(): BotAccount? {
@@ -65,11 +69,22 @@ suspend fun main() {
             if (this is FriendMessage) {
                 withContext(IO) {
                     reply(message[Image] + " downloading")
-                    sender.downloadAsByteArray(message[Image]).inputStream()
-                        .transferTo(File(System.getProperty("user.dir", "testDownloadedImage${currentTime}.png")).outputStream())
-                    reply(message[Image] + " downloaded")
+
+                    sender.downloadTo(message[Image], File(System.getProperty("user.dir"), "testDownloadedImage${currentTime}.png").also { it.createNewFile() })
+                    reply(message[Image].id.value + " downloaded")
                 }
             }
+        }
+
+        startsWith("上传图片", removePrefix = true) handler@{
+            val file = File(FileSystemView.getFileSystemView().homeDirectory, it)
+            if (!file.exists()) {
+                reply("图片不存在")
+                return@handler
+            }
+
+            reply("sent")
+            file.sendAsImageTo(subject)
         }
 
         startsWith("随机图片", removePrefix = true) {

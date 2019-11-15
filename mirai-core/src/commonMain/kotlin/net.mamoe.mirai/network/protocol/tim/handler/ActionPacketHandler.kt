@@ -30,7 +30,7 @@ class ActionPacketHandler(session: BotSession) : PacketHandler(session) {
     override suspend fun onPacketReceived(packet: Packet): Unit = with(session) {
         when (packet) {
             is SKey -> {
-                _sKey = packet.delegate
+                _sKey = packet.value
                 cookies = "uin=o$qqAccount;skey=$sKey;"
 
 

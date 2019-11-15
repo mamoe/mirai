@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON
 import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.message.upload
+import net.mamoe.mirai.message.uploadAsImage
 import org.jsoup.Jsoup
 
 class GentleImage {
@@ -58,7 +58,7 @@ class GentleImage {
                         .execute()
                         .bodyStream()
                 }
-            }?.upload(contact) ?: error("Unable to download image")
+            }?.uploadAsImage(contact) ?: error("Unable to download image")
         }
     }
 
