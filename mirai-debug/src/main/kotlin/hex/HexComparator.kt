@@ -1,8 +1,8 @@
 @file:Suppress("ObjectPropertyName", "unused", "NonAsciiCharacters", "MayBeConstant")
 
-package mirai.test
+package hex
 
-import net.mamoe.mirai.utils.io.printCompareHex
+import net.mamoe.mirai.utils.internal.printCompareHex
 
 
 fun main() {
@@ -13,7 +13,7 @@ fun main() {
         println("Hex2: ")
         val hex2 = readLine()!!
         println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
-        println(printCompareHex(hex1, hex2))
+        println(printCompareHex(hex1.toUpperCase(), hex2.toUpperCase()))
         println()
     }
     /*

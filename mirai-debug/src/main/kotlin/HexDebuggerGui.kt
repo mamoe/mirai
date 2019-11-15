@@ -8,10 +8,10 @@ import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import kotlinx.coroutines.*
 import kotlinx.io.core.readUInt
+import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.stringOfWitch
-import net.mamoe.mirai.utils.readUnsignedVarInt
+import net.mamoe.mirai.utils.io.readUVarInt
 import tornadofx.*
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
@@ -111,7 +111,13 @@ class HexDebuggerGui : View("s") {
                     if (current != last) {
                         withContext(Dispatchers.Main) {
                             input.text = current
-                            updateOutputs(current.toString())
+                            updateOutputs(
+                                current.toString()
+                                    .replace("\n", " ")
+                                    .replace("UVarInt", "", ignoreCase = true)
+                                    .replace("[", "")
+                                    .replace("]", "")
+                            )
                         }
                     }
                 } finally {
@@ -125,7 +131,7 @@ class HexDebuggerGui : View("s") {
     private fun updateOutputs(value: String) {
         outUVarInt.text = runOrNull {
             value.hexToBytes().read {
-                readUnsignedVarInt().toString()
+                readUVarInt().toString()
             }
         }
 
@@ -146,7 +152,7 @@ class HexDebuggerGui : View("s") {
         }
 
         outString.text = runOrNull {
-            value.hexToBytes().stringOfWitch()
+            value.hexToBytes().encodeToString()
         }
     }
 
