@@ -88,7 +88,6 @@ kotlin {
             implementation("io.ktor:ktor-client-android:$ktorVersion")
 
         }
-        languageSettings.enableLanguageFeature("InlineClasses")
     }
 
     sourceSets["jvmMain"].apply {
@@ -116,6 +115,7 @@ kotlin {
 
     sourceSets.all {
         languageSettings.enableLanguageFeature("InlineClasses")
+        languageSettings.useExperimentalAnnotation("kotlin.Experimental")
 
         dependencies {
             implementation("org.jetbrains.kotlin:kotlin-stdlib")
