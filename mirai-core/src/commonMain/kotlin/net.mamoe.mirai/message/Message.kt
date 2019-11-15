@@ -6,6 +6,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageIdRequestPacket
 import net.mamoe.mirai.utils.ExternalImage
+import kotlin.js.JsName
 import kotlin.jvm.Volatile
 
 // region Message Base
@@ -153,6 +154,17 @@ inline class Image(inline val id: ImageId) : Message {
     override val stringValue: String get() = "[${id.value}]"
     override fun toString(): String = stringValue
 
+    /**
+     * 下载这个图片
+     */
+    suspend fun download(): ExternalImage {
+        // http://101.89.39.21/offpic_new/892185277C8A24AB9BB91AE888A6BC910C4D48CBA84BBB2F0D800761F1DD2F71F205364442C451A82D2F6FAD38CF71A9D65B6873409BD10CCF22BBF7DFA73DD7DA06FBB7386E31E4/0?vuin=1040400290&term=255&srvver=26933&rf=naio
+        // http://61.151.234.54/offpic_new/A47CAC5D3C5EF955A77ECE13DA969A69238167886464C00FD75FFC49A76EF15A1F05ED04BC2DE91190A40048AAF97BB6DFDB25BFB0EFE6A9516DC3BE0532A9A93A87A4C8D2E9729C/0?vuin=1040400290&term=255&srvver=26933&rf=naio
+
+
+        TODO()
+    }
+
     companion object Key : Message.Key<Image>
 }
 
@@ -165,6 +177,14 @@ inline class Image(inline val id: ImageId) : Message {
  * @see FriendImageIdRequestPacket.Response.imageId 好友图片的 [ImageId] 获取
  */
 inline class ImageId(inline val value: String)
+
+/**
+ * 图片数据地址.
+ */
+inline class ImageLink(inline val value: String)
+
+fun ImageId.checkLength() = check(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
+fun ImageId.requireLength() = require(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
 
 fun ImageId.image(): Image = Image(this)
 
@@ -212,6 +232,7 @@ inline class Face(val id: FaceID) : Message {
 /**
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 8
  */
+@JsName("emptyMessageChain")
 @Suppress("FunctionName")
 fun MessageChain(): MessageChain = EmptyMessageChain()
 
@@ -225,7 +246,7 @@ fun MessageChain(initialCapacity: Int): MessageChain =
 
 /**
  * 构造 [MessageChain]
- * 若仅提供一个参数, 请考虑使用 [Message.toChain] 以优化性能
+ * 若仅提供一个参数, 请考虑使用 [Message.singleChain] 以优化性能
  */
 @Suppress("FunctionName")
 fun MessageChain(vararg messages: Message): MessageChain =
@@ -242,11 +263,12 @@ fun MessageChain(messages: Iterable<Message>): MessageChain = MessageChainImpl(m
  * 构造单元素的不可修改的 [MessageChain]. 内部类实现为 [SingleMessageChain]
  *
  * 参数 [delegate] 不能为 [MessageChain] 的实例, 否则将会抛出异常.
- * 使用 [Message.toChain] 将帮助提前处理这个问题.
+ * 使用 [Message.singleChain] 将帮助提前处理这个问题.
  *
  * @param delegate 所构造的单元素 [MessageChain] 代表的 [Message]
  * @throws IllegalArgumentException 当 [delegate] 为 [MessageChain] 的实例时
- * @see Message.toChain 将
+ *
+ * @see Message.singleChain receiver 模式
  */
 @Suppress("FunctionName")
 fun SingleMessageChain(delegate: Message): MessageChain {
@@ -266,9 +288,6 @@ fun SingleMessageChain(delegate: Message): MessageChain {
  * @see SingleMessageChainImpl
  */
 fun Message.singleChain(): MessageChain = if (this is MessageChain) this else SingleMessageChain(this)
-
-@Deprecated(message = "deprected", replaceWith = ReplaceWith("this.singleChain()"), level = DeprecationLevel.WARNING)
-fun Message.toChain(): MessageChain = singleChain()
 
 /**
  * 构造 [MessageChain]
