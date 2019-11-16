@@ -43,11 +43,11 @@ fun main() {
         println(it)
     }*/
     val localIp = Pcaps.findAllDevs()[0].addresses[0].address.hostAddress
-    println("LocalIp = $localIp")
-
+    println("localIp = $localIp")
     Pcaps.findAllDevs().forEach {
         listenDevice(localIp, it)
     }
+    println("Ready perfectly")
 }
 
 /**
@@ -59,7 +59,6 @@ private fun listenDevice(localIp: String, device: PcapNetworkInterface) {
     val sender = device.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
     thread {
         sender.setFilter("src $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
-        println("sendListener started")
         try {
             sender.loop(Int.MAX_VALUE, PacketListener {
                 runBlocking {
@@ -80,7 +79,6 @@ private fun listenDevice(localIp: String, device: PcapNetworkInterface) {
     val receiver = device.openLive(65536, PromiscuousMode.PROMISCUOUS, 10)
     thread {
         receiver.setFilter("dst $localIp && udp port 8000", BpfCompileMode.OPTIMIZE)
-        println("receiveListener started")
         try {
             receiver.loop(Int.MAX_VALUE, PacketListener {
                 runBlocking {
