@@ -1,17 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.multiplatform'
+    id 'kotlin-android-extensions'
 }
 
 android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "net.mamoe.mirai.demo"
-        minSdkVersion 23
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -53,10 +53,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 
     androidTestImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
 
     def anko_version = "0.10.8"
     implementation "org.jetbrains.anko:anko-commons:$anko_version"
+
+    implementation group: 'io.ktor', name: 'ktor-client-android', version: '1.2.5'
+    implementation("io.ktor:ktor-client-android:1.2.5")
 }
