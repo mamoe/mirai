@@ -2,9 +2,6 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-import net.mamoe.mirai.event.Subscribable
-import kotlin.reflect.KClass
-
 
 /**
  * 包 ID. 除特殊外, [PacketFactory] 都需要这个注解来指定包 ID.
@@ -17,18 +14,6 @@ annotation class AnnotatedId( // 注解无法在 JS 平台使用, 但现在暂�
 )
 
 inline val AnnotatedId.value: UShort get() = id.value
-
-
-/**
- * 标记这个包对应的事件.
- * 这个注解应该被标记在 [Packet] 上
- */
-@MustBeDocumented
-@Retention(AnnotationRetention.SOURCE)
-@Target(AnnotationTarget.CLASS)
-annotation class CorrespondingEvent(
-    val eventClass: KClass<out Subscribable>
-)
 
 /**
  * 包的最后一次修改时间, 和分析时使用的 TIM 版本

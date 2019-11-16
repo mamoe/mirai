@@ -15,8 +15,8 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageLink
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.printTLVMap
@@ -88,7 +88,7 @@ abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
 
     // region Image download
 
-    suspend fun Image.getLink(): ImageLink = bot.withSession { FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect() }
+    suspend fun Image.getLink(): FriendImageLink = bot.withSession { FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect() }
     suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
     suspend inline fun Image.download(): ByteReadPacket = getLink().download()
     // endregion

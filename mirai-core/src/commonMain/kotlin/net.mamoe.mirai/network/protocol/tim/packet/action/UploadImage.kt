@@ -22,6 +22,7 @@ import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.Http
+import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.configureBody
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
@@ -42,11 +43,11 @@ class OverFileSizeMaxException : IllegalStateException()
  */
 suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
     val userContext = coroutineContext
-    val response = GroupImageIdRequestPacket(bot.qqAccount, internalId, image, sessionKey).sendAndExpect<GroupImageIdRequestPacket.Response>()
+    val response = GroupImagePacket.RequestImageId(bot.qqAccount, internalId, image, sessionKey).sendAndExpect<GroupImageResponse>()
 
     withContext(userContext) {
         when (response) {
-            is GroupImageIdRequestPacket.Response.RequireUpload -> Http.postImage(
+            is GroupImageUKey -> Http.postImage(
                 htcmd = "0x6ff0071",
                 uin = bot.qqAccount,
                 groupId = GroupId(id),
@@ -55,10 +56,11 @@ suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
                 uKeyHex = response.uKey.toUHexString("")
             )
 
-            is GroupImageIdRequestPacket.Response.AlreadyExists -> {
+            is GroupImageAlreadyExists -> {
             }
 
-            is GroupImageIdRequestPacket.Response.OverFileSizeMax -> throw OverFileSizeMaxException()
+            is GroupImageOverFileSizeMax -> throw OverFileSizeMaxException()
+            else -> assertUnreachable()
         }
     }
 
@@ -75,9 +77,9 @@ suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
  */
 suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
     FriendImagePacket.RequestImageId(qqAccount, sessionKey, id, image)
-        .sendAndExpectAsync<ImageResponse, ImageId> {
+        .sendAndExpectAsync<FriendImageResponse, ImageId> {
             return@sendAndExpectAsync when (it) {
-                is ImageUKey -> {
+                is FriendImageUKey -> {
                     Http.postImage(
                         htcmd = "0x6ff0070",
                         uin = bot.qqAccount,
@@ -88,8 +90,8 @@ suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
                     )
                     it.imageId
                 }
-                is ImageAlreadyExists -> it.imageId
-                is ImageOverFileSizeMax -> throw OverFileSizeMaxException()
+                is FriendImageAlreadyExists -> it.imageId
+                is FriendImageOverFileSizeMax -> throw OverFileSizeMaxException()
                 else -> error("This shouldn't happen")
             }
         }.await()
@@ -183,40 +185,82 @@ object SubmitImageFilenamePacket : PacketFactory {
     }
 }*/
 
-interface ImageResponse : EventPacket
+// region FriendImageResponse
+
+interface FriendImageResponse : EventPacket
 
 /**
  * 图片数据地址.
  */
 // TODO: 2019/11/15 应该为 inline class, 但 kotlin 有 bug
-data class ImageLink(inline val value: String) : ImageResponse {
+data class FriendImageLink(inline val value: String) : FriendImageResponse {
     suspend fun downloadAsByteArray(): ByteArray = download().readBytes()
     suspend fun download(): ByteReadPacket = Http.get(value)
 
-    override fun toString(): String = "ImageLink($value)"
+    override fun toString(): String = "FriendImageLink($value)"
 }
 
 /**
  * 访问 HTTP API 时使用的 uKey
  */
-class ImageUKey(inline val imageId: ImageId, inline val uKey: ByteArray) : ImageResponse {
-    override fun toString(): String = "ImageUKey(imageId=${imageId.value}, uKey=${uKey.toUHexString()})"
+class FriendImageUKey(inline val imageId: ImageId, inline val uKey: ByteArray) : FriendImageResponse {
+    override fun toString(): String = "FriendImageUKey(imageId=${imageId.value}, uKey=${uKey.toUHexString()})"
 }
 
 /**
  * 图片 ID 已存在
  * 发送消息时使用的 id
  */
-inline class ImageAlreadyExists(inline val imageId: ImageId) : ImageResponse {
+inline class FriendImageAlreadyExists(inline val imageId: ImageId) : FriendImageResponse {
     override fun toString(): String = "FriendImageAlreadyExists(imageId=${imageId.value})"
 }
 
 /**
  * 超过文件大小上限
  */
-object ImageOverFileSizeMax : ImageResponse {
+object FriendImageOverFileSizeMax : FriendImageResponse {
     override fun toString(): String = "FriendImageOverFileSizeMax"
 }
+
+// endregion
+
+// regiion GroupImageResponse
+interface GroupImageResponse : EventPacket
+
+/**
+ * 图片数据地址.
+ */
+// TODO: 2019/11/15 应该为 inline class, 但 kotlin 有 bug
+data class GroupImageLink(inline val value: String) : GroupImageResponse {
+    suspend fun downloadAsByteArray(): ByteArray = download().readBytes()
+    suspend fun download(): ByteReadPacket = Http.get(value)
+
+    override fun toString(): String = "GroupImageLink($value)"
+}
+
+/**
+ * 访问 HTTP API 时使用的 uKey
+ */
+inline class GroupImageUKey(inline val uKey: ByteArray) : GroupImageResponse {
+    override fun toString(): String = "GroupImageUKey(uKey=${uKey.toUHexString()})"
+}
+
+/**
+ * 图片 ID 已存在
+ * 发送消息时使用的 id
+ */
+object GroupImageAlreadyExists : GroupImageResponse {
+    override fun toString(): String = "GroupImageAlreadyExists"
+}
+
+/**
+ * 超过文件大小上限
+ */
+object GroupImageOverFileSizeMax : GroupImageResponse {
+    override fun toString(): String = "GroupImageOverFileSizeMax"
+
+}
+// endregion
 
 /**
  * 请求上传图片. 将发送图片的 md5, size, width, height.
@@ -226,7 +270,7 @@ object ImageOverFileSizeMax : ImageResponse {
  */
 @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
 @PacketVersion(date = "2019.11.16", timVersion = "2.3.2 (21173)")
-object FriendImagePacket : SessionPacketFactory<ImageResponse>() {
+object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
     @Suppress("FunctionName")
     fun RequestImageId(
         bot: UInt,
@@ -333,103 +377,102 @@ object FriendImagePacket : SessionPacketFactory<ImageResponse>() {
         }
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): ImageResponse =
-        with(this) {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): FriendImageResponse {
 
-            // 上传图片, 成功获取ID
-            //00 00 00 08 00 00
-            // [01 0D]
-            // 12 [06] 98 01 01 A0 01 00
-            // 08 01 //packet type 01=上传图片; 02=下载图片
-            // 12 [86 02]
-            //   08 00
-            //   10 [9B A4 D4 9A 0A]
-            //   18 00
-            //   28 00
-            //   38 F1 C0 A1 BF 05
-            //   38 BB C8 E4 E2 0F
-            //   38 FB AE FA 9D 0A
-            //   38 E5 C6 8B CD 06
-            //   40 BB 03 // ports
-            //   40 90 3F
-            //   40 50
-            //   40 BB 03
-            //   4A [80 01] 76 B2 58 23 B8 F6 B1 E6 AE D4 76 EC 3C 08 79 B1 DF 05 D5 C2 4A E0 CC F1 2F 26 4F D4 DC 44 5A 9A 16 A9 E4 22 EB 92 96 05 C3 C9 8F C5 5F 84 00 A3 4E 63 BE 76 F7 B9 7B 09 43 A6 14 EE C8 6D 6A 48 02 E3 9D 62 CD 42 3E 15 93 64 8F FC F5 88 50 74 6A 6A 03 C9 FE F0 96 EA 76 02 DC 4F 09 D0 F5 60 73 B2 62 8F 8B 11 06 BF 06 1B 18 00 FE B4 5E F3 12 72 F2 66 9C F5 01 97 1C 0A 5B 68 5B 85 ED 9C
-            //   52 [25] 2F 37 38 62 36 34 64 63 32 2D 31 66 32 31 2D 34 33 62 38 2D 39 32 62 31 2D 61 30 35 30 35 30 34 30 35 66 65 32
-            //   5A [25] 2F 37 38 62 36 34 64 63 32 2D 31 66 32 31 2D 34 33 62 38 2D 39 32 62 31 2D 61 30 35 30 35 30 34 30 35 66 65 32
-            //   60 00 68 80 80 08
-            // 20 01
+        // 上传图片, 成功获取ID
+        //00 00 00 08 00 00
+        // [01 0D]
+        // 12 [06] 98 01 01 A0 01 00
+        // 08 01 //packet type 01=上传图片; 02=下载图片
+        // 12 [86 02]
+        //   08 00
+        //   10 [9B A4 D4 9A 0A]
+        //   18 00
+        //   28 00
+        //   38 F1 C0 A1 BF 05
+        //   38 BB C8 E4 E2 0F
+        //   38 FB AE FA 9D 0A
+        //   38 E5 C6 8B CD 06
+        //   40 BB 03 // ports
+        //   40 90 3F
+        //   40 50
+        //   40 BB 03
+        //   4A [80 01] 76 B2 58 23 B8 F6 B1 E6 AE D4 76 EC 3C 08 79 B1 DF 05 D5 C2 4A E0 CC F1 2F 26 4F D4 DC 44 5A 9A 16 A9 E4 22 EB 92 96 05 C3 C9 8F C5 5F 84 00 A3 4E 63 BE 76 F7 B9 7B 09 43 A6 14 EE C8 6D 6A 48 02 E3 9D 62 CD 42 3E 15 93 64 8F FC F5 88 50 74 6A 6A 03 C9 FE F0 96 EA 76 02 DC 4F 09 D0 F5 60 73 B2 62 8F 8B 11 06 BF 06 1B 18 00 FE B4 5E F3 12 72 F2 66 9C F5 01 97 1C 0A 5B 68 5B 85 ED 9C
+        //   52 [25] 2F 37 38 62 36 34 64 63 32 2D 31 66 32 31 2D 34 33 62 38 2D 39 32 62 31 2D 61 30 35 30 35 30 34 30 35 66 65 32
+        //   5A [25] 2F 37 38 62 36 34 64 63 32 2D 31 66 32 31 2D 34 33 62 38 2D 39 32 62 31 2D 61 30 35 30 35 30 34 30 35 66 65 32
+        //   60 00 68 80 80 08
+        // 20 01
 
-            // 上传图片, 图片过大
-            //00 00 00 09 00 00 00 1D 12 07 98 01 01 A0 01 C7 01 08 01 12 19 08 00 18 C7 01 22 12 66 69 6C 65 20 73 69 7A 65 20 6F 76 65 72 20 6D 61 78
-            discardExact(3) // 00 00 00
-            if (readUByte().toUInt() == 0x09u) {
-                return ImageOverFileSizeMax
-            }
-            discardExact(2) //00 00
+        // 上传图片, 图片过大
+        //00 00 00 09 00 00 00 1D 12 07 98 01 01 A0 01 C7 01 08 01 12 19 08 00 18 C7 01 22 12 66 69 6C 65 20 73 69 7A 65 20 6F 76 65 72 20 6D 61 78
+        discardExact(3) // 00 00 00
+        if (readUByte().toUInt() == 0x09u) {
+            return FriendImageOverFileSizeMax
+        }
+        discardExact(2) //00 00
 
-            discardExact(2) //全长 (有 offset)
+        discardExact(2) //全长 (有 offset)
 
-            discardExact(1); discardExact(readUVarInt().toInt()) // 12 06 98 01 01 A0 01 00
+        discardExact(1); discardExact(readUVarInt().toInt()) // 12 06 98 01 01 A0 01 00
 
-            check(readUByte().toUInt() == 0x08u)
-            when (val flag = readUByte().toUInt()) {
-                0x01u -> {
-                    try {
-                        while (readUByte().toUInt() != 0x4Au) readUVarLong()
-                        val uKey = readBytes(readUVarInt().toInt())//128
-                        while (readUByte().toUInt() != 0x52u) readUVarLong()
-                        val imageId = ImageId(readString(readUVarInt().toInt()))//37
-                        return ImageUKey(imageId, uKey)
-                    } catch (e: EOFException) {
-                        val toDiscard = readUByte().toInt() - 37
+        check(readUByte().toUInt() == 0x08u)
+        return when (val flag = readUByte().toUInt()) {
+            0x01u -> {
+                try {
+                    while (readUByte().toUInt() != 0x4Au) readUVarLong()
+                    val uKey = readBytes(readUVarInt().toInt())//128
+                    while (readUByte().toUInt() != 0x52u) readUVarLong()
+                    val imageId = ImageId(readString(readUVarInt().toInt()))//37
+                    return FriendImageUKey(imageId, uKey)
+                } catch (e: EOFException) {
+                    val toDiscard = readUByte().toInt() - 37
 
-                        return if (toDiscard < 0) {
-                            ImageOverFileSizeMax
-                        } else {
-                            discardExact(toDiscard)
-                            val imageId = ImageId(readString(37))
-                            ImageAlreadyExists(imageId)
-                        }
+                    return if (toDiscard < 0) {
+                        FriendImageOverFileSizeMax
+                    } else {
+                        discardExact(toDiscard)
+                        val imageId = ImageId(readString(37))
+                        FriendImageAlreadyExists(imageId)
                     }
                 }
-                0x02u -> {
-                    //00 00 00 08 00 00
-                    // [02 2B]
-                    // 12 [06] 98 01 02 A0 01 00
-                    // 08 02
-                    // 1A [A6 04]
-                    //   0A [25] 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66
-                    //   18 00
-                    //   32 [7B] 68 74 74 70 3A 2F 2F 36 31 2E 31 35 31 2E 32 33 34 2E 35 34 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 30 31 2E 32 32 37 2E 31 33 31 2E 36 37 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7D 68 74 74 70 3A 2F 2F 31 35 37 2E 32 35 35 2E 31 39 32 2E 31 30 35 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 32 30 2E 32 34 31 2E 31 39 30 2E 34 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33
-                    //   3A 00 80 01 00
-
-
-                    //00 00 00 08 00 00
-                    // [02 29]
-                    // 12 [06] 98 01 02 A0 01 00
-                    // 08 02
-                    // 1A [A4 04]
-                    //   0A [25] 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64
-                    //   18 00
-                    //   32 [7A] 68 74 74 70 3A 2F 2F 31 30 31 2E 38 39 2E 33 39 2E 32 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33
-                    //   32 7B 68 74 74 70 3A 2F 2F 36 31 2E 31 35 31 2E 31 38 33 2E 32 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7D 68 74 74 70 3A 2F 2F 31 35 37 2E 32 35 35 2E 31 39 32 2E 31 30 35 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 32 30 2E 32 34 31 2E 31 39 30 2E 34 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 3A 00 80 01 00
-
-                    discardExact(1)
-                    discardExact(2)// [A4 04] 后文长度
-                    check(readUByte().toUInt() == 0x0Au) { "Illegal identity. Required 0x0Au" }
-                    /* val imageId = */ImageId(readString(readUByte().toInt()))
-
-                    check(readUByte().toUInt() == 0x18u) { "Illegal identity. Required 0x18u" }
-                    check(readUShort().toUInt() == 0x0032u) { "Illegal identity. Required 0x0032u" }
-
-                    val link = readUVarIntLVString()
-                    discard()
-                    ImageLink(link)
-                }
-                else -> error("Unknown FriendImageIdRequestPacket flag $flag")
             }
+            0x02u -> {
+                //00 00 00 08 00 00
+                // [02 2B]
+                // 12 [06] 98 01 02 A0 01 00
+                // 08 02
+                // 1A [A6 04]
+                //   0A [25] 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66
+                //   18 00
+                //   32 [7B] 68 74 74 70 3A 2F 2F 36 31 2E 31 35 31 2E 32 33 34 2E 35 34 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 30 31 2E 32 32 37 2E 31 33 31 2E 36 37 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7D 68 74 74 70 3A 2F 2F 31 35 37 2E 32 35 35 2E 31 39 32 2E 31 30 35 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 32 30 2E 32 34 31 2E 31 39 30 2E 34 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33
+                //   3A 00 80 01 00
+
+
+                //00 00 00 08 00 00
+                // [02 29]
+                // 12 [06] 98 01 02 A0 01 00
+                // 08 02
+                // 1A [A4 04]
+                //   0A [25] 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64
+                //   18 00
+                //   32 [7A] 68 74 74 70 3A 2F 2F 31 30 31 2E 38 39 2E 33 39 2E 32 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33
+                //   32 7B 68 74 74 70 3A 2F 2F 36 31 2E 31 35 31 2E 31 38 33 2E 32 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7D 68 74 74 70 3A 2F 2F 31 35 37 2E 32 35 35 2E 31 39 32 2E 31 30 35 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 32 30 2E 32 34 31 2E 31 39 30 2E 34 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 62 61 65 30 63 64 66 66 2D 65 33 34 30 2D 34 38 39 34 2D 39 37 36 65 2D 30 66 62 35 38 61 61 31 36 35 66 64 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 3A 00 80 01 00
+
+                discardExact(1)
+                discardExact(2)// [A4 04] 后文长度
+                check(readUByte().toUInt() == 0x0Au) { "Illegal identity. Required 0x0Au" }
+                /* val imageId = */ImageId(readString(readUByte().toInt()))
+
+                check(readUByte().toUInt() == 0x18u) { "Illegal identity. Required 0x18u" }
+                check(readUShort().toUInt() == 0x0032u) { "Illegal identity. Required 0x0032u" }
+
+                val link = readUVarIntLVString()
+                discard()
+                FriendImageLink(link)
+            }
+            else -> error("Unknown FriendImageIdRequestPacket flag $flag")
         }
+    }
 }
 
 
@@ -438,104 +481,138 @@ object FriendImagePacket : SessionPacketFactory<ImageResponse>() {
  */
 @AnnotatedId(KnownPacketId.GROUP_IMAGE_ID)
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2 (21173)")
-object GroupImageIdRequestPacket : SessionPacketFactory<GroupImageIdRequestPacket.Response>() {
-    operator fun invoke(
+object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
+    @Suppress("FunctionName")
+    fun RequestImageId(
         bot: UInt,
         groupInternalId: GroupInternalId,
         image: ExternalImage,
         sessionKey: SessionKey
-    ): OutgoingPacket = buildOutgoingPacket {
-        writeQQ(bot)
-        writeHex("04 00 00 00 01 01 01 00 00 68 20 00 00 00 00 00 00 00 00")
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x04) {
+        writeHex("00 00 00 07 00 00")
 
-        encryptAndWrite(sessionKey) {
+        writeShortLVPacket(lengthOffset = { it - 7 }) {
+            writeByte(0x08)
+            writeHex("01 12 03 98 01 01 10 01 1A")
+            //                             02 10 02 22
+
+            writeUVarIntLVPacket(lengthOffset = { it }) {
+                writeTUVarint(0x08u, groupInternalId.value)
+                writeTUVarint(0x10u, bot)
+                writeTV(0x1800u)
+
+                writeUByte(0x22u)
+                writeUByte(0x10u)
+                writeFully(image.md5)
+
+                writeTUVarint(0x28u, image.inputSize.toUInt())
+                writeUVarIntLVPacket(tag = 0x32u) {
+                    writeTV(0x5B_00u)
+                    writeTV(0x40_00u)
+                    writeTV(0x33_00u)
+                    writeTV(0x48_00u)
+                    writeTV(0x5F_00u)
+                    writeTV(0x58_00u)
+                    writeTV(0x46_00u)
+                    writeTV(0x51_00u)
+                    writeTV(0x45_00u)
+                    writeTV(0x51_00u)
+                    writeTV(0x40_00u)
+                    writeTV(0x24_00u)
+                    writeTV(0x4F_00u)
+                }
+                writeTV(0x38_01u)
+                writeTV(0x48_01u)
+                writeTUVarint(0x50u, image.width.toUInt())
+                writeTUVarint(0x58u, image.height.toUInt())
+                writeTV(0x60_04u)//这个似乎会变 有时候是02, 有时候是03
+                writeTByteArray(0x6Au, value0x6A)
+
+                writeTV(0x70_00u)
+                writeTV(0x78_03u)
+                writeTV(0x80_01u)
+                writeUByte(0u)
+            }
+        }
+
+    }
+
+    @Suppress("FunctionName")
+    fun RequestImageLink(
+        bot: UInt,
+        sessionKey: SessionKey,
+        imageId: ImageId
+    ): OutgoingPacket {
+        imageId.requireLength()
+        require(imageId.value.length == 37) { "ImageId.value.length must == 37" }
+
+        // 00 00 00 07 00 00 00
+        // [4B]
+        // 08
+        // 01 12
+        // 03 98
+        // 01 02
+        // 08 02
+        //
+        // 1A [47]
+        // 08 [A2 FF 8C F0 03] UVarInt
+        // 10 [DD F1 92 B7 07] UVarInt
+        // 1A [25] 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66
+        // 20 02 30 04 38 20 40 FF 01 50 00 6A 05 32 36 39 33 33 78 01
+
+
+        // 00 00 00 07 00 00 00
+        // [4B]
+        // 08
+        // 01 12
+        // 03 98
+        // 01 02
+        // 08 02
+        //
+        // 1A
+        // [47]
+        // 08 [A2 FF 8C F0 03]
+        // 10 [A6 A7 F1 EA 02]
+        // 1A [25] 2F 39 61 31 66 37 31 36 32 2D 38 37 30 38 2D 34 39 30 38 2D 38 31 63 30 2D 66 34 63 64 66 33 35 63 38 64 37 65
+        // 20 02 30 04 38 20 40 FF 01 50 00 6A 05 32 36 39 33 33 78 01
+
+
+        return buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x04) {
             writeHex("00 00 00 07 00 00")
 
-            writeShortLVPacket(lengthOffset = { it - 7 }) {
-                writeByte(0x08)
-                writeHex("01 12 03 98 01 01 10 01 1A")
+            writeUShort(0x004Bu)
 
-                writeUVarIntLVPacket(lengthOffset = { it }) {
-                    writeTUVarint(0x08u, groupInternalId.value)
-                    writeTUVarint(0x10u, bot)
-                    writeTV(0x1800u)
+            writeUByte(0x08u)
+            writeTV(0x01_12u)
+            writeTV(0x03_98u)
+            writeTV(0x01_02u)
+            writeTV(0x08_02u)
 
-                    writeUByte(0x22u)
-                    writeUByte(0x10u)
-                    writeFully(image.md5)
-
-                    writeTUVarint(0x28u, image.inputSize.toUInt())
-                    writeUVarIntLVPacket(tag = 0x32u) {
-                        writeTV(0x5B_00u)
-                        writeTV(0x40_00u)
-                        writeTV(0x33_00u)
-                        writeTV(0x48_00u)
-                        writeTV(0x5F_00u)
-                        writeTV(0x58_00u)
-                        writeTV(0x46_00u)
-                        writeTV(0x51_00u)
-                        writeTV(0x45_00u)
-                        writeTV(0x51_00u)
-                        writeTV(0x40_00u)
-                        writeTV(0x24_00u)
-                        writeTV(0x4F_00u)
-                    }
-                    writeTV(0x38_01u)
-                    writeTV(0x48_01u)
-                    writeTUVarint(0x50u, image.width.toUInt())
-                    writeTUVarint(0x58u, image.height.toUInt())
-                    writeTV(0x60_04u)//这个似乎会变 有时候是02, 有时候是03
-                    writeTByteArray(0x6Au, value0x6A)
-
-                    writeTV(0x70_00u)
-                    writeTV(0x78_03u)
-                    writeTV(0x80_01u)
-                    writeUByte(0u)
-                }
-            }
+            writeUByte(0x1Au)
+            writeUByte(0x47u)
+            writeTUVarint(0x08u, bot)
+            writeTUVarint(0x10u, bot)
+            writeTLV(0x1Au, imageId.value.toByteArray(Charsets.ISO_8859_1))
+            writeHex("20 02 30 04 38 20 40 FF 01 50 00 6A 05 32 36 39 33 33 78 01")
         }
     }
 
     private val value0x6A: UByteArray = ubyteArrayOf(0x05u, 0x32u, 0x36u, 0x36u, 0x35u, 0x36u)
 
-    sealed class Response : EventPacket {
-        data class RequireUpload(
-            /**
-             * 访问 HTTP API 时需要使用的一个 key. 128 位
-             */
-            val uKey: ByteArray
-        ) : Response() {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other !is RequireUpload) return false
-                if (!uKey.contentEquals(other.uKey)) return false
-                return true
-            }
-
-            override fun hashCode(): Int = uKey.contentHashCode()
-        }
-
-        object AlreadyExists : Response() {
-            override fun toString(): String = this::class.simpleName!!
-        }
-
-        /**
-         * 超过文件大小上限
-         */
-        object OverFileSizeMax : Response() {
-            override fun toString(): String = this::class.simpleName!!
-        }
-    }
-
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): GroupImageResponse {
         discardExact(6)//00 00 00 05 00 00
 
         val length = remaining - 128 - 14
         if (length < 0) {
-            return if (readUShort().toUInt() == 0x0025u) Response.OverFileSizeMax else Response.AlreadyExists
+            return if (readUShort().toUInt() == 0x0025u) GroupImageOverFileSizeMax else GroupImageAlreadyExists
         }
 
         discardExact(length)
-        return Response.RequireUpload(readBytes(128))
+        return GroupImageUKey(readBytes(128))
     }
+
+    // 下载图片
+    // 00 00 00 05 00 00
+    // [02 46]
+    // 12 03 98 01 02 08 9B A4 D4 9A 0A 10 02 22 BB 04 08 92 A8 B2 D3 0A 12 10 EB 1A 34 01 8F 1E B4 73 39 34 F0 65 68 80 A7 52 18 00 48 BD EE 92 CD 01 48 BD EE 92 E5 01 48 B4 C3 A9 E8 06 48 BA F6 D7 5C 48 EF BC A4 DC 07 50 50 50 50 50 50 50 50 50 50 5A 0D 67 63 68 61 74 2E 71 70 69 63 2E 63 6E 62 77 2F 67 63 68 61 74 70 69 63 5F 6E 65 77 2F 38 31 34 37 37 37 32 33 30 2F 38 31 34 37 37 37 32 33 30 2D 32 38 35 39 32 34 32 35 31 34 2D 45 42 31 41 33 34 30 31 38 46 31 45 42 34 37 33 33 39 33 34 46 30 36 35 36 38 38 30 41 37 35 32 2F 31 39 38 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 6A 75 2F 67 63 68 61 74 70 69 63 5F 6E 65 77 2F 38 31 34 37 37 37 32 33 30 2F 38 31 34 37 37 37 32 33 30 2D 32 38 35 39 32 34 32 35 31 34 2D 45 42 31 41 33 34 30 31 38 46 31 45 42 34 37 33 33 39 33 34 46 30 36 35 36 38 38 30 41 37 35 32 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 72 77 2F 67 63 68 61 74 70 69 63 5F 6E 65 77 2F 38 31 34 37 37 37 32 33 30 2F 38 31 34 37 37 37 32 33 30 2D 32 38 35 39 32 34 32 35 31 34 2D 45 42 31 41 33 34 30 31 38 46 31 45 42 34 37 33 33 39 33 34 46 30 36 35 36 38 38 30 41 37 35 32 2F 37 32 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 78 00 80 01 03 9A 01 77 2F 67 63 68 61 74 70 69 63 5F 6E 65 77 2F 38 31 34 37 37 37 32 33 30 2F 38 31 34 37 37 37 32 33 30 2D 32 38 35 39 32 34 32 35 31 34 2D 45 42 31 41 33 34 30 31 38 46 31 45 42 34 37 33 33 39 33 34 46 30 36 35 36 38 38 30 41 37 35 32 2F 34 30 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 A0 01 00
 }

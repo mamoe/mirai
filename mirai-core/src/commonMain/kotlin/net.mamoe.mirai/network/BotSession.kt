@@ -20,8 +20,8 @@ import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageLink
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.internal.PositiveNumbers
@@ -142,7 +142,7 @@ abstract class BotSessionBase(
     suspend inline fun GroupId.group(): Group = bot.getGroup(this)
     suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
 
-    suspend fun Image.getLink(): ImageLink = FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect()
+    suspend fun Image.getLink(): FriendImageLink = FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect()
     suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
     suspend inline fun Image.download(): ByteReadPacket = getLink().download()
 }

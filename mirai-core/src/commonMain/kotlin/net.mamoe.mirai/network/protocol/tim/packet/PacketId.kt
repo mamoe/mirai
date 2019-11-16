@@ -74,7 +74,7 @@ enum class KnownPacketId(override inline val value: UShort, override inline val 
     inline CAN_ADD_FRIEND(0x00A7u, CanAddFriendPacket),
     inline ADD_FRIEND(0x00A8u, AddFriendPacket),
     inline REQUEST_FRIEND_ADDITION_KEY(0x00AEu, RequestFriendAdditionKeyPacket),
-    inline GROUP_IMAGE_ID(0x0388u, GroupImageIdRequestPacket),
+    inline GROUP_IMAGE_ID(0x0388u, GroupImagePacket),
     inline FRIEND_IMAGE_ID(0x0352u, FriendImagePacket),
 
     inline REQUEST_PROFILE_AVATAR(0x0031u, RequestProfileAvatarPacket),
