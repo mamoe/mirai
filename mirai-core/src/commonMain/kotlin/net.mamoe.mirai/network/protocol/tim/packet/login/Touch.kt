@@ -16,7 +16,7 @@ object TouchKey : DecrypterByteArray, DecrypterType<TouchKey> {
 }
 
 /**
- * The packet to sendTouch server, that is, to start the connection to the server.
+ * 与服务器建立连接的第一个包
  *
  * @author Him188moe
  */
