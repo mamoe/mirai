@@ -14,7 +14,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.KnownPacketId
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.SessionPacketFactory
 import net.mamoe.mirai.utils.OnlineStatus
-import net.mamoe.mirai.utils.io.toUHexString
 
 data class FriendStatusChanged(
     val qq: QQ,
@@ -31,7 +30,7 @@ object FriendOnlineStatusChangedPacket : SessionPacketFactory<FriendStatusChange
         val qq = readUInt()
         discardExact(8)
         val statusId = readUByte()
-        val status = OnlineStatus.ofId(statusId) ?: error("Unknown online status id 0x${statusId.toByte().toUHexString()}u")
+        val status = OnlineStatus(statusId)
         return FriendStatusChanged(handler.bot.getQQ(qq), status)
     }
 
