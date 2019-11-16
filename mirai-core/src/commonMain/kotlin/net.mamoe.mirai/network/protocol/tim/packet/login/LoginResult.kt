@@ -83,8 +83,9 @@ fun LoginResult.requireSuccess() {
  *
  * @return 成功时 [Unit], 失败时 `null`
  */
-fun LoginResult.requireSuccessOrNull(): Unit? =
-    if (this == SUCCESS) Unit else null
+fun LoginResult.requireSuccessOrNull(): Unit? {
+    return if (this == SUCCESS) Unit else null
+}
 
 
 /**

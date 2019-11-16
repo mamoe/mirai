@@ -11,7 +11,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
-import net.mamoe.mirai.utils.InternalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.io.InputStream
 
 /**
@@ -19,7 +19,7 @@ import java.io.InputStream
  *
  * @author Him188moe
  */
-@UseExperimental(InternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 actual class BotSession actual constructor(
     bot: Bot,
     sessionKey: SessionKey,

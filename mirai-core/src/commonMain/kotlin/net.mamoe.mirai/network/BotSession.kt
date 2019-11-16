@@ -22,7 +22,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
-import net.mamoe.mirai.utils.InternalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
@@ -45,7 +45,7 @@ internal inline fun TIMBotNetworkHandler.BotSession(
  *
  * @author Him188moe
  */
-@UseExperimental(InternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 expect class BotSession(
     bot: Bot,
     sessionKey: SessionKey,
@@ -56,7 +56,7 @@ expect class BotSession(
 /**
  * [BotSession] 平台通用基础
  */
-@InternalAPI
+@MiraiInternalAPI
 abstract class BotSessionBase(
     val bot: Bot,
     val sessionKey: SessionKey,

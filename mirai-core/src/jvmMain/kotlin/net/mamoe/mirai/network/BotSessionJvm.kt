@@ -10,7 +10,7 @@ import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.InternalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.toExternalImage
 import java.awt.image.BufferedImage
 import java.io.File
@@ -21,7 +21,7 @@ import javax.imageio.ImageIO
 /**
  * JVM 平台相关扩展. 详情查看 [BotSessionBase]
  */
-@UseExperimental(InternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 @Suppress("unused")
 actual class BotSession actual constructor(
     bot: Bot,

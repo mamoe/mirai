@@ -28,10 +28,10 @@ import kotlin.jvm.JvmName
 /**
  * 平台相关扩展
  */
-@UseExperimental(InternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 expect abstract class MessagePacket<TSubject : Contact>() : MessagePacketBase<TSubject>
 
-@InternalAPI
+@MiraiInternalAPI
 abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
     internal lateinit var botVar: Bot
 
