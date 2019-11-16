@@ -127,7 +127,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*>>(
      */
     suspend fun startsWith(
         prefix: String,
-        removePrefix: Boolean = false,
+        removePrefix: Boolean = true,
         onEvent: @MessageDsl suspend T.(String) -> Unit
     ) =
         content({ it.startsWith(prefix) }) {
