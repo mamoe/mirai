@@ -1,10 +1,13 @@
-@file:Suppress("ObjectPropertyName", "MayBeConstant", "NonAsciiCharacters", "SpellCheckingInspection", "unused")
+@file:Suppress("ObjectPropertyName", "MayBeConstant", "NonAsciiCharacters", "SpellCheckingInspection", "unused", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.utils.internal
 
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.io.hexToBytes
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.readUVarInt
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.math.max
 import kotlin.reflect.KProperty0
@@ -46,9 +49,10 @@ private fun LinkedHashSet<NamedHexElement>.initConstFileds() {
 
 private object TestConsts {
     val NIU_BI = "牛逼".toByteArray().toUHexString()
-    val _1994701021 = 1994701021.toUHexString(" ")
-    val _1040400290 = 1040400290.toUHexString(" ")
-    val _580266363 = 580266363.toUHexString(" ")
+    val _1994701021 = 1994701021u.toUHexString(" ")
+    val _1040400290 = 1040400290u.toUHexString(" ")
+    val _580266363 = 580266363u.toUHexString(" ")
+    val _761025446 = 761025446u.toUHexString()
 
     val _1040400290_ = "3E 03 3F A2"
     val _1994701021_ = "76 E4 B8 DD"
@@ -68,7 +72,8 @@ private object TestConsts {
 
     val varint580266363 = "FB D2 D8 94 02"
     val varint1040400290 = "A2 FF 8C F0 03"
-    var varint1994701021 = "DD F1 92 B7 07"
+    val varint1994701021 = "DD F1 92 B7 07"
+    val varint761025446 = 761025446u.toUHexString().hexToBytes().read { readUVarInt() }.toUHexString()
 }
 
 @Suppress("SpellCheckingInspection")
@@ -76,6 +81,7 @@ private object PacketIds {
     val heartbeat = "00 58"
     val friendmsgsend = "00 CD"
     val friendmsgevent = "00 CE"
+    val groupmsg = "00 02"
 }
 
 /**
