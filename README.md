@@ -35,6 +35,11 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 **转到[开发文档](#Development-Guide---Kotlin)**
 
+## Contribution
+
+我们欢迎一切形式的贡献. 若您有兴趣为 Mirai 实现 JS, iOS, Native 平台, 请联系我(`Him188@mamoe.net`).  
+若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
+
 ## Update log
 
 在 [Project](https://github.com/mamoe/mirai/projects/1) 查看
@@ -65,7 +70,7 @@ Mirai 使用以下开源库:
 平台通用开发帮助(不含协议层).   
 
 您需要有一定 Kotlin 基础才能读懂以下内容.  
-若您对本文档有建议, 请告诉我们      
+若您对本文档有建议, 请告诉我们  
 
 目录:  
 - [Introduction](#Introduction) Mirai 介绍
@@ -90,7 +95,8 @@ Mirai 使用以下开源库:
 
 ### Introduction 
 
-Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。
+Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。  
+Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他框架, 但需注明来源.
 
 ### Modules
 Mirai 的模块组成
