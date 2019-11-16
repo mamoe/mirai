@@ -2,9 +2,11 @@
           package="net.mamoe.mirai.demo">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
-            android:name="net.mamoe.mirai.demo.MyApplication"
+           android:label="@string/app_name"
             android:allowBackup="true"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
@@ -18,5 +20,6 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".MiraiService"/>
     </application>
 </manifest>
