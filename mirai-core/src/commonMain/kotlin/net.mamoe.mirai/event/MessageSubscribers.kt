@@ -8,13 +8,20 @@ import net.mamoe.mirai.message.any
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.MessagePacket
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmName
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
+@UseExperimental(ExperimentalContracts::class)
 @MessageDsl
 suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessagePacket<*>>.() -> Unit) {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
     MessageSubscribersBuilder<MessagePacket<*>> { listener ->
         subscribeAlways<MessagePacket<*>> {
             listener(it)
@@ -25,8 +32,12 @@ suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubsc
 /**
  * 订阅来自所有 [Bot] 的所有群消息事件
  */
+@UseExperimental(ExperimentalContracts::class)
 @MessageDsl
 suspend inline fun subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
     MessageSubscribersBuilder<GroupMessage> { listener ->
         subscribeAlways<GroupMessage> {
             listener(it)
@@ -37,8 +48,12 @@ suspend inline fun subscribeGroupMessages(crossinline listeners: suspend Message
 /**
  * 订阅来自所有 [Bot] 的所有好友消息事件
  */
+@UseExperimental(ExperimentalContracts::class)
 @MessageDsl
 suspend inline fun subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
     MessageSubscribersBuilder<FriendMessage> { listener ->
         subscribeAlways<FriendMessage> {
             listener(it)
@@ -49,8 +64,12 @@ suspend inline fun subscribeFriendMessages(crossinline listeners: suspend Messag
 /**
  * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
+@UseExperimental(ExperimentalContracts::class)
 @MessageDsl
 suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessagePacket<*>>.() -> Unit) {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
     MessageSubscribersBuilder<MessagePacket<*>> { listener ->
         this.subscribeAlways<MessagePacket<*>> {
             listener(it)
@@ -61,8 +80,12 @@ suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageS
 /**
  * 订阅来自这个 [Bot] 的所有群消息事件
  */
+@UseExperimental(ExperimentalContracts::class)
 @MessageDsl
 suspend inline fun Bot.subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
     MessageSubscribersBuilder<GroupMessage> { listener ->
         this.subscribeAlways<GroupMessage> {
             listener(it)
@@ -73,8 +96,12 @@ suspend inline fun Bot.subscribeGroupMessages(crossinline listeners: suspend Mes
 /**
  * 订阅来自这个 [Bot] 的所有好友消息事件.
  */
+@UseExperimental(ExperimentalContracts::class)
 @MessageDsl
 suspend inline fun Bot.subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
     MessageSubscribersBuilder<FriendMessage> { listener ->
         this.subscribeAlways<FriendMessage> {
             listener(it)
@@ -82,15 +109,15 @@ suspend inline fun Bot.subscribeFriendMessages(crossinline listeners: suspend Me
     }.apply { listeners() }
 }
 
-internal typealias MessageReplier<T> = @MessageDsl suspend T.(String) -> Message
+private typealias MessageReplier<T> = @MessageDsl suspend T.(String) -> Message
 
-internal typealias StringReplier<T> = @MessageDsl suspend T.(String) -> String
+private typealias StringReplier<T> = @MessageDsl suspend T.(String) -> String
 
-internal suspend inline operator fun <T : MessagePacket<*>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
+private suspend inline operator fun <T : MessagePacket<*>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
     this.invoke(t, t.message.stringValue)
 
 @JvmName("invoke1") //Avoid Platform declaration clash
-internal suspend inline operator fun <T : MessagePacket<*>> StringReplier<T>.invoke(t: T): String =
+private suspend inline operator fun <T : MessagePacket<*>> StringReplier<T>.invoke(t: T): String =
     this.invoke(t, t.message.stringValue)
 
 /**
@@ -202,18 +229,9 @@ class MessageSubscribersBuilder<T : MessagePacket<*>>(
 */
 }
 
-
 /**
  * DSL 标记. 将能让 IDE 阻止一些错误的方法调用.
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 @DslMarker
 internal annotation class MessageDsl
-
-
-fun main() {
-
-    println('B')
-    println("\u7154225")
-    println('B' - 'b')
-}
