@@ -48,6 +48,7 @@ suspend fun main() {
      * 监听所有事件
      */
     subscribeAlways<Subscribable> {
+
         //bot.logger.verbose("收到了一个事件: ${it::class.simpleName}")
     }
 
