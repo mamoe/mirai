@@ -16,7 +16,7 @@ fun <R> CoroutineScope.SuspendLazy(initializer: suspend () -> R): Lazy<Deferred<
 /**
  * 挂起初始化的 [lazy], 是属性不能 `suspend` 的替代品.
  *
- * 本对象代表值初始化时将会通过 [CoroutineScope.async] 运行 [initializer]
+ * 本对象代表值初始化时将会通过 [CoroutineScope.async] 运行 [valueUpdater]
  *
  * [SuspendLazy] 是:
  * - 线程安全

@@ -1,6 +1,9 @@
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult.SUCCESS
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * 登录结果. 除 [SUCCESS] 外均为失败.
@@ -56,7 +59,11 @@ enum class LoginResult {
 /**
  * 如果 [this] 不为 [LoginResult.SUCCESS] 就抛出消息为 [lazyMessage] 的 [IllegalStateException]
  */
-fun LoginResult.requireSuccess(lazyMessage: (LoginResult) -> String) {
+@UseExperimental(ExperimentalContracts::class)
+inline fun LoginResult.requireSuccess(lazyMessage: (LoginResult) -> String) {
+    contract {
+        callsInPlace(lazyMessage, InvocationKind.AT_MOST_ONCE)
+    }
     if (this != SUCCESS) error(lazyMessage(this))
 }
 
@@ -86,5 +93,10 @@ fun LoginResult.requireSuccessOrNull(): Unit? =
  *
  * @return 成功时 [Unit], 失败时 `null`
  */
-inline fun <R> LoginResult.ifFail(block: (LoginResult) -> R): R? =
-    if (this != SUCCESS) block(this) else null
+@UseExperimental(ExperimentalContracts::class)
+inline fun <R> LoginResult.ifFail(block: (LoginResult) -> R): R? {
+    contract {
+        callsInPlace(block, InvocationKind.AT_MOST_ONCE)
+    }
+    return if (this != SUCCESS) block(this) else null
+}

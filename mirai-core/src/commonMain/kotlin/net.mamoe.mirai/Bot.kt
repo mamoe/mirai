@@ -19,6 +19,9 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmOverloads
 
@@ -228,29 +231,36 @@ Mirai 22:04:48 : Packet received: UnknownEventPacket(id=00 D6, identity=(2092749
  * @param lazyMessage 若需要验证请求时的验证消息.
  * @param lazyRemark 好友备注
  */
-suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }, lazyRemark: () -> String = { "" }): AddFriendResult = bot.withSession {
-    when (CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>()) {
-        is CanAddFriendResponse.AlreadyAdded -> AddFriendResult.ALREADY_ADDED
-        is CanAddFriendResponse.Rejected -> AddFriendResult.REJECTED
+@UseExperimental(ExperimentalContracts::class)
+suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }, lazyRemark: () -> String = { "" }): AddFriendResult {
+    contract {
+        callsInPlace(lazyMessage, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(lazyRemark, InvocationKind.AT_MOST_ONCE)
+    }
+    return bot.withSession {
+        when (CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>()) {
+            is CanAddFriendResponse.AlreadyAdded -> AddFriendResult.ALREADY_ADDED
+            is CanAddFriendResponse.Rejected -> AddFriendResult.REJECTED
 
-        is CanAddFriendResponse.ReadyToAdd,
-        is CanAddFriendResponse.RequireVerification -> {
-            val key = RequestFriendAdditionKeyPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
-            AddFriendPacket(bot.qqAccount, id, sessionKey, lazyMessage(), lazyRemark(), key).sendAndExpect<AddFriendPacket.Response>()
-            return AddFriendResult.WAITING_FOR_APPROVE
-        }
-        //这个做的是需要验证消息的情况, 不确定 ReadyToAdd 的是啥
+            is CanAddFriendResponse.ReadyToAdd,
+            is CanAddFriendResponse.RequireVerification -> {
+                val key = RequestFriendAdditionKeyPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
+                AddFriendPacket(bot.qqAccount, id, sessionKey, lazyMessage(), lazyRemark(), key).sendAndExpect<AddFriendPacket.Response>()
+                return AddFriendResult.WAITING_FOR_APPROVE
+            }
+            //这个做的是需要验证消息的情况, 不确定 ReadyToAdd 的是啥
 
-        // 似乎 RequireVerification 和 ReadyToAdd 判断错了. 需要重新检查一下
+            // 似乎 RequireVerification 和 ReadyToAdd 判断错了. 需要重新检查一下
 
-        // TODO: 2019/11/11 需要验证问题的情况
+            // TODO: 2019/11/11 需要验证问题的情况
 
-        /*is CanAddFriendResponse.ReadyToAdd -> {
+            /*is CanAddFriendResponse.ReadyToAdd -> {
             // TODO: 2019/11/11 这不需要验证信息的情况
 
             //AddFriendPacket(bot.qqAccount, id, bot.sessionKey, ).sendAndExpectAsync<AddFriendPacket.Response>().await()
             TODO()
         }*/
+        }
     }
 }
 

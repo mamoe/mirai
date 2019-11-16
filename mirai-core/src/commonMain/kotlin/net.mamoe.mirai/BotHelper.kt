@@ -7,10 +7,14 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmOverloads
 
 /*
@@ -43,7 +47,13 @@ inline val Bot.qqs: ContactList<QQ>
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
  * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpectAsync]
  */
-inline fun <R> Bot.withSession(block: BotSession.() -> R): R = with(this.network.session) { block() }
+@UseExperimental(ExperimentalContracts::class)
+inline fun <R> Bot.withSession(block: BotSession.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return with(this.network.session) { block() }
+}
 
 /**
  * 发送数据包
@@ -54,7 +64,13 @@ suspend inline fun Bot.sendPacket(packet: OutgoingPacket) = this.network.sendPac
 /**
  * 使用在默认配置基础上修改的配置进行登录
  */
-suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit): LoginResult = this.network.login(BotConfiguration().apply(configuration))
+@UseExperimental(ExperimentalContracts::class)
+suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit): LoginResult {
+    contract {
+        callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
+    }
+    return this.network.login(BotConfiguration().apply(configuration))
+}
 
 /**
  * 使用默认的配置 ([BotConfiguration.Default]) 登录
@@ -62,10 +78,29 @@ suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit
 suspend inline fun Bot.login(): LoginResult = this.network.login(BotConfiguration.Default)
 
 /**
+ * 使用默认的配置 ([BotConfiguration.Default]) 登录
+ */
+@UseExperimental(ExperimentalContracts::class)
+suspend inline fun Bot.alsoLogin(lazyMessageWhenLoginFailed: (LoginResult) -> String): Bot {
+    contract {
+        callsInPlace(lazyMessageWhenLoginFailed, InvocationKind.AT_MOST_ONCE)
+    }
+    return this.apply {
+        login().requireSuccess(lazyMessageWhenLoginFailed)
+    }
+}
+
+/**
  * 添加好友
  */
+@UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-suspend inline fun Bot.addFriend(id: UInt, noinline lazyMessage: () -> String = { "" }): AddFriendResult = this.contacts.addFriend(id, lazyMessage)
+suspend inline fun Bot.addFriend(id: UInt, noinline lazyMessage: () -> String = { "" }, noinline lazyRemark: () -> String = { "" }): AddFriendResult {
+    contract {
+        callsInPlace(lazyMessage, InvocationKind.AT_MOST_ONCE)
+    }
+    return this.contacts.addFriend(id, lazyMessage, lazyRemark)
+}
 
 /**
  * 取得机器人的 QQ 号
