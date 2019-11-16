@@ -1,30 +1,22 @@
+@file:Suppress("DEPRECATION", "EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.demo
 
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.app.Service
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import io.ktor.util.cio.writeChannel
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.*
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.subscribeFriendMessages
-import net.mamoe.mirai.login
-import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlatformLogger
-import net.mamoe.mirai.utils.SimpleLogger
-import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity(),LoginCallback {
 
@@ -42,6 +34,7 @@ class MainActivity : AppCompatActivity(),LoginCallback {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override suspend fun onMessage(message:String) {
         withContext(Dispatchers.Main){
             msg.text = "${msg.text}\n$message"
@@ -73,7 +66,7 @@ class MainActivity : AppCompatActivity(),LoginCallback {
 
     var binder: MiraiService.MiraiBinder? = null
 
-    var needCaptcha = false
+    private var needCaptcha = false
 
 
     private val conn = object : ServiceConnection {
