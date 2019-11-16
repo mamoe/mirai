@@ -63,7 +63,6 @@ private val captchaLock = Mutex()
 /**
  * @author NaturalHG
  */
-@JvmOverloads
 private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
     val newHeight = (this.height * (outputWidth.toDouble() / this.width)).toInt()
     val tmp = this.getScaledInstance(outputWidth, newHeight, Image.SCALE_SMOOTH)

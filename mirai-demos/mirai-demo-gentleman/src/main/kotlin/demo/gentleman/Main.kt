@@ -67,6 +67,7 @@ suspend fun main() {
             if (this is FriendMessage) {
                 withContext(IO) {
                     val image: Image by message
+                    // 等同于 val image = message[Image]
 
                     reply(image + " downloading")
                     image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })

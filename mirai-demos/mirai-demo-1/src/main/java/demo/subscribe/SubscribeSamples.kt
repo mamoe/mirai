@@ -107,6 +107,7 @@ suspend fun Bot.messageDSL() {
                 //如果是群消息
                 // group: Group
                 this.group.sendMessage("你在一个群里")
+                // 等同于 reply("你在一个群里")
             }
 
             reply("图片, ID= ${message[Image].id}")//获取第一个 Image 类型的消息
