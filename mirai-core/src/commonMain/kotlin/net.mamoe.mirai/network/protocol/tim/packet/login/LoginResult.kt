@@ -1,59 +1,71 @@
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult.SUCCESS
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult.Companion.SUCCESS
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmStatic
 
 /**
  * 登录结果. 除 [SUCCESS] 外均为失败.
  * @see LoginResult.requireSuccess 要求成功
  */
-enum class LoginResult {
-    /**
-     * 登录成功
-     */
-    SUCCESS,
+inline class LoginResult(val id: Byte) {
+    companion object {
+        /**
+         * 登录成功
+         */
+        @JvmStatic
+        val SUCCESS = LoginResult(0)
 
-    /**
-     * 密码错误
-     */
-    WRONG_PASSWORD,
+        /**
+         * 密码错误
+         */
+        @JvmStatic
+        val WRONG_PASSWORD = LoginResult(1)
 
-    /**
-     * 被冻结
-     */
-    BLOCKED,
+        /**
+         * 被冻结
+         */
+        @JvmStatic
+        val BLOCKED = LoginResult(2)
 
-    /**
-     * QQ 号码输入有误
-     */
-    UNKNOWN_QQ_NUMBER,
+        /**
+         * QQ 号码输入有误
+         */
+        @JvmStatic
+        val UNKNOWN_QQ_NUMBER = LoginResult(3)
 
-    /**
-     * 账号开启了设备锁. 暂不支持设备锁登录
-     */
-    DEVICE_LOCK,
+        /**
+         * 账号开启了设备锁. 暂不支持设备锁登录
+         */
+        @JvmStatic
+        val DEVICE_LOCK = LoginResult(4)
 
-    /**
-     * 账号被回收
-     */
-    TAKEN_BACK,
+        /**
+         * 账号被回收
+         */
+        @JvmStatic
+        val TAKEN_BACK = LoginResult(5)
 
-    /**
-     * 未知. 更换服务器或等几分钟再登录可能解决.
-     */
-    UNKNOWN,
+        /**
+         * 未知. 更换服务器或等几分钟再登录可能解决.
+         */
+        @JvmStatic
+        val UNKNOWN = LoginResult(6)
 
-    /**
-     * 包数据错误
-     */
-    INTERNAL_ERROR,
+        /**
+         * 包数据错误
+         */
+        @JvmStatic
+        val INTERNAL_ERROR = LoginResult(7)
 
-    /**
-     * 超时
-     */
-    TIMEOUT,
+        /**
+         * 超时
+         */
+        @JvmStatic
+        val TIMEOUT = LoginResult(8)
+    }
 }
 
 /**
