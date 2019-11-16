@@ -6,6 +6,8 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
 import net.mamoe.mirai.utils.ExternalImage
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.js.JsName
 import kotlin.jvm.Volatile
 import kotlin.reflect.KProperty
@@ -257,8 +259,12 @@ fun MessageChain(messages: Iterable<Message>): MessageChain = MessageChainImpl(m
  *
  * @see Message.singleChain receiver 模式
  */
+@UseExperimental(ExperimentalContracts::class)
 @Suppress("FunctionName")
 fun SingleMessageChain(delegate: Message): MessageChain {
+    contract {
+        returns() implies (delegate !is MessageChain)
+    }
     require(delegate !is MessageChain) { "delegate for SingleMessageChain should not be any instance of MessageChain" }
     return SingleMessageChainImpl(delegate)
 }
