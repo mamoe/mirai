@@ -5,6 +5,7 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.Listener
 import net.mamoe.mirai.event.internal.subscribeInternal
+import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
 
 /*
@@ -14,9 +15,13 @@ import kotlin.reflect.KClass
 /**
  * 订阅者的状态
  */
-enum class ListeningStatus {
-    LISTENING,
-    STOPPED
+inline class ListeningStatus(inline val listening: Boolean) {
+    companion object {
+        @JvmStatic
+        val LISTENING = ListeningStatus(true)
+        @JvmStatic
+        val STOPPED = ListeningStatus(false)
+    }
 }
 
 
@@ -141,13 +146,17 @@ class ListenerBuilder<out E : Subscribable>(
 
     suspend inline fun always(noinline listener: suspend (E) -> Unit) = handler { listener(it); ListeningStatus.LISTENING }
 
-    suspend inline fun <T> until(until: T, noinline listener: suspend (E) -> T) = handler { if (listener(it) === until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
+    suspend inline fun <T> until(until: T, noinline listener: suspend (E) -> T) =
+        handler { if (listener(it) === until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
+
     suspend inline fun untilFalse(noinline listener: suspend (E) -> Boolean) = until(false, listener)
     suspend inline fun untilTrue(noinline listener: suspend (E) -> Boolean) = until(true, listener)
     suspend inline fun untilNull(noinline listener: suspend (E) -> Any?) = until(null, listener)
 
 
-    suspend inline fun <T> `while`(until: T, noinline listener: suspend (E) -> T) = handler { if (listener(it) !== until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
+    suspend inline fun <T> `while`(until: T, noinline listener: suspend (E) -> T) =
+        handler { if (listener(it) !== until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
+
     suspend inline fun whileFalse(noinline listener: suspend (E) -> Boolean) = `while`(false, listener)
     suspend inline fun whileTrue(noinline listener: suspend (E) -> Boolean) = `while`(true, listener)
     suspend inline fun whileNull(noinline listener: suspend (E) -> Any?) = `while`(null, listener)

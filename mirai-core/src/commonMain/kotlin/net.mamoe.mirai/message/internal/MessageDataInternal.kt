@@ -55,10 +55,6 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
 // 00 04 00 00 00 2E 1A 00 04 00 00 00 2E FF
 // 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 36 36 38 65 35 43 36 38 45 36 42 44 32 46 35 38 34 31 42 30 39 37 39 45 37 46 32 35 34 33 38 38 31 33 43 33 2E 6A 70 67 66 2F 32 65 37 61 65 33 36 66 2D 61 39 31 63 2D 34 31 32 39 2D 62 61 34 32 2D 37 65 30 31 32 39 37 37 35 63 63 38 41
 
-fun main() {
-    println(".".repeat(1000))
-}
-
 internal fun IoBuffer.parseMessageImage0x03(): Image {
     discardExact(1)
 
