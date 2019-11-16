@@ -52,6 +52,12 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 JVM 平台:
 - Java 8
 
+### Using Java 
+Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  
+A: 不能.  
+   Mirai 大量使用协程, 内联, 扩展等 Kotlin 专有特性. 在 Java 调用这些 API 将会非常吃力.  
+   因此您必须具有 Kotlin 技术才能正常使用 Mirai.  
+
 #### Libraries used
 Mirai 使用以下开源库:
 - [kotlin-stdlib](https://github.com/JetBrains/kotlin)
@@ -78,7 +84,7 @@ Mirai 使用以下开源库:
   - [mirai-core](#mirai-core) 核心模块
   - [mirai-console](#mirai-console) JVM 控制台
   - [mirai-demo](#mirai-demo) 示例和演示程序
-  - [mirai-debug](#mirai-debug) 抓包工具和分析工具\
+  - [mirai-debug](#mirai-debug) 抓包工具和分析工具
 - [Logger](#Logger) 日志系统
 - [Bot](#Bot) 机器人类
 - [Contact](#Contact) 联系人
