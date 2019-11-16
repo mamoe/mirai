@@ -213,7 +213,7 @@ data class Profile(
             (school?.let { "school=$school, " } ?: "") +
             (homepage?.let { "homepage=$homepage, " } ?: "") +
             (email?.let { "email=$email, " } ?: "") +
-            (company?.let { "company=$company?," } ?: "") +
+            (company?.let { "company=$company," } ?: "") +
             ")"// 最终会是 ", )", 但这并不影响什么.
 }
 
