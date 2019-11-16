@@ -4,6 +4,7 @@ package net.mamoe.mirai.utils.internal
 
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.math.max
 import kotlin.reflect.KProperty0
@@ -20,6 +21,7 @@ internal fun String.printColorize(ignoreUntilFirstConst: Boolean): String = with
  *
  * 低效率, 仅调试使用.
  */
+@MiraiInternalAPI
 fun printCompareHex(hex1s: String, hex2s: String): String = with(HexComparator) { compare(hex1s.toUpperCase(), hex2s.toUpperCase()) }
 
 data class NamedHexElement(

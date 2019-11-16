@@ -10,7 +10,7 @@ import kotlin.annotation.AnnotationTarget.*
  */
 @Experimental(level = Experimental.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
-internal annotation class MiraiInternalAPI
+annotation class MiraiInternalAPI
 
 /**
  * 标记这个类, 类型, 函数, 属性, 字段, 或构造器为实验性的.
@@ -20,7 +20,7 @@ internal annotation class MiraiInternalAPI
  */
 @Experimental(level = Experimental.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
-internal annotation class MiraiExperimentalAPI
+annotation class MiraiExperimentalAPI
 
 /**
  * 标记这个 API 是自 Mirai 某个版本起才受支持.
@@ -28,4 +28,4 @@ internal annotation class MiraiExperimentalAPI
 @Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
 @Retention(AnnotationRetention.BINARY)
 @MustBeDocumented
-internal annotation class SinceMirai(val version: String)
+annotation class SinceMirai(val version: String)

@@ -2,6 +2,7 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.printColorize
 import net.mamoe.mirai.utils.internal.printCompareHex
@@ -67,6 +68,7 @@ internal fun String.printStringFromHex() {
     println(this.hexToBytes().encodeToString())
 }
 
+@UseExperimental(MiraiInternalAPI::class)
 internal fun ByteArray.printColorizedHex(name: String = "", ignoreUntilFirstConst: Boolean = false, compareTo: String? = null) {
     println("Hex比较 `$name`")
     if (compareTo != null) {
