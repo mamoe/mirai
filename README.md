@@ -46,11 +46,19 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 ## Requirements
 
+#### Run-time 
 所有平台: 
-- Kotlin 1.3.50
+- Kotlin 1.3.50 (保持最新稳定版)
 
 JVM 平台:
-- Java 8
+- JRE 8
+
+#### Build Mirai
+所有平台: 
+- Kotlin 1.3.50 (保持最新稳定版)
+
+JVM 平台:
+- Java 11 (OpenJDK 11)
 
 ### Using Java 
 Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  
