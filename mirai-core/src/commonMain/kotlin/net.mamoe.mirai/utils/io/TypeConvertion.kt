@@ -24,9 +24,6 @@ fun Int.toByteArray(): ByteArray = byteArrayOf(
     (shr(0) and 0xFF).toByte()
 )
 
-/**
- * 转 [ByteArray] 后再转 hex
- */
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 /**
@@ -39,13 +36,23 @@ fun UShort.toByteArray(): ByteArray = with(toUInt()) {
     )
 }
 
-/**
- * 转 [ByteArray] 后再转 hex.
- *
- * @return 2 位 Unsigned Hex
- */
+fun Short.toUHexString(separator: String = " "): String = this.toUShort().toUHexString(separator)
+
 fun UShort.toUHexString(separator: String = " "): String =
     (this.toInt().shr(8).toUShort() and 255u).toByte().toUHexString() + separator + (this and 255u).toByte().toUHexString()
+
+fun ULong.toUHexString(separator: String = " "): String =
+    this.toLong().toUHexString(separator)
+
+fun Long.toUHexString(separator: String = " "): String =
+    this.ushr(32).toUInt().toUHexString(separator) + separator + this.ushr(32).toUInt().toUHexString(separator)
+
+/**
+ * 255 -> 00 FF
+ */
+fun UByte.toByteArray(): ByteArray = byteArrayOf((this and 255u).toByte())
+
+fun UByte.toUHexString(): String = (this and 255u).toByte().toUHexString()
 
 /**
  * 255u -> 00 00 00 FF
