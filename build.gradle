@@ -1,6 +1,4 @@
 buildscript {
-    ext.kotlin_version = '1.3.50'
-
     repositories {
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
         mavenLocal()
@@ -10,8 +8,9 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.0-alpha03'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfu_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
+        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion"
     }
 }
 
@@ -22,6 +21,7 @@ allprojects {
     repositories {
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
         mavenLocal()
+        mavenCentral()
         jcenter()
         google()
         maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }

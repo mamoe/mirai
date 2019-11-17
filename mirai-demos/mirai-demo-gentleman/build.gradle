@@ -6,11 +6,11 @@ dependencies {
     api project(":mirai-core")
     runtime files("../../mirai-core/build/classes/kotlin/jvm/main") // mpp targeting android limitation
     //runtime files("../../mirai-core/build/classes/atomicfu/jvm/main") // mpp targeting android limitation
-    api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
-    api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
+    api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
+    api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutinesVersion
 
-    implementation("org.jetbrains.kotlinx:kotlinx-io:$kotlinxio_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-io:$coroutinesio_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-io:$kotlinXIoVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-io:$coroutinesIoVersion")
     compile group: 'com.alibaba', name: 'fastjson', version: '1.2.62'
     implementation 'org.jsoup:jsoup:1.12.1'
 }

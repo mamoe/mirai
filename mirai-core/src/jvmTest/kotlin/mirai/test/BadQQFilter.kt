@@ -7,10 +7,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.login
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.utils.Console
 import java.util.*
 
 /**
@@ -41,28 +39,25 @@ suspend fun main() {
 
     withContext(GlobalScope.coroutineContext) {
         qqList.split("\n")
-                .filterNot { it.isEmpty() }
-                .map { it.split("----") }
-                .map { Pair(it[0].toLong(), it[1]) }
-                .forEach { (qq, password) ->
-                    runBlocking {
-                        val bot = Bot(
-                                BotAccount(
-                                        qq.toUInt(),
-                                        if (password.endsWith(".")) password.substring(0, password.length - 1) else password
-                                ),
-                                Console()
-                        )
+            .filterNot { it.isEmpty() }
+            .map { it.split("----") }
+            .map { Pair(it[0].toLong(), it[1]) }
+            .forEach { (qq, password) ->
+                runBlocking {
+                    val bot = Bot(
+                        qq.toUInt(),
+                        if (password.endsWith(".")) password.substring(0, password.length - 1) else password
+                    )
 
-                        withContext(Dispatchers.IO) {
-                            bot.login()
-                        }.let { state ->
-                            if (state == LoginResult.SUCCESS) {
-                                goodBotList.add(bot)
-                            }
+                    withContext(Dispatchers.IO) {
+                        bot.login()
+                    }.let { state ->
+                        if (state == LoginResult.SUCCESS) {
+                            goodBotList.add(bot)
                         }
                     }
                 }
+            }
     }
 
     println("Filtering finished")

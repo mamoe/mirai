@@ -23,21 +23,21 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: kotlin_version
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core-common', version: coroutines_version
-                api group: 'org.jetbrains.kotlinx', name: 'atomicfu-common', version: atomicfu_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinxio_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesio_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: kotlinVersion
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core-common', version: coroutinesVersion
+                api group: 'org.jetbrains.kotlinx', name: 'atomicfu-common', version: atomicFuVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinXIoVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesIoVersion
 
-                implementation "com.soywiz.korlibs.klock:klock:$klock_version"
+                implementation "com.soywiz.korlibs.klock:klock:$klockVersion"
 
-                api group: 'io.ktor', name: 'ktor-client-core', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-network', version: ktor_version
-                //api group: 'io.ktor', name: 'ktor-client-cio', version: ktor_version
-                //api group: 'io.ktor', name: 'ktor-client', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-http', version: ktor_version
-                //api group: 'io.ktor', name: 'ktor-utils', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-client-core', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-network', version: ktorVersion
+                //api group: 'io.ktor', name: 'ktor-client-cio', version: ktorVersion
+                //api group: 'io.ktor', name: 'ktor-client', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-http', version: ktorVersion
+                //api group: 'io.ktor', name: 'ktor-utils', version: ktorVersion
                 //api group: 'io.ktor', name: 'ktor-io', version: ktorio_version
             }
         }
@@ -46,19 +46,19 @@ kotlin {
             apply plugin: 'java'
 
             dependencies {
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
-                api group: 'org.jetbrains.kotlinx', name: 'atomicfu', version: atomicfu_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinxio_version
-                // api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io-jvm', version: kotlinxio_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesio_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlinVersion
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutinesVersion
+                api group: 'org.jetbrains.kotlinx', name: 'atomicfu', version: atomicFuVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinXIoVersion
+                // api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io-jvm', version: kotlinXIoVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesIoVersion
 
-                api group: 'io.ktor', name: 'ktor-http-cio', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-http', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-client-core-jvm', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-client-cio', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-http-cio', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-http', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-client-core-jvm', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-client-cio', version: ktorVersion
 
                 implementation 'org.yaml:snakeyaml:1.18'
                 implementation 'org.jsoup:jsoup:1.12.1'
@@ -92,19 +92,19 @@ kotlin {
                 api 'com.google.android:android:4.1.1.4'
                 api 'com.android.support:support-annotations:26.1.0'
 
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
-                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutines_version
-                api group: 'org.jetbrains.kotlinx', name: 'atomicfu', version: atomicfu_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinxio_version
-                // api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io-jvm', version: kotlinxio_version
-                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesio_version
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlinVersion
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
+                api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutinesVersion
+                api group: 'org.jetbrains.kotlinx', name: 'atomicfu', version: atomicFuVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: kotlinXIoVersion
+                // api group: 'org.jetbrains.kotlinx', name: 'kotlinx-io-jvm', version: kotlinXIoVersion
+                api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-io', version: coroutinesIoVersion
 
-                api group: 'io.ktor', name: 'ktor-http-cio', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-http', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-client-core-jvm', version: ktor_version
-                api group: 'io.ktor', name: 'ktor-client-cio', version: ktor_version
+                api group: 'io.ktor', name: 'ktor-http-cio', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-http', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-client-core-jvm', version: ktorVersion
+                api group: 'io.ktor', name: 'ktor-client-cio', version: ktorVersion
             }
         }
 

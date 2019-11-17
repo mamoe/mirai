@@ -15,14 +15,14 @@ application {
     mainClassName = "Application"
 }
 
-val kotlinVersion = rootProject.ext["kotlin_version"].toString()
-val atomicFuVersion = rootProject.ext["atomicfu_version"].toString()
-val coroutinesVersion = rootProject.ext["coroutines_version"].toString()
-val kotlinXIoVersion = rootProject.ext["kotlinxio_version"].toString()
-val coroutinesIoVersion = rootProject.ext["coroutinesio_version"].toString()
+val kotlinVersion = rootProject.ext["kotlinVersion"].toString()
+val atomicFuVersion = rootProject.ext["atomicFuVersion"].toString()
+val coroutinesVersion = rootProject.ext["coroutinesVersion"].toString()
+val kotlinXIoVersion = rootProject.ext["kotlinXIoVersion"].toString()
+val coroutinesIoVersion = rootProject.ext["coroutinesIoVersion"].toString()
 
-val klockVersion = rootProject.ext["klock_version"].toString()
-val ktorVersion = rootProject.ext["ktor_version"].toString()
+val klockVersion = rootProject.ext["klockVersion"].toString()
+val ktorVersion = rootProject.ext["ktorVersion"].toString()
 
 kotlin {
     sourceSets {

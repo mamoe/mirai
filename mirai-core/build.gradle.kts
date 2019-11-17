@@ -6,8 +6,9 @@ plugins {
     id("kotlinx-atomicfu")
     kotlin("multiplatform")
     id("com.android.library")
+    id("kotlinx-serialization")
+
     `maven-publish`
-    //id("kotlin-android-extensions")
 }
 
 group = "net.mamoe.mirai"
@@ -15,14 +16,24 @@ version = "0.1.0"
 
 description = "Mirai core"
 
-val kotlinVersion = rootProject.ext["kotlin_version"].toString()
-val atomicFuVersion = rootProject.ext["atomicfu_version"].toString()
-val coroutinesVersion = rootProject.ext["coroutines_version"].toString()
-val kotlinXIoVersion = rootProject.ext["kotlinxio_version"].toString()
-val coroutinesIoVersion = rootProject.ext["coroutinesio_version"].toString()
+val kotlinVersion: String by rootProject.ext
+val atomicFuVersion: String by rootProject.ext
+val coroutinesVersion: String by rootProject.ext
+val kotlinXIoVersion: String by rootProject.ext
+val coroutinesIoVersion: String by rootProject.ext
 
-val klockVersion = rootProject.ext["klock_version"].toString()
-val ktorVersion = rootProject.ext["ktor_version"].toString()
+val klockVersion: String by rootProject.ext
+val ktorVersion: String by rootProject.ext
+
+val serializationVersion: String by rootProject.ext
+
+fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.kotlinx(id: String, version: String) {
+    implementation("org.jetbrains.kotlinx:$id:$version")
+}
+
+fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.ktor(id: String, version: String) {
+    implementation("io.ktor:$id:$version")
+}
 
 kotlin {
     android("android") {
@@ -42,7 +53,7 @@ kotlin {
             buildTypes {
                 getByName("release") {
                     isMinifyEnabled = false
-                    //proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+                    // proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
                 }
             }
 
@@ -58,22 +69,28 @@ kotlin {
         //  withJava()
     }
 
+    /*
+    val proto  = sourceSets["proto"].apply {
+
+    }*/
+
     val commonMain = sourceSets["commonMain"].apply {
         dependencies {
             kotlin("kotlin-reflect", kotlinVersion)
-            //api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-            implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-common:$coroutinesVersion")
+            //kotlin("kotlin-serialization", kotlinVersion)
 
-            implementation("io.ktor:ktor-http-cio:$ktorVersion")
-            implementation("io.ktor:ktor-http:$ktorVersion")
-            implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
-            implementation("io.ktor:ktor-client-cio:$ktorVersion")
+            kotlinx("kotlinx-coroutines-core-common", coroutinesVersion)
+            kotlinx("kotlinx-serialization-runtime-common", serializationVersion)
 
+            api("com.soywiz.korlibs.klock:klock:$klockVersion")
+
+            ktor("ktor-http-cio", ktorVersion)
+            ktor("ktor-http", ktorVersion)
+            ktor("ktor-client-core-jvm", ktorVersion)
+            ktor("ktor-client-cio", ktorVersion)
+            ktor("ktor-client-core", ktorVersion)
+            ktor("ktor-network", ktorVersion)
             //implementation("io.ktor:ktor-io:1.3.0-beta-1")
-
-            implementation("io.ktor:ktor-client-core:$ktorVersion")
-            implementation("io.ktor:ktor-network:$ktorVersion")
         }
     }
 
@@ -81,12 +98,12 @@ kotlin {
         dependencies {
             dependsOn(commonMain)
 
-            api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+            kotlin("kotlin-reflect", kotlinVersion)
 
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
+            kotlinx("kotlinx-serialization-runtime", serializationVersion)
+            kotlinx("kotlinx-coroutines-android", coroutinesVersion)
 
-            implementation("io.ktor:ktor-client-android:$ktorVersion")
-
+            ktor("ktor-client-android", ktorVersion)
         }
     }
 
@@ -94,14 +111,13 @@ kotlin {
         dependencies {
             dependsOn(commonMain)
 
-            implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-            implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+            kotlin("kotlin-stdlib-jdk8", kotlinVersion)
+            kotlin("kotlin-stdlib-jdk7", kotlinVersion)
+            kotlin("kotlin-reflect", kotlinVersion)
 
-            api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-
-            implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
-            implementation("org.jetbrains.kotlinx:kotlinx-io-jvm:$kotlinXIoVersion")
-
+            ktor("ktor-client-core-jvm", ktorVersion)
+            kotlinx("kotlinx-io-jvm", kotlinXIoVersion)
+            kotlinx("kotlinx-serialization-runtime", serializationVersion)
         }
     }
 
@@ -118,11 +134,13 @@ kotlin {
         languageSettings.useExperimentalAnnotation("kotlin.Experimental")
 
         dependencies {
-            implementation("org.jetbrains.kotlin:kotlin-stdlib")
-            implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-            implementation("org.jetbrains.kotlinx:kotlinx-io:$kotlinXIoVersion")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-io:$coroutinesIoVersion")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+            kotlin("kotlin-stdlib", kotlinVersion)
+            kotlin("kotlin-serialization", kotlinVersion)
+
+            kotlinx("atomicfu", atomicFuVersion)
+            kotlinx("kotlinx-io", kotlinXIoVersion)
+            kotlinx("kotlinx-coroutines-io", coroutinesIoVersion)
+            kotlinx("kotlinx-coroutines-core", coroutinesVersion)
         }
     }
     sourceSets {
