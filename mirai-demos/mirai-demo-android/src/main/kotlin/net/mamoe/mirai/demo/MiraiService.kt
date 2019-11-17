@@ -10,6 +10,7 @@ import android.os.IBinder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.subscribeMessages
@@ -23,7 +24,7 @@ class MiraiService : Service() {
 
     private var mCaptchaDeferred: CompletableDeferred<String>? = null
 
-    private var mBot: Bot? = null
+    private lateinit var mBot: Bot
 
     private var mCaptcha = ""
         set(value) {
@@ -46,9 +47,8 @@ class MiraiService : Service() {
             mBot = Bot(qq, pwd).apply {
                 val loginResult = login {
                     captchaSolver = {
-                        val byteArray = byteArrayOf()
-                        it.readFully(byteArray, 0, it.writeRemaining)
-                        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                        val bytes = it.readBytes()
+                        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                         mCallback?.get()?.onCaptcha(bitmap)
                         mCaptchaDeferred?.await()
                     }
@@ -61,7 +61,7 @@ class MiraiService : Service() {
             }
 
 
-            mBot!!.subscribeMessages {
+            mBot.subscribeMessages {
                 content({ true }) {
                     mCallback?.get()?.onMessage("收到来自${sender.id}的消息")
                 }
