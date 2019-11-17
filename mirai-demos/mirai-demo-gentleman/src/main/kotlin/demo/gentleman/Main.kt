@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.*
+import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
@@ -15,6 +16,7 @@ import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.getValue
 import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
+import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
 import java.util.*
@@ -65,7 +67,7 @@ suspend fun main() {
         }
 
         has<Image> {
-            if (this is FriendMessage) {
+            if (this is FriendMessage || (this is GroupMessage && this.permission == MemberPermission.OPERATOR)) {
                 withContext(IO) {
                     val image: Image by message
                     // 等同于 val image = message[Image]

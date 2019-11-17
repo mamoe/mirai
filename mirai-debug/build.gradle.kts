@@ -3,6 +3,7 @@ plugins {
     id("org.openjfx.javafxplugin") version "0.0.8"
     kotlin("jvm")
     java
+    id("kotlinx-serialization")
 }
 
 javafx {
@@ -15,14 +16,15 @@ application {
     mainClassName = "Application"
 }
 
-val kotlinVersion = rootProject.ext["kotlinVersion"].toString()
-val atomicFuVersion = rootProject.ext["atomicFuVersion"].toString()
-val coroutinesVersion = rootProject.ext["coroutinesVersion"].toString()
-val kotlinXIoVersion = rootProject.ext["kotlinXIoVersion"].toString()
-val coroutinesIoVersion = rootProject.ext["coroutinesIoVersion"].toString()
+val kotlinVersion: String by rootProject.ext
+val atomicFuVersion: String by rootProject.ext
+val coroutinesVersion: String by rootProject.ext
+val kotlinXIoVersion: String by rootProject.ext
+val coroutinesIoVersion: String by rootProject.ext
+val serializationVersion: String by rootProject.ext
 
-val klockVersion = rootProject.ext["klockVersion"].toString()
-val ktorVersion = rootProject.ext["ktorVersion"].toString()
+val klockVersion: String by rootProject.ext
+val ktorVersion: String by rootProject.ext
 
 kotlin {
     sourceSets {
@@ -32,20 +34,30 @@ kotlin {
     }
 }
 
+fun DependencyHandlerScope.kotlinx(id: String, version: String) {
+    implementation("org.jetbrains.kotlinx:$id:$version")
+}
+
+fun DependencyHandlerScope.ktor(id: String, version: String) {
+    implementation("io.ktor:$id:$version")
+}
+
 dependencies {
-    api(project(":mirai-core"))
+    implementation(project(":mirai-core"))
     runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // mpp targeting android limitation
 
-    api("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     implementation("org.pcap4j:pcap4j-distribution:1.8.2")
     implementation("no.tornado:tornadofx:1.7.17")
     compile(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-javafx", version = "1.3.2")
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-io-jvm:$kotlinXIoVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-io:$kotlinXIoVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-io:$coroutinesIoVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    kotlin("kotlin-stdlib", kotlinVersion)
+    kotlinx("atomicfu", atomicFuVersion)
+    kotlinx("kotlinx-io-jvm", kotlinXIoVersion)
+    kotlinx("kotlinx-io", kotlinXIoVersion)
+    kotlinx("kotlinx-coroutines-io", coroutinesIoVersion)
+    kotlinx("kotlinx-coroutines-core", coroutinesVersion)
+
+    kotlinx("kotlinx-serialization-runtime", serializationVersion)
 }

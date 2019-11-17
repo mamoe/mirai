@@ -52,7 +52,7 @@ fun Long.toUHexString(separator: String = " "): String =
  */
 fun UByte.toByteArray(): ByteArray = byteArrayOf((this and 255u).toByte())
 
-fun UByte.toUHexString(): String = (this and 255u).toByte().toUHexString()
+fun UByte.toUHexString(): String = this.toByte().toUHexString()
 
 /**
  * 255u -> 00 00 00 FF
@@ -73,10 +73,17 @@ fun UInt.toUHexString(separator: String = " "): String = this.toByteArray().toUH
  * 转无符号十六进制表示, 并补充首位 `0`.
  * 转换结果示例: `FF`, `0E`
  */
-fun Byte.toUHexString(): String = this.toUByte().toString(16).toUpperCase().let {
-    if (it.length == 1) "0$it"
-    else it
-}
+fun Byte.toUHexString(): String = this.toUByte().fixToUHex()
+
+/**
+ * 转无符号十六进制表示, 并补充首位 `0`.
+ */
+fun Byte.fixToUHex(): String = this.toUByte().fixToUHex()
+
+/**
+ * 转无符号十六进制表示, 并补充首位 `0`.
+ */
+fun UByte.fixToUHex(): String = if (this.toInt() in 0..9) "0${this.toString(16).toUpperCase()}" else this.toString(16).toUpperCase()
 
 /**
  * 将无符号 Hex 转为 [ByteArray], 有根据 hex 的 [hashCode] 建立的缓存.

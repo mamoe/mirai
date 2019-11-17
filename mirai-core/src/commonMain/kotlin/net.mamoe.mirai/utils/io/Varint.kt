@@ -44,6 +44,9 @@ fun Input.readVarInt(): Int {
     return decodeZigZag32(this.readUVarInt())
 }
 
+inline class UVarInt(
+    val data: UInt
+)
 
 @JvmSynthetic
 fun Input.readUVarInt(): UInt {
@@ -82,6 +85,37 @@ fun Output.writeUVarLong(ulong: Long) {
     this.write0(ulong)
 }
 
+fun UVarInt.toByteArray(): ByteArray {
+    val list = mutableListOf<Byte>()
+    var value = this.data.toLong()
+    do {
+        var temp = (value and 127).toByte()
+        value = value ushr 7
+        if (value != 0L) {
+            temp = temp or 128.toByte()
+        }
+        list += temp
+    } while (value != 0L)
+    return list.toByteArray()
+}
+
+fun UVarInt.toUHexString(separator: String = " "): String = buildString {
+    var value = data.toLong()
+
+    var isFirst = true
+    do {
+        if (!isFirst) {
+            append(separator)
+        }
+        var temp = (value and 127).toByte()
+        value = value ushr 7
+        if (value != 0L) {
+            temp = temp or 128.toByte()
+        }
+        append(temp.toUByte().fixToUHex())
+        isFirst = false
+    } while (value != 0L)
+}
 
 private fun Output.write0(long: Long) {
     var value = long
@@ -101,7 +135,7 @@ private fun read(stream: Input, maxSize: Int): Long {
     var b = stream.readByte().toInt()
     while (b and 0x80 == 0x80) {
         value = value or ((b and 0x7F).toLong() shl size++ * 7)
-        require(size < maxSize) { "VarLong too bigger(expecting maxSize=$maxSize)" }
+        require(size < maxSize) { "VarLong too big(expecting maxSize=$maxSize)" }
         b = stream.readByte().toInt()
     }
 
