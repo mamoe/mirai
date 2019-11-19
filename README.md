@@ -1,8 +1,9 @@
 # Mirai
 [![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
 
-一个以 **TIM PC协议(非web)** 驱动的跨平台开源 QQ 机器人服务端核心, 现有 JVM 和 AndroidLib 支持  
-Mirai 在 JVM 平台采用插件模式运行，同时提供独立的跨平台核心库.  
+一个以 **TIM PC协议(非web)** 驱动的跨平台开源 QQ 机器人支持库, 现有 JVM 和 AndroidLib 支持。  
+Mirai 使用纯 Kotlin 实现 QQ 协议库并跨平台。  
+Mirai 在 JVM 平台额外提供插件模式运行的服务端。  
 未来会在 win32 平台提供目前比较流行的几种机器人软件的 API 转接  
   
 若您有任何意见或建议, 请告诉我们.  
@@ -130,8 +131,9 @@ Mirai 的核心部分.
 #### mirai-demo
 Samples and demos.  
 监听事件示例 [SubscribeSamples](mirai-demos/mirai-demo-1/src/main/java/demo/subscribe/SubscribeSamples.kt)  
-随机图片发送 [Gentleman](mirai-demos/mirai-demo-gentleman/src/main/kotlin/demo/gentleman/Main.kt)  
+随机图片发送 [Gentleman](mirai-demos/mirai-demo-gentleman/src/main/kotlin/demo/gentleman/Main.kt)
 
+感谢 [@Freedom](https://github.com/Freedom0925) 的 [Android App Demo](mirai-dehttps://github.com/mamoe/mirai/blob/master/mirai-demos/mirai-demo-android/src/main/kotlin/net/mamoe/mirai/demo/MainActivity.kt)
 #### mirai-debug
 抓包工具和分析工具. 不会进行稳定性维护.  
 
