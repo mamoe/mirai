@@ -1,11 +1,10 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.network
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import kotlinx.coroutines.*
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.Group
@@ -13,6 +12,8 @@ import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.Image
+import net.mamoe.mirai.message.ImageId0x03
+import net.mamoe.mirai.message.ImageId0x06
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
@@ -20,9 +21,9 @@ import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageLink
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.*
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
@@ -123,11 +124,16 @@ abstract class BotSessionBase(
     suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpectAsync(checkSequence: Boolean = true): Deferred<P> =
         sendAndExpectAsync<P, P>(checkSequence) { it }
 
-    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true, crossinline mapper: (P) -> R): R =
-        sendAndExpectAsync<P, R>(checkSequence) { mapper(it) }.await()
+    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(
+        checkSequence: Boolean = true,
+        timeout: TimeSpan = 5.seconds,
+        crossinline mapper: (P) -> R
+    ): R = withTimeout(timeout.millisecondsLong) { sendAndExpectAsync<P, R>(checkSequence) { mapper(it) }.await() }
 
-    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(checkSequence: Boolean = true): P =
-        sendAndExpectAsync<P, P>(checkSequence) { it }.await()
+    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(
+        checkSequence: Boolean = true,
+        timeout: TimeSpan = 5.seconds
+    ): P = withTimeout(timeout.millisecondsLong) { sendAndExpectAsync<P, P>(checkSequence) { it }.await() }
 
     suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
 
@@ -142,7 +148,12 @@ abstract class BotSessionBase(
     suspend inline fun GroupId.group(): Group = bot.getGroup(this)
     suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
 
-    suspend fun Image.getLink(): FriendImageLink = FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect()
+    suspend fun Image.getLink(): ImageLink = when (this.id) {
+        is ImageId0x06 -> FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect<FriendImageLink>()
+        is ImageId0x03 -> GroupImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect<ImageDownloadInfo>().requireSuccess()
+        else -> assertUnreachable()
+    }
+
     suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
     suspend inline fun Image.download(): ByteReadPacket = getLink().download()
 }
