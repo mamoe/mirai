@@ -11,7 +11,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.use
-import kotlinx.io.core.writeFully
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -32,7 +31,7 @@ actual var DefaultCaptchaSolver: CaptchaSolver = {
             @Suppress("EXPERIMENTAL_API_USAGE")
             MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
             try {
-                tempFile.writeChannel().use { it.writeFully(it) }
+                tempFile.writeChannel().use { writeFully(it) }
                 MiraiLogger.info("若看不清字符图片, 请查看 ${tempFile.absolutePath}")
             } catch (e: Exception) {
                 MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
