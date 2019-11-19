@@ -131,8 +131,9 @@ Mirai 的核心部分.
 #### mirai-demo
 Samples and demos.  
 监听事件示例 [SubscribeSamples](mirai-demos/mirai-demo-1/src/main/java/demo/subscribe/SubscribeSamples.kt)  
-随机图片发送 [Gentleman](mirai-demos/mirai-demo-gentleman/src/main/kotlin/demo/gentleman/Main.kt)  
+随机图片发送 [Gentleman](mirai-demos/mirai-demo-gentleman/src/main/kotlin/demo/gentleman/Main.kt)
 
+感谢 [@Freedom](https://github.com/Freedom0925) 的 [#Android App Demo](mirai-demos/mirai-demo-android/src/main/java/net/mamoe/mirai/demo/Application.kt)
 #### mirai-debug
 抓包工具和分析工具. 不会进行稳定性维护.  
 
