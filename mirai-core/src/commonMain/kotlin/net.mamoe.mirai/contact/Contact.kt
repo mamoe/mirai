@@ -21,6 +21,9 @@ import net.mamoe.mirai.utils.SuspendLazy
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.withSession
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 class ContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf()
 
@@ -37,7 +40,7 @@ sealed class Contact(val bot: Bot, val id: UInt) {
     /**
      * 向这个对象发送消息.
      *
-     * 速度太快会被服务器拒绝(无响应). 在测试中不延迟地发送 6 条消息就会被屏蔽之后的数据包 1 秒左右.
+     * 速度太快会被服务器屏蔽(无响应). 在测试中不延迟地发送 6 条消息就会被屏蔽之后的数据包 1 秒左右.
      */
     abstract suspend fun sendMessage(message: MessageChain)
 
@@ -108,7 +111,13 @@ class Group internal constructor(bot: Bot, val groupId: GroupId) : Contact(bot, 
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
  * 这个方法将能帮助使用在 [BotSession] 中定义的一些扩展方法, 如 [BotSession.sendAndExpectAsync]
  */
-inline fun <R> Contact.withSession(block: BotSession.() -> R): R = bot.withSession(block)
+@UseExperimental(ExperimentalContracts::class)
+inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return bot.withSession(block)
+}
 
 /**
  * QQ 对象.
