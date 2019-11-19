@@ -5,13 +5,10 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 import kotlinx.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.readIoBuffer
-import net.mamoe.mirai.utils.io.writeQQ
 
 /**
  * 事件的识别 ID. 在 ACK 时使用
@@ -48,7 +45,7 @@ object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
             uniqueId = readIoBuffer(8)
         )
         handler.sendPacket(EventPacketFactory(id, sequenceId, handler.bot.qqAccount, handler.sessionKey, eventIdentity))
-        discardExact(2)
+        discardExact(2) // 1F 40
 
         return with(matchEventPacketFactory(readUShort())) { parse(handler.bot, eventIdentity) }.also {
             if (it is MessagePacket<*>) {
@@ -74,12 +71,8 @@ object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
         bot: UInt,
         sessionKey: SessionKey,
         identity: EventPacketIdentity
-    ): OutgoingPacket = buildOutgoingPacket(name = "EventPacket", id = id, sequenceId = sequenceId) {
-        writeQQ(bot)
-        writeFully(TIMProtocol.fixVer2)
-        encryptAndWrite(sessionKey) {
-            writeEventPacketIdentity(identity)
-        }
+    ): OutgoingPacket = buildSessionPacket(name = "EventPacket", id = id, sequenceId = sequenceId, bot = bot, sessionKey = sessionKey) {
+        writeEventPacketIdentity(identity)
     }
 }
 
