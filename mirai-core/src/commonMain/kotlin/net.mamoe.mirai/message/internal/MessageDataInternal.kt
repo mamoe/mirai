@@ -41,7 +41,7 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
     discardExact(filenameLength.toInt())
     discardExact(8)//03 00 04 00 00 02 9C 04
     val length = readShort()//=27
-    return Image(ImageId(readString(length)))
+    return Image(ImageId0x06(readString(length)))
     //return Image("{${readString(length)}}.$suffix")
 }
 
@@ -56,9 +56,44 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
 // 00 63 16 20 20 39 39 31 30 20 38 38 31 43 42 20 20 20 20 20 20 20 36 36 38 65 35 43 36 38 45 36 42 44 32 46 35 38 34 31 42 30 39 37 39 45 37 46 32 35 34 33 38 38 31 33 43 33 2E 6A 70 67 66 2F 32 65 37 61 65 33 36 66 2D 61 39 31 63 2D 34 31 32 39 2D 62 61 34 32 2D 37 65 30 31 32 39 37 37 35 63 63 38 41
 
 internal fun IoBuffer.parseMessageImage0x03(): Image {
-    discardExact(1)
+    //discardExact(1)
+    val tlv = readTLVMap(expectingEOF = true, tagSize = 1)
+    tlv.printTLVMap("parseMessageImage0x03")
+    // 02 [     ] IMAGE ID
+    // 04 [00 04] 8B 88 95 C1
+    // 05 [00 04] 3B 24 59 FC
+    // 06 [00 04] 00 00 01 BB
+    // 07 [00 01] 42
+    // 08 [00 10] 32 55 6D 52 33 4E 53 64 41 68 44 78 71 56 79 41
+    // 09 [00 01] 01
+    // 0A [00 10] F5 C3 E6 86 70 EA 03 3E D3 30 1D 2A B5 2E D6 5C
+    // 15 [00 04] 00 00 03 76
+    // 16 [00 04] 00 00 07 80
+    // 17 [00 02] 00 65
+    // 18 [00 04] 00 01 A6 F2
+    // 19 [00 01] 00
+    // 1A [00 04] 00 00 81 5C
+    // 1B [00 04] 00 01 3D 27
+    // 1C [00 04] 00 00 03 EB
+    // FF [00 56] 15 36 20 38 36 65 41 31 42 38 62 38 38 39 35 63 31 33 62 32 34 35 39 66 63 20 20 20 20 20 31 62 62 32 55 6D 52 33 4E 53 64 41 68 44 78 71 56 79 41 46 35 43 33 45 36 38 36 37 30 45 41 30 33 33 45 44 33 33 30 31 44 32 41 42 35 32 45 44 36 35 43 2E 6A 70 67 41
+    // return if (tlv.containsKey(0x0Au)) {
+    return Image(
+        ImageId0x03(
+            String(tlv[0x02u]!!).adjustImageId(),
+            //  tlv[0x0Au],
+            uniqueId = tlv[0x04u]!!.read { readUInt() },
+            height = tlv[0x16u]!!.toUInt().toInt(),
+            width = tlv[0x15u]!!.toUInt().toInt()
+        ).also { debugPrintln("ImageId: $it") }
+    )
+    //} else {
+    //    Image(
+    //        ImageId0x06(
+    //            String(tlv[0x02u]!!).adjustImageId()
+    //        )
+    //    )
+    //}
 
-    return Image(ImageId(String(readUShortLVByteArray()).adjustImageId()))
 }
 
 private operator fun String.get(range: IntRange) = this.substring(range)
@@ -165,7 +200,8 @@ fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
                 is Image -> buildPacket {
                     when (id.value.length) {
                         //   "{F61593B5-5B98-1798-3F47-2A91D32ED2FC}.jpg"
-                        42 -> {
+                        // 41 ???
+                        41, 42 -> {
                             writeUByte(MessageType.IMAGE_42.value)
 
                             //00 00 03 00 CB 02 00 2A 7B 46 36 31 35 39 33 42 35 2D 35 42 39 38 2D 31 37 39 38 2D 33 46 34 37 2D 32 41 39 31 44 33 32 45 44 32 46 43 7D 2E 6A 70 67
