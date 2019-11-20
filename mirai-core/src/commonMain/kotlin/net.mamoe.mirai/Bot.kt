@@ -245,7 +245,7 @@ suspend fun ContactSystem.addFriend(id: UInt, lazyMessage: () -> String = { "" }
             is CanAddFriendResponse.ReadyToAdd,
             is CanAddFriendResponse.RequireVerification -> {
                 val key = RequestFriendAdditionKeyPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
-                AddFriendPacket(bot.qqAccount, id, sessionKey, lazyMessage(), lazyRemark(), key).sendAndExpect<AddFriendPacket.Response>()
+                AddFriendPacket.RequestAdd(bot.qqAccount, id, sessionKey, lazyMessage(), lazyRemark(), key).sendAndExpect<AddFriendPacket.Response>()
                 return AddFriendResult.WAITING_FOR_APPROVE
             }
             //这个做的是需要验证消息的情况, 不确定 ReadyToAdd 的是啥

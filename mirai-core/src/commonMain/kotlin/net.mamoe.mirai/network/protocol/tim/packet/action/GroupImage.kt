@@ -4,11 +4,8 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
@@ -23,7 +20,6 @@ import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.Http
 import net.mamoe.mirai.utils.assertUnreachable
-import net.mamoe.mirai.utils.io.debugPrintln
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.coroutines.coroutineContext
 
@@ -85,7 +81,7 @@ class ImageDownloadInfo(
     val thumbnail: String get() = host + ":" + port.first() + _thumbnail!!
     override val original: String get() = host + ":" + port.first() + _original!!
     val compressed: String get() = host + ":" + port.first() + _compressed!!
-    override fun toString(): String = "ImageDownloadInfo(${_original?.let { original } ?: errorMessage ?: "unknown"}"
+    override fun toString(): String = "ImageDownloadInfo(${_original?.let { original } ?: errorMessage ?: "unknown"})"
 }
 
 fun ImageDownloadInfo.requireSuccess(): ImageDownloadInfo {
@@ -224,11 +220,6 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
     }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): GroupImageResponse {
-        val headLength = readInt()
-        val protoLength = readInt()
-        discardExact(headLength)
-        val bytes = readBytes(protoLength)
-        // println(ByteReadPacket(bytes).readProtoMap())
 
         @Serializable
         data class GroupImageResponseProto(
@@ -236,8 +227,7 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
             @SerialId(4) val imageDownloadInfo: ImageDownloadInfo? = null
         )
 
-        debugPrintln("收到返回=" + bytes.toUHexString())
-        val proto = ProtoBuf.load(GroupImageResponseProto.serializer(), bytes)
+        val proto = decodeProtoPacket(GroupImageResponseProto.serializer())
         return when {
             proto.imageUploadInfoPacket != null -> proto.imageUploadInfoPacket
             proto.imageDownloadInfo != null -> proto.imageDownloadInfo

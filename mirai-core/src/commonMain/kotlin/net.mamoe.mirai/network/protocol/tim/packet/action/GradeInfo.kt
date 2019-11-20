@@ -33,9 +33,7 @@ object RequestAccountInfoPacket : SessionPacketFactory<RequestAccountInfoPacket.
 
     @NoLog
     object Response : Packet {
-        //等级
-        //升级剩余活跃天数
-        //ignored
+        override fun toString(): String = "RequestAccountInfoPacket.Response"
     }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Response = Response

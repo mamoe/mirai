@@ -5,6 +5,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
 import net.mamoe.mirai.utils.io.*
@@ -40,13 +41,17 @@ object QueryPreviousNamePacket : SessionPacketFactory<PreviousNameList>() {
     //      [00 00 00 10] 68 69 6D 31 38 38 E7 9A 84 E5 B0 8F 64 69 63 6B
     //      [00 00 00 0F] E4 B8 B6 E6 9A 97 E8 A3 94 E5 89 91 E9 AD 94
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): PreviousNameList =
-        PreviousNameList(ArrayList<String>(readUInt().toInt()).apply {
-            repeat(size) {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): PreviousNameList {
+        // 00 00 00 01 00 00 00 0F E8 87 AA E5 8A A8 E9 A9 BE E9 A9 B6 31 2E 33
+
+        val count = readUInt().toInt()
+        return PreviousNameList(ArrayList<String>(count).apply {
+            repeat(count) {
                 discardExact(2)
                 add(readUShortLVString())
             }
         })
+    }
 }
 
 class PreviousNameList(
@@ -192,9 +197,9 @@ object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditi
  * 请求添加好友
  */
 @AnnotatedId(KnownPacketId.ADD_FRIEND)
-@PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
-    operator fun invoke(
+    @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
+    fun RequestAdd(
         bot: UInt,
         qq: UInt,
         sessionKey: SessionKey,
@@ -241,6 +246,53 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
         }
         writeByte(0)
         //  write
+    }
+
+    // 03 76 E4 B8 DD
+    // 00 00 09 //分组
+    // 00 29 //有备注
+    // 00 09 00 02 00 00 00 00
+    // [00 18] E8 87 AA E5 8A A8 E9 A9 BE E9 A9 B6 31 2E 33 E5 93 88 E5 93 88 E5 93 88
+    // [00 05] 00 00 00 00 01
+
+    // 03 76 E4 B8 DD
+    // 00 00 09 00 11 00 09 00 02 00 00 00 00 //没有备注, 选择分组和上面那个一样
+    // 00 00 00 05 00 00 00 00 01
+
+    // 03 76 E4 B8 DD
+    // 00 00 00
+    // 00 11 //没有备注
+    // 00 09 00 02 00 00 00 00
+    // 00 00 00 05 00 00 00 00 01
+    @PacketVersion(date = "2019.11.20", timVersion = "2.3.2 (21173)")
+    fun Approve(
+        bot: UInt,
+        sessionKey: SessionKey,
+        /**
+         * 好友列表分组的组的 ID. "我的好友" 为 0
+         */
+        friendListId: Short,
+        qq: UInt,
+        /**
+         * 备注. 不设置则需要为 `null` TODO 需要确认是否还需发送一个设置备注包. 因为测试时若有备注则会多发一个包并且包里面有所设置的备注
+         */
+        remark: String?
+    ) = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x02) {
+        writeByte(0x03)
+        writeQQ(qq)
+        writeZero(1)
+        writeUShort(friendListId.toUShort())
+        writeZero(1)
+        when (remark) {
+            null -> writeUByte(0x11u)
+            else -> writeUByte(0x29u)
+        }
+        writeHex("00 09 00 02 00 00 00 00")
+        when (remark) {
+            null -> writeZero(2)
+            else -> writeShortLVString(remark)
+        }
+        writeHex("00 05 00 00 00 00 01")
     }
 
     object Response : Packet {

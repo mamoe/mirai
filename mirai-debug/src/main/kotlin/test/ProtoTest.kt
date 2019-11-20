@@ -9,10 +9,12 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
 import kotlinx.serialization.serializer
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.ProtoFieldId
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.readProtoMap
 import kotlin.reflect.KClass
 
 @Serializable
@@ -58,17 +60,15 @@ suspend fun main() {
 }
 
 suspend fun deserializeTest() {
-    println(Http.getURL("http://gchat.qpic.cn/gchatpic_new/1994701021/1994701021-2868483628-39F76532E1AB5CA786D7A51389225385/0?vuin=1994701021&term=255&srvver=26933").remaining)
+    //println(Http.getURL("http://gchat.qpic.cn/gchatpic_new/1994701021/1994701021-2868483628-39F76532E1AB5CA786D7A51389225385/0?vuin=1994701021&term=255&srvver=26933").remaining)
 
     val bytes =
         """
             
-            
-   10 02 22 4E 08 A0 89 F7 B6 03 10 A2 FF 8C F0 03 18 BB 92 94 BF 08 22 10 63 B1 86 6F 41 3E D9 78 CB CF 53 3E 92 28 5C 58 28 04 30 02 38 20 40 FF 01 48 00 50 01 5A 05 32 36 39 33 33 60 00 68 00 70 00 78 00 80 01 97 04 88 01 ED 03 90 01 04 A0 01 01
-   
-   
-   
-    """.trimIndent().replace("\n", " ").replace("[", "").replace("]", "")
+  08 01 10 00 1A 89 02 10 01 18 03 3A 4D 08 A6 A7 F1 EA 02 10 DD F1 92 B7 07 18 01 20 D3 81 D5 EE 05 2A 00 32 11 E6 9D A5 E8 87 AA 51 51 E5 8F B7 E6 9F A5 E6 89 BE 38 01 40 01 48 00 50 00 58 00 60 01 6A 00 70 00 78 00 80 01 03 A0 01 00 A8 01 00 B0 01 00 C0 01 01 E8 01 00 3A 4A 08 A6 A7 F1 EA 02 10 DD F1 92 B7 07 18 03 20 DC 80 D5 EE 05 2A 00 32 11 E6 9D A5 E8 87 AA 51 51 E5 8F B7 E6 9F A5 E6 89 BE 38 01 40 01 48 00 50 00 58 00 60 01 6A 00 70 00 78 00 80 01 00 A0 01 00 A8 01 00 B0 01 00 C0 01 00 3A 4A 08 A6 A7 F1 EA 02 10 DD F1 92 B7 07 18 03 20 D7 F8 D4 EE 05 2A 00 32 11 E6 9D A5 E8 87 AA 51 51 E5 8F B7 E6 9F A5 E6 89 BE 38 01 40 01 48 00 50 00 58 00 60 01 6A 00 70 00 78 00 80 01 00 A0 01 00 A8 01 00 B0 01 00 C0 01 00 40 D3 81 D5 EE 05 48 01 50 01 58 01 60 DD F1 92 B7 07 72 08 0A 06 08 DD F1 92 B7 07 78 00
+           
+           
+           """.trimIndent().replace("\n", " ").replace("[", "").replace("]", "")
             .hexToBytes()
 
     /*

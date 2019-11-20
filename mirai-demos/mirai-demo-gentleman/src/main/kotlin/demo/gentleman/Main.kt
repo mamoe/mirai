@@ -17,6 +17,7 @@ import net.mamoe.mirai.message.getValue
 import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
+import net.mamoe.mirai.network.protocol.tim.packet.event.ReceiveFriendAddRequestEvent
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
 import java.util.*
@@ -52,6 +53,10 @@ suspend fun main() {
     subscribeAlways<Subscribable> {
 
         //bot.logger.verbose("收到了一个事件: ${it::class.simpleName}")
+    }
+
+    subscribeAlways<ReceiveFriendAddRequestEvent> {
+        it.approve()
     }
 
     bot.subscribeMessages {

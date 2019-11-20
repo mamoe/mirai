@@ -94,6 +94,7 @@ abstract class KnownEventParserAndHandler<TPacket : Packet>(override val id: USh
         GroupFileUploadEventFactory,
         GroupMemberPermissionChangedEventFactory,
         GroupMessageEventParserAndHandler,
-        FriendMessageEventParserAndHandler
+        FriendMessageEventParserAndHandler,
+        FriendAddRequestEventPacket
     )
 }

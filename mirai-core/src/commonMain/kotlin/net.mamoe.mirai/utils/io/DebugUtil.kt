@@ -12,6 +12,13 @@ internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug")
 
 internal fun debugPrintln(any: Any?) = DebugLogger.debug(any)
 
+@Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
+internal fun String.debugPrint(name: String): String {
+    DebugLogger.debug("$name=$this")
+    return this
+}
+
+@Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
 internal fun ByteArray.debugPrint(name: String): ByteArray {
     DebugLogger.debug(name + "=" + this.toUHexString())
     return this
@@ -67,7 +74,6 @@ internal fun BytePacketBuilder.debugColorizedPrintThis(name: String = "", compar
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith(" "))
 internal fun BytePacketBuilder.debugPrintThis(name: String = "") {
     val data = this.build().readBytes()
-    data.debugPrint(name)
     this.writeFully(data)
 }
 

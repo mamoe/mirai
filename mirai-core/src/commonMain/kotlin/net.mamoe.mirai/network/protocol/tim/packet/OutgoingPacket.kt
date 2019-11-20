@@ -7,7 +7,6 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.writeQQ
@@ -141,7 +140,7 @@ fun <T> PacketFactory<*, *>.buildSessionProtoPacket(
                     writeInt(head.size)
                     writeInt(proto.size)
                     writeFully(head)
-                    writeFully(proto.debugPrint("proto data"))
+                    writeFully(proto)
                 }
                 is String -> buildSessionProtoPacket(bot, sessionKey, name, id, sequenceId, headerSizeHint, version, head.hexToBytes(), serializer, protoObj)
             }

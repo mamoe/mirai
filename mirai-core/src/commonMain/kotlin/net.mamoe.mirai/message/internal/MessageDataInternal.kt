@@ -11,6 +11,7 @@ internal fun IoBuffer.parseMessageFace(): Face {
     //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D
     discardExact(1)
 
+    // FIXME: 2019/11/20  EMOJI 表情会解析失败
     val id1 = FaceId(readLVNumber().toInt().toUByte())//可能这个是id, 也可能下面那个
     discardExact(readByte().toLong()) // -1
     readLVNumber()//某id?

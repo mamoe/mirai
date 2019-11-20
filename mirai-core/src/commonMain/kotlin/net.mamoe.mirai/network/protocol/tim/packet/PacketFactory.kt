@@ -4,10 +4,17 @@ package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readBytes
 import kotlinx.io.pool.useInstance
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.debugPrint
+import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.readProtoMap
 
 object PacketFactoryList : MutableList<PacketFactory<*, *>> by mutableListOf()
 
@@ -42,6 +49,25 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
      * **解码**服务器的回复数据包
      */
     abstract suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): TPacket
+
+    @Suppress("DEPRECATION")
+    fun <T> ByteReadPacket.decodeProtoPacket(deserializer: DeserializationStrategy<T>, debuggingTag: String? = null): T {
+        val headLength = readInt()
+        val protoLength = readInt()
+        if (debuggingTag != null) {
+            readBytes(headLength).debugPrint("$debuggingTag head")
+        } else {
+            discardExact(headLength)
+        }
+        val bytes = readBytes(protoLength)
+        // println(ByteReadPacket(bytes).readProtoMap())
+
+        if (debuggingTag != null) {
+            bytes.read { readProtoMap() }.toString().debugPrint("$debuggingTag proto")
+        }
+
+        return ProtoBuf.load(deserializer, bytes)
+    }
 
     companion object {
         private val sequenceIdInternal = atomic(1)

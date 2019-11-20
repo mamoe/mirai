@@ -72,7 +72,7 @@ enum class ProtoType(val value: Byte, private val typeName: String) {
     override fun toString(): String = this.typeName
 
     companion object {
-        fun valueOf(value: Byte): ProtoType = values().firstOrNull { it.value == value } ?: error("Unknown ProtoId $value")
+        fun valueOf(value: Byte): ProtoType = values().firstOrNull { it.value == value } ?: error("Unknown ProtoType $value")
     }
 }
 
@@ -144,7 +144,8 @@ fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
         require(this.remaining > expectingRemaining) { "Expecting to read $length bytes, but read ${expectingRemaining + length - this.remaining}" }
 
         val id = ProtoFieldId(readUVarInt())
-        map[id] = when (id.type) {
+
+        fun readValue(): Any = when (id.type) {
             ProtoType.VAR_INT -> UVarInt(readUVarInt())
             ProtoType.BIT_32 -> readUInt()
             ProtoType.BIT_64 -> readULong()
@@ -152,6 +153,19 @@ fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
 
             ProtoType.START_GROUP -> Unit
             ProtoType.END_GROUP -> Unit
+        }
+
+        if (map.containsKey(id)) {
+            if (map[id] is MutableList<*>) {
+                @Suppress("UNCHECKED_CAST")
+                (map[id] as MutableList<Any>) += readValue()
+            } else {
+                map[id] = mutableListOf(map[id]!!)
+                @Suppress("UNCHECKED_CAST")
+                (map[id] as MutableList<Any>) += readValue()
+            }
+        } else {
+            map[id] = readValue()
         }
     }
     return map
