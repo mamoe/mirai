@@ -76,6 +76,7 @@ suspend fun main() {
                         image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
                         reply(image.id.value + " downloaded")
                     } catch (e: Exception) {
+                        e.printStackTrace()
                         reply(e.message ?: e::class.java.simpleName)
                     }
                 }
