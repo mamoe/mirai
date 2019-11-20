@@ -15,7 +15,7 @@ fun ByteReadPacket.readIoBuffer(
     n: Int = remaining.toInt()//not that safe but adequate
 ): IoBuffer = IoBuffer.Pool.borrow().also { this.readFully(it, n) }
 
-fun ByteReadPacket.readIoBuffer(n: Number) = this.readIoBuffer(n.toInt())
+fun ByteReadPacket.readIoBuffer(n: Short) = this.readIoBuffer(n.toInt())
 
 fun Input.readIP(): String = buildString(4 + 3) {
     repeat(4) {
@@ -24,6 +24,8 @@ fun Input.readIP(): String = buildString(4 + 3) {
         if (it != 3) this.append(".")
     }
 }
+
+fun Input.readPacket(length: Int): ByteReadPacket = this.readBytes(length).toReadPacket()
 
 fun Input.readUVarIntLVString(): String = String(this.readUVarIntByteArray())
 
@@ -62,7 +64,14 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
                     ", duplicating value=${this.readUShortLVByteArray()}" +
                     ", remaining=" + if (expectingEOF) this.readBytes().toUHexString() else "[Not expecting EOF]"
         }
-        map[type.toUInt()] = this.readUShortLVByteArray()
+        try {
+            map[type.toUInt()] = this.readUShortLVByteArray()
+        } catch (e: RuntimeException) { // BufferUnderflowException
+            if (expectingEOF) {
+                return map
+            }
+            throw e
+        }
     }
     return map
 }
@@ -103,11 +112,24 @@ fun Input.readFlatTUVarIntMap(expectingEOF: Boolean = false, tagSize: Int = 1): 
     return map
 }
 
-fun Map<UInt, ByteArray>.printTLVMap(name: String) =
-    debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() }.mapKeys { it.key.toInt().toUShort().toUHexString() })
+fun Map<UInt, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 1) =
+    debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() }.mapKeys {
+        when (keyLength) {
+            1 -> it.key.toInt().toUByte().toUHexString()
+            2 -> it.key.toInt().toUShort().toUHexString()
+            4 -> it.key.toInt().toUInt().toUHexString()
+            else -> illegalArgument("Expecting 1, 2 or 4 for keyLength")
+        }
+    })
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun unsupported(): Nothing = error("Unsupported")
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun illegalArgument(message: String? = null): Nothing = error(message ?: "Illegal argument passed")
 
 @JvmName("printTLVStringMap")
-fun Map<UInt, String>.printTLVMap(name: String) =
+fun Map<UInt, String>.printTLVMap(name: String = "") =
     debugPrintln("TLVMap $name= " + this.mapKeys { it.key.toInt().toUShort().toUHexString() })
 
 fun Input.readString(length: Int): String = String(this.readBytes(length))

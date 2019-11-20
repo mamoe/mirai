@@ -4,6 +4,8 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
@@ -57,6 +59,9 @@ fun BytePacketBuilder.writeHex(uHex: String) {
     }
 }
 
+fun <T> BytePacketBuilder.writeProto(serializer: SerializationStrategy<T>, obj: T) = writeFully(ProtoBuf.dump(serializer, obj))
+
+
 fun BytePacketBuilder.writeTLV(tag: UByte, values: UByteArray) {
     writeUByte(tag)
     writeUVarInt(values.size.toUInt())
@@ -104,17 +109,17 @@ fun BytePacketBuilder.writeTByteArray(tag: UByte, value: UByteArray) {
 /**
  * 会使用 [ByteArrayPool] 缓存
  */
-fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
+inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
     BytePacketBuilder().apply(encoder).build().encryptBy(key) { decrypted -> writeFully(decrypted) }
 
-fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = ByteArrayPool.useInstance {
+inline fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = ByteArrayPool.useInstance {
     key.readFully(it, 0, key.readRemaining)
     encryptAndWrite(it, encoder)
 }
 
-fun BytePacketBuilder.encryptAndWrite(key: DecrypterByteArray, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.value, encoder)
+inline fun BytePacketBuilder.encryptAndWrite(key: DecrypterByteArray, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.value, encoder)
 
-fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
+inline fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
 
 fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: PrivateKey) {
     val firstMD5 = md5(password)
