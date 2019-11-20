@@ -5,9 +5,11 @@ package net.mamoe.mirai.utils
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.get
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
 import kotlinx.coroutines.io.ByteWriteChannel
+import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import java.io.DataInput
 import java.io.EOFException
@@ -55,7 +57,11 @@ actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(host
 
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
-internal actual val Http: HttpClient = HttpClient(CIO)
+actual val Http: HttpClient get() = HttpClient(CIO)
+
+suspend fun HttpClient.getURL(url: String): ByteReadPacket {
+    return this.get(url)
+}
 
 internal actual fun HttpRequestBuilder.configureBody(
     inputSize: Long,
