@@ -60,4 +60,13 @@ dependencies {
     kotlinx("kotlinx-coroutines-core", coroutinesVersion)
 
     kotlinx("kotlinx-serialization-runtime", serializationVersion)
+
+
+    ktor("ktor-http-cio", ktorVersion)
+    ktor("ktor-http", ktorVersion)
+    ktor("ktor-client-core-jvm", ktorVersion)
+    ktor("ktor-client-cio", ktorVersion)
+    ktor("ktor-client-core", ktorVersion)
+    ktor("ktor-network", ktorVersion)
+
 }
