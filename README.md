@@ -48,14 +48,14 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 #### Run-time 
 所有平台: 
-- Kotlin 1.3.50 (保持最新稳定版)
+- Kotlin 1.3.60 (保持最新稳定版)
 
 JVM 平台:
 - JRE 8
 
 #### Build Mirai
 所有平台: 
-- Kotlin 1.3.50 (保持最新稳定版)
+- Kotlin 1.3.60 (保持最新稳定版)
 
 JVM 平台:
 - Java 11 (OpenJDK 11)
