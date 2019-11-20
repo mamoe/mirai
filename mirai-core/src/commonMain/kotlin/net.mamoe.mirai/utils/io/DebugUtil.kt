@@ -24,6 +24,13 @@ internal fun IoBuffer.debugPrint(name: String): IoBuffer {
     return readBytes.toIoBuffer()
 }
 
+@Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
+internal inline fun IoBuffer.debugCopyUse(block: IoBuffer.() -> Unit): IoBuffer {
+    val readBytes = this.readBytes()
+    block(readBytes.toIoBuffer())
+    return readBytes.toIoBuffer()
+}
+
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith("discardExact(n)"))
 internal fun Input.debugDiscardExact(n: Number, name: String = "") {
     DebugLogger.debug("Discarded($n) $name=" + this.readBytes(n.toInt()).toUHexString())
