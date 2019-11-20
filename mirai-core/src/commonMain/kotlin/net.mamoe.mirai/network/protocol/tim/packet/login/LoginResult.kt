@@ -65,6 +65,12 @@ inline class LoginResult(val id: Byte) {
          */
         @JvmStatic
         val TIMEOUT = LoginResult(8)
+
+        /**
+         * 网络不可用
+         */
+        @JvmStatic
+        val NETWORK_UNAVAILABLE = LoginResult(9)
     }
 }
 
