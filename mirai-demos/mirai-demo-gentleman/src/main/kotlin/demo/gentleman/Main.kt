@@ -72,9 +72,12 @@ suspend fun main() {
                     val image: Image by message
                     // 等同于 val image = message[Image]
 
-                    reply(image + " downloading")
-                    image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
-                    reply(image.id.value + " downloaded")
+                    try {
+                        image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
+                        reply(image.id.value + " downloaded")
+                    } catch (e: Exception) {
+                        reply(e.message ?: e::class.java.simpleName)
+                    }
                 }
             }
         }
