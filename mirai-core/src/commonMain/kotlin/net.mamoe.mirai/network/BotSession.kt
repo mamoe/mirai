@@ -58,6 +58,7 @@ expect class BotSession(
  * [BotSession] 平台通用基础
  */
 @MiraiInternalAPI
+// cannot be internal because of `public BotSession`
 abstract class BotSessionBase(
     val bot: Bot,
     val sessionKey: SessionKey,
