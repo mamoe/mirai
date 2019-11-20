@@ -42,7 +42,7 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 ## Update log
 
-在 [Project](https://github.com/mamoe/mirai/projects/1) 查看
+在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划
 
 ## Requirements
 
