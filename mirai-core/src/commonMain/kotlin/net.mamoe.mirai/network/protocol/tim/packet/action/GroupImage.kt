@@ -107,17 +107,6 @@ class ImageUploadInfo(
 @PacketVersion(date = "2019.10.26", timVersion = "2.3.2 (21173)")
 object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
 
-    /*
-请求上传图片
-ProtoMap(
-  varint 0=0x5D(UVarInt(data=93))
-  varint 1=0x01(UVarInt(data=1))
-  delimi 2=98 01 01
-  varint 2=0x01(UVarInt(data=1))
-  delimi 3=08 A0 89 F7 B6 03 10 A2 FF 8C F0 03 18 00 22 10 2C F2 65 98 12 EA 9C 88 60 BD 7A 29 8E 6F 9B 4D 28 F0 0B 32 1A 43 00 4D 00 45 00 35 00 44 00 53 00 5A 00 43 00 4C 00 52 00 51 00 29 00 28 00 38 01 48 01 50 8B 02 58 BE 03 60 02 6A 05 32 36 39 33 33 70 00 78 03 80 01 00
-)
-     */
-    private val RequestImageIdUnknownByteArray = ubyteArrayOf(0x98u, 0x01u, 0x01u).toByteArray()
     private val constValue3 = byteArrayOf(
         0x28, 0x00, 0x5A, 0x00, 0x53, 0x00, 0x41, 0x00, 0x58, 0x00, 0x40, 0x00, 0x57,
         0x00, 0x4B, 0x00, 0x52, 0x00, 0x4A, 0x00, 0x5A, 0x00, 0x31, 0x00, 0x7E, 0x00
@@ -155,29 +144,6 @@ ProtoMap(
         @SerialId(2) val unknown4: Byte = 2,
         @SerialId(4) var body: Body
     ) {
-        /*
-      ProtoMap(
-        varint 1=0x8E87C28403(UVarInt(data=814777230))
-        varint 2=0xA2FF8CF003(UVarInt(data=1040400290))
-        varint 3=0xFBECB9A9A(UVarInt(data=2771285627))
-        delimi 4=66 3C 60 FB 31 67 85 84 1A 18 00 52 2C D6 C8 7E
-        varint 5=0x04(UVarInt(data=4))
-        varint 6=0x02(UVarInt(data=2))
-        varint 7=0x20(UVarInt(data=32))
-        varint 8=0xFF01(UVarInt(data=255))
-        varint 9=0x00(UVarInt(data=0))
-        varint 10=0x01(UVarInt(data=1))
-        delimi 11=32 36 39 33 33
-        varint 12=0x00(UVarInt(data=0))
-        varint 13=0x00(UVarInt(data=0))
-        varint 14=0x01(UVarInt(data=1))
-        varint 15=0x00(UVarInt(data=0))
-        varint 16=0xA412(UVarInt(data=2340))
-        varint 17=0xB808(UVarInt(data=1080))
-        varint 18=0xE807(UVarInt(data=1000))
-        varint 20=0x01(UVarInt(data=1))
-      )
-               */
         @Serializable
         class Body(
             @SerialId(1) val group: Int,
@@ -247,7 +213,7 @@ ProtoMap(
             protoObj = RequestLinkProto(
                 body = RequestLinkProto.Body(
                     bot = bot.toInt(), // same bin representation, so will be decoded correctly as a unsigned value in the server
-                    group = bot.toInt(), // TODO 似乎是必须要填group ??
+                    group = bot.toInt(),
                     uniqueId = imageId.uniqueId.toInt(),
                     md5 = imageId.md5,
                     height = imageId.height,
