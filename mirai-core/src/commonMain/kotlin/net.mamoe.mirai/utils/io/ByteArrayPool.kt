@@ -3,8 +3,8 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.pool.DefaultPool
 import kotlinx.io.pool.ObjectPool
 
-internal const val DEFAULT_BYTE_ARRAY_POOL_SIZE = 128
-internal const val DEFAULT_BYTE_ARRAY_SIZE = 2048
+internal const val DEFAULT_BYTE_ARRAY_POOL_SIZE = 256
+internal const val DEFAULT_BYTE_ARRAY_SIZE = 4096
 
 val ByteArrayPool: ObjectPool<ByteArray> = ByteArrayPoolImpl
 
