@@ -5,24 +5,25 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
-import net.mamoe.mirai.*
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.getGroup
+import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImageLink
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
-import net.mamoe.mirai.network.sessionKey
+import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.printTLVMap
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readTLVMap
 import net.mamoe.mirai.utils.io.readUShortLVByteArray
+import net.mamoe.mirai.withSession
 import kotlin.jvm.JvmName
 
 /**
@@ -87,8 +88,8 @@ abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
     // endregion
 
     // region Image download
+    suspend inline fun Image.getLink(): ImageLink = bot.withSession { getLink() }
 
-    suspend fun Image.getLink(): FriendImageLink = bot.withSession { FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect() }
     suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
     suspend inline fun Image.download(): ByteReadPacket = getLink().download()
     // endregion
@@ -106,6 +107,7 @@ data class GroupMessage(
     override val sender: QQ,
     override val message: MessageChain = NullMessageChain
 ) : MessagePacket<Group>() {
+
     override val subject: Group get() = group
 }
 

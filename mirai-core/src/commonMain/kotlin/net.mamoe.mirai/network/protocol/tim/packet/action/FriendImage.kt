@@ -2,11 +2,11 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import io.ktor.client.request.get
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.ImageId
+import net.mamoe.mirai.message.ImageId0x06
 import net.mamoe.mirai.message.requireLength
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
@@ -59,11 +59,8 @@ interface FriendImageResponse : EventPacket
  * 图片数据地址.
  */
 // TODO: 2019/11/15 应该为 inline class, 但 kotlin 有 bug
-data class FriendImageLink(inline val value: String) : FriendImageResponse {
-    suspend fun downloadAsByteArray(): ByteArray = download().readBytes()
-    suspend fun download(): ByteReadPacket = Http.get(value)
-
-    override fun toString(): String = "FriendImageLink($value)"
+data class FriendImageLink(override inline val original: String) : FriendImageResponse, ImageLink {
+    override fun toString(): String = "FriendImageLink($original)"
 }
 
 /**
@@ -199,7 +196,7 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
             writeUByte(0x1Au)
             writeUByte(0x47u)
             writeTUVarint(0x08u, bot)
-            writeTUVarint(0x10u, bot)
+            writeTUVarint(0x10u, bot) // 这里实际上应该是这张图片来自哪个 QQ 号. 但传 bot 也没事.
             writeTLV(0x1Au, imageId.value.toByteArray(Charsets.ISO_8859_1))
             writeHex("20 02 30 04 38 20 40 FF 01 50 00 6A 05 32 36 39 33 33 78 01")
         }
@@ -276,7 +273,7 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
                     while (readUByte().toUInt() != 0x4Au) readUVarLong()
                     val uKey = readBytes(readUVarInt().toInt())//128
                     while (readUByte().toUInt() != 0x52u) readUVarLong()
-                    val imageId = ImageId(readString(readUVarInt().toInt()))//37
+                    val imageId = ImageId0x06(readString(readUVarInt().toInt()))//37
                     return FriendImageUKey(imageId, uKey)
                 } catch (e: EOFException) {
                     val toDiscard = readUByte().toInt() - 37
@@ -285,7 +282,7 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
                         FriendImageOverFileSizeMax
                     } else {
                         discardExact(toDiscard)
-                        val imageId = ImageId(readString(37))
+                        val imageId = ImageId0x06(readString(37))
                         FriendImageAlreadyExists(imageId)
                     }
                 }
@@ -302,6 +299,7 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
                 //   3A 00 80 01 00
 
 
+
                 //00 00 00 08 00 00
                 // [02 29]
                 // 12 [06] 98 01 02 A0 01 00
@@ -315,7 +313,7 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
                 discardExact(1)
                 discardExact(2)// [A4 04] 后文长度
                 check(readUByte().toUInt() == 0x0Au) { "Illegal identity. Required 0x0Au" }
-                /* val imageId = */ImageId(readString(readUByte().toInt()))
+                /* val imageId = */ImageId0x06(readString(readUByte().toInt()))
 
                 check(readUByte().toUInt() == 0x18u) { "Illegal identity. Required 0x18u" }
                 check(readUShort().toUInt() == 0x0032u) { "Illegal identity. Required 0x0032u" }

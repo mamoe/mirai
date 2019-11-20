@@ -7,10 +7,7 @@ import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.message.ImageId
-import net.mamoe.mirai.message.image
-import net.mamoe.mirai.message.sendTo
+import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 import net.mamoe.mirai.utils.io.toUHexString
 
@@ -52,7 +49,8 @@ class ExternalImage(
     /**
      * 用于发送消息的 [ImageId]
      */
-    val groupImageId: ImageId by lazy { ImageId("{${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}}.$format") }
+    @Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+    val groupImageId: ImageId by lazy { ImageId0x03("{${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}}.$format", 0u, height, width) }
 
     override fun toString(): String = "[ExternalImage(${width}x$height $format)]"
 }
