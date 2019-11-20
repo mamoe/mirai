@@ -22,14 +22,14 @@ import java.lang.ref.WeakReference
 
 class MiraiService : Service() {
 
-    private var mCaptchaDeferred: CompletableDeferred<String>? = null
+    private lateinit var mCaptchaDeferred: CompletableDeferred<String>
 
     private lateinit var mBot: Bot
 
     private var mCaptcha = ""
         set(value) {
             field = value
-            mCaptchaDeferred?.complete(value)
+            mCaptchaDeferred.complete(value)
         }
 
     private var mBinder: MiraiBinder? = null
@@ -49,8 +49,9 @@ class MiraiService : Service() {
                     captchaSolver = {
                         val bytes = it.readBytes()
                         val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        mCaptchaDeferred = CompletableDeferred()
                         mCallback?.get()?.onCaptcha(bitmap)
-                        mCaptchaDeferred?.await()
+                        mCaptchaDeferred.await()
                     }
                 }
                 if (loginResult == LoginResult.SUCCESS) {
