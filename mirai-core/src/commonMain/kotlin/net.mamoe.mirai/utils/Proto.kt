@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.utils
 
@@ -8,10 +8,14 @@ import kotlinx.io.core.readUInt
 import kotlinx.io.core.readULong
 import net.mamoe.mirai.utils.io.UVarInt
 import net.mamoe.mirai.utils.io.readUVarInt
+import net.mamoe.mirai.utils.io.toReadPacket
 import net.mamoe.mirai.utils.io.toUHexString
+import kotlin.jvm.JvmStatic
 
 // ProtoBuf utilities
 
+
+@Suppress("FunctionName", "SpellCheckingInspection")
 /*
  * Type	Meaning	Used For
  * 0	Varint	int32, int64, uint32, uint64, sint32, sint64, bool, enum
@@ -23,8 +27,6 @@ import net.mamoe.mirai.utils.io.toUHexString
  *
  * https://www.jianshu.com/p/f888907adaeb
  */
-
-@Suppress("FunctionName")
 fun ProtoFieldId(serializedId: UInt): ProtoFieldId = ProtoFieldId(protoFieldNumber(serializedId), protoType(serializedId))
 
 data class ProtoFieldId(
@@ -34,7 +36,8 @@ data class ProtoFieldId(
     override fun toString(): String = "$type $fieldNumber"
 }
 
-enum class ProtoType(val value: Byte, val typeName: String) {
+@Suppress("SpellCheckingInspection")
+enum class ProtoType(val value: Byte, private val typeName: String) {
     /**
      * int32, int64, uint32, uint64, sint32, sint64, bool, enum
      */
@@ -63,7 +66,8 @@ enum class ProtoType(val value: Byte, val typeName: String) {
     /**
      * fixed32, sfixed32, float
      */
-    BIT_32(0x05, " 32bit"), ;
+    BIT_32(0x05, " 32bit"),
+    ;
 
     override fun toString(): String = this.typeName
 
@@ -88,12 +92,22 @@ fun protoFieldNumber(number: UInt): Int = number.toInt().ushr(3)
 
 
 class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, Any> by map {
+    companion object {
+        @JvmStatic
+        val indent: String = "    "
+    }
+
     override fun toString(): String {
-        return this.entries.joinToString(prefix = "ProtoMap(\n  ", postfix = "\n)", separator = "\n  ") {
-            "${it.key}=" + it.value.contentToString().replace("\n", """\n""")
+        return this.entries.joinToString(prefix = "ProtoMap(size=$size){\n$indent", postfix = "\n}", separator = "\n$indent") {
+            "${it.key}=" + it.value.contentToString()
         }
     }
 
+    fun toStringPrefixed(prefix: String): String {
+        return this.entries.joinToString(prefix = "$prefix$indent", separator = "\n$prefix$indent") {
+            "${it.key}=" + it.value.contentToString(prefix)
+        }
+    }
     /*
     override fun put(key: ProtoFieldId, value: Any): Any? {
         println("${key}=" + value.contentToString())
@@ -101,7 +115,7 @@ class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, An
     }*/
 }
 
-fun Any.contentToString(): String = when (this) {
+fun Any.contentToString(prefix: String = ""): String = when (this) {
     is UInt -> "0x" + this.toUHexString("") + "($this)"
     is UByte -> "0x" + this.toUHexString() + "($this)"
     is UShort -> "0x" + this.toUHexString("") + "($this)"
@@ -116,6 +130,8 @@ fun Any.contentToString(): String = when (this) {
     is Boolean -> if (this) "true" else "false"
 
     is ByteArray -> this.toUHexString()// + " (${this.encodeToString()})"
+
+    is ProtoMap -> "ProtoMap(size=$size){\n" + this.toStringPrefixed("$prefix${ProtoMap.indent}${ProtoMap.indent}") + "\n$prefix${ProtoMap.indent}}"
     else -> this.toString()
 }
 
@@ -125,16 +141,27 @@ fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
 
     val expectingRemaining = this.remaining - length
     while (this.remaining != expectingRemaining) {
+        require(this.remaining > expectingRemaining) { "Expecting to read $length bytes, but read ${expectingRemaining + length - this.remaining}" }
+
         val id = ProtoFieldId(readUVarInt())
         map[id] = when (id.type) {
             ProtoType.VAR_INT -> UVarInt(readUVarInt())
             ProtoType.BIT_32 -> readUInt()
             ProtoType.BIT_64 -> readULong()
-            ProtoType.LENGTH_DELIMI -> readBytes(readUVarInt().toInt())
+            ProtoType.LENGTH_DELIMI -> tryReadProtoMapOrByteArray(readUVarInt().toInt())
 
-            ProtoType.START_GROUP -> error("unsupported")
-            ProtoType.END_GROUP -> error("unsupported")
+            ProtoType.START_GROUP -> Unit
+            ProtoType.END_GROUP -> Unit
         }
     }
     return map
+}
+
+private fun ByteReadPacket.tryReadProtoMapOrByteArray(length: Int): Any {
+    val bytes = this.readBytes(length)
+    return try {
+        bytes.toReadPacket().readProtoMap().apply { require(none { it.key.type == ProtoType.START_GROUP || it.key.type == ProtoType.END_GROUP }) }
+    } catch (e: Exception) {
+        bytes
+    }
 }
