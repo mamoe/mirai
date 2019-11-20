@@ -3,10 +3,17 @@
 package net.mamoe.mirai.network.protocol.tim.packet
 
 import kotlinx.io.core.*
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.encryptAndWrite
+import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.writeQQ
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmOverloads
 
 /**
@@ -41,14 +48,19 @@ abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, S
  *
  * 若不提供参数 [id], 则会通过注解 [AnnotatedId] 获取 id.
  */
+@UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-fun PacketFactory<*, *>.buildOutgoingPacket(
+inline fun PacketFactory<*, *>.buildOutgoingPacket(
     name: String? = null,
     id: PacketId = this.id,
     sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     headerSizeHint: Int = 0,
     block: BytePacketBuilder.() -> Unit
 ): OutgoingPacket {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     BytePacketBuilder(headerSizeHint).use {
         with(it) {
             writeFully(TIMProtocol.head)
@@ -68,8 +80,9 @@ fun PacketFactory<*, *>.buildOutgoingPacket(
  *
  * 若不提供参数 [id], 则会通过注解 [AnnotatedId] 获取 id.
  */
+@UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-fun PacketFactory<*, *>.buildSessionPacket(
+inline fun PacketFactory<*, *>.buildSessionPacket(
     bot: UInt,
     sessionKey: SessionKey,
     name: String? = null,
@@ -78,10 +91,60 @@ fun PacketFactory<*, *>.buildSessionPacket(
     headerSizeHint: Int = 0,
     version: ByteArray = TIMProtocol.version0x02,
     block: BytePacketBuilder.() -> Unit
-): OutgoingPacket = buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {
-    writeQQ(bot)
-    writeFully(version)
-    encryptAndWrite(sessionKey) {
-        block()
+): OutgoingPacket {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {
+        writeQQ(bot)
+        writeFully(version)
+        encryptAndWrite(sessionKey) {
+            block()
+        }
+    }
+}
+
+/**
+ * 构造一个待发送给服务器的会话数据包.
+ *
+ * 若不提供参数 [id], 则会通过注解 [AnnotatedId] 获取 id.
+ */
+@UseExperimental(ExperimentalContracts::class)
+@JvmOverloads
+fun <T> PacketFactory<*, *>.buildSessionProtoPacket(
+    bot: UInt,
+    sessionKey: SessionKey,
+    name: String? = null,
+    id: PacketId = this.id,
+    sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
+    headerSizeHint: Int = 0,
+    version: ByteArray = TIMProtocol.version0x04,
+    head: Any,
+    serializer: SerializationStrategy<T>,
+    protoObj: T
+): OutgoingPacket {
+    require(head is ByteArray || head is UByteArray || head is String) { "Illegal head type" }
+    return buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {
+        writeQQ(bot)
+        writeFully(version)
+        encryptAndWrite(sessionKey) {
+            when (head) {
+                is ByteArray -> {
+                    val proto = ProtoBuf.dump(serializer, protoObj)
+                    writeInt(head.size)
+                    writeInt(proto.size)
+                    writeFully(head)
+                    writeFully(proto)
+                }
+                is UByteArray -> {
+                    val proto = ProtoBuf.dump(serializer, protoObj)
+                    writeInt(head.size)
+                    writeInt(proto.size)
+                    writeFully(head)
+                    writeFully(proto.debugPrint("proto data"))
+                }
+                is String -> buildSessionProtoPacket(bot, sessionKey, name, id, sequenceId, headerSizeHint, version, head.hexToBytes(), serializer, protoObj)
+            }
+        }
     }
 }
