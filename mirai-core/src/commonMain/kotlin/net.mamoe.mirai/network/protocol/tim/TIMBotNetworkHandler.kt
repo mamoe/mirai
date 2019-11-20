@@ -41,10 +41,11 @@ internal expect val NetworkDispatcher: CoroutineDispatcher
 internal class TIMBotNetworkHandler internal constructor(coroutineContext: CoroutineContext, override inline val bot: Bot) :
     BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
 
+
     override val coroutineContext: CoroutineContext =
         coroutineContext + NetworkDispatcher + CoroutineExceptionHandler { _, e ->
             bot.logger.error("An exception was thrown in a coroutine under TIMBotNetworkHandler", e)
-        } + SupervisorJob()
+        } + supervisor
 
 
     override lateinit var socket: BotSocketAdapter
@@ -70,7 +71,11 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
         return withContext(this.coroutineContext) {
             TIMProtocol.SERVER_IP.forEach { ip ->
                 bot.logger.info("Connecting server $ip")
-                socket = BotSocketAdapter(ip, configuration)
+                try {
+                    socket = BotSocketAdapter(ip, configuration)
+                } catch (e: Exception) {
+                    return@withContext LoginResult.NETWORK_UNAVAILABLE
+                }
 
                 loginResult = CompletableDeferred()
 
@@ -139,9 +144,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 try {
                     channel.read(buffer)// JVM: withContext(IO)
                 } catch (e: ClosedChannelException) {
-                    withContext(userContext) {
-                        close()
-                    }
+                    close()
                     return
                 } catch (e: ReadPacketInternalException) {
                     bot.logger.error("Socket channel read failed: ${e.message}")
@@ -278,11 +281,17 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 try {
                     built.readAvailable(buffer)
                     val shouldBeSent = buffer.readRemaining
-                    check(channel.send(buffer) == shouldBeSent) { "Buffer is not entirely sent. Required sent length=$shouldBeSent, but after channel.send, buffer remains ${buffer.readBytes().toUHexString()}" }//JVM: withContext(IO)
+                    check(channel.send(buffer) == shouldBeSent) {
+                        "Buffer is not entirely sent. " +
+                                "Required sent length=$shouldBeSent, but after channel.send, " +
+                                "buffer remains ${buffer.readBytes().toUHexString()}"
+                    }//JVM: withContext(IO)
                 } catch (e: SendPacketInternalException) {
-                    bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
+                    if (e.cause !is CancellationException) {
+                        bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
+                    }
 
-                    withContext(userContext) {
+                    GlobalScope.launch(userContext) {
                         bot.reinitializeNetworkHandler(configuration, e)
                     }
                     return@withContext
@@ -513,7 +522,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                                         HeartbeatPacket(
                                             bot.qqAccount,
                                             sessionKey
-                                        ).sendAndExpectAsync<HeartbeatPacketResponse>().join()
+                                        ).sendAndExpect<HeartbeatPacketResponse>()
                                     } == null) {
                                     bot.logger.warning("Heartbeat timed out")
                                     bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
