@@ -74,6 +74,7 @@ internal fun BytePacketBuilder.debugColorizedPrintThis(name: String = "", compar
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith(" "))
 internal fun BytePacketBuilder.debugPrintThis(name: String = "") {
     val data = this.build().readBytes()
+    data.printColorizedHex(name)
     this.writeFully(data)
 }
 
