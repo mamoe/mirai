@@ -9,7 +9,8 @@ object IgnoredEventPacket : EventPacket
 
 object IgnoredEventIds : List<IgnoredEventParserAndHandler> by {
     listOf(
-        0x0021u
+        0x0021u,
+        0x0210u // 新朋友等字符串通知
     ).map { IgnoredEventParserAndHandler(it.toUShort()) }
 }()
 
