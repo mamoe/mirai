@@ -169,8 +169,11 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
         private val _instances: MutableList<Bot> = mutableListOf()
         private val instanceLock: Mutex = Mutex()
 
-        val instances: List<Bot> get() = _instances
+        private val instances: List<Bot> get() = _instances
 
+        suspend fun instanceWhose(qq: UInt) = instanceLock.withLock {
+            instances.first { it.qqAccount == qq }
+        }
 
         internal suspend fun addInstance(bot: Bot) = instanceLock.withLock {
             _instances += bot
