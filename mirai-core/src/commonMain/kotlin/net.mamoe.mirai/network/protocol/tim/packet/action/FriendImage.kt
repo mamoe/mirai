@@ -105,6 +105,9 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
     ): OutgoingPacket = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x04) {
         writeHex("00 00 00 07 00 00")
 
+
+        // TODO: 2019/11/22 should be ProtoBuf
+
         writeShortLVPacket(lengthOffset = { it - 7 }) {
             writeUByte(0x08u)
             writeTV(0x01_12u)
@@ -181,6 +184,7 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
         // 1A [25] 2F 39 61 31 66 37 31 36 32 2D 38 37 30 38 2D 34 39 30 38 2D 38 31 63 30 2D 66 34 63 64 66 33 35 63 38 64 37 65
         // 20 02 30 04 38 20 40 FF 01 50 00 6A 05 32 36 39 33 33 78 01
 
+        // TODO: 2019/11/22 should be ProtoBuf
 
         return buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x04) {
             writeHex("00 00 00 07 00 00")
@@ -244,6 +248,7 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
         discardExact(2) //全长 (有 offset)
 
         discardExact(1); discardExact(readUVarInt().toInt()) // 12 [06] 98 01 01 A0 01 00
+        // TODO: 2019/11/22 should be ProtoBuf
 
         check(readUByte().toUInt() == 0x08u)
         return when (val flag = readUByte().toUInt()) {

@@ -100,7 +100,7 @@ class ImageUploadInfo(
  * 获取 Image Id 和上传用的一个 uKey
  */
 @AnnotatedId(KnownPacketId.GROUP_IMAGE_ID)
-@PacketVersion(date = "2019.10.26", timVersion = "2.3.2 (21173)")
+@PacketVersion(date = "2019.11.22", timVersion = "2.3.2 (21173)")
 object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
 
     private val constValue3 = byteArrayOf(
