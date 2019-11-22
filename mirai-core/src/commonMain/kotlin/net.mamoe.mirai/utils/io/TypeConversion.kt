@@ -8,7 +8,6 @@ import kotlinx.io.pool.ObjectPool
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-
 /*
  * 类型转换 Utils.
  * 这些函数为内部函数, 可能会改变

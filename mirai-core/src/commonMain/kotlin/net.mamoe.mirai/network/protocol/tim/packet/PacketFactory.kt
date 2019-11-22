@@ -11,7 +11,6 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toUHexString
 import net.mamoe.mirai.utils.readProtoMap
@@ -35,6 +34,8 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
         get() = (this::class.annotations.firstOrNull { it is AnnotatedId } as? AnnotatedId)
             ?: error("Annotation AnnotatedId not found for class ${this::class.simpleName}")
 
+
+    // TODO: 2019/11/22 修改为参数
     /**
      * 包 ID.
      */

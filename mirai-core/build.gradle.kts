@@ -121,12 +121,23 @@ kotlin {
         }
     }
 
+    sourceSets["commonTest"].apply {
+        dependencies {
+            kotlin("kotlin-test-annotations-common")
+            kotlin("kotlin-test-common")
+        }
+        kotlin.setSrcDirs(listOf("src/$name/kotlin"))
+    }
+
     sourceSets["jvmTest"].apply {
         dependencies {
+            kotlin("kotlin-test", kotlinVersion)
+            kotlin("kotlin-test-annotations-common", kotlinVersion)
+            kotlin("kotlin-test-junit5", kotlinVersion)
+            implementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
         }
         kotlin.outputDir = file("build/classes/kotlin/jvm/test")
         kotlin.setSrcDirs(listOf("src/$name/kotlin"))
-
     }
 
     sourceSets.all {

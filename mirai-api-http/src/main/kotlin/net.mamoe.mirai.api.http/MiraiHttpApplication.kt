@@ -75,8 +75,6 @@ private fun Route.mirai(path: String, body: PipelineInterceptor<Unit, Applicatio
     }
 }
 
-
-@Suppress("NOTHING_TO_INLINE")
 suspend inline fun ApplicationCall.ok() = this.respond(HttpStatusCode.OK, "OK")
 
 /**

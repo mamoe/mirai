@@ -70,21 +70,6 @@ suspend fun deserializeTest() {
            
            """.trimIndent().replace("\n", " ").replace("[", "").replace("]", "")
             .hexToBytes()
-
-    /*
-    00 00 00 07 00 00 00 52 08 01 12 03 98 01 02
-    10 02
-    22 [4E] 08 A0 89 F7 B6 03 10 A2 FF 8C F0 03 18 BB 92 94 BF 08 22 10 64 CF BB 65 00 13 8D B5 58 E2 45 1E EA 65 88 E1 28 04 30 02 38 20 40 FF 01 48 00 50 01 5A 05 32 36 39 33 33 60 00 68 00 70 00 78 00 80 01 97 04 88 01 ED 03 90 01 04 A0 01 01
-     */
-
-    /*
-    for (i in 0..bytes.size) {
-        try {
-            println(bytes.copyOfRange(i, bytes.size).read { readProtoMap() })
-        } catch (e: Exception) {
-
-        }
-    }*/
     println(bytes.read { readProtoMap() })
 }
 
