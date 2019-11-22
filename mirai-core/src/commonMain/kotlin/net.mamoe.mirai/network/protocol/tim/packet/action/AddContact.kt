@@ -264,6 +264,7 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
     // 00 11 //没有备注
     // 00 09 00 02 00 00 00 00
     // 00 00 00 05 00 00 00 00 01
+    @Suppress("FunctionName")
     @PacketVersion(date = "2019.11.20", timVersion = "2.3.2 (21173)")
     fun Approve(
         bot: UInt,
@@ -277,7 +278,7 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
          * 备注. 不设置则需要为 `null` TODO 需要确认是否还需发送一个设置备注包. 因为测试时若有备注则会多发一个包并且包里面有所设置的备注
          */
         remark: String?
-    ) = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x02) {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x02) {
         writeByte(0x03)
         writeQQ(qq)
         writeZero(1)
