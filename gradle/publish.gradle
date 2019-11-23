@@ -44,7 +44,6 @@ afterEvaluate {
             //root.appendNode('version', project.version)
             root.appendNode('name', project.name)
             root.appendNode('description', project.description)
-            root.appendNode('packing', "jar")
             root.appendNode('url', 'https://github.com/mamoe/mirai')
             root.children().last() + pomConfig
         }
