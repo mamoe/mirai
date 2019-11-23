@@ -1,3 +1,5 @@
+@file:JvmMultifileClass
+@file:JvmName("BotHelperKt")
 @file:Suppress("unused", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai
@@ -15,6 +17,8 @@ import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 
 /*
