@@ -15,8 +15,6 @@ import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toUHexString
 import net.mamoe.mirai.utils.readProtoMap
 
-object PacketFactoryList : MutableList<PacketFactory<*, *>> by mutableListOf()
-
 /**
  * 一种数据包的处理工厂. 它可以解密解码服务器发来的这个包, 也可以编码加密要发送给服务器的这个包
  * 应由一个 `object` 实现, 且实现 `operator fun invoke`
@@ -43,7 +41,6 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
 
     init {
         @Suppress("LeakingThis")
-        PacketFactoryList.add(this)
     }
 
     /**
