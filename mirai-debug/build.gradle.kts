@@ -30,6 +30,7 @@ kotlin {
     sourceSets {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
+            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
         }
     }
 }
