@@ -39,7 +39,7 @@ internal expect val NetworkDispatcher: CoroutineDispatcher
  * @see BotNetworkHandler
  */
 internal class TIMBotNetworkHandler internal constructor(coroutineContext: CoroutineContext, override inline val bot: Bot) :
-    BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList() {
+    BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList(), CoroutineScope {
 
 
     override val coroutineContext: CoroutineContext =
@@ -512,7 +512,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     sessionKey = packet.sessionKey
                     bot.logger.info("sessionKey = ${sessionKey.value.toUHexString()}")
 
-                    heartbeatJob = launch {
+                    heartbeatJob = this@TIMBotNetworkHandler.launch {
                         while (socket.isOpen) {
                             delay(configuration.heartbeatPeriod.millisecondsLong)
                             with(session) {
