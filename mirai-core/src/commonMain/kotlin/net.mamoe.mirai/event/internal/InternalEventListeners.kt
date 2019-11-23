@@ -129,16 +129,15 @@ internal object EventListenerManger {
     private val registriesMutex = Mutex()
 
     @Suppress("UNCHECKED_CAST")
-    internal suspend fun <E : Subscribable> get(clazz: KClass<out E>): EventListeners<E> = registriesMutex.withLock {
-        if (registries.containsKey(clazz)) {
-            return registries[clazz] as EventListeners<E>
-        } else {
+    internal suspend fun <E : Subscribable> get(clazz: KClass<out E>): EventListeners<E> =
+        if (registries.containsKey(clazz)) registries[clazz] as EventListeners<E>
+        else registriesMutex.withLock {
             EventListeners<E>().let {
                 registries[clazz] = it
                 return it
             }
         }
-    }
+
 }
 
 internal suspend fun <E : Subscribable> E.broadcastInternal(): E {
