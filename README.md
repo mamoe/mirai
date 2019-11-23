@@ -1,5 +1,6 @@
 # Mirai
-[![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
+[![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
 
 一个以 **TIM PC协议(非web)** 驱动的跨平台开源 QQ 机器人支持库, 现有 JVM 和 AndroidLib 支持。  
 Mirai 使用纯 Kotlin 实现 QQ 协议库并跨平台。  
@@ -10,6 +11,32 @@ Mirai 在 JVM 平台额外提供插件模式运行的服务端。
 部分协议来自网络上开源项目  
 
 **一切开发旨在学习，请勿用于非法用途**
+
+## Use as library
+把 Mirai 作为库内置于您的项目中使用.  
+Mirai 只上传在 jcenter, 因此请确保添加 `jcenter()` 仓库  
+```kotlin
+repositories{
+  jcenter()
+}
+```
+若您需要使用在跨平台项目, 您需要对各个目标平台添加不同的依赖.  
+若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.  
+
+您需要将 `VERSION` 替换为最新的版本: [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)
+
+#### common 
+```kotlin
+implementation("net.mamoe:mirai-core-common:VERSION")
+```
+#### jvm
+```kotlin
+implementation("net.mamoe:mirai-core-jvm:VERSION")
+```
+#### android
+```kotlin
+implementation("net.mamoe:mirai-core-android:VERSION")
+```
 
 ## Try
 
@@ -132,7 +159,7 @@ Samples and demos.
 监听事件示例 [SubscribeSamples](mirai-demos/mirai-demo-1/src/main/java/demo/subscribe/SubscribeSamples.kt)  
 随机图片发送 [Gentleman](mirai-demos/mirai-demo-gentleman/src/main/kotlin/demo/gentleman/Main.kt)
 
-感谢 [@Freedom](https://github.com/Freedom0925) 的 [Android App Demo](mirai-dehttps://github.com/mamoe/mirai/blob/master/mirai-demos/mirai-demo-android/src/main/kotlin/net/mamoe/mirai/demo/MainActivity.kt)
+感谢 [@Freedom](https://github.com/Freedom0925) 的 [Android App Demo](https://github.com/mamoe/mirai/blob/master/mirai-demos/mirai-demo-android/src/main/kotlin/net/mamoe/mirai/demo/MainActivity.kt)
 #### mirai-debug
 抓包工具和分析工具. 不会进行稳定性维护.  
 
@@ -242,14 +269,12 @@ Mirai 中所有的消息均为对象化的 [Message](mirai-core/src/commonMain/k
 - `suspend IMAGE.toExternalImage():ExternalImage`
 
 直接发送  
-- `suspend IMAGE.sendTo(Contact)`
+- `suspend IMAGE.sendAsImageTo(Contact)`
 - `suspend Contact.sendImage(IMAGE)`
 
 转为 Message  
-- `suspend IMAGE.upload(Contact)`
+- `suspend IMAGE.uploadAsImage(Contact)`
 - `suspend Contact.upload(IMAGE)`
-
-只要语义上正确的函数, 在 Mirai 都是可行的.
 
 ### Event
 

@@ -11,12 +11,20 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion"
+
+        //classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
     }
 }
 
 allprojects {
     group = "net.mamoe"
     version = getProperty("mirai_version")
+
+//    tasks.withType(KotlinCompile).all { task ->
+//        task.kotlinOptions{
+//            jvmTarget = '1.6'
+//        }
+//    }
 
     repositories {
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }

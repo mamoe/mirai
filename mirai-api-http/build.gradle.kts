@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.mamoe.mirai"
-version = "0.1.0"
+version = rootProject.ext["mirai_version"].toString()
 
 description = "Mirai Http Api"
 

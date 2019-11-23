@@ -40,4 +40,4 @@ mirai.iml
 local.properties
 
 # Maven publishing credits
-mirai-core/credits.properties
+keys.properties
