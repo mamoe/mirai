@@ -100,12 +100,7 @@ suspend inline fun Bot.alsoLogin(lazyMessageWhenLoginFailed: (LoginResult) -> St
  */
 @UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-suspend inline fun Bot.addFriend(id: UInt, lazyMessage: () -> String = { "" }, noinline lazyRemark: () -> String = { "" }): AddFriendResult {
-    contract {
-        callsInPlace(lazyMessage, InvocationKind.AT_MOST_ONCE)
-    }
-    return this.contacts.addFriend(id, lazyMessage, lazyRemark)
-}
+suspend inline fun Bot.addFriend(id: UInt, message: String? = null, remark: String? = null): AddFriendResult = contacts.addFriend(id, message, remark)
 
 /**
  * 取得机器人的 QQ 号

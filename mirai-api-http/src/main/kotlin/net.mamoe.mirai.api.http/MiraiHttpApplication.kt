@@ -52,8 +52,8 @@ fun Application.mirai() {
         mirai("/addFriend") {
             Bot.instanceWhose(qq = param("bot")).addFriend(
                 id = param("qq"),
-                lazyMessage = paramOrNull<String?>("message")?.let { { it } } ?: { "" },
-                lazyRemark = paramOrNull<String?>("remark")?.let { { it } } ?: { "" }
+                message = paramOrNull<String?>("message")?.let { it },
+                remark = paramOrNull<String?>("remark")?.let { it }
             )
 
             call.ok()

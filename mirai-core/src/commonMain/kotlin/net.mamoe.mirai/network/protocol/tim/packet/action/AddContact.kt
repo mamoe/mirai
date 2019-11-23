@@ -206,11 +206,11 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
         /**
          * 验证消息
          */
-        message: String,
+        message: String?,
         /**
          * 备注名
          */
-        remark: String, //// TODO: 2019/11/15 无备注的情况
+        remark: String?, //// TODO: 2019/11/15 无备注的情况
         key: FriendAdditionKey
     ): OutgoingPacket = buildSessionPacket(bot, sessionKey) {
 
@@ -235,13 +235,13 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
         writeQQ(qq)
         writeByte(0)
         writeByte(0); writeShort(key.value.readRemaining.toShort()); writeFully(key.value)
-        writeByte(1); writeShortLVString(message)
+        writeByte(1); writeShortLVString(message ?: "")
         writeShortLVPacket {
             //00 01 00 01 00 00 00 1B E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A E5 95 8A 00 05 00 00 00 00 01
 
             //00 01 00 01 00 00 00 00 00 05 00 00 00 00 01
             writeHex("00 01 00 01 00 00")// TODO: 2019/11/11 这里面或者下面那个hex可能包含分组信息. 这两次测试都是用的默认分组即我的好友
-            writeShortLVString(remark)
+            writeShortLVString(remark ?: "")
             writeHex("00 05 00 00 00 00 01")
         }
         writeByte(0)

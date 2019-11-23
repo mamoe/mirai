@@ -39,10 +39,6 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
      */
     open val id: PacketId by lazy { annotatedId.id }
 
-    init {
-        @Suppress("LeakingThis")
-    }
-
     /**
      * **解码**服务器的回复数据包
      */
