@@ -73,12 +73,17 @@ suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit
 }
 
 /**
- * 使用默认的配置 ([BotConfiguration.Default]) 登录
+ * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回登录结果
  */
 suspend inline fun Bot.login(): LoginResult = this.network.login(BotConfiguration.Default)
 
 /**
- * 使用默认的配置 ([BotConfiguration.Default]) 登录
+ * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回 [this]
+ */
+suspend inline fun Bot.alsoLogin(): Bot = apply { login().requireSuccess() }
+
+/**
+ * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回 [this]
  */
 @UseExperimental(ExperimentalContracts::class)
 suspend inline fun Bot.alsoLogin(lazyMessageWhenLoginFailed: (LoginResult) -> String): Bot {
@@ -95,7 +100,7 @@ suspend inline fun Bot.alsoLogin(lazyMessageWhenLoginFailed: (LoginResult) -> St
  */
 @UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-suspend inline fun Bot.addFriend(id: UInt, noinline lazyMessage: () -> String = { "" }, noinline lazyRemark: () -> String = { "" }): AddFriendResult {
+suspend inline fun Bot.addFriend(id: UInt, lazyMessage: () -> String = { "" }, noinline lazyRemark: () -> String = { "" }): AddFriendResult {
     contract {
         callsInPlace(lazyMessage, InvocationKind.AT_MOST_ONCE)
     }
