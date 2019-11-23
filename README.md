@@ -26,15 +26,15 @@ repositories{
 
 您需要将 `VERSION` 替换为最新的版本: [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)
 
-#### common 
+**common**
 ```kotlin
 implementation("net.mamoe:mirai-core-common:VERSION")
 ```
-#### jvm
+**jvm**
 ```kotlin
 implementation("net.mamoe:mirai-core-jvm:VERSION")
 ```
-#### android
+**android**
 ```kotlin
 implementation("net.mamoe:mirai-core-android:VERSION")
 ```
