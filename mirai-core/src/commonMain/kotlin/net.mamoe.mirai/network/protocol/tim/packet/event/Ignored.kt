@@ -5,7 +5,9 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
 
-object IgnoredEventPacket : EventPacket
+inline class IgnoredEventPacket(val id: UShort) : EventPacket {
+    override fun toString(): String = "IgnoredEventPacket(id=$id)"
+}
 
 object IgnoredEventIds : List<IgnoredEventParserAndHandler> by {
     listOf(
@@ -15,5 +17,5 @@ object IgnoredEventIds : List<IgnoredEventParserAndHandler> by {
 }()
 
 inline class IgnoredEventParserAndHandler(override val id: UShort) : EventParserAndHandler<IgnoredEventPacket> {
-    override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): IgnoredEventPacket = IgnoredEventPacket
+    override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): IgnoredEventPacket = IgnoredEventPacket(id)
 }
