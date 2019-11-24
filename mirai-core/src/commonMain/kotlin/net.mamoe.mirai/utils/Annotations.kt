@@ -20,7 +20,9 @@ annotation class MiraiInternalAPI
  */
 @Experimental(level = Experimental.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
-annotation class MiraiExperimentalAPI
+annotation class MiraiExperimentalAPI(
+    val message: String = ""
+)
 
 /**
  * 标记这个 API 是自 Mirai 某个版本起才受支持.
