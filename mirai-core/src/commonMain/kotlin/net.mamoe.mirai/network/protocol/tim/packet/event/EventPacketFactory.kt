@@ -64,7 +64,6 @@ object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
         }
     }
 
-
     operator fun invoke(
         id: PacketId,
         sequenceId: UShort,

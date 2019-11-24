@@ -38,14 +38,12 @@ suspend inline fun Bot.getGroup(internalId: GroupInternalId): Group = this.conta
 /**
  * 取得机器人的群成员列表
  */
-inline val Bot.groups: ContactList<Group>
-    get() = this.contacts.groups
+inline val Bot.groups: ContactList<Group> get() = this.contacts.groups
 
 /**
  * 取得机器人的好友列表
  */
-inline val Bot.qqs: ContactList<QQ>
-    get() = this.contacts.qqs
+inline val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 
 /**
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.

@@ -4,8 +4,8 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import com.soywiz.klock.Date
 import kotlinx.io.core.*
-import net.mamoe.mirai.contact.Gender
-import net.mamoe.mirai.contact.Profile
+import net.mamoe.mirai.contact.data.Gender
+import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.*

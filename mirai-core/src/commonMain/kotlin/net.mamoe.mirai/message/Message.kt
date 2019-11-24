@@ -170,8 +170,6 @@ inline class ImageId0x06(override inline val value: String) : ImageId {
 
 /**
  * 一般是群的图片的 id.
- *
- * @param md5 用于下载图片时提交
  */
 class ImageId0x03 constructor(override inline val value: String, inline val uniqueId: UInt, inline val height: Int, inline val width: Int) : ImageId {
     override fun toString(): String = "ImageId(value=$value, uniqueId=${uniqueId}, height=$height, width=$width)"

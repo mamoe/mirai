@@ -7,6 +7,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot.ContactSystem
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.internal.GroupImpl
+import net.mamoe.mirai.contact.internal.QQImpl
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
@@ -95,17 +97,21 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
      * @see Bot.contacts
      */
     inner class ContactSystem internal constructor() {
-        inline val bot: Bot get() = this@Bot
+        val bot: Bot get() = this@Bot
 
-        private val _groups = ContactList<Group>()
-        private lateinit var groupsUpdater: Job
-        val groups = ContactList<Group>()
+        @Suppress("PropertyName")
+        internal val _groups = MutableContactList<Group>()
+        internal lateinit var groupsUpdater: Job
         private val groupsLock = Mutex()
 
-        private val _qqs = ContactList<QQ>() //todo 实现群列表和好友列表获取
-        private lateinit var qqUpdaterJob: Job
-        val qqs: ContactList<QQ> = _qqs
+        val groups: ContactList<Group> = ContactList(_groups)
+
+        @Suppress("PropertyName")
+        internal val _qqs = MutableContactList<QQ>() //todo 实现群列表和好友列表获取
+        internal lateinit var qqUpdaterJob: Job
         private val qqsLock = Mutex()
+
+        val qqs: ContactList<QQ> = ContactList(_qqs)
 
         /**
          * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.
@@ -113,9 +119,9 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
          * 注: 这个方法是线程安全的
          */
         suspend fun getQQ(id: UInt): QQ =
-            if (qqs.containsKey(id)) qqs[id]!!
+            if (_qqs.containsKey(id)) _qqs[id]!!
             else qqsLock.withLock {
-                qqs.getOrPut(id) { QQ(bot, id) }
+                _qqs.getOrPut(id) { QQImpl(bot, id) }
             }
 
         /**
@@ -131,12 +137,11 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
          * 注: 这个方法是线程安全的
          */
         suspend fun getGroup(id: GroupId): Group = id.value.let {
-            if (groups.containsKey(it)) groups[it]!!
+            if (_groups.containsKey(it)) _groups[it]!!
             else groupsLock.withLock {
-                groups.getOrPut(it) { Group(bot, id) }
+                _groups.getOrPut(it) { GroupImpl(bot, id) }
             }
         }
-
     }
 
     suspend inline fun Int.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0).toUInt())
@@ -152,8 +157,8 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
     suspend fun close() {
         network.close()
         this.coroutineContext.cancelChildren()
-        contacts.groups.clear()
-        contacts.qqs.clear()
+        contacts._groups.clear()
+        contacts._qqs.clear()
     }
 
     companion object {
