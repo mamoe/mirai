@@ -118,7 +118,7 @@ object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("15 95 8D 22 F7 3B C6 6E FE 91 1B 1B 8F A2 9E 1C".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("43 EA BD 3C FF 6A 07 8E E4 13 E9 42 7F AD 03 F1".hexToBytes())
     const val qq: UInt = 761025446u
 
     val IgnoredPacketIdList: List<PacketId> = listOf(

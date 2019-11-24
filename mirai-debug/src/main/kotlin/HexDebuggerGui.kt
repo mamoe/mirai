@@ -76,7 +76,7 @@ class HexDebuggerGui : View("s") {
     private lateinit var outUVarInt: TextField
     private lateinit var outShort: TextField
     private lateinit var outUInt: TextField
-    private lateinit var outString: TextField
+    private lateinit var outString: TextArea
 
 
     private val clip = Toolkit.getDefaultToolkit().systemClipboard
@@ -195,7 +195,8 @@ class HexDebuggerGui : View("s") {
         }
 
         vbox(10) {
-            alignment = Pos.CENTER_RIGHT
+            paddingTop = 10
+            alignment = Pos.TOP_RIGHT
             label("size")
             label("UVarInt")
             label("short")
@@ -229,9 +230,11 @@ class HexDebuggerGui : View("s") {
                 isEditable = false
             }
 
-            outString = textfield {
+            outString = textarea {
                 promptText = "String"
                 isEditable = false
+                maxWidth = 100.0
+                minHeight = 30.0
             }
 
             children.filterIsInstance<Region>().forEach {
