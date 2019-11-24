@@ -90,5 +90,5 @@ object IgnoredPacketFactory : SessionPacketFactory<IgnoredPacket>() {
     override suspend fun BotNetworkHandler<*>.handlePacket(packet: IgnoredPacket) {
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): IgnoredPacket = IgnoredPacket
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): IgnoredPacket = IgnoredPacket(id)
 }

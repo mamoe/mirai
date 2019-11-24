@@ -9,7 +9,10 @@ import net.mamoe.mirai.utils.io.toUHexString
  */
 interface Packet
 
-object IgnoredPacket : Packet
+/**
+ * 被忽略的数据包.
+ */
+inline class IgnoredPacket(val id: PacketId) : Packet
 
 /**
  * 未知的包.
