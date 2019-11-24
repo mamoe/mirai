@@ -15,6 +15,13 @@ import kotlin.jvm.JvmOverloads
  * 可被监听的.
  *
  * 可以是任何 class 或 object.
+ *
+ * @see subscribeAlways
+ * @see subscribeOnce
+ * @see subscribeWhile
+ * @see subscribeAll
+ *
+ * @see subscribeMessages
  */
 interface Subscribable
 

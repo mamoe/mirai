@@ -34,7 +34,7 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
             ?: error("Annotation AnnotatedId not found for class ${this::class.simpleName}")
 
 
-    // TODO: 2019/11/22 修改为参数
+    // TODO: 2019/11/22 修改 包 ID 为参数
     /**
      * 包 ID.
      */
