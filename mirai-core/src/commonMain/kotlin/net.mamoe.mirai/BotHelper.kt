@@ -99,13 +99,9 @@ suspend inline fun Bot.alsoLogin(noinline configuration: BotConfiguration.() -> 
 /**
  * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回 [this]
  */
-@UseExperimental(ExperimentalContracts::class)
-suspend inline fun Bot.alsoLogin(lazyMessageWhenLoginFailed: (LoginResult) -> String): Bot {
-    contract {
-        callsInPlace(lazyMessageWhenLoginFailed, InvocationKind.AT_MOST_ONCE)
-    }
+suspend inline fun Bot.alsoLogin(message: String): Bot {
     return this.apply {
-        login().requireSuccess(lazyMessageWhenLoginFailed)
+        login().requireSuccess { message } // requireSuccess is inline, so no performance waste
     }
 }
 

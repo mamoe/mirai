@@ -6,17 +6,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.login
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
-import net.mamoe.mirai.network.protocol.tim.packet.login.ifFail
 import net.mamoe.mirai.utils.suspendToExternalImage
 import java.io.File
-import kotlin.system.exitProcess
 
 private fun readTestAccount(): BotAccount? {
     val file = File("testAccount.txt")
@@ -39,14 +37,9 @@ suspend fun main() {
             id = 1994701121u,
             password = "123456"
         )
-    )
-
-    // 覆盖默认的配置
-    bot.login {
+    ).alsoLogin {
+        // 覆盖默认的配置
         randomDeviceName = false
-    }.ifFail {
-        bot.logger.error("Login failed: $it")
-        exitProcess(1)
     }
 
     bot.messageDSL()
