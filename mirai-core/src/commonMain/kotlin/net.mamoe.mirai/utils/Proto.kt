@@ -6,10 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import kotlinx.io.core.readULong
-import net.mamoe.mirai.utils.io.UVarInt
-import net.mamoe.mirai.utils.io.readUVarInt
-import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.io.*
 import kotlin.jvm.JvmStatic
 
 // ProtoBuf utilities
@@ -143,29 +140,34 @@ fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
     while (this.remaining != expectingRemaining) {
         require(this.remaining > expectingRemaining) { "Expecting to read $length bytes, but read ${expectingRemaining + length - this.remaining}" }
 
-        val id = ProtoFieldId(readUVarInt())
+        try {
+            val id = ProtoFieldId(readUVarInt())
 
-        fun readValue(): Any = when (id.type) {
-            ProtoType.VAR_INT -> UVarInt(readUVarInt())
-            ProtoType.BIT_32 -> readUInt()
-            ProtoType.BIT_64 -> readULong()
-            ProtoType.LENGTH_DELIMI -> tryReadProtoMapOrByteArray(readUVarInt().toInt())
+            fun readValue(): Any = when (id.type) {
+                ProtoType.VAR_INT -> UVarInt(readUVarInt())
+                ProtoType.BIT_32 -> readUInt()
+                ProtoType.BIT_64 -> readULong()
+                ProtoType.LENGTH_DELIMI -> tryReadProtoMapOrByteArray(readUVarInt().toInt())
 
-            ProtoType.START_GROUP -> Unit
-            ProtoType.END_GROUP -> Unit
-        }
-
-        if (map.containsKey(id)) {
-            if (map[id] is MutableList<*>) {
-                @Suppress("UNCHECKED_CAST")
-                (map[id] as MutableList<Any>) += readValue()
-            } else {
-                map[id] = mutableListOf(map[id]!!)
-                @Suppress("UNCHECKED_CAST")
-                (map[id] as MutableList<Any>) += readValue()
+                ProtoType.START_GROUP -> Unit
+                ProtoType.END_GROUP -> Unit
             }
-        } else {
-            map[id] = readValue()
+
+            if (map.containsKey(id)) {
+                if (map[id] is MutableList<*>) {
+                    @Suppress("UNCHECKED_CAST")
+                    (map[id] as MutableList<Any>) += readValue()
+                } else {
+                    map[id] = mutableListOf(map[id]!!)
+                    @Suppress("UNCHECKED_CAST")
+                    (map[id] as MutableList<Any>) += readValue()
+                }
+            } else {
+                map[id] = readValue()
+            }
+        } catch (e: IllegalStateException) {
+            e.logStacktrace()
+            return map
         }
     }
     return map

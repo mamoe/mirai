@@ -10,6 +10,8 @@ import net.mamoe.mirai.utils.internal.printCompareHex
 
 internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug")
 
+internal fun Throwable.logStacktrace(message: String? = null) = DebugLogger.error(message, this)
+
 internal fun debugPrintln(any: Any?) = DebugLogger.debug(any)
 
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
