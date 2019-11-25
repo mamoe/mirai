@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.data.Profile
@@ -22,6 +23,8 @@ import net.mamoe.mirai.network.BotSession
 interface QQ : Contact {
     /**
      * 用户资料.
+     * 第一次获取时将会向服务器查询.
+     * 第一次以后则是直接得到一个用 [CompletableDeferred] 包装的值
      */
     val profile: Deferred<Profile>
 

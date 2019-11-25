@@ -29,7 +29,7 @@ internal sealed class ContactImpl : Contact {
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
-internal class GroupImpl internal constructor(override val bot: Bot, val groupId: GroupId) : ContactImpl(), Group {
+internal data class GroupImpl internal constructor(override val bot: Bot, val groupId: GroupId) : ContactImpl(), Group {
     override val id: UInt get() = groupId.value
     override val internalId = GroupId(id).toInternalId()
 
@@ -50,7 +50,7 @@ internal class GroupImpl internal constructor(override val bot: Bot, val groupId
     override fun toString(): String = "Group(${this.id})"
 }
 
-internal class QQImpl internal constructor(override val bot: Bot, override val id: UInt) : ContactImpl(), QQ {
+internal data class QQImpl internal constructor(override val bot: Bot, override val id: UInt) : ContactImpl(), QQ {
     private var _profile: Profile? = null
     private val _initialProfile by bot.network.SuspendLazy { updateProfile() }
 
@@ -59,10 +59,6 @@ internal class QQImpl internal constructor(override val bot: Bot, override val i
     override suspend fun sendMessage(message: MessageChain) =
         bot.sendPacket(SendFriendMessagePacket(bot.qqAccount, id, bot.sessionKey, message))
 
-    /**
-     * 更新个人资料.
-     * 将会同步更新 property [profile]
-     */
     override suspend fun updateProfile(): Profile = bot.withSession {
         _profile = RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
             .sendAndExpect<RequestProfileDetailsResponse, Profile> { it.profile }
@@ -76,7 +72,7 @@ internal class QQImpl internal constructor(override val bot: Bot, override val i
 /**
  * 群成员
  */
-internal class MemberImpl(override val bot: Bot, private val delegate: QQ, override val group: Group) : Member, ContactImpl() {
+internal data class MemberImpl(override val bot: Bot, private val delegate: QQ, override val group: Group) : Member, ContactImpl() {
     override val profile: Deferred<Profile> get() = delegate.profile
     override val id: UInt get() = delegate.id
 
