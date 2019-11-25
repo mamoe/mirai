@@ -7,7 +7,7 @@ import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.uploadAsImage
 import org.jsoup.Jsoup
 
-class GentleImage {
+class GentleImage { // This class is untidy, but it doesn't matter
     lateinit var tags: String
     lateinit var author: String
     lateinit var file_url: String
