@@ -136,9 +136,8 @@ suspend inline fun <reified E : Subscribable> subscribeAll(noinline listeners: s
  */
 @ListenersBuilderDsl
 @Suppress("MemberVisibilityCanBePrivate", "unused")
-class ListenerBuilder<out E : Subscribable>(
-    @PublishedApi
-    internal val handlerConsumer: suspend (Listener<E>) -> Unit
+inline class ListenerBuilder<out E : Subscribable>(
+    @PublishedApi internal inline val handlerConsumer: suspend (Listener<E>) -> Unit
 ) {
     suspend inline fun handler(noinline listener: suspend (E) -> ListeningStatus) {
         handlerConsumer(Handler(listener))
