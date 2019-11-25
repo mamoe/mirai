@@ -71,6 +71,22 @@ inline class LoginResult(val id: Byte) {
          */
         @JvmStatic
         val NETWORK_UNAVAILABLE = LoginResult(9)
+
+        @JvmStatic
+        val values: List<LoginResult> by lazy {
+            listOf(
+                BLOCKED,
+                DEVICE_LOCK,
+                SUCCESS,
+                WRONG_PASSWORD,
+                UNKNOWN,
+                UNKNOWN_QQ_NUMBER,
+                TAKEN_BACK,
+                INTERNAL_ERROR,
+                TIMEOUT,
+                NETWORK_UNAVAILABLE
+            )
+        }
     }
 }
 
