@@ -77,56 +77,20 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
     }
 
     sealed class LoginResponse : Packet {
-        data class KeyExchange(
+        class KeyExchange(
             val tlv0006: IoBuffer,//120bytes
             val tokenUnknown: ByteArray?,
-
             val privateKeyUpdate: PrivateKey//16bytes
         ) : LoginResponse() {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other !is KeyExchange) return false
-
-                if (tlv0006 != other.tlv0006) return false
-                if (tokenUnknown != null) {
-                    if (other.tokenUnknown == null) return false
-                    if (!tokenUnknown.contentEquals(other.tokenUnknown)) return false
-                } else if (other.tokenUnknown != null) return false
-                if (privateKeyUpdate != other.privateKeyUpdate) return false
-
-                return true
-            }
-
-            override fun hashCode(): Int {
-                var result = tlv0006.hashCode()
-                result = 31 * result + (tokenUnknown?.contentHashCode() ?: 0)
-                result = 31 * result + privateKeyUpdate.hashCode()
-                return result
-            }
+            override fun toString(): String = "LoginResponse.KeyExchange"
         }
 
-        data class CaptchaInit(
+        class CaptchaInit(
             val captchaPart1: IoBuffer,
             val token00BA: ByteArray,
             val unknownBoolean: Boolean
         ) : LoginResponse() {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other !is CaptchaInit) return false
-
-                if (captchaPart1 != other.captchaPart1) return false
-                if (!token00BA.contentEquals(other.token00BA)) return false
-                if (unknownBoolean != other.unknownBoolean) return false
-
-                return true
-            }
-
-            override fun hashCode(): Int {
-                var result = captchaPart1.hashCode()
-                result = 31 * result + token00BA.contentHashCode()
-                result = 31 * result + unknownBoolean.hashCode()
-                return result
-            }
+            override fun toString(): String = "LoginResponse.CaptchaInit"
         }
 
         data class Success(

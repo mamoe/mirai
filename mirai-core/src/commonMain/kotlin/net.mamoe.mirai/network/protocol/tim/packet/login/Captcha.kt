@@ -109,6 +109,7 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
             lateinit var captchaSectionN: IoBuffer
             lateinit var captchaToken: IoBuffer//56bytes
             var transmissionCompleted: Boolean = false//验证码是否已经传输完成
+            override fun toString(): String = "CaptchaResponse.Transmission"
         }
     }
 
