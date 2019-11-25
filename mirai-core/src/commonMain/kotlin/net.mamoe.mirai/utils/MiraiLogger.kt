@@ -127,7 +127,7 @@ interface MiraiLogger {
  * 不做任何事情的 logger, keep silent.
  */
 @Suppress("unused")
-object Silent : PlatformLogger() {
+object SilentLogger : PlatformLogger() {
     override val identity: String? = null
 
     override fun error0(any: Any?) {
