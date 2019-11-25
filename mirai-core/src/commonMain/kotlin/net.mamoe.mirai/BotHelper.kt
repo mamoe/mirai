@@ -85,6 +85,18 @@ suspend inline fun Bot.login(): LoginResult = this.network.login(BotConfiguratio
 suspend inline fun Bot.alsoLogin(): Bot = apply { login().requireSuccess() }
 
 /**
+ * 使用在默认配置基础上修改的配置进行登录, 返回 [this]
+ */
+@UseExperimental(ExperimentalContracts::class)
+suspend inline fun Bot.alsoLogin(noinline configuration: BotConfiguration.() -> Unit): Bot {
+    contract {
+        callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
+    }
+    this.network.login(BotConfiguration().apply(configuration)).requireSuccess()
+    return this
+}
+
+/**
  * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回 [this]
  */
 @UseExperimental(ExperimentalContracts::class)
