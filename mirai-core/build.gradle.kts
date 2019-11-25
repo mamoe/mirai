@@ -6,7 +6,7 @@ plugins {
     id("com.android.library")
     id("kotlinx-serialization")
     `maven-publish`
-    id("com.jfrog.bintray") version "1.8.4-jetbrains-3"
+    id("com.jfrog.bintray") version "1.8.4-jetbrains-3" // DO NOT CHANGE THIS VERSION UNLESS YOU WANT TO WASTE YOUR TIME
 }
 
 apply(from = rootProject.file("gradle/publish.gradle"))

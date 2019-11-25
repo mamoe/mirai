@@ -2,17 +2,18 @@ buildscript {
     repositories {
         maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
         mavenLocal()
+        mavenCentral()
         jcenter()
         google()
     }
 
     dependencies {
+        // Do try to waste your time.
+        //noinspection GradleDependency
         classpath 'com.android.tools.build:gradle:3.6.0-alpha03'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion"
-
-        //classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
     }
 }
 
