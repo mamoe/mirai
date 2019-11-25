@@ -18,9 +18,16 @@ internal fun IoBuffer.parseMessageFace(): Face {
     return Face(id1)
 }
 
-internal fun IoBuffer.parsePlainText(): PlainText {
-    discardExact(1)//0x01
-    return PlainText(readUShortLVString())
+internal fun IoBuffer.parsePlainTextOrAt(): Message {
+    // 06 00 0D 00 01 00 00 00 08 00 76 E4 B8 DD 00 00
+    discardExact(1)// 0x01 whenever plain or at
+    val msg = readUShortLVString()
+    return if (this.readRemaining == 0) {
+        PlainText(msg)
+    } else {
+        discardExact(10)
+        At(readUInt())
+    }
 }
 
 internal fun IoBuffer.parseLongText0x19(): PlainText {
@@ -59,7 +66,7 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
 internal fun IoBuffer.parseMessageImage0x03(): Image {
     //discardExact(1)
     val tlv = readTLVMap(expectingEOF = true, tagSize = 1)
-    tlv.printTLVMap("parseMessageImage0x03")
+    //tlv.printTLVMap("parseMessageImage0x03")
     // 02 [     ] IMAGE ID
     // 04 [00 04] 8B 88 95 C1
     // 05 [00 04] 3B 24 59 FC
@@ -85,7 +92,7 @@ internal fun IoBuffer.parseMessageImage0x03(): Image {
             uniqueId = tlv[0x04u]!!.read { readUInt() },
             height = tlv[0x16u]!!.toUInt().toInt(),
             width = tlv[0x15u]!!.toUInt().toInt()
-        ).also { debugPrintln("ImageId: $it") }
+        )//.also { debugPrintln("ImageId: $it") }
     )
     //} else {
     //    Image(
@@ -113,8 +120,7 @@ internal fun ByteReadPacket.readMessage(): Message? {
 
     return try {
         when (messageType) {
-            //todo 在每个parse里面都 discard 了第一 byte.
-            0x01 -> sectionData.parsePlainText()
+            0x01 -> sectionData.parsePlainTextOrAt()
             0x02 -> sectionData.parseMessageFace()
             0x03 -> sectionData.parseMessageImage0x03()
             0x06 -> sectionData.parseMessageImage0x06()
@@ -196,7 +202,18 @@ fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
                     }
                 }
 
-                is At -> throw UnsupportedOperationException("At is not supported now but is expecting to be supported")
+                is At -> buildPacket {
+                    writeUByte(MessageType.AT.value)
+
+                    writeShortLVPacket {
+                        writeByte(0x01)
+                        writeShortLVString(stringValue) // 这个应该是 "@群名", 手机上面会显示这个消息, 电脑会显示下面那个
+                        // 06 00 0D 00 01 00 00 00 08 00 76 E4 B8 DD 00 00
+                        writeHex("06 00 0D 00 01 00 00 00 08 00")
+                        writeUInt(target)
+                        writeZero(2)
+                    }
+                }
 
                 is Image -> buildPacket {
                     when (id.value.length) {

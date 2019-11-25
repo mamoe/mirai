@@ -218,10 +218,10 @@ suspend inline fun ImageId.sendTo(contact: Contact) = contact.sendMessage(this.i
 /**
  * At 一个人
  */
-inline class At(val targetQQ: UInt) : Message {
+inline class At(val target: UInt) : Message {
     constructor(target: QQ) : this(target.id)
 
-    override val stringValue: String get() = "[@$targetQQ]"
+    override val stringValue: String get() = "[@$target]" // TODO: 2019/11/25 使用群名称进行 at. 因为手机端只会显示这个文字
     override fun toString(): String = stringValue
 
     companion object Key : Message.Key<At>

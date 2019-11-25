@@ -6,7 +6,7 @@ package net.mamoe.mirai.message
 @Suppress("unused")
 enum class MessageType(val value: UByte) {
     PLAIN_TEXT(0x01u),
-    AT(0x06u),
+    AT(0x01u), // same as PLAIN
     FACE(0x02u),
     /**
      * [ImageId.value] 长度为 42 的图片

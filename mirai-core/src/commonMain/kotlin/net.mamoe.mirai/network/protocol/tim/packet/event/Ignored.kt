@@ -4,9 +4,10 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.io.toUHexString
 
 inline class IgnoredEventPacket(val id: UShort) : EventPacket {
-    override fun toString(): String = "IgnoredEventPacket(id=$id)"
+    override fun toString(): String = "IgnoredEventPacket(id=0x${id.toUHexString("")})"
 }
 
 object IgnoredEventIds : List<IgnoredEventParserAndHandler> by {

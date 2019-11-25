@@ -12,6 +12,7 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
+import net.mamoe.mirai.message.At
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.getValue
 import net.mamoe.mirai.message.sendAsImageTo
@@ -60,6 +61,8 @@ suspend fun main() {
     }
 
     bot.subscribeMessages {
+        case("at me") { At(sender).reply() }
+
         "你好" reply "你好!"
 
         startsWith("profile", removePrefix = true) {
