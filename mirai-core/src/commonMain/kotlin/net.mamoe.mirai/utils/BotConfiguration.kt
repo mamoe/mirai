@@ -30,7 +30,7 @@ class BotConfiguration {
     /**
      * 是否使用随机的设备名.
      * 使用随机可以降低被封禁的风险, 但可能导致每次登录都需要输入验证码
-     * 当一台设备只登录少量账号时, 将此项设置为 `true` 可能更好.
+     * 当一台设备只登录少量账号时, 将此项设置为 `false` 可能更好.
      */
     var randomDeviceName: Boolean = false
     /**
