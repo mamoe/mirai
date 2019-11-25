@@ -5,6 +5,7 @@ package net.mamoe.mirai.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
+import net.mamoe.mirai.message.chain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.withSession
@@ -40,7 +41,7 @@ interface Contact {
     //这两个方法应写为扩展函数, 但为方便 import 还是写在这里
     suspend fun sendMessage(plain: String) = sendMessage(plain.singleChain())
 
-    suspend fun sendMessage(message: Message) = sendMessage(message.singleChain())
+    suspend fun sendMessage(message: Message) = sendMessage(message.chain())
 }
 
 /**
