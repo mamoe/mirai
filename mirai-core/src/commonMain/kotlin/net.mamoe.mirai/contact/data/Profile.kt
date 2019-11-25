@@ -44,9 +44,11 @@ data class Profile(
 
 /**
  * 性别
- */
-enum class Gender {
-    SECRET,
-    MALE,
-    FEMALE;
+ */ // 在 Android 中 enum 的使用被严格控制.
+inline class Gender(val value: Byte) {
+    companion object {
+        val SECRET = Gender(0)
+        val MALE = Gender(2)
+        val FEMALE = Gender(1)
+    }
 }
