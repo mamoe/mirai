@@ -42,7 +42,10 @@ class BotConfiguration {
      * 一旦心跳超时, 整个网络服务将会重启 (将消耗约 1s). 除正在进行的任务 (如图片上传) 会被中断外, 事件和插件均不受影响.
      */
     var heartbeatTimeout: TimeSpan = 2.seconds
-
+    /**
+     * 有验证码要求就失败
+     */
+    var failOnCaptcha = false
     /**
      * 验证码处理器
      */

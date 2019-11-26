@@ -1,6 +1,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult.Companion.SUCCESS
+import net.mamoe.mirai.utils.BotConfiguration
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -71,6 +72,12 @@ inline class LoginResult(val id: Byte) {
          */
         @JvmStatic
         val NETWORK_UNAVAILABLE = LoginResult(9)
+
+        /**
+         * 需要验证码且 [BotConfiguration.failOnCaptcha] 为 `true`
+         */
+        @JvmStatic
+        val CAPTCHA = LoginResult(10)
 
         @JvmStatic
         val values: List<LoginResult> by lazy {
