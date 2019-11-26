@@ -15,6 +15,8 @@ import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
+var EventDisabled = false
+
 /**
  * 监听和广播实现.
  * 它会首先检查这个事件是否正在被广播
@@ -141,6 +143,7 @@ internal object EventListenerManger {
 }
 
 internal suspend fun <E : Subscribable> E.broadcastInternal(): E {
+    if (EventDisabled) return this
     suspend fun callListeners(listeners: EventListeners<in E>) {
         suspend fun callAndRemoveIfRequired() = listeners.inlinedRemoveIf {
             if (it.lock.tryLock()) {
