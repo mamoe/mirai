@@ -25,6 +25,7 @@ import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
+import kotlin.random.Random
 
 /**
  * 包处理协程调度器.
@@ -69,10 +70,12 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
     override suspend fun login(configuration: BotConfiguration): LoginResult {
         userContext = coroutineContext
         return withContext(this.coroutineContext) {
-            TIMProtocol.SERVER_IP.forEach { ip ->
+            TIMProtocol.SERVER_IP.sortedBy { Random.nextInt() }.forEach { ip ->
                 bot.logger.info("Connecting server $ip")
                 try {
-                    socket = BotSocketAdapter(ip, configuration)
+                    withTimeout(3000) {
+                        socket = BotSocketAdapter(ip, configuration)
+                    }
                 } catch (e: Exception) {
                     return@withContext LoginResult.NETWORK_UNAVAILABLE
                 }
@@ -447,6 +450,11 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     this.token00BA = packet.token00BA
 
                     if (packet.transmissionCompleted) {
+                        if (configuration.failOnCaptcha) {
+                            loginResult.complete(LoginResult.CAPTCHA)
+                            close()
+                            return
+                        }
                         val code = configuration.captchaSolver(bot, captchaCache!!)
 
                         this.captchaCache = null
