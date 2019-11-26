@@ -103,7 +103,9 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
     sealed class CaptchaResponse : Packet {
         lateinit var token00BA: ByteArray//56 bytes
 
-        class Correct : CaptchaResponse()
+        class Correct : CaptchaResponse() {
+            override fun toString(): String = "CaptchaResponse.Correct"
+        }
 
         class Transmission : CaptchaResponse() {
             lateinit var captchaSectionN: IoBuffer

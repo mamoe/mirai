@@ -38,7 +38,12 @@ actual var DefaultCaptchaSolver: CaptchaSolver = {
             }
 
             tempFile.inputStream().use {
-                MiraiLogger.info(ImageIO.read(it).createCharImg())
+                val img = ImageIO.read(it)
+                if (img == null) {
+                    MiraiLogger.info("无法创建字符图片. 请查看文件")
+                } else {
+                    MiraiLogger.info(img.createCharImg())
+                }
             }
         }
         MiraiLogger.info("若要更换验证码, 请直接回车")

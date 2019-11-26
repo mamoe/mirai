@@ -527,6 +527,8 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                                 class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
 
                                 if (withTimeoutOrNull(configuration.heartbeatTimeout.millisecondsLong) {
+                                        // TODO: 2019/11/26 启动被挤掉线检测
+
                                         HeartbeatPacket(
                                             bot.qqAccount,
                                             sessionKey
