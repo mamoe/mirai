@@ -28,7 +28,6 @@ data class ProtoTest(
 @UseExperimental(MiraiInternalAPI::class)
 suspend fun main() {
     deserializeTest()
-    return
 
     /*
     intArrayOf(

@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.ReceiveFriendAddRequestEvent
-import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
 import java.io.File
 import java.util.*
 import javax.swing.filechooser.FileSystemView
@@ -46,7 +45,7 @@ suspend fun main() {
             id = 913366033u,
             password = "a18260132383"
         )
-    ).apply { login().requireSuccess() }
+    ).alsoLogin()
 
     /**
      * 监听所有事件
