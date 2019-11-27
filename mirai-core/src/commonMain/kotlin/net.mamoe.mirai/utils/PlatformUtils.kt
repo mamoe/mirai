@@ -10,7 +10,7 @@ import kotlinx.io.core.Input
 /**
  * 时间戳
  */
-val currentTime: Long = DateTime.nowUnixLong()
+inline val currentTime: Long get() = DateTime.nowUnixLong()
 
 /**
  * 设备名
