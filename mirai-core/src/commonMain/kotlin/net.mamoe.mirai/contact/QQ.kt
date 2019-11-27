@@ -7,6 +7,7 @@ import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList
 
 /**
  * QQ 对象.
@@ -33,4 +34,13 @@ interface QQ : Contact {
      * 将会同步更新 property [profile]
      */
     suspend fun updateProfile(): Profile
+
+    /**
+     * 查询曾用名.
+     *
+     * 曾用名可能是:
+     * - 昵称
+     * - 共同群内的群名片
+     */
+    suspend fun queryPreviousNameList(): PreviousNameList
 }

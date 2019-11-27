@@ -13,10 +13,7 @@ import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.chain
 import net.mamoe.mirai.message.singleChain
-import net.mamoe.mirai.network.protocol.tim.packet.action.RequestProfileDetailsPacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.RequestProfileDetailsResponse
-import net.mamoe.mirai.network.protocol.tim.packet.action.SendFriendMessagePacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.SendGroupMessagePacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.*
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.utils.SuspendLazy
 
@@ -41,11 +38,11 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     override suspend fun getMember(id: UInt): Member =
         if (_members.containsKey(id)) _members[id]!!
         else membersLock.withLock {
-            _members.getOrPut(id) { MemberImpl(bot, bot.getQQ(id), this) }
+            _members.getOrPut(id) { MemberImpl(bot.getQQ(id), this) }
         }
 
     override suspend fun sendMessage(message: MessageChain) {
-        bot.sendPacket(SendGroupMessagePacket(bot.qqAccount, internalId, bot.sessionKey, message))
+        bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
     }
 
     override fun toString(): String = "Group(${this.id})"
@@ -67,18 +64,16 @@ internal data class QQImpl internal constructor(override val bot: Bot, override 
         return _profile!!
     }
 
+    override suspend fun queryPreviousNameList(): PreviousNameList = bot.withSession {
+        QueryPreviousNamePacket(bot.qqAccount, sessionKey, id).sendAndExpect()
+    }
+
     override fun toString(): String = "QQ(${this.id})"
 }
 
 /**
  * 群成员
  */
-internal data class MemberImpl(override val bot: Bot, private val delegate: QQ, override val group: Group) : Member, ContactImpl() {
-    override val profile: Deferred<Profile> get() = delegate.profile
-    override val id: UInt get() = delegate.id
-
-    override suspend fun updateProfile(): Profile = delegate.updateProfile()
-    override suspend fun sendMessage(message: MessageChain) = delegate.sendMessage(message)
-
+internal data class MemberImpl(private val delegate: QQ, override val group: Group) : QQ by delegate, Member {
     override fun toString(): String = "Member(${this.id})"
 }
