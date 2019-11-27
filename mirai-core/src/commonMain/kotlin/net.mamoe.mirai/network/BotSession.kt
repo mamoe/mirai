@@ -15,7 +15,6 @@ import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.ImageId0x03
 import net.mamoe.mirai.message.ImageId0x06
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
@@ -65,16 +64,21 @@ abstract class BotSessionBase(
     val socket: DataPacketSocketAdapter,
     val NetworkScope: CoroutineScope
 ) {
-
     /**
      * Web api 使用
      */
-    lateinit var cookies: String
+    val cookies: String get() = _cookies
 
     /**
      * Web api 使用
      */
     val sKey: String get() = _sKey
+
+    /**
+     * Web api 使用
+     */
+    val gtk: Int get() = _gtk
+
 
     @Suppress("PropertyName")
     internal var _sKey: String = ""
@@ -82,12 +86,7 @@ abstract class BotSessionBase(
             field = value
             _gtk = getGTK(value)
         }
-
-    /**
-     * Web api 使用
-     */
-    val gtk: Int get() = _gtk
-
+    internal lateinit var _cookies: String
     private var _gtk: Int = 0
 
     /**
@@ -162,12 +161,6 @@ abstract class BotSessionBase(
 
 inline val BotSession.isOpen: Boolean get() = socket.isOpen
 inline val BotSession.qqAccount: UInt get() = bot.account.id
-
-/**
- * 取得 [BotNetworkHandler] 的 [BotSession].
- * 实际上是一个捷径.
- */
-val BotNetworkHandler<*>.session: BotSession get() = this[ActionPacketHandler].session
 
 /**
  * 取得 [BotNetworkHandler] 的 sessionKey.

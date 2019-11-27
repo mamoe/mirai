@@ -15,10 +15,10 @@ import net.mamoe.mirai.event.events.PacketSentEvent
 import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.protocol.tim.handler.*
+import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
+import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
-import net.mamoe.mirai.network.session
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.OnlineStatus
@@ -40,7 +40,7 @@ internal expect val NetworkDispatcher: CoroutineDispatcher
  * @see BotNetworkHandler
  */
 internal class TIMBotNetworkHandler internal constructor(coroutineContext: CoroutineContext, override inline val bot: Bot) :
-    BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, PacketHandlerList(), CoroutineScope {
+    BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, CoroutineScope {
 
 
     override val coroutineContext: CoroutineContext =
@@ -94,13 +94,11 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
     internal var loginResult: CompletableDeferred<LoginResult> = CompletableDeferred()
 
+    override lateinit var session: BotSession
 
     //private | internal
     private fun onLoggedIn() {
-        require(size == 0) { "Already logged in" }
-        val session = BotSession(sessionKey, socket)
-
-        add(ActionPacketHandler(session).asNode(ActionPacketHandler))
+        session = BotSession(sessionKey, socket)
         bot.logger.info("Successfully logged in")
     }
 
@@ -122,10 +120,6 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
             this.loginResult.join()
         }
 
-        this.forEach {
-            it.instance.close()
-        }
-
         this.socket.close()
     }
 
@@ -138,7 +132,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
         override val isOpen: Boolean get() = channel.isOpen
 
-        private lateinit var loginHandler: LoginHandler
+        private var loginHandler: LoginHandler? = null
 
         private suspend fun processReceive() {
             while (channel.isOpen) {
@@ -186,7 +180,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
                             val packet = try {
                                 with(id.factory) {
-                                    loginHandler.provideDecrypter(id.factory)
+                                    loginHandler!!.provideDecrypter(id.factory)
                                         .decrypt(input)
                                         .decode(id, sequenceId, this@TIMBotNetworkHandler)
                                 }
@@ -205,7 +199,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
         }
 
         internal suspend fun resendTouch(): LoginResult /* = coroutineScope */ {
-            if (::loginHandler.isInitialized) loginHandler.close()
+            loginHandler?.close()
 
             loginHandler = LoginHandler(configuration)
 
@@ -265,11 +259,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 }
             }
 
-            // They should be called in sequence because packet is lock-free
-            loginHandler.onPacketReceived(packet)
-            this@TIMBotNetworkHandler.forEach {
-                it.instance.onPacketReceived(packet)
-            }
+            loginHandler?.onPacketReceived(packet)
         }
 
         override suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext + CoroutineName("sendPacket")) {
@@ -319,7 +309,8 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
         override val owner: Bot get() = this@TIMBotNetworkHandler.bot
 
         override fun close() {
-            if (::loginHandler.isInitialized) loginHandler.close()
+            loginHandler?.close()
+            loginHandler = null
             this.channel.close()
         }
     }
@@ -334,7 +325,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
         private lateinit var loginIP: String
         private var privateKey: PrivateKey = PrivateKey(getRandomByteArray(16))
 
-        private var sessionResponseDecryptionKey: SessionResponseDecryptionKey by Delegates.notNull()
+        private var sessionResponseDecryptionKey: SessionResponseDecryptionKey? = null
 
         private var captchaSectionId: Int = 1
         private var captchaCache: IoBuffer? = null
@@ -359,7 +350,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
                 NoDecrypter -> NoDecrypter
 
-                SessionResponseDecryptionKey -> sessionResponseDecryptionKey
+                SessionResponseDecryptionKey -> sessionResponseDecryptionKey!!
                 SubmitPasswordResponseDecrypter -> SubmitPasswordResponseDecrypter(privateKey)
                 PrivateKey -> privateKey
                 SessionKey -> sessionKey

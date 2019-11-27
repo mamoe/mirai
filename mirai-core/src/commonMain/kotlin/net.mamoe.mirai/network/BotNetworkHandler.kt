@@ -5,9 +5,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.BotSocketAdapter
-import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler.LoginHandler
-import net.mamoe.mirai.network.protocol.tim.handler.*
+import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
+import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.login.HeartbeatPacket
@@ -18,16 +17,7 @@ import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.
- * [BotNetworkHandler] 是全异步和线程安全的.
- *
- * [BotNetworkHandler] 由 2 个模块构成:
- * - [BotSocketAdapter]: 处理数据包底层的发送([ByteArray])
- * - [PacketHandler]: 制作 [OutgoingPacket] 并传递给 [BotSocketAdapter] 发送; 分析 [Packet] 并处理
- *
- * 其中, [PacketHandler] 由 3 个子模块构成:
- * - [LoginHandler] 处理 sendTouch/login/verification code 相关
- * - [ActionPacketHandler] 处理动作相关(踢人/加入群/好友列表等)
- *
+ * [BotNetworkHandler] 是线程安全的.
  *
  * NetworkHandler 实现接口 [CoroutineScope]
  * 即 [BotNetworkHandler] 自己就是作用域.
@@ -50,14 +40,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
 
     val supervisor get() = SupervisorJob()
 
-    /**
-     * 得到 [PacketHandler].
-     * `get(EventPacketHandler)` 返回 [EventPacketHandler]
-     * `get(ActionPacketHandler)` 返回 [ActionPacketHandler].
-     *
-     * 这个方法在 [PacketHandlerList] 中实现
-     */
-    operator fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T
+    val session: BotSession
 
     /**
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果

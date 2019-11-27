@@ -11,6 +11,7 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.withSession
 
 fun BotSession.RequestSKeyPacket(): OutgoingPacket = RequestSKeyPacket(qqAccount, sessionKey)
 
@@ -38,6 +39,26 @@ object RequestSKeyPacket : SessionPacketFactory<SKey>() {
         return SKey(readString(10)).also {
             DebugLogger.warning("SKey 包后面${readRemainingBytes().toUHexString()}")
         }
+    }
+
+    override suspend fun BotNetworkHandler<*>.handlePacket(packet: SKey) = bot.withSession {
+        _sKey = packet.value
+        _cookies = "uin=o$qqAccount;skey=$sKey;"
+
+        // TODO: 2019/11/27 SKEY 实现
+        /*
+        if (sKeyRefresherJob?.isActive != true) {
+            sKeyRefresherJob = NetworkScope.launch {
+                while (isOpen) {
+                    delay(1800000)
+                    try {
+                        requestSKey()
+                    } catch (e: Throwable) {
+                        bot.logger.error(e)
+                    }
+                }
+            }
+        }*/
     }
 }
 
