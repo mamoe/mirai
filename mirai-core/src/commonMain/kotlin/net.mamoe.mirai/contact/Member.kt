@@ -10,6 +10,11 @@ interface Member : QQ, Contact {
      * 所在的群
      */
     val group: Group
+
+    /**
+     * 权限
+     */
+    val permission: MemberPermission
 }
 
 /**

@@ -7,7 +7,9 @@ import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import kotlinx.coroutines.*
+import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
+import kotlinx.io.core.readUShort
 import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
@@ -77,6 +79,7 @@ class HexDebuggerGui : View("s") {
     private lateinit var outShort: TextField
     private lateinit var outUInt: TextField
     private lateinit var outString: TextArea
+    private lateinit var outBits: TextField
 
 
     private val clip = Toolkit.getDefaultToolkit().systemClipboard
@@ -151,6 +154,18 @@ class HexDebuggerGui : View("s") {
             value.hexToBytes().size.toString()
         }
 
+        outBits.text = runOrNull {
+            value.hexToBytes().read {
+                when (remaining.toInt()) {
+                    0 -> null
+                    1 -> readUByte().toString(2)
+                    2 -> readUShort().toString(2)
+                    4 -> readUInt().toString(2)
+                    else -> ""
+                }
+            }
+        }
+
         outString.text = runOrNull {
             value.hexToBytes().encodeToString()
         }
@@ -201,6 +216,7 @@ class HexDebuggerGui : View("s") {
             label("UVarInt")
             label("short")
             label("uint")
+            label("bits")
             label("string")
             children.filterIsInstance<Region>().forEach {
                 it.fitToParentWidth()
@@ -227,6 +243,11 @@ class HexDebuggerGui : View("s") {
 
             outUInt = textfield {
                 promptText = "UInt"
+                isEditable = false
+            }
+
+            outBits = textfield {
+                promptText = "Bits"
                 isEditable = false
             }
 

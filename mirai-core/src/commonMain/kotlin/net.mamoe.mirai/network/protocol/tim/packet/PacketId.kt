@@ -81,6 +81,8 @@ enum class KnownPacketId(override inline val value: UShort, override inline val 
     inline REQUEST_PROFILE_DETAILS(0x003Cu, RequestProfileDetailsPacket),
 
     inline QUERY_PREVIOUS_NAME(0x01BCu, QueryPreviousNamePacket),
+
+    inline QUERY_FRIEND_REMARK(0x003Eu, QueryFriendRemarkPacket)
     // 031F  查询 "新朋友" 记录
 
 

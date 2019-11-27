@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.network.protocol.tim.packet.action.GroupInfo
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 
@@ -20,6 +21,11 @@ interface Group : Contact {
     val member: ContactList<Member>
 
     suspend fun getMember(id: UInt): Member
+
+    /**
+     * 查询群资料
+     */
+    suspend fun queryGroupInfo(): GroupInfo
 }
 
 /**
@@ -36,7 +42,8 @@ inline class GroupId(inline val value: UInt)
 /**
  * 将 [this] 转为 [GroupId].
  */
-fun UInt.groupId(): GroupId = GroupId(this)
+@Suppress("NOTHING_TO_INLINE")
+inline fun UInt.groupId(): GroupId = GroupId(this)
 
 /**
  * 将无符号整数格式的 [Long] 转为 [GroupId].

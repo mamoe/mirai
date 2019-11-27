@@ -18,6 +18,12 @@ data class UnknownEventPacket(
     override fun toString(): String = "UnknownEventPacket(id=${id.toUHexString()}, identity=$identity)\n = ${body.readBytes().toUHexString()}"
 }
 
+/*
+被好友拉入群 (已经进入)
+Mirai 21:54:15 : Packet received: UnknownEventPacket(id=00 57, identity=(920503456->1994701021))
+ = 00 00 00 08 00 0A 00 04 01 00 00 00 36 DD C4 A0 01 04 00 00 00 00 3E 03 3F A2 00 00 20 E5 96 01 BC 23 AE 03 C7 B8 9F BE B3 E5 E4 77 A9 0E FD 2B 7C 64 8B C0 5F 29 8B D7 DC 85 7E 44 7B 00 30 33 65 62 61 62 31 31 66 63 63 61 34 63 38 39 31 36 31 33 37 37 65 65 62 36 63 32 39 37 31 33 34 32 35 62 64 30 34 66 62 31 61 31 65 37 31 63 33
+ */
+
 //TODO This class should be declared with `inline`, but a CompilationException will be thrown
 class UnknownEventParserAndHandler(override val id: UShort) : EventParserAndHandler<UnknownEventPacket> {
 

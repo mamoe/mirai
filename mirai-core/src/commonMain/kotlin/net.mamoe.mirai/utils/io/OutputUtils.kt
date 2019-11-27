@@ -16,7 +16,11 @@ import net.mamoe.mirai.utils.internal.coerceAtMostOrFail
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-fun BytePacketBuilder.writeZero(count: Int) = repeat(count) { this.writeByte(0) }
+fun BytePacketBuilder.writeZero(count: Int) {
+    require(count != 0) { "Trying to write zero with count 0, you made a mistake?" }
+    require(count > 0) { "writeZero: count must > 0" }
+    repeat(count) { this.writeByte(0) }
+}
 
 fun BytePacketBuilder.writeRandom(length: Int) = repeat(length) { this.writeByte(Random.Default.nextInt(255).toByte()) }
 

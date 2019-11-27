@@ -7,6 +7,19 @@ import kotlinx.io.pool.useInstance
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun Input.discardExact(n: Short) = this.discardExact(n.toInt())
+
+@Suppress("NOTHING_TO_INLINE")
+@JvmSynthetic
+inline fun Input.discardExact(n: UShort) = this.discardExact(n.toInt())
+
+@Suppress("NOTHING_TO_INLINE")
+@JvmSynthetic
+inline fun Input.discardExact(n: UByte) = this.discardExact(n.toInt())
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Input.discardExact(n: Byte) = this.discardExact(n.toInt())
 
 fun ByteReadPacket.readRemainingBytes(
     n: Int = remaining.toInt()//not that safe but adequate
@@ -30,13 +43,17 @@ fun Input.readPacket(length: Int): ByteReadPacket = this.readBytes(length).toRea
 
 fun Input.readUVarIntLVString(): String = String(this.readUVarIntByteArray())
 
+fun Input.readUByteLVString(): String = String(this.readUByteLVByteArray())
+
 fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 
 fun Input.readUVarIntByteArray(): ByteArray = this.readBytes(this.readUVarInt().toInt())
 
+fun Input.readUByteLVByteArray(): ByteArray = this.readBytes(this.readUByte().toInt())
+
 fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
-private inline fun <R> inline(block: () -> R): R = block()
+internal inline fun <R> inline(block: () -> R): R = block()
 
 @Suppress("DuplicatedCode")
 fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMap<UInt, ByteArray> {
@@ -138,6 +155,7 @@ fun Input.readString(length: Long): String = String(this.readBytes(length.toInt(
 fun Input.readString(length: Short): String = String(this.readBytes(length.toInt()))
 @JvmSynthetic
 fun Input.readString(length: UShort): String = String(this.readBytes(length.toInt()))
+
 fun Input.readString(length: Byte): String = String(this.readBytes(length.toInt()))
 
 @JvmSynthetic

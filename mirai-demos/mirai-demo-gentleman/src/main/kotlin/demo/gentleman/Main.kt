@@ -64,6 +64,13 @@ suspend fun main() {
 
         "你好" reply "你好!"
 
+        "群资料" reply {
+            if (this is GroupMessage) {
+                group.queryGroupInfo().toString().reply()
+            }
+            ""
+        }
+
         startsWith("profile", removePrefix = true) {
             val account = it.trim()
             if (account.isNotEmpty()) {

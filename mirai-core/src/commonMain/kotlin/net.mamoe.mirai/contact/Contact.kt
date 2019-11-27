@@ -59,9 +59,13 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
 /**
  * 只读联系人列表
  */
-class ContactList<C : Contact> internal constructor(private val delegate: MutableContactList<C>) : Map<UInt, C> by delegate
+class ContactList<C : Contact> internal constructor(private val delegate: MutableContactList<C>) : Map<UInt, C> by delegate {
+    override fun toString(): String = delegate.toString()
+}
 
 /**
  * 可修改联系人列表. 只会在内部使用.
  */
-internal class MutableContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf()
+internal class MutableContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf() {
+    override fun toString(): String = asIterable().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")") { it.value.toString() }
+}
