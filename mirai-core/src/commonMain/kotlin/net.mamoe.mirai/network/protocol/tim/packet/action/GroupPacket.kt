@@ -15,6 +15,9 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
 
 
+/**
+ * 群资料
+ */
 data class GroupInfo(
     val group: Group,
     val owner: Member,
@@ -72,6 +75,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
         override fun toString(): String = "GroupPacket.MessageResponse"
     }
 
+    @PacketVersion(date = "2019.11.27", timVersion = "2.3.2 (21173)")
     @UseExperimental(ExperimentalStdlibApi::class)
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): GroupPacketResponse = handler.bot.withSession {
         return when (readUByte().toUInt()) {
