@@ -30,24 +30,6 @@ import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.use
 
-fun main() {
-    /*
-    check(System.getProperty("os.arch") == "x86") { "Jpcap can only work with x86 JDK" }
-
-    JpcapCaptor.getDeviceList().forEach {
-        println(it)
-    }
-    JpcapCaptor.openDevice(JpcapCaptor.getDeviceList()[0], 65535, true, 1000).loopPacket(Int.MAX_VALUE) {
-        println(it)
-    }*/
-    val localIp = Pcaps.findAllDevs()[0].addresses[0].address.hostAddress
-    println("localIp = $localIp")
-    Pcaps.findAllDevs().forEach {
-        listenDevice(localIp, it)
-    }
-    println("Ready perfectly")
-}
-
 /**
  * 避免 print 重叠. 单线程处理足够调试
  */
@@ -93,6 +75,24 @@ private fun listenDevice(localIp: String, device: PcapNetworkInterface) {
             e.printStackTrace()
         }
     }
+}
+
+fun main() {
+    /*
+    check(System.getProperty("os.arch") == "x86") { "Jpcap can only work with x86 JDK" }
+
+    JpcapCaptor.getDeviceList().forEach {
+        println(it)
+    }
+    JpcapCaptor.openDevice(JpcapCaptor.getDeviceList()[0], 65535, true, 1000).loopPacket(Int.MAX_VALUE) {
+        println(it)
+    }*/
+    val localIp = Pcaps.findAllDevs()[0].addresses[0].address.hostAddress
+    println("localIp = $localIp")
+    Pcaps.findAllDevs().forEach {
+        listenDevice(localIp, it)
+    }
+    println("Ready perfectly")
 }
 
 /**
