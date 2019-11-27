@@ -5,6 +5,7 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 
 fun ByteReadPacket.readRemainingBytes(
@@ -135,12 +136,13 @@ fun Map<UInt, String>.printTLVMap(name: String = "") =
 fun Input.readString(length: Int): String = String(this.readBytes(length))
 fun Input.readString(length: Long): String = String(this.readBytes(length.toInt()))
 fun Input.readString(length: Short): String = String(this.readBytes(length.toInt()))
+@JvmSynthetic
 fun Input.readString(length: UShort): String = String(this.readBytes(length.toInt()))
 fun Input.readString(length: Byte): String = String(this.readBytes(length.toInt()))
 
+@JvmSynthetic
 fun Input.readStringUntil(stopSignalExclude: UByte, expectingEOF: Boolean = false): String = readStringUntil(stopSignalExclude.toByte(), expectingEOF)
 
-// TODO 应标记 JvmSynthetic 但 kotlin 有bug
 @JvmName("readStringUntil0")
 fun Input.readStringUntil(stopSignalExclude: Byte, expectingEOF: Boolean = false): String {
     ByteArrayPool.useInstance {
