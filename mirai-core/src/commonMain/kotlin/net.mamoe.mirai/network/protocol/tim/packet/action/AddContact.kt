@@ -54,6 +54,13 @@ object QueryPreviousNamePacket : SessionPacketFactory<PreviousNameList>() {
     }
 }
 
+/**
+ * 曾用名列表
+ *
+ * 曾用名可能是:
+ * - 昵称
+ * - 共同群内的群名片
+ */
 class PreviousNameList(
     list: List<String>
 ) : Packet, List<String> by list {
@@ -63,29 +70,6 @@ class PreviousNameList(
 // 需要验证消息
 // 0065 发送 03 07 57 37 E8
 // 0065 接受 03 07 57 37 E8 10 40 00 00 10 14 20 00 00 00 00 00 00 00 01 00 00 00 00 00
-
-
-/**
- * 添加好友结果
- *
- * @author Him188moe
- */
-enum class AddFriendResult {
-    /**
-     * 等待对方处理
-     */
-    WAITING_FOR_AGREEMENT,
-
-    /**
-     * 和对方已经是好友了
-     */
-    ALREADY_ADDED,
-
-    /**
-     * 对方设置为不添加好友等
-     */
-    FAILED,
-}
 
 /**
  * 向服务器检查是否可添加某人为好友
