@@ -106,9 +106,7 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeWhileNull(listener: s
 @ListenersBuilderDsl
 @PublishedApi
 internal suspend fun <E : Subscribable> KClass<E>.subscribeAll(listeners: suspend ListenerBuilder<E>.() -> Unit) {
-    with(ListenerBuilder<E> { this.subscribeInternal(it) }) {
-        listeners()
-    }
+    listeners(ListenerBuilder { this.subscribeInternal(it) })
 }
 
 /**
