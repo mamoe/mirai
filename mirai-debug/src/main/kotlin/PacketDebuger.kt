@@ -9,9 +9,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.handler.ActionPacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
-import net.mamoe.mirai.network.protocol.tim.handler.PacketHandler
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.CaptchaKey
@@ -312,11 +310,7 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
 
     }
     override val bot: Bot = Bot(qq, "")
-    val session = BotSession(bot, sessionKey, socket, this)
-    val action = ActionPacketHandler(session)
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : PacketHandler> get(key: PacketHandler.Key<T>): T = action as? T ?: error("UNSUPPORTED")
+    override val session = BotSession(bot, sessionKey, socket, this)
 
     override suspend fun login(configuration: BotConfiguration): LoginResult = LoginResult.SUCCESS
 
