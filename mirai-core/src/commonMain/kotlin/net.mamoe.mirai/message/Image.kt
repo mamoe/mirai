@@ -43,11 +43,11 @@ class ImageId0x03 constructor(override inline val value: String, inline val uniq
             .toByteArray().also { check(it.size == 16); debugPrintln("image md5=" + it.toUHexString()); debugPrintln("imageId=$this") }
 }
 
-@Suppress("FunctionName")
-fun ImageId(value: String): ImageId = ImageId0x06(value)
+@Suppress("FunctionName", "NOTHING_TO_INLINE")
+inline fun ImageId(value: String): ImageId = ImageId0x06(value)
 
-@Suppress("FunctionName")
-fun ImageId(value: String, uniqueId: UInt, height: Int, width: Int): ImageId = ImageId0x03(value, uniqueId, height, width)
+@Suppress("FunctionName", "NOTHING_TO_INLINE")
+inline fun ImageId(value: String, uniqueId: UInt, height: Int, width: Int): ImageId = ImageId0x03(value, uniqueId, height, width)
 
 
 /**
@@ -65,6 +65,7 @@ interface ImageId {
 fun ImageId.checkLength() = check(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
 fun ImageId.requireLength() = require(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
 
-fun ImageId.image(): Image = Image(this)
+@Suppress("NOTHING_TO_INLINE")
+inline fun ImageId.image(): Image = Image(this)
 
 suspend inline fun ImageId.sendTo(contact: Contact) = contact.sendMessage(this.image())
