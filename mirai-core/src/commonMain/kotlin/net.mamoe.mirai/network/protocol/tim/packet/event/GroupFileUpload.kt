@@ -3,11 +3,9 @@
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.utils.io.debugPrint
-import net.mamoe.mirai.utils.io.readString
 
 
 data class GroupFileUploadPacket(inline val xmlMessage: String) : EventPacket
@@ -17,9 +15,10 @@ object GroupFileUploadEventFactory : KnownEventParserAndHandler<GroupFileUploadP
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): GroupFileUploadPacket {
         this.debugPrint("GroupFileUploadPacket")
         return GroupFileUploadPacket("")
+        /*
         discardExact(60)
         val size = readShort().toInt()
         discardExact(3)
-        return GroupFileUploadPacket(xmlMessage = readString(size))
+        return GroupFileUploadPacket(xmlMessage = readString(size))*/
     }
 }

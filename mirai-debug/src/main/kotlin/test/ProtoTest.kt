@@ -10,10 +10,8 @@ import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
 import kotlinx.serialization.serializer
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.ProtoFieldId
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.toUHexString
 import net.mamoe.mirai.utils.readProtoMap
 import kotlin.reflect.KClass
 
@@ -32,12 +30,13 @@ suspend fun main() {
     deserializeTest()
     return
 
+    /*
     intArrayOf(
     ).forEach {
         println(it.toUShort().toUHexString() + " => " + ProtoFieldId(it.toUInt()))
     }
 
-    println(ProtoBuf.dump(ProtoTest.serializer(), ProtoTest(1)).toUHexString())
+    println(ProtoBuf.dump(ProtoTest.serializer(), ProtoTest(1)).toUHexString())*/
 }
 
 suspend fun deserializeTest() {
