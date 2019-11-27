@@ -69,7 +69,7 @@ enum class KnownPacketId(override inline val value: UShort, override inline val 
     inline HEARTBEAT(0x0058u, HeartbeatPacket),
     inline S_KEY(0x001Du, RequestSKeyPacket),
     inline ACCOUNT_INFO(0x005Cu, RequestAccountInfoPacket),
-    inline SEND_GROUP_MESSAGE(0x0002u, SendGroupMessagePacket),
+    inline SEND_GROUP_MESSAGE(0x0002u, GroupPacket),
     inline SEND_FRIEND_MESSAGE(0x00CDu, SendFriendMessagePacket),
     inline CAN_ADD_FRIEND(0x00A7u, CanAddFriendPacket),
     inline ADD_FRIEND(0x00A8u, AddFriendPacket),
