@@ -3,6 +3,7 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.network.protocol.tim.packet.action.GroupInfo
+import net.mamoe.mirai.network.protocol.tim.packet.action.QuiteGroupResponse
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 
@@ -30,6 +31,13 @@ interface Group : Contact {
      * 查询群资料
      */ // should be `suspend val` if kotlin supports in the future
     suspend fun queryGroupInfo(): GroupInfo
+
+    /**
+     * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
+     *
+     * @see QuiteGroupResponse.isSuccess 判断是否成功
+     */
+    suspend fun quite(): QuiteGroupResponse
 }
 
 /**
@@ -48,6 +56,12 @@ inline class GroupId(inline val value: UInt)
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun UInt.groupId(): GroupId = GroupId(this)
+
+/**
+ * 将 [this] 转为 [GroupInternalId].
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun UInt.groupInternalId(): GroupInternalId = GroupInternalId(this)
 
 /**
  * 将无符号整数格式的 [Long] 转为 [GroupId].

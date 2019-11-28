@@ -26,9 +26,19 @@ data class GroupInfo(
     val members: ContactList<Member>
 ) : GroupPacket.GroupPacketResponse
 
+/**
+ * 退出群的返回
+ */
+inline class QuiteGroupResponse(private val _group: GroupInternalId?) : Packet, GroupPacket.GroupPacketResponse {
+    val group: GroupInternalId get() = _group ?: error("request failed")
+    val isSuccess: Boolean get() = _group != null
+
+    override fun toString(): String = "GroupPacket.QuitResponse"
+}
+
+@Suppress("FunctionName")
 @AnnotatedId(KnownPacketId.SEND_GROUP_MESSAGE)
 object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
-    @Suppress("FunctionName")
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2 (21173)")
     fun Message(
         bot: UInt,
@@ -54,9 +64,21 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
     }
 
     /**
+     * 退出群
+     */
+    @PacketVersion(date = "2019.11.28", timVersion = "2.3.2 (21173)")
+    fun QuiteGroup(
+        bot: UInt,
+        sessionKey: SessionKey,
+        group: GroupInternalId
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey) {
+        writeUByte(0x09u)
+        writeGroup(group)
+    }
+
+    /**
      * 查询群信息
      */
-    @Suppress("FunctionName")
     @PacketVersion(date = "2019.11.27", timVersion = "2.3.2 (21173)")
     fun QueryGroupInfo(
         bot: UInt,
@@ -79,6 +101,16 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
     @UseExperimental(ExperimentalStdlibApi::class)
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): GroupPacketResponse = handler.bot.withSession {
         return when (readUByte().toUInt()) {
+            0x2Au -> MessageResponse
+
+            0x09u -> {
+                if (readByte().toInt() == 0) {
+                    QuiteGroupResponse(readUInt().groupInternalId())
+                } else {
+                    QuiteGroupResponse(null)
+                }
+            }
+
             0x72u -> {
                 discardExact(1) // 00
                 discardExact(4) // group internal id
@@ -253,7 +285,6 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
                  */
             }
 
-            0x2Au -> MessageResponse
             else -> unsupported()
         }
     }

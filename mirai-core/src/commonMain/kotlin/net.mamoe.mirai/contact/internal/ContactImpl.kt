@@ -47,6 +47,10 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
         GroupPacket.QueryGroupInfo(qqAccount, internalId, sessionKey).sendAndExpect()
     }
 
+    override suspend fun quite(): QuiteGroupResponse = bot.withSession {
+        GroupPacket.QuiteGroup(qqAccount, sessionKey, internalId).sendAndExpect()
+    }
+
     override fun toString(): String = "Group(${this.id})"
 }
 
