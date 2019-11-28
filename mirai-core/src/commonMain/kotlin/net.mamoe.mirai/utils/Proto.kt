@@ -112,7 +112,7 @@ class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, An
     }*/
 }
 
-fun Any.contentToString(prefix: String = ""): String = when (this) {
+internal fun Any.contentToString(prefix: String = ""): String = when (this) {
     is UInt -> "0x" + this.toUHexString("") + "($this)"
     is UByte -> "0x" + this.toUHexString() + "($this)"
     is UShort -> "0x" + this.toUHexString("") + "($this)"
