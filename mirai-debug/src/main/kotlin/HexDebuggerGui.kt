@@ -120,6 +120,12 @@ class HexDebuggerGui : View("s") {
                                     .replace("UVarInt", "", ignoreCase = true)
                                     .replace("[", "")
                                     .replace("]", "")
+                                    .replace("(", "")
+                                    .replace(")", "")
+                                    .replace("  ", " ")
+                                    .replace("  ", " ")
+                                    .replace("_", "")
+                                    .replace(",", "")
                             )
                         }
                     }

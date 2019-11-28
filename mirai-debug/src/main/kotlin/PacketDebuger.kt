@@ -12,6 +12,7 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.network.protocol.tim.packet.event.IgnoredEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.CaptchaKey
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.ShareKey
@@ -116,7 +117,7 @@ object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("10 52 CD 27 0B A5 9C 74 1B A2 15 7E 41 19 0C 7B".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("F7 3C 31 B5 E1 F1 E5 6A FA F7 95 79 AE 19 30 01".hexToBytes())
     const val qq: UInt = 761025446u
 
     val IgnoredPacketIdList: List<PacketId> = listOf(
@@ -139,30 +140,39 @@ object PacketDebugger {
             }
 
 
-            println("--------------")
 
             discardExact(3)//0x00 0x00 0x00. 但更可能是应该 discard 8
-            println(
-                "接收包id=$id, " +
-                        "\nsequence=${sequenceId.toUHexString()}"
-            )
             // val remaining = this.readRemainingBytes().cutTail(1)
             try {
+                lateinit var decodedBody: ByteArray
                 val packet = use {
                     with(id.factory) {
                         provideDecrypter(id.factory)
                             .decrypt(this@read.readRemainingBytes().let { ByteReadPacket(it, 0, it.size - 1) })
                             .let {
-                                it.debugPrint("  解密body", it.remaining)
+                                decodedBody = it.readBytes()
+                                ByteReadPacket(decodedBody)
                             }
                             .decode(id, sequenceId, DebugNetworkHandler)
                     }
                 }
 
-                handlePacket(id, sequenceId, packet, id.factory)
+
+                if (packet !is IgnoredEventPacket) {
+                    println("--------------")
+                    println("接收包id=$id, \nsequence=${sequenceId.toUHexString()}")
+                    println("  解密body=${decodedBody.toUHexString()}")
+                    println("  解析body=$packet")
+                }
+
+                //handlePacket(id, sequenceId, packet, id.factory)
             } catch (e: DecryptionFailedException) {
                 // println("密文body=" + remaining.toUHexString())
+                println("--------------")
+                println("接收包id=$id, \nsequence=${sequenceId.toUHexString()}")
                 println("  解密body=解密失败")
+            } finally {
+
             }
         }
     }
@@ -190,6 +200,8 @@ object PacketDebugger {
             else -> error("No decrypter is found")
         } as? D ?: error("Internal error: could not cast decrypter which is found for factory to class Decrypter")
 
+
+    /*
     /**
      * 处理一个包
      */
@@ -200,9 +212,8 @@ object PacketDebugger {
         packet: TPacket,
         factory: PacketFactory<TPacket, *>
     ) {
-        println("  解析body=$packet")
         return
-    }
+    }*/
 
     fun dataSent(rawPacket: ByteArray) = rawPacket.cutTail(1).read {
 
