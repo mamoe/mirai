@@ -3,6 +3,7 @@
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.String
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.Bot
@@ -31,10 +32,6 @@ import kotlin.jvm.JvmName
  */
 @UseExperimental(MiraiInternalAPI::class)
 expect abstract class MessagePacket<TSubject : Contact>() : MessagePacketBase<TSubject>
-
-interface BotExtensions {
-    suspend fun MessageChain.reply()
-}
 
 @MiraiInternalAPI
 abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
@@ -109,7 +106,7 @@ data class GroupMessage(
      */
     val permission: MemberPermission,
     override val sender: QQ,
-    override val message: MessageChain = NullMessageChain
+    override val message: MessageChain
 ) : MessagePacket<Group>() {
 
     override val subject: Group get() = group
@@ -146,8 +143,8 @@ object GroupMessageEventParserAndHandler : KnownEventParserAndHandler<GroupMessa
                 }
 
                 senderName = when {
-                    tlv.containsKey(0x01u) -> kotlinx.io.core.String(tlv.getValue(0x01u))//这个人的qq昵称
-                    tlv.containsKey(0x02u) -> kotlinx.io.core.String(tlv.getValue(0x02u))//这个人的群名片
+                    tlv.containsKey(0x01u) -> String(tlv.getValue(0x01u))//这个人的qq昵称
+                    tlv.containsKey(0x02u) -> String(tlv.getValue(0x02u))//这个人的群名片
                     else -> {
                         tlv.printTLVMap("TLV(tag=18) Map")
                         MiraiLogger.warning("Could not determine senderName")

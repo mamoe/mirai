@@ -16,6 +16,9 @@ import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
  */
 data class BeingKickEvent(val group: Group, val operator: Member) : EventPacket
 
+/**
+ * 机器人被踢出去群
+ */
 object BeingKickEventPacketHandler : KnownEventParserAndHandler<BeingKickEvent>(0x0022u) {
     //00 00 00 08 00 0A 00 04 01 00 00
     // 00 36 DD C4 A0
