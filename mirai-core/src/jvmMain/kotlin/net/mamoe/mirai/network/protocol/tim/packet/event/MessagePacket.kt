@@ -49,6 +49,9 @@ actual abstract class MessagePacket<TSubject : Contact> : MessagePacketBase<TSub
     suspend inline fun File.sendAsImage() = sendAsImageTo(subject)
 
     suspend inline fun Image.downloadTo(file: File): Long = file.outputStream().use { downloadTo(it) }
+    /**
+     * 这个函数结束后不会关闭 [output]
+     */
     suspend inline fun Image.downloadTo(output: OutputStream): Long =
         download().inputStream().use { input -> withContext(Dispatchers.IO) { input.copyTo(output) } }
 

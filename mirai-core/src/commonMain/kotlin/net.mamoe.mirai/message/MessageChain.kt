@@ -99,18 +99,16 @@ fun SingleMessageChain(delegate: Message): MessageChain {
 /**
  * 得到包含 [this] 的 [MessageChain].
  * 若 [this] 为 [MessageChain] 将直接返回 this
- * 否则将调用 [SingleMessageChain] 构造一个唯一成员且不可修改的 [SingleMessageChainImpl]
- *
- * @see SingleMessageChain
- * @see SingleMessageChainImpl
+ * 否则将调用 [MessageChain] 构造一个 [MessageChainImpl]
  */
-fun Message.chain(): MessageChain = if (this is MessageChain) this else MessageChain(this)
+@Suppress("NOTHING_TO_INLINE")
+inline fun Message.chain(): MessageChain = if (this is MessageChain) this else MessageChain(this)
 
 /**
  * 构造 [MessageChain]
  */
-@Suppress("unused")
-fun List<Message>.messageChain(): MessageChain = MessageChain(this)
+@Suppress("unused", "NOTHING_TO_INLINE")
+inline fun List<Message>.messageChain(): MessageChain = MessageChain(this)
 
 
 /**

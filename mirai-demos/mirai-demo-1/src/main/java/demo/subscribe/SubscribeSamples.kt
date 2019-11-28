@@ -96,6 +96,8 @@ suspend fun Bot.messageDSL() {
             // sender: QQ
             // it: String (MessageChain.toString)
 
+
+            message[Image].download()
             if (this is GroupMessage) {
                 //如果是群消息
                 // group: Group
@@ -112,7 +114,7 @@ suspend fun Bot.messageDSL() {
 
 
         // 当收到 "我的qq" 就执行 lambda 并回复 lambda 的返回值 String
-        "我的qq" reply { sender.id.toString() }
+        "我的qq" reply { sender.id }
 
 
         // 如果是这个 QQ 号发送的消息(可以是好友消息也可以是群消息)

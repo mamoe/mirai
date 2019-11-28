@@ -109,15 +109,13 @@ suspend inline fun Bot.subscribeFriendMessages(crossinline listeners: suspend Me
     }.apply { listeners() }
 }
 
-private typealias MessageReplier<T> = @MessageDsl suspend T.(String) -> Message
-
-private typealias StringReplier<T> = @MessageDsl suspend T.(String) -> String
+private typealias AnyReplier<T> = @MessageDsl suspend T.(String) -> Any?
 
 private suspend inline operator fun <T : MessagePacket<*>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
     this.invoke(t, t.message.stringValue)
 
 @JvmName("invoke1") //Avoid Platform declaration clash
-private suspend inline operator fun <T : MessagePacket<*>> StringReplier<T>.invoke(t: T): String =
+private suspend inline operator fun <T : MessagePacket<*>> AnyReplier<T>.invoke(t: T): Any? =
     this.invoke(t, t.message.stringValue)
 
 /**
@@ -217,15 +215,15 @@ class MessageSubscribersBuilder<T : MessagePacket<*>>(
         content({ this@containsReply in it }) { this@content.reply(replier) }
 
     @MessageDsl
-    suspend infix fun String.containsReply(replier: StringReplier<T>) =
+    suspend infix fun String.containsReply(replier: AnyReplier<T>) =
         content({ this@containsReply in it }) { replier(this) }
 
     @MessageDsl
-    suspend infix fun String.startsWithReply(replier: StringReplier<T>) =
+    suspend infix fun String.startsWithReply(replier: AnyReplier<T>) =
         content({ it.startsWith(this@startsWithReply) }) { replier(this) }
 
     @MessageDsl
-    suspend infix fun String.endswithReply(replier: StringReplier<T>) =
+    suspend infix fun String.endswithReply(replier: AnyReplier<T>) =
         content({ it.endsWith(this@endswithReply) }) { replier(this) }
 
     @MessageDsl
@@ -234,7 +232,15 @@ class MessageSubscribersBuilder<T : MessagePacket<*>>(
     }
 
     @MessageDsl
-    suspend infix fun String.reply(reply: StringReplier<T>) = case(this) { this@case.reply(reply(this)) }
+    suspend infix fun String.reply(reply: AnyReplier<T>) = case(this) {
+        when (val message = reply(this)) {
+            is Message -> reply(message)
+            is Unit -> {
+
+            }
+            else -> reply(message.toString())
+        }
+    }
 
 
 /* 易产生迷惑感

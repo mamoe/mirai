@@ -18,13 +18,17 @@ import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 interface Group : Contact {
     val internalId: GroupInternalId
 
+    /**
+     * 在 [Group] 实例创建的时候查询一次. 收到各事件后
+     */
     val member: ContactList<Member>
+
 
     suspend fun getMember(id: UInt): Member
 
     /**
      * 查询群资料
-     */
+     */ // should be `suspend val` if kotlin supports in the future
     suspend fun queryGroupInfo(): GroupInfo
 }
 

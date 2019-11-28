@@ -68,7 +68,6 @@ suspend fun main() {
             if (this is GroupMessage) {
                 group.queryGroupInfo().toString().reply()
             }
-            ""
         }
 
         startsWith("profile", removePrefix = true) {
@@ -77,7 +76,7 @@ suspend fun main() {
                 bot.getQQ(account.toUInt())
             } else {
                 sender
-            }.profile.await().toString().reply()
+            }.queryProfile().toString().reply()
         }
 
         has<Image> {

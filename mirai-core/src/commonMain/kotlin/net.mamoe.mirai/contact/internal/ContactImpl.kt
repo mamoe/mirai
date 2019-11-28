@@ -2,8 +2,6 @@
 
 package net.mamoe.mirai.contact.internal
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
@@ -17,7 +15,6 @@ import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.sendPacket
-import net.mamoe.mirai.utils.SuspendLazy
 import net.mamoe.mirai.withSession
 
 internal sealed class ContactImpl : Contact {
@@ -40,9 +37,7 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
 
     override suspend fun getMember(id: UInt): Member =
         if (_members.containsKey(id)) _members[id]!!
-        else throw NoSuchElementException("No such member whose id is $id in group $id") /*membersLock.withLock {
-            _members.getOrPut(id) { MemberImpl(bot.getQQ(id), this) }
-        }*/
+        else throw NoSuchElementException("No such member whose id is $id in group $id")
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
@@ -56,23 +51,19 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
 }
 
 internal data class QQImpl internal constructor(override val bot: Bot, override val id: UInt) : ContactImpl(), QQ {
-    private var _profile: Profile? = null
-    private val _initialProfile by bot.network.SuspendLazy { updateProfile() }
-
-    override val profile: Deferred<Profile> get() = if (_profile == null) _initialProfile else CompletableDeferred(_profile!!)
-
     override suspend fun sendMessage(message: MessageChain) =
         bot.sendPacket(SendFriendMessagePacket(bot.qqAccount, id, bot.sessionKey, message))
 
-    override suspend fun updateProfile(): Profile = bot.withSession {
-        _profile = RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey)
-            .sendAndExpect<RequestProfileDetailsResponse, Profile> { it.profile }
-
-        return _profile!!
+    override suspend fun queryProfile(): Profile = bot.withSession {
+        RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestProfileDetailsResponse>().profile
     }
 
     override suspend fun queryPreviousNameList(): PreviousNameList = bot.withSession {
         QueryPreviousNamePacket(bot.qqAccount, sessionKey, id).sendAndExpect()
+    }
+
+    override suspend fun queryRemark(): FriendNameRemark = bot.withSession {
+        QueryFriendRemarkPacket(bot.qqAccount, sessionKey, id).sendAndExpect()
     }
 
     override fun toString(): String = "QQ(${this.id})"

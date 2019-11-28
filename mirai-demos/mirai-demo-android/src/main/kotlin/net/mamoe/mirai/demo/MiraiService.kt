@@ -108,7 +108,7 @@ class MiraiService : Service() {
 
 
                 // 当收到 "我的qq" 就执行 lambda 并回复 lambda 的返回值 String
-                "我的qq" reply { sender.id.toString() }
+                "我的qq" reply { sender.id }
 
 
                 // 当消息前缀为 "我是" 时

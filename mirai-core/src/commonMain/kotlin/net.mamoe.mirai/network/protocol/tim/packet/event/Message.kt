@@ -32,6 +32,10 @@ import kotlin.jvm.JvmName
 @UseExperimental(MiraiInternalAPI::class)
 expect abstract class MessagePacket<TSubject : Contact>() : MessagePacketBase<TSubject>
 
+interface BotExtensions {
+    suspend fun MessageChain.reply()
+}
+
 @MiraiInternalAPI
 abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
     internal lateinit var botVar: Bot
@@ -172,7 +176,9 @@ data class FriendMessage(
     /**
      * 是否应被自动广播. 此为内部 API
      */
-    override val shouldBroadcast: Boolean get() = !previous
+    @MiraiInternalAPI
+    override val shouldBroadcast: Boolean
+        get() = !previous
 
     override val subject: QQ get() = sender
 }

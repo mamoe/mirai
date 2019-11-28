@@ -2,11 +2,10 @@
 
 package net.mamoe.mirai.contact
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.network.protocol.tim.packet.action.FriendNameRemark
 import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList
 
 /**
@@ -23,17 +22,9 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList
  */
 interface QQ : Contact {
     /**
-     * 用户资料.
-     * 第一次获取时将会向服务器查询.
-     * 第一次以后则是直接得到一个用 [CompletableDeferred] 包装的值
+     * 查询用户资料
      */
-    val profile: Deferred<Profile>
-
-    /**
-     * 更新个人资料.
-     * 将会同步更新 property [profile]
-     */
-    suspend fun updateProfile(): Profile
+    suspend fun queryProfile(): Profile
 
     /**
      * 查询曾用名.
@@ -43,4 +34,9 @@ interface QQ : Contact {
      * - 共同群内的群名片
      */
     suspend fun queryPreviousNameList(): PreviousNameList
+
+    /**
+     * 查询机器人账号给这个人设置的备注
+     */
+    suspend fun queryRemark(): FriendNameRemark
 }
