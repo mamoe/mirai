@@ -161,7 +161,7 @@ abstract class BotSessionBase(
 
 
 inline val BotSession.isOpen: Boolean get() = socket.isOpen
-inline val BotSession.qqAccount: UInt get() = bot.account.id
+inline val BotSession.qqAccount: UInt get() = bot.account.id // 为了与群和好友的 id 区别.
 
 /**
  * 取得 [BotNetworkHandler] 的 sessionKey.

@@ -7,7 +7,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot.ContactSystem
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.contact.internal.GroupImpl
+import net.mamoe.mirai.contact.internal.Group
 import net.mamoe.mirai.contact.internal.QQImpl
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
@@ -139,7 +139,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
         suspend fun getGroup(id: GroupId): Group = id.value.let {
             if (_groups.containsKey(it)) _groups[it]!!
             else groupsLock.withLock {
-                _groups.getOrPut(it) { GroupImpl(bot, id) }
+                _groups.getOrPut(it) { Group(bot, id) }
             }
         }
     }

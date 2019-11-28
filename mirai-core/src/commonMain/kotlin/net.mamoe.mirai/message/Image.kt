@@ -5,8 +5,6 @@ package net.mamoe.mirai.message
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.io.debugPrintln
-import net.mamoe.mirai.utils.io.toUHexString
 
 
 /**
@@ -40,7 +38,7 @@ class ImageId0x03 constructor(override inline val value: String, inline val uniq
             .replace("-", "")
             .chunked(2)
             .map { (it[0] + it[1].toString()).toUByte(16).toByte() }
-            .toByteArray().also { check(it.size == 16); debugPrintln("image md5=" + it.toUHexString()); debugPrintln("imageId=$this") }
+            .toByteArray().also { check(it.size == 16) }
 }
 
 @Suppress("FunctionName", "NOTHING_TO_INLINE")

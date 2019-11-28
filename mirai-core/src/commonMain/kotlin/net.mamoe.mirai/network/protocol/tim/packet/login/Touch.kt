@@ -46,33 +46,19 @@ object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey
     }
 
     sealed class TouchResponse : Packet {
-        data class OK(
+        class OK(
             var loginTime: Int,
             val loginIP: String,
             val token0825: ByteArray
         ) : TouchResponse() {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other !is OK) return false
-
-                if (loginTime != other.loginTime) return false
-                if (loginIP != other.loginIP) return false
-                if (!token0825.contentEquals(other.token0825)) return false
-
-                return true
-            }
-
-            override fun hashCode(): Int {
-                var result = loginTime
-                result = 31 * result + loginIP.hashCode()
-                result = 31 * result + token0825.contentHashCode()
-                return result
-            }
+            override fun toString(): String = "TouchResponse.OK"
         }
 
-        data class Redirection(
+        class Redirection(
             val serverIP: String? = null
-        ) : TouchResponse()
+        ) : TouchResponse() {
+            override fun toString(): String = "TouchResponse.Redirection"
+        }
     }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): TouchResponse {

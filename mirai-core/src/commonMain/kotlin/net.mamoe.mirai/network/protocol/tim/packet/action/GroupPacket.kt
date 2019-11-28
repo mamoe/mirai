@@ -5,7 +5,6 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.internal.MemberImpl
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -18,18 +17,48 @@ import net.mamoe.mirai.withSession
 /**
  * 群资料
  */
-data class GroupInfo(
-    val group: Group,
-    val owner: Member,
+@Suppress("MemberVisibilityCanBePrivate") // 将来使用
+class GroupInfo(
+    internal var _group: Group,
+    internal var _owner: Member,
+    internal var _name: String,
+    internal var _announcement: String,
+    internal var _members: ContactList<Member>
+) {
+    val group: Group get() = _group
+    val owner: Member get() = _owner
+    val name: String get() = _name
+    val announcement: String get() = _announcement
+    val members: ContactList<Member> get() = _members
+
+    override fun toString(): String = "GroupInfo(id=${group.id}, owner=$owner, name=$name, announcement=$announcement, members=${members.idContentString}"
+}
+
+data class RawGroupInfo(
+    val group: UInt,
+    val owner: UInt,
     val name: String,
     val announcement: String,
-    val members: ContactList<Member>
-) : GroupPacket.GroupPacketResponse
+    /**
+     * 不含群主
+     */
+    val members: Map<UInt, MemberPermission>
+) : GroupPacket.GroupPacketResponse {
+    suspend inline fun parseBy(group: Group): GroupInfo = group.bot.withSession {
+        GroupInfo(
+            group,
+            MemberImpl(this@RawGroupInfo.owner.qq(), group, MemberPermission.OWNER),
+            this@RawGroupInfo.name,
+            this@RawGroupInfo.announcement,
+            ContactList(this@RawGroupInfo.members.mapValuesTo(MutableContactList()) { MemberImpl(it.key.qq(), group, MemberPermission.OWNER) })
+        )
+    }
+}
 
 /**
  * 退出群的返回
  */
-inline class QuiteGroupResponse(private val _group: GroupInternalId?) : Packet, GroupPacket.GroupPacketResponse {
+inline class QuitGroupResponse(private val _group: GroupInternalId?) : Packet, GroupPacket.GroupPacketResponse {
     val group: GroupInternalId get() = _group ?: error("request failed")
     val isSuccess: Boolean get() = _group != null
 
@@ -37,7 +66,7 @@ inline class QuiteGroupResponse(private val _group: GroupInternalId?) : Packet, 
 }
 
 @Suppress("FunctionName")
-@AnnotatedId(KnownPacketId.SEND_GROUP_MESSAGE)
+@AnnotatedId(KnownPacketId.GROUP_PACKET)
 object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2 (21173)")
     fun Message(
@@ -67,7 +96,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
      * 退出群
      */
     @PacketVersion(date = "2019.11.28", timVersion = "2.3.2 (21173)")
-    fun QuiteGroup(
+    fun QuitGroup(
         bot: UInt,
         sessionKey: SessionKey,
         group: GroupInternalId
@@ -84,7 +113,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
         bot: UInt,
         groupInternalId: GroupInternalId,
         sessionKey: SessionKey
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "QueryBulletin", headerSizeHint = 9) {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "QueryGroupInfo", headerSizeHint = 9) {
         writeUByte(0x72u)
         writeGroup(groupInternalId)
         writeZero(4)
@@ -105,19 +134,19 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
 
             0x09u -> {
                 if (readByte().toInt() == 0) {
-                    QuiteGroupResponse(readUInt().groupInternalId())
+                    QuitGroupResponse(readUInt().groupInternalId())
                 } else {
-                    QuiteGroupResponse(null)
+                    QuitGroupResponse(null)
                 }
             }
 
             0x72u -> {
                 discardExact(1) // 00
                 discardExact(4) // group internal id
-                val group = readUInt().group() // group id
+                val group = readUInt() // group id
 
                 discardExact(13) //00 00 00 03 01 01 00 04 01 00 80 01 40
-                val owner = MemberImpl(readUInt().qq(), group, MemberPermission.OWNER)
+                val owner = readUInt()
                 discardExact(22)
                 val groupName = readUByteLVString()
 
@@ -134,12 +163,11 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
 
                 val stop = readUInt() // 标记读取群成员的结束
                 discardExact(1) // 00
-                val members: MutableContactList<Member> = MutableContactList()
-                members[owner.id] = owner
+                val members = mutableMapOf<UInt, MemberPermission>()
                 do {
                     val qq = readUInt()
                     val status = readUShort().toInt() // 这个群成员的状态, 最后一 bit 为管理员权限. 这里面还包含其他状态
-                    if (qq == owner.id) {
+                    if (qq == owner) {
                         continue
                     }
 
@@ -147,9 +175,9 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
                         1 -> MemberPermission.OPERATOR
                         else -> MemberPermission.MEMBER
                     }
-                    members[qq] = MemberImpl(handler.bot.getQQ(qq), group, permission)
+                    members[qq] = permission
                 } while (qq != stop && remaining != 0L)
-                return GroupInfo(group, owner, groupName, announcement, ContactList(members))
+                return RawGroupInfo(group, owner, groupName, announcement, members)
                 /*
                  * 群 Mirai
                  *

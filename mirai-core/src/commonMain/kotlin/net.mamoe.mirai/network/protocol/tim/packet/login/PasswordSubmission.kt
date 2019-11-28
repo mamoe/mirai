@@ -93,7 +93,8 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
             override fun toString(): String = "LoginResponse.CaptchaInit"
         }
 
-        data class Success(
+        @Suppress("unused")
+        class Success(
             val sessionResponseDecryptionKey: SessionResponseDecryptionKey,
 
             val token38: IoBuffer,//56
@@ -103,7 +104,9 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
             val nickname: String,
             val age: Short,
             val gender: Gender
-        ) : LoginResponse()
+        ) : LoginResponse() {
+            override fun toString(): String = "LoginResponse.Success"
+        }
 
         data class Failed(val result: LoginResult) : LoginResponse()
     }
@@ -222,6 +225,7 @@ inline class SessionResponseDecryptionKey(private val delegate: IoBuffer) : Decr
     override fun decrypt(input: ByteReadPacket): ByteReadPacket = input.decryptBy(delegate)
 
     override fun toString(): String = "SessionResponseDecryptionKey"
+
     companion object Type : DecrypterType<SessionResponseDecryptionKey>
 }
 

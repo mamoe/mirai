@@ -59,10 +59,12 @@ object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyRespo
         }
     }
 
-    data class SessionKeyResponse(
+    class SessionKeyResponse(
         val sessionKey: SessionKey,
         val tlv0105: ByteReadPacket? = null
-    ) : Packet
+    ) : Packet {
+        override fun toString(): String = "SessionKeyResponse"
+    }
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): SessionKeyResponse {
         when (remaining) {

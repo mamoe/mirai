@@ -2,7 +2,6 @@
 
 package net.mamoe.mirai.contact.internal
 
-import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.data.Profile
@@ -26,32 +25,50 @@ internal sealed class ContactImpl : Contact {
     override suspend fun sendMessage(message: Message) = sendMessage(message.chain())
 }
 
+/**
+ * 构造 [Group]
+ */
+@Suppress("FunctionName")
+@PublishedApi
+internal suspend fun Group(bot: Bot, groupId: GroupId): Group {
+    val info: RawGroupInfo = try {
+        bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, groupId.toInternalId(), sessionKey).sendAndExpect() }
+    } catch (e: Exception) {
+        error("Cannot obtain group info for id ${groupId.value}")
+    }
+    return GroupImpl(bot, groupId).apply { this.info = info.parseBy(this) }
+}
+
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
 internal data class GroupImpl internal constructor(override val bot: Bot, val groupId: GroupId) : ContactImpl(), Group {
     override val id: UInt get() = groupId.value
     override val internalId = GroupId(id).toInternalId()
 
-    private val _members: MutableContactList<Member> = MutableContactList()
-    override val member: ContactList<Member> = ContactList(_members)
-    private val membersLock: Mutex = Mutex()
+    internal lateinit var info: GroupInfo
+    override val owner: Member get() = info.owner
+    override val name: String get() = info.name
+    override val announcement: String get() = info.announcement
+    override val members: ContactList<Member> get() = info.members
 
     override suspend fun getMember(id: UInt): Member =
-        if (_members.containsKey(id)) _members[id]!!
+        if (members.containsKey(id)) members[id]!!
         else throw NoSuchElementException("No such member whose id is $id in group $id")
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
     }
 
-    override suspend fun queryGroupInfo(): GroupInfo = bot.withSession {
-        GroupPacket.QueryGroupInfo(qqAccount, internalId, sessionKey).sendAndExpect()
+    override suspend fun updateGroupInfo(): GroupInfo = bot.withSession {
+        GroupPacket.QueryGroupInfo(qqAccount, internalId, sessionKey).sendAndExpect<RawGroupInfo>().parseBy(this@GroupImpl)
     }
 
-    override suspend fun quite(): QuiteGroupResponse = bot.withSession {
-        GroupPacket.QuiteGroup(qqAccount, sessionKey, internalId).sendAndExpect()
+    override suspend fun quit(): QuitGroupResponse = bot.withSession {
+        GroupPacket.QuitGroup(qqAccount, sessionKey, internalId).sendAndExpect()
     }
 
     override fun toString(): String = "Group(${this.id})"
+
+    override fun iterator(): Iterator<Member> = members.delegate.values.iterator()
 }
 
 internal data class QQImpl internal constructor(override val bot: Bot, override val id: UInt) : ContactImpl(), QQ {
@@ -76,6 +93,7 @@ internal data class QQImpl internal constructor(override val bot: Bot, override 
 /**
  * 群成员
  */
+@PublishedApi
 internal data class MemberImpl(private val delegate: QQ, override val group: Group, override val permission: MemberPermission) : QQ by delegate, Member {
     override fun toString(): String = "Member(id=${this.id}, permission=$permission)"
 }
