@@ -141,7 +141,7 @@ fun Map<UInt, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 1) =
     })
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun unsupported(): Nothing = error("Unsupported")
+internal inline fun unsupported(message: String? = null): Nothing = error(message ?: "Unsupported")
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun illegalArgument(message: String? = null): Nothing = error(message ?: "Illegal argument passed")
