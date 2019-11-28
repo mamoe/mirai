@@ -44,8 +44,9 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
 
     override val coroutineContext: CoroutineContext =
-        coroutineContext + NetworkDispatcher + CoroutineExceptionHandler { _, e ->
-            bot.logger.error("An exception was thrown in a coroutine under TIMBotNetworkHandler", e)
+        coroutineContext + NetworkDispatcher + CoroutineExceptionHandler { context, e ->
+            bot.logger.error("An exception was thrown in ${context[CoroutineName]?.let { "coroutine $it" }
+                ?: "an unnamed coroutine"} under TIMBotNetworkHandler", e)
         } + supervisor
 
 
