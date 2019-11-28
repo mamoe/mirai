@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
@@ -24,10 +24,14 @@ interface MemberListChangedEvent : EventPacket
 /**
  * 成员主动离开群
  */
+@Suppress("unused")
 data class MemberQuitEvent(
     val member: Member,
     private val _operator: Member?
 ) : MemberListChangedEvent {
+    /**
+     * 是否是被管理员或群主踢出
+     */
     val isKick: Boolean get() = _operator != null
 
     /**
@@ -44,7 +48,6 @@ data class BeingKickEvent(val group: Group, val operator: Member) : MemberListCh
 /**
  * 成员退出. 可能是被踢出也可能是主动退出
  */
-@Suppress("EXPERIMENTAL_API_USAGE")
 object MemberGoneEventPacketHandler : KnownEventParserAndHandler<MemberListChangedEvent>(0x0022u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): MemberListChangedEvent {
         discardExact(11)
