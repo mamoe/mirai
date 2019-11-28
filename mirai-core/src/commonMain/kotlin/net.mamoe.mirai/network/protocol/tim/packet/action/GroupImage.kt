@@ -123,6 +123,7 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
             @SerialId(5) val const2: Short = 0x0E2D,
             @SerialId(6) val const3: ByteArray = constValue3,
             @SerialId(7) val const4: Byte = 1,
+            // 8 is missing
             @SerialId(9) val const5: Byte = 1,
             @SerialId(10) val width: Int,
             @SerialId(11) val height: Int,
@@ -160,6 +161,7 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
             @SerialId(16) val height: Int,
             @SerialId(17) val width: Int,
             @SerialId(18) val const12: Int = 1003, //?? 有时候还是1000, 1004
+            // 19 is missing
             @SerialId(20) val const13: Byte = 1
         )
     }
@@ -209,7 +211,7 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
             protoObj = RequestLinkProto(
                 body = RequestLinkProto.Body(
                     bot = bot.toInt(), // same bin representation, so will be decoded correctly as a unsigned value in the server
-                    group = bot.toInt(),
+                    group = bot.toInt(), // it's no need to pass a real group (internal) id
                     uniqueId = imageId.uniqueId.toInt(),
                     md5 = imageId.md5,
                     height = imageId.height,
