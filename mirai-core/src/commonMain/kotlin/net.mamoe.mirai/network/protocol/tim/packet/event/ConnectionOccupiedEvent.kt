@@ -15,7 +15,7 @@ inline class ConnectionOccupiedEvent(val message: String) : EventPacket {
     override fun toString(): String = "ConnectionOccupiedEvent(${message.replace("\n", "")})"
 }
 
-internal object ConnectionOccupiedPacketFactory : KnownEventParserAndHandler<ConnectionOccupiedEvent>(0x0030u) {
+internal object ConnectionOccupiedPacketHandler : KnownEventParserAndHandler<ConnectionOccupiedEvent>(0x0030u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): ConnectionOccupiedEvent {
         discardExact(6)
         return ConnectionOccupiedEvent(readBytes((remaining - 8).toInt()).encodeToString())

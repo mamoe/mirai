@@ -48,7 +48,7 @@ data class BeingKickEvent(val group: Group, val operator: Member) : MemberListCh
 /**
  * 成员退出. 可能是被踢出也可能是主动退出
  */
-object MemberGoneEventPacketHandler : KnownEventParserAndHandler<MemberListChangedEvent>(0x0022u) {
+internal object MemberGoneEventPacketHandler : KnownEventParserAndHandler<MemberListChangedEvent>(0x0022u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): MemberListChangedEvent {
         discardExact(11)
 

@@ -113,7 +113,7 @@ data class GroupMessage(
 }
 
 @PacketVersion(date = "2019.11.2", timVersion = "2.3.2 (21173)")
-object GroupMessageEventParserAndHandler : KnownEventParserAndHandler<GroupMessage>(0x0052u) {
+internal object GroupMessageEventParserAndHandler : KnownEventParserAndHandler<GroupMessage>(0x0052u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): GroupMessage {
         discardExact(31)
         val groupNumber = readUInt()
@@ -183,7 +183,7 @@ data class FriendMessage(
 
 @Suppress("unused")
 @PacketVersion(date = "2019.11.2", timVersion = "2.3.2 (21173)")
-object FriendMessageEventParserAndHandler : KnownEventParserAndHandler<FriendMessage>(0x00A6u) {
+internal object FriendMessageEventParserAndHandler : KnownEventParserAndHandler<FriendMessage>(0x00A6u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): FriendMessage {
         discardExact(2)
         val l1 = readShort()

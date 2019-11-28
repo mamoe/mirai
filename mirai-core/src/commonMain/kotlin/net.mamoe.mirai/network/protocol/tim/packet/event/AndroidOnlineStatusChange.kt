@@ -22,7 +22,7 @@ data class AndroidDeviceStatusChangePacket(val kind: Kind) : Packet {
  * Android 客户端在线状态改变
  */
 @PacketVersion(date = "2019.10.31", timVersion = "2.3.2 (21173)")
-object AndroidDeviceOnlineStatusChangedEventFactory : KnownEventParserAndHandler<AndroidDeviceStatusChangePacket>(0x00C4u) {
+internal object AndroidDeviceOnlineStatusChangedEventFactory : KnownEventParserAndHandler<AndroidDeviceStatusChangePacket>(0x00C4u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): AndroidDeviceStatusChangePacket {
         discardExact(13)
         return AndroidDeviceStatusChangePacket(

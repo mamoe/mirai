@@ -14,7 +14,7 @@ data class FriendConversationInitialize(
 ) : EventPacket
 
 @PacketVersion(date = "2019.11.2", timVersion = "2.3.2 (21173)")
-object FriendConversationInitializedEventParserAndHandler : KnownEventParserAndHandler<FriendConversationInitialize>(0x0079u) {
+internal object FriendConversationInitializedEventParserAndHandler : KnownEventParserAndHandler<FriendConversationInitialize>(0x0079u) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): FriendConversationInitialize {
         discardExact(4)// 00 00 00 00
         return FriendConversationInitialize(readUInt())

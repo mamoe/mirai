@@ -37,7 +37,7 @@ data class ReceiveFriendAddRequestEvent(
 }
 
 @PacketVersion(date = "2019.11.20", timVersion = "2.3.2 (21173)")
-object FriendAddRequestEventPacket : KnownEventParserAndHandler<ReceiveFriendAddRequestEvent>(0x02DFu) {
+internal object FriendAddRequestEventPacket : KnownEventParserAndHandler<ReceiveFriendAddRequestEvent>(0x02DFu) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): ReceiveFriendAddRequestEvent = bot.withSession {
         // 00 00 00 08 00 0A 00 04 01 00
         // 00 00 00 01

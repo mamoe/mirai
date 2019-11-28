@@ -28,7 +28,7 @@ data class MemberPermissionChangePacket(
 }
 
 @PacketVersion(date = "2019.11.1", timVersion = "2.3.2 (21173)")
-object GroupMemberPermissionChangedEventFactory : KnownEventParserAndHandler<MemberPermissionChangePacket>(0x002Cu) {
+internal object GroupMemberPermissionChangedEventFactory : KnownEventParserAndHandler<MemberPermissionChangePacket>(0x002Cu) {
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): MemberPermissionChangePacket {
         // 群里一个人变成管理员:
         // 00 00 00 08 00 0A 00 04 01 00 00 00 22 96 29 7B 01 01 76 E4 B8 DD 01
