@@ -59,13 +59,23 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
 /**
  * 只读联系人列表
  */
-class ContactList<C : Contact> internal constructor(internal val delegate: MutableContactList<C>) : Map<UInt, C> by delegate {
+class ContactList<C : Contact> @PublishedApi internal constructor(internal val delegate: MutableContactList<C>) : Map<UInt, C> by delegate {
+    /**
+     * ID 列表的字符串表示.
+     * 如:
+     * ```
+     * [123456, 321654, 123654]
+     * ```
+     */
+    val idContentString: String get() = this.keys.joinToString(prefix = "[", postfix = "]") { it.toLong().toString() }
+
     override fun toString(): String = delegate.toString()
 }
 
 /**
  * 可修改联系人列表. 只会在内部使用.
  */
+@PublishedApi
 internal class MutableContactList<C : Contact> : MutableMap<UInt, C> by mutableMapOf() {
     override fun toString(): String = asIterable().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")") { it.value.toString() }
 }
