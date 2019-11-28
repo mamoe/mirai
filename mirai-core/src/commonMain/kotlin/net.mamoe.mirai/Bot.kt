@@ -12,17 +12,28 @@ import net.mamoe.mirai.contact.internal.QQImpl
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.tim.packet.login.isSuccess
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmOverloads
 
 data class BotAccount(
     val id: UInt,
     val password: String//todo 不保存 password?
 )
+
+@Suppress("FunctionName")
+suspend inline fun Bot(account: BotAccount, logger: MiraiLogger): Bot = Bot(account, logger, coroutineContext)
+
+@Suppress("FunctionName")
+suspend inline fun Bot(account: BotAccount): Bot = Bot(account, coroutineContext)
+
+@Suppress("FunctionName")
+suspend inline fun Bot(qq: UInt, password: String): Bot = Bot(qq, password, coroutineContext)
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -54,15 +65,16 @@ data class BotAccount(
  * @author NaturalHG
  * @see Contact
  */
-class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
-    override val coroutineContext: CoroutineContext = SupervisorJob()
+class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineContext) : CoroutineScope {
+    private val supervisorJob = SupervisorJob(context[Job])
+    override val coroutineContext: CoroutineContext = context + supervisorJob
 
-    constructor(qq: UInt, password: String) : this(BotAccount(qq, password))
-    constructor(account: BotAccount) : this(account, DefaultLogger("Bot(" + account.id + ")"))
+    constructor(qq: UInt, password: String, context: CoroutineContext) : this(BotAccount(qq, password), context)
+    constructor(account: BotAccount, context: CoroutineContext) : this(account, DefaultLogger("Bot(" + account.id + ")"), context)
 
     val contacts = ContactSystem()
 
-    var network: BotNetworkHandler<*> = TIMBotNetworkHandler(this.coroutineContext, this)
+    lateinit var network: BotNetworkHandler<*>
 
     init {
         launch {
@@ -76,19 +88,40 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
      * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
      * 然后重新启动并尝试登录
      */
-    @JvmOverloads
-    suspend fun reinitializeNetworkHandler(
+    @JvmOverloads // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
+    fun tryReinitializeNetworkHandler(
         configuration: BotConfiguration,
         cause: Throwable? = null
-    ): LoginResult {
+    ): Job = launch {
+        repeat(configuration.reconnectionRetryTimes) {
+            if (reinitializeNetworkHandlerAsync(configuration, cause).await().isSuccess()) {
+                logger.info("Reconnected successfully")
+                return@launch
+            } else {
+                delay(configuration.reconnectPeriod.millisecondsLong)
+            }
+        }
+    }
+
+    /**
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
+     * 然后重新启动并尝试登录
+     */
+    @JvmOverloads // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
+    fun reinitializeNetworkHandlerAsync(
+        configuration: BotConfiguration,
+        cause: Throwable? = null
+    ): Deferred<LoginResult> = async {
         logger.info("Initializing BotNetworkHandler")
         try {
-            network.close(cause)
+            if (::network.isInitialized) {
+                network.close(cause)
+            }
         } catch (e: Exception) {
-            logger.error(e)
+            logger.error("Cannot close network handler", e)
         }
-        network = TIMBotNetworkHandler(this.coroutineContext, this)
-        return network.login(configuration)
+        network = TIMBotNetworkHandler(coroutineContext + configuration, this@Bot)
+        network.login()
     }
 
     /**

@@ -17,7 +17,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.CaptchaKey
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.ShareKey
 import net.mamoe.mirai.network.protocol.tim.packet.login.TouchKey
-import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DecryptionFailedException
 import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.*
@@ -301,6 +300,7 @@ when (idHex.substring(0, 5)) {
 
 
 internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>, CoroutineScope {
+    override val supervisor: CompletableJob = SupervisorJob()
     override val socket: DataPacketSocketAdapter = object : DataPacketSocketAdapter {
         override val serverIp: String
             get() = ""
@@ -320,10 +320,10 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
             get() = bot
 
     }
-    override val bot: Bot = Bot(qq, "")
+    override val bot: Bot = Bot(qq, "", coroutineContext)
     override val session = BotSession(bot, sessionKey, socket, this)
 
-    override suspend fun login(configuration: BotConfiguration): LoginResult = LoginResult.SUCCESS
+    override suspend fun login(): LoginResult = LoginResult.SUCCESS
 
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
     }
@@ -336,4 +336,5 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
 
     override val coroutineContext: CoroutineContext
         get() = GlobalScope.coroutineContext
+
 }

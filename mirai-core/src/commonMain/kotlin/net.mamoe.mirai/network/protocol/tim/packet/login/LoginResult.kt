@@ -124,6 +124,13 @@ fun LoginResult.requireSuccess() = requireSuccess { "Login failed: $this" }
 fun LoginResult.requireSuccessOrNull(): Unit? = if (this == SUCCESS) Unit else null
 
 /**
+ * 返回 [this] 是否为 [LoginResult.SUCCESS].
+ */
+@Suppress("NOTHING_TO_INLINE")
+@UseExperimental(ExperimentalContracts::class)
+inline fun LoginResult.isSuccess(): Boolean = this == SUCCESS
+
+/**
  * 检查 [this] 为 [LoginResult.SUCCESS].
  * 失败则返回 `null`
  *

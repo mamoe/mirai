@@ -5,6 +5,8 @@ import com.soywiz.klock.seconds
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.packet.login.TouchPacket.TouchResponse
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 
 /**
@@ -22,7 +24,7 @@ expect var DefaultCaptchaSolver: CaptchaSolver
 /**
  * 网络和连接配置
  */
-class BotConfiguration {
+class BotConfiguration : CoroutineContext.Element {
     /**
      * 等待 [TouchResponse] 的时间
      */
@@ -43,6 +45,18 @@ class BotConfiguration {
      */
     var heartbeatTimeout: TimeSpan = 2.seconds
     /**
+     * 心跳失败后的第一次重连前的等待时间.
+     */
+    var firstReconnectDelay: TimeSpan = 5.seconds
+    /**
+     * 重连失败后, 继续尝试的每次等待时间
+     */
+    var reconnectPeriod: TimeSpan = 60.seconds
+    /**
+     * 最多尝试多少次重连
+     */
+    var reconnectionRetryTimes: Int = 3
+    /**
      * 有验证码要求就失败
      */
     var failOnCaptcha = false
@@ -51,11 +65,15 @@ class BotConfiguration {
      */
     var captchaSolver: CaptchaSolver = DefaultCaptchaSolver
 
-    companion object {
+    companion object Key : CoroutineContext.Key<BotConfiguration> {
         /**
          * 默认的配置实例
          */
         @JvmField
         val Default = BotConfiguration()
     }
+
+    override val key: CoroutineContext.Key<*> get() = Key
 }
+
+suspend inline fun currentBotConfiguration(): BotConfiguration = coroutineContext[BotConfiguration] ?: error("No BotConfiguration found")

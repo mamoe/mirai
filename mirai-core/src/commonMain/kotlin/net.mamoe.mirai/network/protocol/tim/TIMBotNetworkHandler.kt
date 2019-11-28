@@ -20,8 +20,8 @@ import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.OnlineStatus
+import net.mamoe.mirai.utils.currentBotConfiguration
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
@@ -42,13 +42,13 @@ internal expect val NetworkDispatcher: CoroutineDispatcher
 internal class TIMBotNetworkHandler internal constructor(coroutineContext: CoroutineContext, override inline val bot: Bot) :
     BotNetworkHandler<TIMBotNetworkHandler.BotSocketAdapter>, CoroutineScope {
 
+    override val supervisor: CompletableJob = SupervisorJob(coroutineContext[Job])
 
     override val coroutineContext: CoroutineContext =
         coroutineContext + NetworkDispatcher + CoroutineExceptionHandler { context, e ->
             bot.logger.error("An exception was thrown in ${context[CoroutineName]?.let { "coroutine $it" }
                 ?: "an unnamed coroutine"} under TIMBotNetworkHandler", e)
         } + supervisor
-
 
     override lateinit var socket: BotSocketAdapter
         private set
@@ -60,7 +60,6 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
     private lateinit var userContext: CoroutineContext
 
-
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
         handlersLock.withLock {
             temporaryPacketHandlers.add(temporaryPacketHandler)
@@ -68,14 +67,14 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
         temporaryPacketHandler.send(this.session)
     }
 
-    override suspend fun login(configuration: BotConfiguration): LoginResult {
+    override suspend fun login(): LoginResult {
         userContext = coroutineContext
         return withContext(this.coroutineContext) {
             TIMProtocol.SERVER_IP.sortedBy { Random.nextInt() }.forEach { ip ->
                 bot.logger.info("Connecting server $ip")
                 try {
                     withTimeout(3000) {
-                        socket = BotSocketAdapter(ip, configuration)
+                        socket = BotSocketAdapter(ip)
                     }
                 } catch (e: Exception) {
                     return@withContext LoginResult.NETWORK_UNAVAILABLE
@@ -126,7 +125,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
     override suspend fun sendPacket(packet: OutgoingPacket) = socket.sendPacket(packet)
 
-    internal inner class BotSocketAdapter(override val serverIp: String, val configuration: BotConfiguration) :
+    internal inner class BotSocketAdapter(override val serverIp: String) :
         DataPacketSocketAdapter {
 
         override val channel: PlatformDatagramChannel = PlatformDatagramChannel(serverIp, 8000)
@@ -202,13 +201,13 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
         internal suspend fun resendTouch(): LoginResult /* = coroutineScope */ {
             loginHandler?.close()
 
-            loginHandler = LoginHandler(configuration)
+            loginHandler = LoginHandler()
 
 
             val expect = expectPacket<TouchPacket.TouchResponse>()
             launch { processReceive() }
             launch {
-                if (withTimeoutOrNull(configuration.touchTimeout.millisecondsLong) { expect.join() } == null) {
+                if (withTimeoutOrNull(currentBotConfiguration().touchTimeout.millisecondsLong) { expect.join() } == null) {
                     loginResult.complete(LoginResult.TIMEOUT)
                 }
             }
@@ -284,10 +283,9 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     if (e.cause !is CancellationException) {
                         bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
                     }
-
-                    GlobalScope.launch(userContext) {
-                        bot.reinitializeNetworkHandler(configuration, e)
-                    }
+                    val configuration = currentBotConfiguration()
+                    delay(configuration.firstReconnectDelay.millisecondsLong)
+                    bot.tryReinitializeNetworkHandler(configuration, e)
                     return@withContext
                 } finally {
                     buffer.release(IoBuffer.Pool)
@@ -319,7 +317,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
     /**
      * 处理登录过程
      */
-    inner class LoginHandler(private val configuration: BotConfiguration) {
+    inner class LoginHandler {
         private lateinit var token00BA: ByteArray
         private lateinit var token0825: ByteArray//56
         private var loginTime: Int = 0
@@ -375,7 +373,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                             privateKey = privateKey,
                             token0825 = token0825,
                             token00BA = null,
-                            randomDeviceName = socket.configuration.randomDeviceName
+                            randomDeviceName = currentBotConfiguration().randomDeviceName
                         )
                     )
                 }
@@ -383,7 +381,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 is TouchPacket.TouchResponse.Redirection -> {
                     withContext(userContext) {
                         socket.close()
-                        socket = BotSocketAdapter(packet.serverIP!!, socket.configuration)
+                        socket = BotSocketAdapter(packet.serverIP!!)
                         bot.logger.info("Redirecting to ${packet.serverIP}")
                         loginResult.complete(socket.resendTouch())
                     }
@@ -407,7 +405,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                             privateKey = privateKey,
                             token0825 = token0825,
                             token00BA = packet.token00BA,
-                            randomDeviceName = socket.configuration.randomDeviceName
+                            randomDeviceName = currentBotConfiguration().randomDeviceName
                         )
                     )
                 }
@@ -441,6 +439,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     this.captchaCache!!.writeFully(packet.captchaSectionN)
                     this.token00BA = packet.token00BA
 
+                    val configuration = currentBotConfiguration()
                     if (packet.transmissionCompleted) {
                         if (configuration.failOnCaptcha) {
                             loginResult.complete(LoginResult.CAPTCHA)
@@ -455,23 +454,11 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                             socket.sendPacket(CaptchaPacket.Refresh(bot.qqAccount, token0825))
                         } else {
                             this.captchaSectionId = 0//意味着已经提交验证码
-                            socket.sendPacket(
-                                CaptchaPacket.Submit(
-                                    bot.qqAccount,
-                                    token0825,
-                                    code,
-                                    packet.captchaToken
-                                )
-                            )
+                            socket.sendPacket(CaptchaPacket.Submit(bot.qqAccount, token0825, code, packet.captchaToken))
                         }
                     } else {
                         socket.sendPacket(
-                            CaptchaPacket.RequestTransmission(
-                                bot.qqAccount,
-                                token0825,
-                                captchaSectionId++,
-                                packet.token00BA
-                            )
+                            CaptchaPacket.RequestTransmission(bot.qqAccount, token0825, captchaSectionId++, packet.token00BA)
                         )
                     }
                 }
@@ -479,13 +466,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 is SubmitPasswordPacket.LoginResponse.Success -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
                     socket.sendPacket(
-                        RequestSessionPacket(
-                            bot.qqAccount,
-                            socket.serverIp,
-                            packet.token38,
-                            packet.token88,
-                            packet.encryptionKey
-                        )
+                        RequestSessionPacket(bot.qqAccount, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey)
                     )
                 }
 
@@ -502,7 +483,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                             privateKey = privateKey,
                             token0825 = token0825,
                             token00BA = packet.tokenUnknown ?: token00BA,
-                            randomDeviceName = socket.configuration.randomDeviceName,
+                            randomDeviceName = currentBotConfiguration().randomDeviceName,
                             tlv0006 = packet.tlv0006
                         )
                     )
@@ -512,6 +493,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     sessionKey = packet.sessionKey
                     bot.logger.info("sessionKey = ${sessionKey.value.toUHexString()}")
 
+                    val configuration = currentBotConfiguration()
                     heartbeatJob = this@TIMBotNetworkHandler.launch {
                         while (socket.isOpen) {
                             delay(configuration.heartbeatPeriod.millisecondsLong)
@@ -519,15 +501,13 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                                 class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
 
                                 if (withTimeoutOrNull(configuration.heartbeatTimeout.millisecondsLong) {
-                                        // TODO: 2019/11/26 启动被挤掉线检测
+                                        // FIXME: 2019/11/26 启动被挤掉线检测
 
-                                        HeartbeatPacket(
-                                            bot.qqAccount,
-                                            sessionKey
-                                        ).sendAndExpect<HeartbeatPacketResponse>()
+                                        HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
                                     } == null) {
                                     bot.logger.warning("Heartbeat timed out")
-                                    bot.reinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
+                                    delay(configuration.firstReconnectDelay.millisecondsLong)
+                                    bot.tryReinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
                                     return@launch
                                 }
                             }

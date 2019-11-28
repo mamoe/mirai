@@ -1,9 +1,8 @@
 package net.mamoe.mirai.network
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
@@ -12,7 +11,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.login.HeartbeatPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
-import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -38,7 +36,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
     val socket: Socket
     val bot: Bot
 
-    val supervisor get() = SupervisorJob()
+    val supervisor: CompletableJob
 
     val session: BotSession
 
@@ -46,7 +44,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果
      * 本函数将挂起直到登录成功.
      */
-    suspend fun login(configuration: BotConfiguration): LoginResult
+    suspend fun login(): LoginResult
 
     /**
      * 添加一个临时包处理器, 并发送相应的包
@@ -70,6 +68,6 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
      * 关闭网络接口, 停止所有有关协程和任务
      */
     suspend fun close(cause: Throwable? = null) {
-        supervisor.cancelChildren(CancellationException("handler closed", cause))
+        supervisor.cancel(CancellationException("handler closed", cause))
     }
 }
