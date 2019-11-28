@@ -45,15 +45,15 @@ implementation("net.mamoe:mirai-core-android:VERSION")
 现在您可以开始体验低付出高效率的 Mirai
 
 ```kotlin
-val bot = Bot(qqId, password).apply{ login().requireSuccess() } // 创建一个机器人实例并登录
-bot.subscribeMessages { // 订阅消息事件
-  "你好" reply "你好!" // 收到 "你好" 则回复 "你好!"
-  "profile" reply { sender.profile.await().toString() } // 收到 "profile" 则回复发送者的个人资料
-  contains("图片"){ File(imagePath).send() } // 收到消息包含 "图片" 就回复一张本地的图片
+val bot = Bot(qqId, password).alsoLogin()
+bot.subscribeMessages {
+  "你好" reply "你好!"
+  "profile" reply { sender.queryProfile() }
+  contains("图片"){ File(imagePath).send() }
 }
 bot.subscribeAlways<MemberPermissionChangedEvent> {
   if (it.kind == BECOME_OPERATOR)
-    it.group.sendMessage("${it.member.id} 成为了管理员")
+    reply("${it.member.id} 成为了管理员")
 }
 ```
 
