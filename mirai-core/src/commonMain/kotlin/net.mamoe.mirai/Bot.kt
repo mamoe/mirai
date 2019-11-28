@@ -121,7 +121,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
         suspend fun getQQ(id: UInt): QQ =
             if (_qqs.containsKey(id)) _qqs[id]!!
             else qqsLock.withLock {
-                _qqs.getOrPut(id) { QQImpl(bot, id) }
+                _qqs.getOrPut(id) { QQImpl(bot, id, coroutineContext) }
             }
 
         /**
@@ -139,7 +139,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger) : CoroutineScope {
         suspend fun getGroup(id: GroupId): Group = id.value.let {
             if (_groups.containsKey(it)) _groups[it]!!
             else groupsLock.withLock {
-                _groups.getOrPut(it) { Group(bot, id) }
+                _groups.getOrPut(it) { Group(bot, id, coroutineContext) }
             }
         }
     }

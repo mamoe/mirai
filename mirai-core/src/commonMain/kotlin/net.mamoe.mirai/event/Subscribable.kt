@@ -2,14 +2,10 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.*
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.withSwitch
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmOverloads
 
 /**
  * 可被监听的.
@@ -77,33 +73,20 @@ interface Cancellable : Subscribable {
 
 /**
  * 广播一个事件的唯一途径.
- * 这个方法将会把处理挂起在 [context] 下运行. 默认为使用 [EventDispatcher] 调度事件协程.
- *
- * @param context 事件处理协程运行的 [CoroutineContext].
  */
 @Suppress("UNCHECKED_CAST")
-@JvmOverloads
-suspend fun <E : Subscribable> E.broadcast(context: CoroutineContext = EmptyCoroutineContext): E {
+suspend fun <E : Subscribable> E.broadcast(): E {
     if (EventDebuggingFlag) {
         EventDebugLogger.debug(this::class.simpleName + " pre broadcast")
     }
     try {
         @Suppress("EXPERIMENTAL_API_USAGE")
-        return withContext(EventScope.newCoroutineContext(context)) { this@broadcast.broadcastInternal() }
+        return this@broadcast.broadcastInternal()
     } finally {
         if (EventDebuggingFlag) {
             EventDebugLogger.debug(this::class.simpleName + " after broadcast")
         }
     }
-}
-
-internal expect val EventDispatcher: CoroutineDispatcher
-
-object EventScope : CoroutineScope {
-    override val coroutineContext: CoroutineContext =
-        EventDispatcher + CoroutineExceptionHandler { _, e ->
-            MiraiLogger.error("An exception is thrown in EventScope", e)
-        }
 }
 
 /**

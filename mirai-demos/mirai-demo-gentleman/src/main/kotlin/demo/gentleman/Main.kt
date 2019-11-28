@@ -66,7 +66,7 @@ suspend fun main() {
 
         "群资料" reply {
             if (this is GroupMessage) {
-                group.queryGroupInfo().toString().reply()
+                group.updateGroupInfo().toString().reply()
             }
         }
 

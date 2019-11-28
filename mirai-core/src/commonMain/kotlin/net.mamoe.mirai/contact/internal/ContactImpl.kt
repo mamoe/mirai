@@ -2,19 +2,25 @@
 
 package net.mamoe.mirai.contact.internal
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.data.Profile
+import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.chain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.protocol.tim.packet.action.*
+import net.mamoe.mirai.network.protocol.tim.packet.event.MemberJoinEventPacket
+import net.mamoe.mirai.network.protocol.tim.packet.event.MemberQuitEvent
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.sendPacket
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.withSession
+import kotlin.coroutines.CoroutineContext
 
 internal sealed class ContactImpl : Contact {
     abstract override suspend fun sendMessage(message: MessageChain)
@@ -23,6 +29,11 @@ internal sealed class ContactImpl : Contact {
     override suspend fun sendMessage(plain: String) = sendMessage(plain.singleChain())
 
     override suspend fun sendMessage(message: Message) = sendMessage(message.chain())
+
+    /**
+     * 开始监听事件, 以同步更新资料
+     */
+    internal abstract suspend fun CoroutineContext.startUpdater()
 }
 
 /**
@@ -30,17 +41,18 @@ internal sealed class ContactImpl : Contact {
  */
 @Suppress("FunctionName")
 @PublishedApi
-internal suspend fun Group(bot: Bot, groupId: GroupId): Group {
+internal suspend fun Group(bot: Bot, groupId: GroupId, context: CoroutineContext): Group {
     val info: RawGroupInfo = try {
         bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, groupId.toInternalId(), sessionKey).sendAndExpect() }
     } catch (e: Exception) {
         error("Cannot obtain group info for id ${groupId.value}")
     }
-    return GroupImpl(bot, groupId).apply { this.info = info.parseBy(this) }
+    return GroupImpl(bot, groupId, context).apply { this.info = info.parseBy(this) }
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
-internal data class GroupImpl internal constructor(override val bot: Bot, val groupId: GroupId) : ContactImpl(), Group {
+internal data class GroupImpl internal constructor(override val bot: Bot, val groupId: GroupId, override val coroutineContext: CoroutineContext) :
+    ContactImpl(), Group, CoroutineScope {
     override val id: UInt get() = groupId.value
     override val internalId = GroupId(id).toInternalId()
 
@@ -52,7 +64,7 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
 
     override suspend fun getMember(id: UInt): Member =
         if (members.containsKey(id)) members[id]!!
-        else throw NoSuchElementException("No such member whose id is $id in group $id")
+        else throw NoSuchElementException("No such member whose id is $id in group ${groupId.value.toLong()}")
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
@@ -66,12 +78,25 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
         GroupPacket.QuitGroup(qqAccount, sessionKey, internalId).sendAndExpect()
     }
 
+    @UseExperimental(MiraiInternalAPI::class)
+    override suspend fun CoroutineContext.startUpdater() {
+        subscribeAlways<MemberJoinEventPacket> {
+            // FIXME: 2019/11/29 非线程安全!!
+            members.delegate[it.member.id] = it.member
+        }
+        subscribeAlways<MemberQuitEvent> {
+            // FIXME: 2019/11/29 非线程安全!!
+            members.delegate.remove(it.member.id)
+        }
+    }
+
     override fun toString(): String = "Group(${this.id})"
 
     override fun iterator(): Iterator<Member> = members.delegate.values.iterator()
 }
 
-internal data class QQImpl internal constructor(override val bot: Bot, override val id: UInt) : ContactImpl(), QQ {
+internal data class QQImpl internal constructor(override val bot: Bot, override val id: UInt, override val coroutineContext: CoroutineContext) : ContactImpl(),
+    QQ, CoroutineScope {
     override suspend fun sendMessage(message: MessageChain) =
         bot.sendPacket(SendFriendMessagePacket(bot.qqAccount, id, bot.sessionKey, message))
 
@@ -85,6 +110,10 @@ internal data class QQImpl internal constructor(override val bot: Bot, override 
 
     override suspend fun queryRemark(): FriendNameRemark = bot.withSession {
         QueryFriendRemarkPacket(bot.qqAccount, sessionKey, id).sendAndExpect()
+    }
+
+    override suspend fun CoroutineContext.startUpdater() {
+        // TODO: 2019/11/28 被删除好友事件
     }
 
     override fun toString(): String = "QQ(${this.id})"

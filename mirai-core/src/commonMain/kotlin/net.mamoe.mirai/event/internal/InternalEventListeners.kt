@@ -1,21 +1,27 @@
 package net.mamoe.mirai.event.internal
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.EventDebugLogger
-import net.mamoe.mirai.event.EventScope
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.internal.inlinedRemoveIf
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
+/**
+ * 设置为 `true` 以关闭事件.
+ * 所有的 `subscribe` 都能正常添加到监听器列表, 但所有的广播都会直接返回.
+ */
 var EventDisabled = false
+
+// TODO: 2019/11/29 修改监听为 lock-free 模式
 
 /**
  * 监听和广播实现.
@@ -24,8 +30,8 @@ var EventDisabled = false
  *  - 如果不是, 则直接将新的监听者放入主列表
  *
  * @author Him188moe
- */
-internal suspend fun <E : Subscribable> KClass<E>.subscribeInternal(listener: Listener<E>): Unit = with(this.listeners()) {
+ */ // inline to avoid a Continuation creation
+internal suspend inline fun <L : Listener<E>, E : Subscribable> KClass<E>.subscribeInternal(listener: L): L = with(this.listeners()) {
     if (mainMutex.tryLock(listener)) {//能锁则代表这个事件目前没有正在广播.
         try {
             add(listener)//直接修改主监听者列表
@@ -33,7 +39,7 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeInternal(listener: Li
         } finally {
             mainMutex.unlock(listener)
         }
-        return
+        return listener
     }
 
     //不能锁住, 则这个事件正在广播, 那么要将新的监听者放入缓存
@@ -42,7 +48,7 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeInternal(listener: Li
         EventDebugLogger.debug("Added a listener to cache of ${this@subscribeInternal.simpleName}")
     }
 
-    EventScope.launch {
+    GlobalScope.launch {
         //启动协程并等待正在进行的广播结束, 然后将缓存转移到主监听者列表
         //启动后的协程马上就会因为锁而被挂起
         mainMutex.withLock(listener) {
@@ -55,21 +61,53 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeInternal(listener: Li
             }
         }
     }
+
+    return@with listener
 }
 
 /**
- * 事件监听器
+ * 事件监听器.
+ *
+ * 它实现 [CompletableJob] 接口,
+ * 可通过 [CompletableJob.complete] 来正常结束监听, 或 [CompletableJob.completeExceptionally] 来异常地结束监听.
  *
  * @author Him188moe
  */
-sealed class Listener<in E : Subscribable> {
+sealed class Listener<in E : Subscribable> : CompletableJob {
     internal val lock = Mutex()
     abstract suspend fun onEvent(event: E): ListeningStatus
 }
 
 @PublishedApi
-internal class Handler<in E : Subscribable>(@JvmField val handler: suspend (E) -> ListeningStatus) : Listener<E>() {
-    override suspend fun onEvent(event: E): ListeningStatus = handler.invoke(event)
+@Suppress("FunctionName")
+internal suspend inline fun <E : Subscribable> Handler(noinline handler: suspend (E) -> ListeningStatus): Handler<E> {
+    return Handler(coroutineContext[Job], coroutineContext, handler)
+}
+
+/**
+ * 事件处理器.
+ */
+@PublishedApi
+internal class Handler<in E : Subscribable>
+@PublishedApi internal constructor(parentJob: Job?, private val context: CoroutineContext, @JvmField val handler: suspend (E) -> ListeningStatus) :
+    Listener<E>(), CompletableJob by Job(parentJob) {
+
+    override suspend fun onEvent(event: E): ListeningStatus {
+        if (isCompleted || isCancelled) return ListeningStatus.STOPPED
+        if (!isActive) return ListeningStatus.LISTENING
+        return try {
+            withContext(context) { handler.invoke(event) }.also { if (it == ListeningStatus.STOPPED) this.complete() }
+        } catch (e: Throwable) {
+            this.completeExceptionally(e)
+            ListeningStatus.STOPPED
+        }
+    }
+}
+
+@PublishedApi
+@Suppress("FunctionName")
+internal suspend inline fun <E : Subscribable> HandlerWithBot(bot: Bot, noinline handler: suspend Bot.(E) -> ListeningStatus): HandlerWithBot<E> {
+    return HandlerWithBot(bot, coroutineContext[Job], coroutineContext, handler)
 }
 
 /**
@@ -78,17 +116,23 @@ internal class Handler<in E : Subscribable>(@JvmField val handler: suspend (E) -
  * 所有的 [BotEvent.bot] `!==` `bot` 的事件都不会被处理
  */
 @PublishedApi
-internal class HandlerWithBot<E : Subscribable>(val bot: Bot, @JvmField val handler: suspend Bot.(E) -> ListeningStatus) :
-    Listener<E>() {
-    override suspend fun onEvent(event: E): ListeningStatus = with(bot) {
-        if (event !is BotEvent || event.bot !== this) {
-            return ListeningStatus.LISTENING
-        }
+internal class HandlerWithBot<E : Subscribable> @PublishedApi internal constructor(
+    val bot: Bot,
+    parentJob: Job?, private val context: CoroutineContext, @JvmField val handler: suspend Bot.(E) -> ListeningStatus
+) :
+    Listener<E>(), CompletableJob by Job(parentJob) {
 
-        return if (bot !== this) {
-            ListeningStatus.LISTENING
-        } else {
-            handler(event)
+    override suspend fun onEvent(event: E): ListeningStatus {
+        if (isCompleted || isCancelled) return ListeningStatus.STOPPED
+        if (!isActive) return ListeningStatus.LISTENING
+
+        if (event !is BotEvent || event.bot !== bot) return ListeningStatus.LISTENING
+
+        return try {
+            withContext(context) { bot.handler(event) }.also { if (it == ListeningStatus.STOPPED) complete() }
+        } catch (e: Throwable) {
+            completeExceptionally(e)
+            ListeningStatus.STOPPED
         }
     }
 }

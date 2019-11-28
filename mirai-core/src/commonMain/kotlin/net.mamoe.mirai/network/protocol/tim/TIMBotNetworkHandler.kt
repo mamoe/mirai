@@ -242,8 +242,8 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
             }
 
             when (packet) {
-                is Cancellable /* Cancellable : Subscribable */ -> if ((packet as Cancellable).broadcast(coroutineContext).cancelled) return
-                is Subscribable -> if ((packet as? BroadcastControllable)?.shouldBroadcast != false) packet.broadcast(coroutineContext)
+                is Cancellable /* Cancellable : Subscribable */ -> if ((packet as Cancellable).broadcast().cancelled) return
+                is Subscribable -> if ((packet as? BroadcastControllable)?.shouldBroadcast != false) packet.broadcast()
             }
 
             // Remove first to release the lock

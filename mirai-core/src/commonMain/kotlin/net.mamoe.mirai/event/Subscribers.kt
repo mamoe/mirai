@@ -17,8 +17,15 @@ import kotlin.reflect.KClass
  */ // Not using enum for Android
 inline class ListeningStatus(inline val listening: Boolean) {
     companion object {
+        /**
+         * 表示继续监听
+         */
         @JvmStatic
         val LISTENING = ListeningStatus(true)
+
+        /**
+         * 表示已停止
+         */
         @JvmStatic
         val STOPPED = ListeningStatus(false)
     }
@@ -29,28 +36,34 @@ inline class ListeningStatus(inline val listening: Boolean) {
 
 /**
  * 订阅所有 [E] 及其子类事件.
- * 在
+ *
+ * 将以当前协程的 job 为父 job 启动监听, 因此, 当当前协程运行结束后, 监听也会结束.
+ * [handler] 将会有当前协程上下文执行, 即会被调用 [subscribe] 时的协程调度器执行
  */
-suspend inline fun <reified E : Subscribable> subscribe(noinline handler: suspend (E) -> ListeningStatus) = E::class.subscribe(handler)
+suspend inline fun <reified E : Subscribable> subscribe(noinline handler: suspend (E) -> ListeningStatus): Listener<E> = E::class.subscribe(handler)
 
-suspend inline fun <reified E : Subscribable> subscribeAlways(noinline listener: suspend (E) -> Unit) = E::class.subscribeAlways(listener)
+suspend inline fun <reified E : Subscribable> subscribeAlways(noinline listener: suspend (E) -> Unit): Listener<E> = E::class.subscribeAlways(listener)
 
-suspend inline fun <reified E : Subscribable> subscribeOnce(noinline listener: suspend (E) -> Unit) = E::class.subscribeOnce(listener)
+suspend inline fun <reified E : Subscribable> subscribeOnce(noinline listener: suspend (E) -> Unit): Listener<E> = E::class.subscribeOnce(listener)
 
-suspend inline fun <reified E : Subscribable, T> subscribeUntil(valueIfStop: T, noinline listener: suspend (E) -> T) =
+suspend inline fun <reified E : Subscribable, T> subscribeUntil(valueIfStop: T, noinline listener: suspend (E) -> T): Listener<E> =
     E::class.subscribeUntil(valueIfStop, listener)
 
-suspend inline fun <reified E : Subscribable> subscribeUntilFalse(noinline listener: suspend (E) -> Boolean) = E::class.subscribeUntilFalse(listener)
-suspend inline fun <reified E : Subscribable> subscribeUntilTrue(noinline listener: suspend (E) -> Boolean) = E::class.subscribeUntilTrue(listener)
-suspend inline fun <reified E : Subscribable> subscribeUntilNull(noinline listener: suspend (E) -> Any?) = E::class.subscribeUntilNull(listener)
+suspend inline fun <reified E : Subscribable> subscribeUntilFalse(noinline listener: suspend (E) -> Boolean): Listener<E> =
+    E::class.subscribeUntilFalse(listener)
+
+suspend inline fun <reified E : Subscribable> subscribeUntilTrue(noinline listener: suspend (E) -> Boolean): Listener<E> = E::class.subscribeUntilTrue(listener)
+suspend inline fun <reified E : Subscribable> subscribeUntilNull(noinline listener: suspend (E) -> Any?): Listener<E> = E::class.subscribeUntilNull(listener)
 
 
-suspend inline fun <reified E : Subscribable, T> subscribeWhile(valueIfContinue: T, noinline listener: suspend (E) -> T) =
+suspend inline fun <reified E : Subscribable, T> subscribeWhile(valueIfContinue: T, noinline listener: suspend (E) -> T): Listener<E> =
     E::class.subscribeWhile(valueIfContinue, listener)
 
-suspend inline fun <reified E : Subscribable> subscribeWhileFalse(noinline listener: suspend (E) -> Boolean) = E::class.subscribeWhileFalse(listener)
-suspend inline fun <reified E : Subscribable> subscribeWhileTrue(noinline listener: suspend (E) -> Boolean) = E::class.subscribeWhileTrue(listener)
-suspend inline fun <reified E : Subscribable> subscribeWhileNull(noinline listener: suspend (E) -> Any?) = E::class.subscribeWhileNull(listener)
+suspend inline fun <reified E : Subscribable> subscribeWhileFalse(noinline listener: suspend (E) -> Boolean): Listener<E> =
+    E::class.subscribeWhileFalse(listener)
+
+suspend inline fun <reified E : Subscribable> subscribeWhileTrue(noinline listener: suspend (E) -> Boolean): Listener<E> = E::class.subscribeWhileTrue(listener)
+suspend inline fun <reified E : Subscribable> subscribeWhileNull(noinline listener: suspend (E) -> Any?): Listener<E> = E::class.subscribeWhileNull(listener)
 
 // endregion
 
@@ -73,13 +86,13 @@ internal suspend fun <E : Subscribable, T> KClass<E>.subscribeUntil(valueIfStop:
     subscribeInternal(Handler { if (listener(it) === valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
 @PublishedApi
-internal suspend fun <E : Subscribable> KClass<E>.subscribeUntilFalse(listener: suspend (E) -> Boolean) = subscribeUntil(false, listener)
+internal suspend inline fun <E : Subscribable> KClass<E>.subscribeUntilFalse(noinline listener: suspend (E) -> Boolean) = subscribeUntil(false, listener)
 
 @PublishedApi
-internal suspend fun <E : Subscribable> KClass<E>.subscribeUntilTrue(listener: suspend (E) -> Boolean) = subscribeUntil(true, listener)
+internal suspend inline fun <E : Subscribable> KClass<E>.subscribeUntilTrue(noinline listener: suspend (E) -> Boolean) = subscribeUntil(true, listener)
 
 @PublishedApi
-internal suspend fun <E : Subscribable> KClass<E>.subscribeUntilNull(listener: suspend (E) -> Any?) = subscribeUntil(null, listener)
+internal suspend inline fun <E : Subscribable> KClass<E>.subscribeUntilNull(noinline listener: suspend (E) -> Any?) = subscribeUntil(null, listener)
 
 
 @PublishedApi
@@ -87,13 +100,13 @@ internal suspend fun <E : Subscribable, T> KClass<E>.subscribeWhile(valueIfConti
     subscribeInternal(Handler { if (listener(it) !== valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
 @PublishedApi
-internal suspend fun <E : Subscribable> KClass<E>.subscribeWhileFalse(listener: suspend (E) -> Boolean) = subscribeWhile(false, listener)
+internal suspend inline fun <E : Subscribable> KClass<E>.subscribeWhileFalse(noinline listener: suspend (E) -> Boolean) = subscribeWhile(false, listener)
 
 @PublishedApi
-internal suspend fun <E : Subscribable> KClass<E>.subscribeWhileTrue(listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
+internal suspend inline fun <E : Subscribable> KClass<E>.subscribeWhileTrue(noinline listener: suspend (E) -> Boolean) = subscribeWhile(true, listener)
 
 @PublishedApi
-internal suspend fun <E : Subscribable> KClass<E>.subscribeWhileNull(listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
+internal suspend inline fun <E : Subscribable> KClass<E>.subscribeWhileNull(noinline listener: suspend (E) -> Any?) = subscribeWhile(null, listener)
 
 // endregion
 
