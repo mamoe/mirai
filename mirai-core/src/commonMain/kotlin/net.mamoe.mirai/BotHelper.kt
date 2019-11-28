@@ -10,7 +10,6 @@ import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
-import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
@@ -36,12 +35,12 @@ suspend inline fun Bot.getGroup(id: GroupId): Group = this.contacts.getGroup(id)
 suspend inline fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.getGroup(internalId)
 
 /**
- * 取得机器人的群成员列表
+ * 取得群列表
  */
 inline val Bot.groups: ContactList<Group> get() = this.contacts.groups
 
 /**
- * 取得机器人的好友列表
+ * 取得好友列表
  */
 inline val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 
