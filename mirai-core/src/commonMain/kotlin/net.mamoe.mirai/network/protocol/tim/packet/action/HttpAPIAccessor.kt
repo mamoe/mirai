@@ -4,12 +4,14 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.userAgent
+import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.GroupId
-import net.mamoe.mirai.utils.configureBody
 
 
 @Suppress("SpellCheckingInspection")
@@ -41,7 +43,18 @@ internal suspend inline fun HttpClient.postImage(
             userAgent("QQClient")
         }
 
-        configureBody(inputSize, imageInput)
+        body = object : OutgoingContent.WriteChannelContent() {
+            override val contentType: ContentType = ContentType.Image.PNG
+            override val contentLength: Long = inputSize
+
+            override suspend fun writeTo(channel: ByteWriteChannel) {
+                val buffer = byteArrayOf(1)
+                repeat(contentLength.toInt()) {
+                    imageInput.readFully(buffer, 0, 1)
+                    channel.writeFully(buffer, 0, 1)
+                }
+            }
+        }
     } == HttpStatusCode.OK
 } finally {
     imageInput.close()

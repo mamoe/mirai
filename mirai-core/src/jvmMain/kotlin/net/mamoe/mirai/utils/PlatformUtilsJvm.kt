@@ -4,13 +4,6 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.get
-import io.ktor.http.ContentType
-import io.ktor.http.content.OutgoingContent
-import kotlinx.coroutines.io.ByteWriteChannel
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
 import java.io.DataInput
 import java.io.EOFException
 import java.io.InputStream
@@ -58,27 +51,3 @@ actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(host
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
 actual val Http: HttpClient get() = HttpClient(CIO)
-
-suspend fun HttpClient.getURL(url: String): ByteReadPacket {
-    return this.get(url)
-}
-
-internal actual fun HttpRequestBuilder.configureBody(
-    inputSize: Long,
-    input: Input
-) {
-    //body = ByteArrayContent(input.readBytes(), ContentType.Image.PNG)
-
-    body = object : OutgoingContent.WriteChannelContent() {
-        override val contentType: ContentType = ContentType.Image.PNG
-        override val contentLength: Long = inputSize
-
-        override suspend fun writeTo(channel: ByteWriteChannel) {//不知道为什么这个 channel 在 common 找不到...
-            val buffer = byteArrayOf(1)
-            repeat(contentLength.toInt()) {
-                input.readFully(buffer, 0, 1)
-                channel.writeFully(buffer, 0, 1)
-            }
-        }
-    }
-}

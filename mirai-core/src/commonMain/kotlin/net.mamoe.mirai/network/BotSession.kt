@@ -86,6 +86,7 @@ abstract class BotSessionBase(
             field = value
             _gtk = getGTK(value)
         }
+    @Suppress("PropertyName")
     internal lateinit var _cookies: String
     private var _gtk: Int = 0
 

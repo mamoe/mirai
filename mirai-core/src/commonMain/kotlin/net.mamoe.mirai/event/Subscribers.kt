@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 
 /**
  * 订阅者的状态
- */
+ */ // Not using enum for Android
 inline class ListeningStatus(inline val listening: Boolean) {
     companion object {
         @JvmStatic

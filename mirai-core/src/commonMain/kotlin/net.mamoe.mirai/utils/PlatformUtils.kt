@@ -4,8 +4,6 @@ package net.mamoe.mirai.utils
 
 import com.soywiz.klock.DateTime
 import io.ktor.client.HttpClient
-import io.ktor.client.request.HttpRequestBuilder
-import kotlinx.io.core.Input
 
 /**
  * 时间戳
@@ -45,7 +43,3 @@ expect fun localIpAddress(): String
  */
 @PublishedApi
 internal expect val Http: HttpClient
-
-
-// FIXME: 2019/10/28 这个方法不是很好的实现
-internal expect fun HttpRequestBuilder.configureBody(inputSize: Long, input: Input)

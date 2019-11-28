@@ -75,8 +75,8 @@ class ImageDownloadInfo(
     @SerialId(13) private val _original: String? = null,
     @SerialId(14) private val _compressed: String? = null
 ) : GroupImageResponse, ImageLink {
-    private val port: List<Byte> get() = _port!!
-    private val host: String get() = "http://" + _host!!
+    private inline val port: List<Byte> get() = _port!!
+    private inline val host: String get() = "http://" + _host!!
 
     val thumbnail: String get() = host + ":" + port.first() + _thumbnail!!
     override val original: String get() = host + ":" + port.first() + _original!!

@@ -2,12 +2,7 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.http.ContentType
-import io.ktor.http.content.OutgoingContent
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.io.ByteWriteChannel
-import kotlinx.io.core.Input
 import java.io.DataInput
 import java.io.EOFException
 import java.io.InputStream
@@ -32,24 +27,6 @@ internal actual val Http: HttpClient
  * Localhost 解析
  */
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
-
-internal actual fun HttpRequestBuilder.configureBody(
-    inputSize: Long,
-    input: Input
-) {
-    body = object : OutgoingContent.WriteChannelContent() {
-        override val contentType: ContentType = ContentType.Image.PNG
-        override val contentLength: Long = inputSize
-
-        override suspend fun writeTo(channel: ByteWriteChannel) {//不知道为什么这个 channel 在 common 找不到...
-            val buffer = byteArrayOf(1)
-            repeat(contentLength.toInt()) {
-                input.readFully(buffer, 0, 1)
-                channel.writeFully(buffer, 0, 1)
-            }
-        }
-    }
-}
 
 /**
  * MD5 算法
