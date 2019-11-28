@@ -59,7 +59,7 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
 /**
  * 只读联系人列表
  */
-class ContactList<C : Contact> internal constructor(private val delegate: MutableContactList<C>) : Map<UInt, C> by delegate {
+class ContactList<C : Contact> internal constructor(internal val delegate: MutableContactList<C>) : Map<UInt, C> by delegate {
     override fun toString(): String = delegate.toString()
 }
 
