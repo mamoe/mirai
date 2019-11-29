@@ -21,9 +21,12 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmOverloads
 
+@Suppress("NOTHING_TO_INLINE", "FunctionName")
+inline fun BotAccount(id: Long, password: String): BotAccount = BotAccount(id.toUInt(), password)
+
 data class BotAccount(
     val id: UInt,
-    val password: String//todo 不保存 password?
+    val password: String
 )
 
 @Suppress("FunctionName")
@@ -34,6 +37,9 @@ suspend inline fun Bot(account: BotAccount): Bot = Bot(account, coroutineContext
 
 @Suppress("FunctionName")
 suspend inline fun Bot(qq: UInt, password: String): Bot = Bot(qq, password, coroutineContext)
+
+@Suppress("FunctionName")
+suspend inline fun Bot(qq: Long, password: String): Bot = Bot(qq.toUInt(), password, coroutineContext)
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
