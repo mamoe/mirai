@@ -130,7 +130,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         } catch (e: Exception) {
             logger.error("Cannot close network handler", e)
         }
-        network = TIMBotNetworkHandler(coroutineContext + configuration, this@Bot)
+        network = TIMBotNetworkHandler(this@Bot.coroutineContext + configuration, this@Bot)
 
         return network.login()
     }
