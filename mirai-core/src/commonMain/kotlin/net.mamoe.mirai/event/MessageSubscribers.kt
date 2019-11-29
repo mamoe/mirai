@@ -149,8 +149,10 @@ class MessageSubscribersBuilder<T : MessagePacket<*>>(
         trim: Boolean = true,
         ignoreCase: Boolean = false,
         noinline onEvent: @MessageDsl suspend T.(String) -> Unit
-    ) =
-        content({ equals.equals(if (trim) it.trim() else it, ignoreCase = ignoreCase) }, onEvent)
+    ) {
+        val toCheck = if (trim) equals.trim() else equals
+        content({ toCheck.equals(if (trim) it.trim() else it, ignoreCase = ignoreCase) }, onEvent)
+    }
 
     /**
      * 如果消息内容包含 [sub], 就执行 [onEvent]
