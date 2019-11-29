@@ -113,7 +113,8 @@ inline fun LoginResult.requireSuccess(lazyMessage: (LoginResult) -> String) {
  * 检查 [this] 为 [LoginResult.SUCCESS].
  * 失败则 [error]
  */
-fun LoginResult.requireSuccess() = requireSuccess { "Login failed: $this" }
+@Suppress("NOTHING_TO_INLINE")
+inline fun LoginResult.requireSuccess() = requireSuccess { "Login failed: $this" }
 
 /**
  * 检查 [this] 为 [LoginResult.SUCCESS].
@@ -121,7 +122,8 @@ fun LoginResult.requireSuccess() = requireSuccess { "Login failed: $this" }
  *
  * @return 成功时 [Unit], 失败时 `null`
  */
-fun LoginResult.requireSuccessOrNull(): Unit? = if (this == SUCCESS) Unit else null
+@Suppress("NOTHING_TO_INLINE")
+inline fun LoginResult.requireSuccessOrNull(): Unit? = if (this == SUCCESS) Unit else null
 
 /**
  * 返回 [this] 是否为 [LoginResult.SUCCESS].

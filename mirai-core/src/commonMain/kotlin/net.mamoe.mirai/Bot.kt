@@ -17,6 +17,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmOverloads
@@ -75,7 +76,8 @@ suspend inline fun Bot(qq: Long, password: String): Bot = Bot(qq.toUInt(), passw
  */
 class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineContext) : CoroutineScope {
     private val supervisorJob = SupervisorJob(context[Job])
-    override val coroutineContext: CoroutineContext = context + supervisorJob
+    override val coroutineContext: CoroutineContext =
+        context + supervisorJob + CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") }
 
     constructor(qq: UInt, password: String, context: CoroutineContext) : this(BotAccount(qq, password), context)
     constructor(account: BotAccount, context: CoroutineContext) : this(account, DefaultLogger("Bot(" + account.id + ")"), context)
@@ -116,10 +118,10 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
      * 然后重新启动并尝试登录
      */
     @JvmOverloads // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
-    fun reinitializeNetworkHandlerAsync(
+    suspend fun reinitializeNetworkHandler(
         configuration: BotConfiguration,
         cause: Throwable? = null
-    ): Deferred<LoginResult> = async {
+    ): LoginResult {
         logger.info("Initializing BotNetworkHandler")
         try {
             if (::network.isInitialized) {
@@ -129,8 +131,19 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
             logger.error("Cannot close network handler", e)
         }
         network = TIMBotNetworkHandler(coroutineContext + configuration, this@Bot)
-        network.login()
+
+        return network.login()
     }
+
+    /**
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
+     * 然后重新启动并尝试登录
+     */
+    @JvmOverloads // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
+    fun reinitializeNetworkHandlerAsync(
+        configuration: BotConfiguration,
+        cause: Throwable? = null
+    ): Deferred<LoginResult> = async { reinitializeNetworkHandler(configuration, cause) }
 
     /**
      * Bot 联系人管理.

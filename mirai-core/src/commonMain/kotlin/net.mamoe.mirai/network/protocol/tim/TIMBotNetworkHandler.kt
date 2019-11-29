@@ -58,8 +58,6 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
     private var heartbeatJob: Job? = null
 
-    private lateinit var userContext: CoroutineContext
-
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
         handlersLock.withLock {
             temporaryPacketHandlers.add(temporaryPacketHandler)
@@ -68,7 +66,6 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
     }
 
     override suspend fun login(): LoginResult {
-        userContext = coroutineContext
         return withContext(this.coroutineContext) {
             TIMProtocol.SERVER_IP.sortedBy { Random.nextInt() }.forEach { ip ->
                 bot.logger.info("Connecting server $ip")
@@ -97,10 +94,6 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
     override lateinit var session: BotSession
 
     //private | internal
-    private fun onLoggedIn() {
-        session = BotSession(sessionKey, socket)
-        bot.logger.info("Successfully logged in")
-    }
 
     private var sessionKey: SessionKey by Delegates.notNull()
 
@@ -379,12 +372,10 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 }
 
                 is TouchPacket.TouchResponse.Redirection -> {
-                    withContext(userContext) {
-                        socket.close()
-                        bot.logger.info("Redirecting to ${packet.serverIP}")
-                        socket = BotSocketAdapter(packet.serverIP!!)
-                        loginResult.complete(socket.resendTouch())
-                    }
+                    socket.close()
+                    bot.logger.info("Redirecting to ${packet.serverIP}")
+                    socket = BotSocketAdapter(packet.serverIP!!)
+                    loginResult.complete(socket.resendTouch())
                 }
 
                 is SubmitPasswordPacket.LoginResponse.Failed -> {
@@ -417,14 +408,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
                     if (packet.unknownBoolean) {
                         this.captchaSectionId = 1
-                        socket.sendPacket(
-                            CaptchaPacket.RequestTransmission(
-                                bot.qqAccount,
-                                this.token0825,
-                                this.captchaSectionId++,
-                                packet.token00BA
-                            )
-                        )
+                        socket.sendPacket(CaptchaPacket.RequestTransmission(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
                     }
                 }
 
@@ -457,17 +441,13 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                             socket.sendPacket(CaptchaPacket.Submit(bot.qqAccount, token0825, code, packet.captchaToken))
                         }
                     } else {
-                        socket.sendPacket(
-                            CaptchaPacket.RequestTransmission(bot.qqAccount, token0825, captchaSectionId++, packet.token00BA)
-                        )
+                        socket.sendPacket(CaptchaPacket.RequestTransmission(bot.qqAccount, token0825, captchaSectionId++, packet.token00BA))
                     }
                 }
 
                 is SubmitPasswordPacket.LoginResponse.Success -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-                    socket.sendPacket(
-                        RequestSessionPacket(bot.qqAccount, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey)
-                    )
+                    socket.sendPacket(RequestSessionPacket(bot.qqAccount, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey))
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的可能之一
@@ -493,6 +473,15 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     sessionKey = packet.sessionKey
                     bot.logger.info("sessionKey = ${sessionKey.value.toUHexString()}")
 
+                    setOnlineStatus(OnlineStatus.ONLINE)//required
+                }
+
+                is ChangeOnlineStatusPacket.ChangeOnlineStatusResponse -> {
+                    BotLoginSucceedEvent(bot).broadcast()
+
+
+                    session = BotSession(sessionKey, socket)
+
                     val configuration = currentBotConfiguration()
                     heartbeatJob = this@TIMBotNetworkHandler.launch {
                         while (socket.isOpen) {
@@ -514,15 +503,8 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                         }
                     }
 
+                    bot.logger.info("Successfully logged in")
                     loginResult.complete(LoginResult.SUCCESS)
-
-                    setOnlineStatus(OnlineStatus.ONLINE)//required
-                }
-
-                is ChangeOnlineStatusPacket.ChangeOnlineStatusResponse -> {
-                    BotLoginSucceedEvent(bot).broadcast()
-
-                    onLoggedIn()
                     this.close()//The LoginHandler is useless since then
                 }
             }

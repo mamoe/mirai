@@ -70,13 +70,13 @@ suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit
     contract {
         callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
     }
-    return this.reinitializeNetworkHandlerAsync(BotConfiguration().apply(configuration)).await()
+    return this.reinitializeNetworkHandler(BotConfiguration().apply(configuration))
 }
 
 /**
  * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回登录结果
  */
-suspend inline fun Bot.login(): LoginResult = this.reinitializeNetworkHandlerAsync(BotConfiguration.Default).await()
+suspend inline fun Bot.login(): LoginResult = this.reinitializeNetworkHandler(BotConfiguration.Default)
 
 /**
  * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回 [this]
@@ -91,7 +91,7 @@ suspend inline fun Bot.alsoLogin(noinline configuration: BotConfiguration.() -> 
     contract {
         callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
     }
-    this.reinitializeNetworkHandlerAsync(BotConfiguration().apply(configuration)).await().requireSuccess()
+    this.reinitializeNetworkHandler(BotConfiguration().apply(configuration)).requireSuccess()
     return this
 }
 
