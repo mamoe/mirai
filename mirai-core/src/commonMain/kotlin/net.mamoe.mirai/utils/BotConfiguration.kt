@@ -7,7 +7,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.protocol.tim.packet.login.TouchPacket.TouchResponse
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmField
+import kotlin.jvm.JvmStatic
 
 /**
  * 验证码处理器. 需挂起(阻塞)直到处理完成验证码.
@@ -69,7 +69,7 @@ class BotConfiguration : CoroutineContext.Element {
         /**
          * 默认的配置实例
          */
-        @JvmField
+        @JvmStatic
         val Default = BotConfiguration()
     }
 
