@@ -11,7 +11,8 @@ inline class PlainText(override val stringValue: String) : Message {
 /**
  * 构造 [PlainText]
  */
-fun String.toMessage(): PlainText = PlainText(this)
+@Suppress("NOTHING_TO_INLINE")
+inline fun String.toMessage(): PlainText = PlainText(this)
 
 /**
  * 得到包含作为 [PlainText] 的 [this] 的 [MessageChain].
@@ -21,4 +22,5 @@ fun String.toMessage(): PlainText = PlainText(this)
  * @see SingleMessageChain
  * @see SingleMessageChainImpl
  */
-fun String.singleChain(): MessageChain = this.toMessage().chain()
+@Suppress("NOTHING_TO_INLINE")
+inline fun String.singleChain(): MessageChain = this.toMessage().chain()
