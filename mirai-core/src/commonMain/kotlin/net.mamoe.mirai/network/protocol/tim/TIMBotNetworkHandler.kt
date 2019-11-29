@@ -381,8 +381,8 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 is TouchPacket.TouchResponse.Redirection -> {
                     withContext(userContext) {
                         socket.close()
-                        socket = BotSocketAdapter(packet.serverIP!!)
                         bot.logger.info("Redirecting to ${packet.serverIP}")
+                        socket = BotSocketAdapter(packet.serverIP!!)
                         loginResult.complete(socket.resendTouch())
                     }
                 }
