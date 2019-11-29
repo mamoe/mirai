@@ -1,9 +1,7 @@
 buildscript {
     repositories {
-        maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
-        mavenLocal()
-        mavenCentral()
         jcenter()
+        mavenCentral()
         google()
     }
 
@@ -28,10 +26,8 @@ allprojects {
 //    }
 
     repositories {
-        maven { url "https://mirrors.huaweicloud.com/repository/maven/" }
-        mavenLocal()
-        mavenCentral()
         jcenter()
+        mavenCentral()
         google()
         maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
         maven { url "https://dl.bintray.com/kotlin/kotlin-dev" }
