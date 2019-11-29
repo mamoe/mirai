@@ -20,6 +20,7 @@ import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 @Suppress("NOTHING_TO_INLINE", "FunctionName")
 inline fun BotAccount(id: Long, password: String): BotAccount = BotAccount(id.toUInt(), password)
@@ -35,6 +36,7 @@ suspend inline fun Bot(account: BotAccount, logger: MiraiLogger): Bot = Bot(acco
 @Suppress("FunctionName")
 suspend inline fun Bot(account: BotAccount): Bot = Bot(account, coroutineContext)
 
+@JvmSynthetic
 @Suppress("FunctionName")
 suspend inline fun Bot(qq: UInt, password: String): Bot = Bot(qq, password, coroutineContext)
 
