@@ -4,5 +4,5 @@ apply plugin: "java"
 dependencies {
     api project(':mirai-core')
     implementation files('../mirai-core/build/classes/kotlin/jvm/main')
-    // mpp targeting android limitation
+    // classpath is not set correctly by IDE
 }
