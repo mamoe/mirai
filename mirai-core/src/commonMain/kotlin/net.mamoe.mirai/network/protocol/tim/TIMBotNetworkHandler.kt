@@ -104,7 +104,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
     override suspend fun close(cause: Throwable?) {
         super.close(cause)
 
-        this.heartbeatJob?.cancelChildren(CancellationException("handler closed"))
+        this.heartbeatJob?.cancel(CancellationException("handler closed"))
         this.heartbeatJob?.join()//等待 cancel 完成
         this.heartbeatJob = null
 
