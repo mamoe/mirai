@@ -3,8 +3,9 @@ package net.mamoe.mirai.utils.internal
 /**
  * 要求 [this] 最小为 [min].
  */
+@Suppress("NOTHING_TO_INLINE")
 @PublishedApi
-internal fun Int.coerceAtLeastOrFail(min: Int): Int {
+internal inline fun Int.coerceAtLeastOrFail(min: Int): Int {
     require(this >= min)
     return this
 }
@@ -12,8 +13,9 @@ internal fun Int.coerceAtLeastOrFail(min: Int): Int {
 /**
  * 要求 [this] 最小为 [min].
  */
+@Suppress("NOTHING_TO_INLINE")
 @PublishedApi
-internal fun Long.coerceAtLeastOrFail(min: Long): Long {
+internal inline fun Long.coerceAtLeastOrFail(min: Long): Long {
     require(this >= min)
     return this
 }
@@ -21,13 +23,15 @@ internal fun Long.coerceAtLeastOrFail(min: Long): Long {
 /**
  * 要求 [this] 最大为 [max].
  */
+@Suppress("NOTHING_TO_INLINE")
 @PublishedApi
-internal fun Int.coerceAtMostOrFail(max: Int): Int =
+internal inline fun Int.coerceAtMostOrFail(max: Int): Int =
     if (this >= max) error("value is greater than its expected maximum value $max")
     else this
 
+@Suppress("NOTHING_TO_INLINE")
 @PublishedApi
-internal fun Long.coerceAtMostOrFail(max: Long): Long =
+internal inline fun Long.coerceAtMostOrFail(max: Long): Long =
     if (this >= max) error("value is greater than its expected maximum value $max")
     else this
 
