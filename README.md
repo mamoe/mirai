@@ -24,7 +24,8 @@ repositories{
 若您需要使用在跨平台项目, 您需要对各个目标平台添加不同的依赖.  
 若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.  
 
-您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)
+您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+Mirai 目前还处于实验性阶段, 建议您时刻保持最新版本.
 
 **common**
 ```kotlin
