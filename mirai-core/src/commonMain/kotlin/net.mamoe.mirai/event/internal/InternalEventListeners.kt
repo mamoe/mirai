@@ -188,36 +188,37 @@ internal object EventListenerManger {
 
 internal suspend fun <E : Subscribable> E.broadcastInternal(): E {
     if (EventDisabled) return this
-    suspend fun callListeners(listeners: EventListeners<in E>) {
-        suspend fun callAndRemoveIfRequired() = listeners.inlinedRemoveIf {
-            if (it.lock.tryLock()) {
-                try {
-                    it.onEvent(this) == ListeningStatus.STOPPED
-                } finally {
-                    it.lock.unlock()
-                }
-            } else false
-        }
-
-        //自己持有, 则是在一个事件中
-        if (listeners.mainMutex.holdsLock(listeners)) {
-            callAndRemoveIfRequired()
-        } else {
-            while (!listeners.mainMutex.tryLock(listeners)) {
-                delay(10)
-            }
-            try {
-                callAndRemoveIfRequired()
-            } finally {
-                listeners.mainMutex.unlock(listeners)
-            }
-        }
-    }
 
     callListeners(this::class.listeners())
 
     applySuperListeners(this::class) { callListeners(it) }
     return this
+}
+
+private suspend inline fun <E : Subscribable> E.callListeners(listeners: EventListeners<in E>) {
+    //自己持有, 则是在一个事件中
+    if (listeners.mainMutex.holdsLock(listeners)) {
+        callAndRemoveIfRequired(listeners)
+    } else {
+        while (!listeners.mainMutex.tryLock(listeners)) {
+            delay(10)
+        }
+        try {
+            callAndRemoveIfRequired(listeners)
+        } finally {
+            listeners.mainMutex.unlock(listeners)
+        }
+    }
+}
+
+private suspend inline fun <E : Subscribable> E.callAndRemoveIfRequired(listeners: EventListeners<in E>) = listeners.inlinedRemoveIf {
+    if (it.lock.tryLock()) {
+        try {
+            it.onEvent(this) == ListeningStatus.STOPPED
+        } finally {
+            it.lock.unlock()
+        }
+    } else false
 }
 
 /**
