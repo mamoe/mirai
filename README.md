@@ -24,7 +24,8 @@ repositories{
 若您需要使用在跨平台项目, 您需要对各个目标平台添加不同的依赖.  
 若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.  
 
-您需要将 `VERSION` 替换为最新的版本: [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)
+您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+Mirai 目前还处于实验性阶段, 建议您时刻保持最新版本.
 
 **common**
 ```kotlin
@@ -75,22 +76,18 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 ## Requirements
 
 #### Run-time 
-所有平台: 
-- Kotlin 1.3.61 (保持最新稳定版)
-
-JVM 平台:
-- JRE 8
+所有平台: Kotlin 1.3.61  
+JVM 平台: JRE 6   
+Android: SDK 15
 
 #### Build Mirai
-所有平台: 
-- Kotlin 1.3.61 (保持最新稳定版)
-
-JVM 平台:
-- Java 11 (OpenJDK 11)
+所有平台:  Kotlin 1.3.61  
+JVM 平台: Java 11 (OpenJDK 11)  
+Android: SDK 15
 
 ### Using Java 
 Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  
-A: 不能.  
+A: 目前不能.  
    Mirai 大量使用协程, 内联, 扩展等 Kotlin 专有特性. 在 Java 调用这些 API 将会非常吃力.  
    因此您必须具有 Kotlin 技术才能正常使用 Mirai.  
 
@@ -106,6 +103,7 @@ Mirai 使用以下开源库:
 - [klock](https://github.com/korlibs/klock)
 - [tornadofx](https://github.com/edvin/tornadofx)
 - [javafx](https://github.com/openjdk/jfx)
+- [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
 
 ## Development Guide - Kotlin
 
@@ -138,7 +136,7 @@ Mirai 使用以下开源库:
 ### Introduction 
 
 Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。  
-Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他框架, 但需注明来源.
+Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他框架, 但需注明来源并遵守开源协议要求.
 
 ### Modules
 Mirai 的模块组成
@@ -146,7 +144,7 @@ Mirai 的模块组成
 #### mirai-core
 Mirai 的核心部分.
 
-- 独立的跨平台设计, 可以被以库的形式内置在任意项目内.
+- 独立跨平台, 可以被以库的形式内置在任意项目内
 - 现有 JVM 与 AndroidLib 支持
 - 未来计划 Native 支持 
 
@@ -333,7 +331,7 @@ subscribeGroupMessages {  }
 ```
 
 另外, 由于 Mirai 可同时维护多个机器人账号, Mirai 也提供了对单个机器人的事件的监听.  
-为了限制只监听来自某个机器人账号的事件, 您只需要在 `subscribeMessages` 前添加 `bot.` 将其修改为调用扩展方法.  
+为了限制只监听来自某个机器人账号的事件, 您只需要在 `subscribeMessages` 前添加 `bot.` 将其修改为调用 `Bot` 下的扩展方法.  
 例:    
 ```kotlin
 bot.subscribeMessages {  }
