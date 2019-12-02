@@ -167,7 +167,7 @@ Samples and demos.
 - GUI Hex 调试器(值转换)
 
 ### Logger
-[Contact](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/MiraiLogger.kt)  
+[Logger](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/MiraiLogger.kt)  
 Mirai 维护跨平台日志系统, 针对平台的实现为 `expect class PlatformLogger`,  
 一般推荐使用顶层的 `var DefaultLogger: (identity: String?) -> PlatformLogger` 通过 `DefaultLogger( ... )` 来创建日志记录器.  
 每个 `Bot` 都拥有一个日志记录器, 可通过 `Bot.logger` 获取
