@@ -1,5 +1,6 @@
 package net.mamoe.mirai.message
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.js.JsName
@@ -85,6 +86,7 @@ fun MessageChain(messages: Iterable<Message>): MessageChain = MessageChainImpl(m
  *
  * @see Message.chain receiver 模式
  */
+@MiraiExperimentalAPI
 @UseExperimental(ExperimentalContracts::class)
 @Suppress("FunctionName")
 fun SingleMessageChain(delegate: Message): MessageChain {
@@ -164,8 +166,7 @@ fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(k
  */
 class EmptyMessageChain : MessageChain {
     private val delegate: MessageChain by lazy {
-        MessageChainImpl()
-            .also { initialized = true }
+        MessageChainImpl().also { initialized = true }
     }
 
     @Volatile
