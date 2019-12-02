@@ -22,9 +22,9 @@ val ktorVersion: String by rootProject.ext
 
 val serializationVersion: String by rootProject.ext
 
-fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:$id:$version"
+fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
-fun ktor(id: String, version: String) = "io.ktor:$id:$version"
+fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 
 description = "Tencent QQ protocol library"
@@ -59,27 +59,27 @@ kotlin {
                 api(kotlin("stdlib", kotlinVersion))
                 api(kotlin("serialization", kotlinVersion))
 
-                api(kotlinx("atomicfu", atomicFuVersion))
-                api(kotlinx("kotlinx-io", kotlinXIoVersion))
-                api(kotlinx("kotlinx-coroutines-io", coroutinesIoVersion))
-                api(kotlinx("kotlinx-coroutines-core", coroutinesVersion))
+                api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+                api(kotlinx("io", kotlinXIoVersion))
+                api(kotlinx("coroutines-io", coroutinesIoVersion))
+                api(kotlinx("coroutines-core", coroutinesVersion))
             }
         }
         commonMain {
             dependencies {
                 api(kotlin("reflect", kotlinVersion))
                 api(kotlin("serialization", kotlinVersion))
-                api(kotlinx("kotlinx-coroutines-core-common", coroutinesVersion))
-                api(kotlinx("kotlinx-serialization-runtime-common", serializationVersion))
+                api(kotlinx("coroutines-core-common", coroutinesVersion))
+                api(kotlinx("serialization-runtime-common", serializationVersion))
 
                 api("com.soywiz.korlibs.klock:klock:$klockVersion")
 
-                api(ktor("ktor-http-cio", ktorVersion))
-                api(ktor("ktor-http", ktorVersion))
-                api(ktor("ktor-client-core-jvm", ktorVersion))
-                api(ktor("ktor-client-cio", ktorVersion))
-                api(ktor("ktor-client-core", ktorVersion))
-                api(ktor("ktor-network", ktorVersion))
+                api(ktor("http-cio", ktorVersion))
+                api(ktor("http", ktorVersion))
+                api(ktor("client-core-jvm", ktorVersion))
+                api(ktor("client-cio", ktorVersion))
+                api(ktor("client-core", ktorVersion))
+                api(ktor("network", ktorVersion))
                 //implementation("io.ktor:ktor-io:1.3.0-beta-1")
             }
         }
@@ -95,10 +95,10 @@ kotlin {
             dependencies {
                 api(kotlin("reflect", kotlinVersion))
 
-                api(kotlinx("kotlinx-serialization-runtime", serializationVersion))
-                api(kotlinx("kotlinx-coroutines-android", coroutinesVersion))
+                api(kotlinx("serialization-runtime", serializationVersion))
+                api(kotlinx("coroutines-android", coroutinesVersion))
 
-                api(ktor("ktor-client-android", ktorVersion))
+                api(ktor("client-android", ktorVersion))
             }
         }
 
@@ -108,9 +108,9 @@ kotlin {
                 api(kotlin("stdlib-jdk7", kotlinVersion))
                 api(kotlin("reflect", kotlinVersion))
 
-                api(ktor("ktor-client-core-jvm", ktorVersion))
-                api(kotlinx("kotlinx-io-jvm", kotlinXIoVersion))
-                api(kotlinx("kotlinx-serialization-runtime", serializationVersion))
+                api(ktor("client-core-jvm", ktorVersion))
+                api(kotlinx("io-jvm", kotlinXIoVersion))
+                api(kotlinx("serialization-runtime", serializationVersion))
             }
         }
 

@@ -23,7 +23,7 @@ rootProject.name = 'mirai'
 include(':mirai-core')
 
 include(':mirai-console')
-include(':mirai-api')
+//include(':mirai-api')
 include(':mirai-api-http')
 include(':mirai-demos:mirai-demo-1')
 include(':mirai-demos:mirai-demo-gentleman')

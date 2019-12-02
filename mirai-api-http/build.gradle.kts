@@ -1,5 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
+
 plugins {
     id("kotlinx-atomicfu")
     kotlin("jvm")
@@ -22,13 +24,9 @@ val ktorVersion: String by rootProject.ext
 
 val serializationVersion: String by rootProject.ext
 
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.kotlinx(id: String, version: String) {
-    implementation("org.jetbrains.kotlinx:$id:$version")
-}
+fun KotlinDependencyHandler.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.ktor(id: String, version: String = ktorVersion) {
-    implementation("io.ktor:$id:$version")
-}
+fun KotlinDependencyHandler.ktor(id: String, version: String = ktorVersion) = "io.ktor:ktor-$id:$version"
 
 kotlin {
 
@@ -37,13 +35,13 @@ kotlin {
         dependencies {
             implementation(project(":mirai-core"))
 
-            kotlin("kotlin-stdlib-jdk8", kotlinVersion)
-            kotlin("kotlin-stdlib-jdk7", kotlinVersion)
-            kotlin("kotlin-reflect", kotlinVersion)
+            implementation(kotlin("stdlib-jdk8", kotlinVersion))
+            implementation(kotlin("stdlib-jdk7", kotlinVersion))
+            implementation(kotlin("reflect", kotlinVersion))
 
-            ktor("ktor-server-cio")
-            kotlinx("kotlinx-io-jvm", kotlinXIoVersion)
-            ktor("ktor-http-jvm")
+            implementation(ktor("server-cio"))
+            implementation(kotlinx("io-jvm", kotlinXIoVersion))
+            implementation(ktor("http-jvm"))
         }
     }
 
@@ -60,16 +58,16 @@ kotlin {
         languageSettings.useExperimentalAnnotation("kotlin.Experimental")
 
         dependencies {
-            kotlin("kotlin-stdlib", kotlinVersion)
-            kotlin("kotlin-serialization", kotlinVersion)
+            implementation(kotlin("stdlib", kotlinVersion))
+            implementation(kotlin("serialization", kotlinVersion))
 
-            kotlinx("atomicfu", atomicFuVersion)
-            kotlinx("kotlinx-io", kotlinXIoVersion)
-            kotlinx("kotlinx-coroutines-io", coroutinesIoVersion)
-            kotlinx("kotlinx-coroutines-core", coroutinesVersion)
-            kotlinx("kotlinx-serialization-runtime", serializationVersion)
-            ktor("ktor-server-core")
-            ktor("ktor-http")
+            implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+            implementation(kotlinx("io", kotlinXIoVersion))
+            implementation(kotlinx("coroutines-io", coroutinesIoVersion))
+            implementation(kotlinx("coroutines-core", coroutinesVersion))
+            implementation(kotlinx("serialization-runtime", serializationVersion))
+            implementation(ktor("server-core"))
+            implementation(ktor("http"))
         }
     }
 }

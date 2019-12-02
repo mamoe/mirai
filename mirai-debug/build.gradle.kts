@@ -35,13 +35,9 @@ kotlin {
     }
 }
 
-fun DependencyHandlerScope.kotlinx(id: String, version: String) {
-    implementation("org.jetbrains.kotlinx:$id:$version")
-}
+fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
-fun DependencyHandlerScope.ktor(id: String, version: String) {
-    implementation("io.ktor:$id:$version")
-}
+fun DependencyHandlerScope.ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 dependencies {
     implementation(project(":mirai-core"))
@@ -51,23 +47,23 @@ dependencies {
 
     implementation("org.pcap4j:pcap4j-distribution:1.8.2")
     implementation("no.tornado:tornadofx:1.7.17")
-    compile(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-javafx", version = "1.3.2")
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-javafx", version = "1.3.2")
 
-    kotlin("kotlin-stdlib", kotlinVersion)
-    kotlinx("atomicfu", atomicFuVersion)
-    kotlinx("kotlinx-io-jvm", kotlinXIoVersion)
-    kotlinx("kotlinx-io", kotlinXIoVersion)
-    kotlinx("kotlinx-coroutines-io", coroutinesIoVersion)
-    kotlinx("kotlinx-coroutines-core", coroutinesVersion)
+    implementation(kotlin("stdlib", kotlinVersion))
+    implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+    implementation(kotlinx("io-jvm", kotlinXIoVersion))
+    implementation(kotlinx("io", kotlinXIoVersion))
+    implementation(kotlinx("coroutines-io", coroutinesIoVersion))
+    implementation(kotlinx("coroutines-core", coroutinesVersion))
 
-    kotlinx("kotlinx-serialization-runtime", serializationVersion)
+    implementation(kotlinx("serialization-runtime", serializationVersion))
 
 
-    ktor("ktor-http-cio", ktorVersion)
-    ktor("ktor-http", ktorVersion)
-    ktor("ktor-client-core-jvm", ktorVersion)
-    ktor("ktor-client-cio", ktorVersion)
-    ktor("ktor-client-core", ktorVersion)
-    ktor("ktor-network", ktorVersion)
+    implementation(ktor("http-cio", ktorVersion))
+    implementation(ktor("http", ktorVersion))
+    implementation(ktor("client-core-jvm", ktorVersion))
+    implementation(ktor("client-cio", ktorVersion))
+    implementation(ktor("client-core", ktorVersion))
+    implementation(ktor("network", ktorVersion))
 
 }
