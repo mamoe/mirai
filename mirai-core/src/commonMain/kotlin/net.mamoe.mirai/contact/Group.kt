@@ -51,7 +51,7 @@ interface Group : Contact, Iterable<Member> {
     /**
      * 获取群成员. 若此 ID 的成员不存在, 则会抛出 [kotlin.NoSuchElementException]
      */
-    suspend fun getMember(id: UInt): Member
+    fun getMember(id: UInt): Member
 
     /**
      * 更新群资料. 群资料会与服务器事件同步事件更新, 一般情况下不需要手动更新.

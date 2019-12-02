@@ -97,6 +97,7 @@ abstract class KnownEventParserAndHandler<TPacket : Packet>(override val id: USh
         FriendAddRequestEventPacket,
         MemberGoneEventPacketHandler,
         ConnectionOccupiedPacketHandler,
-        MemberJoinPacketHandler
+        MemberJoinPacketHandler,
+        MemberMuteEventPacketParserAndHandler
     )
 }

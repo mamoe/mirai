@@ -116,8 +116,8 @@ object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("F7 3C 31 B5 E1 F1 E5 6A FA F7 95 79 AE 19 30 01".hexToBytes())
-    const val qq: UInt = 761025446u
+    val sessionKey: SessionKey = SessionKey("06 23 F8 09 0D 2D 37 BE 2E FE 90 3A 7D E5 8F B1".hexToBytes())
+    const val qq: UInt = 1040400290u
 
     val IgnoredPacketIdList: List<PacketId> = listOf(
         KnownPacketId.FRIEND_ONLINE_STATUS_CHANGE,
@@ -152,7 +152,9 @@ object PacketDebugger {
                                 decodedBody = it.readBytes()
                                 ByteReadPacket(decodedBody)
                             }
-                            .decode(id, sequenceId, DebugNetworkHandler)
+                            .runCatching {
+                                decode(id, sequenceId, DebugNetworkHandler)
+                            }.getOrElse { it.printStackTrace(); null }
                     }
                 }
 

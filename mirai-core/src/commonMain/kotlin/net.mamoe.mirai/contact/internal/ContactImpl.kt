@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "MemberVisibilityCanBePrivate")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.contact.internal
 
@@ -19,6 +19,7 @@ import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.sendPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.io.logStacktrace
 import net.mamoe.mirai.withSession
 import kotlin.coroutines.CoroutineContext
 
@@ -45,6 +46,7 @@ internal suspend fun Group(bot: Bot, groupId: GroupId, context: CoroutineContext
     val info: RawGroupInfo = try {
         bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, groupId.toInternalId(), sessionKey).sendAndExpect() }
     } catch (e: Exception) {
+        e.logStacktrace()
         error("Cannot obtain group info for id ${groupId.value}")
     }
     return GroupImpl(bot, groupId, context).apply { this.info = info.parseBy(this) }
@@ -62,9 +64,9 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     override val announcement: String get() = info.announcement
     override val members: ContactList<Member> get() = info.members
 
-    override suspend fun getMember(id: UInt): Member =
+    override fun getMember(id: UInt): Member =
         if (members.containsKey(id)) members[id]!!
-        else throw NoSuchElementException("No such member whose id is $id in group ${groupId.value.toLong()}")
+        else throw NoSuchElementException("No such member whose id is ${id.toLong()} in group ${groupId.value.toLong()}")
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
@@ -124,5 +126,25 @@ internal data class QQImpl internal constructor(override val bot: Bot, override 
  */
 @PublishedApi
 internal data class MemberImpl(private val delegate: QQ, override val group: Group, override val permission: MemberPermission) : QQ by delegate, Member {
-    override fun toString(): String = "Member(id=${this.id}, permission=$permission)"
+    override fun toString(): String = "Member(id=${this.id}, group=${group.id}, permission=$permission)"
+
+    override suspend fun mute(durationSeconds: Int): Boolean = bot.withSession {
+        require(durationSeconds > 0) { "duration must be greater than 0 second" }
+
+        if (permission == MemberPermission.OWNER) return false
+
+        when (group.getMember(bot.qqAccount).permission) {
+            MemberPermission.MEMBER -> return false
+            MemberPermission.OPERATOR -> if (permission == MemberPermission.OPERATOR) return false
+            MemberPermission.OWNER -> {
+            }
+        }
+
+        GroupPacket.Mute(qqAccount, group.internalId, sessionKey, id, durationSeconds.toUInt()).sendAndExpect<GroupPacket.MuteResponse>()
+        return true
+    }
+
+    override suspend fun unmute(): Unit = bot.withSession {
+        GroupPacket.Mute(qqAccount, group.internalId, sessionKey, id, 0u).sendAndExpect<GroupPacket.MuteResponse>()
+    }
 }

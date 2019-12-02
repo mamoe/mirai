@@ -22,7 +22,7 @@ import java.awt.datatransfer.DataFlavor
 /**
  * How to run:
  *
- * `gradle run`
+ * `gradle :mirai-debug:run`
  */
 class Application : App(HexDebuggerGui::class, Styles::class)
 
@@ -179,7 +179,7 @@ class HexDebuggerGui : View("s") {
 
     override val root = hbox {
         //prefWidth = 735.0
-        minHeight = 240.0
+        minHeight = 300.0
         prefHeight = minHeight
 
         input = textarea {

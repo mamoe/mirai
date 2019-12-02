@@ -50,7 +50,8 @@ data class RawGroupInfo(
             MemberImpl(this@RawGroupInfo.owner.qq(), group, MemberPermission.OWNER),
             this@RawGroupInfo.name,
             this@RawGroupInfo.announcement,
-            ContactList(this@RawGroupInfo.members.mapValuesTo(MutableContactList()) { MemberImpl(it.key.qq(), group, MemberPermission.OWNER) })
+            ContactList(this@RawGroupInfo.members.mapValuesTo(MutableContactList<Member>()) { MemberImpl(it.key.qq(), group, it.value) }
+                .apply { put(owner, MemberImpl(owner.qq(), group, MemberPermission.OWNER)) })
         )
     }
 }
@@ -119,6 +120,29 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
         writeZero(4)
     }
 
+    /**
+     * 禁言群成员
+     */
+    @PacketVersion(date = "2019.12.2", timVersion = "2.3.2 (21173)")
+    fun Mute(
+        bot: UInt,
+        groupInternalId: GroupInternalId,
+        sessionKey: SessionKey,
+        target: UInt,
+        /**
+         * 0 为取消
+         */
+        timeSeconds: UInt
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "MuteMember") {
+        writeUByte(0x7Eu)
+        writeGroup(groupInternalId)
+        writeByte(0x20)
+        writeByte(0x00)
+        writeByte(0x01)
+        writeQQ(target)
+        writeUInt(timeSeconds)
+    }
+
     interface GroupPacketResponse : Packet
 
     @NoLog
@@ -126,11 +150,17 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
         override fun toString(): String = "GroupPacket.MessageResponse"
     }
 
+    @NoLog
+    object MuteResponse : Packet, GroupPacketResponse {
+        override fun toString(): String = "GroupPacket.MuteResponse"
+    }
+
     @PacketVersion(date = "2019.11.27", timVersion = "2.3.2 (21173)")
     @UseExperimental(ExperimentalStdlibApi::class)
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): GroupPacketResponse = handler.bot.withSession {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): GroupPacketResponse {
         return when (readUByte().toUInt()) {
             0x2Au -> MessageResponse
+            0x7Eu -> MuteResponse // 成功: 7E 00 22 96 29 7B;
 
             0x09u -> {
                 if (readByte().toInt() == 0) {

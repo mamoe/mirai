@@ -9,6 +9,7 @@ import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.internal.inlinedRemoveIf
+import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
@@ -98,7 +99,8 @@ internal class Handler<in E : Subscribable>
         return try {
             withContext(context) { handler.invoke(event) }.also { if (it == ListeningStatus.STOPPED) this.complete() }
         } catch (e: Throwable) {
-            this.completeExceptionally(e)
+            e.logStacktrace()
+            //this.completeExceptionally(e)
             ListeningStatus.STOPPED
         }
     }
@@ -131,7 +133,8 @@ internal class HandlerWithBot<E : Subscribable> @PublishedApi internal construct
         return try {
             withContext(context) { bot.handler(event) }.also { if (it == ListeningStatus.STOPPED) complete() }
         } catch (e: Throwable) {
-            completeExceptionally(e)
+            e.logStacktrace()
+            //completeExceptionally(e)
             ListeningStatus.STOPPED
         }
     }

@@ -7,10 +7,7 @@ import kotlinx.io.core.String
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.getGroup
@@ -98,6 +95,7 @@ abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
 
 // region group message
 
+@Suppress("unused")
 data class GroupMessage(
     val group: Group,
     val senderName: String,
@@ -110,6 +108,11 @@ data class GroupMessage(
 ) : MessagePacket<Group>() {
 
     override val subject: Group get() = group
+
+
+    suspend inline fun At.member(): Member = group.getMember(this.target)
+    suspend inline fun UInt.member(): Member = group.getMember(this)
+    suspend inline fun Long.member(): Member = group.getMember(this.toUInt())
 }
 
 @PacketVersion(date = "2019.11.2", timVersion = "2.3.2 (21173)")

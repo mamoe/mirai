@@ -2,6 +2,8 @@
 
 package demo.gentleman
 
+import com.soywiz.klock.months
+import com.soywiz.klock.seconds
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -9,8 +11,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.mute
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.At
 import net.mamoe.mirai.message.Image
@@ -59,16 +63,31 @@ suspend fun main() {
         it.approve()
     }
 
+    bot.subscribeGroupMessages {
+        "群资料" reply {
+            group.updateGroupInfo().toString().reply()
+        }
+
+        startsWith("mt2months") {
+            val at: At by message
+            at.target.member().mute(1.months)
+        }
+
+        startsWith("mute") {
+            val at: At by message
+            at.target.member().mute(30.seconds)
+        }
+
+        startsWith("unmute") {
+            val at: At by message
+            at.target.member().unmute()
+        }
+    }
+
     bot.subscribeMessages {
         case("at me") { At(sender).reply() }
 
         "你好" reply "你好!"
-
-        "群资料" reply {
-            if (this is GroupMessage) {
-                group.updateGroupInfo().toString().reply()
-            }
-        }
 
         startsWith("profile", removePrefix = true) {
             val account = it.trim()
