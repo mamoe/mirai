@@ -27,7 +27,7 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 
-description = "Tencent QQ protocol library"
+description = "QQ protocol library"
 
 kotlin {
     android("android") {
