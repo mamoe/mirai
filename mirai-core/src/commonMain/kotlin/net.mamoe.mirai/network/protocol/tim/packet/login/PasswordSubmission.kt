@@ -167,7 +167,8 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
                             else -> null
                         }
                         else -> null
-                    } ?: error("Unknown length flag: " + flagFront.toUByte().toUHexString() + flagBack.toUByte().toUHexString())
+                    }
+                        ?: error("Unknown length flag: " + flagFront.toUByte().toUHexString() + flagBack.toUByte().toUHexString() + ", remaining packet = ${readBytes().toUHexString()}")
                 )
 
                 discardExact(23 + 3)//01 D3 00 01 00 16 00 00 00 01 00 00 00 64 00 00 0D DE 00 09 3A 80 00
