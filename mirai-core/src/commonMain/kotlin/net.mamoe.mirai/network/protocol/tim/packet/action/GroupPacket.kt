@@ -202,7 +202,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
                     }
 
                     val permission = when (status.takeLowestOneBit()) {
-                        1 -> MemberPermission.OPERATOR
+                        1 -> MemberPermission.ADMINISTRATOR
                         else -> MemberPermission.MEMBER
                     }
                     members[qq] = permission

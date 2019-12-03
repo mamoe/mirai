@@ -70,9 +70,28 @@ enum class MemberPermission {
     /**
      * 管理员
      */
-    OPERATOR,
+    ADMINISTRATOR,
     /**
      * 一般群成员
      */
     MEMBER;
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun MemberPermission.isOwner(): Boolean = this == MemberPermission.OWNER
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun MemberPermission.isAdministrator(): Boolean = this == MemberPermission.ADMINISTRATOR
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun MemberPermission.isAdministratorOrOwner(): Boolean = isAdministrator() || isOwner()
+
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Member.isOwner(): Boolean = this.permission.isOwner()
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Member.isAdministrator(): Boolean = this.permission.isAdministrator()
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Member.isAdministratorOrOwner(): Boolean = this.permission.isAdministratorOrOwner()
