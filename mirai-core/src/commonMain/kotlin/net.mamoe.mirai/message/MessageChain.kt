@@ -38,11 +38,13 @@ interface MessageChain : Message, MutableList<Message> {
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
-    @Suppress("UNCHECKED_CAST")
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
 
 }
 
+/**
+ * 提供一个类型的值. 若不存在则会抛出异常 [NoSuchElementException]
+ */
 inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T = this.first<T>() as T
 
 /**
