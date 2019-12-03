@@ -288,11 +288,8 @@ internal inline class MessageChainImpl constructor(
     private val delegate: MutableList<Message>
 ) : Message, MutableList<Message>,
     MessageChain {
-    //constructor() : this(ArrayList(8))
-    constructor(initialCapacity: Int) : this(ArrayList(initialCapacity))
 
     constructor(vararg messages: Message) : this(messages.toMutableList())
-    constructor(messages: Iterable<Message>) : this(messages.toMutableList())
 
     // region Message override
     override val stringValue: String get() = this.delegate.joinToString("") { it.stringValue }
