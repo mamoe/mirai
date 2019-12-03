@@ -225,9 +225,9 @@ Mirai 中所有的消息均为对象化的 [Message](mirai-core/src/commonMain/k
 - `inline class PlainText : Message` 纯文本
 - `inline class Image : Message` 图片 (将会有独立章节来说明图片的上传等)
 - `inline class Face : Message` 表情 (QQ 自带表情)
+- `inline class At : Message` (仅限群, 将会被 QQ 显示为蓝色的连接)
 
 计划中:  
-- `At` (仅限群, 将会被 QQ 显示为蓝色的连接)
 - `XML`
 - `File` (文件上传)
 
