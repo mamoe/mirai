@@ -90,7 +90,7 @@ Android: SDK 15
 Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  
 A: 目前不能.  
    Mirai 大量使用协程, 内联, 扩展等 Kotlin 专有特性. 在 Java 调用这些 API 将会非常吃力.  
-   因此您必须具有 Kotlin 技术才能正常使用 Mirai.  
+   您必须具有 Kotlin 技术才能正常使用 Mirai.  
 
 #### Libraries used
 Mirai 使用以下开源库:
@@ -125,7 +125,7 @@ Mirai 使用以下开源库:
 - [Contact](#Contact) 联系人
 - [Message](#Message) 消息
   - [MessageChain](#MessageChain) `MessageChain`
-  - [Types](#Types) 消息类型
+  - [Types](#Types-Of-Message) 消息类型
   - [Operators](#Operators) `Message` 一般用法
   - [Extensions](#Extensions) `Message` 的常用扩展方法
 - [Image](#Image) 图片
@@ -145,9 +145,16 @@ Mirai 的模块组成
 #### mirai-core
 Mirai 的核心部分.
 
+- 含全部协议和 `Bot`, `Message`, `Event` 等支持.
 - 独立跨平台, 可以被以库的形式内置在任意项目内
 - 现有 JVM 与 AndroidLib 支持
 - 未来计划 Native 支持 
+
+#### mirai-http-api
+Http API 调用支持. 这是一个单向依赖 `mirai-core` 的模块, 可作为一个附加功能使用.  
+您可以使用其他语言通过 Http API 调用 Mirai.    
+
+开发尚未完成.
 
 #### mirai-console
 - 仅 JVM 平台
@@ -173,55 +180,51 @@ Mirai 维护跨平台日志系统, 针对平台的实现为 `expect class Platfo
 一般推荐使用顶层的 `var DefaultLogger: (identity: String?) -> PlatformLogger` 通过 `DefaultLogger( ... )` 来创建日志记录器.  
 每个 `Bot` 都拥有一个日志记录器, 可通过 `Bot.logger` 获取
 
--日志记录尚不完善, 以后可能会修改-
+*日志记录尚不完善, 以后可能会修改*
 
 ### Bot
 [Bot](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/Bot.kt) 为机器人  
 一个机器人实例只有一个账号.  
-一个机器人实例由多个模块构成.  
-- `BotNetworkHandler` (管理所有网络方面事务, 本文不介绍)
-- `ContactSystem` (管理联系人, 维护一个 `QQ` 列表和一个 `Group` 列表)
 
-Mirai 能同时维护多个机器人账号.
+Mirai 能同时维护多个机器人账号. 
 
-[BotHelper](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/BotHelper.kt) 中存在一些快捷方法  
+[BotHelper](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/BotHelper.kt) 中存在一些快捷方法, 您可以先继续阅读本文再查看捷径.  
 
 ### Contact
 [Contact](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/Contact.kt) 为联系人.  
-虽是联系人, 但它包含 `QQ` 和 `Group`.  
-联系人并不是独立的, 它必须隶属于某个 `Bot`  
+虽是联系人, 但它包含 `QQ`, `Group`, 和 `Member`(群成员).  
+联系人并不是独立的, 它必须隶属于某个 `Bot`.  
 
-**共有方法**:  
-- `sendMessage`(`String`|`Message`|`MessageChain`)
+**共有成员函数**:  
+- `suspend fun sendMessage`(`String`|`Message`|`MessageChain`)
 
 **共有属性**:
-- id (即 QQ 号和群号)
+- `val id: UInt` (即 QQ 号和群号)
 
 注: 为减少出错概率, 联系人的 `id` 均使用无符号整型 `UInt`, 这是 Kotlin 1.3 的一个实验性类型  
 我们建议您在开发中也使用 `UInt`, 以避免产生一些难以发现的问题
 
 ### Message
 Mirai 中所有的消息均为对象化的 [Message](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/Message.kt)  
-实际上, 所有的 `Message` 都是 `inline class`, 保证无性能损失的前提下又不失使用的严谨性和便捷性.  
-`Message` 有大量扩展和相关函数. 本文只介绍使用较多的一部分. 其他函数您也将会在实际开发中通过注释指引了解到.    
+大多数 `Message` 都是 `inline class`, 因此这种模式不会带来性能损失.
 
 #### MessageChain
 
-一条消息为一个 `MessageChain` 对象.  
-`MessageChain` 也是 `Message` 的一种  
-`MessageChain` 实现 `MutableList` 接口.  
+一条发出去的消息或接收到的消息为一个 `MessageChain` 对象, 它实现 `Message` 接口:  
+`interface MessageChain : MutableList<Message>, Message`   
+
+一个普通的 `Message` 不能发送, 只能组成 `MessageChain` 然后发送.
+
 它有多种实现:
-- `inline class MessageChainImpl` 通常的 `MutableList<Message>` 实现
-- `inline class SingleMessageChain` 单个消息的不可变代表包装
-- `object NullMessageChain` 空的不可变实现. 用于替代 `null` 情况  
+- `internal inline class MessageChainImpl : MutableList<Message>, MessageChain`: 通常的实现. 非线程安全.
+- `internal inline class SingleMessageChain : MessageChain`: 用于包装单个 `Message` 为 `MessageChain`. 实例化后不可修改
+- `object NullMessageChain : MessageChain`: 不可变的空集合. 只应改被用于替代 `null` 的情况  
 
-仅 `NullMessageChain` 是公开(public)的. 在开发中无需考虑另外两个的存在, 他们将会在 Mirai 内部合适地使用.
-
-#### Types 
+#### Types of Message 
 现支持的消息类型:  
-- `PlainText` 纯文本
-- `Image` 图片 (将会有独立章节来说明图片的上传等)
-- `Face` 表情 (QQ 自带表情)
+- `inline class PlainText : Message` 纯文本
+- `inline class Image : Message` 图片 (将会有独立章节来说明图片的上传等)
+- `inline class Face : Message` 表情 (QQ 自带表情)
 
 计划中:  
 - `At` (仅限群, 将会被 QQ 显示为蓝色的连接)
@@ -246,9 +249,9 @@ Mirai 中所有的消息均为对象化的 [Message](mirai-core/src/commonMain/k
 |suspend Message.sendTo(Contact)| 发送给联系人 |
 
 ### Image
-考虑到协议需求和内存消耗, Mirai 的所有 API 均使用 [ExternalImage](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/ExternalImage.kt)
-`ExternalImage` 包含图片长宽、大小、格式、文件数据
-您只需通过扩展函数处理图片.
+考虑到协议需求和内存消耗, Mirai 的所有 API 均使用 [ExternalImage](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/ExternalImage.kt)  
+`ExternalImage` 包含图片长宽、大小、格式、文件数据  
+您只需通过扩展函数处理图片.  
 
 | 扩展函数   |  说明  |
 |---| ---|
@@ -256,14 +259,15 @@ Mirai 中所有的消息均为对象化的 [Message](mirai-core/src/commonMain/k
 |suspend ExternalImage.upload():Image | 上传图片并得到 [Image] 消息 |
 |suspend Contact.sendImage(ExternalImage) | 上传图片并发送给指定联系人 |
 
-注: 使用 `upload` 而不是 `toMessage` 作为函数名是为了强调它是一个耗时的过程.
+您无需记忆用法.   
+在监听事件后的事件处理过程中, 您可调用扩展 `image.send()` 来发送图片. 或是调用 `image.upload()` 来上传并得到一个类型为 `Image` 的 `Message` 以便于发送组合类型的消息
 
 #### Image JVM
 
 对于 JVM 平台, Mirai 提供额外的足以应对大多数情况的扩展函数:  
 [ExternalImageJvm](mirai-core/src/jvmMain/kotlin/net.mamoe.mirai/utils/ExternalImageJvm.kt)  
 若有必要, 这些函数将会创建临时文件以避免使用内存缓存图片  
-一下内容中, `IMAGE` 可替换为 `ExternalImage`, `BufferedImage`, `File`, `InputStream`, `URL` 或 `Input` (来自 `kotlinx.io`) 
+以下内容中, `IMAGE` 可替换为 `ExternalImage`, `BufferedImage`, `File`, `InputStream`, `URL` 或 `Input` (来自 `kotlinx.io`) 
 
 转为 `ExternalImage`  
 - `suspend IMAGE.toExternalImage():ExternalImage`
