@@ -6,10 +6,7 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
-import net.mamoe.mirai.utils.io.encryptAndWrite
-import net.mamoe.mirai.utils.io.readIoBuffer
-import net.mamoe.mirai.utils.io.writeHex
-import net.mamoe.mirai.utils.io.writeQQ
+import net.mamoe.mirai.utils.io.*
 
 object CaptchaKey : DecrypterByteArray, DecrypterType<CaptchaKey> {
     override val value: ByteArray = TIMProtocol.key00BA
@@ -125,18 +122,20 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
             }
             0x13u -> {
                 CaptchaResponse.Transmission().apply {
-                    discardExact(9)
-                    captchaToken = readIoBuffer(56)
+                    with(debugPrint("验证码包")) {
+                        discardExact(9)
+                        captchaToken = readIoBuffer(56)
 
-                    val length = readShort()
-                    captchaSectionN = readIoBuffer(length)
+                        val length = readShort()
+                        captchaSectionN = readIoBuffer(length)
 
-                    discardExact(1)
-                    val byte = readByte().toInt()
-                    transmissionCompleted = byte == 0
+                        discardExact(1)
+                        val byte = readByte().toInt()
+                        transmissionCompleted = byte == 0
 
-                    discardExact(remaining - 56 - 2)
-                    token00BA = readBytes(40)
+                        discardExact(remaining - 56 - 2)
+                        token00BA = readBytes(40)
+                    }
                 }
             }
 
