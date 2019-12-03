@@ -91,6 +91,8 @@ abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
     suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
     suspend inline fun Image.download(): ByteReadPacket = getLink().download()
     // endregion
+
+    suspend inline fun At.qq(): QQ = bot.getQQ(this.target)
 }
 
 // region group message
