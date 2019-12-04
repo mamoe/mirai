@@ -17,7 +17,6 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -202,16 +201,6 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
             }
         }
     }
-
-    suspend inline fun Int.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0).toUInt())
-    suspend inline fun Long.qq(): QQ = getQQ(this.coerceAtLeastOrFail(0))
-    suspend inline fun UInt.qq(): QQ = getQQ(this)
-
-    suspend inline fun Int.group(): Group = getGroup(this.coerceAtLeastOrFail(0).toUInt())
-    suspend inline fun Long.group(): Group = getGroup(this.coerceAtLeastOrFail(0))
-    suspend inline fun UInt.group(): Group = getGroup(GroupId(this))
-    suspend inline fun GroupId.group(): Group = getGroup(this)
-    suspend inline fun GroupInternalId.group(): Group = getGroup(this)
 
     @UseExperimental(MiraiInternalAPI::class)
     suspend fun close() {
