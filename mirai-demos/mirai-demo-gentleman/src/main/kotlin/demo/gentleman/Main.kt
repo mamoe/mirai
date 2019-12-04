@@ -132,20 +132,19 @@ suspend fun main() {
         }
 
         has<Image> {
-            if (this is FriendMessage || (this is GroupMessage && this.permission == MemberPermission.ADMINISTRATOR)) {
-                withContext(IO) {
-                    val image: Image by message
-                    // 等同于 val image = message[Image]
+            if (this is FriendMessage || (this is GroupMessage && this.permission == MemberPermission.ADMINISTRATOR)) withContext(IO) {
+                val image: Image by message
+                // 等同于 val image = message[Image]
 
-                    try {
-                        image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
-                        reply(image.id.value + " downloaded")
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        reply(e.message ?: e::class.java.simpleName)
-                    }
+                try {
+                    image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
+                    reply(image.id.value + " downloaded")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    reply(e.message ?: e::class.java.simpleName)
                 }
             }
+
         }
 
         startsWith("上传图片", removePrefix = true) handler@{
