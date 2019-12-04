@@ -8,6 +8,7 @@ import kotlinx.io.core.Input
 import kotlinx.io.core.use
 import kotlinx.io.streams.inputStream
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -23,7 +24,7 @@ import javax.imageio.ImageIO
  * JVM 平台相关扩展
  */
 @UseExperimental(MiraiInternalAPI::class)
-actual abstract class MessagePacket<TSubject : Contact> : MessagePacketBase<TSubject>() {
+actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> : MessagePacketBase<TSender, TSubject>() {
     suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
     suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
     suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)

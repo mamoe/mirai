@@ -48,7 +48,7 @@ object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
         discardExact(2) // 1F 40
 
         return with(matchEventPacketFactory(readUShort())) { parse(handler.bot, eventIdentity) }.also {
-            if (it is MessagePacket<*>) {
+            if (it is MessagePacket<*, *>) {
                 it.botVar = handler.bot
             }
 

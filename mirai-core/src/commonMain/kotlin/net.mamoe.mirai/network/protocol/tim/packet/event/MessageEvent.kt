@@ -17,10 +17,7 @@ import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.printTLVMap
-import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.readTLVMap
-import net.mamoe.mirai.utils.io.readUShortLVByteArray
+import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
 import kotlin.jvm.JvmName
 
@@ -28,10 +25,10 @@ import kotlin.jvm.JvmName
  * 平台相关扩展
  */
 @UseExperimental(MiraiInternalAPI::class)
-expect abstract class MessagePacket<TSubject : Contact>() : MessagePacketBase<TSubject>
+expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
 
 @MiraiInternalAPI
-abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
+abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : EventPacket, BotEvent() {
     internal lateinit var botVar: Bot
 
     override val bot: Bot get() = botVar
@@ -49,7 +46,7 @@ abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
     /**
      * 发送人
      */
-    abstract val sender: QQ
+    abstract val sender: TSender
 
     abstract val message: MessageChain
 
@@ -97,7 +94,7 @@ abstract class MessagePacketBase<TSubject : Contact> : EventPacket, BotEvent() {
 
 // region group message
 
-@Suppress("unused")
+@Suppress("unused", "NOTHING_TO_INLINE")
 data class GroupMessage(
     val group: Group,
     val senderName: String,
@@ -105,16 +102,17 @@ data class GroupMessage(
      * 发送方权限.
      */
     val permission: MemberPermission,
-    override val sender: QQ,
+    override val sender: Member,
     override val message: MessageChain
-) : MessagePacket<Group>() {
+) : MessagePacket<Member, Group>() {
 
     override val subject: Group get() = group
 
-
-    suspend inline fun At.member(): Member = group.getMember(this.target)
-    suspend inline fun UInt.member(): Member = group.getMember(this)
-    suspend inline fun Long.member(): Member = group.getMember(this.toUInt())
+    inline fun At.member(): Member = group.getMember(this.target)
+    inline fun UInt.member(): Member = group.getMember(this)
+    inline fun Long.member(): Member = group.getMember(this.toUInt())
+    override fun toString(): String =
+        "GroupMessage(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
 }
 
 @PacketVersion(date = "2019.11.2", timVersion = "2.3.2 (21173)")
@@ -128,38 +126,43 @@ internal object GroupMessageEventParserAndHandler : KnownEventParserAndHandler<G
         discardExact(48)
         readUShortLVByteArray()
         discardExact(2)//2个0x00
-        val message = readMessageChain()
 
-        var senderPermission: MemberPermission = MemberPermission.MEMBER
-        var senderName = ""
-        val map = readTLVMap(true)
-        if (map.containsKey(18u)) {
-            map.getValue(18u).read {
-                val tlv = readTLVMap(true)
-                senderPermission = when (tlv.takeIf { it.containsKey(0x04u) }?.get(0x04u)?.getOrNull(3)?.toUInt()) {
-                    null -> MemberPermission.MEMBER
-                    0x08u -> MemberPermission.OWNER
-                    0x10u -> MemberPermission.OPERATOR
-                    else -> {
-                        tlv.printTLVMap("TLV(tag=18) Map")
-                        MiraiLogger.warning("Could not determine member permission, default permission MEMBER is being used")
-                        MemberPermission.MEMBER
+        with(this.debugPrint("群消息")) {
+            val message = readMessageChain()
+
+            var senderPermission: MemberPermission = MemberPermission.MEMBER
+            var senderName = ""
+            val map = readTLVMap(true)
+            if (map.containsKey(18u)) {
+                map.getValue(18u).read {
+                    val tlv = readTLVMap(true)
+                    senderPermission = when (tlv.takeIf { it.containsKey(0x04u) }?.get(0x04u)?.getOrNull(3)?.toUInt()) {
+                        null -> MemberPermission.MEMBER
+                        0x08u -> MemberPermission.OWNER
+                        0x10u -> MemberPermission.ADMINISTRATOR
+                        else -> {
+                            tlv.printTLVMap("TLV(tag=18) Map")
+                            MiraiLogger.warning("Could not determine member permission, default permission MEMBER is being used")
+                            MemberPermission.MEMBER
+                        }
                     }
-                }
 
-                senderName = when {
-                    tlv.containsKey(0x01u) -> String(tlv.getValue(0x01u))//这个人的qq昵称
-                    tlv.containsKey(0x02u) -> String(tlv.getValue(0x02u))//这个人的群名片
-                    else -> {
-                        tlv.printTLVMap("TLV(tag=18) Map")
-                        MiraiLogger.warning("Could not determine senderName")
-                        "null"
+                    senderName = when {
+                        tlv.containsKey(0x01u) -> String(tlv.getValue(0x01u))//这个人的qq昵称
+                        tlv.containsKey(0x02u) -> String(tlv.getValue(0x02u))//这个人的群名片
+                        else -> {
+                            tlv.printTLVMap("TLV(tag=18) Map")
+                            MiraiLogger.warning("Could not determine senderName")
+                            "null"
+                        }
                     }
                 }
             }
+
+            val group = bot.getGroup(groupNumber)
+            return GroupMessage(group, senderName, senderPermission, group.getMember(qq), message).apply { this.botVar = bot }
         }
 
-        return GroupMessage(bot.getGroup(groupNumber), senderName, senderPermission, bot.getQQ(qq), message)
     }
 }
 
@@ -174,7 +177,7 @@ data class FriendMessage(
     val previous: Boolean,
     override val sender: QQ,
     override val message: MessageChain
-) : MessagePacket<QQ>(), BroadcastControllable {
+) : MessagePacket<QQ, QQ>(), BroadcastControllable {
     /**
      * 是否应被自动广播. 此为内部 API
      */
@@ -205,7 +208,7 @@ internal object FriendMessageEventParserAndHandler : KnownEventParserAndHandler<
             previous = previous,
             sender = bot.getQQ(identity.from),
             message = message
-        )
+        ).apply { this.botVar = bot }
     }
 }
 // endregion
