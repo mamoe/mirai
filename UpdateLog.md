@@ -1,6 +1,6 @@
 # UpdateLog
 
-## Main version 0
+## Major version 0
 
 开发版本. 频繁更新, 不保证高稳定性
 ### 0.7.0
