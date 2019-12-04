@@ -72,7 +72,7 @@ class Styles : Stylesheet() {
     }
 }
 
-class HexDebuggerGui : View("s") {
+class HexDebuggerGui : View("Mirai Hex Debugger") {
     private lateinit var input: TextArea
     private lateinit var outSize: TextField
     private lateinit var outUVarInt: TextField
@@ -126,6 +126,13 @@ class HexDebuggerGui : View("s") {
                                     .replace("  ", " ")
                                     .replace("_", "")
                                     .replace(",", "")
+                                    .replace("`", "")
+                                    .replace("\"", "")
+                                    .replace("'", "")
+                                    .replace("*", "")
+                                    .replace("\\", "")
+                                    .replace("/", "")
+                                    .replace("-", "")
                             )
                         }
                     }
