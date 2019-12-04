@@ -93,6 +93,8 @@ fun main() {
         listenDevice(localIp, it)
     }
     println("Ready perfectly")
+    println("Using sessionKey = ${sessionKey.value.toUHexString()}")
+    println("Filter QQ = ${qq.toLong()}")
 }
 
 /**
@@ -116,7 +118,7 @@ object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("06 23 F8 09 0D 2D 37 BE 2E FE 90 3A 7D E5 8F B1".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("BF 65 3E 32 F3 74 03 C2 3D A3 4C 15 20 CE 55 2A".hexToBytes())
     const val qq: UInt = 1040400290u
 
     val IgnoredPacketIdList: List<PacketId> = listOf(
