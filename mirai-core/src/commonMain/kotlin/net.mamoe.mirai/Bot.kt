@@ -15,6 +15,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.isSuccess
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.utils.io.logStacktrace
@@ -153,6 +154,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
     inner class ContactSystem internal constructor() {
         val bot: Bot get() = this@Bot
 
+        @UseExperimental(MiraiInternalAPI::class)
         @Suppress("PropertyName")
         internal val _groups = MutableContactList<Group>()
         internal lateinit var groupsUpdater: Job
@@ -161,6 +163,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         val groups: ContactList<Group> = ContactList(_groups)
 
         @Suppress("PropertyName")
+        @UseExperimental(MiraiInternalAPI::class)
         internal val _qqs = MutableContactList<QQ>() //todo 实现群列表和好友列表获取
         internal lateinit var qqUpdaterJob: Job
         private val qqsLock = Mutex()
@@ -172,6 +175,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
          *
          * 注: 这个方法是线程安全的
          */
+        @UseExperimental(MiraiInternalAPI::class)
         suspend fun getQQ(id: UInt): QQ =
             if (_qqs.containsKey(id)) _qqs[id]!!
             else qqsLock.withLock {
@@ -190,6 +194,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
          *
          * 注: 这个方法是线程安全的
          */
+        @UseExperimental(MiraiInternalAPI::class)
         suspend fun getGroup(id: GroupId): Group = id.value.let {
             if (_groups.containsKey(it)) _groups[it]!!
             else groupsLock.withLock {
@@ -208,6 +213,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
     suspend inline fun GroupId.group(): Group = getGroup(this)
     suspend inline fun GroupInternalId.group(): Group = getGroup(this)
 
+    @UseExperimental(MiraiInternalAPI::class)
     suspend fun close() {
         network.close()
         this.coroutineContext.cancelChildren()

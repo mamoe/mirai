@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.Image

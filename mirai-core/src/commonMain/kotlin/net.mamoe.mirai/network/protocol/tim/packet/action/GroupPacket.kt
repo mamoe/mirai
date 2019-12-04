@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
 
@@ -44,6 +45,7 @@ data class RawGroupInfo(
      */
     val members: Map<UInt, MemberPermission>
 ) : GroupPacket.GroupPacketResponse {
+    @UseExperimental(MiraiInternalAPI::class)
     suspend inline fun parseBy(group: Group): GroupInfo = group.bot.withSession {
         return GroupInfo(
             group,

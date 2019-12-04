@@ -3,6 +3,7 @@
 package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.sendMessage
 
 /**
  * 可发送的或从服务器接收的消息.

@@ -8,6 +8,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage

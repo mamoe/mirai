@@ -18,6 +18,7 @@ import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelineInterceptor
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.addFriend
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.getGroup
 import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.utils.io.hexToBytes

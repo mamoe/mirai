@@ -8,6 +8,7 @@ import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.chain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.withSession
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -36,13 +37,11 @@ interface Contact {
      * 速度太快会被服务器屏蔽(无响应). 在测试中不延迟地发送 6 条消息就会被屏蔽之后的数据包 1 秒左右.
      */
     suspend fun sendMessage(message: MessageChain)
-
-
-    //这两个方法应写为扩展函数, 但为方便 import 还是写在这里
-    suspend fun sendMessage(plain: String) = sendMessage(plain.singleChain())
-
-    suspend fun sendMessage(message: Message) = sendMessage(message.chain())
 }
+
+suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.chain())
+
+suspend inline fun Contact.sendMessage(plain: String) = sendMessage(plain.singleChain())
 
 /**
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
@@ -59,7 +58,8 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
 /**
  * 只读联系人列表
  */
-class ContactList<C : Contact> @PublishedApi internal constructor(internal val mutable: MutableContactList<C>) : Map<UInt, C> {
+@UseExperimental(MiraiInternalAPI::class)
+inline class ContactList<C : Contact>(internal val mutable: MutableContactList<C>) : Map<UInt, C> {
     /**
      * ID 列表的字符串表示.
      * 如:
@@ -87,13 +87,11 @@ class ContactList<C : Contact> @PublishedApi internal constructor(internal val m
 /**
  * 可修改联系人列表. 只会在内部使用.
  */
-@PublishedApi
-internal class MutableContactList<C : Contact> : MutableMap<UInt, C> {
+@MiraiInternalAPI
+inline class MutableContactList<C : Contact>(private val delegate: MutableMap<UInt, C> = linkedMapOf()) : MutableMap<UInt, C> {
     override fun toString(): String = asIterable().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")") { it.value.toString() }
 
-
     // TODO: 2019/12/2 应该使用属性代理, 但属性代理会导致 UInt 内联错误. 等待 kotlin 修复后替换
-    private val delegate = linkedMapOf<UInt, C>()
 
     override val size: Int get() = delegate.size
     override fun containsKey(key: UInt): Boolean = delegate.containsKey(key)
