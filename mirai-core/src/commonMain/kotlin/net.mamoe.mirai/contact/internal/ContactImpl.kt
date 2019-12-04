@@ -135,7 +135,7 @@ internal data class MemberImpl(private val delegate: QQ, override val group: Gro
 
         when (group.getMember(bot.qqAccount).permission) {
             MemberPermission.MEMBER -> return false
-            MemberPermission.OPERATOR -> if (permission == MemberPermission.OPERATOR) return false
+            MemberPermission.ADMINISTRATOR -> if (permission == MemberPermission.ADMINISTRATOR) return false
             MemberPermission.OWNER -> {
             }
         }
