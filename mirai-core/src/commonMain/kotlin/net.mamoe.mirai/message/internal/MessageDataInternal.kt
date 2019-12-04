@@ -115,8 +115,7 @@ private fun String.adjustImageId() =
 
 internal fun ByteReadPacket.readMessage(): Message? {
     val messageType = this.readByte().toInt()
-    val sectionLength = this.readShort()
-    val sectionData = this.readIoBuffer(sectionLength.toInt())
+    val sectionData = this.readIoBuffer(this.readShort().toInt())
 
     return try {
         when (messageType) {
@@ -140,11 +139,19 @@ internal fun ByteReadPacket.readMessage(): Message? {
                 // sectionData.parseLongText0x19()
             }
 
+            // XML
+            /*
+             * 19 [01 AD] 01 01 AA 9A 03 A6 03 0A A3 03 01 78 9C A5 91 CB 4E E3 30 14 86 5F A5 F2 BA 4A 93 A6 49 DA EE 59 B1 06 69 34 42 95 9B B8 25 D0 D8 C6 71 5A 31 A8 52 C5 02 CA C0 86 E1 BA E0 22 16 08 21 2A 71 D9 50 31 C3 D3 10 37 E5 2D 38 4E 87 D9 CC 12 59 B2 74 FE F3 FB 3B FF 91 37 10 E6 1C D5 91 CF 22 43 12 EA 13 2A 8D 58 8A C4 97 51 DC 46 45 D0 69 2B 6C A3 FA 06 C2 89 64 71 F8 83 A0 3A B4 09 74 64 18 41 61 39 9E 63 7B AE 57 AE 14 51 8B 89 1E 16 C1 A7 43 B2 55 42 81 6D D7 1C DF B3 3C DB 2A BB 2D AB EA 60 D7 0D AA 15 B3 59 29 37 2B 6E 15 9B 4D 18 23 D7 39 B0 10 65 22 C2 1D D4 2F A2 80 C4 3E 08 93 E3 87 F7 93 DF 60 88 88 C4 3A 05 25 BD 38 4F 03 E3 99 86 43 0F D3 40 B0 30 68 F0 D5 76 83 62 1D 2A 57 39 6F CC B0 56 5E 84 90 CB 32 CD 9A 63 79 9E FB 6F 80 7A 7E 9A DE 6C 66 67 BB B6 63 9A 46 2D 1D 6F 4F 46 57 F0 7A 25 89 F8 82 E8 80 63 59 4A 5E 2F 95 12 D1 31 7C 5A 72 F8 5C 3C 9F AC 80 83 0B D2 0D 49 EF 7F 87 DB B5 BF 2D AE 81 23 66 89 F0 49 23 F4 3F 83 FE 15 92 9C AB B7 C6 6D 1D E1 E0 50 1D DC CE 6E 2D 86 B2 A3 57 78 1B FC 54 C3 81 DA D9 CF AE 2F D4 E5 65 21 1B 3E A6 E3 D7 74 7C 9E DD 6F 17 D4 9F CD EC 68 6F 32 3C 4D 5F 76 DE 06 BB D9 68 54 9D DE 9F 17 A6 57 03 F5 6B 4F ED BF A2 7E 5F 27 64 11 97 80 FA AE 86 5B E9 CB DD D2 D7 90 45 D4 25 02 68 A6 A1 8F A5 EB D9 FE F9 9F F4 3F 00 FB FE EF 17
+             *
+             * 01 00 89 01 00 86 5B E5 88 86 E4 BA AB 5D E3 80 8A E5 88 80 E5 89 91 E7 A5 9E E5 9F 9F 20 E7 88 B1 E4 B8 BD E4 B8 9D E7 AF 87 20 E5 BC 82 E7 95 8C E6 88 98 E4 BA 89 E3 80 8B E7 AC AC 38 E8 AF 9D 20 E8 A1 80 E5 92 8C E5 91 BD 0A E5 B7 B2 E8 A7 82 E7 9C 8B 33 35 30 30 2E 39 E4 B8 87 E6 AC A1 0A 68 74 74 70 3A 2F 2F 75 72 6C 2E 63 6E 2F 35 70 45 73 4B 75 6A 0A E6 9D A5 E8 87 AA 3A 20 E5 93 94 E5 93 A9 E5 93 94 E5 93 A9
+             *
+             * 19 00 42 01 00 3F AA 02 3C 08 00 50 03 60 00 68 00 88 01 00 9A 01 2E 08 09 20 BF 50 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 90 04 80 0B 0E 00 0E 01 00 04 00 00 00 09 0A 00 04 00 00 00 00 12 00 25 05 00 04 00 00 00 01 08 00 04 00 00 00 01 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 10
+             */
+
 
             0x14 -> {//长文本的后一部分? 总长度 0x0175=373, body长度=0x016B=363
 //14  01  75  01  01  6B  01  78  9C  CD  92  4D  4F  C2  30  18  C7  EF  7E  8A  A6  1E  C9  64  83  B1  CD  A4  1B  E1  4D  19  8A  C6  20  11  BC  98  39  3A  A8  EE  C5  74  1D  20  37  6E  46  0F  C6  83  37  8D  31  D1  83  89  51  4F  DE  F8  38  4C  3E  86  1D  62  3C  7A  D4  7F  93  26  7D  DA  7F  9F  A7  BF  A7  28  3F  F4  5C  D0  C7  34  24  81  AF  43  69  45  84  00  FB  76  D0  21  7E  57  87  11  73  04  0D  E6  8D  25  C0  85  BC  B0  0B  0E  29  C1  8E  0E  57  FE  B9  20  F0  0E  1C  E2  E2  2D  CB  C3  3A  D4  A4  D5  72  A9  58  58  13  24  AD  A4  0A  B2  22  E5  84  42  59  91  85  9C  52  C8  2A  62  46  14  65  59  FD  76  34  C8  88  3B  38  05  CB  66  73  24  7D  82  07  F5  C8  65  A4  1E  76  21  70  5C  8B  73  C9  42  10  62  DA  27  36  36  CB  7C  95  4B  CC  14  87  A4  A3  C3  AA  B4  CE  82  63  B5  46  54  8D  A4  EC  F6  20  F4  68  D8  21  C5  ED  7D  B5  B9  A1  0D  46  4D  33  E5  8F  86  47  AD  DA  6E  73  2F  D3  3B  91  2B  55  53  A9  6C  B6  76  AC  96  DD  20  38  DB  36  21  30  00  22  0C  7B  C0  B5  4E  83  88  F1  9E  40  1E  61  84  B9  D8  00  7F  CD  F5  37  01  94  5E  54  0A  50  8F  1A  28  CD  A7  45  F1  C0  0E  DC  80  EA  70  59  13  93  C1  1F  15  DF  3D  7E  DC  5C  48  F1  ED  FD  6C  F2  3C  BD  BC  8A  DF  CF  E2  F1  2B  F8  B9  03  A5  13  10  06  0A  83  88  DA  18  F8  F3  66  CE  C6  E7  D3  87  A7  D9  CB  DB  74  72  0D  79  86  AF  CD  E4  30  FF  9F  C6  27  23  A2  C1  36  02  00  04  00  00  00  23  0E  00  07  01  00  04  00  00  00  09
 
-                //是否要用 sectionData.read?
                 discardExact(1)
                 val value = readUShortLVByteArray()
                 println(value.size)
@@ -179,7 +186,7 @@ fun ByteReadPacket.readMessageChain(): MessageChain {
         if (this.remaining == 0L) {
             return chain
         }
-    } while (this.readMessage().takeIf { it != null }?.let { chain.concat(it) } != null)
+    } while (this.readMessage().takeIf { it != null }?.let { chain.followedBy(it) } != null)
     return chain
 }
 
