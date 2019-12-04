@@ -118,7 +118,7 @@ suspend fun Bot.messageDSL() {
 
 
         // 如果是这个 QQ 号发送的消息(可以是好友消息也可以是群消息)
-        sentBy(1040400290) {
+        sentBy(123456789) {
         }
 
 
