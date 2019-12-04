@@ -1,13 +1,14 @@
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * 平台相关扩展
  */
 @UseExperimental(MiraiInternalAPI::class)
-actual abstract class MessagePacket<TSubject : Contact> : MessagePacketBase<TSubject>() {
+actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> : MessagePacketBase<TSender, TSubject>() {
     //   suspend inline fun uploadImage(image: Bitmap): Image = subject.uploadImage(image)
     //suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
     //suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)
