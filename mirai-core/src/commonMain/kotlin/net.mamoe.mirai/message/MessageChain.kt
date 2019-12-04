@@ -22,11 +22,11 @@ interface MessageChain : Message, MutableList<Message> {
     override val stringValue: String
 
     override operator fun contains(sub: String): Boolean
-    override fun concat(tail: Message): MessageChain
+    override fun followedBy(tail: Message): MessageChain
     // endregion
 
     operator fun plusAssign(message: Message) {
-        this.concat(message)
+        this.followedBy(message)
     }
 
     operator fun plusAssign(plain: String) {
@@ -162,7 +162,7 @@ fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(k
  *
  * 它不包含任何元素, 但维护一个 'lazy' 的 [MessageChainImpl].
  *
- * 只有在必要的时候(如迭代([iterator]), 插入([add]), 连接([concat], [plus], [plusAssign]))才会创建这个对象代表的 list
+ * 只有在必要的时候(如迭代([iterator]), 插入([add]), 连接([followedBy], [plus], [plusAssign]))才会创建这个对象代表的 list
  *
  * 它是一个正常的 [Message] 和 [MessageChain]. 可以做所有 [Message] 能做的事.
  */
@@ -187,7 +187,7 @@ class EmptyMessageChain : MessageChain {
 
     override fun contains(sub: String): Boolean = if (initialized) delegate.contains(sub) else false
     override fun contains(element: Message): Boolean = if (initialized) delegate.contains(element) else false
-    override fun concat(tail: Message): MessageChain = delegate.concat(tail)
+    override fun followedBy(tail: Message): MessageChain = delegate.followedBy(tail)
 
     override val size: Int = if (initialized) delegate.size else 0
     override fun containsAll(elements: Collection<Message>): Boolean =
@@ -244,7 +244,7 @@ object NullMessageChain : MessageChain {
 
     override fun contains(sub: String): Boolean = false
     override fun contains(element: Message): Boolean = false
-    override fun concat(tail: Message): MessageChain =
+    override fun followedBy(tail: Message): MessageChain =
         MessageChainImpl(tail)
 
     override val size: Int = 0
@@ -297,8 +297,9 @@ internal inline class MessageChainImpl constructor(
     override fun toString(): String = stringValue
 
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
-    override fun concat(tail: Message): MessageChain {
-        if (tail is MessageChain) tail.forEach { child -> this.concat(child) }
+    override fun followedBy(tail: Message): MessageChain {
+        require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
+        if (tail is MessageChain) tail.forEach { child -> this.followedBy(child) }
         else this.delegate.add(tail)
         return this
     }
@@ -345,9 +346,11 @@ internal inline class SingleMessageChainImpl(
     override val stringValue: String get() = this.delegate.stringValue
 
     override operator fun contains(sub: String): Boolean = delegate.contains(sub)
-    override fun concat(tail: Message): MessageChain =
-        if (tail is MessageChain) tail.apply { concat(delegate) }
+    override fun followedBy(tail: Message): MessageChain {
+        require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
+        return if (tail is MessageChain) tail.apply { followedBy(delegate) }
         else MessageChain(delegate, tail)
+    }
 
     override fun plusAssign(message: Message) =
         throw UnsupportedOperationException("SingleMessageChainImpl cannot be plusAssigned")

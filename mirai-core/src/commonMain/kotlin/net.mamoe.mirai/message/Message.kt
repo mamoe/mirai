@@ -93,13 +93,21 @@ interface Message {
      * println(c)// "Hello world!"
      * ```
      */
-    fun concat(tail: Message): MessageChain =
-        if (tail is MessageChain) tail.concat(this)/*MessageChainImpl(this).also { tail.forEach { child -> it.concat(child) } }*/
+    fun followedBy(tail: Message): MessageChain {
+        require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
+        require(this !is SingleOnly) { "SingleOnly Message cannot be followed" }
+        return if (tail is MessageChain) tail.followedBy(this)/*MessageChainImpl(this).also { tail.forEach { child -> it.concat(child) } }*/
         else MessageChainImpl(this, tail)
+    }
 
-    operator fun plus(another: Message): MessageChain = this.concat(another)
-    operator fun plus(another: String): MessageChain = this.concat(another.toMessage())
+    operator fun plus(another: Message): MessageChain = this.followedBy(another)
+    operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
 }
+
+/**
+ * 表示这个 [Message] 仅能单个存在, 无法被连接.
+ */
+interface SingleOnly : Message
 
 /**
  * 将 [this] 发送给指定联系人
