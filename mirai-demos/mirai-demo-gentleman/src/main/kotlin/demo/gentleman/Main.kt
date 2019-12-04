@@ -16,10 +16,7 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.message.At
-import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.message.getValue
-import net.mamoe.mirai.message.sendAsImageTo
+import net.mamoe.mirai.message.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
 import net.mamoe.mirai.network.protocol.tim.packet.event.ReceiveFriendAddRequestEvent
@@ -98,8 +95,41 @@ suspend fun main() {
             }.queryProfile().toString().reply()
         }
 
+        "xml" reply {
+
+            val template =
+                """
+        <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+        <msg templateID='1' serviceID='1' action='plugin' actionData='ACTION_LINK' brief='BRIEF' flag='3' url=''>
+            <item bg='0' layout='4'>
+                <picture cover='TITLE_PICTURE_LINK'/>
+                <title size='30' color='#fc7299'>TITLE</title>
+            </item>
+            <item>
+                <summary color='#fc7299'>CONTENT</summary>
+                <picture cover='CONTENT_PICTURE_LINK'/>
+            </item>
+            <source name='ExHentai' icon='ExHentai'/>
+        </msg>
+    """.trimIndent()
+
+            buildXMLMessage {
+                item {
+                    picture("http://img.mamoe.net/2019/12/03/be35ccb489ecb.jpg")
+                    title("This is title")
+                }
+
+                item {
+                    summary("This is a summary colored #66CCFF", color = "#66CCFF")
+                    picture("http://img.mamoe.net/2019/12/03/74c8614c4a161.jpg")
+                }
+
+                source("Mirai", "http://img.mamoe.net/2019/12/03/02eea0f6e826a.png")
+            }.reply()
+        }
+
         has<Image> {
-            if (this is FriendMessage || (this is GroupMessage && this.permission == MemberPermission.OPERATOR)) {
+            if (this is FriendMessage || (this is GroupMessage && this.permission == MemberPermission.ADMINISTRATOR)) {
                 withContext(IO) {
                     val image: Image by message
                     // 等同于 val image = message[Image]
