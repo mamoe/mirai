@@ -137,9 +137,9 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 无任何触发条件.
      */
     @MessageDsl
-    suspend inline fun always(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
+    suspend inline fun always(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
         content({ true }, onEvent)
-    }
+    } // TODO: 2019/12/4 这些 onEvent 都应该为 crossinline, 而这会导致一个 CompilationException
 
     /**
      * 如果消息内容 `==` [equals], 就执行 [onEvent]
@@ -151,7 +151,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         equals: String,
         trim: Boolean = true,
         ignoreCase: Boolean = false,
-        crossinline onEvent: @MessageDsl suspend T.(String) -> Unit
+        noinline onEvent: @MessageDsl suspend T.(String) -> Unit
     ) {
         val toCheck = if (trim) equals.trim() else equals
         content({ toCheck.equals(if (trim) it.trim() else it, ignoreCase = ignoreCase) }, onEvent)
@@ -161,7 +161,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果消息内容包含 [sub], 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun contains(sub: String, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) = content({ sub in it }, onEvent)
+    suspend inline fun contains(sub: String, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) = content({ sub in it }, onEvent)
 
     /**
      * 如果消息的前缀是 [prefix], 就执行 [onEvent]
@@ -170,7 +170,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     suspend inline fun startsWith(
         prefix: String,
         removePrefix: Boolean = true,
-        crossinline onEvent: @MessageDsl suspend T.(String) -> Unit
+        noinline onEvent: @MessageDsl suspend T.(String) -> Unit
     ) =
         content({ it.startsWith(prefix) }) {
             if (removePrefix) this.onEvent(this.message.stringValue.substringAfter(prefix))
@@ -181,68 +181,68 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果消息的结尾是 [suffix], 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun endsWith(suffix: String, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun endsWith(suffix: String, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ it.endsWith(suffix) }, onEvent)
 
     /**
      * 如果是这个人发的消息, 就执行 [onEvent]. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
-    suspend inline fun sentBy(qqId: UInt, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun sentBy(qqId: UInt, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ sender.id == qqId }, onEvent)
 
     /**
      * 如果是这个人发的消息, 就执行 [onEvent]. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
-    suspend inline fun sentBy(qqId: Long, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) = sentBy(qqId.toUInt(), onEvent)
+    suspend inline fun sentBy(qqId: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) = sentBy(qqId.toUInt(), onEvent)
 
     /**
      * 如果是管理员或群主发的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentByOperator(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun sentByOperator(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ this is GroupMessage && sender.permission.isOperator() }, onEvent)
 
     /**
      * 如果是管理员发的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentByAdministrator(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun sentByAdministrator(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ this is GroupMessage && sender.permission.isAdministrator() }, onEvent)
 
     /**
      * 如果是群主发的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentByOwner(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun sentByOwner(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ this is GroupMessage && sender.permission.isOwner() }, onEvent)
 
     /**
      * 如果是来自这个群的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentFrom(id: UInt, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun sentFrom(id: UInt, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ if (this is GroupMessage) group.id == id else false }, onEvent)
 
     /**
      * 如果是来自这个群的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentFrom(id: Long, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) = sentFrom(id.toUInt(), onEvent)
+    suspend inline fun sentFrom(id: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) = sentFrom(id.toUInt(), onEvent)
 
     /**
      * 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun <reified M : Message> has(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun <reified M : Message> has(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         subscriber { if (message.any<M>()) onEvent(this) }
 
     /**
      * 如果 [filter] 返回 `true` 就执行 `onEvent`
      */
     @MessageDsl
-    suspend inline fun content(crossinline filter: T.(String) -> Boolean, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun content(noinline filter: T.(String) -> Boolean, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         subscriber { if (this.filter(message.stringValue)) onEvent(this) }
 
     /**
@@ -260,7 +260,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun String.containsReply(crossinline replier: AnyReplier<T>) =
+    suspend inline infix fun String.containsReply(noinline replier: AnyReplier<T>) =
         content({ this@containsReply in it }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
             executeAndReply(replier)
@@ -280,7 +280,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他类型则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun String.startsWithReply(crossinline replier: AnyReplier<T>) {
+    suspend inline infix fun String.startsWithReply(noinline replier: AnyReplier<T>) {
         val toCheck = this.trimStart()
         content({ it.trimStart().startsWith(toCheck) }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
@@ -304,7 +304,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun String.endswithReply(crossinline replier: AnyReplier<T>) {
+    suspend inline infix fun String.endswithReply(noinline replier: AnyReplier<T>) {
         val toCheck = this.trimEnd()
         content({ it.endsWith(this@endswithReply) }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
@@ -320,14 +320,14 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     }
 
     @MessageDsl
-    suspend inline infix fun String.reply(crossinline replier: AnyReplier<T>) = case(this) {
+    suspend inline infix fun String.reply(noinline replier: AnyReplier<T>) = case(this) {
         @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
         executeAndReply(replier)
     }
 
     @PublishedApi
     @Suppress("NOTHING_TO_INLINE")
-    internal suspend inline fun T.executeAndReply(crossinline replier: AnyReplier<T>) {
+    internal suspend inline fun T.executeAndReply(noinline replier: AnyReplier<T>) {
         when (val message = replier(this)) {
             is Message -> this.reply(message)
             is Unit -> {
