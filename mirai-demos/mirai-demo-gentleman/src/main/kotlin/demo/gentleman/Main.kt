@@ -9,7 +9,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.*
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.addFriend
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.mute
 import net.mamoe.mirai.event.Subscribable
@@ -89,7 +92,7 @@ suspend fun main() {
         startsWith("profile", removePrefix = true) {
             val account = it.trim()
             if (account.isNotEmpty()) {
-                bot.getQQ(account.toUInt())
+                account.toUInt().qq()
             } else {
                 sender
             }.queryProfile().toString().reply()

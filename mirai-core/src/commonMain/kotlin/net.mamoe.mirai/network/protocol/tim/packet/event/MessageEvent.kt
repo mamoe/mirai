@@ -17,6 +17,7 @@ import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
 import kotlin.jvm.JvmName
@@ -90,6 +91,16 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : EventPacket
     // endregion
 
     suspend inline fun At.qq(): QQ = bot.getQQ(this.target)
+
+    suspend inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.qq(): QQ = bot.getQQ(this)
+
+    suspend inline fun Int.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.group(): Group = bot.getGroup(GroupId(this))
+    suspend inline fun GroupId.group(): Group = bot.getGroup(this)
+    suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
 }
 
 // region group message
