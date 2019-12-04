@@ -40,18 +40,17 @@ data class RawGroupInfo(
     val name: String,
     val announcement: String,
     /**
-     * 不含群主
+     * 含群主
      */
     val members: Map<UInt, MemberPermission>
 ) : GroupPacket.GroupPacketResponse {
     suspend inline fun parseBy(group: Group): GroupInfo = group.bot.withSession {
-        GroupInfo(
+        return GroupInfo(
             group,
             MemberImpl(this@RawGroupInfo.owner.qq(), group, MemberPermission.OWNER),
             this@RawGroupInfo.name,
             this@RawGroupInfo.announcement,
-            ContactList(this@RawGroupInfo.members.mapValuesTo(MutableContactList<Member>()) { MemberImpl(it.key.qq(), group, it.value) }
-                .apply { put(owner, MemberImpl(owner.qq(), group, MemberPermission.OWNER)) })
+            ContactList(this@RawGroupInfo.members.mapValuesTo(MutableContactList()) { MemberImpl(it.key.qq(), group, it.value) })
         )
     }
 }
@@ -207,6 +206,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
                     }
                     members[qq] = permission
                 } while (qq != stop && remaining != 0L)
+                members[owner] = MemberPermission.OWNER
                 return RawGroupInfo(group, owner, groupName, announcement, members)
                 /*
                  * 群 Mirai
