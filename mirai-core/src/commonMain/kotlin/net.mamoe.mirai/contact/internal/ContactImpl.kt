@@ -73,7 +73,7 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     }
 
     override suspend fun updateGroupInfo(): GroupInfo = bot.withSession {
-        GroupPacket.QueryGroupInfo(qqAccount, internalId, sessionKey).sendAndExpect<RawGroupInfo>().parseBy(this@GroupImpl)
+        GroupPacket.QueryGroupInfo(qqAccount, internalId, sessionKey).sendAndExpect<RawGroupInfo>().parseBy(this@GroupImpl).also { info = it }
     }
 
     override suspend fun quit(): QuitGroupResponse = bot.withSession {
@@ -84,17 +84,17 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     override suspend fun CoroutineContext.startUpdater() {
         subscribeAlways<MemberJoinEventPacket> {
             // FIXME: 2019/11/29 非线程安全!!
-            members.delegate[it.member.id] = it.member
+            members.mutable[it.member.id] = it.member
         }
         subscribeAlways<MemberQuitEvent> {
             // FIXME: 2019/11/29 非线程安全!!
-            members.delegate.remove(it.member.id)
+            members.mutable.remove(it.member.id)
         }
     }
 
     override fun toString(): String = "Group(${this.id})"
 
-    override fun iterator(): Iterator<Member> = members.delegate.values.iterator()
+    override fun iterator(): Iterator<Member> = members.values.iterator()
 }
 
 internal data class QQImpl internal constructor(override val bot: Bot, override val id: UInt, override val coroutineContext: CoroutineContext) : ContactImpl(),

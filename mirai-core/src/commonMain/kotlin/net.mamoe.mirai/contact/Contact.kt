@@ -59,7 +59,7 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
 /**
  * 只读联系人列表
  */
-class ContactList<C : Contact> @PublishedApi internal constructor(internal val delegate: MutableContactList<C>) : Map<UInt, C> {
+class ContactList<C : Contact> @PublishedApi internal constructor(internal val mutable: MutableContactList<C>) : Map<UInt, C> {
     /**
      * ID 列表的字符串表示.
      * 如:
@@ -69,19 +69,19 @@ class ContactList<C : Contact> @PublishedApi internal constructor(internal val d
      */
     val idContentString: String get() = this.keys.joinToString(prefix = "[", postfix = "]") { it.toLong().toString() }
 
-    override fun toString(): String = delegate.toString()
+    override fun toString(): String = mutable.toString()
 
 
     // TODO: 2019/12/2 应该使用属性代理, 但属性代理会导致 UInt 内联错误. 等待 kotlin 修复后替换
 
-    override val size: Int get() = delegate.size
-    override fun containsKey(key: UInt): Boolean = delegate.containsKey(key)
-    override fun containsValue(value: C): Boolean = delegate.containsValue(value)
-    override fun get(key: UInt): C? = delegate[key]
-    override fun isEmpty(): Boolean = delegate.isEmpty()
-    override val entries: MutableSet<MutableMap.MutableEntry<UInt, C>> get() = delegate.entries
-    override val keys: MutableSet<UInt> get() = delegate.keys
-    override val values: MutableCollection<C> get() = delegate.values
+    override val size: Int get() = mutable.size
+    override fun containsKey(key: UInt): Boolean = mutable.containsKey(key)
+    override fun containsValue(value: C): Boolean = mutable.containsValue(value)
+    override fun get(key: UInt): C? = mutable[key]
+    override fun isEmpty(): Boolean = mutable.isEmpty()
+    override val entries: MutableSet<MutableMap.MutableEntry<UInt, C>> get() = mutable.entries
+    override val keys: MutableSet<UInt> get() = mutable.keys
+    override val values: MutableCollection<C> get() = mutable.values
 }
 
 /**
@@ -93,7 +93,7 @@ internal class MutableContactList<C : Contact> : MutableMap<UInt, C> {
 
 
     // TODO: 2019/12/2 应该使用属性代理, 但属性代理会导致 UInt 内联错误. 等待 kotlin 修复后替换
-    private val delegate = mutableMapOf<UInt, C>()
+    private val delegate = linkedMapOf<UInt, C>()
 
     override val size: Int get() = delegate.size
     override fun containsKey(key: UInt): Boolean = delegate.containsKey(key)
