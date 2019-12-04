@@ -9,6 +9,7 @@ package net.mamoe.mirai.message
  */
 inline class XMLMessage(override val stringValue: String) : Message, SingleOnly {
     override fun followedBy(tail: Message): Nothing = error("XMLMessage Message cannot be followed")
+    override fun toString(): String = stringValue
 }
 
 /**
@@ -32,7 +33,7 @@ class ItemBuilder(
     }
 
     inline fun title(text: String, size: Int = 18, color: String = "#FFFFFF") {
-        this.builder.append("<title size='$size', color='$color'>$text</title>")
+        this.builder.append("<title size='$size' color='$color'>$text</title>")
     }
 
     inline fun picture(coverUrl: String) {
