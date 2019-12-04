@@ -49,13 +49,13 @@ object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey
         class OK(
             var loginTime: Int,
             val loginIP: String,
-            val token0825: ByteArray
+            val token0825: ByteArray // 56
         ) : TouchResponse() {
             override fun toString(): String = "TouchResponse.OK"
         }
 
         class Redirection(
-            val serverIP: String? = null
+            val serverIP: String
         ) : TouchResponse() {
             override fun toString(): String = "TouchResponse.Redirection"
         }

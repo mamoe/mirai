@@ -374,7 +374,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 is TouchPacket.TouchResponse.Redirection -> {
                     socket.close()
                     bot.logger.info("Redirecting to ${packet.serverIP}")
-                    socket = BotSocketAdapter(packet.serverIP!!)
+                    socket = BotSocketAdapter(packet.serverIP)
                     loginResult.complete(socket.resendTouch())
                 }
 
@@ -406,10 +406,8 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     this.token00BA = packet.token00BA
                     this.captchaCache = packet.captchaPart1
 
-                    if (packet.unknownBoolean) {
-                        this.captchaSectionId = 1
-                        socket.sendPacket(CaptchaPacket.RequestTransmission(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
-                    }
+                    this.captchaSectionId = 1
+                    socket.sendPacket(CaptchaPacket.RequestTransmission(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
                 }
 
                 is CaptchaPacket.CaptchaResponse.Transmission -> {

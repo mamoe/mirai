@@ -122,6 +122,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         configuration: BotConfiguration,
         cause: Throwable? = null
     ): LoginResult {
+        logger.info("BotAccount: ${qqAccount.toLong()}")
         logger.info("Initializing BotNetworkHandler")
         try {
             if (::network.isInitialized) {

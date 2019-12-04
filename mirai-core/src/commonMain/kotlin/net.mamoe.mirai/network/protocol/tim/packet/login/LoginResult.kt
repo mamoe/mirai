@@ -79,6 +79,11 @@ inline class LoginResult(val id: Byte) {
         @JvmStatic
         val CAPTCHA = LoginResult(10)
 
+        /**
+         * 该号码长期未登录, 为了保证账号安全, 已被系统设置成保护状态, 请用手机 TIM 最新版本登录, 登录成功后即可自动解除保护模式
+         */ // TIM的错误代码为 00020
+        val PROTECTED = LoginResult(11)
+
         @JvmStatic
         val values: List<LoginResult> by lazy {
             listOf(
@@ -91,7 +96,9 @@ inline class LoginResult(val id: Byte) {
                 TAKEN_BACK,
                 INTERNAL_ERROR,
                 TIMEOUT,
-                NETWORK_UNAVAILABLE
+                NETWORK_UNAVAILABLE,
+                CAPTCHA,
+                PROTECTED
             )
         }
     }
