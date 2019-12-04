@@ -7,10 +7,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.MessageChain
-import net.mamoe.mirai.message.chain
-import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.protocol.tim.packet.action.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.MemberJoinEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.event.MemberQuitEvent
@@ -25,11 +22,6 @@ import kotlin.coroutines.CoroutineContext
 
 internal sealed class ContactImpl : Contact {
     abstract override suspend fun sendMessage(message: MessageChain)
-
-    //这两个方法应写为扩展函数, 但为方便 import 还是写在这里
-    override suspend fun sendMessage(plain: String) = sendMessage(plain.singleChain())
-
-    override suspend fun sendMessage(message: Message) = sendMessage(message.chain())
 
     /**
      * 开始监听事件, 以同步更新资料

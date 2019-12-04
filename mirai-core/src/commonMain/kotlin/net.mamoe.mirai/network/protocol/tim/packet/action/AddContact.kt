@@ -9,6 +9,7 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.EventPacket
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.withSession
 
 
 /**
@@ -87,26 +88,27 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
         writeQQ(qq)
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): CanAddFriendResponse = with(handler.bot) {
-        if (remaining > 20) {//todo check
-            return CanAddFriendResponse.AlreadyAdded(readUInt().qq())
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): CanAddFriendResponse =
+        handler.bot.withSession {
+            if (remaining > 20) {//todo check
+                return CanAddFriendResponse.AlreadyAdded(readUInt().qq())
+            }
+            val qq: QQ = readUInt().qq()
+
+            // debugDiscardExact(1)
+
+            return when (val state = readUByte().toUInt()) {
+                //09 4E A4 B1 00 03
+                0x00u -> CanAddFriendResponse.ReadyToAdd(qq)
+
+                0x01u -> CanAddFriendResponse.RequireVerification(qq)
+                0x99u -> CanAddFriendResponse.AlreadyAdded(qq)
+
+                0x03u,
+                0x04u -> CanAddFriendResponse.Rejected(qq)
+                else -> error(state.toString())
+            }
         }
-        val qq: QQ = readUInt().qq()
-
-        // debugDiscardExact(1)
-
-        return when (val state = readUByte().toUInt()) {
-            //09 4E A4 B1 00 03
-            0x00u -> CanAddFriendResponse.ReadyToAdd(qq)
-
-            0x01u -> CanAddFriendResponse.RequireVerification(qq)
-            0x99u -> CanAddFriendResponse.AlreadyAdded(qq)
-
-            0x03u,
-            0x04u -> CanAddFriendResponse.Rejected(qq)
-            else -> error(state.toString())
-        }
-    }
 
 }
 
