@@ -13,6 +13,11 @@
 
 **一切开发旨在学习，请勿用于非法用途**
 
+## Update log
+
+在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划  
+在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
+
 ## Use as library
 把 Mirai 作为库内置于您的项目中使用.  
 Mirai 只上传在 jcenter, 因此请确保添加 `jcenter()` 仓库  
@@ -68,11 +73,6 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 我们欢迎一切形式的贡献. 若您有兴趣为 Mirai 实现 JS, iOS, Native 平台, 请联系我(`Him188@mamoe.net`).  
 若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
-
-## Update log
-
-在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划
-在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
 
 ## Requirements
 
