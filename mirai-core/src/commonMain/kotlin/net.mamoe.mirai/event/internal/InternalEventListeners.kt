@@ -8,6 +8,8 @@ import net.mamoe.mirai.event.EventDebugLogger
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.network.session
 import net.mamoe.mirai.utils.internal.inlinedRemoveIf
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
@@ -108,8 +110,11 @@ internal class Handler<in E : Subscribable>
 
 @PublishedApi
 @Suppress("FunctionName")
-internal suspend inline fun <E : Subscribable> HandlerWithBot(bot: Bot, noinline handler: suspend Bot.(E) -> ListeningStatus): HandlerWithBot<E> {
-    return HandlerWithBot(bot, coroutineContext[Job], coroutineContext, handler)
+internal suspend inline fun <E : Subscribable> HandlerWithSession(
+    bot: Bot,
+    noinline handler: suspend BotSession.(E) -> ListeningStatus
+): HandlerWithSession<E> {
+    return HandlerWithSession(bot, coroutineContext[Job], coroutineContext, handler)
 }
 
 /**
@@ -118,9 +123,9 @@ internal suspend inline fun <E : Subscribable> HandlerWithBot(bot: Bot, noinline
  * 所有的 [BotEvent.bot] `!==` `bot` 的事件都不会被处理
  */
 @PublishedApi
-internal class HandlerWithBot<E : Subscribable> @PublishedApi internal constructor(
+internal class HandlerWithSession<E : Subscribable> @PublishedApi internal constructor(
     val bot: Bot,
-    parentJob: Job?, private val context: CoroutineContext, @JvmField val handler: suspend Bot.(E) -> ListeningStatus
+    parentJob: Job?, private val context: CoroutineContext, @JvmField val handler: suspend BotSession.(E) -> ListeningStatus
 ) :
     Listener<E>(), CompletableJob by Job(parentJob) {
 
@@ -131,7 +136,7 @@ internal class HandlerWithBot<E : Subscribable> @PublishedApi internal construct
         if (event !is BotEvent || event.bot !== bot) return ListeningStatus.LISTENING
 
         return try {
-            withContext(context) { bot.handler(event) }.also { if (it == ListeningStatus.STOPPED) complete() }
+            withContext(context) { bot.session.handler(event) }.also { if (it == ListeningStatus.STOPPED) complete() }
         } catch (e: Throwable) {
             e.logStacktrace()
             //completeExceptionally(e)
