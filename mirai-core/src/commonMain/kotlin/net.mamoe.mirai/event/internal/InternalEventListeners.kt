@@ -77,6 +77,7 @@ internal suspend inline fun <L : Listener<E>, E : Subscribable> KClass<E>.subscr
  * @author Him188moe
  */
 sealed class Listener<in E : Subscribable> : CompletableJob {
+    @JvmField
     internal val lock = Mutex()
     abstract suspend fun onEvent(event: E): ListeningStatus
 }
@@ -124,7 +125,7 @@ internal suspend inline fun <E : Subscribable> HandlerWithSession(
  */
 @PublishedApi
 internal class HandlerWithSession<E : Subscribable> @PublishedApi internal constructor(
-    val bot: Bot,
+    @JvmField val bot: Bot,
     parentJob: Job?, private val context: CoroutineContext, @JvmField val handler: suspend BotSession.(E) -> ListeningStatus
 ) :
     Listener<E>(), CompletableJob by Job(parentJob) {
@@ -155,14 +156,17 @@ internal class EventListeners<E : Subscribable> : MutableList<Listener<E>> by mu
      * 主监听者列表.
      * 广播事件时使用这个锁.
      */
+    @JvmField
     val mainMutex = Mutex()
     /**
      * 缓存(监听)事件时使用的锁
      */
+    @JvmField
     val cacheMutex = Mutex()
     /**
      * 等待加入到主 list 的监听者. 务必使用 [cacheMutex]
      */
+    @JvmField
     val cache: MutableList<Listener<E>> = mutableListOf()
 
     init {
