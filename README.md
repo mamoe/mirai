@@ -3,15 +3,12 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
 
 **TIM PC 协议** 跨平台 QQ 协议支持库.
-
-- 纯 Kotlin 实现
-- JVM 平台额外提供插件模式服务端
-  
-若您有任何意见或建议, 请告诉我们.  
-
 部分协议来自网络上开源项目  
-
 **一切开发旨在学习，请勿用于非法用途**
+
+## Update log
+在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划  
+在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
 
 ## Use as library
 把 Mirai 作为库内置于您的项目中使用.  
@@ -68,11 +65,6 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 我们欢迎一切形式的贡献. 若您有兴趣为 Mirai 实现 JS, iOS, Native 平台, 请联系我(`Him188@mamoe.net`).  
 若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
-
-## Update log
-
-在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划
-在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
 
 ## Requirements
 
