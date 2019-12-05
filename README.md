@@ -1,8 +1,9 @@
 # Mirai
 [![HitCount](http://hits.dwyl.io/him188/mamoe/mirai.svg)](http://hits.dwyl.io/him188/mamoe/mirai)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
+**[English](README-eng.md)**  
 
-**TIM PC 协议** 跨平台 QQ 协议支持库.
+**TIM PC 协议** 跨平台 QQ 协议支持库.  
 部分协议来自网络上开源项目  
 **一切开发旨在学习，请勿用于非法用途**
 
@@ -10,9 +11,9 @@
 在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划  
 在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
 
-## Use as library
+## Use as a library
 把 Mirai 作为库内置于您的项目中使用.  
-Mirai 只上传在 jcenter, 因此请确保添加 `jcenter()` 仓库  
+Mirai 只上传在 `jcenter`, 因此请确保在 `build.gradle` 添加 `jcenter()` 仓库  
 ```kotlin
 repositories{
   jcenter()
@@ -68,14 +69,9 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 ## Requirements
 
-#### Run-time 
-所有平台: Kotlin 1.3.61  
-JVM 平台: JRE 6   
-Android: SDK 15
+Kotlin 1.3.61  
 
-#### Build Mirai
-所有平台:  Kotlin 1.3.61  
-JVM 平台: Java 11 (OpenJDK 11)  
+JVM 平台: Java 6  
 Android: SDK 15
 
 ### Using Java 
