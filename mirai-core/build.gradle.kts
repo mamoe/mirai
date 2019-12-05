@@ -104,8 +104,8 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                api(kotlin("stdlib-jdk8", kotlinVersion))
-                api(kotlin("stdlib-jdk7", kotlinVersion))
+                //api(kotlin("stdlib-jdk8", kotlinVersion))
+                //api(kotlin("stdlib-jdk7", kotlinVersion))
                 api(kotlin("reflect", kotlinVersion))
 
                 api(ktor("client-core-jvm", ktorVersion))
