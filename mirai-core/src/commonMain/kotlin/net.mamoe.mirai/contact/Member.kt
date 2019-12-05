@@ -37,13 +37,13 @@ interface Member : QQ, Contact {
 
 @ExperimentalTime
 suspend inline fun Member.mute(duration: Duration) {
-    require(duration.inDays > 30) { "duration must be at most 1 month" }
+    require(duration.inDays <= 30) { "duration must be at most 1 month" }
     require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
     this.mute(duration.inSeconds.toInt())
 }
 
 suspend inline fun Member.mute(duration: TimeSpan) {
-    require(duration.days > 30) { "duration must be at most 1 month" }
+    require(duration.days <= 30) { "duration must be at most 1 month" }
     require(duration.microseconds > 0) { "duration must be greater than 0 second" }
     this.mute(duration.seconds.toInt())
 }
