@@ -36,28 +36,28 @@ interface Member : QQ, Contact {
 }
 
 @ExperimentalTime
-suspend inline fun Member.mute(duration: Duration) {
+suspend inline fun Member.mute(duration: Duration): Boolean {
     require(duration.inDays <= 30) { "duration must be at most 1 month" }
     require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
-    this.mute(duration.inSeconds.toInt())
+    return this.mute(duration.inSeconds.toInt())
 }
 
-suspend inline fun Member.mute(duration: TimeSpan) {
+suspend inline fun Member.mute(duration: TimeSpan): Boolean {
     require(duration.days <= 30) { "duration must be at most 1 month" }
     require(duration.microseconds > 0) { "duration must be greater than 0 second" }
-    this.mute(duration.seconds.toInt())
+    return this.mute(duration.seconds.toInt())
 }
 
-suspend inline fun Member.mute(duration: MonthSpan) {
+suspend inline fun Member.mute(duration: MonthSpan): Boolean {
     require(duration.totalMonths == 1) { "if you pass a MonthSpan, it must be 1 month" }
-    this.mute(duration.totalMonths * 30 * 24 * 3600)
+    return this.mute(duration.totalMonths * 30 * 24 * 3600)
 }
 
 @ExperimentalUnsignedTypes
-suspend inline fun Member.mute(durationSeconds: UInt) {
+suspend inline fun Member.mute(durationSeconds: UInt): Boolean {
     require(durationSeconds.toInt() <= 30 * 24 * 3600) { "duration must be at most 1 month" }
-    this.mute(durationSeconds.toInt())
-} // same bin rep.
+    return this.mute(durationSeconds.toInt()) // same bin rep.
+}
 
 /**
  * 群成员的权限
