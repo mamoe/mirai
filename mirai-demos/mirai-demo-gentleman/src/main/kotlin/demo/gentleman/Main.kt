@@ -70,17 +70,17 @@ suspend fun main() {
 
         startsWith("mt2months") {
             val at: At by message
-            at.target.member().mute(1.months)
+            at.member().mute(1.months)
         }
 
         startsWith("mute") {
             val at: At by message
-            at.target.member().mute(30.seconds)
+            at.member().mute(30.seconds)
         }
 
         startsWith("unmute") {
             val at: At by message
-            at.target.member().unmute()
+            at.member().unmute()
         }
     }
 
