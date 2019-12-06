@@ -6,9 +6,10 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.printColorize
 import net.mamoe.mirai.utils.internal.printCompareHex
+import net.mamoe.mirai.utils.withSwitch
 
 
-internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug")
+internal object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug").withSwitch()
 
 internal fun Throwable.logStacktrace(message: String? = null) = DebugLogger.error(message, this)
 
