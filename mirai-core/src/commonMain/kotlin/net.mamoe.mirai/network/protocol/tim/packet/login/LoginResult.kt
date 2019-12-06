@@ -1,107 +1,77 @@
+@file:Suppress("unused")
+
 package net.mamoe.mirai.network.protocol.tim.packet.login
 
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult.Companion.SUCCESS
+import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult.SUCCESS
 import net.mamoe.mirai.utils.BotConfiguration
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.jvm.JvmStatic
 
 /**
  * 登录结果. 除 [SUCCESS] 外均为失败.
  * @see LoginResult.requireSuccess 要求成功
  */
-inline class LoginResult(val id: Byte) {
-    companion object {
-        /**
-         * 登录成功
-         */
-        @JvmStatic
-        val SUCCESS = LoginResult(0)
+enum class LoginResult(val id: Byte) {
+    /**
+     * 登录成功
+     */
+    SUCCESS(0),
 
-        /**
-         * 密码错误
-         */
-        @JvmStatic
-        val WRONG_PASSWORD = LoginResult(1)
+    /**
+     * 密码错误
+     */
+    WRONG_PASSWORD(1),
 
-        /**
-         * 被冻结
-         */
-        @JvmStatic
-        val BLOCKED = LoginResult(2)
+    /**
+     * 被冻结
+     */
+    BLOCKED(2),
 
-        /**
-         * QQ 号码输入有误
-         */
-        @JvmStatic
-        val UNKNOWN_QQ_NUMBER = LoginResult(3)
+    /**
+     * QQ 号码输入有误
+     */
+    UNKNOWN_QQ_NUMBER(3),
 
-        /**
-         * 账号开启了设备锁. 暂不支持设备锁登录
-         */
-        @JvmStatic
-        val DEVICE_LOCK = LoginResult(4)
+    /**
+     * 账号开启了设备锁. 暂不支持设备锁登录
+     */
+    DEVICE_LOCK(4),
 
-        /**
-         * 账号被回收
-         */
-        @JvmStatic
-        val TAKEN_BACK = LoginResult(5)
+    /**
+     * 账号被回收
+     */
+    TAKEN_BACK(5),
 
-        /**
-         * 未知. 更换服务器或等几分钟再登录可能解决.
-         */
-        @JvmStatic
-        val UNKNOWN = LoginResult(6)
+    /**
+     * 未知. 更换服务器或等几分钟再登录可能解决.
+     */
+    UNKNOWN(6),
 
-        /**
-         * 包数据错误
-         */
-        @JvmStatic
-        val INTERNAL_ERROR = LoginResult(7)
+    /**
+     * 包数据错误
+     */
+    INTERNAL_ERROR(7),
 
-        /**
-         * 超时
-         */
-        @JvmStatic
-        val TIMEOUT = LoginResult(8)
+    /**
+     * 超时
+     */
+    TIMEOUT(8),
 
-        /**
-         * 网络不可用
-         */
-        @JvmStatic
-        val NETWORK_UNAVAILABLE = LoginResult(9)
+    /**
+     * 网络不可用
+     */
+    NETWORK_UNAVAILABLE(9),
 
-        /**
-         * 需要验证码且 [BotConfiguration.failOnCaptcha] 为 `true`
-         */
-        @JvmStatic
-        val CAPTCHA = LoginResult(10)
+    /**
+     * 需要验证码且 [BotConfiguration.failOnCaptcha] 为 `true`
+     */
+    CAPTCHA(10),
 
-        /**
-         * 该号码长期未登录, 为了保证账号安全, 已被系统设置成保护状态, 请用手机 TIM 最新版本登录, 登录成功后即可自动解除保护模式
-         */ // TIM的错误代码为 00020
-        val PROTECTED = LoginResult(11)
-
-        @JvmStatic
-        val values: List<LoginResult> by lazy {
-            listOf(
-                BLOCKED,
-                DEVICE_LOCK,
-                SUCCESS,
-                WRONG_PASSWORD,
-                UNKNOWN,
-                UNKNOWN_QQ_NUMBER,
-                TAKEN_BACK,
-                INTERNAL_ERROR,
-                TIMEOUT,
-                NETWORK_UNAVAILABLE,
-                CAPTCHA,
-                PROTECTED
-            )
-        }
-    }
+    /**
+     * 该号码长期未登录, 为了保证账号安全, 已被系统设置成保护状态, 请用手机 TIM 最新版本登录, 登录成功后即可自动解除保护模式
+     */ // TIM的错误代码为 00020
+    PROTECTED(11),
 }
 
 /**
