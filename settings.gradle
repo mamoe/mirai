@@ -36,6 +36,7 @@ include(':mirai-core')
 include(':mirai-core-timpc')
 include(':mirai-core-qqandroid')
 
+include(':mirai-japt')
 include(':mirai-console')
 //include(':mirai-api')
 include(':mirai-api-http')
