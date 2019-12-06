@@ -13,14 +13,18 @@ import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
 
-fun BotSession.RequestSKeyPacket(): OutgoingPacket = RequestSKeyPacket(qqAccount, sessionKey)
+internal fun BotSession.RequestSKeyPacket(): OutgoingPacket = RequestSKeyPacket(qqAccount, sessionKey)
+
+inline class SKey(
+    val value: String
+) : Packet
 
 /**
  * 请求 `SKey`
  * SKey 用于 http api
  */
 @AnnotatedId(KnownPacketId.S_KEY)
-object RequestSKeyPacket : SessionPacketFactory<SKey>() {
+internal object RequestSKeyPacket : SessionPacketFactory<SKey>() {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey
@@ -61,7 +65,3 @@ object RequestSKeyPacket : SessionPacketFactory<SKey>() {
         }*/
     }
 }
-
-inline class SKey(
-    val value: String
-) : Packet
