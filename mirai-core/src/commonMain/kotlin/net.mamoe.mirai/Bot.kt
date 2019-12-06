@@ -23,13 +23,14 @@ import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
-@Suppress("NOTHING_TO_INLINE", "FunctionName")
-inline fun BotAccount(id: Long, password: String): BotAccount = BotAccount(id.toUInt(), password)
-
 data class BotAccount(
     val id: UInt,
     val password: String
-)
+) {
+    constructor(id: Long, password: String) : this(id.toUInt(), password)
+}
+
+// These pseudo 'constructors' are suspend, therefore they should not be inside the object
 
 @Suppress("FunctionName")
 suspend inline fun Bot(account: BotAccount, logger: MiraiLogger): Bot = Bot(account, logger, coroutineContext)
@@ -39,10 +40,10 @@ suspend inline fun Bot(account: BotAccount): Bot = Bot(account, coroutineContext
 
 @JvmSynthetic
 @Suppress("FunctionName")
-suspend inline fun Bot(qq: UInt, password: String): Bot = Bot(qq, password, coroutineContext)
+suspend inline fun Bot(qq: UInt, password: String): Bot = Bot(BotAccount(qq, password), coroutineContext)
 
 @Suppress("FunctionName")
-suspend inline fun Bot(qq: Long, password: String): Bot = Bot(qq.toUInt(), password, coroutineContext)
+suspend inline fun Bot(qq: Long, password: String): Bot = Bot(BotAccount(qq.toUInt(), password), coroutineContext)
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -79,6 +80,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
     override val coroutineContext: CoroutineContext =
         context + supervisorJob + CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") }
 
+    constructor(qq: Long, password: String, context: CoroutineContext) : this(BotAccount(qq, password), context)
     constructor(qq: UInt, password: String, context: CoroutineContext) : this(BotAccount(qq, password), context)
     constructor(account: BotAccount, context: CoroutineContext) : this(account, DefaultLogger("Bot(" + account.id + ")"), context)
 
