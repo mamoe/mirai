@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.network.protocol.tim.packet.action.GroupInfo
 import net.mamoe.mirai.network.protocol.tim.packet.action.QuitGroupResponse
 import net.mamoe.mirai.utils.internal.PositiveNumbers
@@ -16,7 +17,7 @@ import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
  * - Group ID([Group.internalId]) 是与调用 API 时使用的 id.(在 QQ 客户端中不可见)
  * @author Him188moe
  */
-interface Group : Contact, Iterable<Member>/*, Map<UInt, Member>*/ { // TODO: 2019/12/4 在 inline 稳定后实现 Map<UInt, Member>. 目前这样做会导致问题
+interface Group : Contact, CoroutineScope, Iterable<Member>/*, Map<UInt, Member>*/ { // TODO: 2019/12/4 在 inline 稳定后实现 Map<UInt, Member>. 目前这样做会导致问题
     /**
      * 内部 ID. 内部 ID 为 [GroupId] 的映射
      */

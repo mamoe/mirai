@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.network.BotSession
@@ -20,7 +21,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList
  *
  * @author Him188moe
  */
-interface QQ : Contact {
+interface QQ : Contact, CoroutineScope {
     /**
      * 查询用户资料
      */

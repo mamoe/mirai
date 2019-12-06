@@ -8,7 +8,7 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot.ContactSystem
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.internal.Group
-import net.mamoe.mirai.contact.internal.QQImpl
+import net.mamoe.mirai.contact.internal.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
@@ -186,7 +186,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         suspend fun getQQ(id: UInt): QQ =
             if (_qqs.containsKey(id)) _qqs[id]!!
             else qqsLock.withLock {
-                _qqs.getOrPut(id) { QQImpl(bot, id, coroutineContext) }
+                _qqs.getOrPut(id) { QQ(bot, id, coroutineContext) }
             }
 
         // NO INLINE!! to help Java
@@ -194,7 +194,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         suspend fun getQQ(id: Long): QQ = id.coerceAtLeastOrFail(0).toUInt().let {
             if (_qqs.containsKey(it)) _qqs[it]!!
             else qqsLock.withLock {
-                _qqs.getOrPut(it) { QQImpl(bot, it, coroutineContext) }
+                _qqs.getOrPut(it) { QQ(bot, it, coroutineContext) }
             }
         }
 

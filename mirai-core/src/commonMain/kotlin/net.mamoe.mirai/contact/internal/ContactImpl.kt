@@ -26,7 +26,7 @@ internal sealed class ContactImpl : Contact {
     /**
      * 开始监听事件, 以同步更新资料
      */
-    internal abstract suspend fun CoroutineContext.startUpdater()
+    internal abstract suspend fun startUpdater()
 }
 
 /**
@@ -41,7 +41,7 @@ internal suspend fun Group(bot: Bot, groupId: GroupId, context: CoroutineContext
         e.logStacktrace()
         error("Cannot obtain group info for id ${groupId.value}")
     }
-    return GroupImpl(bot, groupId, context).apply { this.info = info.parseBy(this) }
+    return GroupImpl(bot, groupId, context).apply { this.info = info.parseBy(this); startUpdater() }
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
@@ -73,7 +73,7 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     }
 
     @UseExperimental(MiraiInternalAPI::class)
-    override suspend fun CoroutineContext.startUpdater() {
+    override suspend fun startUpdater() {
         subscribeAlways<MemberJoinEventPacket> {
             // FIXME: 2019/11/29 非线程安全!!
             members.mutable[it.member.id] = it.member
@@ -89,7 +89,12 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     override fun iterator(): Iterator<Member> = members.values.iterator()
 }
 
-internal data class QQImpl internal constructor(override val bot: Bot, override val id: UInt, override val coroutineContext: CoroutineContext) : ContactImpl(),
+@Suppress("FunctionName")
+suspend inline fun QQ(bot: Bot, id: UInt, coroutineContext: CoroutineContext): QQ = QQImpl(bot, id, coroutineContext).apply { startUpdater() }
+
+@PublishedApi
+internal data class QQImpl @PublishedApi internal constructor(override val bot: Bot, override val id: UInt, override val coroutineContext: CoroutineContext) :
+    ContactImpl(),
     QQ, CoroutineScope {
     override suspend fun sendMessage(message: MessageChain) =
         bot.sendPacket(SendFriendMessagePacket(bot.qqAccount, id, bot.sessionKey, message))
@@ -106,26 +111,38 @@ internal data class QQImpl internal constructor(override val bot: Bot, override 
         QueryFriendRemarkPacket(bot.qqAccount, sessionKey, id).sendAndExpect()
     }
 
-    override suspend fun CoroutineContext.startUpdater() {
+    @PublishedApi
+    override suspend fun startUpdater() {
         // TODO: 2019/11/28 被删除好友事件
     }
 
     override fun toString(): String = "QQ(${this.id})"
 }
 
+@Suppress("FunctionName")
+suspend inline fun Member(delegate: QQ, group: Group, permission: MemberPermission, coroutineContext: CoroutineContext): Member =
+    MemberImpl(delegate, group, permission, coroutineContext).apply { startUpdater() }
+
 /**
  * 群成员
  */
 @PublishedApi
-internal data class MemberImpl(private val delegate: QQ, override val group: Group, override val permission: MemberPermission) : QQ by delegate, Member {
+internal data class MemberImpl(
+    private val delegate: QQ,
+    override val group: Group,
+    override val permission: MemberPermission,
+    override val coroutineContext: CoroutineContext
+) : QQ by delegate, CoroutineScope, Member, ContactImpl() {
     override fun toString(): String = "Member(id=${this.id}, group=${group.id}, permission=$permission)"
 
     override suspend fun mute(durationSeconds: Int): Boolean = bot.withSession {
         require(durationSeconds > 0) { "duration must be greater than 0 second" }
+        require(durationSeconds <= 30 * 24 * 3600) { "duration must be no more than 30 days" }
 
         if (permission == MemberPermission.OWNER) return false
-
-        when (group.getMember(bot.qqAccount).permission) {
+        val operator = group.getMember(bot.qqAccount)
+        check(operator.id != id) { "The bot is the owner of group ${group.id.toLong()}, it cannot mute itself!" }
+        when (operator.permission) {
             MemberPermission.MEMBER -> return false
             MemberPermission.ADMINISTRATOR -> if (permission == MemberPermission.ADMINISTRATOR) return false
             MemberPermission.OWNER -> {
@@ -134,6 +151,11 @@ internal data class MemberImpl(private val delegate: QQ, override val group: Gro
 
         GroupPacket.Mute(qqAccount, group.internalId, sessionKey, id, durationSeconds.toUInt()).sendAndExpect<GroupPacket.MuteResponse>()
         return true
+    }
+
+    @PublishedApi
+    override suspend fun startUpdater() {
+        // TODO: 2019/12/6 更新群成员信息
     }
 
     override suspend fun unmute(): Unit = bot.withSession {
