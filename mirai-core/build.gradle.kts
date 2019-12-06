@@ -92,7 +92,6 @@ kotlin {
 
                 runtimeOnly(files("build/classes/kotlin/metadata/test")) // classpath is not properly set by IDE
             }
-            kotlin.setSrcDirs(listOf("src/$name/kotlin"))
         }
 
         val androidMain by getting {
