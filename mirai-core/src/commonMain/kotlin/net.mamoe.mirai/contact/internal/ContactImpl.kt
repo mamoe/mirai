@@ -15,6 +15,7 @@ import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.sendPacket
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.logStacktrace
 import net.mamoe.mirai.withSession
@@ -85,8 +86,6 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     }
 
     override fun toString(): String = "Group(${this.id})"
-
-    override fun iterator(): Iterator<Member> = members.values.iterator()
 }
 
 @Suppress("FunctionName")
