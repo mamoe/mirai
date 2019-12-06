@@ -25,7 +25,7 @@ import kotlin.jvm.JvmOverloads
  */
 
 //Contacts
-suspend inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number.coerceAtLeastOrFail(0).toUInt())
+suspend inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number)
 
 suspend inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
 

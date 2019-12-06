@@ -17,6 +17,8 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.internal.PositiveNumbers
+import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -86,7 +88,9 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
 
     val contacts = ContactSystem()
 
-    lateinit var network: BotNetworkHandler<*>
+    val network: BotNetworkHandler<*> get() = _network
+
+    private lateinit var _network: BotNetworkHandler<*>
 
     init {
         launch {
@@ -127,15 +131,15 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         logger.info("BotAccount: ${qqAccount.toLong()}")
         logger.info("Initializing BotNetworkHandler")
         try {
-            if (::network.isInitialized) {
-                network.close(cause)
+            if (::_network.isInitialized) {
+                _network.close(cause)
             }
         } catch (e: Exception) {
             logger.error("Cannot close network handler", e)
         }
-        network = TIMBotNetworkHandler(this@Bot.coroutineContext + configuration, this@Bot)
+        _network = TIMBotNetworkHandler(this@Bot.coroutineContext + configuration, this@Bot)
 
-        return network.login()
+        return _network.login()
     }
 
     /**
@@ -178,11 +182,21 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
          * 注: 这个方法是线程安全的
          */
         @UseExperimental(MiraiInternalAPI::class)
+        @JvmSynthetic
         suspend fun getQQ(id: UInt): QQ =
             if (_qqs.containsKey(id)) _qqs[id]!!
             else qqsLock.withLock {
                 _qqs.getOrPut(id) { QQImpl(bot, id, coroutineContext) }
             }
+
+        // NO INLINE!! to help Java
+        @UseExperimental(MiraiInternalAPI::class)
+        suspend fun getQQ(id: Long): QQ = id.coerceAtLeastOrFail(0).toUInt().let {
+            if (_qqs.containsKey(it)) _qqs[it]!!
+            else qqsLock.withLock {
+                _qqs.getOrPut(it) { QQImpl(bot, it, coroutineContext) }
+            }
+        }
 
         /**
          * 获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
@@ -203,11 +217,20 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
                 _groups.getOrPut(it) { Group(bot, id, coroutineContext) }
             }
         }
+
+        // NO INLINE!! to help Java
+        @UseExperimental(MiraiInternalAPI::class)
+        suspend fun getGroup(@PositiveNumbers id: Long): Group = id.coerceAtLeastOrFail(0).toUInt().let {
+            if (_groups.containsKey(it)) _groups[it]!!
+            else groupsLock.withLock {
+                _groups.getOrPut(it) { Group(bot, GroupId(it), coroutineContext) }
+            }
+        }
     }
 
     @UseExperimental(MiraiInternalAPI::class)
-    suspend fun close() {
-        network.close()
+    fun close() {
+        _network.close()
         this.coroutineContext.cancelChildren()
         contacts._groups.clear()
         contacts._qqs.clear()
