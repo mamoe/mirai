@@ -1,8 +1,8 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-    id("kotlinx-atomicfu")
     kotlin("multiplatform")
+    id("kotlinx-atomicfu")
     id("com.android.library")
     id("kotlinx-serialization")
     `maven-publish`
@@ -81,12 +81,16 @@ kotlin {
                 api(ktor("client-core", ktorVersion))
                 api(ktor("network", ktorVersion))
                 //implementation("io.ktor:ktor-io:1.3.0-beta-1")
+
+                runtimeOnly(files("build/classes/kotlin/metadata/main")) // classpath is not properly set by IDE
             }
         }
         commonTest {
             dependencies {
                 api(kotlin("test-annotations-common"))
                 api(kotlin("test-common"))
+
+                runtimeOnly(files("build/classes/kotlin/metadata/test")) // classpath is not properly set by IDE
             }
             kotlin.setSrcDirs(listOf("src/$name/kotlin"))
         }
@@ -111,18 +115,19 @@ kotlin {
                 api(ktor("client-core-jvm", ktorVersion))
                 api(kotlinx("io-jvm", kotlinXIoVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
+
+                runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
             }
         }
 
         val jvmTest by getting {
             dependencies {
                 api(kotlin("test", kotlinVersion))
-                api(kotlin("test-annotations-common", kotlinVersion))
-                api(kotlin("test-junit5", kotlinVersion))
-                api("org.junit.jupiter:junit-jupiter-api:5.5.2")
+                api(kotlin("test-junit", kotlinVersion))
+                implementation("org.pcap4j:pcap4j-distribution:1.8.2")
+
+                runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
-            kotlin.outputDir = file("build/classes/kotlin/jvm/test")
-            kotlin.setSrcDirs(listOf("src/$name/kotlin"))
         }
     }
 }
