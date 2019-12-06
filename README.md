@@ -24,7 +24,7 @@ repositories{
 若您需要使用在跨平台项目, 您需要对各个目标平台添加不同的依赖.  
 若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.  
 
-您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/) [![Join the chat at https://gitter.im/mamoe/mirai](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  
 Mirai 目前还处于实验性阶段, 建议您时刻保持最新版本.
 
 **common**
