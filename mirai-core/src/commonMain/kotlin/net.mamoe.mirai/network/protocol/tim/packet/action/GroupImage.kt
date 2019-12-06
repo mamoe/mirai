@@ -21,7 +21,6 @@ import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.Http
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.io.toUHexString
-import kotlin.coroutines.coroutineContext
 
 
 /**
@@ -58,13 +57,13 @@ suspend fun Group.uploadImage(image: ExternalImage): ImageId = withSession {
     return image.groupImageId
 }
 
-interface GroupImageResponse : EventPacket
+internal interface GroupImageResponse : EventPacket
 
 // endregion
 
 @Suppress("unused")
 @Serializable
-class ImageDownloadInfo(
+class GroupImageLink(
     @SerialId(3) val errorCode: Int = 0, // 0 for success
     @SerialId(4) val errorMessage: String? = null, // 感动中国
 
@@ -84,13 +83,14 @@ class ImageDownloadInfo(
     override fun toString(): String = "ImageDownloadInfo(${_original?.let { original } ?: errorMessage ?: "unknown"})"
 }
 
-fun ImageDownloadInfo.requireSuccess(): ImageDownloadInfo {
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun GroupImageLink.requireSuccess(): GroupImageLink {
     require(this.errorCode == 0) { this.errorMessage ?: "null" }
     return this
 }
 
 @Serializable
-class ImageUploadInfo(
+internal class ImageUploadInfo(
     @SerialId(8) val uKey: ByteArray? = null
 ) : GroupImageResponse {
     override fun toString(): String = "ImageUploadInfo(uKey=${uKey?.toUHexString()})"
@@ -101,7 +101,7 @@ class ImageUploadInfo(
  */
 @AnnotatedId(KnownPacketId.GROUP_IMAGE_ID)
 @PacketVersion(date = "2019.11.22", timVersion = "2.3.2 (21173)")
-object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
+internal object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
 
     private val constValue3 = byteArrayOf(
         0x28, 0x00, 0x5A, 0x00, 0x53, 0x00, 0x41, 0x00, 0x58, 0x00, 0x40, 0x00, 0x57,
@@ -115,7 +115,7 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
         @SerialId(3) var body: Body
     ) {
         @Serializable
-        class Body(
+        internal class Body(
             @SerialId(1) val group: Int,
             @SerialId(2) val bot: Int,
             @SerialId(3) val const1: Byte = 0,
@@ -142,7 +142,7 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
         @SerialId(4) var body: Body
     ) {
         @Serializable
-        class Body(
+        internal class Body(
             @SerialId(1) val group: Int,
             @SerialId(2) val bot: Int,
             @SerialId(3) val uniqueId: Int,
@@ -226,13 +226,13 @@ object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
         @Serializable
         data class GroupImageResponseProto(
             @SerialId(3) val imageUploadInfoPacket: ImageUploadInfo? = null,
-            @SerialId(4) val imageDownloadInfo: ImageDownloadInfo? = null
+            @SerialId(4) val groupImageLink: GroupImageLink? = null
         )
 
         val proto = decodeProtoPacket(GroupImageResponseProto.serializer())
         return when {
             proto.imageUploadInfoPacket != null -> proto.imageUploadInfoPacket
-            proto.imageDownloadInfo != null -> proto.imageDownloadInfo
+            proto.groupImageLink != null -> proto.groupImageLink
             else -> assertUnreachable()
         }
     }

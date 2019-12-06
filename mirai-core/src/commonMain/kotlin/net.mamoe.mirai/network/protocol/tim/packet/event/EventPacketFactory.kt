@@ -5,6 +5,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.event
 import kotlinx.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
@@ -13,7 +14,7 @@ import net.mamoe.mirai.utils.io.readIoBuffer
 /**
  * 事件的识别 ID. 在 ACK 时使用
  */
-class EventPacketIdentity(
+internal class EventPacketIdentity(
     val from: UInt,//对于好友消息, 这个是发送人
     val to: UInt,//对于好友消息, 这个是bot
     internal val uniqueId: IoBuffer//8
@@ -21,7 +22,7 @@ class EventPacketIdentity(
     override fun toString(): String = "($from->$to)"
 }
 
-fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = with(identity) {
+internal fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = with(identity) {
     writeUInt(from)
     writeUInt(to)
     writeFully(uniqueId)
@@ -29,7 +30,7 @@ fun BytePacketBuilder.writeEventPacketIdentity(identity: EventPacketIdentity) = 
 
 
 @Suppress("FunctionName")
-fun matchEventPacketFactory(value: UShort): EventParserAndHandler<*> =
+internal fun matchEventPacketFactory(value: UShort): EventParserAndHandler<*> =
     KnownEventParserAndHandler.firstOrNull { it.id == value } ?: IgnoredEventIds.firstOrNull { it.id == value } ?: UnknownEventParserAndHandler(value)
 
 /**
@@ -37,14 +38,14 @@ fun matchEventPacketFactory(value: UShort): EventParserAndHandler<*> =
  */
 @NoLog
 @Suppress("FunctionName")
-object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
+internal object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): Packet {
         val eventIdentity = EventPacketIdentity(
             from = readUInt(),
             to = readUInt(),
             uniqueId = readIoBuffer(8)
         )
-        handler.sendPacket(EventPacketFactory(id, sequenceId, handler.bot.qqAccount, handler.sessionKey, eventIdentity))
+        (handler as TIMBotNetworkHandler).socket.sendPacket(EventPacketFactory(id, sequenceId, handler.bot.qqAccount, handler.sessionKey, eventIdentity))
         discardExact(2) // 1F 40
 
         return with(matchEventPacketFactory(readUShort())) { parse(handler.bot, eventIdentity) }.also {
@@ -75,7 +76,7 @@ object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKey) {
     }
 }
 
-interface EventParserAndHandler<TPacket : Packet> {
+internal interface EventParserAndHandler<TPacket : Packet> {
     val id: UShort
 
     suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): TPacket
@@ -86,7 +87,7 @@ interface EventParserAndHandler<TPacket : Packet> {
     suspend fun BotNetworkHandler<*>.handlePacket(packet: TPacket) {}
 }
 
-abstract class KnownEventParserAndHandler<TPacket : Packet>(override val id: UShort) : EventParserAndHandler<TPacket> {
+internal abstract class KnownEventParserAndHandler<TPacket : Packet>(override val id: UShort) : EventParserAndHandler<TPacket> {
     companion object FactoryList : MutableList<KnownEventParserAndHandler<*>> by mutableListOf(
         AndroidDeviceOnlineStatusChangedEventFactory,
         FriendConversationInitializedEventParserAndHandler,

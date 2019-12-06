@@ -59,8 +59,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
     private var heartbeatJob: Job? = null
 
-    @UseExperimental(MiraiInternalAPI::class)
-    override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
+    suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
         handlersLock.withLock {
             temporaryPacketHandlers.add(temporaryPacketHandler)
         }
@@ -115,8 +114,6 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
         this.socket.close()
     }
-
-    override suspend fun sendPacket(packet: OutgoingPacket) = socket.sendPacket(packet)
 
     internal inner class BotSocketAdapter(override val serverIp: String) :
         DataPacketSocketAdapter {
@@ -255,7 +252,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
             loginHandler?.onPacketReceived(packet)
         }
 
-        override suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext + CoroutineName("sendPacket")) {
+        internal suspend fun sendPacket(packet: OutgoingPacket): Unit = withContext(coroutineContext + CoroutineName("sendPacket")) {
             check(channel.isOpen) { "channel is not open" }
 
             if (BeforePacketSendEvent(bot, packet).broadcast().cancelled) {

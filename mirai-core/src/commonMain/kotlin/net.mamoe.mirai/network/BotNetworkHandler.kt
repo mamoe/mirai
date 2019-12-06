@@ -48,20 +48,6 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
     suspend fun login(): LoginResult
 
     /**
-     * 添加一个临时包处理器, 并发送相应的包
-     *
-     * @see [BotSession.sendAndExpectAsync] 发送并期待一个包
-     * @see [TemporaryPacketHandler] 临时包处理器
-     */
-    @MiraiInternalAPI
-    suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>)
-
-    /**
-     * 发送数据包
-     */
-    suspend fun sendPacket(packet: OutgoingPacket)
-
-    /**
      * 等待直到与服务器断开连接. 若未连接则立即返回
      */
     suspend fun awaitDisconnection()

@@ -18,7 +18,7 @@ import kotlin.jvm.JvmOverloads
 /**
  * 待发送给服务器的数据包. 它代表着一个 [ByteReadPacket],
  */
-class OutgoingPacket(
+internal class OutgoingPacket(
     name: String?,
     val packetId: PacketId,
     val sequenceId: UShort,
@@ -35,7 +35,7 @@ class OutgoingPacket(
  *
  * @param TPacket invariant
  */
-abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, SessionKey>(SessionKey) {
+internal abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, SessionKey>(SessionKey) {
     /**
      * 在 [BotNetworkHandler] 下处理这个包. 广播事件等.
      */
@@ -49,7 +49,7 @@ abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, S
  */
 @UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-inline fun PacketFactory<*, *>.buildOutgoingPacket(
+internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
     name: String? = null,
     id: PacketId = this.id,
     sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
@@ -81,7 +81,7 @@ inline fun PacketFactory<*, *>.buildOutgoingPacket(
  */
 @UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-inline fun PacketFactory<*, *>.buildSessionPacket(
+internal inline fun PacketFactory<*, *>.buildSessionPacket(
     bot: UInt,
     sessionKey: SessionKey,
     name: String? = null,
@@ -110,7 +110,7 @@ inline fun PacketFactory<*, *>.buildSessionPacket(
  */
 @UseExperimental(ExperimentalContracts::class)
 @JvmOverloads
-fun <T> PacketFactory<*, *>.buildSessionProtoPacket(
+internal fun <T> PacketFactory<*, *>.buildSessionProtoPacket(
     bot: UInt,
     sessionKey: SessionKey,
     name: String? = null,
@@ -142,7 +142,18 @@ fun <T> PacketFactory<*, *>.buildSessionProtoPacket(
                     writeFully(head)
                     writeFully(proto)
                 }
-                is String -> buildSessionProtoPacket(bot, sessionKey, name, id, sequenceId, headerSizeHint, version, head.hexToBytes(), serializer, protoObj)
+                is String -> buildSessionProtoPacket(
+                    bot,
+                    sessionKey,
+                    name,
+                    id,
+                    sequenceId,
+                    headerSizeHint,
+                    version,
+                    head.hexToBytes(),
+                    serializer,
+                    protoObj
+                )
             }
         }
     }

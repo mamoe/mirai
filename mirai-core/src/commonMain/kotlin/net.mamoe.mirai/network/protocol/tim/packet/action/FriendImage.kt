@@ -29,31 +29,30 @@ import net.mamoe.mirai.withSession
  * @throws OverFileSizeMaxException 如果文件过大, 服务器拒绝接收时
  */
 suspend fun QQ.uploadImage(image: ExternalImage): ImageId = bot.withSession {
-    FriendImagePacket.RequestImageId(qqAccount, sessionKey, id, image)
-        .sendAndExpectAsync<FriendImageResponse, ImageId> {
-            return@sendAndExpectAsync when (it) {
-                is FriendImageUKey -> {
-                    Http.postImage(
-                        htcmd = "0x6ff0070",
-                        uin = bot.qqAccount,
-                        groupId = null,
-                        uKeyHex = it.uKey.toUHexString(""),
-                        imageInput = image.input,
-                        inputSize = image.inputSize
-                    )
-                    it.imageId
-                }
-                is FriendImageAlreadyExists -> it.imageId
-                is FriendImageOverFileSizeMax -> throw OverFileSizeMaxException()
-                else -> error("This shouldn't happen")
+    FriendImagePacket.RequestImageId(qqAccount, sessionKey, id, image).sendAndExpect<FriendImageResponse>().let {
+        when (it) {
+            is FriendImageUKey -> {
+                Http.postImage(
+                    htcmd = "0x6ff0070",
+                    uin = bot.qqAccount,
+                    groupId = null,
+                    uKeyHex = it.uKey.toUHexString(""),
+                    imageInput = image.input,
+                    inputSize = image.inputSize
+                )
+                it.imageId
             }
-        }.await()
+            is FriendImageAlreadyExists -> it.imageId
+            is FriendImageOverFileSizeMax -> throw OverFileSizeMaxException()
+            else -> error("This shouldn't happen")
+        }
+    }
 }
 
 
 // region FriendImageResponse
 
-interface FriendImageResponse : EventPacket
+internal interface FriendImageResponse : EventPacket
 
 /**
  * 图片数据地址.
@@ -66,7 +65,7 @@ data class FriendImageLink(override inline val original: String) : FriendImageRe
 /**
  * 访问 HTTP API 时使用的 uKey
  */
-class FriendImageUKey(inline val imageId: ImageId, inline val uKey: ByteArray) : FriendImageResponse {
+internal class FriendImageUKey(inline val imageId: ImageId, inline val uKey: ByteArray) : FriendImageResponse {
     override fun toString(): String = "FriendImageUKey(imageId=${imageId.value}, uKey=${uKey.toUHexString()})"
 }
 
@@ -74,14 +73,14 @@ class FriendImageUKey(inline val imageId: ImageId, inline val uKey: ByteArray) :
  * 图片 ID 已存在
  * 发送消息时使用的 id
  */
-inline class FriendImageAlreadyExists(inline val imageId: ImageId) : FriendImageResponse {
+internal inline class FriendImageAlreadyExists(inline val imageId: ImageId) : FriendImageResponse {
     override fun toString(): String = "FriendImageAlreadyExists(imageId=${imageId.value})"
 }
 
 /**
  * 超过文件大小上限
  */
-object FriendImageOverFileSizeMax : FriendImageResponse {
+internal object FriendImageOverFileSizeMax : FriendImageResponse {
     override fun toString(): String = "FriendImageOverFileSizeMax"
 }
 
@@ -95,14 +94,19 @@ object FriendImageOverFileSizeMax : FriendImageResponse {
  */
 @AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
 @PacketVersion(date = "2019.11.16", timVersion = "2.3.2 (21173)")
-object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
+internal object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
     @Suppress("FunctionName")
     fun RequestImageId(
         bot: UInt,
         sessionKey: SessionKey,
         target: UInt,
         image: ExternalImage
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x04) {
+    ): OutgoingPacket = buildSessionPacket(
+        bot,
+        sessionKey,
+        version = TIMProtocol.version0x04,
+        name = "FriendImagePacket.RequestPacketId"
+    ) {
         writeHex("00 00 00 07 00 00")
 
 
@@ -186,7 +190,12 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
 
         // TODO: 2019/11/22 should be ProtoBuf
 
-        return buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x04) {
+        return buildSessionPacket(
+            bot,
+            sessionKey,
+            version = TIMProtocol.version0x04,
+            name = "FriendImagePacket.RequestImageLink"
+        ) {
             writeHex("00 00 00 07 00 00")
 
             writeUShort(0x004Bu)
@@ -206,7 +215,11 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
         }
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): FriendImageResponse {
+    override suspend fun ByteReadPacket.decode(
+        id: PacketId,
+        sequenceId: UShort,
+        handler: BotNetworkHandler<*>
+    ): FriendImageResponse {
 
         // 上传图片, 成功获取ID
         //00 00 00 08 00 00
@@ -302,7 +315,6 @@ object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
                 //   18 00
                 //   32 [7B] 68 74 74 70 3A 2F 2F 36 31 2E 31 35 31 2E 32 33 34 2E 35 34 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 30 31 2E 32 32 37 2E 31 33 31 2E 36 37 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7D 68 74 74 70 3A 2F 2F 31 35 37 2E 32 35 35 2E 31 39 32 2E 31 30 35 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33 32 7C 68 74 74 70 3A 2F 2F 31 32 30 2E 32 34 31 2E 31 39 30 2E 34 31 3A 38 30 2F 6F 66 66 70 69 63 5F 6E 65 77 2F 31 30 34 30 34 30 30 32 39 30 2F 2F 38 65 32 63 32 38 62 64 2D 35 38 61 31 2D 34 66 37 30 2D 38 39 61 31 2D 65 37 31 39 66 63 33 30 37 65 65 66 2F 30 3F 76 75 69 6E 3D 31 30 34 30 34 30 30 32 39 30 26 74 65 72 6D 3D 32 35 35 26 73 72 76 76 65 72 3D 32 36 39 33 33
                 //   3A 00 80 01 00
-
 
 
                 //00 00 00 08 00 00

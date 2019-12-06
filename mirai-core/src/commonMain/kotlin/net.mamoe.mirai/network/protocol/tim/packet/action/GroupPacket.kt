@@ -4,7 +4,7 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.contact.internal.MemberImpl
+import net.mamoe.mirai.contact.internal.Member
 import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -32,10 +32,11 @@ class GroupInfo(
     val announcement: String get() = _announcement
     val members: ContactList<Member> get() = _members
 
-    override fun toString(): String = "GroupInfo(id=${group.id}, owner=$owner, name=$name, announcement=$announcement, members=${members.idContentString}"
+    override fun toString(): String =
+        "GroupInfo(id=${group.id}, owner=$owner, name=$name, announcement=$announcement, members=${members.idContentString}"
 }
 
-data class RawGroupInfo(
+internal data class RawGroupInfo(
     val group: UInt,
     val owner: UInt,
     val name: String,
@@ -49,10 +50,12 @@ data class RawGroupInfo(
     suspend inline fun parseBy(group: Group): GroupInfo = group.bot.withSession {
         return GroupInfo(
             group,
-            MemberImpl(this@RawGroupInfo.owner.qq(), group, MemberPermission.OWNER),
+            this@RawGroupInfo.owner.qq().let { Member(it, group, MemberPermission.OWNER, it.coroutineContext) },
             this@RawGroupInfo.name,
             this@RawGroupInfo.announcement,
-            ContactList(this@RawGroupInfo.members.mapValuesTo(MutableContactList()) { MemberImpl(it.key.qq(), group, it.value) })
+            ContactList(this@RawGroupInfo.members.mapValuesTo(MutableContactList()) { entry: Map.Entry<UInt, MemberPermission> ->
+                entry.key.qq().let { Member(it,group, entry.value, it.coroutineContext) }
+            })
         )
     }
 }
@@ -69,14 +72,14 @@ inline class QuitGroupResponse(private val _group: GroupInternalId?) : Packet, G
 
 @Suppress("FunctionName")
 @AnnotatedId(KnownPacketId.GROUP_PACKET)
-object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
+internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2 (21173)")
     fun Message(
         bot: UInt,
         groupInternalId: GroupInternalId,
         sessionKey: SessionKey,
         message: MessageChain
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "GroupMessage") {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "GroupPacket.GroupMessage") {
         writeUByte(0x2Au)
         writeGroup(groupInternalId)
 
@@ -102,7 +105,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
         bot: UInt,
         sessionKey: SessionKey,
         group: GroupInternalId
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey) {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "GroupPacket.QuitGroup") {
         writeUByte(0x09u)
         writeGroup(group)
     }
@@ -115,7 +118,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
         bot: UInt,
         groupInternalId: GroupInternalId,
         sessionKey: SessionKey
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "QueryGroupInfo", headerSizeHint = 9) {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "GroupPacket.QueryGroupInfo", headerSizeHint = 9) {
         writeUByte(0x72u)
         writeGroup(groupInternalId)
         writeZero(4)
@@ -134,7 +137,7 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
          * 0 为取消
          */
         timeSeconds: UInt
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "MuteMember") {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "GroupPacket.Mute") {
         writeUByte(0x7Eu)
         writeGroup(groupInternalId)
         writeByte(0x20)
@@ -144,21 +147,25 @@ object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
         writeUInt(timeSeconds)
     }
 
-    interface GroupPacketResponse : Packet
+    internal interface GroupPacketResponse : Packet
 
     @NoLog
-    object MessageResponse : Packet, GroupPacketResponse {
+    internal object MessageResponse : Packet, GroupPacketResponse {
         override fun toString(): String = "GroupPacket.MessageResponse"
     }
 
     @NoLog
-    object MuteResponse : Packet, GroupPacketResponse {
+    internal object MuteResponse : Packet, GroupPacketResponse {
         override fun toString(): String = "GroupPacket.MuteResponse"
     }
 
     @PacketVersion(date = "2019.11.27", timVersion = "2.3.2 (21173)")
     @UseExperimental(ExperimentalStdlibApi::class)
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): GroupPacketResponse {
+    override suspend fun ByteReadPacket.decode(
+        id: PacketId,
+        sequenceId: UShort,
+        handler: BotNetworkHandler<*>
+    ): GroupPacketResponse {
         return when (readUByte().toUInt()) {
             0x2Au -> MessageResponse
             0x7Eu -> MuteResponse // 成功: 7E 00 22 96 29 7B;

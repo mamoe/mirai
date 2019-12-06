@@ -8,14 +8,14 @@ import net.mamoe.mirai.utils.decryptBy
 /**
  * 会话密匙
  */
-inline class SessionKey(override val value: ByteArray) : DecrypterByteArray {
+internal inline class SessionKey(override val value: ByteArray) : DecrypterByteArray {
     companion object Type : DecrypterType<SessionKey>
 }
 
 /**
  * [ByteArray] 解密器
  */
-interface DecrypterByteArray : Decrypter {
+internal interface DecrypterByteArray : Decrypter {
     val value: ByteArray
     override fun decrypt(input: ByteReadPacket): ByteReadPacket = input.decryptBy(value)
 }
@@ -23,7 +23,7 @@ interface DecrypterByteArray : Decrypter {
 /**
  * [IoBuffer] 解密器
  */
-interface DecrypterIoBuffer : Decrypter {
+internal interface DecrypterIoBuffer : Decrypter {
     val value: IoBuffer
     override fun decrypt(input: ByteReadPacket): ByteReadPacket = input.decryptBy(value)
 }
@@ -31,18 +31,18 @@ interface DecrypterIoBuffer : Decrypter {
 /**
  * 连接在一起的解密器
  */
-inline class LinkedDecrypter(inline val block: (ByteReadPacket) -> ByteReadPacket) : Decrypter {
+internal inline class LinkedDecrypter(inline val block: (ByteReadPacket) -> ByteReadPacket) : Decrypter {
     override fun decrypt(input: ByteReadPacket): ByteReadPacket = block(input)
 }
 
-object NoDecrypter : Decrypter, DecrypterType<NoDecrypter> {
+internal object NoDecrypter : Decrypter, DecrypterType<NoDecrypter> {
     override fun decrypt(input: ByteReadPacket): ByteReadPacket = input
 }
 
 /**
  * 解密器
  */
-interface Decrypter {
+internal interface Decrypter {
     fun decrypt(input: ByteReadPacket): ByteReadPacket
     /**
      * 连接后将会先用 this 解密, 再用 [another] 解密
@@ -50,4 +50,4 @@ interface Decrypter {
     operator fun plus(another: Decrypter): Decrypter = LinkedDecrypter { another.decrypt(this.decrypt(it)) }
 }
 
-interface DecrypterType<D : Decrypter>
+internal interface DecrypterType<D : Decrypter>

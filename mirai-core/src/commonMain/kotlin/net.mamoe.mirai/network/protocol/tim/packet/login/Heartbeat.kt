@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.io.writeQQ
 
 @NoLog
 @AnnotatedId(KnownPacketId.HEARTBEAT)
-object HeartbeatPacket : SessionPacketFactory<HeartbeatPacketResponse>() {
+internal object HeartbeatPacket : SessionPacketFactory<HeartbeatPacketResponse>() {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey
@@ -32,4 +32,4 @@ object HeartbeatPacket : SessionPacketFactory<HeartbeatPacketResponse>() {
 
 @NoLog
 @AnnotatedId(KnownPacketId.HEARTBEAT)
-object HeartbeatPacketResponse : Packet, Subscribable
+internal object HeartbeatPacketResponse : Packet, Subscribable

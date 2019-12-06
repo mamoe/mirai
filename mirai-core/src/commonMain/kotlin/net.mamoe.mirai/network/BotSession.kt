@@ -46,7 +46,7 @@ internal inline fun TIMBotNetworkHandler.BotSession(
  * @author Him188moe
  */
 @UseExperimental(MiraiInternalAPI::class)
-expect class BotSession(
+expect class BotSession internal constructor(
     bot: Bot,
     sessionKey: SessionKey,
     socket: DataPacketSocketAdapter,
@@ -58,9 +58,9 @@ expect class BotSession(
  */
 @MiraiInternalAPI
 // cannot be internal because of `public BotSession`
-abstract class BotSessionBase(
+abstract class BotSessionBase internal constructor(
     val bot: Bot,
-    val sessionKey: SessionKey,
+    internal val sessionKey: SessionKey,
     val socket: DataPacketSocketAdapter,
     val NetworkScope: CoroutineScope
 ) {
@@ -110,33 +110,36 @@ abstract class BotSessionBase(
      *
      * @see Bot.withSession 转换 receiver, 即 `this` 的指向, 为 [BotSession]
      */
-    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpectAsync(
+    internal suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpectAsync(
         checkSequence: Boolean = true,
         noinline handler: suspend (P) -> R
     ): Deferred<R> {
         val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
-        bot.network.addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSessionBase as BotSession, checkSequence, coroutineContext + deferred).also {
+        (bot.network as TIMBotNetworkHandler).addHandler(TemporaryPacketHandler(
+            P::class, deferred, this@BotSessionBase as BotSession, checkSequence, coroutineContext + deferred
+        ).also {
             it.toSend(this)
             it.onExpect(handler)
         })
         return deferred
     }
 
-    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpectAsync(checkSequence: Boolean = true): Deferred<P> =
+    internal suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpectAsync(checkSequence: Boolean = true): Deferred<P> =
         sendAndExpectAsync<P, P>(checkSequence) { it }
 
-    suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(
+    internal suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(
         checkSequence: Boolean = true,
         timeout: TimeSpan = 5.seconds,
         crossinline mapper: (P) -> R
     ): R = withTimeout(timeout.millisecondsLong) { sendAndExpectAsync<P, R>(checkSequence) { mapper(it) }.await() }
 
-    suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(
+    internal suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(
         checkSequence: Boolean = true,
         timeout: TimeSpan = 5.seconds
     ): P = withTimeout(timeout.millisecondsLong) { sendAndExpectAsync<P, P>(checkSequence) { it }.await() }
 
-    suspend inline fun OutgoingPacket.send() = socket.sendPacket(this)
+    internal suspend inline fun OutgoingPacket.send() =
+        (socket as TIMBotNetworkHandler.BotSocketAdapter).sendPacket(this)
 
 
     suspend inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
@@ -150,8 +153,16 @@ abstract class BotSessionBase(
     suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
 
     suspend fun Image.getLink(): ImageLink = when (this.id) {
-        is ImageId0x06 -> FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect<FriendImageLink>()
-        is ImageId0x03 -> GroupImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect<ImageDownloadInfo>().requireSuccess()
+        is ImageId0x06 -> FriendImagePacket.RequestImageLink(
+            bot.qqAccount,
+            bot.sessionKey,
+            id
+        ).sendAndExpect<FriendImageLink>()
+        is ImageId0x03 -> GroupImagePacket.RequestImageLink(
+            bot.qqAccount,
+            bot.sessionKey,
+            id
+        ).sendAndExpect<GroupImageLink>().requireSuccess()
         else -> assertUnreachable()
     }
 
@@ -167,7 +178,7 @@ inline val BotSession.qqAccount: UInt get() = bot.account.id // 为了与群和�
  * 取得 [BotNetworkHandler] 的 sessionKey.
  * 实际上是一个捷径.
  */
-inline val BotNetworkHandler<*>.sessionKey: SessionKey get() = this.session.sessionKey
+internal inline val BotNetworkHandler<*>.sessionKey: SessionKey get() = this.session.sessionKey
 
 /**
  * 取得 [Bot] 的 [BotSession].
@@ -179,14 +190,14 @@ inline val Bot.session: BotSession get() = this.network.session
  * 取得 [Bot] 的 `sessionKey`.
  * 实际上是一个捷径.
  */
-inline val Bot.sessionKey: SessionKey get() = this.session.sessionKey
+internal inline val Bot.sessionKey: SessionKey get() = this.session.sessionKey
 
 
 /**
  * 发送数据包
  * @throws IllegalStateException 当 [BotNetworkHandler.socket] 未开启时
  */
-suspend inline fun BotSession.sendPacket(packet: OutgoingPacket) = this.bot.sendPacket(packet)
+internal suspend inline fun BotSession.sendPacket(packet: OutgoingPacket) = this.bot.sendPacket(packet)
 
 
 suspend inline fun BotSession.getQQ(@PositiveNumbers number: Long): QQ = this.bot.getQQ(number)

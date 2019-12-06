@@ -9,11 +9,11 @@ package net.mamoe.mirai.network.protocol.tim.packet
 @MustBeDocumented
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
-annotation class AnnotatedId( // 注解无法在 JS 平台使用, 但现在暂不需要考虑 JS
+internal annotation class AnnotatedId( // 注解无法在 JS 平台使用, 但现在暂不需要考虑 JS
     val id: KnownPacketId
 )
 
-inline val AnnotatedId.value: UShort get() = id.value
+internal inline val AnnotatedId.value: UShort get() = id.value
 
 /**
  * 包的最后一次修改时间, 和分析时使用的 TIM 版本

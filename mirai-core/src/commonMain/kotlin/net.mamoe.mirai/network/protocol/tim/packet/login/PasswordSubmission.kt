@@ -13,15 +13,15 @@ import net.mamoe.mirai.utils.encryptBy
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.writeCRC32
 
-object ShareKey : DecrypterByteArray, DecrypterType<ShareKey> {
+internal object ShareKey : DecrypterByteArray, DecrypterType<ShareKey> {
     override val value: ByteArray = TIMProtocol.shareKey
 }
 
-inline class PrivateKey(override val value: ByteArray) : DecrypterByteArray {
+internal inline class PrivateKey(override val value: ByteArray) : DecrypterByteArray {
     companion object Type : DecrypterType<PrivateKey>
 }
 
-inline class SubmitPasswordResponseDecrypter(private val privateKey: PrivateKey) : Decrypter {
+internal inline class SubmitPasswordResponseDecrypter(private val privateKey: PrivateKey) : Decrypter {
     override fun decrypt(input: ByteReadPacket): ByteReadPacket {
         var decrypted = ShareKey.decrypt(input)
         (decrypted.remaining).let {
@@ -45,7 +45,7 @@ inline class SubmitPasswordResponseDecrypter(private val privateKey: PrivateKey)
  * 提交密码
  */
 @AnnotatedId(KnownPacketId.LOGIN)
-object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, SubmitPasswordResponseDecrypter>(SubmitPasswordResponseDecrypter) {
+internal object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, SubmitPasswordResponseDecrypter>(SubmitPasswordResponseDecrypter) {
     operator fun invoke(
         bot: UInt,
         password: String,
@@ -76,7 +76,7 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
         }
     }
 
-    sealed class LoginResponse : Packet {
+    internal sealed class LoginResponse : Packet {
         class KeyExchange(
             val tlv0006: IoBuffer,//120bytes
             val tokenUnknown: ByteArray?,
@@ -259,7 +259,7 @@ object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, 
     }
 }
 
-inline class SessionResponseDecryptionKey(private val delegate: IoBuffer) : Decrypter {
+internal inline class SessionResponseDecryptionKey(private val delegate: IoBuffer) : Decrypter {
     override fun decrypt(input: ByteReadPacket): ByteReadPacket = input.decryptBy(delegate)
 
     override fun toString(): String = "SessionResponseDecryptionKey"

@@ -15,7 +15,7 @@ import net.mamoe.mirai.withSession
 
 internal fun BotSession.RequestSKeyPacket(): OutgoingPacket = RequestSKeyPacket(qqAccount, sessionKey)
 
-inline class SKey(
+internal inline class SKey(
     val value: String
 ) : Packet
 

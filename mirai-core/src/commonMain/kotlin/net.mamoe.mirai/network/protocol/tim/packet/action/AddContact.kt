@@ -21,7 +21,7 @@ import net.mamoe.mirai.withSession
  */
 @AnnotatedId(KnownPacketId.QUERY_PREVIOUS_NAME)
 @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
-object QueryPreviousNamePacket : SessionPacketFactory<PreviousNameList>() {
+internal object QueryPreviousNamePacket : SessionPacketFactory<PreviousNameList>() {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey,
@@ -79,7 +79,7 @@ class PreviousNameList(
  */
 @AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
 @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
-object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
+internal object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
     operator fun invoke(
         bot: UInt,
         qq: UInt,
@@ -112,7 +112,7 @@ object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
 
 }
 
-sealed class CanAddFriendResponse : EventPacket {
+internal sealed class CanAddFriendResponse : EventPacket {
     abstract val qq: QQ
 
     /**
@@ -157,7 +157,7 @@ inline class FriendAdditionKey(val value: IoBuffer)
  */
 @AnnotatedId(KnownPacketId.REQUEST_FRIEND_ADDITION_KEY)
 @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
-object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditionKeyPacket.Response>() {
+internal object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditionKeyPacket.Response>() {
     operator fun invoke(
         bot: UInt,
         qq: UInt,
@@ -183,8 +183,9 @@ object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditi
  * 请求添加好友
  */
 @AnnotatedId(KnownPacketId.ADD_FRIEND)
-object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
+internal object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
     @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
+    @Suppress("FunctionName")
     fun RequestAdd(
         bot: UInt,
         qq: UInt,
@@ -198,7 +199,7 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
          */
         remark: String?, //// TODO: 2019/11/15 无备注的情况
         key: FriendAdditionKey
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey) {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, name = "AddFriendPacket.RequestAdd") {
 
         //02 5D 12 93 30
         // 00
@@ -264,7 +265,7 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
          * 备注. 不设置则需要为 `null` TODO 需要确认是否还需发送一个设置备注包. 因为测试时若有备注则会多发一个包并且包里面有所设置的备注
          */
         remark: String?
-    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x02) {
+    ): OutgoingPacket = buildSessionPacket(bot, sessionKey, version = TIMProtocol.version0x02, name = "AddFriendPacket.Approve") {
         writeByte(0x03)
         writeQQ(qq)
         writeZero(1)
@@ -282,7 +283,7 @@ object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
         writeHex("00 05 00 00 00 00 01")
     }
 
-    object Response : Packet {
+    internal object Response : Packet {
         override fun toString(): String = "AddFriendPacket.Response"
     }
 

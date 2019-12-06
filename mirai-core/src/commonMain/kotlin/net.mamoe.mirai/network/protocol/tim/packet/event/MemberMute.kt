@@ -18,7 +18,7 @@ import net.mamoe.mirai.qqAccount
 /**
  * 某群成员被禁言事件
  */
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class MemberMuteEvent(
     val member: Member,
     override val duration: TimeSpan,

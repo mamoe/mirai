@@ -24,7 +24,7 @@ data class FriendStatusChanged(
  * 好友在线状态改变
  */
 @AnnotatedId(KnownPacketId.FRIEND_ONLINE_STATUS_CHANGE)
-object FriendOnlineStatusChangedPacket : SessionPacketFactory<FriendStatusChanged>() {
+internal object FriendOnlineStatusChangedPacket : SessionPacketFactory<FriendStatusChanged>() {
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): FriendStatusChanged {
         val qq = readUInt()

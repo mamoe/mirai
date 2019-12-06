@@ -12,13 +12,13 @@ import net.mamoe.mirai.utils.io.toUHexString
 /**
  * 通过 [value] 匹配一个 [IgnoredPacketId] 或 [KnownPacketId], 无匹配则返回一个 [UnknownPacketId].
  */
-fun matchPacketId(value: UShort): PacketId =
+internal fun matchPacketId(value: UShort): PacketId =
     IgnoredPacketIds.firstOrNull { it.value == value } ?: KnownPacketId.values().firstOrNull { it.value == value } ?: UnknownPacketId(value)
 
 /**
  * 包 ID.
  */
-interface PacketId {
+internal interface PacketId {
     val value: UShort
     val factory: PacketFactory<*, *>
 }
@@ -27,7 +27,7 @@ interface PacketId {
  * 用于代表 `null`. 调用任何属性时都将会得到一个 [error]
  */
 @Suppress("unused")
-object NullPacketId : PacketId {
+internal object NullPacketId : PacketId {
     override val factory: PacketFactory<*, *> get() = error("uninitialized")
     override val value: UShort get() = error("uninitialized")
     override fun toString(): String = "NullPacketId"
@@ -36,17 +36,17 @@ object NullPacketId : PacketId {
 /**
  * 未知的 [PacketId]
  */
-inline class UnknownPacketId(override inline val value: UShort) : PacketId {
+internal inline class UnknownPacketId(override inline val value: UShort) : PacketId {
     override val factory: PacketFactory<*, *> get() = UnknownPacketFactory
     override fun toString(): String = "UnknownPacketId(${value.toUHexString()})"
 }
 
-object IgnoredPacketIds : List<IgnoredPacketId> by {
+internal object IgnoredPacketIds : List<IgnoredPacketId> by {
     listOf<UShort>(
     ).map { IgnoredPacketId(it.toUShort()) }
 }()
 
-inline class IgnoredPacketId constructor(override val value: UShort) : PacketId {
+internal inline class IgnoredPacketId constructor(override val value: UShort) : PacketId {
     override val factory: PacketFactory<*, *> get() = IgnoredPacketFactory
     override fun toString(): String = "IgnoredPacketId(${value.toUHexString()})"
 }
@@ -55,7 +55,7 @@ inline class IgnoredPacketId constructor(override val value: UShort) : PacketId 
  * 已知的 [matchPacketId]. 所有在 Mirai 中实现过的包都会使用这些 Id
  */
 @Suppress("unused")
-enum class KnownPacketId(override inline val value: UShort, override inline val factory: PacketFactory<*, *>) :
+internal enum class KnownPacketId(override inline val value: UShort, override inline val factory: PacketFactory<*, *>) :
     PacketId {
     inline TOUCH(0x0825u, TouchPacket),
     inline SESSION_KEY(0x0828u, RequestSessionPacket),

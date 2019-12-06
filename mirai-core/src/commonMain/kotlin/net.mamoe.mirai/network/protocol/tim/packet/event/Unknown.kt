@@ -10,7 +10,7 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toUHexString
 
-data class UnknownEventPacket(
+internal data class UnknownEventPacket(
     val id: UShort,
     val identity: EventPacketIdentity,
     val body: ByteReadPacket
@@ -25,7 +25,7 @@ Mirai 21:54:15 : Packet received: UnknownEventPacket(id=00 57, identity=(9205034
  */
 
 //TODO This class should be declared with `inline`, but a CompilationException will be thrown
-class UnknownEventParserAndHandler(override val id: UShort) : EventParserAndHandler<UnknownEventPacket> {
+internal class UnknownEventParserAndHandler(override val id: UShort) : EventParserAndHandler<UnknownEventPacket> {
 
     override suspend fun ByteReadPacket.parse(bot: Bot, identity: EventPacketIdentity): UnknownEventPacket {
         // MiraiLogger.debug("UnknownEventPacket(${id.toUHexString()}) = ${readBytes().toUHexString()}")

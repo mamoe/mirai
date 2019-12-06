@@ -8,6 +8,7 @@ import net.mamoe.mirai.event.events.ServerPacketReceivedEvent
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -35,15 +36,6 @@ interface DataPacketSocketAdapter : Closeable {
      * 是否开启
      */
     val isOpen: Boolean
-
-    /**
-     * 发送一个数据包(非异步).
-     *
-     * 可通过 hook 事件 [ServerPacketReceivedEvent] 来获取服务器返回.
-     *
-     * @see [BotSession.sendAndExpectAsync] kotlin DSL
-     */
-    suspend fun sendPacket(packet: OutgoingPacket)
 
     override fun close()
 }

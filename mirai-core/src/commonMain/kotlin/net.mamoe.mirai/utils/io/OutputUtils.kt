@@ -16,46 +16,46 @@ import net.mamoe.mirai.utils.internal.coerceAtMostOrFail
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-fun BytePacketBuilder.writeZero(count: Int) {
+internal fun BytePacketBuilder.writeZero(count: Int) {
     require(count != 0) { "Trying to write zero with count 0, you made a mistake?" }
     require(count > 0) { "writeZero: count must > 0" }
     repeat(count) { this.writeByte(0) }
 }
 
-fun BytePacketBuilder.writeRandom(length: Int) = repeat(length) { this.writeByte(Random.Default.nextInt(255).toByte()) }
+internal fun BytePacketBuilder.writeRandom(length: Int) = repeat(length) { this.writeByte(Random.Default.nextInt(255).toByte()) }
 
-fun BytePacketBuilder.writeQQ(qq: Long) = this.writeUInt(qq.toUInt())
-fun BytePacketBuilder.writeQQ(qq: UInt) = this.writeUInt(qq)
-fun BytePacketBuilder.writeGroup(groupId: GroupId) = this.writeUInt(groupId.value)
-fun BytePacketBuilder.writeGroup(groupInternalId: GroupInternalId) = this.writeUInt(groupInternalId.value)
-fun BytePacketBuilder.writeFully(value: DecrypterByteArray) = this.writeFully(value.value)
+internal fun BytePacketBuilder.writeQQ(qq: Long) = this.writeUInt(qq.toUInt())
+internal fun BytePacketBuilder.writeQQ(qq: UInt) = this.writeUInt(qq)
+internal fun BytePacketBuilder.writeGroup(groupId: GroupId) = this.writeUInt(groupId.value)
+internal fun BytePacketBuilder.writeGroup(groupInternalId: GroupInternalId) = this.writeUInt(groupInternalId.value)
+internal fun BytePacketBuilder.writeFully(value: DecrypterByteArray) = this.writeFully(value.value)
 
-fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
+internal fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
     this.writeShort(byteArray.size.toShort())
     this.writeFully(byteArray)
 }
 
-fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
+internal fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
         writeUShort((lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL).toUShort())
         writePacket(it)
     }
 
-fun BytePacketBuilder.writeUVarIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
+internal fun BytePacketBuilder.writeUVarIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
         writeUVarInt((lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL))
         writePacket(it)
     }
 
-fun BytePacketBuilder.writeShortLVString(str: String) = writeShortLVByteArray(str.toByteArray())
+internal fun BytePacketBuilder.writeShortLVString(str: String) = writeShortLVByteArray(str.toByteArray())
 
-fun BytePacketBuilder.writeIP(ip: String) = writeFully(ip.trim().split(".").map { it.toUByte() }.toUByteArray())
+internal fun BytePacketBuilder.writeIP(ip: String) = writeFully(ip.trim().split(".").map { it.toUByte() }.toUByteArray())
 
-fun BytePacketBuilder.writeTime() = this.writeInt(currentTime.toInt())
+internal fun BytePacketBuilder.writeTime() = this.writeInt(currentTime.toInt())
 
-fun BytePacketBuilder.writeHex(uHex: String) {
+internal fun BytePacketBuilder.writeHex(uHex: String) {
     uHex.split(" ").forEach {
         if (it.isNotBlank()) {
             writeUByte(it.toUByte(16))
@@ -63,49 +63,49 @@ fun BytePacketBuilder.writeHex(uHex: String) {
     }
 }
 
-fun <T> BytePacketBuilder.writeProto(serializer: SerializationStrategy<T>, obj: T) = writeFully(ProtoBuf.dump(serializer, obj))
+internal fun <T> BytePacketBuilder.writeProto(serializer: SerializationStrategy<T>, obj: T) = writeFully(ProtoBuf.dump(serializer, obj))
 
 
-fun BytePacketBuilder.writeTLV(tag: UByte, values: UByteArray) {
+internal fun BytePacketBuilder.writeTLV(tag: UByte, values: UByteArray) {
     writeUByte(tag)
     writeUVarInt(values.size.toUInt())
     writeFully(values)
 }
 
-fun BytePacketBuilder.writeTLV(tag: UByte, values: ByteArray) {
+internal fun BytePacketBuilder.writeTLV(tag: UByte, values: ByteArray) {
     writeUByte(tag)
     writeUVarInt(values.size.toUInt())
     writeFully(values)
 }
 
-fun BytePacketBuilder.writeTHex(tag: UByte, uHex: String) {
+internal fun BytePacketBuilder.writeTHex(tag: UByte, uHex: String) {
     this.writeUByte(tag)
     this.writeFully(uHex.hexToUBytes())
 }
 
-fun BytePacketBuilder.writeTV(tagValue: UShort) = writeUShort(tagValue)
+internal fun BytePacketBuilder.writeTV(tagValue: UShort) = writeUShort(tagValue)
 
-fun BytePacketBuilder.writeTV(tag: UByte, value: UByte) {
+internal fun BytePacketBuilder.writeTV(tag: UByte, value: UByte) {
     writeUByte(tag)
     writeUByte(value)
 }
 
-fun BytePacketBuilder.writeTUbyte(tag: UByte, value: UByte) {
+internal fun BytePacketBuilder.writeTUbyte(tag: UByte, value: UByte) {
     this.writeUByte(tag)
     this.writeUByte(value)
 }
 
-fun BytePacketBuilder.writeTUVarint(tag: UByte, value: UInt) {
+internal fun BytePacketBuilder.writeTUVarint(tag: UByte, value: UInt) {
     this.writeUByte(tag)
     this.writeUVarInt(value)
 }
 
-fun BytePacketBuilder.writeTByteArray(tag: UByte, value: ByteArray) {
+internal fun BytePacketBuilder.writeTByteArray(tag: UByte, value: ByteArray) {
     this.writeUByte(tag)
     this.writeFully(value)
 }
 
-fun BytePacketBuilder.writeTByteArray(tag: UByte, value: UByteArray) {
+internal fun BytePacketBuilder.writeTByteArray(tag: UByte, value: UByteArray) {
     this.writeUByte(tag)
     this.writeFully(value)
 }
@@ -113,19 +113,19 @@ fun BytePacketBuilder.writeTByteArray(tag: UByte, value: UByteArray) {
 /**
  * 会使用 [ByteArrayPool] 缓存
  */
-inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
+internal inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
     BytePacketBuilder().apply(encoder).build().encryptBy(key) { decrypted -> writeFully(decrypted) }
 
-inline fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = ByteArrayPool.useInstance {
+internal inline fun BytePacketBuilder.encryptAndWrite(key: IoBuffer, encoder: BytePacketBuilder.() -> Unit) = ByteArrayPool.useInstance {
     key.readFully(it, 0, key.readRemaining)
     encryptAndWrite(it, encoder)
 }
 
-inline fun BytePacketBuilder.encryptAndWrite(key: DecrypterByteArray, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.value, encoder)
+internal inline fun BytePacketBuilder.encryptAndWrite(key: DecrypterByteArray, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(key.value, encoder)
 
-inline fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
+internal inline fun BytePacketBuilder.encryptAndWrite(keyHex: String, encoder: BytePacketBuilder.() -> Unit) = encryptAndWrite(keyHex.hexToBytes(), encoder)
 
-fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: PrivateKey) {
+internal fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, loginIP: String, privateKey: PrivateKey) {
     val firstMD5 = md5(password)
     val secondMD5 = md5(firstMD5 + byteArrayOf(0, 0, 0, 0) + qq.toUInt().toByteArray())
 
@@ -149,7 +149,7 @@ fun BytePacketBuilder.writeTLV0006(qq: UInt, password: String, loginTime: Int, l
 }
 
 @Tested
-fun BytePacketBuilder.writeDeviceName(random: Boolean) {
+internal fun BytePacketBuilder.writeDeviceName(random: Boolean) {
     val deviceName: String = if (random) {
         "DESKTOP-" + String(ByteArray(7) {
             (if (Random.nextBoolean()) Random.nextInt('A'.toInt()..'Z'.toInt())

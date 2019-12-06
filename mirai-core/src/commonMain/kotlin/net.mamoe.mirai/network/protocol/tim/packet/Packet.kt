@@ -12,18 +12,18 @@ interface Packet
 /**
  * 被忽略的数据包.
  */
-inline class IgnoredPacket(val id: PacketId) : Packet
+internal inline class IgnoredPacket(internal val id: PacketId) : Packet
 
 /**
  * 未知的包.
  */
-class UnknownPacket(val id: PacketId, val body: ByteReadPacket) : Packet {
+internal class UnknownPacket(val id: PacketId, val body: ByteReadPacket) : Packet {
     override fun toString(): String = "UnknownPacket(${id.value.toUHexString()})\nbody=${body.readBytes().toUHexString()}"
 }
 
 /**
  * 仅用于替换类型应为 [Unit] 的情况
  */
-object NoPacket : Packet {
+internal object NoPacket : Packet {
     override fun toString(): String = "NoPacket"
 }

@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.io.writeQQ
  * @author Him188moe
  */
 @AnnotatedId(KnownPacketId.ACCOUNT_INFO)
-object RequestAccountInfoPacket : SessionPacketFactory<RequestAccountInfoPacket.Response>() {
+internal object RequestAccountInfoPacket : SessionPacketFactory<RequestAccountInfoPacket.Response>() {
     operator fun invoke(
         qq: UInt,
         sessionKey: SessionKey

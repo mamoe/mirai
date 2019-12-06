@@ -8,12 +8,12 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.*
 
-object CaptchaKey : DecrypterByteArray, DecrypterType<CaptchaKey> {
+internal object CaptchaKey : DecrypterByteArray, DecrypterType<CaptchaKey> {
     override val value: ByteArray = TIMProtocol.key00BA
 }
 
 @AnnotatedId(KnownPacketId.CAPTCHA)
-object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(CaptchaKey) {
+internal object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(CaptchaKey) {
     /**
      * 请求验证码传输
      */
@@ -97,7 +97,7 @@ object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(
         }
     }
 
-    sealed class CaptchaResponse : Packet {
+    internal sealed class CaptchaResponse : Packet {
         lateinit var token00BA: ByteArray//56 bytes
 
         class Correct : CaptchaResponse() {

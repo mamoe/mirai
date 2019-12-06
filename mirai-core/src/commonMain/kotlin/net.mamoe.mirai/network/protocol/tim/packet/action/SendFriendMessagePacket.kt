@@ -13,7 +13,7 @@ import net.mamoe.mirai.utils.md5
 
 @AnnotatedId(KnownPacketId.SEND_FRIEND_MESSAGE)
 @PacketVersion(date = "2019.10.19", timVersion = "2.3.2 (21173)")
-object SendFriendMessagePacket : SessionPacketFactory<SendFriendMessagePacket.Response>() {
+internal object SendFriendMessagePacket : SessionPacketFactory<SendFriendMessagePacket.Response>() {
     operator fun invoke(
         botQQ: UInt,
         targetQQ: UInt,
@@ -65,7 +65,7 @@ object SendFriendMessagePacket : SessionPacketFactory<SendFriendMessagePacket.Re
     }
 
     @NoLog
-    object Response : Packet {
+    internal object Response : Packet {
         override fun toString(): String = "SendFriendMessagePacket.Response"
     }
 

@@ -10,6 +10,7 @@ import kotlinx.io.pool.useInstance
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.read
@@ -23,7 +24,7 @@ import net.mamoe.mirai.utils.readProtoMap
  * @param TPacket 服务器回复包解析结果
  * @param TDecrypter 服务器回复包解密器
  */
-abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
+internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
 
     /**
      * 2 Ubyte.
@@ -46,7 +47,10 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
     abstract suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): TPacket
 
     @Suppress("DEPRECATION")
-    fun <T> ByteReadPacket.decodeProtoPacket(deserializer: DeserializationStrategy<T>, debuggingTag: String? = null): T {
+    fun <T> ByteReadPacket.decodeProtoPacket(
+        deserializer: DeserializationStrategy<T>,
+        debuggingTag: String? = null
+    ): T {
         val headLength = readInt()
         val protoLength = readInt()
         if (debuggingTag != null) {
@@ -72,7 +76,7 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
     }
 }
 
-object UnknownPacketFactory : SessionPacketFactory<UnknownPacket>() {
+internal object UnknownPacketFactory : SessionPacketFactory<UnknownPacket>() {
     override suspend fun BotNetworkHandler<*>.handlePacket(packet: UnknownPacket) {
         ByteArrayPool.useInstance {
             packet.body.readAvailable(it)
@@ -81,11 +85,19 @@ object UnknownPacketFactory : SessionPacketFactory<UnknownPacket>() {
         packet.body.close()
     }
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): UnknownPacket {
+    override suspend fun ByteReadPacket.decode(
+        id: PacketId,
+        sequenceId: UShort,
+        handler: BotNetworkHandler<*>
+    ): UnknownPacket {
         return UnknownPacket(id, this)
     }
 }
 
-object IgnoredPacketFactory : SessionPacketFactory<IgnoredPacket>() {
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): IgnoredPacket = IgnoredPacket(id)
+internal object IgnoredPacketFactory : SessionPacketFactory<IgnoredPacket>() {
+    override suspend fun ByteReadPacket.decode(
+        id: PacketId,
+        sequenceId: UShort,
+        handler: BotNetworkHandler<*>
+    ): IgnoredPacket = IgnoredPacket(id)
 }

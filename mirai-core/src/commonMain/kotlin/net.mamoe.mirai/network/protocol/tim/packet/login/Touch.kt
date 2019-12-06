@@ -11,7 +11,7 @@ import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.*
 
-object TouchKey : DecrypterByteArray, DecrypterType<TouchKey> {
+internal object TouchKey : DecrypterByteArray, DecrypterType<TouchKey> {
     override val value: ByteArray = TIMProtocol.touchKey
 }
 
@@ -21,7 +21,7 @@ object TouchKey : DecrypterByteArray, DecrypterType<TouchKey> {
  * @author Him188moe
  */
 @AnnotatedId(KnownPacketId.TOUCH)
-object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey) {
+internal object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey) {
     operator fun invoke(
         bot: UInt,
         serverIp: String,
@@ -45,7 +45,7 @@ object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey
         }
     }
 
-    sealed class TouchResponse : Packet {
+    internal  sealed class TouchResponse : Packet {
         class OK(
             var loginTime: Int,
             val loginIP: String,

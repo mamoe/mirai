@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.io.writeZero
 class FriendList : Packet
 
 @PacketVersion(date = "2019.11.24", timVersion = "2.3.2 (21173)")
-object RequestFriendListPacket : SessionPacketFactory<FriendList>() {
+internal object RequestFriendListPacket : SessionPacketFactory<FriendList>() {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey

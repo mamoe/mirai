@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
 import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import net.mamoe.mirai.network.sendPacket
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 
@@ -23,7 +24,7 @@ import kotlin.reflect.KClass
  *
  * @see BotSession.sendAndExpectAsync
  */
-class TemporaryPacketHandler<P : Packet, R>(
+internal class TemporaryPacketHandler<P : Packet, R>(
     private val expectationClass: KClass<P>,
     private val deferred: CompletableDeferred<R>,
     private val fromSession: BotSession,
@@ -40,24 +41,26 @@ class TemporaryPacketHandler<P : Packet, R>(
     lateinit var session: BotSession//无需覆盖
 
 
-    fun toSend(packet: OutgoingPacket) {
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun toSend(packet: OutgoingPacket) {
         this.toSend = packet
     }
 
-    fun onExpect(handler: suspend (P) -> R) {
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun onExpect(noinline handler: suspend (P) -> R) {
         this.handler = handler
     }
 
-    internal suspend fun send(session: BotSession) {
-        require(::handler.isInitialized) { "handler is not initialized" }
+    internal suspend inline fun send(session: BotSession) {
         this.session = session
-        session.socket.sendPacket(toSend)
+        session.sendPacket(toSend)
     }
 
-    internal fun filter(session: BotSession, packet: Packet, sequenceId: UShort): Boolean =
+    @Suppress("NOTHING_TO_INLINE")
+    internal inline fun filter(session: BotSession, packet: Packet, sequenceId: UShort): Boolean =
         expectationClass.isInstance(packet) && session === this.fromSession && if (checkSequence) sequenceId == toSend.sequenceId else true
 
-    internal suspend fun doReceiveWithoutExceptions(packet: Packet) {
+    internal suspend inline fun doReceiveWithoutExceptions(packet: Packet) {
         @Suppress("UNCHECKED_CAST")
         val ret = try {
             withContext(callerContext) {
@@ -68,6 +71,5 @@ class TemporaryPacketHandler<P : Packet, R>(
             return
         }
         deferred.complete(ret)
-        return
     }
 }

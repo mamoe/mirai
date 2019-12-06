@@ -10,7 +10,7 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.localIpAddress
 
 @AnnotatedId(KnownPacketId.SESSION_KEY)
-object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyResponse, SessionResponseDecryptionKey>(SessionResponseDecryptionKey) {
+internal object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyResponse, SessionResponseDecryptionKey>(SessionResponseDecryptionKey) {
     operator fun invoke(
         bot: UInt,
         serverIp: String,
@@ -59,7 +59,7 @@ object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyRespo
         }
     }
 
-    class SessionKeyResponse(
+    internal   class SessionKeyResponse(
         val sessionKey: SessionKey,
         val tlv0105: ByteReadPacket? = null
     ) : Packet {

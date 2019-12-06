@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.io.writeQQ
  * 改变在线状态: "我在线上", "隐身" 等
  */
 @AnnotatedId(KnownPacketId.CHANGE_ONLINE_STATUS)
-object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(NoDecrypter) {
+internal object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(NoDecrypter) {
     operator fun invoke(
         bot: UInt,
         sessionKey: SessionKey,
@@ -32,7 +32,7 @@ object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeO
         }
     }
 
-    object ChangeOnlineStatusResponse : Packet {
+    internal   object ChangeOnlineStatusResponse : Packet {
         override fun toString(): String = this::class.simpleName!!
     }
 
