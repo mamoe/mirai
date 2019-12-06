@@ -78,9 +78,9 @@ Android: SDK 15
 
 ### Using Java 
 Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  
-A: 目前不能.  
-   Mirai 大量使用协程, 内联, 扩展等 Kotlin 专有特性. 在 Java 调用这些 API 将会非常吃力.  
-   您必须具有 Kotlin 技术才能正常使用 Mirai.  
+A: 正在适配中.  
+   Mirai 大量使用协程, 内联, 扩展等 Kotlin 专有特性. 在 Java 调用这些 API 将会非常吃力. 
+   我们正在为 Java 调用提供转接。
 
 #### Libraries used
 Mirai 使用以下开源库:
