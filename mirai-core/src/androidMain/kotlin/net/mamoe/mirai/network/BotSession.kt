@@ -20,7 +20,7 @@ import java.io.InputStream
  * @author Him188moe
  */
 @UseExperimental(MiraiInternalAPI::class)
-actual class BotSession actual constructor(
+actual class BotSession internal actual constructor(
     bot: Bot,
     sessionKey: SessionKey,
     socket: DataPacketSocketAdapter,

@@ -23,7 +23,7 @@ import javax.imageio.ImageIO
  */
 @UseExperimental(MiraiInternalAPI::class)
 @Suppress("unused")
-actual class BotSession actual constructor(
+actual class BotSession internal actual constructor(
     bot: Bot,
     sessionKey: SessionKey,
     socket: DataPacketSocketAdapter,
