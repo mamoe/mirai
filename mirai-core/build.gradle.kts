@@ -31,7 +31,7 @@ description = "QQ protocol library"
 
 kotlin {
     android("android") {
-        publishAllLibraryVariants()
+        publishLibraryVariants("release")
         project.android {
             compileSdkVersion(29)
 
