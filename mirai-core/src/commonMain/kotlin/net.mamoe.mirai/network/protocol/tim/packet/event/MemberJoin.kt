@@ -8,7 +8,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.internal.MemberImpl
+import net.mamoe.mirai.contact.internal.Member
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.getGroup
@@ -16,6 +16,7 @@ import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact
+import kotlin.coroutines.coroutineContext
 
 /**
  * 成员加入前的事件. 群的成员列表中还没有这个人
@@ -74,7 +75,7 @@ internal object MemberJoinPacketHandler : KnownEventParserAndHandler<MemberJoinE
         val group = bot.getGroup(readUInt())
 
         discardExact(1) // 01
-        val member = MemberImpl(bot.getQQ(readUInt()), group, MemberPermission.MEMBER)
+        val member = Member(bot.getQQ(readUInt()), group, MemberPermission.MEMBER, coroutineContext)
 
         return if (readByte().toInt() == 0x03) {
             MemberJoinEventPacket(member, null)

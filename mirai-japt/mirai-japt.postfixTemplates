@@ -1,0 +1,4 @@
+# Contact
+
+.blocking : 阻塞式包装
+    net.mamoe.mirai.contact.QQ [net.mamoe.mirai.japt.BlockingContacts] -> BlockingQQ. BlockingContacts.createBlocking($var$)
