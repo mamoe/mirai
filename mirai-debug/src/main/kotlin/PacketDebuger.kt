@@ -18,6 +18,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.ShareKey
 import net.mamoe.mirai.network.protocol.tim.packet.login.TouchKey
 import net.mamoe.mirai.utils.DecryptionFailedException
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.*
 import org.pcap4j.core.BpfProgram.BpfCompileMode
@@ -329,6 +330,7 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
 
     override suspend fun login(): LoginResult = LoginResult.SUCCESS
 
+    @UseExperimental(MiraiInternalAPI::class)
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
     }
 
