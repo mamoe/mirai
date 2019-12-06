@@ -20,6 +20,7 @@ import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.qqAccount
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.currentBotConfiguration
 import net.mamoe.mirai.utils.io.*
@@ -58,6 +59,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
 
     private var heartbeatJob: Job? = null
 
+    @UseExperimental(MiraiInternalAPI::class)
     override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
         handlersLock.withLock {
             temporaryPacketHandlers.add(temporaryPacketHandler)
