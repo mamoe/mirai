@@ -11,6 +11,7 @@ import net.mamoe.mirai.network.protocol.tim.packet.Packet
 import net.mamoe.mirai.network.protocol.tim.packet.login.HeartbeatPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -52,6 +53,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
      * @see [BotSession.sendAndExpectAsync] 发送并期待一个包
      * @see [TemporaryPacketHandler] 临时包处理器
      */
+    @MiraiInternalAPI
     suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>)
 
     /**
@@ -67,7 +69,7 @@ interface BotNetworkHandler<Socket : DataPacketSocketAdapter> : CoroutineScope {
     /**
      * 关闭网络接口, 停止所有有关协程和任务
      */
-    suspend fun close(cause: Throwable? = null) {
+    fun close(cause: Throwable? = null) {
         supervisor.cancel(CancellationException("handler closed", cause))
     }
 }
