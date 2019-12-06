@@ -105,6 +105,15 @@ kotlin {
             }
         }
 
+        val androidTest by getting {
+            dependencies {
+                api(kotlin("test", kotlinVersion))
+                api(kotlin("test-junit", kotlinVersion))
+                api(kotlin("test-annotations-common"))
+                api(kotlin("test-common"))
+            }
+        }
+
         val jvmMain by getting {
             dependencies {
                 //api(kotlin("stdlib-jdk8", kotlinVersion))
