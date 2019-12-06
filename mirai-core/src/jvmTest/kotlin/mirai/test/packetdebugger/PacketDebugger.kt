@@ -1,8 +1,10 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-import PacketDebugger.dataSent
-import PacketDebugger.qq
-import PacketDebugger.sessionKey
+package mirai.test.packetdebugger
+
+import mirai.test.packetdebugger.PacketDebugger.dataSent
+import mirai.test.packetdebugger.PacketDebugger.qq
+import mirai.test.packetdebugger.PacketDebugger.sessionKey
 import kotlinx.coroutines.*
 import kotlinx.io.core.*
 import net.mamoe.mirai.Bot
@@ -10,7 +12,6 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
-import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.event.IgnoredEventPacket
 import net.mamoe.mirai.network.protocol.tim.packet.login.CaptchaKey
@@ -18,7 +19,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.ShareKey
 import net.mamoe.mirai.network.protocol.tim.packet.login.TouchKey
 import net.mamoe.mirai.utils.DecryptionFailedException
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.*
 import org.pcap4j.core.BpfProgram.BpfCompileMode
@@ -104,7 +104,7 @@ fun main() {
  *
  * @author Him188moe
  */
-object PacketDebugger {
+internal object PacketDebugger {
     /**
      * 会话密匙, 用于解密数据.
      * 在一次登录中会话密匙不会改变.
@@ -179,12 +179,6 @@ object PacketDebugger {
 
             }
         }
-    }
-
-    internal fun ByteReadPacket.debugPrint(name: String = "", length: Long = this.remaining): ByteReadPacket {
-        val bytes = this.readBytes(length.toInt())
-        println("$name=" + bytes.toUHexString())
-        return bytes.toReadPacket()
     }
 
     /**
@@ -314,10 +308,6 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
         override val isOpen: Boolean
             get() = true
 
-        override suspend fun sendPacket(packet: OutgoingPacket) {
-
-        }
-
         override fun close() {
         }
 
@@ -326,16 +316,12 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
 
     }
     override val bot: Bot = Bot(qq, "", coroutineContext)
-    override val session = BotSession(bot, sessionKey, socket, this)
+    override val session = BotSession(
+        bot, sessionKey,
+        socket, this
+    )
 
     override suspend fun login(): LoginResult = LoginResult.SUCCESS
-
-    @UseExperimental(MiraiInternalAPI::class)
-    override suspend fun addHandler(temporaryPacketHandler: TemporaryPacketHandler<*, *>) {
-    }
-
-    override suspend fun sendPacket(packet: OutgoingPacket) {
-    }
 
     override suspend fun awaitDisconnection() {
     }
