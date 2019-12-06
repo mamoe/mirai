@@ -7,8 +7,7 @@ buildscript {
 
     dependencies {
         // Do try to waste your time.
-        //noinspection GradleDependency
-        classpath 'com.android.tools.build:gradle:3.6.0-alpha03'
+        classpath 'com.android.tools.build:gradle:3.5.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion"
