@@ -12,7 +12,6 @@ import kotlinx.serialization.json.Json
 import mirai.test.packetdebugger.PacketDebugger.dataReceived
 import mirai.test.packetdebugger.PacketDebugger.dataSent
 import mirai.test.packetdebugger.PacketDebugger.qq
-import mirai.test.packetdebugger.PacketDebugger.recorder
 import mirai.test.packetdebugger.PacketDebugger.sessionKey
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -127,7 +126,7 @@ suspend fun main() {
             listenDevice(localIp, it)
         }
         println("Using sessionKey = ${sessionKey.value.toUHexString()}")
-        println("Filter QQ = ${qq.toLong()}")
+        println("Filter QQ = ${qq?.toLong()}")
         PacketDebugger.recorder?.let { println("Recorder is enabled") }
         Runtime.getRuntime().addShutdownHook(thread(false) {
             PacketDebugger.recorder?.writeTo(File(GMTDate().toString() + ".record"))?.also { println("${PacketDebugger.recorder.list.size} records saved.") }
@@ -135,25 +134,28 @@ suspend fun main() {
         println("Ready perfectly")
     }
 
-    suspend fun decryptRecordedPackets() {
-        File("GMTDate(seconds=12, minutes=20, hours=7, dayOfWeek=SATURDAY, dayOfMonth=7, dayOfYear=341, month=DECEMBER, year=2019, timestamp=1575703212612).record").toRecorder()
+    suspend fun decryptRecordedPackets(filename: String) {
+        File(filename).toRecorder()
             .list.forEach {
             if (it.isSend) {
                 try {
                     dataSent(it.data)
                 } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             } else {
                 try {
                     dataReceived(it.data)
                 } catch (e: Exception) {
+                    e.printStackTrace()
 
                 }
             }
         }
     }
 
-    decryptRecordedPackets()
+    decryptRecordedPackets("GMTDate(seconds=3, minutes=46, hours=7, dayOfWeek=SATURDAY, dayOfMonth=7, dayOfYear=341, month=DECEMBER, year=2019, timestamp=1575704763731).record")
+    //startPacketListening()
 }
 
 /**
@@ -178,10 +180,13 @@ internal object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("D4 4F 0A 89 E6 A6 10 CE CF F8 AF C0 7E FA F4 32".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("98 4C 42 37 0F 87 BB A2 97 57 A1 77 A9 A9 74 37".hexToBytes())
     // TODO: 2019/12/7 无法访问 internal 是 kotlin bug, KT-34849
 
-    const val qq: UInt = 1040400290u
+    /**
+     * null 则不筛选
+     */
+    val qq: UInt? = null
     /**
      * 打开后则记录每一个包到文件.
      */
@@ -200,7 +205,8 @@ internal object PacketDebugger {
             discardExact(3)
             val id = matchPacketId(readUShort())
             val sequenceId = readUShort()
-            if (id == KnownPacketId.HEARTBEAT || readUInt() != qq)
+            val packetQQ = readUInt()
+            if (id == KnownPacketId.HEARTBEAT || (qq != null && packetQQ != qq))
                 return@read
 
             if (IgnoredPacketIdList.contains(id)) {
@@ -296,7 +302,8 @@ internal object PacketDebugger {
         if (IgnoredPacketIdList.contains(id)) {
             return
         }
-        if (readUInt() != qq) {
+        val packetQQ = readUInt()
+        if (qq != null && packetQQ != qq) {
             return@read
         }
         println("---------------------------")
@@ -382,7 +389,7 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
             get() = bot
 
     }
-    override val bot: Bot = Bot(qq, "", coroutineContext)
+    override val bot: Bot = Bot(qq ?: 0u, "", coroutineContext)
     override val session = BotSession(bot)
 
     override suspend fun login(): LoginResult = LoginResult.SUCCESS
