@@ -358,7 +358,8 @@ private object TEA {
     }
 }
 
-private fun ByteArray.checkDataLengthAndReturnSelf(length: Int = this.size): ByteArray {
+@Suppress("NOTHING_TO_INLINE")
+private inline fun ByteArray.checkDataLengthAndReturnSelf(length: Int = this.size): ByteArray {
     require(length % 8 == 0 && length >= 16) { "data must len % 8 == 0 && len >= 16 but given (length=$length) ${this.toUHexString()}" }
     return this
 }
