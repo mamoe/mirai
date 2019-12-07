@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai.contact.data
 
-import com.soywiz.klock.Date
+import io.ktor.util.date.GMTDate
 
 /**
  * 个人资料
@@ -17,7 +17,7 @@ data class Profile(
     val zipCode: String?,
     val phone: String?,
     val gender: Gender,
-    val birthday: Date?,
+    val birthday: GMTDate?,
     val personalStatement: String?,// 个人说明
     val school: String?,
     val homepage: String?,

@@ -2,8 +2,6 @@
 
 package demo.gentleman
 
-import com.soywiz.klock.months
-import com.soywiz.klock.seconds
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -14,7 +12,6 @@ import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.addFriend
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.mute
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeGroupMessages
@@ -70,12 +67,12 @@ suspend fun main() {
 
         startsWith("mt2months") {
             val at: At by message
-            at.member().mute(1.months)
+            at.member().mute(1)
         }
 
         startsWith("mute") {
             val at: At by message
-            at.member().mute(30.seconds)
+            at.member().mute(30)
         }
 
         startsWith("unmute") {

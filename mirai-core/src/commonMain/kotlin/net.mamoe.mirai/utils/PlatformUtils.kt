@@ -2,13 +2,13 @@
 
 package net.mamoe.mirai.utils
 
-import com.soywiz.klock.DateTime
 import io.ktor.client.HttpClient
+import io.ktor.util.date.GMTDate
 
 /**
  * 时间戳
  */
-inline val currentTime: Long get() = DateTime.nowUnixLong()
+inline val currentTime: Long get() = GMTDate().timestamp
 
 /**
  * 设备名

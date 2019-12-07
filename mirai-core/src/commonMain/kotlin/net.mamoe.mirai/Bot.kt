@@ -114,7 +114,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
                 logger.info("Reconnected successfully")
                 return@launch
             } else {
-                delay(configuration.reconnectPeriod.millisecondsLong)
+                delay(configuration.reconnectPeriodMillis)
             }
         }
     }

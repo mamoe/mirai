@@ -2,9 +2,6 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
-import com.soywiz.klock.toTimeString
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
@@ -21,28 +18,28 @@ import net.mamoe.mirai.qqAccount
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class MemberMuteEvent(
     val member: Member,
-    override val duration: TimeSpan,
+    override val durationSeconds: Int,
     override val operator: Member
 ) : MuteEvent() {
     override val group: Group get() = operator.group
-    override fun toString(): String = "MemberMuteEvent(member=${member.id}, group=${group.id}, operator=${operator.id}, duration=${duration.toTimeString()}"
+    override fun toString(): String = "MemberMuteEvent(member=${member.id}, group=${group.id}, operator=${operator.id}, duration=${durationSeconds}s"
 }
 
 /**
  * 机器人被禁言事件
  */
 class BeingMutedEvent(
-    override val duration: TimeSpan,
+    override val durationSeconds: Int,
     override val operator: Member
 ) : MuteEvent() {
     override val group: Group get() = operator.group
-    override fun toString(): String = "BeingMutedEvent(group=${group.id}, operator=${operator.id}, duration=${duration.toTimeString()}"
+    override fun toString(): String = "BeingMutedEvent(group=${group.id}, operator=${operator.id}, duration=${durationSeconds}s"
 }
 
 sealed class MuteEvent : EventOfMute() {
     abstract override val operator: Member
     abstract override val group: Group
-    abstract val duration: TimeSpan
+    abstract val durationSeconds: Int
 }
 // endregion
 
@@ -124,12 +121,10 @@ internal object MemberMuteEventPacketParserAndHandler : KnownEventParserAndHandl
                 MemberUnmuteEvent(group.getMember(memberQQ), operator)
             }
         } else {
-            val duration = durationSeconds.seconds
-
             if (memberQQ == bot.qqAccount) {
-                BeingMutedEvent(duration, operator)
+                BeingMutedEvent(durationSeconds, operator)
             } else {
-                MemberMuteEvent(group.getMember(memberQQ), duration, operator)
+                MemberMuteEvent(group.getMember(memberQQ), durationSeconds, operator)
             }
         }
     }

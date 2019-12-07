@@ -2,8 +2,7 @@
 
 package net.mamoe.mirai.contact
 
-import com.soywiz.klock.MonthSpan
-import com.soywiz.klock.TimeSpan
+import net.mamoe.mirai.utils.*
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -26,6 +25,10 @@ interface Member : QQ, Contact {
      *
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 若机器人无权限禁言这个群成员, 返回 `false`
+     *
+     * @see Int.minutesToSeconds
+     * @see Int.hoursToSeconds
+     * @see Int.daysToSeconds
      */
     suspend fun mute(durationSeconds: Int): Boolean
 
@@ -40,17 +43,6 @@ suspend inline fun Member.mute(duration: Duration): Boolean {
     require(duration.inDays <= 30) { "duration must be at most 1 month" }
     require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
     return this.mute(duration.inSeconds.toInt())
-}
-
-suspend inline fun Member.mute(duration: TimeSpan): Boolean {
-    require(duration.days <= 30) { "duration must be at most 1 month" }
-    require(duration.microseconds > 0) { "duration must be greater than 0 second" }
-    return this.mute(duration.seconds.toInt())
-}
-
-suspend inline fun Member.mute(duration: MonthSpan): Boolean {
-    require(duration.totalMonths == 1) { "if you pass a MonthSpan, it must be 1 month" }
-    return this.mute(duration.totalMonths * 30 * 24 * 3600)
 }
 
 @ExperimentalUnsignedTypes

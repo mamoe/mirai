@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet.action
 
-import com.soywiz.klock.Date
+import io.ktor.util.date.GMTDate
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.data.Gender
 import net.mamoe.mirai.contact.data.Profile
@@ -77,7 +77,7 @@ internal object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfil
                 else -> Gender.SECRET // 猜的
                 //else -> error("Cannot determine gender, bad value of 0x4E29u: ${map[0x4729u]!![0].toUHexString()}")
             },
-            birthday = map[0x4E3Fu]?.let { Date(it.toUInt().toInt()) },
+            birthday = map[0x4E3Fu]?.let { GMTDate(it.toUInt().toLong()) },
             personalStatement = map[0x4E33u]?.encodeToString(),
             homepage = map[0x4E2Du]?.encodeToString(),
             company = map[0x5DC8u]?.encodeToString(),

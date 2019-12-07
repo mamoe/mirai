@@ -2,8 +2,6 @@
 
 package net.mamoe.mirai.network
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
 import kotlinx.coroutines.*
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.*
@@ -26,16 +24,14 @@ import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.getGTK
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.coroutines.coroutineContext
 
 /**
  * 构造 [BotSession] 的捷径
  */
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
-internal inline fun TIMBotNetworkHandler.BotSession(
-    sessionKey: SessionKey,
-    socket: DataPacketSocketAdapter
-): BotSession = BotSession(bot, sessionKey, socket, this)
+internal inline fun TIMBotNetworkHandler.BotSession(): BotSession = BotSession(bot)
 
 /**
  * 登录会话. 当登录完成后, 客户端会拿到 sessionKey.
@@ -47,10 +43,7 @@ internal inline fun TIMBotNetworkHandler.BotSession(
  */
 @UseExperimental(MiraiInternalAPI::class)
 expect class BotSession internal constructor(
-    bot: Bot,
-    sessionKey: SessionKey,
-    socket: DataPacketSocketAdapter,
-    NetworkScope: CoroutineScope
+    bot: Bot
 ) : BotSessionBase
 
 /**
@@ -59,11 +52,12 @@ expect class BotSession internal constructor(
 @MiraiInternalAPI
 // cannot be internal because of `public BotSession`
 abstract class BotSessionBase internal constructor(
-    val bot: Bot,
-    internal val sessionKey: SessionKey,
-    val socket: DataPacketSocketAdapter,
-    val NetworkScope: CoroutineScope
+    val bot: Bot
 ) {
+    internal val sessionKey: SessionKey get() = bot.sessionKey
+    val socket: DataPacketSocketAdapter get() = bot.network.socket
+    val NetworkScope: CoroutineScope get() = bot.network
+
     /**
      * Web api 使用
      */
@@ -79,6 +73,29 @@ abstract class BotSessionBase internal constructor(
      */
     val gtk: Int get() = _gtk
 
+    suspend inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.qq(): QQ = bot.getQQ(this)
+
+    suspend inline fun Int.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0).toUInt())
+    suspend inline fun Long.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0))
+    suspend inline fun UInt.group(): Group = bot.getGroup(GroupId(this))
+    suspend inline fun GroupId.group(): Group = bot.getGroup(this)
+    suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
+
+    suspend fun Image.getLink(): ImageLink = when (this.id) {
+        is ImageId0x06 -> FriendImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect<FriendImageLink>()
+        is ImageId0x03 -> GroupImagePacket.RequestImageLink(bot.qqAccount, bot.sessionKey, id).sendAndExpect<GroupImageLink>().requireSuccess()
+        else -> assertUnreachable()
+    }
+
+    suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
+    suspend inline fun Image.download(): ByteReadPacket = getLink().download()
+
+
+
+
+    // region internal
 
     @Suppress("PropertyName")
     internal var _sKey: String = ""
@@ -115,12 +132,11 @@ abstract class BotSessionBase internal constructor(
         noinline handler: suspend (P) -> R
     ): Deferred<R> {
         val deferred: CompletableDeferred<R> = CompletableDeferred(coroutineContext[Job])
-        (bot.network as TIMBotNetworkHandler).addHandler(TemporaryPacketHandler(
-            P::class, deferred, this@BotSessionBase as BotSession, checkSequence, coroutineContext + deferred
-        ).also {
-            it.toSend(this)
-            it.onExpect(handler)
-        })
+        (bot.network as TIMBotNetworkHandler)
+            .addHandler(TemporaryPacketHandler(P::class, deferred, this@BotSessionBase as BotSession, checkSequence, coroutineContext + deferred).also {
+                it.toSend(this)
+                it.onExpect(handler)
+            })
         return deferred
     }
 
@@ -129,45 +145,19 @@ abstract class BotSessionBase internal constructor(
 
     internal suspend inline fun <reified P : Packet, R> OutgoingPacket.sendAndExpect(
         checkSequence: Boolean = true,
-        timeout: TimeSpan = 5.seconds,
+        timeoutMillis: Long = 5.secondsToMillis,
         crossinline mapper: (P) -> R
-    ): R = withTimeout(timeout.millisecondsLong) { sendAndExpectAsync<P, R>(checkSequence) { mapper(it) }.await() }
+    ): R = withTimeout(timeoutMillis) { sendAndExpectAsync<P, R>(checkSequence) { mapper(it) }.await() }
 
     internal suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(
         checkSequence: Boolean = true,
-        timeout: TimeSpan = 5.seconds
-    ): P = withTimeout(timeout.millisecondsLong) { sendAndExpectAsync<P, P>(checkSequence) { it }.await() }
+        timeoutMillist: Long = 5.secondsToMillis
+    ): P = withTimeout(timeoutMillist) { sendAndExpectAsync<P, P>(checkSequence) { it }.await() }
 
     internal suspend inline fun OutgoingPacket.send() =
         (socket as TIMBotNetworkHandler.BotSocketAdapter).sendPacket(this)
 
-
-    suspend inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
-    suspend inline fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
-    suspend inline fun UInt.qq(): QQ = bot.getQQ(this)
-
-    suspend inline fun Int.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0).toUInt())
-    suspend inline fun Long.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0))
-    suspend inline fun UInt.group(): Group = bot.getGroup(GroupId(this))
-    suspend inline fun GroupId.group(): Group = bot.getGroup(this)
-    suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
-
-    suspend fun Image.getLink(): ImageLink = when (this.id) {
-        is ImageId0x06 -> FriendImagePacket.RequestImageLink(
-            bot.qqAccount,
-            bot.sessionKey,
-            id
-        ).sendAndExpect<FriendImageLink>()
-        is ImageId0x03 -> GroupImagePacket.RequestImageLink(
-            bot.qqAccount,
-            bot.sessionKey,
-            id
-        ).sendAndExpect<GroupImageLink>().requireSuccess()
-        else -> assertUnreachable()
-    }
-
-    suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
-    suspend inline fun Image.download(): ByteReadPacket = getLink().download()
+    // endregion
 }
 
 

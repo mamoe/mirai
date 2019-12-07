@@ -20,7 +20,6 @@ import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
 import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.network.protocol.tim.packet.login.*
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.currentBotConfiguration
 import net.mamoe.mirai.utils.io.*
@@ -197,7 +196,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
             val expect = expectPacket<TouchPacket.TouchResponse>()
             launch { processReceive() }
             launch {
-                if (withTimeoutOrNull(currentBotConfiguration().touchTimeout.millisecondsLong) { expect.join() } == null) {
+                if (withTimeoutOrNull(currentBotConfiguration().touchTimeoutMillis) { expect.join() } == null) {
                     loginResult.complete(LoginResult.TIMEOUT)
                 }
             }
@@ -274,7 +273,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                         bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
                     }
                     val configuration = currentBotConfiguration()
-                    delay(configuration.firstReconnectDelay.millisecondsLong)
+                    delay(configuration.firstReconnectDelayMillis)
                     bot.tryReinitializeNetworkHandler(configuration, e)
                     return@withContext
                 } finally {
@@ -475,22 +474,22 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     BotLoginSucceedEvent(bot).broadcast()
 
 
-                    session = BotSession(sessionKey, socket)
+                    session = BotSession()
 
                     val configuration = currentBotConfiguration()
                     heartbeatJob = this@TIMBotNetworkHandler.launch {
                         while (socket.isOpen) {
-                            delay(configuration.heartbeatPeriod.millisecondsLong)
+                            delay(configuration.heartbeatPeriodMillis)
                             with(session) {
                                 class HeartbeatTimeoutException : CancellationException("heartbeat timeout")
 
-                                if (withTimeoutOrNull(configuration.heartbeatTimeout.millisecondsLong) {
+                                if (withTimeoutOrNull(configuration.heartbeatTimeoutMillis) {
                                         // FIXME: 2019/11/26 启动被挤掉线检测
 
                                         HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
                                     } == null) {
                                     bot.logger.warning("Heartbeat timed out")
-                                    delay(configuration.firstReconnectDelay.millisecondsLong)
+                                    delay(configuration.firstReconnectDelayMillis)
                                     bot.tryReinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
                                     return@launch
                                 }

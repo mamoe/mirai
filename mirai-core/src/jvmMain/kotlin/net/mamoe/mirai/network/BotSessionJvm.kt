@@ -24,11 +24,8 @@ import javax.imageio.ImageIO
 @UseExperimental(MiraiInternalAPI::class)
 @Suppress("unused")
 actual class BotSession internal actual constructor(
-    bot: Bot,
-    sessionKey: SessionKey,
-    socket: DataPacketSocketAdapter,
-    NetworkScope: CoroutineScope
-) : BotSessionBase(bot, sessionKey, socket, NetworkScope) {
+    bot: Bot
+) : BotSessionBase(bot) {
 
     suspend inline fun Image.downloadAsStream(): InputStream = download().inputStream()
     suspend inline fun Image.downloadAsBufferedImage(): BufferedImage = withContext(IO) { downloadAsStream().use { ImageIO.read(it) } }

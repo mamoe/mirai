@@ -72,8 +72,6 @@ kotlin {
                 api(kotlinx("coroutines-core-common", coroutinesVersion))
                 api(kotlinx("serialization-runtime-common", serializationVersion))
 
-                api("com.soywiz.korlibs.klock:klock:$klockVersion")
-
                 api(ktor("http-cio", ktorVersion))
                 api(ktor("http", ktorVersion))
                 api(ktor("client-core-jvm", ktorVersion))
