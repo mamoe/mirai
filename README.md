@@ -11,7 +11,8 @@
 在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
 
 ## Thank you!
-您的 star 是对我们最大的鼓励(点击项目右上角)
+您的 star 是对我们最大的鼓励(点击项目右上角);  
+若要关注版本更新, 请点击 star 旁边的 watch
 
 ## Use as a library
 把 Mirai 作为库内置于您的项目中使用.  
