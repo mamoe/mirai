@@ -316,10 +316,7 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
 
     }
     override val bot: Bot = Bot(qq, "", coroutineContext)
-    override val session = BotSession(
-        bot, sessionKey,
-        socket, this
-    )
+    override val session = BotSession(bot)
 
     override suspend fun login(): LoginResult = LoginResult.SUCCESS
 

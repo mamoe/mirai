@@ -21,11 +21,8 @@ import java.io.InputStream
  */
 @UseExperimental(MiraiInternalAPI::class)
 actual class BotSession internal actual constructor(
-    bot: Bot,
-    sessionKey: SessionKey,
-    socket: DataPacketSocketAdapter,
-    NetworkScope: CoroutineScope
-) : BotSessionBase(bot, sessionKey, socket, NetworkScope) {
+    bot: Bot
+) : BotSessionBase(bot) {
 
     suspend inline fun Image.downloadAsStream(): InputStream = download().inputStream()
     suspend inline fun Image.downloadAsBitmap(): Bitmap = withContext(Dispatchers.IO) { downloadAsStream().use { BitmapFactory.decodeStream(it) } }
