@@ -2,11 +2,18 @@
 
 package mirai.test.packetdebugger
 
-import mirai.test.packetdebugger.PacketDebugger.dataSent
-import mirai.test.packetdebugger.PacketDebugger.qq
-import mirai.test.packetdebugger.PacketDebugger.sessionKey
+import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.*
 import kotlinx.io.core.*
+import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.internal.ArrayListSerializer
+import kotlinx.serialization.json.Json
+import mirai.test.packetdebugger.PacketDebugger.dataReceived
+import mirai.test.packetdebugger.PacketDebugger.dataSent
+import mirai.test.packetdebugger.PacketDebugger.qq
+import mirai.test.packetdebugger.PacketDebugger.recorder
+import mirai.test.packetdebugger.PacketDebugger.sessionKey
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
@@ -26,6 +33,8 @@ import org.pcap4j.core.PacketListener
 import org.pcap4j.core.PcapNetworkInterface
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode
 import org.pcap4j.core.Pcaps
+import java.io.File
+import java.nio.charset.Charset
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
@@ -78,24 +87,73 @@ private fun listenDevice(localIp: String, device: PcapNetworkInterface) {
     }
 }
 
-fun main() {
-    /*
-    check(System.getProperty("os.arch") == "x86") { "Jpcap can only work with x86 JDK" }
+internal fun File.toRecorder(): Recorder =
+    Recorder(Json.plain.fromJson(ArrayListSerializer(Recorder.Record.serializer()), Json.plain.parseJson(this.readText())).toMutableList())
 
-    JpcapCaptor.getDeviceList().forEach {
-        println(it)
+internal class Recorder(
+    val list: MutableList<Record> = mutableListOf()
+) : CoroutineScope {
+    @Serializable
+    data class Record(
+        val isSend: Boolean,
+        @Suppress("ArrayInDataClass")
+        val data: ByteArray
+    )
+
+    fun recordSend(data: ByteArray) {
+        launch { list.add(Record(true, data)) }
     }
-    JpcapCaptor.openDevice(JpcapCaptor.getDeviceList()[0], 65535, true, 1000).loopPacket(Int.MAX_VALUE) {
-        println(it)
-    }*/
-    val localIp = Pcaps.findAllDevs()[0].addresses[0].address.hostAddress
-    println("localIp = $localIp")
-    Pcaps.findAllDevs().forEach {
-        listenDevice(localIp, it)
+
+    fun recordReceive(data: ByteArray) {
+        launch { list.add(Record(false, data)) }
     }
-    println("Ready perfectly")
-    println("Using sessionKey = ${sessionKey.value.toUHexString()}")
-    println("Filter QQ = ${qq.toLong()}")
+
+    @kotlinx.serialization.Transient
+    @Transient
+    override val coroutineContext: CoroutineContext = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+}
+
+@UseExperimental(ImplicitReflectionSerializer::class)
+internal fun Recorder.writeTo(file: File) {
+    file.writeText(Json.plain.toJson(ArrayListSerializer(Recorder.Record.serializer()), this.list).toString(), Charset.defaultCharset())
+}
+
+suspend fun main() {
+
+    fun startPacketListening() {
+        val localIp = Pcaps.findAllDevs()[0].addresses[0].address.hostAddress
+        println("localIp = $localIp")
+        Pcaps.findAllDevs().forEach {
+            listenDevice(localIp, it)
+        }
+        println("Using sessionKey = ${sessionKey.value.toUHexString()}")
+        println("Filter QQ = ${qq.toLong()}")
+        PacketDebugger.recorder?.let { println("Recorder is enabled") }
+        Runtime.getRuntime().addShutdownHook(thread(false) {
+            PacketDebugger.recorder?.writeTo(File(GMTDate().toString() + ".record"))?.also { println("${PacketDebugger.recorder.list.size} records saved.") }
+        })
+        println("Ready perfectly")
+    }
+
+    suspend fun decryptRecordedPackets() {
+        File("GMTDate(seconds=12, minutes=20, hours=7, dayOfWeek=SATURDAY, dayOfMonth=7, dayOfYear=341, month=DECEMBER, year=2019, timestamp=1575703212612).record").toRecorder()
+            .list.forEach {
+            if (it.isSend) {
+                try {
+                    dataSent(it.data)
+                } catch (e: Exception) {
+                }
+            } else {
+                try {
+                    dataReceived(it.data)
+                } catch (e: Exception) {
+
+                }
+            }
+        }
+    }
+
+    decryptRecordedPackets()
 }
 
 /**
@@ -105,6 +163,7 @@ fun main() {
  * @author Him188moe
  */
 internal object PacketDebugger {
+
     /**
      * 会话密匙, 用于解密数据.
      * 在一次登录中会话密匙不会改变.
@@ -119,8 +178,14 @@ internal object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("BF 65 3E 32 F3 74 03 C2 3D A3 4C 15 20 CE 55 2A".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("D4 4F 0A 89 E6 A6 10 CE CF F8 AF C0 7E FA F4 32".hexToBytes())
+    // TODO: 2019/12/7 无法访问 internal 是 kotlin bug, KT-34849
+
     const val qq: UInt = 1040400290u
+    /**
+     * 打开后则记录每一个包到文件.
+     */
+    val recorder: Recorder? = Recorder()
 
     val IgnoredPacketIdList: List<PacketId> = listOf(
         KnownPacketId.FRIEND_ONLINE_STATUS_CHANGE,
@@ -129,6 +194,7 @@ internal object PacketDebugger {
     )
 
     suspend fun dataReceived(data: ByteArray) {
+        recorder?.recordReceive(data)
         //println("raw = " + data.toUHexString())
         data.read {
             discardExact(3)
@@ -214,6 +280,7 @@ internal object PacketDebugger {
     }*/
 
     fun dataSent(rawPacket: ByteArray) = rawPacket.cutTail(1).read {
+        recorder?.recordSend(rawPacket)
 
         // 02 38 03
         // 03 52 78 9F
