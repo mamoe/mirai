@@ -134,27 +134,29 @@ suspend fun main() {
         println("Ready perfectly")
     }
 
-    suspend fun decryptRecordedPackets(filename: String) {
-        File(filename).toRecorder()
-            .list.forEach {
+    suspend fun decryptRecordedPackets(filename: String?) {
+        (if (filename == null) File(".").listFiles()?.maxBy { it.lastModified() }!!
+        else File(filename)).toRecorder().also {
+            println("total count = " + it.list.size)
+            println()
+        }.list.forEach {
             if (it.isSend) {
                 try {
                     dataSent(it.data)
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    //e.printStackTrace()
                 }
             } else {
                 try {
                     dataReceived(it.data)
                 } catch (e: Exception) {
-                    e.printStackTrace()
-
+                    // e.printStackTrace()
                 }
             }
         }
     }
 
-    decryptRecordedPackets("GMTDate(seconds=3, minutes=46, hours=7, dayOfWeek=SATURDAY, dayOfMonth=7, dayOfYear=341, month=DECEMBER, year=2019, timestamp=1575704763731).record")
+    decryptRecordedPackets(null)
     //startPacketListening()
 }
 
@@ -180,13 +182,13 @@ internal object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("98 4C 42 37 0F 87 BB A2 97 57 A1 77 A9 A9 74 37".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("F3 4A 4E F4 79 C4 92 62 EF 0F D8 6E D3 AB E3 80".hexToBytes())
     // TODO: 2019/12/7 无法访问 internal 是 kotlin bug, KT-34849
 
     /**
      * null 则不筛选
      */
-    val qq: UInt? = null
+    val qq: UInt? = 215555909u
     /**
      * 打开后则记录每一个包到文件.
      */
@@ -229,7 +231,7 @@ internal object PacketDebugger {
                             }
                             .runCatching {
                                 decode(id, sequenceId, DebugNetworkHandler)
-                            }.getOrElse { it.printStackTrace(); null }
+                            }.getOrElse { /*it.printStackTrace();*/ null }
                     }
                 }
 
@@ -237,7 +239,9 @@ internal object PacketDebugger {
                 if (packet !is IgnoredEventPacket) {
                     println("--------------")
                     println("接收包id=$id, \nsequence=${sequenceId.toUHexString()}")
-                    println("  解密body=${decodedBody.toUHexString()}")
+                    if (packet !is UnknownPacket) {
+                        println("  解密body=${decodedBody.toUHexString()}")
+                    }
                     println("  解析body=$packet")
                 }
 
@@ -390,7 +394,7 @@ internal object DebugNetworkHandler : BotNetworkHandler<DataPacketSocketAdapter>
 
     }
     override val bot: Bot = Bot(qq ?: 0u, "", coroutineContext)
-    override val session = BotSession(bot)
+    override val session = BotSession(bot, SessionKey(byteArrayOf()))
 
     override suspend fun login(): LoginResult = LoginResult.SUCCESS
 

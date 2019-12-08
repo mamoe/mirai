@@ -6,8 +6,10 @@ import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.network.protocol.tim.packet.action.AvatarLink
 import net.mamoe.mirai.network.protocol.tim.packet.action.FriendNameRemark
 import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
  * QQ 对象.
@@ -22,6 +24,12 @@ import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList
  * @author Him188moe
  */
 interface QQ : Contact, CoroutineScope {
+    /**
+     * 请求头像下载链接
+     */
+   // @MiraiExperimentalAPI
+    //suspend fun queryAvatar(): AvatarLink
+
     /**
      * 查询用户资料
      */

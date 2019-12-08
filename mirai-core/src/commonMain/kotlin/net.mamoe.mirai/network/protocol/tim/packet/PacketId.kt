@@ -79,6 +79,7 @@ internal enum class KnownPacketId(override inline val value: UShort, override in
 
     inline REQUEST_PROFILE_AVATAR(0x0031u, RequestProfileAvatarPacket),
     inline REQUEST_PROFILE_DETAILS(0x003Cu, RequestProfileDetailsPacket),
+    inline QUERY_NICKNAME(0x0126u, QueryNicknamePacket),
 
     inline QUERY_PREVIOUS_NAME(0x01BCu, QueryPreviousNamePacket),
 

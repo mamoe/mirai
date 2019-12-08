@@ -474,7 +474,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     BotLoginSucceedEvent(bot).broadcast()
 
 
-                    session = BotSession()
+                    session = BotSession(sessionKey)
 
                     val configuration = currentBotConfiguration()
                     heartbeatJob = this@TIMBotNetworkHandler.launch {

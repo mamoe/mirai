@@ -1,13 +1,11 @@
 package net.mamoe.mirai.network
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.use
 import kotlinx.io.streams.inputStream
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -24,8 +22,9 @@ import javax.imageio.ImageIO
 @UseExperimental(MiraiInternalAPI::class)
 @Suppress("unused")
 actual class BotSession internal actual constructor(
-    bot: Bot
-) : BotSessionBase(bot) {
+    bot: Bot,
+    sessionKey: SessionKey
+) : BotSessionBase(bot, sessionKey) {
 
     suspend inline fun Image.downloadAsStream(): InputStream = download().inputStream()
     suspend inline fun Image.downloadAsBufferedImage(): BufferedImage = withContext(IO) { downloadAsStream().use { ImageIO.read(it) } }

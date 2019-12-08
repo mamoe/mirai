@@ -41,10 +41,11 @@ fun GroupId.toInternalId(): GroupInternalId {//求你别出错
     )
 }
 
-fun GroupInternalId.toId(): GroupId {//求你别出错
+fun GroupInternalId.toId(): GroupId = with(value) {
+    //求你别出错
     var left: UInt = this.toString().let {
         if (it.length < 6) {
-            return GroupId(this.value)
+            return GroupId(value)
         }
         it.substring(0 until it.length - 6).toUInt()
     }
@@ -96,6 +97,6 @@ fun GroupInternalId.toId(): GroupId {//求你别出错
             left = left.toString().substring(0 until 3).toUInt()
             ((left - 349u).toString() + right.toString()).toUInt()
         }
-        else -> this.value
+        else -> value
     })
 }

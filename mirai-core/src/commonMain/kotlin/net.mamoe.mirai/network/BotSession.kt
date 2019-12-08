@@ -31,7 +31,7 @@ import kotlin.coroutines.coroutineContext
  * 构造 [BotSession] 的捷径
  */
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
-internal inline fun TIMBotNetworkHandler.BotSession(): BotSession = BotSession(bot)
+internal inline fun TIMBotNetworkHandler.BotSession(sessionKey: SessionKey): BotSession = BotSession(bot, sessionKey)
 
 /**
  * 登录会话. 当登录完成后, 客户端会拿到 sessionKey.
@@ -43,7 +43,8 @@ internal inline fun TIMBotNetworkHandler.BotSession(): BotSession = BotSession(b
  */
 @UseExperimental(MiraiInternalAPI::class)
 expect class BotSession internal constructor(
-    bot: Bot
+    bot: Bot,
+    sessionKey: SessionKey
 ) : BotSessionBase
 
 /**
@@ -52,9 +53,9 @@ expect class BotSession internal constructor(
 @MiraiInternalAPI
 // cannot be internal because of `public BotSession`
 abstract class BotSessionBase internal constructor(
-    val bot: Bot
+    val bot: Bot,
+    internal val sessionKey: SessionKey
 ) {
-    internal val sessionKey: SessionKey get() = bot.sessionKey
     val socket: DataPacketSocketAdapter get() = bot.network.socket
     val NetworkScope: CoroutineScope get() = bot.network
 
