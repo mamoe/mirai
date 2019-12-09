@@ -16,3 +16,9 @@ inline class At(val target: UInt) : Message {
 
     companion object Key : Message.Key<At>
 }
+
+/**
+ * At 这个成员
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun QQ.at(): At = At(this)
