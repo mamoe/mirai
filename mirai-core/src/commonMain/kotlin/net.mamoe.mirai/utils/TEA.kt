@@ -17,7 +17,10 @@ import kotlin.random.Random
 /**
  * 解密错误
  */
-internal class DecryptionFailedException : Exception()
+internal class DecryptionFailedException : Exception {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+}
 
 
 // region encrypt
@@ -360,6 +363,8 @@ private object TEA {
 
 @Suppress("NOTHING_TO_INLINE")
 private inline fun ByteArray.checkDataLengthAndReturnSelf(length: Int = this.size): ByteArray {
-    require(length % 8 == 0 && length >= 16) { "data must len % 8 == 0 && len >= 16 but given (length=$length) ${this.toUHexString()}" }
+    if (!(length % 8 == 0 && length >= 16)) {
+        throw DecryptionFailedException("data must len % 8 == 0 && len >= 16 but given (length=$length) ${this.toUHexString()}")
+    }
     return this
 }

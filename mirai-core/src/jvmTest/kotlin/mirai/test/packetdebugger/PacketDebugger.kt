@@ -156,8 +156,8 @@ suspend fun main() {
         }
     }
 
-    decryptRecordedPackets(null)
-    //startPacketListening()
+    //decryptRecordedPackets(null)
+    startPacketListening()
 }
 
 /**
@@ -188,7 +188,7 @@ internal object PacketDebugger {
     /**
      * null 则不筛选
      */
-    val qq: UInt? = 215555909u
+    val qq: UInt? = null
     /**
      * 打开后则记录每一个包到文件.
      */
@@ -219,12 +219,13 @@ internal object PacketDebugger {
 
             discardExact(3)//0x00 0x00 0x00. 但更可能是应该 discard 8
             // val remaining = this.readRemainingBytes().cutTail(1)
+            val encryptedBody = this@read.readRemainingBytes().cutTail(1)
             try {
                 lateinit var decodedBody: ByteArray
                 val packet = use {
                     with(id.factory) {
                         provideDecrypter(id.factory)
-                            .decrypt(this@read.readRemainingBytes().let { ByteReadPacket(it, 0, it.size - 1) })
+                            .decrypt(ByteReadPacket(encryptedBody))
                             .let {
                                 decodedBody = it.readBytes()
                                 ByteReadPacket(decodedBody)
@@ -246,10 +247,10 @@ internal object PacketDebugger {
                 }
 
                 //handlePacket(id, sequenceId, packet, id.factory)
-            } catch (e: DecryptionFailedException) {
-                // println("密文body=" + remaining.toUHexString())
+            } catch (e: Exception) {
                 println("--------------")
                 println("接收包id=$id, \nsequence=${sequenceId.toUHexString()}")
+                println("  密文body=" + encryptedBody.toUHexString())
                 println("  解密body=解密失败")
             } finally {
 
@@ -271,7 +272,7 @@ internal object PacketDebugger {
 
             SessionKey -> sessionKey
 
-            else -> error("No decrypter is found")
+            else -> error("No decrypter is found for ${factory.decrypterType}")
         } as? D ?: error("Internal error: could not cast decrypter which is found for factory to class Decrypter")
 
 
