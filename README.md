@@ -236,7 +236,7 @@ Mirai 中所有的消息均为对象化的 [Message](mirai-core/src/commonMain/k
 | 扩展方法   |  说明  |
 |---| ---|
 |String.toChain():MessageChain| PlainText(this) |
-|Message.toChain():MessageChain| 构造上文提到的 SingleMessageChain |
+|Message.toChain():MessageChain| 构造初始数量为一个的 MessageChain |
 |suspend Message.sendTo(Contact)| 发送给联系人 |
 
 ### Image
