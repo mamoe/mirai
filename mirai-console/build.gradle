@@ -3,6 +3,6 @@ apply plugin: "java"
 
 dependencies {
     api project(':mirai-core')
-    implementation files('../mirai-core/build/classes/kotlin/jvm/main')
+    runtimeOnly files('../mirai-core/build/classes/kotlin/jvm/main')
     // classpath is not set correctly by IDE
 }
