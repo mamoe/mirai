@@ -83,7 +83,7 @@ internal suspend fun <E : Subscribable> KClass<E>.subscribeOnce(listener: suspen
 
 @PublishedApi
 internal suspend fun <E : Subscribable, T> KClass<E>.subscribeUntil(valueIfStop: T, listener: suspend (E) -> T) =
-    subscribeInternal(Handler { if (listener(it) === valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
+    subscribeInternal(Handler { if (listener(it) == valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
 @PublishedApi
 internal suspend inline fun <E : Subscribable> KClass<E>.subscribeUntilFalse(noinline listener: suspend (E) -> Boolean) = subscribeUntil(false, listener)
@@ -157,7 +157,7 @@ inline class ListenerBuilder<out E : Subscribable>(
     suspend inline fun always(noinline listener: suspend (E) -> Unit) = handler { listener(it); ListeningStatus.LISTENING }
 
     suspend inline fun <T> until(until: T, noinline listener: suspend (E) -> T) =
-        handler { if (listener(it) === until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
+        handler { if (listener(it) == until) ListeningStatus.STOPPED else ListeningStatus.LISTENING }
 
     suspend inline fun untilFalse(noinline listener: suspend (E) -> Boolean) = until(false, listener)
     suspend inline fun untilTrue(noinline listener: suspend (E) -> Boolean) = until(true, listener)
