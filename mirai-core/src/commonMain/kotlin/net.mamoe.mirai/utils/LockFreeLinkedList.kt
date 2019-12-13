@@ -118,7 +118,7 @@ class LockFreeLinkedList<E> : MutableList<E>, RandomAccess {
                 currentNoderef.value = value
             }
 
-        private var currentNoderef: AtomicRef<Node<E>> = atomic(head) // concurrent compatibility
+        private val currentNoderef: AtomicRef<Node<E>> = atomic(head) // concurrent compatibility
 
         /**
          * Check if
