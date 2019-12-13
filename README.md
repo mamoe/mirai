@@ -92,7 +92,6 @@ Mirai 使用以下开源库:
 - [pcap4j](https://github.com/kaitoy/pcap4j)
 - [atomicfu](https://github.com/Kotlin/kotlinx.atomicfu)
 - [ktor](https://github.com/ktorio/ktor)
-- [klock](https://github.com/korlibs/klock)
 - [tornadofx](https://github.com/edvin/tornadofx)
 - [javafx](https://github.com/openjdk/jfx)
 - [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
@@ -256,7 +255,7 @@ Mirai 中所有的消息均为对象化的 [Message](mirai-core/src/commonMain/k
 #### Image JVM
 
 对于 JVM 平台, Mirai 提供额外的足以应对大多数情况的扩展函数:  
-[ExternalImageJvm](mirai-core/src/jvmMain/kotlin/net.mamoe.mirai/utils/ExternalImageJvm.kt)  
+[ExternalImageJvm](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/utils/ExternalImageJvm.kt)  
 若有必要, 这些函数将会创建临时文件以避免使用内存缓存图片  
 以下内容中, `IMAGE` 可替换为 `ExternalImage`, `BufferedImage`, `File`, `InputStream`, `URL` 或 `Input` (来自 `kotlinx.io`) 
 
