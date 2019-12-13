@@ -4,6 +4,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
+import net.mamoe.mirai.utils.Node.Companion.equals
 
 
 @MiraiExperimentalAPI
@@ -15,7 +16,10 @@ inline fun <E> lockFreeLinkedListOf(vararg elements: E): LockFreeLinkedList<E> =
 inline fun <E> lockFreeLinkedListOf(): LockFreeLinkedList<E> = LockFreeLinkedList<E>()
 
 /**
- * 无锁链表实现. 元素值不能为 null
+ * Implementation of lock-free LinkedList.
+ *
+ * Modifying can be performed concurrently.
+ * Iterating concurrency is guaranteed. // TODO: 2019/12/13 ADD MORE
  */
 @MiraiExperimentalAPI
 class LockFreeLinkedList<E> : MutableList<E>, RandomAccess {
@@ -37,7 +41,7 @@ class LockFreeLinkedList<E> : MutableList<E>, RandomAccess {
     }
 
     internal fun getLinkStucture(): String = buildString {
-        head.childIterate<Node<*>>({
+        head.childIterateReturnsLastSatisfying<Node<*>>({
             append(it.toString())
             append("->")
             it.nextNode
@@ -253,9 +257,10 @@ class LockFreeLinkedList<E> : MutableList<E>, RandomAccess {
 private inline fun <E> E.asNode(nextNode: Node<E>): Node<E> = Node(nextNode).apply { nodeValueRef.value = this@asNode }
 
 /**
- * 使用 [iterator] 进行自我迭代, 直到 [mustBeTrue] 返回 false 时停止迭代. 返回最后一个满足条件的元素
+ * Self-iterate using the [iterator], until [mustBeTrue] returns `false`.
+ * Returns the element at the last time when the [mustBeTrue] returns `true`
  */
-private inline fun <N : Node<*>> N.childIterate(iterator: (N) -> N, mustBeTrue: (N) -> Boolean): N {
+private inline fun <N : Node<*>> N.childIterateReturnsLastSatisfying(iterator: (N) -> N, mustBeTrue: (N) -> Boolean): N {
     if (!mustBeTrue(this)) return this
     var value: N = this
 
@@ -272,7 +277,8 @@ private inline fun <N : Node<*>> N.childIterate(iterator: (N) -> N, mustBeTrue: 
 }
 
 /**
- * 使用 [iterator] 进行自我迭代, 直到 [mustBeTrue] 返回 false 时停止迭代. 返回第一个不满足条件的元素
+ * Self-iterate using the [iterator], until [mustBeTrue] returns `false`.
+ * Returns the element at the first time when the [mustBeTrue] returns `false`
  */
 private inline fun <E> E.childIterateReturnFirstUnsitisfying(iterator: (E) -> E, mustBeTrue: (E) -> Boolean): E {
     if (!mustBeTrue(this)) return this
@@ -291,7 +297,8 @@ private inline fun <E> E.childIterateReturnFirstUnsitisfying(iterator: (E) -> E,
 }
 
 /**
- * 使用 [iterator] 进行自我迭代, 直到 [mustBeTrue] 返回 false 时停止迭代. 返回满足条件的元素数量
+ * Self-iterate using the [iterator], until [mustBeTrue] returns `false`.
+ * Returns the count of elements being iterated.
  */
 private inline fun <E> E.countChildIterate(iterator: (E) -> E, mustBeTrue: (E) -> Boolean): Int {
     var count = 0
@@ -330,6 +337,9 @@ private open class Node<E>(
 
     val nodeValueRef: AtomicRef<E?> = atomic(null)
 
+    /**
+     * Short cut for accessing [nodeValueRef]
+     */
     inline var nodeValue: E?
         get() = nodeValueRef.value
         set(value) {
@@ -338,6 +348,10 @@ private open class Node<E>(
 
     @Suppress("LeakingThis")
     val nextNodeRef: AtomicRef<Node<E>> = atomic(nextNode ?: this)
+
+    /**
+     * Short cut for accessing [nextNodeRef]
+     */
     inline var nextNode: Node<E>
         get() = nextNodeRef.value
         set(value) {
@@ -345,28 +359,61 @@ private open class Node<E>(
         }
 
 
-    inline fun iterateWhile(filter: (Node<E>) -> Boolean): Node<E> = this.childIterate<Node<E>>({ it.nextNode }, filter)
-
+    /**
+     * Returns the former node of the last node whence [filter] returnes true
+     */
     inline fun iterateBeforeFirst(filter: (Node<E>) -> Boolean): Node<E> =
-        this.childIterate<Node<E>>({ it.nextNode }, { !filter(it) })
+        this.childIterateReturnsLastSatisfying<Node<E>>({ it.nextNode }, { !filter(it) })
 
+    /**
+     * Returns the last node whence [filter] returnes true.
+     */
     inline fun iterateStopOnFirst(filter: (Node<E>) -> Boolean): Node<E> =
         iterateBeforeFirst(filter).nextNode
 
+
+    /**
+     * Returns the former node of next node whose value is not null.
+     * [Tail] is returned if no node is found
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun iterateBeforeNotnull(): Node<E> = iterateBeforeFirst { it.nodeValue != null }
 
+    /**
+     * Returns the next node which is not [Tail] or [Head] and with a notnull value.
+     * [Tail] is returned if no node is found
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun nextValidElement(): Node<E> = this.iterateBeforeFirst { !it.isValidElementNode() }
 
+    /**
+     * Returns the next node whose value is not null.
+     * [Tail] is returned if no node is found
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun nextNotnull(): Node<E> = this.iterateBeforeFirst { it.nodeValueRef.value == null }
 
-    inline fun allMatching(filter: (Node<E>) -> Boolean): Boolean = this.iterateWhile(filter) !is Tail
+    /**
+     * Check if all the node which is not [Tail] matches the [condition]
+     *
+     * Head, which is this, is also being tested.
+     * [Tail], is not being tested.
+     */
+    inline fun allMatching(condition: (Node<E>) -> Boolean): Boolean = this.childIterateReturnsLastSatisfying<Node<E>>({ it.nextNode }, condition) !is Tail
 
+    /**
+     * Stop on and returns the former element of the element that is [equals] to the [element]
+     *
+     * E.g.: for `head <- 1 <- 2 <- 3 <- tail`, `iterateStopOnNodeValue(2)` returns the node whose value is 1
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun iterateBeforeNodeValue(element: E): Node<E> = this.iterateBeforeFirst { it.nodeValueRef.value == element }
 
+    /**
+     * Stop on and returns the element that is [equals] to the [element]
+     *
+     * E.g.: for `head <- 1 <- 2 <- 3 <- tail`, `iterateStopOnNodeValue(2)` returns the node whose value is 2
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun iterateStopOnNodeValue(element: E): Node<E> = this.iterateBeforeNodeValue(element).nextNode
 }
