@@ -188,7 +188,7 @@ class LockFreeLinkedList<E> : MutableList<E>, RandomAccess {
             searchStartingFrom = got.nextNode
             index += timesOnThisTurn
 
-            if (!got.isRemoved()) lastMatching = got // only record the lastMatching if got is not removed.
+            if (!got.isRemoved()) lastMatching = got //record the lastMatching only if got is not removed.
         }
 
         if (!lastMatching.isValidElementNode()) {
