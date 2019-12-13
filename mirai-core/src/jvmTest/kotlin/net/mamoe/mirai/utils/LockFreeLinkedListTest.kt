@@ -10,6 +10,7 @@ import org.junit.Test
 import kotlin.system.exitProcess
 import kotlin.test.*
 
+@MiraiExperimentalAPI
 internal class LockFreeLinkedListTest {
     init {
         GlobalScope.launch {
@@ -226,9 +227,11 @@ internal class LockFreeLinkedListTest {
 
 internal fun withTimeoutBlocking(timeout: Long = 500L, block: suspend () -> Unit) = runBlocking { withTimeout(timeout) { block() } }
 
+@MiraiExperimentalAPI
 internal suspend fun <E> LockFreeLinkedList<E>.concurrentAdd(numberOfCoroutines: Int, timesOfAdd: Int, element: E) =
     concurrentDo(numberOfCoroutines, timesOfAdd) { add(element) }
 
+@MiraiExperimentalAPI
 internal suspend fun <E : LockFreeLinkedList<*>> E.concurrentDo(numberOfCoroutines: Int, timesOfAdd: Int, todo: E.() -> Unit) = coroutineScope {
     repeat(numberOfCoroutines) {
         launch {
