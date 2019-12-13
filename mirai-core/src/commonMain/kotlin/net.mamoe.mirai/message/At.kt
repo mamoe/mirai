@@ -6,7 +6,7 @@ import net.mamoe.mirai.contact.QQ
 
 
 /**
- * At 一个人
+ * At 一个人. 只能发送给一个群.
  */
 inline class At(val target: UInt) : Message {
     constructor(target: QQ) : this(target.id)
