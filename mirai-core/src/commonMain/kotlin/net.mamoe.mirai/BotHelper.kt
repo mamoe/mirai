@@ -91,7 +91,7 @@ suspend inline fun Bot.alsoLogin(): Bot = apply { login().requireSuccess() }
  * 使用在默认配置基础上修改的配置进行登录, 返回 [this]
  */
 @UseExperimental(ExperimentalContracts::class)
-suspend inline fun Bot.alsoLogin(noinline configuration: BotConfiguration.() -> Unit): Bot {
+suspend inline fun Bot.alsoLogin(configuration: BotConfiguration.() -> Unit): Bot {
     contract {
         callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
     }
