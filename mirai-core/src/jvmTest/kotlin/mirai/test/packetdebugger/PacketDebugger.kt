@@ -73,7 +73,7 @@ private fun listenDevice(localIp: String, device: PcapNetworkInterface) {
                 runBlocking {
                     withContext(DISPATCHER) {
                         try {
-                            PacketDebugger.dataReceived(it.rawData.drop(42).toByteArray())
+                            dataReceived(it.rawData.drop(42).toByteArray())
                         } catch (e: Throwable) {
                             e.printStackTrace()
                         }
@@ -117,6 +117,7 @@ internal fun Recorder.writeTo(file: File) {
     file.writeText(Json.plain.toJson(ArrayListSerializer(Recorder.Record.serializer()), this.list).toString(), Charset.defaultCharset())
 }
 
+@Suppress("unused")
 suspend fun main() {
 
     fun startPacketListening() {
