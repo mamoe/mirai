@@ -70,7 +70,7 @@ internal suspend inline fun Bot.sendPacket(packet: OutgoingPacket) =
  * 使用在默认配置基础上修改的配置进行登录
  */
 @UseExperimental(ExperimentalContracts::class)
-suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit): LoginResult {
+suspend inline fun Bot.login(configuration: BotConfiguration.() -> Unit): LoginResult {
     contract {
         callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
     }
