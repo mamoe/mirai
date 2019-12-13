@@ -95,7 +95,7 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
 }
 
 /**
- * 读扁平的 tag-UVarInt map. 重复的 tag 将不会只保留最后一个
+ * 读扁平的 tag-UVarInt map. 重复的 tag 将只保留最后一个
  *
  * tag: UByte
  * value: UVarint
