@@ -2,6 +2,8 @@
 
 package net.mamoe.mirai.utils
 
+import net.mamoe.mirai.contact.Group
+
 /**
  * 在获取 [Group] 对象等操作时可能出现的异常
  */

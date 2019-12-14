@@ -20,7 +20,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.addFriend
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.getGroup
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.hexToUBytes
 
@@ -81,6 +80,7 @@ suspend inline fun ApplicationCall.ok() = this.respond(HttpStatusCode.OK, "OK")
 /**
  * 错误请求. 抛出这个异常后将会返回错误给一个请求
  */
+@Suppress("unused")
 open class IllegalAccessException : Exception {
     override val message: String get() = super.message!!
 

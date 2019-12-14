@@ -13,7 +13,6 @@ import net.mamoe.mirai.contact.internal.MemberImpl
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.getGroup
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact

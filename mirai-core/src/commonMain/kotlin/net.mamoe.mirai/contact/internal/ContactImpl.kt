@@ -85,7 +85,7 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
 }
 
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
-inline fun CoroutineScope.QQ(bot: Bot, id: UInt, coroutineContext: CoroutineContext): QQ = QQImpl(bot, id, coroutineContext).apply { launch { startUpdater() } }
+internal inline fun CoroutineScope.QQ(bot: Bot, id: UInt, coroutineContext: CoroutineContext): QQ = QQImpl(bot, id, coroutineContext).apply { launch { startUpdater() } }
 
 @PublishedApi
 internal data class QQImpl @PublishedApi internal constructor(override val bot: Bot, override val id: UInt, override val coroutineContext: CoroutineContext) :
@@ -115,7 +115,7 @@ internal data class QQImpl @PublishedApi internal constructor(override val bot: 
 }
 
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
-inline fun Group.Member(delegate: QQ, permission: MemberPermission, coroutineContext: CoroutineContext): Member =
+internal inline fun Group.Member(delegate: QQ, permission: MemberPermission, coroutineContext: CoroutineContext): Member =
     MemberImpl(delegate, this, permission, coroutineContext).apply { launch { startUpdater() } }
 
 /**

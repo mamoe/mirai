@@ -11,7 +11,6 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.getGroup
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion

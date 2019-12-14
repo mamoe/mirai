@@ -7,7 +7,6 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.packet.KnownPacketId
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId

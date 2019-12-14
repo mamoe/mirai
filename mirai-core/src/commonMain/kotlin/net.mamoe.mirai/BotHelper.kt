@@ -26,25 +26,8 @@ import kotlin.jvm.JvmOverloads
  */
 
 //Contacts
- inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number)
- inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
+suspend inline fun Bot.getGroup(id: UInt): Group = this.getGroup(GroupId(id))
 
-suspend inline fun Bot.getGroup(id: UInt): Group = this.contacts.getGroup(GroupId(id))
-suspend inline fun Bot.getGroup(@PositiveNumbers id: Long): Group =
-    this.contacts.getGroup(GroupId(id.coerceAtLeastOrFail(0).toUInt()))
-
-suspend inline fun Bot.getGroup(id: GroupId): Group = this.contacts.getGroup(id)
-suspend inline fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.getGroup(internalId)
-
-/**
- * 取得群列表
- */
-inline val Bot.groups: ContactList<Group> get() = this.contacts.groups
-
-/**
- * 取得好友列表
- */
-inline val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 
 /**
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
@@ -106,14 +89,6 @@ suspend inline fun Bot.alsoLogin(message: String): Bot {
         login().requireSuccess { message } // requireSuccess is inline, so no performance waste
     }
 }
-
-/**
- * 添加好友
- */
-@UseExperimental(ExperimentalContracts::class)
-@JvmOverloads
-suspend inline fun Bot.addFriend(id: UInt, message: String? = null, remark: String? = null): AddFriendResult =
-    contacts.addFriend(id, message, remark)
 
 /**
  * 取得机器人的 QQ 号
