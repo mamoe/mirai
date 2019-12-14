@@ -55,6 +55,17 @@ internal fun ByteReadPacket.debugPrint(name: String = ""): ByteReadPacket {
 }
 
 @Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
+internal inline fun <R> ByteReadPacket.debugPrintIfFail(name: String = "", block: ByteReadPacket.() -> R): R {
+    val bytes = this.readBytes()
+    try {
+        return block(bytes.toReadPacket())
+    } catch (e: Throwable) {
+        DebugLogger.debug("Error in ByteReadPacket $name=" + bytes.toUHexString())
+        throw e
+    }
+}
+
+@Deprecated("Low efficiency, only for debug purpose", ReplaceWith("this"))
 internal fun ByteReadPacket.debugColorizedPrint(name: String = "", ignoreUntilFirstConst: Boolean = false): ByteReadPacket {
     val bytes = this.readBytes()
     bytes.printColorizedHex(name, ignoreUntilFirstConst)
