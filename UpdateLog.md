@@ -4,6 +4,19 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+### `0.8.0`  *2019/12/14*
+协议
+- 现在查询群资料时可处理群号无效的情况
+- 现在能正常分辨禁言事件包
+
+功能
+- 增加无锁链表: LockFreeLinkedList, 并将 ContactList 的实现改为该无锁链表
+- **ContactSystem.getQQ 不再是 `suspend`**
+- ContactSystem.getGroup 仍是 `suspend`, 原因为需要查询群资料. 在群 ID 无效时抛出 `GroupNotFoundException`
+
+优化
+- 日志中, 发送给服务器的包将会被以名字记录, 而不是 id
+
 ### `0.7.5`  *2019/12/09*
 - 修复验证码包发出后无回复 (错误的验证码包)
 

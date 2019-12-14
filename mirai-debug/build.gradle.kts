@@ -41,7 +41,7 @@ fun DependencyHandlerScope.ktor(id: String, version: String) = "io.ktor:ktor-$id
 
 dependencies {
     implementation(project(":mirai-core"))
-    runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // classpath is not added correctly by IDE
+    // runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // classpath is not added correctly by IDE
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
