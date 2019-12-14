@@ -11,15 +11,13 @@ import net.mamoe.mirai.contact.internal.Group
 import net.mamoe.mirai.contact.internal.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.packet.action.GroupNotFound
 import net.mamoe.mirai.network.protocol.tim.packet.action.GroupPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.RawGroupInfo
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.isSuccess
 import net.mamoe.mirai.network.qqAccount
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.utils.io.inline
@@ -165,10 +163,10 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         val bot: Bot get() = this@Bot
 
         @UseExperimental(MiraiInternalAPI::class)
-        val groups: ContactList<Group> = ContactList(MutableContactList<Group>())
+        val groups: ContactList<Group> = ContactList(MutableContactList())
 
         @UseExperimental(MiraiInternalAPI::class)
-        val qqs: ContactList<QQ> = ContactList(MutableContactList<QQ>())
+        val qqs: ContactList<QQ> = ContactList(MutableContactList())
 
         /**
          * 线程安全地获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.
@@ -192,10 +190,15 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         /**
          * 线程安全地获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
          */
-        @UseExperimental(MiraiInternalAPI::class)
+        @UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class)
         suspend fun getGroup(id: GroupId): Group = groups.delegate.getOrNull(id.value) ?: inline {
             val info: RawGroupInfo = try {
-                bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, id.toInternalId(), sessionKey).sendAndExpect() }
+                when (val response =
+                    bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, id.toInternalId(), sessionKey).sendAndExpect<GroupPacket.InfoResponse>() }) {
+                    is RawGroupInfo -> response
+                    is GroupNotFound -> throw GroupNotFoundException("id=${id.value.toLong()}")
+                    else -> assertUnreachable()
+                }
             } catch (e: Exception) {
                 throw IllegalStateException("Cannot obtain group info for id ${id.value.toLong()}", e)
             }
