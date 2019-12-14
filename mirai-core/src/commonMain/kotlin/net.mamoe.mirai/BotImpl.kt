@@ -106,11 +106,9 @@ internal class BotImpl @PublishedApi internal constructor(
     // endregion
 
     // region contacts
-    @UseExperimental(MiraiInternalAPI::class)
-    override val groups: ContactList<Group> = ContactList(MutableContactList())
+    override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
-    @UseExperimental(MiraiInternalAPI::class)
-    override val qqs: ContactList<QQ> = ContactList(MutableContactList())
+    override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     /**
      * 线程安全地获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.

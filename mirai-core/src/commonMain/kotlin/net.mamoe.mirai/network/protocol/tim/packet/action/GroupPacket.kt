@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMProtocol
 import net.mamoe.mirai.network.protocol.tim.packet.*
+import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.withSession
@@ -54,7 +55,7 @@ internal data class RawGroupInfo(
     @Suppress("NOTHING_TO_INLINE") // this function it only executed in one place.
     @UseExperimental(MiraiInternalAPI::class)
     inline fun parseBy(group: Group): GroupInfo = group.bot.withSession {
-        val memberList = MutableContactList<Member>()
+        val memberList = LockFreeLinkedList<Member>()
         members.forEach { entry: Map.Entry<UInt, MemberPermission> ->
             entry.key.qq().let { group.Member(it, entry.value, it.coroutineContext) }
         }
