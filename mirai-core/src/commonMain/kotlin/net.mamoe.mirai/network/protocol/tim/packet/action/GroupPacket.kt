@@ -52,9 +52,8 @@ internal data class RawGroupInfo(
     val members: Map<UInt, MemberPermission>
 ) : GroupPacket.InfoResponse {
 
-    @Suppress("NOTHING_TO_INLINE") // this function it only executed in one place.
     @UseExperimental(MiraiInternalAPI::class)
-    inline fun parseBy(group: Group): GroupInfo = group.bot.withSession {
+    fun parseBy(group: Group): GroupInfo = group.bot.withSession {
         val memberList = LockFreeLinkedList<Member>()
         members.forEach { entry: Map.Entry<UInt, MemberPermission> ->
             entry.key.qq().let { group.Member(it, entry.value, it.coroutineContext) }
@@ -191,7 +190,7 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
             0x72u -> {
                 when (val flag = readByte().toInt()) {
                     0x02 -> GroupNotFound
-                    0x00 -> {
+                    0x00 -> debugPrintIfFail("解析群信息") {
                         discardExact(4) // group internal id
                         val group = readUInt() // group id
 
