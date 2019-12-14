@@ -58,7 +58,7 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
 }
 
 /**
- * 只读联系人列表, lockfree 实现
+ * 只读联系人列表, lock-free 实现
  */
 @UseExperimental(MiraiInternalAPI::class)
 @Suppress("unused")
