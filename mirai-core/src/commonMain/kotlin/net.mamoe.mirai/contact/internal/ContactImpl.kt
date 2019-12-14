@@ -37,7 +37,7 @@ internal sealed class ContactImpl : Contact {
 @PublishedApi
 internal fun CoroutineScope.Group(bot: Bot, groupId: GroupId, info: RawGroupInfo, context: CoroutineContext): Group =
     GroupImpl(bot, groupId, context).apply {
-        this@apply.info = info.parseBy(this@apply);
+        this@apply.info = info.parseBy(this@apply)
         launch { startUpdater() }
     }
 
