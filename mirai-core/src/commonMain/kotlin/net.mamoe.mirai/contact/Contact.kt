@@ -61,6 +61,7 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
  * 只读联系人列表, lockfree 实现
  */
 @UseExperimental(MiraiInternalAPI::class)
+@Suppress("unused")
 class ContactList<C : Contact>(@PublishedApi internal val delegate: MutableContactList<C>) {
     /**
      * ID 列表的字符串表示.
@@ -71,7 +72,7 @@ class ContactList<C : Contact>(@PublishedApi internal val delegate: MutableConta
      */
     val idContentString: String get() = "[" + buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(2) + "]"
 
-    operator fun get(id: UInt): C = delegate.get(id)
+    operator fun get(id: UInt): C = delegate[id]
     fun getOrNull(id: UInt): C? = delegate.getOrNull(id)
     fun containsId(id: UInt): Boolean = delegate.getOrNull(id) != null
 
@@ -88,7 +89,7 @@ class ContactList<C : Contact>(@PublishedApi internal val delegate: MutableConta
  * 可修改联系人列表. 只会在内部使用.
  */
 @MiraiInternalAPI
-class MutableContactList<C : Contact>() : LockFreeLinkedList<C>() {
+class MutableContactList<C : Contact> : LockFreeLinkedList<C>() {
     override fun toString(): String = joinToString(separator = ", ", prefix = "MutableContactList(", postfix = ")")
 
     operator fun get(id: UInt): C {
