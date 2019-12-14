@@ -1,6 +1,6 @@
 @file:JvmMultifileClass
 @file:JvmName("BotHelperKt")
-@file:Suppress("unused", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("unused", "EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai
 
@@ -26,9 +26,8 @@ import kotlin.jvm.JvmOverloads
  */
 
 //Contacts
-suspend inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number)
-
-suspend inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
+ inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number)
+ inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
 
 suspend inline fun Bot.getGroup(id: UInt): Group = this.contacts.getGroup(GroupId(id))
 suspend inline fun Bot.getGroup(@PositiveNumbers id: Long): Group =

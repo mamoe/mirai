@@ -8,7 +8,9 @@ import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.chain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.joinToString
 import net.mamoe.mirai.withSession
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -56,10 +58,10 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
 }
 
 /**
- * 只读联系人列表
+ * 只读联系人列表, lockfree 实现
  */
 @UseExperimental(MiraiInternalAPI::class)
-inline class ContactList<C : Contact>(internal val mutable: MutableContactList<C>) : Map<UInt, C> {
+class ContactList<C : Contact>(@PublishedApi internal val delegate: MutableContactList<C>) {
     /**
      * ID 列表的字符串表示.
      * 如:
@@ -67,42 +69,37 @@ inline class ContactList<C : Contact>(internal val mutable: MutableContactList<C
      * [123456, 321654, 123654]
      * ```
      */
-    val idContentString: String get() = this.keys.joinToString(prefix = "[", postfix = "]") { it.toLong().toString() }
+    val idContentString: String get() = "[" + buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(2) + "]"
 
-    override fun toString(): String = mutable.toString()
+    operator fun get(id: UInt): C = delegate.get(id)
+    fun getOrNull(id: UInt): C? = delegate.getOrNull(id)
+    fun containsId(id: UInt): Boolean = delegate.getOrNull(id) != null
 
+    val size: Int get() = delegate.size
+    operator fun contains(element: C): Boolean = delegate.contains(element)
+    fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
+    fun isEmpty(): Boolean = delegate.isEmpty()
+    inline fun forEach(block: (C) -> Unit) = delegate.forEach(block)
 
-    // TODO: 2019/12/2 应该使用属性代理, 但属性代理会导致 UInt 内联错误. 等待 kotlin 修复后替换
-
-    override val size: Int get() = mutable.size
-    override fun containsKey(key: UInt): Boolean = mutable.containsKey(key)
-    override fun containsValue(value: C): Boolean = mutable.containsValue(value)
-    override fun get(key: UInt): C? = mutable[key]
-    override fun isEmpty(): Boolean = mutable.isEmpty()
-    override val entries: MutableSet<MutableMap.MutableEntry<UInt, C>> get() = mutable.entries
-    override val keys: MutableSet<UInt> get() = mutable.keys
-    override val values: MutableCollection<C> get() = mutable.values
+    override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
 }
 
 /**
  * 可修改联系人列表. 只会在内部使用.
  */
 @MiraiInternalAPI
-inline class MutableContactList<C : Contact>(private val delegate: MutableMap<UInt, C> = linkedMapOf()) : MutableMap<UInt, C> {
-    override fun toString(): String = asIterable().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")") { it.value.toString() }
+class MutableContactList<C : Contact>() : LockFreeLinkedList<C>() {
+    override fun toString(): String = joinToString(separator = ", ", prefix = "MutableContactList(", postfix = ")")
 
-    // TODO: 2019/12/2 应该使用属性代理, 但属性代理会导致 UInt 内联错误. 等待 kotlin 修复后替换
+    operator fun get(id: UInt): C {
+        forEach { if (it.id == id) return it }
+        throw NoSuchElementException()
+    }
 
-    override val size: Int get() = delegate.size
-    override fun containsKey(key: UInt): Boolean = delegate.containsKey(key)
-    override fun containsValue(value: C): Boolean = delegate.containsValue(value)
-    override fun get(key: UInt): C? = delegate[key]
-    override fun isEmpty(): Boolean = delegate.isEmpty()
-    override val entries: MutableSet<MutableMap.MutableEntry<UInt, C>> get() = delegate.entries
-    override val keys: MutableSet<UInt> get() = delegate.keys
-    override val values: MutableCollection<C> get() = delegate.values
-    override fun clear() = delegate.clear()
-    override fun put(key: UInt, value: C): C? = delegate.put(key, value)
-    override fun putAll(from: Map<out UInt, C>) = delegate.putAll(from)
-    override fun remove(key: UInt): C? = delegate.remove(key)
+    fun getOrNull(id: UInt): C? {
+        forEach { if (it.id == id) return it }
+        return null
+    }
+
+    fun getOrAdd(id: UInt, supplier: () -> C): C = super.filteringGetOrAdd({it.id == id}, supplier)
 }

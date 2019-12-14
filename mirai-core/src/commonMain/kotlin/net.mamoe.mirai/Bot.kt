@@ -11,14 +11,18 @@ import net.mamoe.mirai.contact.internal.Group
 import net.mamoe.mirai.contact.internal.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.packet.action.GroupPacket
+import net.mamoe.mirai.network.protocol.tim.packet.action.RawGroupInfo
 import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
 import net.mamoe.mirai.network.protocol.tim.packet.login.isSuccess
+import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import net.mamoe.mirai.utils.io.inline
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -161,69 +165,59 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
         val bot: Bot get() = this@Bot
 
         @UseExperimental(MiraiInternalAPI::class)
-        @Suppress("PropertyName")
-        internal val _groups = MutableContactList<Group>()
-        internal lateinit var groupsUpdater: Job
-        private val groupsLock = Mutex()
+        val groups: ContactList<Group> = ContactList(MutableContactList<Group>())
 
-        val groups: ContactList<Group> = ContactList(_groups)
-
-        @Suppress("PropertyName")
         @UseExperimental(MiraiInternalAPI::class)
-        internal val _qqs = MutableContactList<QQ>() //todo 实现群列表和好友列表获取
-        internal lateinit var qqUpdaterJob: Job
-        private val qqsLock = Mutex()
-
-        val qqs: ContactList<QQ> = ContactList(_qqs)
+        val qqs: ContactList<QQ> = ContactList(MutableContactList<QQ>())
 
         /**
-         * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.
-         *
-         * 注: 这个方法是线程安全的
+         * 线程安全地获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.
          */
         @UseExperimental(MiraiInternalAPI::class)
         @JvmSynthetic
-        suspend fun getQQ(id: UInt): QQ =
-            if (_qqs.containsKey(id)) _qqs[id]!!
-            else qqsLock.withLock {
-                _qqs.getOrPut(id) { QQ(bot, id, coroutineContext) }
-            }
-
-        // NO INLINE!! to help Java
-        @UseExperimental(MiraiInternalAPI::class)
-        suspend fun getQQ(id: Long): QQ = id.coerceAtLeastOrFail(0).toUInt().let {
-            if (_qqs.containsKey(it)) _qqs[it]!!
-            else qqsLock.withLock {
-                _qqs.getOrPut(it) { QQ(bot, it, coroutineContext) }
-            }
-        }
+        fun getQQ(id: UInt): QQ = qqs.delegate.getOrAdd(id) { QQ(bot, id, coroutineContext) }
 
         /**
-         * 获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
-         *
-         * 注: 这个方法是线程安全的
+         * 线程安全地获取缓存的 QQ 对象. 若没有对应的缓存, 则会创建一个.
+         */
+        // NO INLINE!! to help Java
+        @UseExperimental(MiraiInternalAPI::class)
+        fun getQQ(@PositiveNumbers id: Long): QQ = getQQ(id.coerceAtLeastOrFail(0).toUInt())
+
+        /**
+         * 线程安全地获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
          */
         suspend fun getGroup(internalId: GroupInternalId): Group = getGroup(internalId.toId())
 
         /**
-         * 获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
-         *
-         * 注: 这个方法是线程安全的
+         * 线程安全地获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
          */
         @UseExperimental(MiraiInternalAPI::class)
-        suspend fun getGroup(id: GroupId): Group = id.value.let {
-            if (_groups.containsKey(it)) _groups[it]!!
-            else groupsLock.withLock {
-                _groups.getOrPut(it) { Group(bot, id, coroutineContext) }
+        suspend fun getGroup(id: GroupId): Group = groups.delegate.getOrNull(id.value) ?: inline {
+            val info: RawGroupInfo = try {
+                bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, id.toInternalId(), sessionKey).sendAndExpect() }
+            } catch (e: Exception) {
+                throw IllegalStateException("Cannot obtain group info for id ${id.value.toLong()}", e)
             }
+
+            return groups.delegate.getOrAdd(id.value) { Group(bot, id, info, coroutineContext) }
         }
 
+        /**
+         * 线程安全地获取缓存的群对象. 若没有对应的缓存, 则会创建一个.
+         */
         // NO INLINE!! to help Java
         @UseExperimental(MiraiInternalAPI::class)
         suspend fun getGroup(@PositiveNumbers id: Long): Group = id.coerceAtLeastOrFail(0).toUInt().let {
-            if (_groups.containsKey(it)) _groups[it]!!
-            else groupsLock.withLock {
-                _groups.getOrPut(it) { Group(bot, GroupId(it), coroutineContext) }
+            groups.delegate.getOrNull(it) ?: inline {
+                val info: RawGroupInfo = try {
+                    bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, GroupId(it).toInternalId(), sessionKey).sendAndExpect() }
+                } catch (e: Exception) {
+                    e.logStacktrace()
+                    error("Cannot obtain group info for id ${it.toLong()}")
+                }
+
+                return groups.delegate.getOrAdd(it) { Group(bot, GroupId(it), info, coroutineContext) }
             }
         }
     }
@@ -232,8 +226,8 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
     fun close() {
         _network.close()
         this.coroutineContext.cancelChildren()
-        contacts._groups.clear()
-        contacts._qqs.clear()
+        contacts.groups.delegate.clear()
+        contacts.qqs.delegate.clear()
     }
 
     companion object {

@@ -76,7 +76,7 @@ internal object MemberJoinPacketHandler : KnownEventParserAndHandler<MemberJoinE
 
         discardExact(1) // 01
         val qq = bot.getQQ(readUInt())
-        val member = Member(qq, group, MemberPermission.MEMBER, qq.coroutineContext)
+        val member = group.Member(qq, MemberPermission.MEMBER, qq.coroutineContext)
 
         return if (readByte().toInt() == 0x03) {
             MemberJoinEventPacket(member, null)

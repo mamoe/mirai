@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.network
 
@@ -74,9 +74,9 @@ abstract class BotSessionBase internal constructor(
      */
     val gtk: Int get() = _gtk
 
-    suspend inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
-    suspend inline fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
-    suspend inline fun UInt.qq(): QQ = bot.getQQ(this)
+    inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
+    inline fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
+    inline fun UInt.qq(): QQ = bot.getQQ(this)
 
     suspend inline fun Int.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0).toUInt())
     suspend inline fun Long.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0))
