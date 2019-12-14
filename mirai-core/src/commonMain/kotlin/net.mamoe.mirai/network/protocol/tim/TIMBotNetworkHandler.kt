@@ -286,7 +286,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     it::class.annotations.filterIsInstance<NoLog>().any()
                 }
             }?.let {
-                bot.logger.verbose("Packet sent:     ${it.packetId}")
+                bot.logger.verbose("Packet sent:     ${it.name}")
             }
 
             PacketSentEvent(bot, packet).broadcast()
