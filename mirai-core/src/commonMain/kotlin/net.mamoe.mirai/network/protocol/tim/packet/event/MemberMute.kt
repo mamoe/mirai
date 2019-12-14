@@ -1,4 +1,4 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.network.protocol.tim.packet.event
 
@@ -61,6 +61,7 @@ class MemberUnmuteEvent(
 /**
  * 机器人被解除禁言事件
  */
+@Suppress("SpellCheckingInspection")
 class BeingUnmutedEvent(
     override val operator: Member
 ) : UnmuteEvent() {
@@ -75,9 +76,11 @@ sealed class UnmuteEvent : EventOfMute() {
 
 // endregion
 
+@Suppress("ClassName")
 internal object `Unknown0x02DCPacket_falg=0x0E_MaybeMutePacket` : EventOfMute() {
     override val operator: Member get() = error("Getting a field from Unknown0x02DCPacket_MaybeMutePacket")
     override val group: Group get() = error("Getting a field from Unknown0x02DCPacket_MaybeMutePacket")
+    override fun toString(): String = "`Unknown0x02DCPacket_falg=0x0E_MaybeMutePacket`"
 }
 
 sealed class EventOfMute : EventPacket {
@@ -117,8 +120,7 @@ internal object MemberMuteEventPacketParserAndHandler : KnownEventParserAndHandl
         // 00 27 8D 00
 
         discardExact(3)
-        val flag = readByte().toUInt()
-        return when (flag) {
+        return when (val flag = readByte().toUInt()) {
             0x0Eu -> {
                 //00 00 00 0E 00 08 00 02 00 01 00
                 // 0A 00 04 01 00 00 00 35 DB 60 A2 11 00 3E 08 07 20 A2 C1 ED AE 03 5A 34 08 A2 FF 8C F0 03 1A 19 08 F4 0E 10 FE 8C D3 EF 05 18 84 A1 F8 F9 06 20 00 28 00 30 A2 FF 8C F0 03 2A 0D 08 00 12 09 08 F4 0E 10 00 18 01 20 00 30 00 38 00

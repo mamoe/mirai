@@ -10,7 +10,6 @@ import kotlinx.io.pool.useInstance
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.read
@@ -26,20 +25,13 @@ import net.mamoe.mirai.utils.readProtoMap
  */
 internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
 
-    /**
-     * 2 Ubyte.
-     * 读取注解 [AnnotatedId]
-     */
-    private val annotatedId: AnnotatedId
-        get() = (this::class.annotations.firstOrNull { it is AnnotatedId } as? AnnotatedId)
-            ?: error("Annotation AnnotatedId not found for class ${this::class.simpleName}")
+    @Suppress("PropertyName")
+    internal var _id: PacketId = NullPacketId
 
-
-    // TODO: 2019/11/22 修改 包 ID 为参数
     /**
      * 包 ID.
      */
-    open val id: PacketId by lazy { annotatedId.id }
+    open val id: PacketId get() = _id
 
     /**
      * **解码**服务器的回复数据包

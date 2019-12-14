@@ -11,6 +11,7 @@ import net.mamoe.mirai.contact.internal.Group
 import net.mamoe.mirai.contact.internal.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.packet.KnownPacketId
 import net.mamoe.mirai.network.protocol.tim.packet.action.GroupNotFound
 import net.mamoe.mirai.network.protocol.tim.packet.action.GroupPacket
 import net.mamoe.mirai.network.protocol.tim.packet.action.RawGroupInfo
@@ -246,6 +247,10 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
 
         internal suspend fun addInstance(bot: Bot) = instanceLock.withLock {
             _instances += bot
+        }
+
+        init {
+            KnownPacketId.values() // load packet ids
         }
     }
 }

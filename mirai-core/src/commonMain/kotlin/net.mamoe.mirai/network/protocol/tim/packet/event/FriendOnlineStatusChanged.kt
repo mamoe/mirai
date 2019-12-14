@@ -9,7 +9,6 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.packet.AnnotatedId
 import net.mamoe.mirai.network.protocol.tim.packet.KnownPacketId
 import net.mamoe.mirai.network.protocol.tim.packet.PacketId
 import net.mamoe.mirai.network.protocol.tim.packet.SessionPacketFactory
@@ -23,7 +22,6 @@ data class FriendStatusChanged(
 /**
  * 好友在线状态改变
  */
-@AnnotatedId(KnownPacketId.FRIEND_ONLINE_STATUS_CHANGE)
 internal object FriendOnlineStatusChangedPacket : SessionPacketFactory<FriendStatusChanged>() {
 
     override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): FriendStatusChanged {

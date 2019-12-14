@@ -12,7 +12,6 @@ internal object CaptchaKey : DecrypterByteArray, DecrypterType<CaptchaKey> {
     override val value: ByteArray = TIMProtocol.key00BA
 }
 
-@AnnotatedId(KnownPacketId.CAPTCHA)
 internal object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, CaptchaKey>(CaptchaKey) {
     /**
      * 请求验证码传输

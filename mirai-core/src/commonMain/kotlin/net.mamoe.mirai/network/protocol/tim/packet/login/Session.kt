@@ -9,7 +9,6 @@ import net.mamoe.mirai.network.protocol.tim.packet.*
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.localIpAddress
 
-@AnnotatedId(KnownPacketId.SESSION_KEY)
 internal object RequestSessionPacket : PacketFactory<RequestSessionPacket.SessionKeyResponse, SessionResponseDecryptionKey>(SessionResponseDecryptionKey) {
     operator fun invoke(
         bot: UInt,

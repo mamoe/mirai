@@ -79,7 +79,6 @@ inline class QuitGroupResponse(private val _group: GroupInternalId?) : Packet, G
 }
 
 @Suppress("FunctionName")
-@AnnotatedId(KnownPacketId.GROUP_PACKET)
 internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketResponse>() {
     @PacketVersion(date = "2019.10.19", timVersion = "2.3.2 (21173)")
     fun Message(

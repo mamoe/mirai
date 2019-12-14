@@ -13,7 +13,6 @@ import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 
 @NoLog
-@AnnotatedId(KnownPacketId.HEARTBEAT)
 internal object HeartbeatPacket : SessionPacketFactory<HeartbeatPacketResponse>() {
     operator fun invoke(
         bot: UInt,
@@ -31,5 +30,4 @@ internal object HeartbeatPacket : SessionPacketFactory<HeartbeatPacketResponse>(
 }
 
 @NoLog
-@AnnotatedId(KnownPacketId.HEARTBEAT)
 internal object HeartbeatPacketResponse : Packet, Subscribable

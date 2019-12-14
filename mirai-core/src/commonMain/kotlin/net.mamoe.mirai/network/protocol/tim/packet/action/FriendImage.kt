@@ -92,7 +92,6 @@ internal object FriendImageOverFileSizeMax : FriendImageResponse {
  * - 服务器已经存有这个图片
  * - 服务器未存有, 返回一个 key 用于客户端上传
  */
-@AnnotatedId(KnownPacketId.FRIEND_IMAGE_ID)
 @PacketVersion(date = "2019.11.16", timVersion = "2.3.2 (21173)")
 internal object FriendImagePacket : SessionPacketFactory<FriendImageResponse>() {
     @Suppress("FunctionName")

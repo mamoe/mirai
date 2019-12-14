@@ -44,7 +44,6 @@ internal inline class SubmitPasswordResponseDecrypter(private val privateKey: Pr
 /**
  * 提交密码
  */
-@AnnotatedId(KnownPacketId.LOGIN)
 internal object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, SubmitPasswordResponseDecrypter>(SubmitPasswordResponseDecrypter) {
     operator fun invoke(
         bot: UInt,
