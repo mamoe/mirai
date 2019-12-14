@@ -23,10 +23,10 @@ internal class LockFreeLinkedListTest {
     @Test
     fun addAndGetSingleThreaded() {
         val list = LockFreeLinkedList<Int>()
-        list.add(1)
-        list.add(2)
-        list.add(3)
-        list.add(4)
+        list.addLast(1)
+        list.addLast(2)
+        list.addLast(3)
+        list.addLast(4)
 
         list.size shouldBeEqualTo 4
     }
@@ -36,7 +36,7 @@ internal class LockFreeLinkedListTest {
         //withContext(Dispatchers.Default){
         val list = LockFreeLinkedList<Int>()
 
-        list.concurrentAdd(1000, 10, 1)
+        list.concurrentDo(1000, 10) { addLast(1) }
         list.size shouldBeEqualTo 1000 * 10
 
         list.concurrentDo(100, 10) {
@@ -51,18 +51,55 @@ internal class LockFreeLinkedListTest {
     fun addAndGetMassConcurrentAccess() = runBlocking {
         val list = LockFreeLinkedList<Int>()
 
-        val addJob = async { list.concurrentAdd(5000, 10, 1) }
+        val addJob = async { list.concurrentDo(2, 30000) { addLast(1) } }
 
-        delay(10) // let addJob fly
+        //delay(1) // let addJob fly
         if (addJob.isCompleted) {
             error("Number of elements are not enough")
         }
-        list.concurrentDo(1000, 10) {
-            remove(1).shouldBeTrue()
+        val foreachJob = async {
+            list.concurrentDo(1, 10000) {
+                forEach { it + it }
+            }
         }
-        addJob.join()
+        val removeLastJob = async {
+            list.concurrentDo(1, 15000) {
+                removeLast() shouldBeEqualTo 1
+            }
+        }
+        val removeFirstJob = async {
+            list.concurrentDo(1, 10000) {
+                removeFirst() shouldBeEqualTo 1
+            }
+        }
+        val addJob2 = async {
+            list.concurrentDo(1, 5000) {
+                addLast(1)
+            }
+        }
+        val removeExactJob = launch {
+            list.concurrentDo(3, 1000) {
+                remove(1).shouldBeTrue()
+            }
+        }
+        val filteringGetOrAddJob = launch {
+            list.concurrentDo(1, 10000) {
+                filteringGetOrAdd({ it == 2 }, { 1 })
+            }
+        }
+        joinAll(addJob, addJob2, foreachJob, removeLastJob, removeFirstJob, removeExactJob, filteringGetOrAddJob)
 
-        list.size shouldBeEqualTo 5000 * 10 - 1000 * 10
+        list.size shouldBeEqualTo 2 * 30000 - 1 * 15000 - 1 * 10000 + 1 * 5000 - 3 * 1000 + 1 * 10000
+    }
+
+    @Test
+    fun removeWhileForeach() {
+        val list = LockFreeLinkedList<Int>()
+        repeat(10) { list.addLast(it) }
+        list.forEach {
+            list.remove(it + 1)
+        }
+        list.peekFirst() shouldBeEqualTo 0
     }
 
     @Test
@@ -72,11 +109,11 @@ internal class LockFreeLinkedListTest {
         assertFalse { list.remove(1) }
         assertEquals(0, list.size)
 
-        list.add(1)
+        list.addLast(1)
         assertTrue { list.remove(1) }
         assertEquals(0, list.size)
 
-        list.add(2)
+        list.addLast(2)
         assertFalse { list.remove(1) }
         assertEquals(1, list.size)
     }
@@ -107,6 +144,43 @@ internal class LockFreeLinkedListTest {
         list.toString() shouldBeEqualTo "[1, 2, 3, 4, 5]"
     }
 
+    @Test
+    fun `filteringGetOrAdd when add`() {
+        val list = LockFreeLinkedList<Int>()
+        list.addAll(listOf(1, 2, 3, 4, 5))
+        val value = list.filteringGetOrAdd({ it == 6 }, { 6 })
+
+        println("Check value")
+        value shouldBeEqualTo 6
+        println("Check size")
+        println(list.getLinkStructure())
+        list.size shouldBeEqualTo 6
+    }
+
+    @Test
+    fun `filteringGetOrAdd when get`() {
+        val list = LockFreeLinkedList<Int>()
+        list.addAll(listOf(1, 2, 3, 4, 5))
+        val value = list.filteringGetOrAdd({ it == 2 }, { 2 })
+
+        println("Check value")
+        value shouldBeEqualTo 2
+        println("Check size")
+        println(list.getLinkStructure())
+        list.size shouldBeEqualTo 5
+    }
+
+    @Test
+    fun `filteringGetOrAdd when empty`() {
+        val list = LockFreeLinkedList<Int>()
+        val value = list.filteringGetOrAdd({ it == 2 }, { 2 })
+
+        println("Check value")
+        value shouldBeEqualTo 2
+        println("Check size")
+        println(list.getLinkStructure())
+        list.size shouldBeEqualTo 1
+    }
     /*
     @Test
     fun indexOf() {
@@ -176,16 +250,13 @@ internal class LockFreeLinkedListTest {
      */
 }
 
+@UseExperimental(ExperimentalCoroutinesApi::class)
 @MiraiExperimentalAPI
-internal suspend inline fun <E> LockFreeLinkedList<E>.concurrentAdd(numberOfCoroutines: Int, timesOfAdd: Int, element: E) =
-    concurrentDo(numberOfCoroutines, timesOfAdd) { add(element) }
-
-@MiraiExperimentalAPI
-internal suspend inline fun <E : LockFreeLinkedList<*>> E.concurrentDo(numberOfCoroutines: Int, timesOfAdd: Int, crossinline todo: E.() -> Unit) =
+internal suspend inline fun <E : LockFreeLinkedList<*>> E.concurrentDo(numberOfCoroutines: Int, times: Int, crossinline todo: E.() -> Unit) =
     coroutineScope {
         repeat(numberOfCoroutines) {
-            launch {
-                repeat(timesOfAdd) {
+            launch(start = CoroutineStart.UNDISPATCHED) {
+                repeat(times) {
                     todo()
                 }
             }
