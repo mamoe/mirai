@@ -125,7 +125,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
      * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
      * 然后重新启动并尝试登录
      */
-    @JvmOverloads // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
+    @JvmOverloads
     suspend fun reinitializeNetworkHandler(
         configuration: BotConfiguration,
         cause: Throwable? = null
@@ -148,7 +148,7 @@ class Bot(val account: BotAccount, val logger: MiraiLogger, context: CoroutineCo
      * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
      * 然后重新启动并尝试登录
      */
-    @JvmOverloads // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
+    @JvmOverloads
     fun reinitializeNetworkHandlerAsync(
         configuration: BotConfiguration,
         cause: Throwable? = null
