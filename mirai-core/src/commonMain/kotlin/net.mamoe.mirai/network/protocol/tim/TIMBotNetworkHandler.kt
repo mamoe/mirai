@@ -226,7 +226,9 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 return
 
             if (!packet::class.annotations.filterIsInstance<NoLog>().any()) {
-                bot.logger.verbose("Packet received: $packet")
+                if ((packet as? BroadcastControllable)?.shouldBroadcast != false) {
+                    bot.logger.verbose("Packet received: $packet")
+                }
             }
 
             when (packet) {

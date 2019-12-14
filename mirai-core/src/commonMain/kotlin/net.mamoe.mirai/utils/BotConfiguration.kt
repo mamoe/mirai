@@ -62,6 +62,12 @@ class BotConfiguration : CoroutineContext.Element {
      * 验证码处理器
      */
     var captchaSolver: CaptchaSolver = DefaultCaptchaSolver
+    /**
+     * 登录完成后几秒会收到好友消息的历史记录,
+     * 这些历史记录不会触发事件.
+     * 这个选项为是否把这些记录添加到日志
+     */
+    var logPreviousMessages: Boolean = false
 
     companion object Key : CoroutineContext.Key<BotConfiguration> {
         /**
