@@ -239,7 +239,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 temporaryPacketHandlers.filter { it.filter(session, packet, sequenceId) }
                     .also { temporaryPacketHandlers.removeAll(it) }
             }.forEach {
-                it.doReceiveWithoutExceptions(packet)
+                it.doReceiveCatchingExceptions(packet)
             }
 
             if (factory is SessionPacketFactory<*>) {

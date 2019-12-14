@@ -60,7 +60,7 @@ internal class TemporaryPacketHandler<P : Packet, R>(
     internal inline fun filter(session: BotSession, packet: Packet, sequenceId: UShort): Boolean =
         expectationClass.isInstance(packet) && session === this.fromSession && if (checkSequence) sequenceId == toSend.sequenceId else true
 
-    internal suspend inline fun doReceiveWithoutExceptions(packet: Packet) {
+    internal suspend inline fun doReceiveCatchingExceptions(packet: Packet) {
         @Suppress("UNCHECKED_CAST")
         val ret = try {
             withContext(callerContext) {
