@@ -54,37 +54,7 @@ interface Bot : CoroutineScope {
 
     override val coroutineContext: CoroutineContext
 
-    /**
-     * 网络模块
-     */
-    val network: BotNetworkHandler<*>
-
-    /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
-     * 然后重新启动并尝试登录
-     */
-    fun tryReinitializeNetworkHandler(
-        configuration: BotConfiguration,
-        cause: Throwable? = null
-    ): Job
-
-    /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
-     * 然后重新启动并尝试登录
-     */
-    suspend fun reinitializeNetworkHandler(
-        configuration: BotConfiguration,
-        cause: Throwable? = null
-    ): LoginResult
-
-    /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
-     * 然后重新启动并尝试登录
-     */
-    fun reinitializeNetworkHandlerAsync(
-        configuration: BotConfiguration,
-        cause: Throwable? = null
-    ): Deferred<LoginResult>
+    // region contacts
 
     /**
      * 与这个机器人相关的 QQ 列表. 机器人与 QQ 不一定是好友
@@ -123,6 +93,44 @@ interface Bot : CoroutineScope {
      * 若 [id] 无效, 将会抛出 [GroupNotFoundException]
      */
     suspend fun getGroup(id: Long): Group
+
+    // endregion
+
+    // region network
+
+    /**
+     * 网络模块
+     */
+    val network: BotNetworkHandler<*>
+
+    /**
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
+     * 然后重新启动并尝试登录
+     */
+    fun tryReinitializeNetworkHandler(
+        configuration: BotConfiguration,
+        cause: Throwable? = null
+    ): Job
+
+    /**
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
+     * 然后重新启动并尝试登录
+     */
+    suspend fun reinitializeNetworkHandler(
+        configuration: BotConfiguration,
+        cause: Throwable? = null
+    ): LoginResult
+
+    /**
+     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
+     * 然后重新启动并尝试登录
+     */
+    fun reinitializeNetworkHandlerAsync(
+        configuration: BotConfiguration,
+        cause: Throwable? = null
+    ): Deferred<LoginResult>
+
+    // endregion
 
     fun close()
 }
