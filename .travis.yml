@@ -1,6 +1,5 @@
-language: java
-
-
+language: android
+#### use android since there are android components####
 jdk:
   - openjdk11
 
@@ -10,7 +9,10 @@ android:
     - android-26
     - extra
 
-
+licenses:
+  - 'android-sdk-license-.+'
+  - 'google-gdk-license-.+'
+  - 'android-sdk-preview-license-.+'
 
 
 install: true
