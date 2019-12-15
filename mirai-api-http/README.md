@@ -14,7 +14,7 @@ Method: POST
 this verify your session to one bot and you could have full access to that bot<br>
 NOTE that only 1 bot could be control under 1 session, you could have multiple session to control all bots.
 
-####Request:<br>
+#### Request:<br>
 
 |  name    | type | optional|example|note|
 | --- | --- | --- | --- | --- |
@@ -22,7 +22,7 @@ NOTE that only 1 bot could be control under 1 session, you could have multiple s
 | qq   |  String |false|1040400290|bot QQ number you want to access|
 
  
-####Response if success:<br>
+#### Response if success:<br>
 
 |  name    | type | example|note|
 | --- | --- | ---  | --- |
@@ -30,7 +30,7 @@ NOTE that only 1 bot could be control under 1 session, you could have multiple s
 | session |String |UANSHDKSLAOISN|your session key|
 
 
-####Response if failed:<br>
+#### Response if failed:<br>
 
 |  name    | type | example|note|
 | --- | --- | ---  | --- |
@@ -38,7 +38,7 @@ NOTE that only 1 bot could be control under 1 session, you could have multiple s
 | session |String |null|your session key|
 | error |int |0|error code|
 
-####Error:<br>
+#### Error:<br>
 
 |  code    | reason|
 | --- | --- |
