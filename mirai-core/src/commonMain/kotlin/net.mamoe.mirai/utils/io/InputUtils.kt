@@ -67,7 +67,7 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
                     2 -> readUShort()
                     else -> error("Unsupported tag size: $tagSize")
                 }
-            } catch (e: EOFException) {
+            } catch (e: Exception) { // java.nio.BufferUnderflowException is not a EOFException...
                 if (expectingEOF) {
                     return map
                 }
@@ -79,7 +79,7 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
         check(!map.containsKey(type.toUInt())) {
             "Count not readTLVMap: duplicated key 0x${type.toUInt().toUHexString("")}. " +
                     "map=$map" +
-                    ", duplicating value=${this.readUShortLVByteArray()}" +
+                    ", duplicating value=${this.readUShortLVByteArray().toUHexString()}" +
                     ", remaining=" + if (expectingEOF) this.readBytes().toUHexString() else "[Not expecting EOF]"
         }
         try {
