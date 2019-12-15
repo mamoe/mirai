@@ -1,4 +1,12 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.network.protocol.tim.packet.action
+
+import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import net.mamoe.mirai.network.protocol.tim.packet.PacketId
+import net.mamoe.mirai.network.protocol.tim.packet.SessionPacketFactory
 
 
 // 0001
@@ -15,6 +23,13 @@ package net.mamoe.mirai.network.protocol.tim.packet.action
 // 00 00
 
 
+internal inline class FriendListList(val delegate: List<FriendList>): Packet
+
+internal object QueryFriendListListPacket : SessionPacketFactory<FriendList>() {
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler<*>): FriendList {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+}
 
 
 // 0134

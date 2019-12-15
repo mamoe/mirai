@@ -19,7 +19,6 @@ import net.mamoe.mirai.withSession
  * - 昵称
  * - 共同群内的群名片
  */
-@AnnotatedId(KnownPacketId.QUERY_PREVIOUS_NAME)
 @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 internal object QueryPreviousNamePacket : SessionPacketFactory<PreviousNameList>() {
     operator fun invoke(
@@ -77,7 +76,6 @@ class PreviousNameList(
  *
  * @author Him188moe
  */
-@AnnotatedId(KnownPacketId.CAN_ADD_FRIEND)
 @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 internal object CanAddFriendPacket : SessionPacketFactory<CanAddFriendResponse>() {
     operator fun invoke(
@@ -155,7 +153,6 @@ inline class FriendAdditionKey(val value: IoBuffer)
 /**
  * 请求一个 32 位 Key, 在添加好友时发出
  */
-@AnnotatedId(KnownPacketId.REQUEST_FRIEND_ADDITION_KEY)
 @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
 internal object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFriendAdditionKeyPacket.Response>() {
     operator fun invoke(
@@ -182,7 +179,6 @@ internal object RequestFriendAdditionKeyPacket : SessionPacketFactory<RequestFri
 /**
  * 请求添加好友
  */
-@AnnotatedId(KnownPacketId.ADD_FRIEND)
 internal object AddFriendPacket : SessionPacketFactory<AddFriendPacket.Response>() {
     @PacketVersion(date = "2019.11.11", timVersion = "2.3.2 (21173)")
     @Suppress("FunctionName")

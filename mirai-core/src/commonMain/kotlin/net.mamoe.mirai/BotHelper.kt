@@ -1,6 +1,6 @@
 @file:JvmMultifileClass
 @file:JvmName("BotHelperKt")
-@file:Suppress("unused", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("unused", "EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai
 
@@ -26,26 +26,8 @@ import kotlin.jvm.JvmOverloads
  */
 
 //Contacts
-suspend inline fun Bot.getQQ(@PositiveNumbers number: Long): QQ = this.contacts.getQQ(number)
+suspend inline fun Bot.getGroup(id: UInt): Group = this.getGroup(GroupId(id))
 
-suspend inline fun Bot.getQQ(number: UInt): QQ = this.contacts.getQQ(number)
-
-suspend inline fun Bot.getGroup(id: UInt): Group = this.contacts.getGroup(GroupId(id))
-suspend inline fun Bot.getGroup(@PositiveNumbers id: Long): Group =
-    this.contacts.getGroup(GroupId(id.coerceAtLeastOrFail(0).toUInt()))
-
-suspend inline fun Bot.getGroup(id: GroupId): Group = this.contacts.getGroup(id)
-suspend inline fun Bot.getGroup(internalId: GroupInternalId): Group = this.contacts.getGroup(internalId)
-
-/**
- * 取得群列表
- */
-inline val Bot.groups: ContactList<Group> get() = this.contacts.groups
-
-/**
- * 取得好友列表
- */
-inline val Bot.qqs: ContactList<QQ> get() = this.contacts.qqs
 
 /**
  * 以 [BotSession] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
@@ -70,7 +52,7 @@ internal suspend inline fun Bot.sendPacket(packet: OutgoingPacket) =
  * 使用在默认配置基础上修改的配置进行登录
  */
 @UseExperimental(ExperimentalContracts::class)
-suspend inline fun Bot.login(noinline configuration: BotConfiguration.() -> Unit): LoginResult {
+suspend inline fun Bot.login(configuration: BotConfiguration.() -> Unit): LoginResult {
     contract {
         callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
     }
@@ -91,7 +73,7 @@ suspend inline fun Bot.alsoLogin(): Bot = apply { login().requireSuccess() }
  * 使用在默认配置基础上修改的配置进行登录, 返回 [this]
  */
 @UseExperimental(ExperimentalContracts::class)
-suspend inline fun Bot.alsoLogin(noinline configuration: BotConfiguration.() -> Unit): Bot {
+suspend inline fun Bot.alsoLogin(configuration: BotConfiguration.() -> Unit): Bot {
     contract {
         callsInPlace(configuration, InvocationKind.EXACTLY_ONCE)
     }
@@ -107,14 +89,6 @@ suspend inline fun Bot.alsoLogin(message: String): Bot {
         login().requireSuccess { message } // requireSuccess is inline, so no performance waste
     }
 }
-
-/**
- * 添加好友
- */
-@UseExperimental(ExperimentalContracts::class)
-@JvmOverloads
-suspend inline fun Bot.addFriend(id: UInt, message: String? = null, remark: String? = null): AddFriendResult =
-    contacts.addFriend(id, message, remark)
 
 /**
  * 取得机器人的 QQ 号

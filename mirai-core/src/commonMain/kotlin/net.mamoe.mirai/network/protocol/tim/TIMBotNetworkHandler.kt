@@ -226,7 +226,9 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 return
 
             if (!packet::class.annotations.filterIsInstance<NoLog>().any()) {
-                bot.logger.verbose("Packet received: $packet")
+                if ((packet as? BroadcastControllable)?.shouldBroadcast != false) {
+                    bot.logger.verbose("Packet received: $packet")
+                }
             }
 
             when (packet) {
@@ -239,7 +241,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                 temporaryPacketHandlers.filter { it.filter(session, packet, sequenceId) }
                     .also { temporaryPacketHandlers.removeAll(it) }
             }.forEach {
-                it.doReceiveWithoutExceptions(packet)
+                it.doReceiveCatchingExceptions(packet)
             }
 
             if (factory is SessionPacketFactory<*>) {
@@ -286,7 +288,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     it::class.annotations.filterIsInstance<NoLog>().any()
                 }
             }?.let {
-                bot.logger.verbose("Packet sent:     ${it.packetId}")
+                bot.logger.verbose("Packet sent:     ${it.name}")
             }
 
             PacketSentEvent(bot, packet).broadcast()

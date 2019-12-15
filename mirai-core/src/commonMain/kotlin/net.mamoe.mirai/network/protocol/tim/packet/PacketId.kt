@@ -55,35 +55,35 @@ internal inline class IgnoredPacketId constructor(override val value: UShort) : 
  * 已知的 [matchPacketId]. 所有在 Mirai 中实现过的包都会使用这些 Id
  */
 @Suppress("unused")
-internal enum class KnownPacketId(override inline val value: UShort, override inline val factory: PacketFactory<*, *>) :
+internal enum class KnownPacketId(override val value: UShort, override val factory: PacketFactory<*, *>) :
     PacketId {
-    inline TOUCH(0x0825u, TouchPacket),
-    inline SESSION_KEY(0x0828u, RequestSessionPacket),
-    inline LOGIN(0x0836u, SubmitPasswordPacket),
-    inline CAPTCHA(0x00BAu, CaptchaPacket),
-    inline SERVER_EVENT_1(0x00CEu, EventPacketFactory),
-    inline SERVER_EVENT_2(0x0017u, EventPacketFactory),
-    inline FRIEND_ONLINE_STATUS_CHANGE(0x0081u, FriendOnlineStatusChangedPacket),
-    inline CHANGE_ONLINE_STATUS(0x00ECu, ChangeOnlineStatusPacket),
+    TOUCH(0x0825u, TouchPacket),
+    SESSION_KEY(0x0828u, RequestSessionPacket),
+    LOGIN(0x0836u, SubmitPasswordPacket),
+    CAPTCHA(0x00BAu, CaptchaPacket),
+    SERVER_EVENT_1(0x00CEu, EventPacketFactory),
+    SERVER_EVENT_2(0x0017u, EventPacketFactory),
+    FRIEND_ONLINE_STATUS_CHANGE(0x0081u, FriendOnlineStatusChangedPacket),
+    CHANGE_ONLINE_STATUS(0x00ECu, ChangeOnlineStatusPacket),
 
-    inline HEARTBEAT(0x0058u, HeartbeatPacket),
-    inline S_KEY(0x001Du, RequestSKeyPacket),
-    inline ACCOUNT_INFO(0x005Cu, RequestAccountInfoPacket),
-    inline GROUP_PACKET(0x0002u, GroupPacket),
-    inline SEND_FRIEND_MESSAGE(0x00CDu, SendFriendMessagePacket),
-    inline CAN_ADD_FRIEND(0x00A7u, CanAddFriendPacket),
-    inline ADD_FRIEND(0x00A8u, AddFriendPacket),
-    inline REQUEST_FRIEND_ADDITION_KEY(0x00AEu, RequestFriendAdditionKeyPacket),
-    inline GROUP_IMAGE_ID(0x0388u, GroupImagePacket),
-    inline FRIEND_IMAGE_ID(0x0352u, FriendImagePacket),
+    HEARTBEAT(0x0058u, HeartbeatPacket),
+    S_KEY(0x001Du, RequestSKeyPacket),
+    ACCOUNT_INFO(0x005Cu, RequestAccountInfoPacket),
+    GROUP_PACKET(0x0002u, GroupPacket),
+    SEND_FRIEND_MESSAGE(0x00CDu, SendFriendMessagePacket),
+    CAN_ADD_FRIEND(0x00A7u, CanAddFriendPacket),
+    ADD_FRIEND(0x00A8u, AddFriendPacket),
+    REQUEST_FRIEND_ADDITION_KEY(0x00AEu, RequestFriendAdditionKeyPacket),
+    GROUP_IMAGE_ID(0x0388u, GroupImagePacket),
+    FRIEND_IMAGE_ID(0x0352u, FriendImagePacket),
 
-    inline REQUEST_PROFILE_AVATAR(0x0031u, RequestProfileAvatarPacket),
-    inline REQUEST_PROFILE_DETAILS(0x003Cu, RequestProfileDetailsPacket),
-    inline QUERY_NICKNAME(0x0126u, QueryNicknamePacket),
+    REQUEST_PROFILE_AVATAR(0x0031u, RequestProfileAvatarPacket),
+    REQUEST_PROFILE_DETAILS(0x003Cu, RequestProfileDetailsPacket),
+    QUERY_NICKNAME(0x0126u, QueryNicknamePacket),
 
-    inline QUERY_PREVIOUS_NAME(0x01BCu, QueryPreviousNamePacket),
+    QUERY_PREVIOUS_NAME(0x01BCu, QueryPreviousNamePacket),
 
-    inline QUERY_FRIEND_REMARK(0x003Eu, QueryFriendRemarkPacket)
+    QUERY_FRIEND_REMARK(0x003Eu, QueryFriendRemarkPacket)
     // 031F  查询 "新朋友" 记录
 
 
@@ -91,6 +91,10 @@ internal enum class KnownPacketId(override inline val value: UShort, override in
     // inline SUBMIT_IMAGE_FILE_NAME(0x01BDu, SubmitImageFilenamePacket),
 
     ;
+
+    init {
+        factory._id = this
+    }
 
     override fun toString(): String = (factory::class.simpleName ?: this.name) + "(${value.toUHexString()})"
 }

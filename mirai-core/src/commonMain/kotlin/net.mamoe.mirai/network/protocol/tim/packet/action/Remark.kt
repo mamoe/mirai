@@ -15,7 +15,6 @@ import net.mamoe.mirai.utils.io.writeZero
  */
 inline class FriendNameRemark(val value: String) : Packet
 
-@AnnotatedId(KnownPacketId.QUERY_FRIEND_REMARK)
 internal object QueryFriendRemarkPacket : SessionPacketFactory<FriendNameRemark>() {
     /**
      * 查询好友的备注

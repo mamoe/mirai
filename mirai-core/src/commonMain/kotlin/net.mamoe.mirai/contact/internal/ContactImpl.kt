@@ -3,6 +3,8 @@
 package net.mamoe.mirai.contact.internal
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.data.Profile
@@ -15,9 +17,7 @@ import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.sendPacket
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.logStacktrace
 import net.mamoe.mirai.withSession
 import kotlin.coroutines.CoroutineContext
 
@@ -35,15 +35,12 @@ internal sealed class ContactImpl : Contact {
  */
 @Suppress("FunctionName")
 @PublishedApi
-internal suspend fun Group(bot: Bot, groupId: GroupId, context: CoroutineContext): Group {
-    val info: RawGroupInfo = try {
-        bot.withSession { GroupPacket.QueryGroupInfo(qqAccount, groupId.toInternalId(), sessionKey).sendAndExpect() }
-    } catch (e: Exception) {
-        e.logStacktrace()
-        error("Cannot obtain group info for id ${groupId.value}")
+internal fun CoroutineScope.Group(bot: Bot, groupId: GroupId, info: RawGroupInfo, context: CoroutineContext): Group =
+    GroupImpl(bot, groupId, context).apply {
+        this@apply.info = info.parseBy(this@apply)
+        launch { startUpdater() }
     }
-    return GroupImpl(bot, groupId, context).apply { this.info = info.parseBy(this); startUpdater() }
-}
+
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
 internal data class GroupImpl internal constructor(override val bot: Bot, val groupId: GroupId, override val coroutineContext: CoroutineContext) :
@@ -52,14 +49,15 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     override val internalId = GroupId(id).toInternalId()
 
     internal lateinit var info: GroupInfo
+    internal lateinit var initialInfoJob: Job
+
     override val owner: Member get() = info.owner
     override val name: String get() = info.name
     override val announcement: String get() = info.announcement
     override val members: ContactList<Member> get() = info.members
 
     override fun getMember(id: UInt): Member =
-        if (members.containsKey(id)) members[id]!!
-        else throw NoSuchElementException("No such member whose id is ${id.toLong()} in group ${groupId.value.toLong()}")
+        members.getOrNull(id) ?: throw NoSuchElementException("No such member whose id is ${id.toLong()} in group ${groupId.value.toLong()}")
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
@@ -76,20 +74,18 @@ internal data class GroupImpl internal constructor(override val bot: Bot, val gr
     @UseExperimental(MiraiInternalAPI::class)
     override suspend fun startUpdater() {
         subscribeAlways<MemberJoinEventPacket> {
-            // FIXME: 2019/11/29 非线程安全!!
-            members.mutable[it.member.id] = it.member
+            members.delegate.addLast(it.member)
         }
         subscribeAlways<MemberQuitEvent> {
-            // FIXME: 2019/11/29 非线程安全!!
-            members.mutable.remove(it.member.id)
+            members.delegate.remove(it.member)
         }
     }
 
     override fun toString(): String = "Group(${this.id})"
 }
 
-@Suppress("FunctionName")
-suspend inline fun QQ(bot: Bot, id: UInt, coroutineContext: CoroutineContext): QQ = QQImpl(bot, id, coroutineContext).apply { startUpdater() }
+@Suppress("FunctionName", "NOTHING_TO_INLINE")
+internal inline fun CoroutineScope.QQ(bot: Bot, id: UInt, coroutineContext: CoroutineContext): QQ = QQImpl(bot, id, coroutineContext).apply { launch { startUpdater() } }
 
 @PublishedApi
 internal data class QQImpl @PublishedApi internal constructor(override val bot: Bot, override val id: UInt, override val coroutineContext: CoroutineContext) :
@@ -118,9 +114,9 @@ internal data class QQImpl @PublishedApi internal constructor(override val bot: 
     override fun toString(): String = "QQ(${this.id})"
 }
 
-@Suppress("FunctionName")
-suspend inline fun Member(delegate: QQ, group: Group, permission: MemberPermission, coroutineContext: CoroutineContext): Member =
-    MemberImpl(delegate, group, permission, coroutineContext).apply { startUpdater() }
+@Suppress("FunctionName", "NOTHING_TO_INLINE")
+internal inline fun Group.Member(delegate: QQ, permission: MemberPermission, coroutineContext: CoroutineContext): Member =
+    MemberImpl(delegate, this, permission, coroutineContext).apply { launch { startUpdater() } }
 
 /**
  * 群成员

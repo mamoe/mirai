@@ -16,7 +16,6 @@ import net.mamoe.mirai.utils.io.writeQQ
 /**
  * 改变在线状态: "我在线上", "隐身" 等
  */
-@AnnotatedId(KnownPacketId.CHANGE_ONLINE_STATUS)
 internal object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(NoDecrypter) {
     operator fun invoke(
         bot: UInt,

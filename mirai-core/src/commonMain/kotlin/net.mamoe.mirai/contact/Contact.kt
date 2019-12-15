@@ -8,7 +8,9 @@ import net.mamoe.mirai.message.MessageChain
 import net.mamoe.mirai.message.chain
 import net.mamoe.mirai.message.singleChain
 import net.mamoe.mirai.network.BotSession
+import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.joinToString
 import net.mamoe.mirai.withSession
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -53,56 +55,4 @@ inline fun <R> Contact.withSession(block: BotSession.() -> R): R {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
     return bot.withSession(block)
-}
-
-/**
- * 只读联系人列表
- */
-@UseExperimental(MiraiInternalAPI::class)
-inline class ContactList<C : Contact>(internal val mutable: MutableContactList<C>) : Map<UInt, C> {
-    /**
-     * ID 列表的字符串表示.
-     * 如:
-     * ```
-     * [123456, 321654, 123654]
-     * ```
-     */
-    val idContentString: String get() = this.keys.joinToString(prefix = "[", postfix = "]") { it.toLong().toString() }
-
-    override fun toString(): String = mutable.toString()
-
-
-    // TODO: 2019/12/2 应该使用属性代理, 但属性代理会导致 UInt 内联错误. 等待 kotlin 修复后替换
-
-    override val size: Int get() = mutable.size
-    override fun containsKey(key: UInt): Boolean = mutable.containsKey(key)
-    override fun containsValue(value: C): Boolean = mutable.containsValue(value)
-    override fun get(key: UInt): C? = mutable[key]
-    override fun isEmpty(): Boolean = mutable.isEmpty()
-    override val entries: MutableSet<MutableMap.MutableEntry<UInt, C>> get() = mutable.entries
-    override val keys: MutableSet<UInt> get() = mutable.keys
-    override val values: MutableCollection<C> get() = mutable.values
-}
-
-/**
- * 可修改联系人列表. 只会在内部使用.
- */
-@MiraiInternalAPI
-inline class MutableContactList<C : Contact>(private val delegate: MutableMap<UInt, C> = linkedMapOf()) : MutableMap<UInt, C> {
-    override fun toString(): String = asIterable().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")") { it.value.toString() }
-
-    // TODO: 2019/12/2 应该使用属性代理, 但属性代理会导致 UInt 内联错误. 等待 kotlin 修复后替换
-
-    override val size: Int get() = delegate.size
-    override fun containsKey(key: UInt): Boolean = delegate.containsKey(key)
-    override fun containsValue(value: C): Boolean = delegate.containsValue(value)
-    override fun get(key: UInt): C? = delegate[key]
-    override fun isEmpty(): Boolean = delegate.isEmpty()
-    override val entries: MutableSet<MutableMap.MutableEntry<UInt, C>> get() = delegate.entries
-    override val keys: MutableSet<UInt> get() = delegate.keys
-    override val values: MutableCollection<C> get() = delegate.values
-    override fun clear() = delegate.clear()
-    override fun put(key: UInt, value: C): C? = delegate.put(key, value)
-    override fun putAll(from: Map<out UInt, C>) = delegate.putAll(from)
-    override fun remove(key: UInt): C? = delegate.remove(key)
 }

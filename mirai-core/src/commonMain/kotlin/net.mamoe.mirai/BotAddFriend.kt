@@ -68,15 +68,15 @@ Mirai 22:04:48 : Packet received: UnknownEventPacket(id=00 D6, identity=(2092749
  * @param remark 好友备注
  */
 @UseExperimental(ExperimentalContracts::class)
-suspend fun Bot.ContactSystem.addFriend(id: UInt, message: String? = null, remark: String? = null): AddFriendResult = bot.withSession {
-    return when (CanAddFriendPacket(bot.qqAccount, id, bot.sessionKey).sendAndExpect<CanAddFriendResponse>()) {
+suspend fun Bot.addFriend(id: UInt, message: String? = null, remark: String? = null): AddFriendResult = withSession {
+    return when (CanAddFriendPacket(qqAccount, id, sessionKey).sendAndExpect<CanAddFriendResponse>()) {
         is CanAddFriendResponse.AlreadyAdded -> AddFriendResult.ALREADY_ADDED
         is CanAddFriendResponse.Rejected -> AddFriendResult.REJECTED
 
         is CanAddFriendResponse.ReadyToAdd,
         is CanAddFriendResponse.RequireVerification -> {
-            val key = RequestFriendAdditionKeyPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
-            AddFriendPacket.RequestAdd(bot.qqAccount, id, sessionKey, message, remark, key).sendAndExpect<AddFriendPacket.Response>()
+            val key = RequestFriendAdditionKeyPacket(qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
+            AddFriendPacket.RequestAdd(qqAccount, id, sessionKey, message, remark, key).sendAndExpect<AddFriendPacket.Response>()
             AddFriendResult.WAITING_FOR_APPROVE
         } //这个做的是需要验证消息的情况, 不确定 ReadyToAdd 的是啥
 
@@ -87,7 +87,7 @@ suspend fun Bot.ContactSystem.addFriend(id: UInt, message: String? = null, remar
         /*is CanAddFriendResponse.ReadyToAdd -> {
         // TODO: 2019/11/11 这不需要验证信息的情况
 
-        //AddFriendPacket(bot.qqAccount, id, bot.sessionKey, ).sendAndExpectAsync<AddFriendPacket.Response>().await()
+        //AddFriendPacket(qqAccount, id, sessionKey, ).sendAndExpectAsync<AddFriendPacket.Response>().await()
         TODO()
     }*/
     }

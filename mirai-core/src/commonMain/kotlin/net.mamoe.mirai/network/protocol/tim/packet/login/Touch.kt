@@ -20,7 +20,6 @@ internal object TouchKey : DecrypterByteArray, DecrypterType<TouchKey> {
  *
  * @author Him188moe
  */
-@AnnotatedId(KnownPacketId.TOUCH)
 internal object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>(TouchKey) {
     operator fun invoke(
         bot: UInt,
@@ -45,7 +44,7 @@ internal object TouchPacket : PacketFactory<TouchPacket.TouchResponse, TouchKey>
         }
     }
 
-    internal  sealed class TouchResponse : Packet {
+    internal sealed class TouchResponse : Packet {
         class OK(
             var loginTime: Int,
             val loginIP: String,

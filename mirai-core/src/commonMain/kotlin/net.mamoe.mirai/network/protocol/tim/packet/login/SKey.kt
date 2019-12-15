@@ -23,7 +23,6 @@ internal inline class SKey(
  * 请求 `SKey`
  * SKey 用于 http api
  */
-@AnnotatedId(KnownPacketId.S_KEY)
 internal object RequestSKeyPacket : SessionPacketFactory<SKey>() {
     operator fun invoke(
         bot: UInt,

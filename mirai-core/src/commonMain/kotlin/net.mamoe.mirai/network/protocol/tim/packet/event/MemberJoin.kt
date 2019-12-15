@@ -13,7 +13,6 @@ import net.mamoe.mirai.contact.internal.MemberImpl
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.getGroup
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact
@@ -76,7 +75,7 @@ internal object MemberJoinPacketHandler : KnownEventParserAndHandler<MemberJoinE
 
         discardExact(1) // 01
         val qq = bot.getQQ(readUInt())
-        val member = Member(qq, group, MemberPermission.MEMBER, qq.coroutineContext)
+        val member = group.Member(qq, MemberPermission.MEMBER, qq.coroutineContext)
 
         return if (readByte().toInt() == 0x03) {
             MemberJoinEventPacket(member, null)

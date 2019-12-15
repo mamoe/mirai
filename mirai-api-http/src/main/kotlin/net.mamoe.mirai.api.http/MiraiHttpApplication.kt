@@ -20,7 +20,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.addFriend
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.getGroup
-import net.mamoe.mirai.getQQ
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.hexToUBytes
 
@@ -81,6 +80,7 @@ suspend inline fun ApplicationCall.ok() = this.respond(HttpStatusCode.OK, "OK")
 /**
  * 错误请求. 抛出这个异常后将会返回错误给一个请求
  */
+@Suppress("unused")
 open class IllegalAccessException : Exception {
     override val message: String get() = super.message!!
 
@@ -107,14 +107,14 @@ private inline fun <reified R> PipelineContext<Unit, ApplicationCall>.param(name
 @Suppress("IMPLICIT_CAST_TO_ANY")
 @UseExperimental(ExperimentalUnsignedTypes::class)
 private inline fun <reified R> PipelineContext<Unit, ApplicationCall>.paramOrNull(name: String): R? =
-    when {
-        R::class == Byte::class -> call.parameters[name]?.toByte()
-        R::class == Int::class -> call.parameters[name]?.toInt()
-        R::class == Short::class -> call.parameters[name]?.toShort()
-        R::class == Float::class -> call.parameters[name]?.toFloat()
-        R::class == Long::class -> call.parameters[name]?.toLong()
-        R::class == Double::class -> call.parameters[name]?.toDouble()
-        R::class == Boolean::class -> when (call.parameters[name]) {
+    when (R::class) {
+        Byte::class -> call.parameters[name]?.toByte()
+        Int::class -> call.parameters[name]?.toInt()
+        Short::class -> call.parameters[name]?.toShort()
+        Float::class -> call.parameters[name]?.toFloat()
+        Long::class -> call.parameters[name]?.toLong()
+        Double::class -> call.parameters[name]?.toDouble()
+        Boolean::class -> when (call.parameters[name]) {
             "true" -> true
             "false" -> false
             "0" -> false
@@ -123,13 +123,13 @@ private inline fun <reified R> PipelineContext<Unit, ApplicationCall>.paramOrNul
             else -> illegalParam("boolean", name)
         }
 
-        R::class == String::class -> call.parameters[name]
+        String::class -> call.parameters[name]
 
-        R::class == UByte::class -> call.parameters[name]?.toUByte()
-        R::class == UInt::class -> call.parameters[name]?.toUInt()
-        R::class == UShort::class -> call.parameters[name]?.toUShort()
+        UByte::class -> call.parameters[name]?.toUByte()
+        UInt::class -> call.parameters[name]?.toUInt()
+        UShort::class -> call.parameters[name]?.toUShort()
 
-        R::class == UByteArray::class -> call.parameters[name]?.hexToUBytes()
-        R::class == ByteArray::class -> call.parameters[name]?.hexToBytes()
+        UByteArray::class -> call.parameters[name]?.hexToUBytes()
+        ByteArray::class -> call.parameters[name]?.hexToBytes()
         else -> error(name::class.simpleName + " is not supported")
     } as R?

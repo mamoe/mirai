@@ -17,7 +17,6 @@ inline class NicknameMap(val delegate: Map<UInt, String>) : Packet
 /**
  * 批量查询昵称.
  */
-@AnnotatedId(KnownPacketId.QUERY_NICKNAME)
 internal object QueryNicknamePacket : SessionPacketFactory<NicknameMap>() {
     /**
      * 单个查询.
@@ -135,7 +134,6 @@ body=03 00 00 00 00 00 00 00 00 00 00 00 03 8E 3C A6 A0 EE EF 02 07 6C 01 14 E8 
 /**
  * 请求获取头像
  */ // ? 这个包的数据跟下面那个包一样
-@AnnotatedId(KnownPacketId.REQUEST_PROFILE_AVATAR)
 internal object RequestProfileAvatarPacket : SessionPacketFactory<AvatarLink>() {
     //00 01 00 17 D4 54 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 4E 22 4E 25 4E 26 4E 27 4E 29 4E 2A 4E 2B 4E 2D 4E 2E 4E 2F 4E 30 4E 31 4E 33 4E 35 4E 36 4E 37 4E 38 4E 3F 4E 40 4E 41 4E 42 4E 43 4E 45 4E 49 4E 4B 4E 4F 4E 54 4E 5B 52 0B 52 0F 5D C2 5D C8 65 97 69 9D 69 A9 9D A5 A4 91 A4 93 A4 94 A4 9C A4 B5
     operator fun invoke(
@@ -159,7 +157,6 @@ internal object RequestProfileAvatarPacket : SessionPacketFactory<AvatarLink>() 
  *
  * @see Profile
  */
-@AnnotatedId(KnownPacketId.REQUEST_PROFILE_DETAILS)
 internal object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfileDetailsResponse>() {
     //00 01 3E F8 FB E3 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 4E 22 4E 25 4E 26 4E 27 4E 29 4E 2A 4E 2B 4E 2D 4E 2E 4E 2F 4E 30 4E 31 4E 33 4E 35 4E 36 4E 37 4E 38 4E 3F 4E 40 4E 41 4E 42 4E 43 4E 45 4E 49 4E 4B 4E 4F 4E 54 4E 5B 52 0B 52 0F 5D C2 5D C8 65 97 69 9D 69 A9 9D A5 A4 91 A4 93 A4 94 A4 9C A4 B5
     //00 01 B1 89 BE 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 4E 22 4E 25 4E 26 4E 27 4E 29 4E 2A 4E 2B 4E 2D 4E 2E 4E 2F 4E 30 4E 31 4E 33 4E 35 4E 36 4E 37 4E 38 4E 3F 4E 40 4E 41 4E 42 4E 43 4E 45 4E 49 4E 4B 4E 4F 4E 54 4E 5B 52 0B 52 0F 5D C2 5D C8 65 97 69 9D 69 A9 9D A5 A4 91 A4 93 A4 94 A4 9C A4 B5
@@ -211,7 +208,6 @@ internal object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfil
     }
 }
 
-@AnnotatedId(KnownPacketId.REQUEST_PROFILE_DETAILS)
 internal data class RequestProfileDetailsResponse(
     val qq: UInt,
     val profile: Profile

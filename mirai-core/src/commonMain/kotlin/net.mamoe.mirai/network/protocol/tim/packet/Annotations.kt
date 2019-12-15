@@ -2,19 +2,6 @@
 
 package net.mamoe.mirai.network.protocol.tim.packet
 
-
-/**
- * 包 ID. 除特殊外, [PacketFactory] 都需要这个注解来指定包 ID.
- */
-@MustBeDocumented
-@Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.CLASS)
-internal annotation class AnnotatedId( // 注解无法在 JS 平台使用, 但现在暂不需要考虑 JS
-    val id: KnownPacketId
-)
-
-internal inline val AnnotatedId.value: UShort get() = id.value
-
 /**
  * 包的最后一次修改时间, 和分析时使用的 TIM 版本
  */
