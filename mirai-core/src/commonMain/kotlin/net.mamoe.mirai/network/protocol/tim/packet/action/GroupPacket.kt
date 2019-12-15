@@ -56,7 +56,7 @@ internal data class RawGroupInfo(
     fun parseBy(group: Group): GroupInfo = group.bot.withSession {
         val memberList = LockFreeLinkedList<Member>()
         members.forEach { entry: Map.Entry<UInt, MemberPermission> ->
-            entry.key.qq().let { group.Member(it, entry.value, it.coroutineContext) }
+            memberList.addLast(entry.key.qq().let { group.Member(it, entry.value, it.coroutineContext) })
         }
         return GroupInfo(
             group,
