@@ -1,6 +1,14 @@
 language: java
+jdk:
+  - openjdk11
+
+install: true
 
 sudo: required
 
 before_script:
   - chmod +x gradlew
+
+script:
+  - ./gradlew clean build -i --continue
+
