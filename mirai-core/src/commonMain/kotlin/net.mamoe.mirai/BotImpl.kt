@@ -117,7 +117,6 @@ internal class BotImpl @PublishedApi internal constructor(
     @JvmSynthetic
     override fun getQQ(id: UInt): QQ = qqs.delegate.getOrAdd(id) { QQ(this, id, coroutineContext) }
 
-    // NO INLINE!! to help Java
     @UseExperimental(MiraiInternalAPI::class)
     override fun getQQ(@PositiveNumbers id: Long): QQ = getQQ(id.coerceAtLeastOrFail(0).toUInt())
 
@@ -139,7 +138,6 @@ internal class BotImpl @PublishedApi internal constructor(
         return groups.delegate.getOrAdd(id.value) { Group(this, id, info, coroutineContext) }
     }
 
-    // NO INLINE!! to help Java
     @UseExperimental(MiraiInternalAPI::class)
     override suspend fun getGroup(@PositiveNumbers id: Long): Group = id.coerceAtLeastOrFail(0).toUInt().let {
         groups.delegate.getOrNull(it) ?: inline {
