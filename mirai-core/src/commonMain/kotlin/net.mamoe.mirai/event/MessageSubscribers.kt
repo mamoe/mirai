@@ -246,6 +246,14 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         subscriber { if (this.filter(message.stringValue)) onEvent(this) }
 
     /**
+     * 如果消息内容可由正则表达式匹配, 就执行 `onEvent`
+     */
+    @MessageDsl
+    suspend inline fun matching(regex: Regex, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
+        content({ regex.matchEntire(it) != null }, onEvent)
+    }
+
+    /**
      * 若消息内容包含 [this] 则回复 [reply]
      */
     @MessageDsl
@@ -265,6 +273,21 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
             executeAndReply(replier)
         }
+
+    /**
+     * 若消息内容可由正则表达式匹配, 则执行 [replier] 并将其返回值回复给发信对象.
+     *
+     * [replier] 的 `it` 将会是消息内容 string.
+     *
+     * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
+     */
+    @MessageDsl
+    suspend inline fun Regex.matchingReply(noinline replier: AnyReplier<T>) {
+        content({ this@matchingReply.matchEntire(it) != null }){
+            @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
+            executeAndReply(replier)
+        }
+    }
 
     /**
      * 不考虑空格, 若消息内容以 [this] 开始则执行 [replier] 并将其返回值回复给发信对象.
