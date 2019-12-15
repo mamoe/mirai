@@ -22,12 +22,28 @@ Request:<br>
 | qq   |  String |false|1040400290|bot QQ number you want to access|
 
  
-Response:<br>
+Response if success:<br>
 
 |  name    | type | example|note|
 | --- | --- | ---  | --- |
 | success |Boolean |true|if this session is authorized|
 | session |String |UANSHDKSLAOISN|your session key|
+
+
+Response if failed:<br>
+
+|  name    | type | example|note|
+| --- | --- | ---  | --- |
+| success |Boolean |false|if this session is authorized|
+| session |String |null|your session key|
+| error |int |0|error code|
+
+Error:<br>
+
+|  code    | reason|
+| --- | --- |
+| 0 | wrong MIRAI API HTTP key |
+| 1 | unknown bot number |
 
 
  without session key, you are not able to access any method below.</br>
