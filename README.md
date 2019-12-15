@@ -73,12 +73,11 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 我们欢迎一切形式的贡献. 若您有兴趣为 Mirai 实现 JS, iOS, Native 平台, 请联系我(`Him188@mamoe.net`).  
 若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
 
-## Requirements
+## Build Requirements
 
-Kotlin 1.3.61  
-
-JVM 平台: Java 6  
-Android: SDK 15
+- Kotlin 1.3.61  
+- JDK 8
+- Android SDK 29
 
 ### Using Java 
 Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  
