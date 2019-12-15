@@ -17,8 +17,8 @@ import net.mamoe.mirai.contact.sendMessage
  *
  * 连接 [Message] 与 [Message], [String], (使用 operator [Message.plus]):
  *  ```kotlin
- *      event = PlainText("Hello ")
- *      qq.sendMessage(event + "world")
+ *      text = PlainText("Hello ")
+ *      qq.sendMessage(text + "world")
  *  ```
  *
  * `Message1 + Message2 + Message3`, 类似 [String] 的连接:
