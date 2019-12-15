@@ -5,10 +5,9 @@ Mirai-API-http provides adapter for ALL langugae to access mirai via HTTP protoc
 </b>
   
 
-#### Start Session
+#### Start Session-Authorize
 
 ```php
-Authorize
 Path: /auth
 Method: POST
 ```
@@ -17,8 +16,8 @@ NOTE that only 1 bot could be control under 1 session, you could have multiple s
 
 |  name    | type | optional|example|note|
 | --- | --- | --- | --- | --- |
-| key  |  String |false|UAHSNDXlaksd918273h|this could be found after initialize|
-| QQ   |  String |false|1040400290|bot QQ number you want to access|
+| key  |  String |false|U9HSaDXl39ksd918273hU|this could be found after initialize|
+| qq   |  String |false|1040400290|bot QQ number you want to access|
 
  
  
