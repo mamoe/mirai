@@ -1,6 +1,7 @@
 language: android
 
 jdk: oraclejdk8
+### need JDK11
 
 env:
   global:
@@ -23,6 +24,8 @@ before_install:
   - touch $HOME/.android/repositories.cfg
   - yes | sdkmanager "platforms;android-28"
   - yes | sdkmanager "build-tools;28.0.3"
+
+### need JDK8( SDK manager thing)
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
