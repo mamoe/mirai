@@ -17,7 +17,10 @@ import net.mamoe.mirai.network.protocol.tim.packet.PacketVersion
 import net.mamoe.mirai.network.protocol.tim.packet.action.ImageLink
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.io.printTLVMap
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.readTLVMap
+import net.mamoe.mirai.utils.io.readUShortLVByteArray
 import net.mamoe.mirai.withSession
 import kotlin.jvm.JvmName
 
@@ -140,41 +143,41 @@ internal object GroupMessageEventParserAndHandler : KnownEventParserAndHandler<G
         readUShortLVByteArray()
         discardExact(2)//2个0x00
 
-        with(this.debugPrint("群消息")) {
-            val message = readMessageChain()
+        //debugPrintIfFail {
+        val message = readMessageChain()
 
-            var senderPermission: MemberPermission = MemberPermission.MEMBER
-            var senderName = ""
-            val map = readTLVMap(true)
-            if (map.containsKey(18u)) {
-                map.getValue(18u).read {
-                    val tlv = readTLVMap(true)
-                    senderPermission = when (tlv.takeIf { it.containsKey(0x04u) }?.get(0x04u)?.getOrNull(3)?.toUInt()) {
-                        null -> MemberPermission.MEMBER
-                        0x08u -> MemberPermission.OWNER
-                        0x10u -> MemberPermission.ADMINISTRATOR
-                        else -> {
-                            tlv.printTLVMap("TLV(tag=18) Map")
-                            MiraiLogger.warning("Could not determine member permission, default permission MEMBER is being used")
-                            MemberPermission.MEMBER
-                        }
+        var senderPermission: MemberPermission = MemberPermission.MEMBER
+        var senderName = ""
+        val map = readTLVMap(true)
+        if (map.containsKey(18u)) {
+            map.getValue(18u).read {
+                val tlv = readTLVMap(true)
+                senderPermission = when (tlv.takeIf { it.containsKey(0x04u) }?.get(0x04u)?.getOrNull(3)?.toUInt()) {
+                    null -> MemberPermission.MEMBER
+                    0x08u -> MemberPermission.OWNER
+                    0x10u -> MemberPermission.ADMINISTRATOR
+                    else -> {
+                        tlv.printTLVMap("TLV(tag=18) Map")
+                        MiraiLogger.warning("Could not determine member permission, default permission MEMBER is being used")
+                        MemberPermission.MEMBER
                     }
+                }
 
-                    senderName = when {
-                        tlv.containsKey(0x01u) -> String(tlv.getValue(0x01u))//这个人的qq昵称
-                        tlv.containsKey(0x02u) -> String(tlv.getValue(0x02u))//这个人的群名片
-                        else -> {
-                            tlv.printTLVMap("TLV(tag=18) Map")
-                            MiraiLogger.warning("Could not determine senderName")
-                            "null"
-                        }
+                senderName = when {
+                    tlv.containsKey(0x01u) -> String(tlv.getValue(0x01u))//这个人的qq昵称
+                    tlv.containsKey(0x02u) -> String(tlv.getValue(0x02u))//这个人的群名片
+                    else -> {
+                        tlv.printTLVMap("TLV(tag=18) Map")
+                        MiraiLogger.warning("Could not determine senderName")
+                        "null"
                     }
                 }
             }
-
-            val group = bot.getGroup(groupNumber)
-            return GroupMessage(group, senderName, senderPermission, group.getMember(qq), message).apply { this.botVar = bot }
         }
+
+        val group = bot.getGroup(groupNumber)
+        return GroupMessage(group, senderName, senderPermission, group.getMember(qq), message).apply { this.botVar = bot }
+        // }
 
     }
 }
