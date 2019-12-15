@@ -3,6 +3,7 @@ language: android
 jdk:
   - openjdk11
 os: linux
+dist: trusty
 
 
 android:
@@ -14,8 +15,7 @@ android:
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
     - 'android-sdk-preview-license-.+'
-
-
+    - 'android-sdk-preview-license-52d11cd2'
 
 install: true
 
