@@ -1,11 +1,21 @@
 language: java
+
+
 jdk:
   - openjdk11
+
+android:
+  components:
+    - build-tools-26.0.2
+    - android-26
+    - extra
+
+
+
 
 install: true
 
 sudo: required
-
 before_script:
   - chmod +x gradlew
 
