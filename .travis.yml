@@ -1,6 +1,6 @@
 language: android
 
-jdk: oraclejdk11
+jdk: oraclejdk8
 
 env:
   global:
