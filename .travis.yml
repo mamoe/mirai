@@ -2,6 +2,8 @@ language: android
 #### use android since there are android components####
 jdk:
   - openjdk11
+os: linux
+
 
 android:
   components:
@@ -17,7 +19,7 @@ licenses:
 
 install: true
 
-sudo: required
+
 before_script:
   - chmod +x gradlew
 
