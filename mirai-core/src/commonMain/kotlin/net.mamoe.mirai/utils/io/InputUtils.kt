@@ -2,6 +2,8 @@
 
 package net.mamoe.mirai.utils.io
 
+import kotlinx.io.InputStream
+import kotlinx.io.OutputStream
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import kotlin.jvm.JvmName

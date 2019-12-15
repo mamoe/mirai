@@ -4,6 +4,10 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import kotlinx.io.core.Output
+import kotlinx.io.core.copyTo
+import kotlinx.io.streams.asInput
+import kotlinx.io.streams.asOutput
 import java.io.DataInput
 import java.io.EOFException
 import java.io.InputStream
@@ -21,13 +25,13 @@ actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5
 fun InputStream.md5(): ByteArray {
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
-    this.transferTo(object : OutputStream() {
+    this.asInput().copyTo(object : OutputStream() {
         override fun write(b: Int) {
             b.toByte().let {
                 digest.update(it)
             }
         }
-    })
+    }.asOutput())
     return digest.digest()
 }
 

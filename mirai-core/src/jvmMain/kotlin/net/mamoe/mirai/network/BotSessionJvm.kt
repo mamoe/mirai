@@ -1,8 +1,12 @@
 package net.mamoe.mirai.network
 
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.copyTo
 import kotlinx.io.core.use
+import kotlinx.io.streams.asInput
+import kotlinx.io.streams.asOutput
 import kotlinx.io.streams.inputStream
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Image
@@ -31,5 +35,11 @@ actual class BotSession internal actual constructor(
     suspend inline fun Image.downloadAsExternalImage(): ExternalImage = download().use { it.toExternalImage() }
 
     suspend inline fun Image.downloadTo(file: File) = file.outputStream().use { downloadTo(it) }
-    suspend inline fun Image.downloadTo(output: OutputStream) = download().inputStream().use { input -> withContext(IO) { input.transferTo(output) } }
+
+    /**
+     * 需要调用者自行 close [output]
+     */
+    @UseExperimental(KtorExperimentalAPI::class)
+    suspend inline fun Image.downloadTo(output: OutputStream) =
+        download().inputStream().asInput().use { input -> withContext(IO) { input.copyTo(output.asOutput()) } }
 }

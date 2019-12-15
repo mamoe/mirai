@@ -4,12 +4,15 @@ package net.mamoe.mirai.utils
 
 import io.ktor.util.asStream
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.io.jvm.javaio.copyTo
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.buildPacket
+import kotlinx.io.core.copyTo
 import kotlinx.io.errors.IOException
 import kotlinx.io.streams.asInput
+import kotlinx.io.streams.asOutput
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -81,9 +84,9 @@ suspend fun File.suspendToExternalImage(): ExternalImage = withContext(IO) { toE
 @Throws(IOException::class)
 fun URL.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().use { output ->
-        openStream().use { input ->
-            input.transferTo(output)
+    file.outputStream().asOutput().use { output ->
+        openStream().asInput().use { input ->
+            input.copyTo(output)
         }
     }
     return file.toExternalImage()
@@ -101,8 +104,8 @@ suspend fun URL.suspendToExternalImage(): ExternalImage = withContext(IO) { toEx
 @Throws(IOException::class)
 fun InputStream.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().use {
-        this.transferTo(it)
+    file.outputStream().asOutput().use {
+        this.asInput().copyTo(it)
     }
     this.close()
     return file.toExternalImage()
@@ -120,8 +123,8 @@ suspend fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO
 @Throws(IOException::class)
 fun Input.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().use {
-        this.asStream().transferTo(it)
+    file.outputStream().asOutput().use {
+        this.asStream().asInput().copyTo(it)
     }
     return file.toExternalImage()
 }
