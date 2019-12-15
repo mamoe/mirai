@@ -10,11 +10,11 @@ android:
     - build-tools-29
     - android-29
     - extra
+  licenses:
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+    - 'android-sdk-preview-license-.+'
 
-licenses:
-  - 'android-sdk-license-.+'
-  - 'google-gdk-license-.+'
-  - 'android-sdk-preview-license-.+'
 
 
 install: true
