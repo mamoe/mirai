@@ -183,13 +183,13 @@ internal object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey = SessionKey("F3 4A 4E F4 79 C4 92 62 EF 0F D8 6E D3 AB E3 80".hexToBytes())
+    val sessionKey: SessionKey = SessionKey("95 F3 24 8E 7B B6 62 AA 98 C0 EE 45 CE CE 2B 69".hexToBytes())
     // TODO: 2019/12/7 无法访问 internal 是 kotlin bug, KT-34849
 
     /**
      * null 则不筛选
      */
-    val qq: UInt? = null
+    val qq: UInt? = 761025446u
     /**
      * 打开后则记录每一个包到文件.
      */
