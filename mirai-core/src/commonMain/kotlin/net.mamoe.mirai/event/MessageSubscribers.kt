@@ -139,7 +139,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     @MessageDsl
     suspend inline fun always(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
         content({ true }, onEvent)
-    } // TODO: 2019/12/4 这些 onEvent 都应该为 crossinline, 而这会导致一个 CompilationException
+    } // TODO: 2019/12/4 这些 onEvent 都应该为 cross-inline, 而这会导致一个 CompilationException
 
     /**
      * 如果消息内容 `==` [equals], 就执行 [onEvent]
