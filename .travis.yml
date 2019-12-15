@@ -1,2 +1,5 @@
 language: java
 
+
+before_script:
+  - chmod +x gradlew
