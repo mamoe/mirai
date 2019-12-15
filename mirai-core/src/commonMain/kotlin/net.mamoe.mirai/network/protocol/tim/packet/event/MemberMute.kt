@@ -77,9 +77,9 @@ sealed class UnmuteEvent : EventOfMute() {
 // endregion
 
 internal object Unknown0x02DCPacketFlag0x0EMaybeMutePacket : EventOfMute() {
-    override val operator: Member get() = error("Getting a field from Unknown0x02DCPacket_MaybeMutePacket")
-    override val group: Group get() = error("Getting a field from Unknown0x02DCPacket_MaybeMutePacket")
-    override fun toString(): String = "`Unknown0x02DCPacket_falg=0x0E_MaybeMutePacket`"
+    override val operator: Member get() = error("Getting a field from Unknown0x02DCPacketFlag0x0EMaybeMutePacket")
+    override val group: Group get() = error("Getting a field from Unknown0x02DCPacketFlag0x0EMaybeMutePacket")
+    override fun toString(): String = "Unknown0x02DCPacketFlag0x0EMaybeMutePacket"
 }
 
 sealed class EventOfMute : EventPacket {
