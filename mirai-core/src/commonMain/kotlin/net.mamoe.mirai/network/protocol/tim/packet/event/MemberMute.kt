@@ -11,6 +11,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.getGroup
 import net.mamoe.mirai.qqAccount
+import net.mamoe.mirai.utils.io.debugPrintIfFail
 import net.mamoe.mirai.utils.io.toUHexString
 
 // region mute
@@ -126,7 +127,7 @@ internal object MemberMuteEventPacketParserAndHandler : KnownEventParserAndHandl
                 Unknown0x02DCPacketFlag0x0EMaybeMutePacket
             }
 
-            0x11u -> {
+            0x11u -> debugPrintIfFail("解析禁言包(0x02DC)时"){ // 猜测这个失败是撤回??
                 discardExact(15)
                 discardExact(2)
                 val group = bot.getGroup(readUInt())
