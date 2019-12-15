@@ -92,11 +92,11 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : EventPacket
     suspend inline fun Image.download(): ByteReadPacket = getLink().download()
     // endregion
 
-    inline fun At.qq(): QQ = bot.getQQ(this.target)
+    fun At.qq(): QQ = bot.getQQ(this.target)
 
-    inline fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
-    inline fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
-    inline fun UInt.qq(): QQ = bot.getQQ(this)
+    fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toUInt())
+    fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
+    fun UInt.qq(): QQ = bot.getQQ(this)
 
     suspend inline fun Int.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0).toUInt())
     suspend inline fun Long.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0))
