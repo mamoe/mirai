@@ -190,11 +190,37 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
             0x72u -> {
                 when (val flag = readByte().toInt()) {
                     0x02 -> GroupNotFound
-                    0x00 -> debugPrintIfFail("解析群信息") {
+                    0x00 -> {
+                        /*
+                        27 0B 60 E7
+                        27 0B 60 E7
+                        00 00 00 03 01 01 00 04 01
+                        40 23 00 40
+                        3E 03 3F A2 群主
+
+                        01 00 00 00 00 00 00 00 00 27 19 01 F4 01
+                        00 00 00 01 00 00
+                        00 2B
+                        05 4D 69 72 61 69 群名
+                        00
+                        00
+                        00
+                        00
+                        00
+                        38 96 A2 13 CE 50 65 AD E4 2C FB 26 6A 4C D5 0D F0 B4 79 0B A1 8A B8 48 17 B1 7D BD A6 27 AF BD E8 EF E2 C5 40 AA A7 9C C0 1E 65 9F 54 6D 0F ED 9B 30 B1 03 97 F0 46 2A 46
+                        00
+                        0F 00 00 00 00 06 00 03 00 02 00 00 00 04 00 04
+                        00 00 00 01 00 05 00 04 5D F5 37 65 00 06 00 04 04 08 00 00 00 07 00 04 00 00 00 00 00 09 00 01 00
+                        76 E4 B8 DD 00
+                        38 B5 21 5D 00 00
+                        3B E7 BB BC 00 00
+                        3E 03 3F A2 00 00
+                        76 E4 B8 DD 00 00
+                         */
                         discardExact(4) // group internal id
                         val group = readUInt() // group id
 
-                        discardExact(13) //00 00 00 03 01 01 00 04 01 00 80 01 40
+                        discardExact(13) //00 00 00 03 01 01 00 04 01  00 80 01 40
                         val owner = readUInt()
                         discardExact(22)
                         val groupName = readUByteLVString()
@@ -205,10 +231,8 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
                         discardExact(readUByte()) // 00
                         discardExact(readUByte()) // 00
                         discardExact(readUByte()) // 38 ... 未知
-                        discardExact(readUByte()) // 00
-                        discardExact(readUByte()) // 0A ...
 
-                        discardExact(38)
+                        discardExact(50)
 
                         val stop = readUInt() // 标记读取群成员的结束
                         discardExact(1) // 00
@@ -231,7 +255,8 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
                         /*
                          * 群 Mirai
                          *
-                         * 00 00 00 03 01 41 00 04 01 40 23 04 40
+                         * 00 00 00 03 01 41 00 04 01
+                         * 40 23 04 40
                          * B1 89 BE 09 群主
                          *
                          * 02 00 00 00 00 00 00 00 00 00 21 00 C8 01
