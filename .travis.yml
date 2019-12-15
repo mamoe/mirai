@@ -8,20 +8,25 @@ dist: trusty
 
 android:
   components:
-    - build-tools-26
-    - android-26
-    - extra
+    - tools
+    - platform-tools
+    - tools
+    - extra-android-m2repository
   licenses:
+    - '.+'
+    - 'android-sdk-preview-license-52d11cd2'
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
-    - 'android-sdk-preview-license-.+'
-    - 'android-sdk-preview-license-52d11cd2'
-
-install: true
 
 
 before_script:
   - chmod +x gradlew
+
+
+before_install:
+  - touch $HOME/.android/repositories.cfg
+  - yes | sdkmanager "platforms;android-28"
+  - yes | sdkmanager "build-tools;28.0.3"
 
 script:
   - ./gradlew clean build -i --continue
