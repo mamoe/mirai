@@ -1,5 +1,6 @@
 language: java
 
+sudo: required
 
 before_script:
   - chmod +x gradlew
