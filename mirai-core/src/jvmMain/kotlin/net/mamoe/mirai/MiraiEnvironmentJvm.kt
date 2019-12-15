@@ -14,14 +14,3 @@ actual object MiraiEnvironment {
     actual val platform: Platform
         get() = Platform.JVM
 }
-
-@ExperimentalUnsignedTypes
-fun main() {
-    println(GroupInternalId(2793514141u).toId().value.toLong())
-    println(GroupInternalId(2040208217u).toId().value.toLong())
-    println(289942298u.toByteArray().toUHexString())
-    println(1040400290u.toByteArray().toUHexString())
-    println(buildPacket {
-        writeStringUtf8("信用卡")
-    }.readBytes().toUByteArray().toUHexString())
-}
