@@ -5,8 +5,8 @@ jdk:
 
 android:
   components:
-    - build-tools-26.0.2
-    - android-26
+    - build-tools-29
+    - android-29
     - extra
 
 licenses:
