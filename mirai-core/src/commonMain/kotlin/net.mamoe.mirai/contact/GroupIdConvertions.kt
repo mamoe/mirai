@@ -13,20 +13,22 @@ fun GroupId.toInternalId(): GroupInternalId {
     if (this.value <= `10EXP6`) {
         return GroupInternalId(this.value)
     }
-    val left: Long = this.value.toString().dropLast(6).toLong()
-    val right: Long = this.value.toString().takeLast(6).toLong()
+    val stringValue = this.value.toString()
+
+    fun plusLeft(leftIncrement: Int, rightLength: Int): String =
+        stringValue.let { (it.dropLast(rightLength).toLong() + leftIncrement).toString() + it.takeLast(rightLength) }
 
     return GroupInternalId(
-        when (left) {
-            in 1..10 -> ((left + 202).toString() + right.toString()).toUInt()
-            in 11..19 -> ((left + 469).toString() + right.toString()).toUInt()
-            in 20..66 -> ((left + 208).toString() + right.toString()).toUInt()
-            in 67..156 -> ((left + 1943).toString() + right.toString()).toUInt()
-            in 157..209 -> ((left + 199).toString() + right.toString()).toUInt()
-            in 210..309 -> ((left + 389).toString() + right.toString()).toUInt()
-            in 310..499 -> ((left + 349).toString() + right.toString()).toUInt()
-            else -> this.value
-        }
+        when (stringValue.dropLast(6).toInt()) {
+            in 1..10 -> plusLeft(202, 6)
+            in 11..19 -> plusLeft(469, 6)
+            in 20..66 -> plusLeft(208, 7)
+            in 67..156 ->  plusLeft(1943, 6)
+            in 157..209 -> plusLeft(1997, 7)
+            in 210..309 -> plusLeft(389, 7)
+            in 310..499 -> plusLeft(349, 7)
+            else -> null
+        }?.toUInt() ?: this.value
     )
 }
 
