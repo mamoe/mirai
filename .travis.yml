@@ -2,22 +2,24 @@ language: android
 #### use android since there are android components####
 jdk:
   - openjdk11
+os: linux
+
 
 android:
   components:
     - build-tools-29
     - android-29
     - extra
+  licenses:
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+    - 'android-sdk-preview-license-.+'
 
-licenses:
-  - 'android-sdk-license-.+'
-  - 'google-gdk-license-.+'
-  - 'android-sdk-preview-license-.+'
 
 
 install: true
 
-sudo: required
+
 before_script:
   - chmod +x gradlew
 
