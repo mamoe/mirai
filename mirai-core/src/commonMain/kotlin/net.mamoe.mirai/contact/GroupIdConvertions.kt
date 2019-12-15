@@ -24,7 +24,7 @@ fun GroupId.toInternalId(): GroupInternalId {
             in 11..19 -> plusLeft(469, 6)
             in 20..66 -> plusLeft(208, 7)
             in 67..156 ->  plusLeft(1943, 6)
-            in 157..209 -> plusLeft(1997, 7)
+            in 157..209 -> plusLeft(199, 7)
             in 210..309 -> plusLeft(389, 7)
             in 310..499 -> plusLeft(349, 7)
             else -> null
