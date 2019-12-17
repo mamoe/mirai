@@ -7,7 +7,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.timpc.packet.login.LoginResult
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.GroupNotFoundException
 import net.mamoe.mirai.utils.MiraiLogger

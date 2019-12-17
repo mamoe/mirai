@@ -2,7 +2,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.protocol.tim.packet.login.TouchPacket.TouchResponse
+import net.mamoe.mirai.network.protocol.timpc.packet.login.TouchPacket.TouchResponse
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmStatic

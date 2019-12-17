@@ -8,9 +8,9 @@ import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.isOwner
 import net.mamoe.mirai.message.Message
 import net.mamoe.mirai.message.any
-import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
-import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
-import net.mamoe.mirai.network.protocol.tim.packet.event.MessagePacket
+import net.mamoe.mirai.network.protocol.timpc.packet.event.FriendMessage
+import net.mamoe.mirai.network.protocol.timpc.packet.event.GroupMessage
+import net.mamoe.mirai.network.protocol.timpc.packet.event.MessagePacket
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

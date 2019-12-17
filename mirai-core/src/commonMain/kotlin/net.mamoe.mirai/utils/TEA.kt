@@ -3,8 +3,8 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.network.protocol.tim.packet.Decrypter
-import net.mamoe.mirai.network.protocol.tim.packet.DecrypterByteArray
+import net.mamoe.mirai.network.protocol.timpc.packet.Decrypter
+import net.mamoe.mirai.network.protocol.timpc.packet.DecrypterByteArray
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toByteArray
 import net.mamoe.mirai.utils.io.toUHexString

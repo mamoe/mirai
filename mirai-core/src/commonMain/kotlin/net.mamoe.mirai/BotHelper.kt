@@ -7,10 +7,10 @@ package net.mamoe.mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.network.protocol.tim.packet.login.requireSuccess
+import net.mamoe.mirai.network.protocol.timpc.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.timpc.packet.OutgoingPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.timpc.packet.login.requireSuccess
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail

@@ -8,7 +8,7 @@ import kotlin.jvm.JvmStatic
  * QQ 在线状态
  *
  * @author Him188moe
- * @see net.mamoe.mirai.network.protocol.tim.packet.login.ChangeOnlineStatusPacket
+ * @see net.mamoe.mirai.network.protocol.timpc.packet.login.ChangeOnlineStatusPacket
  */
 inline class OnlineStatus(
     inline val id: UByte

@@ -12,13 +12,13 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.Image
 import net.mamoe.mirai.message.ImageId0x03
 import net.mamoe.mirai.message.ImageId0x06
-import net.mamoe.mirai.network.protocol.tim.TIMBotNetworkHandler
-import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
-import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.Packet
-import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
-import net.mamoe.mirai.network.protocol.tim.packet.action.*
+import net.mamoe.mirai.network.protocol.timpc.TIMBotNetworkHandler
+import net.mamoe.mirai.network.protocol.timpc.handler.DataPacketSocketAdapter
+import net.mamoe.mirai.network.protocol.timpc.handler.TemporaryPacketHandler
+import net.mamoe.mirai.network.protocol.timpc.packet.OutgoingPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.Packet
+import net.mamoe.mirai.network.protocol.timpc.packet.SessionKey
+import net.mamoe.mirai.network.protocol.timpc.packet.action.*
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.getGTK
@@ -120,7 +120,7 @@ abstract class BotSessionBase internal constructor(
      *  }
      * }
      * ```
-     * @sample net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
+     * @sample net.mamoe.mirai.network.protocol.timpc.packet.action.uploadImage
      *
      * @param checkSequence 是否筛选 `sequenceId`, 即是否筛选发出的包对应的返回包.
      * @param P 期待的包
@@ -191,8 +191,8 @@ internal inline val Bot.sessionKey: SessionKey get() = this.session.sessionKey
 internal suspend inline fun BotSession.sendPacket(packet: OutgoingPacket) = this.bot.sendPacket(packet)
 
 
-suspend inline fun BotSession.getQQ(@PositiveNumbers number: Long): QQ = this.bot.getQQ(number)
-suspend inline fun BotSession.getQQ(number: UInt): QQ = this.bot.getQQ(number)
+inline fun BotSession.getQQ(@PositiveNumbers number: Long): QQ = this.bot.getQQ(number)
+inline fun BotSession.getQQ(number: UInt): QQ = this.bot.getQQ(number)
 
 suspend inline fun BotSession.getGroup(id: UInt): Group = this.bot.getGroup(id)
 suspend inline fun BotSession.getGroup(@PositiveNumbers id: Long): Group = this.bot.getGroup(id)

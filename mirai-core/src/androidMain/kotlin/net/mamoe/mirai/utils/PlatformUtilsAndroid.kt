@@ -3,12 +3,16 @@ package net.mamoe.mirai.utils
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.io.core.IoBuffer
+import kotlinx.io.core.readBytes
+import java.io.ByteArrayOutputStream
 import java.io.DataInput
 import java.io.EOFException
 import java.io.InputStream
 import java.net.InetAddress
 import java.security.MessageDigest
 import java.util.zip.CRC32
+import java.util.zip.Inflater
 
 
 /**
@@ -75,3 +79,16 @@ actual fun crc32(key: ByteArray): Int = CRC32().apply { update(key) }.value.toIn
  * hostname 解析 ipv4
  */
 actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
+
+actual fun ByteArray.unzip(): ByteArray {
+    val inflater = Inflater()
+    inflater.reset()
+    val output = ByteArrayOutputStream()
+    inflater.setInput(this)
+    val buffer = ByteArray(128)
+    while (!inflater.finished()) {
+        output.write(buffer, 0, inflater.inflate(buffer))
+    }
+    inflater.end()
+    return output.toByteArray()
+}

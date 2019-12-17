@@ -7,19 +7,16 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.addFriend
-import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
-import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
-import net.mamoe.mirai.network.protocol.tim.packet.event.ReceiveFriendAddRequestEvent
+import net.mamoe.mirai.network.protocol.timpc.packet.event.FriendMessage
+import net.mamoe.mirai.network.protocol.timpc.packet.event.GroupMessage
+import net.mamoe.mirai.network.protocol.timpc.packet.event.ReceiveFriendAddRequestEvent
 import java.io.File
 import java.util.*
 import javax.swing.filechooser.FileSystemView
@@ -93,6 +90,12 @@ suspend fun main() {
             } else {
                 sender
             }.queryProfile().toString().reply()
+        }
+        "grouplist" reply {
+
+            //"https://ssl.ptlogin2.qq.com/jump?pt_clientver=5509&pt_src=1&keyindex=9&clientuin=" + bot.qqAccount + "&clientkey=" + com.tick_tock.pctim.utils.Util.byte2HexString(
+            //    user.txprotocol.serviceTicketHttp
+            //).replace(" ", "").toString() + "&u1=http%3A%2F%2Fqun.qq.com%2Fmember.html%23gid%3D168209441"
         }
 
         "xml" reply {

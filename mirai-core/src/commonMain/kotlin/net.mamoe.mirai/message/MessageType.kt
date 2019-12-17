@@ -16,6 +16,7 @@ enum class MessageType(val value: UByte) {
      * [ImageId.value] 长度为 37 的图片
      */
     IMAGE_37(0x06u),
+    XML(0x19u)
     ;
 
 

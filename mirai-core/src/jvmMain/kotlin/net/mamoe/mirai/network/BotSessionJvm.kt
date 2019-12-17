@@ -10,7 +10,7 @@ import kotlinx.io.streams.asOutput
 import kotlinx.io.streams.inputStream
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.network.protocol.tim.packet.SessionKey
+import net.mamoe.mirai.network.protocol.timpc.packet.SessionKey
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.toExternalImage

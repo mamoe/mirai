@@ -8,7 +8,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
+import net.mamoe.mirai.network.protocol.timpc.packet.action.uploadImage
 import net.mamoe.mirai.utils.io.toUHexString
 
 @Suppress("FunctionName")

@@ -3,9 +3,9 @@ package mirai.test.packetdebugger
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUShort
-import net.mamoe.mirai.network.protocol.tim.packet.PacketId
-import net.mamoe.mirai.network.protocol.tim.packet.login.CaptchaPacket
-import net.mamoe.mirai.network.protocol.tim.packet.matchPacketId
+import net.mamoe.mirai.network.protocol.timpc.packet.PacketId
+import net.mamoe.mirai.network.protocol.timpc.packet.login.CaptchaPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.matchPacketId
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

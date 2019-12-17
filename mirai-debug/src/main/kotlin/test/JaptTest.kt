@@ -1,6 +1,6 @@
 package test
 
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.timpc.packet.login.LoginResult
 
 @Suppress("RedundantSuspendModifier")
 suspend fun suspendPrintln(arg: String) = println(arg)

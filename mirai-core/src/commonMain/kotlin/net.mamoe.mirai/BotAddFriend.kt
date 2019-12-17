@@ -4,10 +4,10 @@
 
 package net.mamoe.mirai
 
-import net.mamoe.mirai.network.protocol.tim.packet.action.AddFriendPacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendPacket
-import net.mamoe.mirai.network.protocol.tim.packet.action.CanAddFriendResponse
-import net.mamoe.mirai.network.protocol.tim.packet.action.RequestFriendAdditionKeyPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.action.AddFriendPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.action.CanAddFriendPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.action.CanAddFriendResponse
+import net.mamoe.mirai.network.protocol.timpc.packet.action.RequestFriendAdditionKeyPacket
 import net.mamoe.mirai.network.sessionKey
 import kotlin.contracts.ExperimentalContracts
 import kotlin.jvm.JvmMultifileClass

@@ -17,8 +17,8 @@ import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.login
 import net.mamoe.mirai.message.Image
-import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
+import net.mamoe.mirai.network.protocol.timpc.packet.event.GroupMessage
+import net.mamoe.mirai.network.protocol.timpc.packet.login.LoginResult
 import java.lang.ref.WeakReference
 
 class MiraiService : Service() {

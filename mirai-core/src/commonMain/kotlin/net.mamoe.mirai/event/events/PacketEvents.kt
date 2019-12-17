@@ -2,8 +2,8 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Cancellable
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.Packet
+import net.mamoe.mirai.network.protocol.timpc.packet.OutgoingPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.Packet
 
 /* Abstract */
 

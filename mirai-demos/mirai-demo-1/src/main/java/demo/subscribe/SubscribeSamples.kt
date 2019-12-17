@@ -11,9 +11,9 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.network.protocol.tim.packet.action.uploadImage
-import net.mamoe.mirai.network.protocol.tim.packet.event.FriendMessage
-import net.mamoe.mirai.network.protocol.tim.packet.event.GroupMessage
+import net.mamoe.mirai.network.protocol.timpc.packet.action.uploadImage
+import net.mamoe.mirai.network.protocol.timpc.packet.event.FriendMessage
+import net.mamoe.mirai.network.protocol.timpc.packet.event.GroupMessage
 import net.mamoe.mirai.utils.suspendToExternalImage
 import java.io.File
 

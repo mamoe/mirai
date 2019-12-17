@@ -4,13 +4,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.protocol.tim.handler.DataPacketSocketAdapter
-import net.mamoe.mirai.network.protocol.tim.handler.TemporaryPacketHandler
-import net.mamoe.mirai.network.protocol.tim.packet.OutgoingPacket
-import net.mamoe.mirai.network.protocol.tim.packet.Packet
-import net.mamoe.mirai.network.protocol.tim.packet.login.HeartbeatPacket
-import net.mamoe.mirai.network.protocol.tim.packet.login.LoginResult
-import net.mamoe.mirai.network.protocol.tim.packet.login.RequestSKeyPacket
+import net.mamoe.mirai.network.protocol.timpc.handler.DataPacketSocketAdapter
+import net.mamoe.mirai.network.protocol.timpc.handler.TemporaryPacketHandler
+import net.mamoe.mirai.network.protocol.timpc.packet.OutgoingPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.Packet
+import net.mamoe.mirai.network.protocol.timpc.packet.login.HeartbeatPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.login.RequestSKeyPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.login.LoginResult
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 

@@ -3,8 +3,8 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.network.protocol.tim.packet.action.GroupInfo
-import net.mamoe.mirai.network.protocol.tim.packet.action.QuitGroupResponse
+import net.mamoe.mirai.network.protocol.timpc.packet.action.GroupInfo
+import net.mamoe.mirai.network.protocol.timpc.packet.action.QuitGroupResponse
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.internal.PositiveNumbers
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail

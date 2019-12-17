@@ -6,9 +6,9 @@ import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.network.BotSession
-import net.mamoe.mirai.network.protocol.tim.packet.action.AvatarLink
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendNameRemark
-import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList
+import net.mamoe.mirai.network.protocol.timpc.packet.action.AvatarLink
+import net.mamoe.mirai.network.protocol.timpc.packet.action.FriendNameRemark
+import net.mamoe.mirai.network.protocol.timpc.packet.action.PreviousNameList
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**

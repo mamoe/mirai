@@ -3,7 +3,7 @@
 package net.mamoe.mirai.utils.internal
 
 import kotlinx.io.core.toByteArray
-import net.mamoe.mirai.network.protocol.tim.TIMProtocol
+import net.mamoe.mirai.network.protocol.timpc.TIMProtocol
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read

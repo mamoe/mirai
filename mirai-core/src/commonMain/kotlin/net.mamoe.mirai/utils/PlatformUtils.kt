@@ -4,6 +4,7 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.util.date.GMTDate
+import kotlinx.io.core.IoBuffer
 
 /**
  * 时间戳
@@ -20,6 +21,8 @@ expect val deviceName: String
  * CRC32 算法
  */
 expect fun crc32(key: ByteArray): Int
+
+expect fun ByteArray.unzip(): ByteArray
 
 /**
  * MD5 算法

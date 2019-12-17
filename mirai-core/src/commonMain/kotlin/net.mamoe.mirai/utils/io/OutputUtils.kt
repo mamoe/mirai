@@ -8,9 +8,9 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
-import net.mamoe.mirai.network.protocol.tim.TIMProtocol
-import net.mamoe.mirai.network.protocol.tim.packet.DecrypterByteArray
-import net.mamoe.mirai.network.protocol.tim.packet.login.PrivateKey
+import net.mamoe.mirai.network.protocol.timpc.TIMProtocol
+import net.mamoe.mirai.network.protocol.timpc.packet.DecrypterByteArray
+import net.mamoe.mirai.network.protocol.timpc.packet.login.PrivateKey
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.coerceAtMostOrFail
 import kotlin.random.Random

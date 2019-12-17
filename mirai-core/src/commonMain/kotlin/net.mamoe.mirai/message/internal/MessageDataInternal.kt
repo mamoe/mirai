@@ -5,6 +5,7 @@ package net.mamoe.mirai.message.internal
 import kotlinx.io.core.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.unzip
 
 internal fun IoBuffer.parseMessageFace(): Face {
     //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
@@ -53,6 +54,40 @@ internal fun IoBuffer.parseMessageImage0x06(): Image {
     //return Image("{${readString(length)}}.$suffix")
 }
 
+internal fun IoBuffer.parseMessageXML(): XMLMessage {
+    discardExact(1)
+    discardExact(readUShort())
+    discardExact(1)
+    /*
+  网易云音乐分享
+19
+[01 BB]
+  01
+  [01 B8] 9A 03 B4 03 0A B1 03 01 78 9C 6D 51 CB 8A 14 31 14 FD 95 21 2B 85 A6 AA D2 F5 EA 34 88 B8 92 41 DD F9 58 88 34 31 95 2A E3 74 25 21 8F 19 A6 87 DE 54 83 C8 AC 1C 74 E1 6E 36 EE 86 01 C1 8D D3 20 7E 4C B5 0E FE 85 37 D5 4E 83 28 59 84 7B EE C9 B9 E7 9E 9C 20 AA 35 9A 22 A6 DA C8 71 C9 B8 74 91 75 C6 33 D7 DA 06 8D 00 97 B5 68 D0 F4 04 51 EF 94 15 0B 8E A6 D0 E6 D0 71 A2 85 02 E7 65 91 25 05 C1 78 84 6A 65 8E A8 A9 6E 18 4E 1D 70 09 DA A4 CE D3 62 5C BE 24 78 4C 38 AD 6B 56 67 39 CB 26 39 A1 09 61 A4 A4 30 C6 1D 6B D0 42 52 99 96 CE D1 72 84 2A 6E 19 00 BF CE BF 6C AE DE 01 A1 E5 8E 06 17 AD B7 82 0D 76 60 BE 0A EA D0 A4 B2 32 4A 54 33 7D D0 CC 24 0D AE 06 54 EB D9 56 17 0F 85 00 63 38 49 32 92 27 93 7C 37 E1 81 58 78 49 F7 EE ED C7 9B AF 97 D7 1F 3E F7 AB 4F 7D 77 D5 77 DF FB EE 02 44 5E FB 56 3F 31 73 20 BE 72 4E 4F E3 78 30 10 E1 22 8D 20 B2 D8 2A D9 C4 38 9D A4 24 4B 49 3A 8E EF 7A CB 8D A8 EE A4 E3 2C 29 8B 34 29 83 F5 F0 E2 2F 0D 6F E6 11 93 71 4E 26 CF 16 4F 1F 03 45 1B 7E 28 F8 D1 BF 8C E3 E6 7E FA B0 05 86 55 DE 30 FE C8 36 FB B0 05 4A 76 C8 4C B0 9B 14 FE 00 7E 98 14 32 A5 F0 6F E8 FA DB D9 CF 8F EF 37 EB B3 5D 94 4E B8 79 88 A8 EF 2E FB 6E DD AF 4E FB D5 F9 DE 2D A6 0E B9 B9 8D 96 CB E0 46 B5 DA 01 E3 F9 8F B7 6F 36 EB 8B 17 FF 65 8E 10 5C C1 4B 14 0E 0E F5 76 85 ED 17 2D 7F 03 2B B9 D5 0A
+01
+[00 8B]
+  01
+  [00 88] 5B E5 88 86 E4 BA AB 5D E3 82 AD E3 82 BA E3 83 8A E3 83 9F 20 28 63 6F 76 65 72 29 0A 4B 69 7A 75 6E 61 20 41 49 2F E4 B8 AD E7 94 B0 E3 83 A4 E3 82 B9 E3 82 BF E3 82 AB 0A 68 74 74 70 3A 2F 2F 6D 75 73 69 63 2E 31 36 33 2E 63 6F 6D 2F 73 6F 6E 67 2F 31 33 38 33 39 34 33 39 33 32 2F 3F 75 73 65 72 69 64 3D 33 32 34 30 37 36 33 30 37 0A E6 9D A5 E8 87 AA 3A 20 E7 BD 91 E6 98 93 E4 BA 91 E9 9F B3 E4 B9 90
+
+19
+[00 41]
+  01
+  [00 3E] AA 02 3B 08 00 50 03 60 00 68 00 88 01 00 9A 01 2D 08 09 20 CB 50 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 90 04 00
+0E
+[00 0E]
+  01
+  [00 04] 00 00 00 09
+0A
+[00 04] 00 00 00 00
+12
+[00 25]
+05 00 04 00 00 00 03 08 00 04 00 00 00 04 01 00
+[09] 48 69 6D 31 38 38 6D 6F 65
+03 00 01 01 04 00 04 00 00 00 08
+
+   */
+    return XMLMessage(readBytes().unzip().encodeToString())
+}
 
 //00 1B filenameLength
 // 43 37 46 29 5F 34 32 34 4E 33 55 37 7B 4C 47 36 7D 4F 25 5A 51 58 51 2E 6A 70 67 get suffix
@@ -147,23 +182,7 @@ internal fun ByteReadPacket.readMessage(): Message? {
              *
              * 19 00 42 01 00 3F AA 02 3C 08 00 50 03 60 00 68 00 88 01 00 9A 01 2E 08 09 20 BF 50 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 90 04 80 0B 0E 00 0E 01 00 04 00 00 00 09 0A 00 04 00 00 00 00 12 00 25 05 00 04 00 00 00 01 08 00 04 00 00 00 01 01 00 09 48 69 6D 31 38 38 6D 6F 65 03 00 01 04 04 00 04 00 00 00 10
              */
-
-
-            0x14 -> {//长文本的后一部分? 总长度 0x0175=373, body长度=0x016B=363
-//14  01  75  01  01  6B  01  78  9C  CD  92  4D  4F  C2  30  18  C7  EF  7E  8A  A6  1E  C9  64  83  B1  CD  A4  1B  E1  4D  19  8A  C6  20  11  BC  98  39  3A  A8  EE  C5  74  1D  20  37  6E  46  0F  C6  83  37  8D  31  D1  83  89  51  4F  DE  F8  38  4C  3E  86  1D  62  3C  7A  D4  7F  93  26  7D  DA  7F  9F  A7  BF  A7  28  3F  F4  5C  D0  C7  34  24  81  AF  43  69  45  84  00  FB  76  D0  21  7E  57  87  11  73  04  0D  E6  8D  25  C0  85  BC  B0  0B  0E  29  C1  8E  0E  57  FE  B9  20  F0  0E  1C  E2  E2  2D  CB  C3  3A  D4  A4  D5  72  A9  58  58  13  24  AD  A4  0A  B2  22  E5  84  42  59  91  85  9C  52  C8  2A  62  46  14  65  59  FD  76  34  C8  88  3B  38  05  CB  66  73  24  7D  82  07  F5  C8  65  A4  1E  76  21  70  5C  8B  73  C9  42  10  62  DA  27  36  36  CB  7C  95  4B  CC  14  87  A4  A3  C3  AA  B4  CE  82  63  B5  46  54  8D  A4  EC  F6  20  F4  68  D8  21  C5  ED  7D  B5  B9  A1  0D  46  4D  33  E5  8F  86  47  AD  DA  6E  73  2F  D3  3B  91  2B  55  53  A9  6C  B6  76  AC  96  DD  20  38  DB  36  21  30  00  22  0C  7B  C0  B5  4E  83  88  F1  9E  40  1E  61  84  B9  D8  00  7F  CD  F5  37  01  94  5E  54  0A  50  8F  1A  28  CD  A7  45  F1  C0  0E  DC  80  EA  70  59  13  93  C1  1F  15  DF  3D  7E  DC  5C  48  F1  ED  FD  6C  F2  3C  BD  BC  8A  DF  CF  E2  F1  2B  F8  B9  03  A5  13  10  06  0A  83  88  DA  18  F8  F3  66  CE  C6  E7  D3  87  A7  D9  CB  DB  74  72  0D  79  86  AF  CD  E4  30  FF  9F  C6  27  23  A2  C1  36  02  00  04  00  00  00  23  0E  00  07  01  00  04  00  00  00  09
-
-                discardExact(1)
-                val value = readUShortLVByteArray()
-                println(value.size)
-                println("0x14的未知压缩的data=" + value.toUHexString())
-                //todo 未知压缩算法
-
-                return PlainText("")
-
-                //后面似乎还有一节?
-                //discardExact(7)//02  00  04  00  00  00  23
-                //return PlainText(value.toUHexString())
-            }
+            0x14 -> sectionData.parseMessageXML()
 
             0x0E -> {
                 null
@@ -180,7 +199,7 @@ internal fun ByteReadPacket.readMessage(): Message? {
     }
 }
 
-fun ByteReadPacket.readMessageChain(): MessageChain {
+internal fun ByteReadPacket.readMessageChain(): MessageChain {
     val chain = MessageChain()
     do {
         if (this.remaining == 0L) {
@@ -190,10 +209,18 @@ fun ByteReadPacket.readMessageChain(): MessageChain {
     return chain
 }
 
-fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
+internal fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
     this@toPacket.forEach { message ->
         writePacket(with(message) {
             when (this) {
+                is XMLMessage -> buildPacket {
+                    writeUByte(MessageType.XML.value)
+                    writeShortLVPacket {
+                        writeByte(0x01)
+                        //writeUByte()
+                    }
+                }
+
                 is Face -> buildPacket {
                     writeUByte(MessageType.FACE.value)
 

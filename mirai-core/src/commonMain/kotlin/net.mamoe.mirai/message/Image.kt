@@ -4,7 +4,7 @@ package net.mamoe.mirai.message
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendImagePacket
+import net.mamoe.mirai.network.protocol.timpc.packet.action.FriendImagePacket
 import net.mamoe.mirai.utils.ExternalImage
 
 

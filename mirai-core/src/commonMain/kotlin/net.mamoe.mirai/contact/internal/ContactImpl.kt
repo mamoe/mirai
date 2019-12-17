@@ -10,9 +10,9 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.data.Profile
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageChain
-import net.mamoe.mirai.network.protocol.tim.packet.action.*
-import net.mamoe.mirai.network.protocol.tim.packet.event.MemberJoinEventPacket
-import net.mamoe.mirai.network.protocol.tim.packet.event.MemberQuitEvent
+import net.mamoe.mirai.network.protocol.timpc.packet.action.*
+import net.mamoe.mirai.network.protocol.timpc.packet.event.MemberJoinEventPacket
+import net.mamoe.mirai.network.protocol.timpc.packet.event.MemberQuitEvent
 import net.mamoe.mirai.network.qqAccount
 import net.mamoe.mirai.network.sessionKey
 import net.mamoe.mirai.qqAccount
