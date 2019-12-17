@@ -3,6 +3,8 @@
 <b>
 Mirai-API-http provides adapter for ALL langugae to access mirai via HTTP protocol.<br>
 </b>
+
+**[中文](README_CH.md)**  
   
 
 ### Start Session-Authorize
