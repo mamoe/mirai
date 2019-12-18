@@ -1,5 +1,8 @@
 # Mirai
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade) [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)
+[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Actions Status](https://github.com/mamoe/mirai/workflows/CI/badge.svg)](https://github.com/mamoe/mirai/actions)
+[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **[English](README-eng.md)**  
 
 **TIM PC 协议** 跨平台 QQ 协议支持库.  
@@ -70,12 +73,11 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 我们欢迎一切形式的贡献. 若您有兴趣为 Mirai 实现 JS, iOS, Native 平台, 请联系我(`Him188@mamoe.net`).  
 若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
 
-## Requirements
+## Build Requirements
 
-Kotlin 1.3.61  
-
-JVM 平台: Java 6  
-Android: SDK 15
+- Kotlin 1.3.61  
+- JDK 8
+- Android SDK 29
 
 ### Using Java 
 Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  

@@ -13,5 +13,5 @@ jobs:
       uses: msfjarvis/setup-android@0.2
       with:
         # Gradle tasks to run - If you want to run ./gradlew assemble, specify assemble here. 
-        gradleTasks: build
+        gradleTasks: build -x mirai-core:jvmTest
     
