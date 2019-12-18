@@ -11,6 +11,13 @@ inline class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
     fun get(): T = weakRef.get() ?: error("WeakRef is released")
     fun clear() = weakRef.clear()
 
+    /**
+     * Provides delegate value.
+     *
+     * ```kotlin
+     * val bot: Bot by param.unsafeWeakRef()
+     * ```
+     */
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T? = this.get()
 }
 
