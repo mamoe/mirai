@@ -18,7 +18,7 @@ inline class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
      * val bot: Bot by param.unsafeWeakRef()
      * ```
      */
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T? = this.get()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): T = this.get()
 }
 
 /**
