@@ -3,7 +3,8 @@
 package net.mamoe.mirai.message.internal
 
 import kotlinx.io.core.*
-import net.mamoe.mirai.message.*
+import net.mamoe.mirai.message.MessageType
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unzip
 
@@ -27,7 +28,7 @@ internal fun IoBuffer.parsePlainTextOrAt(): Message {
         PlainText(msg)
     } else {
         discardExact(10)
-        At(readUInt())
+        At(readQQ())
     }
 }
 
@@ -38,13 +39,13 @@ internal fun IoBuffer.parseLongText0x19(): PlainText {
     //AA 02 33 50 00 60 00 68 00 9A 01 2A 08 09 20 CB 50 78 80 80 04 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 D3 02 A0 03 10 B0 03 00 C0 03 AF 9C 01 D0 03 00 E8 03 00
     //AA 02 30 50 00 60 00 68 00 9A 01 27 08 0A 78 A7 C0 04 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 00 B0 03 00 C0 03 00 D0 03 00 E8 03 00
     // 应该是手机发送时的字体或气泡之类的
-    // println("parseLongText0x19.raw=${raw.toUHexString()}")
+    // println("parseLongText0x19.raw=${raw.toHexString()}")
     return PlainText("")
 }
 
 internal fun IoBuffer.parseMessageImage0x06(): Image {
     discardExact(1)
-    //MiraiLogger.debug(this.toUHexString())
+    //MiraiLogger.debug(this.toHexString())
     val filenameLength = readShort()
 
     discardExact(filenameLength.toInt())
@@ -199,7 +200,7 @@ internal fun ByteReadPacket.readMessage(): Message? {
     }
 }
 
-internal fun ByteReadPacket.readMessageChain(): MessageChain {
+fun ByteReadPacket.readMessageChain(): MessageChain {
     val chain = MessageChain()
     do {
         if (this.remaining == 0L) {
@@ -209,7 +210,7 @@ internal fun ByteReadPacket.readMessageChain(): MessageChain {
     return chain
 }
 
-internal fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
+fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
     this@toPacket.forEach { message ->
         writePacket(with(message) {
             when (this) {
@@ -244,7 +245,7 @@ internal fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
                         writeShortLVString(stringValue) // 这个应该是 "@群名", 手机上面会显示这个消息, 电脑会显示下面那个
                         // 06 00 0D 00 01 00 00 00 08 00 76 E4 B8 DD 00 00
                         writeHex("06 00 0D 00 01 00 00 00 08 00")
-                        writeUInt(target)
+                        writeQQ(target)
                         writeZero(2)
                     }
                 }

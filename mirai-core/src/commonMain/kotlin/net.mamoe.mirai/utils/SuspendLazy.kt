@@ -10,9 +10,13 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * 创建一个在当前 [CoroutineScope] 下执行初始化的 [SuspendLazy]
+ * 创建一个在当前 [CoroutineScope] 下执行初始化的 [suspendLazy]
+ *
+ * ```kotlin
+ * val image: Deferred<Image> by suspendLazy{  /* intializer */  }
+ * ```
  */
-fun <R> CoroutineScope.SuspendLazy(context: CoroutineContext = EmptyCoroutineContext, initializer: suspend () -> R): Lazy<Deferred<R>> =
+fun <R> CoroutineScope.suspendLazy(context: CoroutineContext = EmptyCoroutineContext, initializer: suspend () -> R): Lazy<Deferred<R>> =
     SuspendLazy(this, context, initializer)
 
 /**

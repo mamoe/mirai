@@ -2,7 +2,6 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.protocol.timpc.packet.login.TouchPacket.TouchResponse
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmStatic
@@ -24,9 +23,9 @@ expect var DefaultCaptchaSolver: CaptchaSolver
  */
 class BotConfiguration : CoroutineContext.Element {
     /**
-     * 等待 [TouchResponse] 的时间
+     * 连接每个服务器的时间
      */
-    var touchTimeoutMillis: Long = 2.secondsToMillis
+    var touchTimeoutMillis: Long = 1.secondsToMillis
     /**
      * 是否使用随机的设备名.
      * 使用随机可以降低被封禁的风险, 但可能导致每次登录都需要输入验证码

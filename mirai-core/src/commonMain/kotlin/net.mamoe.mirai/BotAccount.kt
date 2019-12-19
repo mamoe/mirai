@@ -3,8 +3,6 @@
 package net.mamoe.mirai
 
 data class BotAccount(
-    val id: UInt,
+    val id: Long,
     val password: String
-) {
-    constructor(id: Long, password: String) : this(id.toUInt(), password)
-}
+)

@@ -23,9 +23,9 @@ expect class ClosedChannelException : IOException
 /**
  * 在 [PlatformDatagramChannel.send] 或 [PlatformDatagramChannel.read] 时出现的错误.
  */
-internal class SendPacketInternalException(cause: Throwable?) : Exception(cause)
+class SendPacketInternalException(cause: Throwable?) : Exception(cause)
 
 /**
  * 在 [PlatformDatagramChannel.send] 或 [PlatformDatagramChannel.read] 时出现的错误.
  */
-internal class ReadPacketInternalException(cause: Throwable?) : Exception(cause)
+class ReadPacketInternalException(cause: Throwable?) : Exception(cause)

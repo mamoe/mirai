@@ -6,7 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.network.protocol.timpc.packet.action.OverFileSizeMaxException
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.sendTo
 import net.mamoe.mirai.utils.toExternalImage
 import net.mamoe.mirai.utils.upload

@@ -3,8 +3,6 @@ package net.mamoe.mirai.utils
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.readBytes
 import java.io.ByteArrayOutputStream
 import java.io.DataInput
 import java.io.EOFException
@@ -24,7 +22,7 @@ actual val deviceName: String get() = InetAddress.getLocalHost().hostName
  * Ktor HttpClient. 不同平台使用不同引擎.
  */
 @KtorExperimentalAPI
-internal actual val Http: HttpClient
+actual val Http: HttpClient
     get() = HttpClient(CIO)
 
 /**

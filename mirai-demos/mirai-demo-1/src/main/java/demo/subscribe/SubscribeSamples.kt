@@ -10,10 +10,14 @@ import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.message.*
-import net.mamoe.mirai.network.protocol.timpc.packet.action.uploadImage
-import net.mamoe.mirai.network.protocol.timpc.packet.event.FriendMessage
-import net.mamoe.mirai.network.protocol.timpc.packet.event.GroupMessage
+import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.ImageId
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.firstOrNull
+import net.mamoe.mirai.message.sendAsImageTo
+import net.mamoe.mirai.timpc.TIMPC
 import net.mamoe.mirai.utils.suspendToExternalImage
 import java.io.File
 
@@ -25,7 +29,7 @@ private fun readTestAccount(): BotAccount? {
 
     val lines = file.readLines()
     return try {
-        BotAccount(lines[0].toUInt(), lines[1])
+        BotAccount(lines[0].toLong(), lines[1])
     } catch (e: IndexOutOfBoundsException) {
         null
     }
@@ -33,9 +37,9 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = Bot(
+    val bot = TIMPC.Bot(
         readTestAccount() ?: BotAccount(//填写你的账号
-            id = 1994701121u,
+            id = 1994701121,
             password = "123456"
         )
     ).alsoLogin {
@@ -211,37 +215,65 @@ suspend fun directlySubscribe(bot: Bot) {
 
             "复读" in it.message -> it.sender.sendMessage(it.message)
 
-            "发群消息" in it.message -> 580266363u.group().sendMessage(it.message.toString().substringAfter("发群消息"))
+            "发群消息" in it.message -> 580266363.group().sendMessage(it.message.toString().substringAfter("发群消息"))
 
             "上传群图片" in it.message -> withTimeoutOrNull(5000) {
                 val filename = it.message.toString().substringAfter("上传群图片")
                 val image = File(
                     "C:\\Users\\Him18\\Desktop\\$filename"
                 ).suspendToExternalImage()
-                920503456u.group().uploadImage(image)
+                920503456.group().uploadImage(image)
                 it.reply(image.groupImageId.value)
                 delay(100)
-                920503456u.group().sendMessage(Image(image.groupImageId))
+                920503456.group().sendMessage(Image(image.groupImageId))
             }
 
             "发群图片" in it.message -> {
-                920503456u.group().sendMessage(Image(ImageId(it.message.toString().substringAfter("发群图片"))))
+                920503456.group().sendMessage(
+                    Image(
+                        ImageId(
+                            it.message.toString().substringAfter(
+                                "发群图片"
+                            )
+                        )
+                    )
+                )
             }
 
             "发好友图片" in it.message -> {
-                it.reply(Image(ImageId(it.message.toString().substringAfter("发好友图片"))))
+                it.reply(
+                    Image(
+                        ImageId(
+                            it.message.toString().substringAfter(
+                                "发好友图片"
+                            )
+                        )
+                    )
+                )
             }
 
             /*it.event eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
                     image.upload(session, Group(session.bot, 580266363)).of()
                 })*/
 
-            it.message eq "发图片群2" -> 580266363u.group().sendMessage(Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
+            it.message eq "发图片群2" -> 580266363.group().sendMessage(
+                Image(
+                    ImageId(
+                        "{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"
+                    )
+                )
+            )
 
             /* it.event eq "发图片" -> sendFriendMessage(it.sentBy, PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
                      image.upload(session, it.sentBy).of()
                  })*/
-            it.message eq "发图片2" -> it.reply(PlainText("test") + Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
+            it.message eq "发图片2" -> it.reply(
+                PlainText("test") + Image(
+                    ImageId(
+                        "{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"
+                    )
+                )
+            )
             else -> {
 
             }

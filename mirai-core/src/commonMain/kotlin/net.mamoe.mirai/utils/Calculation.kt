@@ -7,7 +7,7 @@ import net.mamoe.mirai.utils.io.getRandomByteArray
 
 private const val GTK_BASE_VALUE: Int = 5381
 
-internal fun getGTK(sKey: String): Int {
+fun getGTK(sKey: String): Int {
     var value = GTK_BASE_VALUE
     for (c in sKey.toByteArray()) {
         value += (value shl 5) + c.toInt()
@@ -18,14 +18,11 @@ internal fun getGTK(sKey: String): Int {
 }
 
 @Tested
-@PublishedApi
-internal fun BytePacketBuilder.writeCRC32() = writeCRC32(getRandomByteArray(16))
+fun BytePacketBuilder.writeCRC32() = writeCRC32(getRandomByteArray(16))
 
-@PublishedApi
-internal fun BytePacketBuilder.writeCRC32(key: ByteArray) {
+fun BytePacketBuilder.writeCRC32(key: ByteArray) {
     writeFully(key)//key
     writeInt(crc32(key))
 }
 
-@PublishedApi
-internal fun md5(str: String): ByteArray = md5(str.toByteArray())
+fun md5(str: String): ByteArray = md5(str.toByteArray())

@@ -7,16 +7,22 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.*
+import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Subscribable
+import net.mamoe.mirai.event.events.ReceiveFriendAddRequestEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.message.*
-import net.mamoe.mirai.network.protocol.timpc.packet.event.FriendMessage
-import net.mamoe.mirai.network.protocol.timpc.packet.event.GroupMessage
-import net.mamoe.mirai.network.protocol.timpc.packet.event.ReceiveFriendAddRequestEvent
+import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.buildXMLMessage
+import net.mamoe.mirai.message.data.getValue
+import net.mamoe.mirai.message.sendAsImageTo
+import net.mamoe.mirai.timpc.TIMPC
 import java.io.File
 import java.util.*
 import javax.swing.filechooser.FileSystemView
@@ -30,7 +36,7 @@ private fun readTestAccount(): BotAccount? {
 
     val lines = file.readLines()
     return try {
-        BotAccount(lines[0].toUInt(), lines[1])
+        BotAccount(lines[0].toLong(), lines[1])
     } catch (e: Exception) {
         null
     }
@@ -38,9 +44,9 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = Bot(
+    val bot = TIMPC.Bot(
         readTestAccount() ?: BotAccount(
-            id = 913366033u,
+            id = 913366033,
             password = "a18260132383"
         )
     ).alsoLogin()
@@ -86,7 +92,7 @@ suspend fun main() {
         startsWith("profile", removePrefix = true) {
             val account = it.trim()
             if (account.isNotEmpty()) {
-                account.toUInt().qq()
+                account.toLong().qq()
             } else {
                 sender
             }.queryProfile().toString().reply()
@@ -168,7 +174,7 @@ suspend fun main() {
         }
 
         startsWith("添加好友", removePrefix = true) {
-            reply(bot.addFriend(it.toUInt()).toString())
+            reply(bot.addFriend(it.toLong()).toString())
         }
 
     }

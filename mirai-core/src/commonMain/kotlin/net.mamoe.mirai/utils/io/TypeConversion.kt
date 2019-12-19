@@ -3,7 +3,6 @@
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.writeFully
 import kotlinx.io.pool.ObjectPool
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -105,8 +104,7 @@ fun String.hexToUBytes(): UByteArray =
 /**
  * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
  */
-@PublishedApi
-internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
+fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
 
 /**
  * 随机生成长度为 [length] 的 [String].
@@ -142,4 +140,4 @@ fun ByteArray.toUShort(): UShort =
  * 从 [IoBuffer.Pool] [borrow][ObjectPool.borrow] 一个 [IoBuffer] 然后将 [this] 写入.
  * 注意回收 ([ObjectPool.recycle])
  */
-fun ByteArray.toIoBuffer(): IoBuffer = IoBuffer.Pool.borrow().let { it.writeFully(this); it }
+fun ByteArray.toIoBuffer(offset: Int = 0, length: Int = this.size - offset): IoBuffer = IoBuffer.Pool.borrow().let { it.writeFully(this, offset, length); it }

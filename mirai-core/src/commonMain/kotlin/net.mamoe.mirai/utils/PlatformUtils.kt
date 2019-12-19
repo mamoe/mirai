@@ -4,7 +4,6 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.util.date.GMTDate
-import kotlinx.io.core.IoBuffer
 
 /**
  * 时间戳
@@ -44,5 +43,4 @@ expect fun localIpAddress(): String
 /**
  * Ktor HttpClient. 不同平台使用不同引擎.
  */
-@PublishedApi
-internal expect val Http: HttpClient
+expect val Http: HttpClient

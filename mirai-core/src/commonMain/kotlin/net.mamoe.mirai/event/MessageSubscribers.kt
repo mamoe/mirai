@@ -6,11 +6,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.isOwner
-import net.mamoe.mirai.message.Message
-import net.mamoe.mirai.message.any
-import net.mamoe.mirai.network.protocol.timpc.packet.event.FriendMessage
-import net.mamoe.mirai.network.protocol.timpc.packet.event.GroupMessage
-import net.mamoe.mirai.network.protocol.timpc.packet.event.MessagePacket
+import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.MessagePacket
+import net.mamoe.mirai.message.data.Message
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -188,14 +187,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是这个人发的消息, 就执行 [onEvent]. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
-    suspend inline fun sentBy(qqId: UInt, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun sentBy(qqId: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ sender.id == qqId }, onEvent)
-
-    /**
-     * 如果是这个人发的消息, 就执行 [onEvent]. 消息可以是好友消息也可以是群消息
-     */
-    @MessageDsl
-    suspend inline fun sentBy(qqId: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) = sentBy(qqId.toUInt(), onEvent)
 
     /**
      * 如果是管理员或群主发的消息, 就执行 [onEvent]
@@ -222,21 +215,15 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是来自这个群的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentFrom(id: UInt, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    suspend inline fun sentFrom(id: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
         content({ if (this is GroupMessage) group.id == id else false }, onEvent)
-
-    /**
-     * 如果是来自这个群的消息, 就执行 [onEvent]
-     */
-    @MessageDsl
-    suspend inline fun sentFrom(id: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) = sentFrom(id.toUInt(), onEvent)
 
     /**
      * 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent]
      */
     @MessageDsl
     suspend inline fun <reified M : Message> has(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
-        subscriber { if (message.any<M>()) onEvent(this) }
+        subscriber { if (message.any { it::class == M::class }) onEvent(this) }
 
     /**
      * 如果 [filter] 返回 `true` 就执行 `onEvent`
@@ -283,7 +270,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      */
     @MessageDsl
     suspend inline fun Regex.matchingReply(noinline replier: AnyReplier<T>) {
-        content({ this@matchingReply.matchEntire(it) != null }){
+        content({ this@matchingReply.matchEntire(it) != null }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
             executeAndReply(replier)
         }

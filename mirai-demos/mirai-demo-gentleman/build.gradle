@@ -3,8 +3,8 @@ apply plugin: "java"
 apply plugin: "application"
 
 dependencies {
-    api project(":mirai-core")
-    //runtime files("../../mirai-core/build/classes/kotlin/jvm/main") // classpath is not set correctly by IDE
+    implementation files("../../mirai-core-timpc/build/classes/kotlin/jvm/main") // IDE bug
+    implementation project(":mirai-core-timpc")
 
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutinesVersion

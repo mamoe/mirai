@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(),LoginCallback {
             }
             binder?.setCallback(this)
             if (!needCaptcha){
-                val qq = et_qq.text.toString().toUInt()
+                val qq = et_qq.text.toString().toLong()
                 val pwd = et_pwd.text.toString()
                 binder?.startLogin(qq, pwd)
             }else{

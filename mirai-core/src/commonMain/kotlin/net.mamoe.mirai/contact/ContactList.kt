@@ -12,7 +12,7 @@ import net.mamoe.mirai.utils.joinToString
  */
 @UseExperimental(MiraiInternalAPI::class)
 @Suppress("unused")
-class ContactList<C : Contact>(@PublishedApi internal val delegate: LockFreeLinkedList<C>) {
+class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedList<C>) {
     /**
      * ID 列表的字符串表示.
      * 如:
@@ -22,9 +22,9 @@ class ContactList<C : Contact>(@PublishedApi internal val delegate: LockFreeLink
      */
     val idContentString: String get() = "[" + buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(2) + "]"
 
-    operator fun get(id: UInt): C = delegate[id]
-    fun getOrNull(id: UInt): C? = delegate.getOrNull(id)
-    fun containsId(id: UInt): Boolean = delegate.getOrNull(id) != null
+    operator fun get(id: Long): C = delegate[id]
+    fun getOrNull(id: Long): C? = delegate.getOrNull(id)
+    fun containsId(id: Long): Boolean = delegate.getOrNull(id) != null
 
     val size: Int get() = delegate.size
     operator fun contains(element: C): Boolean = delegate.contains(element)
@@ -35,14 +35,14 @@ class ContactList<C : Contact>(@PublishedApi internal val delegate: LockFreeLink
     override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
 }
 
-operator fun <C : Contact> LockFreeLinkedList<C>.get(id: UInt): C {
+operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
     forEach { if (it.id == id) return it }
     throw NoSuchElementException()
 }
 
-fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: UInt): C? {
+fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: Long): C? {
     forEach { if (it.id == id) return it }
     return null
 }
 
-fun <C : Contact> LockFreeLinkedList<C>.getOrAdd(id: UInt, supplier: () -> C): C = filteringGetOrAdd({ it.id == id }, supplier)
+fun <C : Contact> LockFreeLinkedList<C>.getOrAdd(id: Long, supplier: () -> C): C = filteringGetOrAdd({ it.id == id }, supplier)

@@ -3,7 +3,7 @@ package demo.gentleman
 import com.alibaba.fastjson.JSON
 import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.message.Image
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.uploadAsImage
 import org.jsoup.Jsoup
 

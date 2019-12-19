@@ -17,9 +17,7 @@ import io.ktor.util.pipeline.ContextDsl
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelineInterceptor
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.addFriend
 import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.getGroup
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.hexToUBytes
 
@@ -40,7 +38,7 @@ fun Application.mirai() {
         }
 
         mirai("/sendGroupMessage") {
-            Bot.instanceWhose(qq = param("bot")).getGroup(param<UInt>("group")).sendMessage(param<String>("message"))
+            Bot.instanceWhose(qq = param("bot")).getGroup(param<Long>("group")).sendMessage(param<String>("message"))
             call.ok()
         }
 

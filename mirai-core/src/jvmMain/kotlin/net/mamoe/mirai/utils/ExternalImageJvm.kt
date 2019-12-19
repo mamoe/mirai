@@ -1,10 +1,9 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.utils
 
 import io.ktor.util.asStream
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.io.jvm.javaio.copyTo
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import kotlinx.io.core.IoBuffer
@@ -48,8 +47,7 @@ fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
     return ExternalImage(width, height, digest.digest(), formatName, buffer)
 }
 
-@Suppress("unused")
-suspend fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 读取文件头识别图片属性, 然后构造 [ExternalImage]
@@ -75,8 +73,7 @@ fun File.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [File.toExternalImage]
  */
-@Suppress("unused")
-suspend fun File.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun File.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 下载文件到临时目录然后调用 [File.toExternalImage]
@@ -95,8 +92,7 @@ fun URL.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [URL.toExternalImage]
  */
-@Suppress("unused")
-suspend fun URL.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun URL.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 保存为临时文件然后调用 [File.toExternalImage]
@@ -114,11 +110,12 @@ fun InputStream.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [InputStream.toExternalImage]
  */
-@Suppress("unused")
-suspend fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
- * 保存为临时文件然后调用 [File.toExternalImage]
+ * 保存为临时文件然后调用 [File.toExternalImage].
+ *
+ * 需要函数调用者 close [this]
  */
 @Throws(IOException::class)
 fun Input.toExternalImage(): ExternalImage {
@@ -132,5 +129,4 @@ fun Input.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [Input.toExternalImage]
  */
-@Suppress("unused")
-suspend fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }

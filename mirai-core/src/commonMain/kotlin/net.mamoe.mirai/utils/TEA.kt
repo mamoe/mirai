@@ -3,8 +3,6 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.network.protocol.timpc.packet.Decrypter
-import net.mamoe.mirai.network.protocol.timpc.packet.DecrypterByteArray
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toByteArray
 import net.mamoe.mirai.utils.io.toUHexString
@@ -17,7 +15,7 @@ import kotlin.random.Random
 /**
  * 解密错误
  */
-internal class DecryptionFailedException : Exception {
+class DecryptionFailedException : Exception {
     constructor() : super()
     constructor(message: String?) : super(message)
 }
@@ -31,9 +29,7 @@ internal class DecryptionFailedException : Exception {
  * @param key 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-internal fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key, sourceLength = length)
-
-internal fun ByteArray.encryptBy(key: DecrypterByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key.value, sourceLength = length)
+fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key, sourceLength = length)
 
 /**
  * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 加密.
@@ -42,7 +38,7 @@ internal fun ByteArray.encryptBy(key: DecrypterByteArray, length: Int = this.siz
  * @consumer 由于缓存需要被回收, 需在方法内执行解密后明文的消耗过程
  * @throws DecryptionFailedException 解密错误时
  */
-internal inline fun ByteReadPacket.encryptBy(key: ByteArray, offset: Int = 0, length: Int = remaining.toInt() - offset, consumer: (ByteArray) -> Unit) {
+inline fun ByteReadPacket.encryptBy(key: ByteArray, offset: Int = 0, length: Int = remaining.toInt() - offset, consumer: (ByteArray) -> Unit) {
     ByteArrayPool.useInstance {
         this.readFully(it, offset, length)
         consumer(it.encryptBy(key, length = length))
@@ -60,7 +56,7 @@ internal inline fun ByteReadPacket.encryptBy(key: ByteArray, offset: Int = 0, le
  * @param key 固定长度 16
  * @throws DecryptionFailedException 解密错误时
  */
-internal fun ByteArray.decryptBy(key: ByteArray, length: Int = this.size): ByteArray =
+fun ByteArray.decryptBy(key: ByteArray, length: Int = this.size): ByteArray =
     TEA.decrypt(checkDataLengthAndReturnSelf(length), key, sourceLength = length)
 
 /**
@@ -71,7 +67,7 @@ internal fun ByteArray.decryptBy(key: ByteArray, length: Int = this.size): ByteA
  * @param key 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-internal fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteArray {
+fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteArray {
     checkDataLengthAndReturnSelf(length)
     return ByteArrayPool.useInstance { keyBuffer ->
         key.readFully(keyBuffer, 0, key.readRemaining)
@@ -85,7 +81,7 @@ internal fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteAr
  * @param key 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-internal fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemaining - offset): ByteArray {
+fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemaining - offset): ByteArray {
     return ByteArrayPool.useInstance {
         this.readFully(it, offset, length)
         it.checkDataLengthAndReturnSelf(length)
@@ -97,20 +93,18 @@ internal fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = r
 
 // region ByteReadPacket extension
 
-internal fun ByteReadPacket.decryptBy(key: ByteArray): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+fun ByteReadPacket.decryptBy(key: ByteArray): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
 
-internal fun ByteReadPacket.decryptBy(key: IoBuffer): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+fun ByteReadPacket.decryptBy(key: IoBuffer): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
 
-internal fun ByteReadPacket.decryptBy(key: Decrypter): ByteReadPacket = key.decrypt(this)
-
-internal inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
+inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
         val length = remaining.toInt()
         readFully(it, 0, length)
         consumer(it.decryptBy(key, length))
     }.also { close() }
 
-internal inline fun <R> ByteReadPacket.decryptAsByteArray(key: IoBuffer, consumer: (ByteArray) -> R): R =
+inline fun <R> ByteReadPacket.decryptAsByteArray(key: IoBuffer, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
         val length = remaining.toInt()
         readFully(it, 0, length)

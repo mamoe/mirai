@@ -1,20 +1,23 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName")
 
 package net.mamoe.mirai
 
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
+import kotlinx.io.OutputStream
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.use
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.protocol.timpc.packet.login.LoginResult
+import net.mamoe.mirai.network.data.AddFriendResult
+import net.mamoe.mirai.network.data.ImageLink
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.GroupNotFoundException
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.io.transferTo
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmSynthetic
-
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -22,77 +25,60 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see Contact
  */
-interface Bot : CoroutineScope {
+abstract class Bot : CoroutineScope {
+    @UseExperimental(MiraiInternalAPI::class)
     companion object {
-        suspend inline operator fun invoke(account: BotAccount, logger: MiraiLogger): Bot = BotImpl(account, logger, coroutineContext)
-        suspend inline operator fun invoke(account: BotAccount): Bot = BotImpl(account, context = coroutineContext)
-        @JvmSynthetic
-        suspend inline operator fun invoke(qq: UInt, password: String): Bot = BotImpl(BotAccount(qq, password), context = coroutineContext)
-
-        suspend inline operator fun invoke(qq: Long, password: String): Bot = BotImpl(BotAccount(qq.toUInt(), password), context = coroutineContext)
-        operator fun invoke(qq: Long, password: String, context: CoroutineContext): Bot = BotImpl(BotAccount(qq, password), context = context)
-        @JvmSynthetic
-        operator fun invoke(qq: UInt, password: String, context: CoroutineContext): Bot = BotImpl(BotAccount(qq, password), context = context)
-
-        operator fun invoke(account: BotAccount, context: CoroutineContext): Bot = BotImpl(account, context = context)
-
-
         inline fun forEachInstance(block: (Bot) -> Unit) = BotImpl.forEachInstance(block)
 
-        fun instanceWhose(qq: UInt): Bot = BotImpl.instanceWhose(qq = qq)
+        fun instanceWhose(qq: Long): Bot = BotImpl.instanceWhose(qq = qq)
     }
 
     /**
      * 账号信息
      */
-    val account: BotAccount
+    abstract val account: BotAccount
 
     /**
      * 日志记录器
      */
-    val logger: MiraiLogger
+    abstract val logger: MiraiLogger
 
-    override val coroutineContext: CoroutineContext
+    abstract override val coroutineContext: CoroutineContext
 
     // region contacts
 
     /**
      * 与这个机器人相关的 QQ 列表. 机器人与 QQ 不一定是好友
      */
-    val qqs: ContactList<QQ>
+    abstract val qqs: ContactList<QQ>
 
     /**
      * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会线程安全地创建一个.
      */
-    fun getQQ(id: UInt): QQ
-
-    /**
-     * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会线程安全地创建一个.
-     */
-    fun getQQ(id: Long): QQ
+    abstract fun getQQ(id: Long): QQ
 
     /**
      * 与这个机器人相关的群列表. 机器人不一定是群成员.
      */
-    val groups: ContactList<Group>
+    abstract val groups: ContactList<Group>
 
     /**
      * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
      * 若 [id] 无效, 将会抛出 [GroupNotFoundException]
      */
-    suspend fun getGroup(id: GroupId): Group
+    abstract suspend fun getGroup(id: GroupId): Group
 
     /**
      * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
      * 若 [internalId] 无效, 将会抛出 [GroupNotFoundException]
      */
-    suspend fun getGroup(internalId: GroupInternalId): Group
+    abstract suspend fun getGroup(internalId: GroupInternalId): Group
 
     /**
      * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
      * 若 [id] 无效, 将会抛出 [GroupNotFoundException]
      */
-    suspend fun getGroup(id: Long): Group
+    abstract suspend fun getGroup(id: Long): Group
 
     // endregion
 
@@ -101,36 +87,64 @@ interface Bot : CoroutineScope {
     /**
      * 网络模块
      */
-    val network: BotNetworkHandler<*>
+    abstract val network: BotNetworkHandler
 
     /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
-     * 然后重新启动并尝试登录
+     * 使用在默认配置基础上修改的配置进行登录
      */
-    fun tryReinitializeNetworkHandler(
-        configuration: BotConfiguration,
-        cause: Throwable? = null
-    ): Job
+    suspend inline fun login(configuration: BotConfiguration.() -> Unit) {
+        return this.login(BotConfiguration().apply(configuration))
+    }
 
     /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
-     * 然后重新启动并尝试登录
+     * 使用特定配置进行登录
      */
-    suspend fun reinitializeNetworkHandler(
-        configuration: BotConfiguration,
-        cause: Throwable? = null
-    ): LoginResult
+    abstract suspend fun login(configuration: BotConfiguration = BotConfiguration.Default)
+    // endregion
+
+
+    // region actions
+
+    abstract suspend fun Image.getLink(): ImageLink
+
+    suspend fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
+
+    suspend fun Image.download(): ByteReadPacket = getLink().download()
 
     /**
-     * [关闭][BotNetworkHandler.close]网络处理器, 取消所有运行在 [BotNetworkHandler] 下的协程.
-     * 然后重新启动并尝试登录
+     * 添加一个好友
+     *
+     * @param message 若需要验证请求时的验证消息.
+     * @param remark 好友备注
      */
-    fun reinitializeNetworkHandlerAsync(
-        configuration: BotConfiguration,
-        cause: Throwable? = null
-    ): Deferred<LoginResult>
+    abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult
+
+    /**
+     * 同意来自陌生人的加好友请求
+     */
+    abstract suspend fun approveFriendAddRequest(id: Long, remark: String?)
 
     // endregion
 
-    fun close()
+    abstract fun close(throwable: Throwable?)
+
+    // region extensions
+
+    fun Int.qq(): QQ = getQQ(this.toLong())
+    fun Long.qq(): QQ = getQQ(this)
+
+    suspend inline fun Int.group(): Group = getGroup(this.toLong())
+    suspend inline fun Long.group(): Group = getGroup(this)
+    suspend inline fun GroupInternalId.group(): Group = getGroup(this)
+    suspend inline fun GroupId.group(): Group = getGroup(this)
+
+
+    /**
+     * 需要调用者自行 close [output]
+     */
+    @UseExperimental(KtorExperimentalAPI::class)
+    suspend inline fun Image.downloadTo(output: OutputStream) =
+        download().use { input -> input.transferTo(output) }
+
+    // endregion
 }

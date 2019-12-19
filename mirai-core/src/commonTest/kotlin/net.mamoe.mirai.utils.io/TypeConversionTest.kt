@@ -2,7 +2,6 @@ package net.mamoe.mirai.utils.io
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.asserter
 
 
 class TypeConversionTest {

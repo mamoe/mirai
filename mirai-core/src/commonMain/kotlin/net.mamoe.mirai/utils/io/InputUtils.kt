@@ -2,10 +2,13 @@
 
 package net.mamoe.mirai.utils.io
 
-import kotlinx.io.InputStream
 import kotlinx.io.OutputStream
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.contact.GroupId
+import net.mamoe.mirai.contact.GroupInternalId
+import net.mamoe.mirai.contact.groupId
+import net.mamoe.mirai.contact.groupInternalId
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
@@ -22,6 +25,14 @@ inline fun Input.discardExact(n: UByte) = this.discardExact(n.toInt())
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Input.discardExact(n: Byte) = this.discardExact(n.toInt())
+
+fun ByteReadPacket.transferTo(outputStream: OutputStream) {
+    ByteArrayPool.useInstance {
+        while (this.isNotEmpty) {
+            outputStream.write(it, 0, this.readAvailable(it))
+        }
+    }
+}
 
 fun ByteReadPacket.readRemainingBytes(
     n: Int = remaining.toInt()//not that safe but adequate
@@ -43,6 +54,11 @@ fun Input.readIP(): String = buildString(4 + 3) {
 
 fun Input.readPacket(length: Int): ByteReadPacket = this.readBytes(length).toReadPacket()
 
+fun Input.readQQ(): Long = this.readUInt().toLong()
+fun Input.readGroup(): Long = this.readUInt().toLong()
+fun Input.readGroupId(): GroupId = this.readUInt().toLong().groupId()
+fun Input.readGroupInternalId(): GroupInternalId = this.readUInt().toLong().groupInternalId()
+
 fun Input.readUVarIntLVString(): String = String(this.readUVarIntByteArray())
 
 fun Input.readUByteLVString(): String = String(this.readUByteLVByteArray())
@@ -55,7 +71,7 @@ fun Input.readUByteLVByteArray(): ByteArray = this.readBytes(this.readUByte().to
 
 fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
-internal inline fun <R> inline(block: () -> R): R = block()
+private inline fun <R> inline(block: () -> R): R = block()
 
 @Suppress("DuplicatedCode")
 fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMap<UInt, ByteArray> {
@@ -143,9 +159,6 @@ fun Map<UInt, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 1) =
     })
 
 internal inline fun unsupported(message: String? = null): Nothing = error(message ?: "Unsupported")
-
-internal inline fun ByteReadPacket.unsupportedFlag(name: String, flag: String): Nothing = error("Unsupported flag of $name. flag=$flag, remaining=${readBytes().toUHexString()}")
-internal inline fun ByteReadPacket.unsupportedType(name: String, type: String): Nothing = error("Unsupported type of $name. type=$type, remaining=${readBytes().toUHexString()}")
 
 internal inline fun illegalArgument(message: String? = null): Nothing = error(message ?: "Illegal argument passed")
 

@@ -40,10 +40,24 @@ expect class WeakRef<T>(referent: T) {
 }
 
 /**
+ * Indicates that the property is delegated by a [WeakRef]
+ *
+ * @see weakRef
+ */
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.SOURCE)
+annotation class WeakRefProperty
+
+/**
  * Provides a weak reference to [this]
  * The `getValue` for delegation returns [this] when [this] is not released by GC
  */
 fun <T> T.weakRef(): WeakRef<T> = WeakRef(this)
+
+/**
+ * Constructs an unsafe inline delegate for [this]
+ */
+fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
 
 /**
  * Provides a weak reference to [this].

@@ -9,7 +9,12 @@ import kotlin.annotation.AnnotationTarget.*
  * 非常不建议在发行版本中使用这些 API.
  */
 @Experimental(level = Experimental.Level.ERROR)
-@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
+@Target(
+    CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
+    CLASS,
+    FUNCTION,
+    PROPERTY
+)
 annotation class MiraiInternalAPI
 
 /**

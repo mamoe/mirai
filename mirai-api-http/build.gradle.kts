@@ -33,7 +33,7 @@ kotlin {
 
     sourceSets["main"].apply {
         dependencies {
-            implementation(project(":mirai-core"))
+            implementation(project(":mirai-core-timpc"))
 
             implementation(kotlin("stdlib-jdk8", kotlinVersion))
             implementation(kotlin("stdlib-jdk7", kotlinVersion))
