@@ -233,11 +233,19 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         subscriber { if (this.filter(message.stringValue)) onEvent(this) }
 
     /**
-     * 如果消息内容可由正则表达式匹配, 就执行 `onEvent`
+     * 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent`
      */
     @MessageDsl
     suspend inline fun matching(regex: Regex, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
         content({ regex.matchEntire(it) != null }, onEvent)
+    }
+
+    /**
+     * 如果消息内容可由正则表达式查找([Regex.find]), 就执行 `onEvent`
+     */
+    @MessageDsl
+    suspend inline fun finding(regex: Regex, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
+        content({ regex.find(it) != null }, onEvent)
     }
 
     /**
@@ -262,15 +270,30 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         }
 
     /**
-     * 若消息内容可由正则表达式匹配, 则执行 [replier] 并将其返回值回复给发信对象.
+     * 若消息内容可由正则表达式匹配([Regex.matchEntire]), 则执行 [replier] 并将其返回值回复给发信对象.
      *
      * [replier] 的 `it` 将会是消息内容 string.
      *
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline fun Regex.matchingReply(noinline replier: AnyReplier<T>) {
+    suspend inline infix fun Regex.matchingReply(noinline replier: AnyReplier<T>) {
         content({ this@matchingReply.matchEntire(it) != null }) {
+            @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
+            executeAndReply(replier)
+        }
+    }
+
+    /**
+     * 若消息内容可由正则表达式查找([Regex.find]), 则执行 [replier] 并将其返回值回复给发信对象.
+     *
+     * [replier] 的 `it` 将会是消息内容 string.
+     *
+     * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
+     */
+    @MessageDsl
+    suspend inline infix fun Regex.findingReply(noinline replier: AnyReplier<T>) {
+        content({ this@findingReply.find(it) != null }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
             executeAndReply(replier)
         }
