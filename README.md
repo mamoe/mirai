@@ -31,7 +31,7 @@ repositories{
 您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 Mirai 目前还处于实验性阶段, 建议您时刻保持最新版本.
 
-现在 Mirai 只支持 TIM PC 协议.
+现在 Mirai 只支持 TIM PC 协议.  
 **common**
 ```kotlin
 implementation("net.mamoe:mirai-core-timpc-common:VERSION")
