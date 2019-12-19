@@ -5,16 +5,19 @@ package net.mamoe.mirai.timpc.network.packet.event
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.network.data.EventPacket
 import net.mamoe.mirai.timpc.network.packet.PacketVersion
 import net.mamoe.mirai.utils.io.readQQ
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.Group
 
 
 data class MemberPermissionChangePacket(
-    val groupId: Long,
-    val qq: Long,
+    val member: Member,
     val kind: Kind
-) : Packet {
+) : EventPacket {
+    val group: Group get() = member.group
+
     enum class Kind {
         /**
          * 变成管理员
@@ -35,12 +38,13 @@ internal object GroupMemberPermissionChangedEventFactory : KnownEventParserAndHa
         // 取消管理员
         // 00 00 00 08 00 0A 00 04 01 00 00 00 22 96 29 7B 01 00 76 E4 B8 DD 00
         discardExact(remaining - 5)
+        val group = bot.getGroup(identity.from)
         val qq = readQQ()
         val kind = when (readByte().toInt()) {
             0x00 -> MemberPermissionChangePacket.Kind.NO_LONGER_OPERATOR
             0x01 -> MemberPermissionChangePacket.Kind.BECOME_OPERATOR
             else -> error("Could not determine permission change kind")
         }
-        return MemberPermissionChangePacket(identity.from, qq, kind)
+        return MemberPermissionChangePacket(group.getMember(qq), kind)
     }
 }

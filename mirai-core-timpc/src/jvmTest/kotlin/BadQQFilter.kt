@@ -5,7 +5,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.data.LoginResult
 import net.mamoe.mirai.timpc.TIMPC
 import java.util.*
 
@@ -47,12 +46,12 @@ suspend fun main() {
                         if (password.endsWith(".")) password.substring(0, password.length - 1) else password
                     )
 
-                    withContext(Dispatchers.IO) {
-                        bot.login()
-                    }.let { state ->
-                        if (state == LoginResult.SUCCESS) {
-                            goodBotList.add(bot)
+                    try {
+                        withContext(Dispatchers.IO) {
+                            bot.login()
                         }
+                        goodBotList.add(bot)
+                    } catch (ignored: Exception) {
                     }
                 }
             }

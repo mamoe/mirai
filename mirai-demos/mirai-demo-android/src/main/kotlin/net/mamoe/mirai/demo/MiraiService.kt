@@ -13,8 +13,8 @@ import kotlinx.coroutines.launch
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.network.data.LoginResult
 import net.mamoe.mirai.timpc.TIMPC
+import net.mamoe.mirai.utils.LoginFailedException
 import java.lang.ref.WeakReference
 
 class MiraiService : Service() {
@@ -42,18 +42,18 @@ class MiraiService : Service() {
     private fun login(qq: Long, pwd: String) {
         GlobalScope.launch {
             mBot = TIMPC.Bot(qq, pwd).apply {
-                val loginResult = login {
-                    captchaSolver = {
-                        val bytes = it.readBytes()
-                        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                        mCaptchaDeferred = CompletableDeferred()
-                        mCallback?.get()?.onCaptcha(bitmap)
-                        mCaptchaDeferred.await()
+                try {
+                    login {
+                        captchaSolver = {
+                            val bytes = it.readBytes()
+                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                            mCaptchaDeferred = CompletableDeferred()
+                            mCallback?.get()?.onCaptcha(bitmap)
+                            mCaptchaDeferred.await()
+                        }
                     }
-                }
-                if (loginResult == LoginResult.SUCCESS) {
                     mCallback?.get()?.onSuccess()
-                } else {
+                } catch (e: LoginFailedException) {
                     mCallback?.get()?.onFailed()
                 }
             }
