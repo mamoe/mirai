@@ -27,6 +27,7 @@ private fun readTestAccount(): BotAccount? {
         return null
     }
 
+    println("Reading account from testAccount.text")
     val lines = file.readLines()
     return try {
         BotAccount(lines[0].toLong(), lines[1])
