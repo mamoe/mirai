@@ -83,7 +83,7 @@ suspend fun Bot.messageDSL() {
         // 当消息 == "查看 subject" 时, 执行 lambda
         case("查看 subject") {
             if (subject is QQ) {
-                reply("消息主体为 QQ, 你在跟发私聊消息")
+                reply("消息主体为 QQ, 你在发私聊消息")
             } else {
                 reply("消息主体为 Group, 你在群里发消息")
             }
@@ -115,6 +115,9 @@ suspend fun Bot.messageDSL() {
             reply(message)
         }
 
+        "hello.*world".toRegex() matchingReply {
+            "Hello!"
+        }
 
         "123" containsReply "你的消息里面包含 123"
 
@@ -230,54 +233,16 @@ suspend fun directlySubscribe(bot: Bot) {
             }
 
             "发群图片" in it.message -> {
-                920503456.group().sendMessage(
-                    Image(
-                        ImageId(
-                            it.message.toString().substringAfter(
-                                "发群图片"
-                            )
-                        )
-                    )
-                )
+                920503456.group().sendMessage(Image(ImageId(it.message.toString().substringAfter("发群图片"))))
             }
 
             "发好友图片" in it.message -> {
-                it.reply(
-                    Image(
-                        ImageId(
-                            it.message.toString().substringAfter(
-                                "发好友图片"
-                            )
-                        )
-                    )
-                )
+                it.reply(Image(ImageId(it.message.toString().substringAfter("发好友图片"))))
             }
 
-            /*it.event eq "发图片群" -> sendGroupMessage(Group(session.bot, 580266363), PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
-                    image.upload(session, Group(session.bot, 580266363)).of()
-                })*/
+            it.message eq "发图片群2" -> 580266363.group().sendMessage(Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
 
-            it.message eq "发图片群2" -> 580266363.group().sendMessage(
-                Image(
-                    ImageId(
-                        "{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"
-                    )
-                )
-            )
-
-            /* it.event eq "发图片" -> sendFriendMessage(it.sentBy, PlainText("test") + UnsolvedImage(File("C:\\Users\\Him18\\Desktop\\faceImage_1559564477775.jpg")).also { image ->
-                     image.upload(session, it.sentBy).of()
-                 })*/
-            it.message eq "发图片2" -> it.reply(
-                PlainText("test") + Image(
-                    ImageId(
-                        "{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg"
-                    )
-                )
-            )
-            else -> {
-
-            }
+            it.message eq "发图片2" -> it.reply(PlainText("test") + Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
         }
     }
 }
