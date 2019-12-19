@@ -7,35 +7,11 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.uploadAsImage
 import org.jsoup.Jsoup
 
-class GentleImage { // This class is untidy, but it doesn't matter
-    lateinit var tags: String
-    lateinit var author: String
-    lateinit var file_url: String
-
-    var score: Int = 0
-
-    var width: Int = 0
-    var height: Int = 0
-
-    //val summary by lazy { "Avatar by ${author}; Origin size ($width*$height);" + "HD URL: $file_url" }
-
-    val name: String by lazy {
-        var name: String
-        val tags = tags.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        if (tags.isEmpty()) {
-            return@lazy "OneTapper"
-        }
-        name = tags[(Math.random() * tags.size).toInt()]
-        name = name.substring(0, 1).toUpperCase() + name.substring(1)
-        name = name.split("\\(".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-        name = name.split("_".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-
-        name
-    }
-
-
+class GentleImage {
     lateinit var contact: Contact
+
     // `Deferred<Image?>`  causes a runtime ClassCastException
+
     val image: Deferred<Image> by lazy {
         GlobalScope.async {
             //delay((Math.random() * 5000L).toLong())
