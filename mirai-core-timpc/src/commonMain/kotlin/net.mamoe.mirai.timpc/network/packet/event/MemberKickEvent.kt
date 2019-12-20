@@ -7,7 +7,7 @@ import kotlinx.io.core.readUByte
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.network.data.EventPacket
+import net.mamoe.mirai.data.EventPacket
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.io.*
 

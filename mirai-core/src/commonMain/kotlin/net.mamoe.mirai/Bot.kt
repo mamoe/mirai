@@ -8,10 +8,10 @@ import kotlinx.io.OutputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.AddFriendResult
+import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.AddFriendResult
-import net.mamoe.mirai.network.data.ImageLink
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.GroupNotFoundException
 import net.mamoe.mirai.utils.MiraiInternalAPI

@@ -4,9 +4,9 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.data.FriendNameRemark
-import net.mamoe.mirai.network.data.PreviousNameList
-import net.mamoe.mirai.network.data.Profile
+import net.mamoe.mirai.data.FriendNameRemark
+import net.mamoe.mirai.data.PreviousNameList
+import net.mamoe.mirai.data.Profile
 
 /**
  * QQ 对象.

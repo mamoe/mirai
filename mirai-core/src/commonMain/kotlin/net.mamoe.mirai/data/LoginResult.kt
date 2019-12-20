@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package net.mamoe.mirai.network.data
+package net.mamoe.mirai.data
 
 import net.mamoe.mirai.utils.BotConfiguration
 

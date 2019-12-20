@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package net.mamoe.mirai
 
 import kotlinx.coroutines.CoroutineScope
@@ -10,7 +12,6 @@ import net.mamoe.mirai.utils.MiraiLogger
  * - `mirai-core-timpc`: `TIMPC`
  * - `mirai-core-qqandroid`: `QQAndroid`
  */
-@Suppress("FunctionName")
 interface BotFactory {
     /**
      * 在当前 CoroutineScope 下构造 Bot 实例

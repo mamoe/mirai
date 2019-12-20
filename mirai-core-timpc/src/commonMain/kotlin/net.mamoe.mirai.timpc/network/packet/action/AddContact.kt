@@ -5,9 +5,9 @@ package net.mamoe.mirai.timpc.network.packet.action
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.EventPacket
-import net.mamoe.mirai.network.data.Packet
-import net.mamoe.mirai.network.data.PreviousNameList
+import net.mamoe.mirai.data.EventPacket
+import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.utils.io.*

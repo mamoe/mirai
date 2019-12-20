@@ -9,8 +9,8 @@ import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.message.data.ImageId0x03
 import net.mamoe.mirai.message.data.requireLength
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.EventPacket
-import net.mamoe.mirai.network.data.ImageLink
+import net.mamoe.mirai.data.EventPacket
+import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.timpc.utils.assertUnreachable
 import net.mamoe.mirai.utils.ExternalImage

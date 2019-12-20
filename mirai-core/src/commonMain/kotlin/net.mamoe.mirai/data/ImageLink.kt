@@ -1,4 +1,4 @@
-package net.mamoe.mirai.network.data
+package net.mamoe.mirai.data
 
 import io.ktor.client.request.get
 import io.ktor.util.KtorExperimentalAPI

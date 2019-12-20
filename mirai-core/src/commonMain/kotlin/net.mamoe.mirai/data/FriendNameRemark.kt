@@ -1,4 +1,4 @@
-package net.mamoe.mirai.network.data
+package net.mamoe.mirai.data
 
 /**
  * 给好友设置的备注

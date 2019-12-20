@@ -6,7 +6,7 @@ import kotlinx.io.core.*
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.writeQQ

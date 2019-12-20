@@ -1,6 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-package net.mamoe.mirai.network.data
+package net.mamoe.mirai.data
 
 import io.ktor.util.date.GMTDate
 

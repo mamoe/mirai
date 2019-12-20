@@ -9,10 +9,10 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.data.ImageId
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.network.data.FriendNameRemark
-import net.mamoe.mirai.network.data.GroupInfo
-import net.mamoe.mirai.network.data.PreviousNameList
-import net.mamoe.mirai.network.data.Profile
+import net.mamoe.mirai.data.FriendNameRemark
+import net.mamoe.mirai.data.GroupInfo
+import net.mamoe.mirai.data.PreviousNameList
+import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.internal.RawGroupInfo

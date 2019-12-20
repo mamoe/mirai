@@ -7,7 +7,7 @@ import kotlinx.io.core.readBytes
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.EventPacket
+import net.mamoe.mirai.data.EventPacket
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toUHexString
 

@@ -12,8 +12,8 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotLoginSucceedEvent
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.LoginResult
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.LoginResult
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.network.handler.DataPacketSocketAdapter

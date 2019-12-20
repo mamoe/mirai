@@ -2,7 +2,7 @@
 @file:JvmName("BotHelperKt")
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-package net.mamoe.mirai.network.data
+package net.mamoe.mirai.data
 
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName

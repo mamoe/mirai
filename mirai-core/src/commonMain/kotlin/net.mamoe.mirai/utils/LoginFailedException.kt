@@ -1,6 +1,6 @@
 package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.network.data.LoginResult
+import net.mamoe.mirai.data.LoginResult
 
 class LoginFailedException(
     val result: LoginResult,

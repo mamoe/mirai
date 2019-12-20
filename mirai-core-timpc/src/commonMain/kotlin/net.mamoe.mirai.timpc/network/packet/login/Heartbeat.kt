@@ -6,7 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.utils.io.writeHex

@@ -4,7 +4,7 @@ package net.mamoe.mirai.timpc.network.handler
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.Packet
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 

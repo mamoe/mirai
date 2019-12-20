@@ -5,10 +5,10 @@ package net.mamoe.mirai.message
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.EventPacket
+import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.network.data.EventPacket
-import net.mamoe.mirai.network.data.ImageLink
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import kotlin.jvm.JvmName

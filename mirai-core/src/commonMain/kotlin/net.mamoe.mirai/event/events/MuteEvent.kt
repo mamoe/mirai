@@ -2,7 +2,7 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.network.data.EventPacket
+import net.mamoe.mirai.data.EventPacket
 
 
 // region mute

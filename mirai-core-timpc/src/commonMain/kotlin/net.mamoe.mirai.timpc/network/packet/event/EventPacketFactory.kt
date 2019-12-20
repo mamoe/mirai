@@ -5,7 +5,7 @@ package net.mamoe.mirai.timpc.network.packet.event
 import kotlinx.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.timpc.network.TIMBotNetworkHandler
 import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.qqAccount

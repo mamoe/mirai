@@ -2,7 +2,7 @@ package net.mamoe.mirai.timpc.network.packet
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.utils.io.toUHexString
 
 /**

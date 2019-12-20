@@ -8,8 +8,8 @@ import net.mamoe.mirai.message.data.ImageId
 import net.mamoe.mirai.message.data.ImageId0x06
 import net.mamoe.mirai.message.data.requireLength
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.EventPacket
-import net.mamoe.mirai.network.data.ImageLink
+import net.mamoe.mirai.data.EventPacket
+import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.utils.ExternalImage

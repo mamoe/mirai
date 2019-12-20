@@ -5,6 +5,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.AddFriendResult
+import net.mamoe.mirai.data.ImageLink
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageId0x03
 import net.mamoe.mirai.message.data.ImageId0x06

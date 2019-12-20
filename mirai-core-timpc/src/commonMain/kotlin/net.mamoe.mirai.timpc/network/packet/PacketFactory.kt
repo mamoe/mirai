@@ -10,7 +10,7 @@ import kotlinx.io.pool.useInstance
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.read

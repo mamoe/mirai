@@ -9,7 +9,7 @@ import net.mamoe.mirai.contact.groupInternalId
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.data.Packet
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.timpc.network.packet.*

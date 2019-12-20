@@ -4,7 +4,7 @@ package net.mamoe.mirai.timpc.network.packet.event
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.data.EventPacket
+import net.mamoe.mirai.data.EventPacket
 import net.mamoe.mirai.timpc.network.packet.PacketVersion
 import net.mamoe.mirai.utils.io.debugPrint
 

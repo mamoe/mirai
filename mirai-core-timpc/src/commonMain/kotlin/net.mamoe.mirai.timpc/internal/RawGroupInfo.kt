@@ -1,7 +1,7 @@
 package net.mamoe.mirai.timpc.internal
 
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.network.data.GroupInfo
+import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.network.packet.action.GroupPacket
 import net.mamoe.mirai.utils.LockFreeLinkedList
