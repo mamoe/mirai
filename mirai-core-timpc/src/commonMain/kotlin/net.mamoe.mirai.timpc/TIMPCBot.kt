@@ -11,7 +11,6 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageId0x03
 import net.mamoe.mirai.message.data.ImageId0x06
-import net.mamoe.mirai.network.data.*
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.GroupImpl
