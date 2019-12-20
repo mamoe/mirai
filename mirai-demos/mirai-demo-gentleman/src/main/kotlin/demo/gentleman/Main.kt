@@ -7,6 +7,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.MemberPermission
@@ -22,7 +23,6 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.buildXMLMessage
 import net.mamoe.mirai.message.data.getValue
 import net.mamoe.mirai.message.sendAsImageTo
-import net.mamoe.mirai.timpc.TIMPC
 import java.io.File
 import java.util.*
 import javax.swing.filechooser.FileSystemView
@@ -44,7 +44,7 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = TIMPC.Bot(
+    val bot = Bot(
         readTestAccount() ?: BotAccount(
             id = 913366033,
             password = "a18260132383"
