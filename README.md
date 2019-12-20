@@ -51,7 +51,7 @@ implementation("net.mamoe:mirai-core-timpc-android:VERSION")
 现在您可以开始体验低付出高效率的 Mirai
 
 ```kotlin
-val bot = Bot(qqId, password).alsoLogin()
+val bot = TIMPC.Bot(qqId, password).alsoLogin()
 bot.subscribeMessages {
   "你好" reply "你好!"
   "profile" reply { sender.queryProfile() }
