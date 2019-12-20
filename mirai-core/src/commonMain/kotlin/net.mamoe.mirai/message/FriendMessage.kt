@@ -23,4 +23,6 @@ class FriendMessage(
         get() = !previous
 
     override val subject: QQ get() = sender
+
+    override fun toString(): String = "FriendMessage(sender=${sender.id}, message=$message)"
 }

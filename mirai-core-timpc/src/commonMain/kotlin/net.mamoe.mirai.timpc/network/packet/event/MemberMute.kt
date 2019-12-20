@@ -9,7 +9,7 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.io.debugPrintIfFail
 import net.mamoe.mirai.utils.io.readQQ

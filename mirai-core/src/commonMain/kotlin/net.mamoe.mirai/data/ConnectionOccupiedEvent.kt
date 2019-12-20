@@ -1,6 +1,4 @@
-package net.mamoe.mirai.event.events
-
-import net.mamoe.mirai.data.EventPacket
+package net.mamoe.mirai.data
 
 /**
  * 被挤下线. 只能获取到中文的消息
