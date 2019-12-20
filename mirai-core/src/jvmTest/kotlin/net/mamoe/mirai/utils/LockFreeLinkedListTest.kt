@@ -48,14 +48,14 @@ internal class LockFreeLinkedListTest {
     }
 
     @Test
-    fun addAndGetMassConcurrentAccess() = runBlocking {
+    fun `so many concurrent add remove and foreach`() = runBlocking {
         val list = LockFreeLinkedList<Int>()
 
         val addJob = async { list.concurrentDo(2, 30000) { addLast(1) } }
 
         //delay(1) // let addJob fly
         if (addJob.isCompleted) {
-            error("Number of elements are not enough")
+            println("Number of elements are not enough")
         }
         val foreachJob = async {
             list.concurrentDo(1, 10000) {
@@ -168,6 +168,18 @@ internal class LockFreeLinkedListTest {
         println("Check size")
         println(list.getLinkStructure())
         list.size shouldBeEqualTo 5
+    }
+
+    @Test
+    fun `remove while foreach`() {
+        val list = LockFreeLinkedList<Int>()
+        list.addAll(listOf(1, 2, 3, 4, 5))
+
+        list.forEach {
+            list.remove(3)
+        }
+
+        list.toString() shouldBeEqualTo "[1, 2, 4, 5]"
     }
 
     @Test
