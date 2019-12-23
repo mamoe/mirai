@@ -90,19 +90,24 @@ internal object EventListenerManger {
 }
 
 // inline: NO extra Continuation
+@Suppress("UNCHECKED_CAST")
 internal suspend inline fun Subscribable.broadcastInternal() {
     if (EventDisabled) return
 
     callAndRemoveIfRequired(this::class.listeners())
 
-    this::class.supertypes.forEach { superType ->
-        val superListeners =
-            @Suppress("UNCHECKED_CAST")
-            (superType.classifier as? KClass<out Subscribable>)?.listeners() ?: return // return if super type is not Subscribable
+    var supertypes = this::class.supertypes
+    while (true) {
+        val superSubscribableType = supertypes.firstOrNull {
+            it.classifier as? KClass<out Subscribable> != null
+        }
 
-        callAndRemoveIfRequired(superListeners)
+        superSubscribableType?.let {
+            callAndRemoveIfRequired((it.classifier as KClass<out Subscribable>).listeners())
+        }
+
+        supertypes = (superSubscribableType?.classifier as? KClass<*>)?.supertypes ?: return
     }
-    return
 }
 
 private suspend inline fun <E : Subscribable> E.callAndRemoveIfRequired(listeners: EventListeners<E>) {
