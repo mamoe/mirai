@@ -11,7 +11,7 @@ internal class QQAndroidBotNetworkHandler(override val bot: QQAndroidBot) : BotN
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
 
     override suspend fun login() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun awaitDisconnection() {

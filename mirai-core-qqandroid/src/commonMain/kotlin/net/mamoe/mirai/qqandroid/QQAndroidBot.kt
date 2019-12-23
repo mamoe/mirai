@@ -25,10 +25,10 @@ internal abstract class QQAndroidBotBase constructor(
     context: CoroutineContext
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, logger, context) {
     override val qqs: ContactList<QQ>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = TODO("not implemented")
 
     override fun getQQ(id: Long): QQ {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
@@ -36,33 +36,33 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override val groups: ContactList<Group>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = TODO("not implemented")
 
     override suspend fun getGroup(id: GroupId): Group {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun getGroup(internalId: GroupInternalId): Group {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun getGroup(id: Long): Group {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun login(configuration: BotConfiguration) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun Image.getLink(): ImageLink {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
     override suspend fun approveFriendAddRequest(id: Long, remark: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 }
