@@ -19,7 +19,7 @@ import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.GroupImpl
 import net.mamoe.mirai.timpc.network.MemberImpl
 import net.mamoe.mirai.timpc.network.QQImpl
-import net.mamoe.mirai.timpc.network.TIMBotNetworkHandler
+import net.mamoe.mirai.timpc.network.TIMPCBotNetworkHandler
 import net.mamoe.mirai.timpc.network.handler.TemporaryPacketHandler
 import net.mamoe.mirai.timpc.network.packet.action.*
 import net.mamoe.mirai.timpc.network.packet.event.EventPacketFactory
@@ -46,7 +46,7 @@ internal abstract class TIMPCBotBase constructor(
     account: BotAccount,
     logger: MiraiLogger?,
     context: CoroutineContext
-) : BotImpl<TIMBotNetworkHandler>(account, logger ?: DefaultLogger("Bot(" + account.id + ")"), context) {
+) : BotImpl<TIMPCBotNetworkHandler>(account, logger ?: DefaultLogger("Bot(" + account.id + ")"), context) {
 
     @UseExperimental(ExperimentalUnsignedTypes::class)
     companion object {
@@ -85,47 +85,10 @@ internal abstract class TIMPCBotBase constructor(
         }
     }
 
-    final override val network: TIMBotNetworkHandler get() = _network
+    inline val sessionKey: SessionKey get()= network.sessionKey
 
-    inline val sessionKey: SessionKey get() = network.sessionKey
-
-    private lateinit var _network: TIMBotNetworkHandler
-
-    override suspend fun login(configuration: BotConfiguration) =
-        reinitializeNetworkHandler(configuration, null)
-
-    // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
-    internal fun tryReinitializeNetworkHandler(
-        configuration: BotConfiguration,
-        cause: Throwable?
-    ): Job = launch {
-        repeat(configuration.reconnectionRetryTimes) {
-            try {
-                reinitializeNetworkHandler(configuration, cause)
-                logger.info("Reconnected successfully")
-                return@launch
-            } catch (e: LoginFailedException) {
-                delay(configuration.reconnectPeriodMillis)
-            }
-        }
-    }
-
-    private suspend fun reinitializeNetworkHandler(
-        configuration: BotConfiguration,
-        cause: Throwable?
-    ) {
-        logger.info("BotAccount: $qqAccount")
-        logger.info("Initializing BotNetworkHandler")
-        try {
-            if (::_network.isInitialized) {
-                _network.close(cause)
-            }
-        } catch (e: Exception) {
-            logger.error("Cannot close network handler", e)
-        }
-        _network = TIMBotNetworkHandler(this.coroutineContext + configuration, this as TIMPCBot)
-
-        _network.login()
+    override fun createNetworkHandler(coroutineContext: CoroutineContext): TIMPCBotNetworkHandler {
+        return TIMPCBotNetworkHandler(coroutineContext, this as TIMPCBot)
     }
 
     final override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {

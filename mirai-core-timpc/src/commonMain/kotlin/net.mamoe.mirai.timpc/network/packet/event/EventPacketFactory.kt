@@ -7,7 +7,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.timpc.network.TIMBotNetworkHandler
+import net.mamoe.mirai.timpc.network.TIMPCBotNetworkHandler
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.network.packet.buildSessionPacket
 import net.mamoe.mirai.utils.io.readIoBuffer
@@ -46,7 +46,7 @@ internal object EventPacketFactory : PacketFactory<Packet, SessionKey>(SessionKe
             to = readUInt().toLong(), // clear semantic
             uniqueId = readIoBuffer(8)
         )
-        (handler as TIMBotNetworkHandler).socket.sendPacket(EventPacketFactory(id, sequenceId, handler.bot.qqAccount, handler.sessionKey, eventIdentity))
+        (handler as TIMPCBotNetworkHandler).socket.sendPacket(EventPacketFactory(id, sequenceId, handler.bot.qqAccount, handler.sessionKey, eventIdentity))
         discardExact(2) // 1F 40
 
         return with(matchEventPacketFactory(readUShort())) { parse(handler.bot, eventIdentity) }.also {

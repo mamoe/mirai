@@ -37,7 +37,7 @@ internal expect val NetworkDispatcher: CoroutineDispatcher
  *
  * @see BotNetworkHandler
  */
-internal class TIMBotNetworkHandler internal constructor(coroutineContext: CoroutineContext, bot: TIMPCBot) :
+internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: CoroutineContext, bot: TIMPCBot) :
     BotNetworkHandler(), CoroutineScope {
     override val bot: TIMPCBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(coroutineContext[Job])
@@ -160,7 +160,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                                 with(id.factory) {
                                     loginHandler!!.provideDecrypter(id.factory)
                                         .decrypt(input)
-                                        .decode(id, sequenceId, this@TIMBotNetworkHandler)
+                                        .decode(id, sequenceId, this@TIMPCBotNetworkHandler)
                                 }
                             } finally {
                                 input.close()
@@ -272,7 +272,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
             Unit
         }
 
-        override val owner: Bot get() = this@TIMBotNetworkHandler.bot
+        override val owner: Bot get() = this@TIMPCBotNetworkHandler.bot
 
         override fun close() {
             loginHandler?.close()
@@ -452,7 +452,7 @@ internal class TIMBotNetworkHandler internal constructor(coroutineContext: Corou
                     BotLoginSucceedEvent(bot).broadcast()
 
                     val configuration = currentBotConfiguration()
-                    heartbeatJob = this@TIMBotNetworkHandler.launch {
+                    heartbeatJob = this@TIMPCBotNetworkHandler.launch {
                         while (socket.isOpen) {
                             delay(configuration.heartbeatPeriodMillis)
                             with(bot) {

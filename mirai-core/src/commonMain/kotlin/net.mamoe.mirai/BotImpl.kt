@@ -2,15 +2,9 @@
 
 package net.mamoe.mirai
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 
@@ -56,7 +50,49 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     // region network
 
-    abstract override val network: N
+    final override val network: N get() = _network
+
+    private lateinit var _network: N
+
+    override suspend fun login(configuration: BotConfiguration) =
+        reinitializeNetworkHandler(configuration, null)
+
+    // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
+    fun tryReinitializeNetworkHandler(
+        configuration: BotConfiguration,
+        cause: Throwable?
+    ): Job = launch {
+        repeat(configuration.reconnectionRetryTimes) {
+            try {
+                reinitializeNetworkHandler(configuration, cause)
+                logger.info("Reconnected successfully")
+                return@launch
+            } catch (e: LoginFailedException) {
+                delay(configuration.reconnectPeriodMillis)
+            }
+        }
+    }
+
+    private suspend fun reinitializeNetworkHandler(
+        configuration: BotConfiguration,
+        cause: Throwable?
+    ) {
+        logger.info("BotAccount: $qqAccount")
+        logger.info("Initializing BotNetworkHandler")
+        try {
+            if (::_network.isInitialized) {
+                _network.close(cause)
+            }
+        } catch (e: Exception) {
+            logger.error("Cannot close network handler", e)
+        }
+        _network = createNetworkHandler(this.coroutineContext + configuration)
+
+        _network.login()
+    }
+
+    protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): N
+
     // endregion
 
     @UseExperimental(MiraiInternalAPI::class)
