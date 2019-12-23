@@ -5,6 +5,7 @@
 package net.mamoe.mirai
 
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.LoginFailedException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -18,12 +19,16 @@ import kotlin.jvm.JvmName
 //Contacts
 /**
  * 使用默认的配置 ([BotConfiguration.Default]) 登录, 返回 [this]
+ *
+ * @throws LoginFailedException
  */
 suspend inline fun Bot.alsoLogin(configuration: BotConfiguration = BotConfiguration.Default): Bot =
     apply { login(configuration) }
 
 /**
  * 使用在默认配置基础上修改的配置进行登录, 返回 [this]
+ *
+ * @throws LoginFailedException
  */
 @UseExperimental(ExperimentalContracts::class)
 suspend inline fun Bot.alsoLogin(configuration: BotConfiguration.() -> Unit): Bot {
