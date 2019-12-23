@@ -102,4 +102,4 @@ Mirai 使用以下开源库:
 - [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
 
 ## Wiki
-在 [WiKi](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助
+在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助
