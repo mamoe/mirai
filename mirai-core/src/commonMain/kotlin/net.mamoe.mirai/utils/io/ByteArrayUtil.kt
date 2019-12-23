@@ -7,8 +7,10 @@ import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
+import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
+@JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun ByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
