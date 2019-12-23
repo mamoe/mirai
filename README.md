@@ -9,6 +9,8 @@
 部分协议来自网络上开源项目  
 **一切开发旨在学习，请勿用于非法用途**
 
+您可在 Gitter 提问, 或加入 QQ 群: 655057127
+
 ## Update log
 在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划  
 在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
