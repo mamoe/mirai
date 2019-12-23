@@ -6,13 +6,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.data.ImageId
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.message.data.ImageId
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
@@ -32,7 +32,7 @@ internal sealed class ContactImpl : Contact {
     /**
      * 开始监听事件, 以同步更新资料
      */
-    internal abstract suspend fun startUpdater()
+    internal abstract fun startUpdater()
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
@@ -93,7 +93,7 @@ internal class GroupImpl internal constructor(bot: TIMPCBot, val groupId: GroupI
     }
 
     @UseExperimental(MiraiInternalAPI::class)
-    override suspend fun startUpdater() {
+    override fun startUpdater() {
         subscribeAlways<MemberJoinEventPacket> {
             members.delegate.addLast(it.member)
         }
@@ -148,7 +148,7 @@ internal class QQImpl @PublishedApi internal constructor(bot: TIMPCBot, override
     }
 
     @PublishedApi
-    override suspend fun startUpdater() {
+    override fun startUpdater() {
         // TODO: 2019/11/28 被删除好友事件
     }
 
@@ -186,7 +186,7 @@ internal data class MemberImpl(
     }
 
     @PublishedApi
-    override suspend fun startUpdater() {
+    override fun startUpdater() {
         // TODO: 2019/12/6 更新群成员信息
     }
 
