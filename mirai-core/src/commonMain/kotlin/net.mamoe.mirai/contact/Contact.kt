@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
@@ -16,7 +17,7 @@ import kotlin.contracts.contract
  *
  * @author Him188moe
  */
-interface Contact {
+interface Contact : CoroutineScope {
     /**
      * 这个联系人所属 [Bot]
      */
