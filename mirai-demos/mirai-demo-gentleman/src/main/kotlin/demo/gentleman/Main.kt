@@ -55,7 +55,7 @@ suspend fun main() {
      * 监听所有事件
      */
     GlobalScope.subscribeAlways<Subscribable> {
-        bot.logger.verbose("收到了一个事件: $this")
+        //bot.logger.verbose("收到了一个事件: $this")
     }
 
     GlobalScope.subscribeAlways<ReceiveFriendAddRequestEvent> {
