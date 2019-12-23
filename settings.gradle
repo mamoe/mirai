@@ -23,6 +23,7 @@ rootProject.name = 'mirai'
 
 include(':mirai-core')
 include(':mirai-core-timpc')
+include(':mirai-core-qqandroid')
 
 include(':mirai-console')
 //include(':mirai-api')
