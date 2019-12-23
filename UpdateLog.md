@@ -4,6 +4,15 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+### `0.10.0`  *2019/12/23*
+**事件优化**  
+更快的监听过程  
+现在监听不再是 `suspend`, 而必须显式指定 `CoroutineScope`. 详见 [`Subscribers.kt`](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Subscribers.kt#L69)  
+删除原本的 bot.subscribe 等监听模式.
+
+**其他**  
+`Contact` 现在实现接口 `CoroutineScope`
+
 ### `0.9.0`  *2019/12/20*
 **协议模块独立**  
 现在 `mirai-core` 只提供基础的抽象类. 具体的各协议实现为 `mirai-core-PROTOCOL`.  
@@ -12,16 +21,16 @@
 查阅 API 时请查看 `mirai-core`.  
 每个模块只提供少量的额外方法. 我们会给出详细列表.   
 
-在目前的开发中您无需考虑多协议兼容. 
+在目前的开发中您无需考虑多协议兼容.
 
-**Bot 构造**
+**Bot 构造**  
 协议抽象后构造 Bot 需指定协议的 `BotFactory`.  
 在 JVM 平台, Mirai 通过 classname 自动加载协议模块的 `BotFactory`, 因此若您只使用一套协议, 则无需修改现行源码  
 
-**事件**
+**事件**  
 大部分事件包名修改. 
 
-**UInt -> Long**
+**UInt -> Long**  
 修改全部 QQ ID, Group ID 的类型由 UInt 为 Long.  
 **此为 API 不兼容更新**, 请将所有无符号标志 `u` 删除即可. 如 `123456u` 改为 `123456`
 
