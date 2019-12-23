@@ -7,8 +7,9 @@ import kotlinx.io.core.writeFully
 import kotlinx.io.core.writeUByte
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
 import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
@@ -16,7 +17,9 @@ import net.mamoe.mirai.utils.io.writeQQ
 /**
  * 改变在线状态: "我在线上", "隐身" 等
  */
-internal object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(NoDecrypter) {
+internal object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(
+    NoDecrypter
+) {
     operator fun invoke(
         bot: Long,
         sessionKey: SessionKey,

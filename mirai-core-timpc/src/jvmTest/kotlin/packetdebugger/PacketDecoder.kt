@@ -3,8 +3,8 @@ package packetdebugger
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUShort
-import net.mamoe.mirai.timpc.network.packet.PacketId
-import net.mamoe.mirai.timpc.network.packet.matchPacketId
+import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.matchPacketId
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

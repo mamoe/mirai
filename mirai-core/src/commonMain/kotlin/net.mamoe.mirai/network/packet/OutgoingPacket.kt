@@ -1,13 +1,13 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "unused", "MemberVisibilityCanBePrivate")
 
-package net.mamoe.mirai.timpc.network.packet
+package net.mamoe.mirai.network.packet
 
 import kotlinx.io.core.*
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.timpc.network.TIMProtocol
+import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.writeQQ
 import kotlin.contracts.ExperimentalContracts
@@ -18,11 +18,11 @@ import kotlin.jvm.JvmOverloads
 /**
  * 待发送给服务器的数据包. 它代表着一个 [ByteReadPacket],
  */
-internal class OutgoingPacket(
+class OutgoingPacket(
     name: String?,
     val packetId: PacketId,
     val sequenceId: UShort,
-    internal val delegate: ByteReadPacket
+    val delegate: ByteReadPacket
 ) : Packet {
     val name: String by lazy {
         name ?: packetId.toString()
@@ -35,7 +35,9 @@ internal class OutgoingPacket(
  *
  * @param TPacket invariant
  */
-internal abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, SessionKey>(SessionKey) {
+abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<TPacket, SessionKey>(
+    SessionKey
+) {
     /**
      * 在 [BotNetworkHandler] 下处理这个包. 广播事件等.
      */
@@ -45,13 +47,16 @@ internal abstract class SessionPacketFactory<TPacket : Packet> : PacketFactory<T
 /**
  * 构造一个待发送给服务器的数据包.
  */
-@UseExperimental(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class, MiraiInternalAPI::class)
 @JvmOverloads
-internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
+inline fun PacketFactory<*, *>.buildOutgoingPacket0(
     name: String? = null,
     id: PacketId = this.id,
     sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     headerSizeHint: Int = 0,
+    head: ByteArray,
+    ver: ByteArray,
+    tail: ByteArray,
     block: BytePacketBuilder.() -> Unit
 ): OutgoingPacket {
     contract {
@@ -60,12 +65,12 @@ internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
 
     BytePacketBuilder(headerSizeHint).use {
         with(it) {
-            writeFully(TIMProtocol.head)
-            writeFully(TIMProtocol.ver)
+            writeFully(head)
+            writeFully(ver)
             writeUShort(id.value)
             writeUShort(sequenceId)
             block(this)
-            writeFully(TIMProtocol.tail)
+            writeFully(tail)
         }
         return OutgoingPacket(name, id, sequenceId, it.build())
     }
@@ -75,22 +80,33 @@ internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
 /**
  * 构造一个待发送给服务器的会话数据包.
  */
-@UseExperimental(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class, MiraiInternalAPI::class)
 @JvmOverloads
-internal inline fun PacketFactory<*, *>.buildSessionPacket(
+inline fun PacketFactory<*, *>.buildSessionPacket0(
     bot: Long,
     sessionKey: SessionKey,
     name: String? = null,
     id: PacketId = this.id,
     sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     headerSizeHint: Int = 0,
-    version: ByteArray = TIMProtocol.version0x02,
+    version: ByteArray, // in packet body
+    head: ByteArray,
+    ver: ByteArray, // in packet head
+    tail: ByteArray,
     block: BytePacketBuilder.() -> Unit
 ): OutgoingPacket {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    return buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {
+    return buildOutgoingPacket0(
+        name = name,
+        id = id,
+        sequenceId = sequenceId,
+        headerSizeHint = headerSizeHint,
+        head = head,
+        ver = ver,
+        tail = tail
+    ) {
         writeQQ(bot)
         writeFully(version)
         encryptAndWrite(sessionKey) {
@@ -102,22 +118,25 @@ internal inline fun PacketFactory<*, *>.buildSessionPacket(
 /**
  * 构造一个待发送给服务器的会话数据包.
  */
-@UseExperimental(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class, MiraiInternalAPI::class)
 @JvmOverloads
-internal fun <T> PacketFactory<*, *>.buildSessionProtoPacket(
+fun <T> PacketFactory<*, *>.buildSessionProtoPacket0(
     bot: Long,
     sessionKey: SessionKey,
     name: String? = null,
     id: PacketId = this.id,
     sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     headerSizeHint: Int = 0,
-    version: ByteArray = TIMProtocol.version0x04,
+    version: ByteArray,
     head: Any,
     serializer: SerializationStrategy<T>,
-    protoObj: T
+    protoObj: T,
+    packetHead: ByteArray,
+    ver: ByteArray, // in packet head
+    tail: ByteArray
 ): OutgoingPacket {
     require(head is ByteArray || head is UByteArray || head is String) { "Illegal head type" }
-    return buildOutgoingPacket(name, id, sequenceId, headerSizeHint) {
+    return buildOutgoingPacket0(name, id, sequenceId, headerSizeHint, head = packetHead, ver = ver, tail = tail) {
         writeQQ(bot)
         writeFully(version)
         encryptAndWrite(sessionKey) {
@@ -136,17 +155,20 @@ internal fun <T> PacketFactory<*, *>.buildSessionProtoPacket(
                     writeFully(head)
                     writeFully(proto)
                 }
-                is String -> buildSessionProtoPacket(
-                    bot,
-                    sessionKey,
-                    name,
-                    id,
-                    sequenceId,
-                    headerSizeHint,
-                    version,
-                    head.hexToBytes(),
-                    serializer,
-                    protoObj
+                is String -> buildSessionProtoPacket0(
+                    bot = bot,
+                    sessionKey = sessionKey,
+                    name = name,
+                    id = id,
+                    sequenceId = sequenceId,
+                    headerSizeHint = headerSizeHint,
+                    version = version,
+                    head = head.hexToBytes(),
+                    serializer = serializer,
+                    protoObj = protoObj,
+                    packetHead = packetHead,
+                    ver = ver,
+                    tail = tail
                 )
             }
         }

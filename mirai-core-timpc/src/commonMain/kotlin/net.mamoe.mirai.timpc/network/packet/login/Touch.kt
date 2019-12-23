@@ -6,13 +6,15 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.writeFully
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
 import net.mamoe.mirai.utils.io.*
 
-internal object TouchKey : DecrypterByteArray, DecrypterType<TouchKey> {
+internal object TouchKey : DecrypterByteArray,
+    DecrypterType<TouchKey> {
     override val value: ByteArray = TIMProtocol.touchKey
 }
 

@@ -7,12 +7,14 @@ import net.mamoe.mirai.data.Gender
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.LoginResult
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
 
-internal object ShareKey : DecrypterByteArray, DecrypterType<ShareKey> {
+internal object ShareKey : DecrypterByteArray,
+    DecrypterType<ShareKey> {
     override val value: ByteArray = TIMProtocol.shareKey
 }
 

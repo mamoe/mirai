@@ -11,6 +11,9 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageId0x03
 import net.mamoe.mirai.message.data.ImageId0x06
+import net.mamoe.mirai.network.packet.KnownPacketId
+import net.mamoe.mirai.network.packet.OutgoingPacket
+import net.mamoe.mirai.network.packet.SessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.GroupImpl
@@ -18,10 +21,10 @@ import net.mamoe.mirai.timpc.network.MemberImpl
 import net.mamoe.mirai.timpc.network.QQImpl
 import net.mamoe.mirai.timpc.network.TIMBotNetworkHandler
 import net.mamoe.mirai.timpc.network.handler.TemporaryPacketHandler
-import net.mamoe.mirai.timpc.network.packet.KnownPacketId
-import net.mamoe.mirai.timpc.network.packet.OutgoingPacket
-import net.mamoe.mirai.timpc.network.packet.SessionKey
 import net.mamoe.mirai.timpc.network.packet.action.*
+import net.mamoe.mirai.timpc.network.packet.event.EventPacketFactory
+import net.mamoe.mirai.timpc.network.packet.event.FriendOnlineStatusChangedPacket
+import net.mamoe.mirai.timpc.network.packet.login.*
 import net.mamoe.mirai.timpc.utils.assertUnreachable
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
@@ -44,9 +47,41 @@ internal abstract class TIMPCBotBase constructor(
     logger: MiraiLogger?,
     context: CoroutineContext
 ) : BotImpl<TIMBotNetworkHandler>(account, logger ?: DefaultLogger("Bot(" + account.id + ")"), context) {
+
+    @UseExperimental(ExperimentalUnsignedTypes::class)
     companion object {
         init {
-            KnownPacketId.values() /* load id classes */
+            KnownPacketId[0x0825u] = TouchPacket
+            KnownPacketId[0x0828u] = RequestSessionPacket
+            KnownPacketId[0x0836u] = SubmitPasswordPacket
+            KnownPacketId[0x00BAu] = CaptchaPacket
+            KnownPacketId[0x00CEu] = EventPacketFactory
+            KnownPacketId[0x0017u] = EventPacketFactory
+            KnownPacketId[0x0081u] = FriendOnlineStatusChangedPacket
+            KnownPacketId[0x00ECu] = ChangeOnlineStatusPacket
+
+            KnownPacketId[0x0058u] = HeartbeatPacket
+            KnownPacketId[0x001Du] = RequestSKeyPacket
+            KnownPacketId[0x005Cu] = RequestAccountInfoPacket
+            KnownPacketId[0x0002u] = GroupPacket
+            KnownPacketId[0x00CDu] = SendFriendMessagePacket
+            KnownPacketId[0x00A7u] = CanAddFriendPacket
+            KnownPacketId[0x00A8u] = AddFriendPacket
+            KnownPacketId[0x00AEu] = RequestFriendAdditionKeyPacket
+            KnownPacketId[0x0388u] = GroupImagePacket
+            KnownPacketId[0x0352u] = FriendImagePacket
+
+            KnownPacketId[0x0031u] = RequestProfileAvatarPacket
+            KnownPacketId[0x003Cu] = RequestProfileDetailsPacket
+            KnownPacketId[0x0126u] = QueryNicknamePacket
+
+            KnownPacketId[0x01BCu] = QueryPreviousNamePacket
+
+            KnownPacketId[0x003Eu] = QueryFriendRemarkPacket
+            // 031F  查询 "新朋友" 记录
+
+            // @Suppress("DEPRECATION")
+            // inline SUBMIT_IMAGE_FILE_NAME(0x01BDu, SubmitImageFilenamePacket),
         }
     }
 
@@ -69,7 +104,7 @@ internal abstract class TIMPCBotBase constructor(
                 reinitializeNetworkHandler(configuration, cause)
                 logger.info("Reconnected successfully")
                 return@launch
-            } catch (e: LoginFailedException){
+            } catch (e: LoginFailedException) {
                 delay(configuration.reconnectPeriodMillis)
             }
         }

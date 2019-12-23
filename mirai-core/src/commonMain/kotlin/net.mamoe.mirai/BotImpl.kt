@@ -19,13 +19,17 @@ import kotlin.coroutines.CoroutineContext
  */
 @MiraiInternalAPI
 abstract class BotImpl<N : BotNetworkHandler> constructor(
-    override val account: BotAccount,
-    override val logger: MiraiLogger = DefaultLogger("Bot(" + account.id + ")"),
+    account: BotAccount,
+    logger: MiraiLogger?,
     context: CoroutineContext
 ) : Bot(), CoroutineScope {
     private val supervisorJob = SupervisorJob(context[Job])
     override val coroutineContext: CoroutineContext =
         context + supervisorJob + CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") }
+
+    @Suppress("CanBePrimaryConstructorProperty") // for logger
+    override val account: BotAccount = account
+    override val logger: MiraiLogger = logger ?: DefaultLogger("Bot(" + account.id + ")")
 
     init {
         @Suppress("LeakingThis")

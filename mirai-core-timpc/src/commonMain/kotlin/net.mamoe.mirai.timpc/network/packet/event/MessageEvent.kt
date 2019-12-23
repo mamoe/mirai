@@ -7,7 +7,7 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.internal.readMessageChain
 import net.mamoe.mirai.message.FriendMessage
-import net.mamoe.mirai.timpc.network.packet.PacketVersion
+import net.mamoe.mirai.network.packet.PacketVersion
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.*
 

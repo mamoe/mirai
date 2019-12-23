@@ -5,11 +5,11 @@ package net.mamoe.mirai.timpc.network.packet.event
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.data.EventPacket
-import net.mamoe.mirai.timpc.network.packet.PacketVersion
-import net.mamoe.mirai.utils.io.readQQ
-import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.data.EventPacket
+import net.mamoe.mirai.network.packet.PacketVersion
+import net.mamoe.mirai.utils.io.readQQ
 
 
 data class MemberPermissionChangePacket(

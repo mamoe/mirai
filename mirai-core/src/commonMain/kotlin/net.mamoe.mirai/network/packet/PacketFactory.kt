@@ -1,6 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.timpc.network.packet
+package net.mamoe.mirai.network.packet
 
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
@@ -11,6 +11,7 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.read
@@ -24,7 +25,7 @@ import net.mamoe.mirai.utils.readProtoMap
  * @param TPacket 服务器回复包解析结果
  * @param TDecrypter 服务器回复包解密器
  */
-internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
+abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
 
     @Suppress("PropertyName")
     internal var _id: PacketId = NullPacketId
@@ -64,8 +65,8 @@ internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypt
     companion object {
         private val sequenceIdInternal = atomic(1)
 
-        @PublishedApi
-        internal fun atomicNextSequenceId(): UShort = sequenceIdInternal.getAndIncrement().toUShort()
+        @MiraiInternalAPI
+        fun atomicNextSequenceId(): UShort = sequenceIdInternal.getAndIncrement().toUShort()
     }
 }
 

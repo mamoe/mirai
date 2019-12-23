@@ -5,12 +5,10 @@ package net.mamoe.mirai.timpc.network.packet.event
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
-import kotlinx.io.core.readUInt
 import net.mamoe.mirai.event.events.FriendStatusChanged
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.timpc.network.packet.KnownPacketId
-import net.mamoe.mirai.timpc.network.packet.PacketId
-import net.mamoe.mirai.timpc.network.packet.SessionPacketFactory
+import net.mamoe.mirai.network.packet.PacketId
+import net.mamoe.mirai.network.packet.SessionPacketFactory
 import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.io.readQQ
 

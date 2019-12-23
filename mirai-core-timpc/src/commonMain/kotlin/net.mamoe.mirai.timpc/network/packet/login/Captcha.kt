@@ -5,11 +5,13 @@ package net.mamoe.mirai.timpc.network.packet.login
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
 import net.mamoe.mirai.utils.io.*
 
-internal object CaptchaKey : DecrypterByteArray, DecrypterType<CaptchaKey> {
+internal object CaptchaKey : DecrypterByteArray,
+    DecrypterType<CaptchaKey> {
     override val value: ByteArray = TIMProtocol.key00BA
 }
 

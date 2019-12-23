@@ -5,10 +5,11 @@ package net.mamoe.mirai.timpc.network.packet.action
 import io.ktor.util.date.GMTDate
 import kotlinx.io.core.*
 import net.mamoe.mirai.data.Gender
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.timpc.network.packet.buildSessionPacket
 import net.mamoe.mirai.utils.io.*
 
 inline class AvatarLink(val value: String) : Packet

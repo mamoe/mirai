@@ -8,8 +8,9 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.EventPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.data.PreviousNameList
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.timpc.network.packet.buildSessionPacket
 import net.mamoe.mirai.utils.io.*
 
 

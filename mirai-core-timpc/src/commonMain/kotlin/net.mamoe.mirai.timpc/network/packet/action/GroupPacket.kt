@@ -6,17 +6,17 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.groupInternalId
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.internal.toPacket
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.timpc.network.packet.buildSessionPacket
 import net.mamoe.mirai.timpc.utils.unsupportedFlag
 import net.mamoe.mirai.timpc.utils.unsupportedType
 import net.mamoe.mirai.utils.io.*
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
 
 
