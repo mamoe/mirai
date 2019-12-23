@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
@@ -13,20 +14,19 @@ import net.mamoe.mirai.message.data.Message
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.jvm.JvmName
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessagePacket<*, *>>.() -> Unit) {
+inline fun CoroutineScope.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> Unit) {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
-        subscribeAlways<MessagePacket<*, *>> {
-            listener(it)
+        subscribeAlways {
+            listener(it, this.message.toString())
         }
     }.apply { listeners() }
 }
@@ -36,13 +36,13 @@ suspend inline fun subscribeMessages(crossinline listeners: suspend MessageSubsc
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-suspend inline fun subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+inline fun CoroutineScope.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     MessageSubscribersBuilder<GroupMessage> { listener ->
-        subscribeAlways<GroupMessage> {
-            listener(it)
+        subscribeAlways {
+            listener(it, this.message.toString())
         }
     }.apply { listeners() }
 }
@@ -52,13 +52,13 @@ suspend inline fun subscribeGroupMessages(crossinline listeners: suspend Message
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-suspend inline fun subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+inline fun CoroutineScope.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     MessageSubscribersBuilder<FriendMessage> { listener ->
-        subscribeAlways<FriendMessage> {
-            listener(it)
+        subscribeAlways {
+            listener(it, this.message.toString())
         }
     }.apply { listeners() }
 }
@@ -68,13 +68,13 @@ suspend inline fun subscribeFriendMessages(crossinline listeners: suspend Messag
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageSubscribersBuilder<MessagePacket<*, *>>.() -> Unit) {
+inline fun Bot.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> Unit) {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
-        this.subscribeAlways<MessagePacket<*, *>> {
-            listener(it)
+        this.subscribeAlways {
+            listener(it, this.message.toString())
         }
     }.apply { listeners() }
 }
@@ -84,13 +84,13 @@ suspend inline fun Bot.subscribeMessages(crossinline listeners: suspend MessageS
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-suspend inline fun Bot.subscribeGroupMessages(crossinline listeners: suspend MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+inline fun Bot.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     MessageSubscribersBuilder<GroupMessage> { listener ->
-        this.subscribeAlways<GroupMessage> {
-            listener(it)
+        this.subscribeAlways {
+            listener(it, this.message.toString())
         }
     }.apply { listeners() }
 }
@@ -100,25 +100,16 @@ suspend inline fun Bot.subscribeGroupMessages(crossinline listeners: suspend Mes
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-suspend inline fun Bot.subscribeFriendMessages(crossinline listeners: suspend MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+inline fun Bot.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     MessageSubscribersBuilder<FriendMessage> { listener ->
-        this.subscribeAlways<FriendMessage> {
-            listener(it)
+        this.subscribeAlways {
+            it.listener(it.message.toString())
         }
     }.apply { listeners() }
 }
-
-private typealias AnyReplier<T> = @MessageDsl suspend T.(String) -> Any?
-
-private suspend inline operator fun <T : MessagePacket<*, *>> (@MessageDsl suspend T.(String) -> Unit).invoke(t: T) =
-    this.invoke(t, t.message.stringValue)
-
-@JvmName("invoke1") //Avoid Platform declaration clash
-private suspend inline operator fun <T : MessagePacket<*, *>> AnyReplier<T>.invoke(t: T): Any? =
-    this.invoke(t, t.message.stringValue)
 
 /**
  * 消息订阅构造器
@@ -126,19 +117,19 @@ private suspend inline operator fun <T : MessagePacket<*, *>> AnyReplier<T>.invo
  * @see subscribeFriendMessages
  * @sample demo.subscribe.messageDSL
  */
-// TODO: 2019/11/29 应定义为 inline, 但这会导致一个 JVM run-time VerifyError. 等待 kotlin 修复 bug
+// TODO: 2019/12/23 应定义为 inline, 但这会导致一个 JVM run-time VerifyError. 等待 kotlin 修复 bug (Kotlin 1.3.61)
 @Suppress("unused")
 @MessageDsl
 class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
-    inline val subscriber: suspend (@MessageDsl suspend T.(String) -> Unit) -> Unit
+    val subscriber: (@MessageDsl suspend T.(String) -> Unit) -> Listener<T>
 ) {
     /**
      * 无任何触发条件.
      */
     @MessageDsl
-    suspend inline fun always(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
-        content({ true }, onEvent)
-    } // TODO: 2019/12/4 这些 onEvent 都应该为 cross-inline, 而这会导致一个 CompilationException
+    inline fun always(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> {
+        return content({ true }, onEvent)
+    }
 
     /**
      * 如果消息内容 `==` [equals], 就执行 [onEvent]
@@ -146,97 +137,97 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param ignoreCase `true` 则不区分大小写
      */
     @MessageDsl
-    suspend inline fun case(
+    inline fun case(
         equals: String,
         trim: Boolean = true,
         ignoreCase: Boolean = false,
-        noinline onEvent: @MessageDsl suspend T.(String) -> Unit
-    ) {
+        crossinline onEvent: @MessageDsl suspend T.(String) -> Unit
+    ): Listener<T> {
         val toCheck = if (trim) equals.trim() else equals
-        content({ toCheck.equals(if (trim) it.trim() else it, ignoreCase = ignoreCase) }, onEvent)
+        return content({ toCheck.equals(if (trim) it.trim() else it, ignoreCase = ignoreCase) }, onEvent)
     }
 
     /**
      * 如果消息内容包含 [sub], 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun contains(sub: String, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) = content({ sub in it }, onEvent)
+    inline fun contains(sub: String, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> = content({ sub in it }, onEvent)
 
     /**
      * 如果消息的前缀是 [prefix], 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun startsWith(
+    inline fun startsWith(
         prefix: String,
         removePrefix: Boolean = true,
-        noinline onEvent: @MessageDsl suspend T.(String) -> Unit
-    ) =
+        crossinline onEvent: @MessageDsl suspend T.(String) -> Unit
+    ): Listener<T> =
         content({ it.startsWith(prefix) }) {
             if (removePrefix) this.onEvent(this.message.stringValue.substringAfter(prefix))
-            else onEvent(this)
+            else onEvent(this, this.message.toString())
         }
 
     /**
      * 如果消息的结尾是 [suffix], 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun endsWith(suffix: String, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    inline fun endsWith(suffix: String, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
         content({ it.endsWith(suffix) }, onEvent)
 
     /**
      * 如果是这个人发的消息, 就执行 [onEvent]. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
-    suspend inline fun sentBy(qqId: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    inline fun sentBy(qqId: Long, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
         content({ sender.id == qqId }, onEvent)
 
     /**
      * 如果是管理员或群主发的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentByOperator(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    inline fun sentByOperator(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
         content({ this is GroupMessage && sender.permission.isOperator() }, onEvent)
 
     /**
      * 如果是管理员发的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentByAdministrator(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    inline fun sentByAdministrator(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
         content({ this is GroupMessage && sender.permission.isAdministrator() }, onEvent)
 
     /**
      * 如果是群主发的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentByOwner(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    inline fun sentByOwner(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
         content({ this is GroupMessage && sender.permission.isOwner() }, onEvent)
 
     /**
      * 如果是来自这个群的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun sentFrom(id: Long, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
+    inline fun sentFrom(id: Long, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
         content({ if (this is GroupMessage) group.id == id else false }, onEvent)
 
     /**
      * 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent]
      */
     @MessageDsl
-    suspend inline fun <reified M : Message> has(noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
-        subscriber { if (message.any { it::class == M::class }) onEvent(this) }
+    inline fun <reified M : Message> has(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
+        subscriber { if (message.any { it::class == M::class }) onEvent(this, this.message.toString()) }
 
     /**
      * 如果 [filter] 返回 `true` 就执行 `onEvent`
      */
     @MessageDsl
-    suspend inline fun content(noinline filter: T.(String) -> Boolean, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) =
-        subscriber { if (this.filter(message.stringValue)) onEvent(this) }
+    inline fun content(crossinline filter: T.(String) -> Boolean, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> =
+        subscriber { if (this.filter(message.toString())) onEvent(this, this.message.toString()) }
 
     /**
      * 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent`
      */
     @MessageDsl
-    suspend inline fun matching(regex: Regex, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
+    inline fun matching(regex: Regex, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
         content({ regex.matchEntire(it) != null }, onEvent)
     }
 
@@ -244,7 +235,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果消息内容可由正则表达式查找([Regex.find]), 就执行 `onEvent`
      */
     @MessageDsl
-    suspend inline fun finding(regex: Regex, noinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
+    inline fun finding(regex: Regex, crossinline onEvent: @MessageDsl suspend T.(String) -> Unit) {
         content({ regex.find(it) != null }, onEvent)
     }
 
@@ -252,7 +243,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 若消息内容包含 [this] 则回复 [reply]
      */
     @MessageDsl
-    suspend inline infix fun String.containsReply(reply: String) =
+    infix fun String.containsReply(reply: String) =
         content({ this@containsReply in it }) { this@content.reply(reply) }
 
     /**
@@ -263,7 +254,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun String.containsReply(noinline replier: AnyReplier<T>) =
+    inline infix fun String.containsReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?) =
         content({ this@containsReply in it }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
             executeAndReply(replier)
@@ -277,7 +268,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun Regex.matchingReply(noinline replier: AnyReplier<T>) {
+    inline infix fun Regex.matchingReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?) {
         content({ this@matchingReply.matchEntire(it) != null }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
             executeAndReply(replier)
@@ -292,7 +283,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun Regex.findingReply(noinline replier: AnyReplier<T>) {
+    inline infix fun Regex.findingReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?) {
         content({ this@findingReply.find(it) != null }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
             executeAndReply(replier)
@@ -313,7 +304,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他类型则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun String.startsWithReply(noinline replier: AnyReplier<T>) {
+    inline infix fun String.startsWithReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?) {
         val toCheck = this.trimStart()
         content({ it.trimStart().startsWith(toCheck) }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
@@ -337,7 +328,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    suspend inline infix fun String.endswithReply(noinline replier: AnyReplier<T>) {
+    inline infix fun String.endswithReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?) {
         val toCheck = this.trimEnd()
         content({ it.endsWith(this@endswithReply) }) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
@@ -348,20 +339,20 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     }
 
     @MessageDsl
-    suspend inline infix fun String.reply(reply: String) = case(this) {
+    infix fun String.reply(reply: String) = case(this) {
         this@case.reply(reply)
     }
 
     @MessageDsl
-    suspend inline infix fun String.reply(noinline replier: AnyReplier<T>) = case(this) {
+    inline infix fun String.reply(crossinline replier: @MessageDsl suspend T.(String) -> Any?) = case(this) {
         @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false negative warning
         executeAndReply(replier)
     }
 
     @PublishedApi
-    @Suppress("NOTHING_TO_INLINE")
-    internal suspend inline fun T.executeAndReply(noinline replier: AnyReplier<T>) {
-        when (val message = replier(this)) {
+    @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE") // false positive
+    internal suspend inline fun T.executeAndReply(replier: @MessageDsl suspend T.(String) -> Any?) {
+        when (val message = replier(this, this.message.toString())) {
             is Message -> this.reply(message)
             is Unit -> {
 
@@ -371,10 +362,10 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     }
 
 /* 易产生迷惑感
-    suspend inline fun replyCase(equals: String, trim: Boolean = true, noinline replier: MessageReplier<T>) = case(equals, trim) { reply(replier(this)) }
-    suspend inline fun replyContains(value: String, noinline replier: MessageReplier<T>) = content({ value in it }) { replier(this) }
-    suspend inline fun replyStartsWith(value: String, noinline replier: MessageReplier<T>) = content({ it.startsWith(value) }) { replier(this) }
-    suspend inline fun replyEndsWith(value: String, noinline replier: MessageReplier<T>) = content({ it.endsWith(value) }) { replier(this) }
+ fun replyCase(equals: String, trim: Boolean = true, replier: MessageReplier<T>) = case(equals, trim) { reply(replier(this)) }
+ fun replyContains(value: String, replier: MessageReplier<T>) = content({ value in it }) { replier(this) }
+ fun replyStartsWith(value: String, replier: MessageReplier<T>) = content({ it.startsWith(value) }) { replier(this) }
+ fun replyEndsWith(value: String, replier: MessageReplier<T>) = content({ it.endsWith(value) }) { replier(this) }
 */
 }
 

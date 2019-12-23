@@ -3,9 +3,6 @@
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.event.internal.broadcastInternal
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.withSwitch
 
 /**
  * 可被监听的.
@@ -13,9 +10,7 @@ import net.mamoe.mirai.utils.withSwitch
  * 可以是任何 class 或 object.
  *
  * @see subscribeAlways
- * @see subscribeOnce
  * @see subscribeWhile
- * @see subscribeAll
  *
  * @see subscribeMessages
  */
@@ -47,19 +42,6 @@ abstract class Event : Subscribable {
     fun cancel() {
         cancelled = true
     }
-
-    init {
-        if (EventDebuggingFlag) {
-            EventDebugLogger.debug(this::class.simpleName + " created")
-        }
-    }
-}
-
-internal object EventDebugLogger : MiraiLogger by DefaultLogger("Event").withSwitch(EventDebuggingFlag)
-
-private val EventDebuggingFlag: Boolean by lazy {
-    // avoid 'Condition is always true'
-    false
 }
 
 /**
@@ -74,19 +56,10 @@ interface Cancellable : Subscribable {
 /**
  * 广播一个事件的唯一途径.
  */
-@Suppress("UNCHECKED_CAST")
 suspend fun <E : Subscribable> E.broadcast(): E {
-    if (EventDebuggingFlag) {
-        EventDebugLogger.debug(this::class.simpleName + " pre broadcast")
-    }
-    try {
-        @Suppress("EXPERIMENTAL_API_USAGE")
-        return this@broadcast.broadcastInternal()
-    } finally {
-        if (EventDebuggingFlag) {
-            EventDebugLogger.debug(this::class.simpleName + " after broadcast")
-        }
-    }
+    @Suppress("EXPERIMENTAL_API_USAGE")
+    this@broadcast.broadcastInternal() // inline, no extra cost
+    return this
 }
 
 /**

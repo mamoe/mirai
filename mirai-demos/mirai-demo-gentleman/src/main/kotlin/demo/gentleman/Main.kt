@@ -37,7 +37,7 @@ private fun readTestAccount(): BotAccount? {
     val lines = file.readLines()
     return try {
         BotAccount(lines[0].toLong(), lines[1])
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         null
     }
 }
@@ -54,16 +54,15 @@ suspend fun main() {
     /**
      * 监听所有事件
      */
-    subscribeAlways<Subscribable> {
-
-        //bot.logger.verbose("收到了一个事件: ${it::class.simpleName}")
+    GlobalScope.subscribeAlways<Subscribable> {
+        bot.logger.verbose("收到了一个事件: $this")
     }
 
-    subscribeAlways<ReceiveFriendAddRequestEvent> {
+    GlobalScope.subscribeAlways<ReceiveFriendAddRequestEvent> {
         it.approve()
     }
 
-    bot.subscribeGroupMessages {
+    GlobalScope.subscribeGroupMessages {
         "群资料" reply {
             group.updateGroupInfo().toString().reply()
         }
@@ -85,7 +84,11 @@ suspend fun main() {
     }
 
     bot.subscribeMessages {
+        always {
+        }
+
         case("at me") { At(sender).reply() }
+        // 等同于  "at me" reply { At(sender) }
 
         "你好" reply "你好!"
 

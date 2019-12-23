@@ -51,17 +51,6 @@ suspend fun main() {
     bot.messageDSL()
     directlySubscribe(bot)
 
-    //DSL 监听
-    subscribeAll<FriendMessage> {
-        always {
-            //获取第一个纯文本消息
-            val firstText = it.message.firstOrNull<PlainText>()
-
-        }
-    }
-
-    demo2()
-
     bot.network.awaitDisconnection()//等到直到断开连接
 }
 
@@ -199,9 +188,22 @@ suspend fun Bot.messageDSL() {
  */
 @Suppress("UNUSED_VARIABLE")
 suspend fun directlySubscribe(bot: Bot) {
+    // 在当前协程作用域 (CoroutineScope) 下创建一个子 Job, 监听一个事件.
+    //
     // 手动处理消息
     // 使用 Bot 的扩展方法监听, 将在处理事件时得到一个 this: Bot.
     // 这样可以调用 Bot 内的一些扩展方法如 UInt.qq():QQ
+    //
+    // 这个函数返回 Listener, Listener 是一个 CompletableJob. 如果不手动 close 它, 它会一直阻止当前 CoroutineScope 结束.
+    // 例如:
+    // ```kotlin
+    // runBlocking {// this: CoroutineScope
+    //     bot.subscribeAlways<FriendMessage> {
+    //     }
+    // }
+    // ```
+    // 则这个 `runBlocking` 永远不会结束, 因为 `subscribeAlways` 在 `runBlocking` 的 `CoroutineScope` 下创建了一个 Job.
+    // 正确的用法为:
     bot.subscribeAlways<FriendMessage> {
         // this: Bot
         // it: FriendMessageEvent
@@ -243,23 +245,6 @@ suspend fun directlySubscribe(bot: Bot) {
             it.message eq "发图片群2" -> 580266363.group().sendMessage(Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
 
             it.message eq "发图片2" -> it.reply(PlainText("test") + Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
-        }
-    }
-}
-
-/**
- * 实现功能:
- * 对机器人说 "记笔记", 机器人记录之后的所有消息.
- * 对机器人说 "停止", 机器人停止
- */
-suspend fun demo2() {
-    subscribeAlways<FriendMessage> { event ->
-        if (event.message eq "记笔记") {
-            subscribeUntilFalse<FriendMessage> {
-                it.reply("你发送了 ${it.message}")
-
-                it.message eq "停止"
-            }
         }
     }
 }
