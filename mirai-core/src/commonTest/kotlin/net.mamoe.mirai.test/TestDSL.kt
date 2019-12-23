@@ -11,13 +11,13 @@ import kotlin.test.assertTrue
 internal annotation class TestDSL
 
 @TestDSL
-inline fun Boolean.shouldBeTrue() = assertTrue { this }
+fun Boolean.shouldBeTrue() = assertTrue { this }
 
 @TestDSL
-inline fun Boolean.shouldBeFalse() = assertFalse { this }
+fun Boolean.shouldBeFalse() = assertFalse { this }
 
 @TestDSL
-inline infix fun <E> E.shouldBeEqualTo(another: E) = assertEquals(another, this)
+infix fun <E> E.shouldBeEqualTo(another: E) = assertEquals(another, this)
 
 @TestDSL
-inline infix fun <E> E.shouldNotBeEqualTo(another: E) = assertNotEquals(another, this)
+infix fun <E> E.shouldNotBeEqualTo(another: E) = assertNotEquals(another, this)
