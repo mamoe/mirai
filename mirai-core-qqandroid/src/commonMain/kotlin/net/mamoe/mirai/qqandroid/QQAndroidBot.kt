@@ -47,7 +47,7 @@ internal abstract class QQAndroidBotBase constructor(
         TODO("not implemented")
     }
 
-    override suspend fun login(configuration: BotConfiguration) {
+    override suspend fun login() {
         TODO("not implemented")
     }
 
