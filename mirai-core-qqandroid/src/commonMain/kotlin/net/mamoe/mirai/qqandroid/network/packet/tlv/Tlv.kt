@@ -66,7 +66,7 @@ object Tlv {
         tgtgtKey: ByteArray,
         n7: Int,
         array_6_may_be_null: ByteArray?,
-        n8: Int = 1
+        ret_is_0_or_4: Int
     ) {
         writeShort(0x106)
 
@@ -105,7 +105,7 @@ object Tlv {
                     writeFully(array_6_may_be_null)
                 }
                 writeInt(subAppId.toInt())
-                writeInt(n8)
+                writeInt(ret_is_0_or_4)
                 writeShortLVByteArray(uinAccount)
             }
         }
