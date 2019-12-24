@@ -43,10 +43,10 @@ suspend fun main() {
             id = 1994701121,
             password = "123456"
         )
-    ).alsoLogin {
+    ) {
         // 覆盖默认的配置
         randomDeviceName = false
-    }
+    }.alsoLogin()
 
     bot.messageDSL()
     directlySubscribe(bot)

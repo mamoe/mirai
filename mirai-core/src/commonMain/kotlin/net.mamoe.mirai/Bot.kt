@@ -12,9 +12,11 @@ import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.GroupNotFoundException
+import net.mamoe.mirai.utils.LoginFailedException
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.transferTo
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
@@ -39,8 +41,6 @@ abstract class Bot : CoroutineScope {
      * 日志记录器
      */
     abstract val logger: MiraiLogger
-
-    abstract override val coroutineContext: CoroutineContext
 
     // region contacts
 
@@ -87,20 +87,11 @@ abstract class Bot : CoroutineScope {
     abstract val network: BotNetworkHandler
 
     /**
-     * 使用在默认配置基础上修改的配置进行登录
+     * 登录
      *
      * @throws LoginFailedException
      */
-    suspend inline fun login(configuration: BotConfiguration.() -> Unit) {
-        return this.login(BotConfiguration().apply(configuration))
-    }
-
-    /**
-     * 使用特定配置进行登录
-     *
-     * @throws LoginFailedException
-     */
-    abstract suspend fun login(configuration: BotConfiguration = BotConfiguration.Default)
+    abstract suspend fun login()
     // endregion
 
 
@@ -127,7 +118,7 @@ abstract class Bot : CoroutineScope {
 
     // endregion
 
-    abstract fun close(throwable: Throwable?)
+    abstract fun dispose(throwable: Throwable?)
 
     // region extensions
 

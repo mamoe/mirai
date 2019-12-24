@@ -1,13 +1,9 @@
 package net.mamoe.mirai.qqandroid
 
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.utils.MiraiLogger
-import kotlin.coroutines.CoroutineContext
+import net.mamoe.mirai.utils.BotConfiguration
 
 internal actual class QQAndroidBot actual constructor(
     account: BotAccount,
-    logger: MiraiLogger?,
-    context: CoroutineContext
-) : QQAndroidBotBase(account, logger, context) {
-
-}
+    configuration: BotConfiguration
+) : QQAndroidBotBase(account, configuration)

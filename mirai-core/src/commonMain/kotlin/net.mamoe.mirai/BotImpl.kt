@@ -14,16 +14,16 @@ import kotlin.coroutines.CoroutineContext
 @MiraiInternalAPI
 abstract class BotImpl<N : BotNetworkHandler> constructor(
     account: BotAccount,
-    logger: MiraiLogger?,
-    context: CoroutineContext
+    val configuration: BotConfiguration
 ) : Bot(), CoroutineScope {
-    private val supervisorJob = SupervisorJob(context[Job])
+    private val botJob = SupervisorJob(configuration.parentCoroutineContext[Job])
     override val coroutineContext: CoroutineContext =
-        context + supervisorJob + CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") }
+        configuration.parentCoroutineContext + botJob + (configuration.parentCoroutineContext[CoroutineExceptionHandler]
+            ?: CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") })
 
     @Suppress("CanBePrimaryConstructorProperty") // for logger
     override val account: BotAccount = account
-    override val logger: MiraiLogger = logger ?: DefaultLogger("Bot(" + account.id + ")")
+    override val logger: MiraiLogger = configuration.logger ?: DefaultLogger("Bot(" + account.id + ")")
 
     init {
         @Suppress("LeakingThis")
@@ -54,17 +54,15 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     private lateinit var _network: N
 
-    override suspend fun login(configuration: BotConfiguration) =
-        reinitializeNetworkHandler(configuration, null)
+    override suspend fun login() = reinitializeNetworkHandler(null)
 
     // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
     fun tryReinitializeNetworkHandler(
-        configuration: BotConfiguration,
         cause: Throwable?
     ): Job = launch {
         repeat(configuration.reconnectionRetryTimes) {
             try {
-                reinitializeNetworkHandler(configuration, cause)
+                reinitializeNetworkHandler(cause)
                 logger.info("Reconnected successfully")
                 return@launch
             } catch (e: LoginFailedException) {
@@ -74,19 +72,18 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     }
 
     private suspend fun reinitializeNetworkHandler(
-        configuration: BotConfiguration,
         cause: Throwable?
     ) {
         logger.info("BotAccount: $qqAccount")
         logger.info("Initializing BotNetworkHandler")
         try {
             if (::_network.isInitialized) {
-                _network.close(cause)
+                _network.dispose(cause)
             }
         } catch (e: Exception) {
             logger.error("Cannot close network handler", e)
         }
-        _network = createNetworkHandler(this.coroutineContext + configuration)
+        _network = createNetworkHandler(this.coroutineContext)
 
         _network.login()
     }
@@ -96,15 +93,15 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     // endregion
 
     @UseExperimental(MiraiInternalAPI::class)
-    override fun close(throwable: Throwable?) {
+    override fun dispose(throwable: Throwable?) {
         if (throwable == null) {
-            network.close()
-            this.supervisorJob.complete()
+            network.dispose()
+            this.botJob.complete()
             groups.delegate.clear()
             qqs.delegate.clear()
         } else {
-            network.close(throwable)
-            this.supervisorJob.completeExceptionally(throwable)
+            network.dispose(throwable)
+            this.botJob.completeExceptionally(throwable)
             groups.delegate.clear()
             qqs.delegate.clear()
         }

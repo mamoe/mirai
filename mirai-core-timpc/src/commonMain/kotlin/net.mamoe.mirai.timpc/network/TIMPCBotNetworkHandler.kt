@@ -20,8 +20,11 @@ import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.network.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.timpc.network.handler.TemporaryPacketHandler
 import net.mamoe.mirai.timpc.network.packet.login.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.LockFreeLinkedList
+import net.mamoe.mirai.utils.LoginFailedException
+import net.mamoe.mirai.utils.OnlineStatus
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 
@@ -90,8 +93,8 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
         heartbeatJob?.join()
     }
 
-    override fun close(cause: Throwable?) {
-        super.close(cause)
+    override fun dispose(cause: Throwable?) {
+        super.dispose(cause)
 
         this.heartbeatJob?.cancel(CancellationException("handler closed"))
         this.heartbeatJob = null
@@ -186,7 +189,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
             try {
                 launch { processReceive() }
                 launch {
-                    if (withTimeoutOrNull(currentBotConfiguration().touchTimeoutMillis) { expectingTouchResponse!!.join() } == null) {
+                    if (withTimeoutOrNull(bot.configuration.touchTimeoutMillis) { expectingTouchResponse!!.join() } == null) {
                         loginResult.complete(LoginResult.TIMEOUT)
                     }
                 }
@@ -252,7 +255,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     if (e.cause !is CancellationException) {
                         bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
                     }
-                    val configuration = currentBotConfiguration()
+                    val configuration = bot.configuration
                     delay(configuration.firstReconnectDelayMillis)
                     bot.tryReinitializeNetworkHandler(configuration, e)
                     return@withContext
@@ -340,7 +343,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                             privateKey = privateKey,
                             token0825 = token0825,
                             token00BA = null,
-                            randomDeviceName = currentBotConfiguration().randomDeviceName
+                            randomDeviceName = bot.configuration.randomDeviceName
                         )
                     )
                 }
@@ -370,7 +373,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                             privateKey = privateKey,
                             token0825 = token0825,
                             token00BA = packet.token00BA,
-                            randomDeviceName = currentBotConfiguration().randomDeviceName
+                            randomDeviceName = bot.configuration.randomDeviceName
                         )
                     )
                 }
@@ -395,7 +398,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     this.captchaCache!!.writeFully(packet.captchaSectionN)
                     this.token00BA = packet.token00BA
 
-                    val configuration = currentBotConfiguration()
+                    val configuration = bot.configuration
                     if (packet.transmissionCompleted) {
                         if (configuration.failOnCaptcha) {
                             loginResult.complete(LoginResult.CAPTCHA)
@@ -435,7 +438,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                             privateKey = privateKey,
                             token0825 = token0825,
                             token00BA = packet.tokenUnknown ?: token00BA,
-                            randomDeviceName = currentBotConfiguration().randomDeviceName,
+                            randomDeviceName = bot.configuration.randomDeviceName,
                             tlv0006 = packet.tlv0006
                         )
                     )
@@ -451,7 +454,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                 is ChangeOnlineStatusPacket.ChangeOnlineStatusResponse -> {
                     BotLoginSucceedEvent(bot).broadcast()
 
-                    val configuration = currentBotConfiguration()
+                    val configuration = bot.configuration
                     heartbeatJob = this@TIMPCBotNetworkHandler.launch {
                         while (socket.isOpen) {
                             delay(configuration.heartbeatPeriodMillis)

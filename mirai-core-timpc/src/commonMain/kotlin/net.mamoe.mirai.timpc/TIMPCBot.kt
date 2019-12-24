@@ -37,16 +37,14 @@ import kotlin.jvm.JvmSynthetic
 
 internal expect class TIMPCBot constructor(
     account: BotAccount,
-    logger: MiraiLogger?,
-    context: CoroutineContext
+    configuration: BotConfiguration
 ) : TIMPCBotBase
 
 @UseExperimental(MiraiInternalAPI::class)
 internal abstract class TIMPCBotBase constructor(
     account: BotAccount,
-    logger: MiraiLogger?,
-    context: CoroutineContext
-) : BotImpl<TIMPCBotNetworkHandler>(account, logger ?: DefaultLogger("Bot(" + account.id + ")"), context) {
+    configuration: BotConfiguration
+) : BotImpl<TIMPCBotNetworkHandler>(account, configuration) {
 
     @UseExperimental(ExperimentalUnsignedTypes::class)
     companion object {

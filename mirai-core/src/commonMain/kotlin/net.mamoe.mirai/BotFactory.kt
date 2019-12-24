@@ -3,7 +3,11 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.network.packet.NullPacketId.factory
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * 构造 [Bot] 的工厂.
@@ -14,58 +18,13 @@ import net.mamoe.mirai.utils.MiraiLogger
  */
 interface BotFactory {
     /**
-     * 在当前 CoroutineScope 下构造 Bot 实例
-     * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
-     * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
-     *
-     * ```kotlin
-     * suspend fun myProcess(){
-     *   TIMPC.Bot(account, logger)
-     * }
-     * ```
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    suspend fun Bot(account: BotAccount, logger: MiraiLogger? = null): Bot
+    fun Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)? = null) : Bot
 
     /**
-     * 在当前 CoroutineScope 下构造 Bot 实例
-     * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
-     * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
-     *
-     * ```kotlin
-     * suspend fun myProcess(){
-     *   TIMPC.Bot(account, logger)
-     * }
-     * ```
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    suspend fun Bot(qq: Long, password: String, logger: MiraiLogger? = null): Bot
-
-    /**
-     * 在特定的 CoroutineScope 下构造 Bot 实例
-     * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
-     * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
-     *
-     * ```kotlin
-     * fun myProcess(){
-     *   TIMPC.run {
-     *     GlobalScope.Bot(account, logger)
-     *   }
-     * }
-     * ```
-     */
-    fun CoroutineScope.Bot(qq: Long, password: String, logger: MiraiLogger? = null): Bot
-
-    /**
-     * 在特定的 CoroutineScope 下构造 Bot 实例
-     * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
-     * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
-     *
-     * ```kotlin
-     * fun myProcess(){
-     *   TIMPC.run {
-     *     GlobalScope.Bot(account, logger)
-     *   }
-     * }
-     * ```
-     */
-    fun CoroutineScope.Bot(account: BotAccount, logger: MiraiLogger? = null): Bot
+    fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)? = null): Bot =
+        this.Bot(BotAccount(qq, password), configuration)
 }

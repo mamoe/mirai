@@ -9,21 +9,18 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.coroutines.CoroutineContext
 
 internal expect class QQAndroidBot(
     account: BotAccount,
-    logger: MiraiLogger?,
-    context: CoroutineContext
+    configuration: BotConfiguration
 ) : QQAndroidBotBase
 
 @UseExperimental(MiraiInternalAPI::class)
 internal abstract class QQAndroidBotBase constructor(
     account: BotAccount,
-    logger: MiraiLogger?,
-    context: CoroutineContext
-) : BotImpl<QQAndroidBotNetworkHandler>(account, logger, context) {
+    configuration: BotConfiguration
+) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
     override val qqs: ContactList<QQ>
         get() = TODO("not implemented")
 

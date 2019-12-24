@@ -2,8 +2,7 @@
 
 package net.mamoe.mirai
 
-import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.BotConfiguration
 
 // Do not use ServiceLoader. Probably not working on MPP
 private val factory = run {
@@ -22,69 +21,13 @@ private val factory = run {
 )
 
 /**
- * 加载现有协议的 [BotFactory], 并调用其 [BotFactory.Bot]
- *
- * 在当前 CoroutineScope 下构造 Bot 实例
- * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
- * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
- *
- * ```kotlin
- * suspend fun myProcess(){
- *   TIMPC.Bot(account, logger)
- * }
- * ```
+ * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
-suspend fun Bot(account: BotAccount, logger: MiraiLogger? = null): Bot =
-    factory.Bot(account, logger)
+fun Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)? = null): Bot =
+    factory.Bot(account, configuration)
 
 /**
- * 加载现有协议的 [BotFactory], 并调用其 [BotFactory.Bot]
- *
- * 在当前 CoroutineScope 下构造 Bot 实例
- * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
- * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
- *
- * ```kotlin
- * suspend fun myProcess(){
- *   TIMPC.Bot(account, logger)
- * }
- * ```
+ * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
-suspend fun Bot(qq: Long, password: String, logger: MiraiLogger? = null): Bot =
-    factory.Bot(qq, password, logger)
-
-/**
- * 加载现有协议的 [BotFactory], 并调用其 [BotFactory.Bot]
- *
- * 在特定的 CoroutineScope 下构造 Bot 实例
- * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
- * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
- *
- * ```kotlin
- * fun myProcess(){
- *   TIMPC.run {
- *     GlobalScope.Bot(account, logger)
- *   }
- * }
- * ```
- */
-fun CoroutineScope.Bot(qq: Long, password: String, logger: MiraiLogger? = null): Bot =
-    factory.run { this@Bot.Bot(qq, password, logger) }
-
-/**
- * 加载现有协议的 [BotFactory], 并调用其 [BotFactory.Bot]
- *
- * 在特定的 CoroutineScope 下构造 Bot 实例
- * 该 Bot 实例的生命周期将会跟随这个 CoroutineScope.
- * 这个 CoroutineScope 也会等待 Bot 的结束才会结束.
- *
- * ```kotlin
- * fun myProcess(){
- *   TIMPC.run {
- *     GlobalScope.Bot(account, logger)
- *   }
- * }
- * ```
- */
-fun CoroutineScope.Bot(account: BotAccount, logger: MiraiLogger? = null): Bot =
-    factory.run { this@Bot.Bot(account, logger) }
+fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)? = null): Bot =
+    factory.Bot(qq, password, configuration)

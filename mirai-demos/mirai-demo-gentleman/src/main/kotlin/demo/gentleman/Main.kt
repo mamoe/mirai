@@ -49,27 +49,24 @@ suspend fun main() {
             id = 913366033,
             password = "a18260132383"
         )
-    ).alsoLogin()
+    ) {
+        // override config here.
+    }.alsoLogin()
 
-    /**
-     * 监听所有事件
-     */
+    // 任何可以监听的对象都继承 Subscribable, 因此这个订阅会订阅全部的事件.
     GlobalScope.subscribeAlways<Subscribable> {
         //bot.logger.verbose("收到了一个事件: $this")
     }
 
+    // 全局范围订阅事件, 不受 bot 实例影响
     GlobalScope.subscribeAlways<ReceiveFriendAddRequestEvent> {
         it.approve()
     }
 
-    GlobalScope.subscribeGroupMessages {
+    // 订阅来自这个 bot 的群消息事件
+    bot.subscribeGroupMessages {
         "群资料" reply {
             group.updateGroupInfo().toString().reply()
-        }
-
-        startsWith("mt2months") {
-            val at: At by message
-            at.member().mute(1)
         }
 
         startsWith("mute") {
@@ -83,6 +80,7 @@ suspend fun main() {
         }
     }
 
+    // 订阅来自这个 bot 的消息事件, 可以是群消息也可以是好友消息
     bot.subscribeMessages {
         always {
         }

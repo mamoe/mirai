@@ -3,6 +3,7 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmStatic
 
@@ -21,7 +22,17 @@ expect var DefaultCaptchaSolver: CaptchaSolver
 /**
  * 网络和连接配置
  */
-class BotConfiguration : CoroutineContext.Element {
+class BotConfiguration {
+    /**
+     * 日志记录器
+     */
+    var logger: PlatformLogger? = null
+
+    /**
+     * 父 [CoroutineContext]
+     */
+    var parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+
     /**
      * 连接每个服务器的时间
      */
@@ -68,15 +79,11 @@ class BotConfiguration : CoroutineContext.Element {
      */
     var logPreviousMessages: Boolean = false
 
-    companion object Key : CoroutineContext.Key<BotConfiguration> {
+    companion object {
         /**
          * 默认的配置实例
          */
         @JvmStatic
         val Default = BotConfiguration()
     }
-
-    override val key: CoroutineContext.Key<*> get() = Key
 }
-
-suspend inline fun currentBotConfiguration(): BotConfiguration = coroutineContext[BotConfiguration] ?: error("No BotConfiguration found")

@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.io.PlatformDatagramChannel
  * - SKey 刷新 [RequestSKeyPacket]
  * - 所有数据包处理和发送
  *
- * [BotNetworkHandler.close] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
+ * [BotNetworkHandler.dispose] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
  *
  * A BotNetworkHandler is used to connect with Tencent servers.
  */
@@ -46,7 +46,7 @@ abstract class BotNetworkHandler : CoroutineScope {
     /**
      * 关闭网络接口, 停止所有有关协程和任务
      */
-    open fun close(cause: Throwable? = null) {
+    open fun dispose(cause: Throwable? = null) {
         supervisor.cancel(CancellationException("handler closed", cause))
     }
 
