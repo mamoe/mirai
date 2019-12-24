@@ -1,7 +1,7 @@
 package net.mamoe.mirai.message.data
 
 
-inline class PlainText(override val stringValue: String) : Message {
+inline class PlainText(val stringValue: String) : Message {
     override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
 

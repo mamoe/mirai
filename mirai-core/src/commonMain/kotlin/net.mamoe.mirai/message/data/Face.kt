@@ -6,8 +6,7 @@ import kotlin.jvm.JvmStatic
  * QQ 自带表情
  */
 inline class Face(val id: FaceId) : Message {
-    override val stringValue: String get() = "[face${id.value}]"
-    override fun toString(): String = stringValue
+    override fun toString(): String = "[face${id.value}]"
 
     companion object Key : Message.Key<Face>
 }

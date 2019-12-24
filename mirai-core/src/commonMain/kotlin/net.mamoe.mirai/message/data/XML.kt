@@ -7,7 +7,7 @@ package net.mamoe.mirai.message.data
  *
  * @see buildXMLMessage
  */
-inline class XMLMessage(override val stringValue: String) : Message,
+inline class XMLMessage(val stringValue: String) : Message,
     SingleOnly {
     override fun followedBy(tail: Message): Nothing = error("XMLMessage Message cannot be followed")
     override fun toString(): String = stringValue

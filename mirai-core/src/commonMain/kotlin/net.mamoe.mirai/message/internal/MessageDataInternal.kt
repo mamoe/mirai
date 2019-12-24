@@ -242,7 +242,7 @@ fun MessageChain.toPacket(): ByteReadPacket = buildPacket {
 
                     writeShortLVPacket {
                         writeByte(0x01)
-                        writeShortLVString(stringValue) // 这个应该是 "@群名", 手机上面会显示这个消息, 电脑会显示下面那个
+                        writeShortLVString(message.toString()) // 这个应该是 "@群名", 手机上面会显示这个消息, 电脑会显示下面那个
                         // 06 00 0D 00 01 00 00 00 08 00 76 E4 B8 DD 00 00
                         writeHex("06 00 0D 00 01 00 00 00 08 00")
                         writeQQ(target)

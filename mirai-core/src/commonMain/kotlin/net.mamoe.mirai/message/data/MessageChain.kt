@@ -20,8 +20,6 @@ import kotlin.reflect.KProperty
  */
 interface MessageChain : Message, MutableList<Message> {
     // region Message override
-    override val stringValue: String
-
     override operator fun contains(sub: String): Boolean
     override fun followedBy(tail: Message): MessageChain
     // endregion
@@ -185,10 +183,7 @@ class EmptyMessageChain : MessageChain {
             toIndex
         ) else throw IndexOutOfBoundsException("given args that from $fromIndex to $toIndex, but the list is empty")
 
-    override val stringValue: String
-        get() = if (initialized) delegate.stringValue else ""
-
-    override fun toString(): String = stringValue
+    override fun toString(): String = if (initialized) delegate.toString() else ""
 
     override fun contains(sub: String): Boolean = if (initialized) delegate.contains(sub) else false
     override fun contains(element: Message): Boolean = if (initialized) delegate.contains(element) else false
@@ -240,8 +235,6 @@ class EmptyMessageChain : MessageChain {
 object NullMessageChain : MessageChain {
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> = error("accessing NullMessageChain")
 
-    override val stringValue: String get() = "null"
-
     override fun toString(): String = "null"
 
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
@@ -291,9 +284,7 @@ internal inline class MessageChainImpl constructor(
     constructor(vararg messages: Message) : this(messages.toMutableList())
 
     // region Message override
-    override val stringValue: String get() = this.delegate.joinToString("") { it.stringValue }
-
-    override fun toString(): String = stringValue
+    override fun toString(): String =  this.delegate.joinToString("") { it.toString() }
 
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
     override fun followedBy(tail: Message): MessageChain {
@@ -342,8 +333,6 @@ internal inline class SingleMessageChainImpl(
     MessageChain {
 
     // region Message override
-    override val stringValue: String get() = this.delegate.stringValue
-
     override operator fun contains(sub: String): Boolean = delegate.contains(sub)
     override fun followedBy(tail: Message): MessageChain {
         require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
@@ -354,7 +343,7 @@ internal inline class SingleMessageChainImpl(
     override fun plusAssign(message: Message) =
         throw UnsupportedOperationException("SingleMessageChainImpl cannot be plusAssigned")
 
-    override fun toString(): String = stringValue
+    override fun toString(): String = delegate.toString()
     // endregion
 
     // region MutableList override

@@ -48,18 +48,6 @@ import net.mamoe.mirai.contact.sendMessage
  */
 interface Message {
     /**
-     * 易读的 [String] 值
-     * 如:
-     * ```
-     * [@123456789]
-     * [face123]
-     * ```
-     *
-     * 使用 [toString] 将得到同样的值
-     */
-    val stringValue: String
-
-    /**
      * 类型 Key.
      * 除 [MessageChain] 外, 每个 [Message] 类型都拥有一个`伴生对象`(companion object) 来持有一个 Key
      * 在 [MessageChain.get] 时将会使用到这个 Key 进行判断类型.
@@ -73,7 +61,7 @@ interface Message {
     /**
      * 将 [stringValue] 与 [other] 比较
      */
-    infix fun eq(other: String): Boolean = this.stringValue == other
+    infix fun eq(other: String): Boolean = this.toString() == other
 
     operator fun contains(sub: String): Boolean = false
 

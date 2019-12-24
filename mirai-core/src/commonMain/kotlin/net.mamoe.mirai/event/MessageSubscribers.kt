@@ -163,7 +163,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         crossinline onEvent: @MessageDsl suspend T.(String) -> Unit
     ): Listener<T> =
         content({ it.startsWith(prefix) }) {
-            if (removePrefix) this.onEvent(this.message.stringValue.substringAfter(prefix))
+            if (removePrefix) this.onEvent(this.message.toString().substringAfter(prefix))
             else onEvent(this, this.message.toString())
         }
 

@@ -14,8 +14,7 @@ import net.mamoe.mirai.utils.ExternalImage
  * @param id 这个图片的 [ImageId]
  */
 inline class Image(inline val id: ImageId) : Message {
-    override val stringValue: String get() = "[${id.value}]"
-    override fun toString(): String = stringValue
+    override fun toString(): String =  "[${id.value}]"
 
     companion object Key : Message.Key<Image>
 }
