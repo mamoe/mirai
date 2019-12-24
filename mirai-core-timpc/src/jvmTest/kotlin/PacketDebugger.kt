@@ -379,7 +379,7 @@ when (idHex.substring(0, 5)) {
 internal object DebugNetworkHandler : BotNetworkHandler(), CoroutineScope {
     override val supervisor: CompletableJob = SupervisorJob()
 
-    override val bot: Bot = TIMPC.run { this@DebugNetworkHandler.Bot(qq ?: 0L, "", null) }
+    override val bot: Bot = TIMPC.Bot(qq ?: 0L, "", null)
 
     override suspend fun login() {}
 

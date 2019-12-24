@@ -33,11 +33,13 @@ fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
     this.writeFully(byteArray)
 }
 
-fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
+fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
-        writeUShort((lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL).toUShort())
+        val length = (lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL)
+        writeUShort(length.toUShort())
         writePacket(it)
+        return length.toInt()
     }
 
 fun BytePacketBuilder.writeUVarIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =

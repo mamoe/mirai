@@ -255,9 +255,8 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     if (e.cause !is CancellationException) {
                         bot.logger.error("Caught SendPacketInternalException: ${e.cause?.message}")
                     }
-                    val configuration = bot.configuration
-                    delay(configuration.firstReconnectDelayMillis)
-                    bot.tryReinitializeNetworkHandler(configuration, e)
+                    delay(bot.configuration.firstReconnectDelayMillis)
+                    bot.tryReinitializeNetworkHandler(e)
                     return@withContext
                 } finally {
                     buffer.release(IoBuffer.Pool)
@@ -468,7 +467,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                                     } == null) {
                                     bot.logger.warning("Heartbeat timed out")
                                     delay(configuration.firstReconnectDelayMillis)
-                                    bot.tryReinitializeNetworkHandler(configuration, HeartbeatTimeoutException())
+                                    bot.tryReinitializeNetworkHandler(HeartbeatTimeoutException())
                                     return@launch
                                 }
                             }

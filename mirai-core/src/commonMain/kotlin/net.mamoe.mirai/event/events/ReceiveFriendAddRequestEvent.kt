@@ -22,6 +22,6 @@ class ReceiveFriendAddRequestEvent(
      *
      * @param remark 备注名, 不设置则需为 `null`
      */
-    @JvmOverloads // TODO: 2019/12/17 协议抽象
+    @JvmOverloads
     suspend fun approve(remark: String? = null): Unit = qq.bot.approveFriendAddRequest(qq.id, remark)
 }

@@ -41,17 +41,17 @@ class MiraiService : Service() {
 
     private fun login(qq: Long, pwd: String) {
         GlobalScope.launch {
-            mBot = TIMPC.Bot(qq, pwd).apply {
+            mBot = TIMPC.Bot(qq, pwd) {
+                captchaSolver = {
+                    val bytes = it.readBytes()
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    mCaptchaDeferred = CompletableDeferred()
+                    mCallback?.get()?.onCaptcha(bitmap)
+                    mCaptchaDeferred.await()
+                }
+            }.apply {
                 try {
-                    login {
-                        captchaSolver = {
-                            val bytes = it.readBytes()
-                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                            mCaptchaDeferred = CompletableDeferred()
-                            mCallback?.get()?.onCaptcha(bitmap)
-                            mCaptchaDeferred.await()
-                        }
-                    }
+                    login()
                     mCallback?.get()?.onSuccess()
                 } catch (e: LoginFailedException) {
                     mCallback?.get()?.onFailed()
