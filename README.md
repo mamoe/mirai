@@ -6,8 +6,10 @@
 **[English](README-eng.md)**  
 
 **TIM PC 协议** 跨平台 QQ 协议支持库.  
-部分协议来自网络上开源项目  
-**一切开发旨在学习，请勿用于非法用途**
+**纯 Kotlin 实现协议和支持框架. 目前可运行在 JVM 或 Android.**  
+部分协议来自网络上开源项目.   
+
+**一切开发旨在学习，请勿用于非法用途**  
 
 您可在 Gitter 提问, 或加入 QQ 群: 655057127
 
@@ -15,12 +17,20 @@
 在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划  
 在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
 
-## Thank you!
+## Contribution
+
+我（Him188）将会一直维护这个项目，除非遇到不可抗力因素。
+
+我们欢迎一切形式的贡献。  
+我们也期待有更多人能加入 Mirai 的开发。  
+
+若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
+
 您的 star 是对我们最大的鼓励(点击项目右上角);  
 若要关注版本更新, 请点击 star 旁边的 watch
 
 ## Use as a library
-把 Mirai 作为库内置于您的项目中使用.  
+**把 Mirai 作为库内置于您的项目中使用.**  
 Mirai 只上传在 `jcenter`, 因此请确保在 `build.gradle` 添加 `jcenter()` 仓库  
 ```kotlin
 repositories{
@@ -69,12 +79,6 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 2. Import as Gradle project
 3. 运行 Demo 程序: [mirai-demo](#mirai-demo) 示例和演示程序
 
-**转到[开发文档](#Development-Guide---Kotlin)**
-
-## Contribution
-
-我们欢迎一切形式的贡献. 若您有兴趣为 Mirai 实现 JS, iOS, Native 平台, 请联系我(`Him188@mamoe.net`).  
-若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
 
 ## Build Requirements
 
