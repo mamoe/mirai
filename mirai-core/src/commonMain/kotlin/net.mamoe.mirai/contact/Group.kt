@@ -4,7 +4,7 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.data.GroupInfo
-import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import net.mamoe.mirai.utils.coerceAtLeastOrFail
 
 
 /**

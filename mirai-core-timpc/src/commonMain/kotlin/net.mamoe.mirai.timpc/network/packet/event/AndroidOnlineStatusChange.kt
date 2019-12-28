@@ -6,7 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.packet.PacketVersion
+import net.mamoe.mirai.utils.PacketVersion
 import net.mamoe.mirai.utils.io.readBoolean
 
 

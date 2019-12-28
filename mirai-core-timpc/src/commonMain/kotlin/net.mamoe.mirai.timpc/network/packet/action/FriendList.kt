@@ -5,8 +5,9 @@ package net.mamoe.mirai.timpc.network.packet.action
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.network.packet.SessionPacketFactory
+import net.mamoe.mirai.timpc.network.packet.PacketId
+
+import net.mamoe.mirai.timpc.network.packet.SessionPacketFactory
 
 
 // 0001

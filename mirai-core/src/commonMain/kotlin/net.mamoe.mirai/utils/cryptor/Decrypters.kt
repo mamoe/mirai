@@ -1,18 +1,10 @@
-package net.mamoe.mirai.network.packet
+package net.mamoe.mirai.utils.cryptor
 
 import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
-import net.mamoe.mirai.utils.decryptBy
 import net.mamoe.mirai.utils.io.encryptAndWrite
 
-
-/**
- * 会话密匙
- */
-inline class SessionKey(override val value: ByteArray) : DecrypterByteArray {
-    companion object Type : DecrypterType<SessionKey>
-}
 
 /**
  * [ByteArray] 解密器

@@ -1,4 +1,4 @@
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.cryptor
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
@@ -29,7 +29,8 @@ class DecryptionFailedException : Exception {
  * @param key 长度至少为 16
  * @throws DecryptionFailedException 解密错误时
  */
-fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray = TEA.encrypt(this, key, sourceLength = length)
+fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray =
+    TEA.encrypt(this, key, sourceLength = length)
 
 /**
  * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 加密.
@@ -339,11 +340,13 @@ private object TEA {
 
     @PublishedApi
     @JvmStatic
-    internal fun encrypt(source: ByteArray, key: ByteArray, sourceLength: Int = source.size): ByteArray = doOption(source, key, sourceLength, true)
+    internal fun encrypt(source: ByteArray, key: ByteArray, sourceLength: Int = source.size): ByteArray =
+        doOption(source, key, sourceLength, true)
 
     @PublishedApi
     @JvmStatic
-    internal fun decrypt(source: ByteArray, key: ByteArray, sourceLength: Int = source.size): ByteArray = doOption(source, key, sourceLength, false)
+    internal fun decrypt(source: ByteArray, key: ByteArray, sourceLength: Int = source.size): ByteArray =
+        doOption(source, key, sourceLength, false)
 
     private fun ByteArray.pack(offset: Int, len: Int): Long {
         var result: Long = 0

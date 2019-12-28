@@ -8,7 +8,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.EventPacket
-import net.mamoe.mirai.network.packet.PacketVersion
+import net.mamoe.mirai.utils.PacketVersion
 import net.mamoe.mirai.utils.io.readQQ
 
 

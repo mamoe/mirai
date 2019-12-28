@@ -16,14 +16,17 @@ import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.packet.*
+
 import net.mamoe.mirai.timpc.TIMPC
 import net.mamoe.mirai.timpc.network.TIMProtocol
+import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.timpc.network.packet.event.FriendOnlineStatusChangedPacket
 import net.mamoe.mirai.timpc.network.packet.event.IgnoredEventPacket
 import net.mamoe.mirai.timpc.network.packet.login.*
-import net.mamoe.mirai.utils.DecryptionFailedException
-import net.mamoe.mirai.utils.decryptBy
+import net.mamoe.mirai.utils.cryptor.Decrypter
+import net.mamoe.mirai.utils.cryptor.DecryptionFailedException
+import net.mamoe.mirai.utils.cryptor.NoDecrypter
+import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
 import org.pcap4j.core.BpfProgram.BpfCompileMode
 import org.pcap4j.core.PacketListener
@@ -181,13 +184,13 @@ internal object PacketDebugger {
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
     val sessionKey: SessionKey =
-        SessionKey("95 F3 24 8E 7B B6 62 AA 98 C0 EE 45 CE CE 2B 69".hexToBytes())
+        SessionKey("D8 D0 B0 DE 37 53 9B 05 A5 E7 AB 96 B2 AC AD EC".hexToBytes())
     // TODO: 2019/12/7 无法访问 internal 是 kotlin bug, KT-34849
 
     /**
      * null 则不筛选
      */
-    val qq: Long? = 761025446
+    val qq: Long? = null
     /**
      * 打开后则记录每一个包到文件.
      */
@@ -204,7 +207,7 @@ internal object PacketDebugger {
         //println("raw = " + data.toUHexString())
         data.read {
             discardExact(3)
-            val id = net.mamoe.mirai.network.packet.matchPacketId(readUShort())
+            val id = matchPacketId(readUShort())
             val sequenceId = readUShort()
             val packetQQ = readQQ()
             if (id == KnownPacketId.get<HeartbeatPacket>() || (qq != null && packetQQ != qq))
@@ -301,7 +304,7 @@ internal object PacketDebugger {
         // 3E 03 3F A2 02 00 00 00 01 2E 01 00 00 69 35
 
         discardExact(3)//head
-        val id = net.mamoe.mirai.network.packet.matchPacketId(readUShort())
+        val id = net.mamoe.mirai.timpc.network.packet.matchPacketId(readUShort())
         val sequence = readUShort().toUHexString()
         if (IgnoredPacketIdList.contains(id)) {
             return

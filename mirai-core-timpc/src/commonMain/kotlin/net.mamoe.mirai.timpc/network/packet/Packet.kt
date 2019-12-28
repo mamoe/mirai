@@ -1,4 +1,4 @@
-package net.mamoe.mirai.network.packet
+package net.mamoe.mirai.timpc.network.packet
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes

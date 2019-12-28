@@ -1,9 +1,18 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.network.packet
+package net.mamoe.mirai.timpc.network.packet
+
 
 import net.mamoe.mirai.utils.io.toUHexString
 
+
+/**
+ * 包 ID.
+ */
+interface PacketId {
+    val value: UShort
+    val factory: PacketFactory<*, *>
+}
 
 /**
  * 通过 [value] 匹配一个 [IgnoredPacketId] 或 [KnownPacketId], 无匹配则返回一个 [UnknownPacketId].
@@ -13,13 +22,6 @@ fun matchPacketId(value: UShort): PacketId =
         ?: KnownPacketId.entries.firstOrNull { it.value.value == value }?.value
         ?: UnknownPacketId(value)
 
-/**
- * 包 ID.
- */
-interface PacketId {
-    val value: UShort
-    val factory: PacketFactory<*, *>
-}
 
 /**
  * 用于代表 `null`. 调用任何属性时都将会得到一个 [error]
@@ -49,7 +51,8 @@ inline class IgnoredPacketId constructor(override val value: UShort) : PacketId 
     override fun toString(): String = "IgnoredPacketId(${value.toUHexString()})"
 }
 
-class KnownPacketId(override val value: UShort, override val factory: PacketFactory<*, *>) : PacketId {
+class KnownPacketId(override val value: UShort, override val factory: PacketFactory<*, *>) :
+    PacketId {
     companion object : MutableMap<UShort, KnownPacketId> by mutableMapOf() {
         operator fun set(key: UShort, factory: PacketFactory<*, *>) {
             this[key] = KnownPacketId(key, factory)
@@ -65,7 +68,8 @@ class KnownPacketId(override val value: UShort, override val factory: PacketFact
             return null
         }
 
-        inline fun <reified PF : PacketFactory<*, *>> get(): KnownPacketId = getOrNull<PF>() ?: throw NoSuchElementException()
+        inline fun <reified PF : PacketFactory<*, *>> get(): KnownPacketId = getOrNull<PF>()
+            ?: throw NoSuchElementException()
     }
 
     override fun toString(): String = (factory::class.simpleName ?: factory::class.simpleName) + "(${value.toUHexString()})"

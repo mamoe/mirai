@@ -5,9 +5,13 @@ package net.mamoe.mirai.timpc.network.packet.login
 import kotlinx.io.core.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.network.TIMProtocol
+import net.mamoe.mirai.timpc.network.packet.OutgoingPacket
+import net.mamoe.mirai.timpc.network.packet.PacketFactory
+import net.mamoe.mirai.timpc.network.packet.PacketId
 import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
+import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
+import net.mamoe.mirai.utils.cryptor.DecrypterType
 import net.mamoe.mirai.utils.io.*
 
 internal object CaptchaKey : DecrypterByteArray,

@@ -11,9 +11,6 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageId0x03
 import net.mamoe.mirai.message.data.ImageId0x06
-import net.mamoe.mirai.network.packet.KnownPacketId
-import net.mamoe.mirai.network.packet.OutgoingPacket
-import net.mamoe.mirai.network.packet.SessionKey
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.GroupImpl
@@ -21,13 +18,15 @@ import net.mamoe.mirai.timpc.network.MemberImpl
 import net.mamoe.mirai.timpc.network.QQImpl
 import net.mamoe.mirai.timpc.network.TIMPCBotNetworkHandler
 import net.mamoe.mirai.timpc.network.handler.TemporaryPacketHandler
+import net.mamoe.mirai.timpc.network.packet.KnownPacketId
+import net.mamoe.mirai.timpc.network.packet.OutgoingPacket
+import net.mamoe.mirai.timpc.network.packet.SessionKey
 import net.mamoe.mirai.timpc.network.packet.action.*
 import net.mamoe.mirai.timpc.network.packet.event.EventPacketFactory
 import net.mamoe.mirai.timpc.network.packet.event.FriendOnlineStatusChangedPacket
 import net.mamoe.mirai.timpc.network.packet.login.*
 import net.mamoe.mirai.timpc.utils.assertUnreachable
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind

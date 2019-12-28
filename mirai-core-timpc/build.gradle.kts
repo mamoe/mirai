@@ -104,7 +104,7 @@ kotlin {
                 api(kotlin("test-junit", kotlinVersion))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
 
-                //runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
+                runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
     }

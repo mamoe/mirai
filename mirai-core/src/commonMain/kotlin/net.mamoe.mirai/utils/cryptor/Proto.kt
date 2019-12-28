@@ -1,6 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.utils.cryptor
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
@@ -24,7 +24,11 @@ import kotlin.jvm.JvmStatic
  *
  * https://www.jianshu.com/p/f888907adaeb
  */
-fun ProtoFieldId(serializedId: UInt): ProtoFieldId = ProtoFieldId(protoFieldNumber(serializedId), protoType(serializedId))
+fun ProtoFieldId(serializedId: UInt): ProtoFieldId =
+    ProtoFieldId(
+        protoFieldNumber(serializedId),
+        protoType(serializedId)
+    )
 
 data class ProtoFieldId(
     val fieldNumber: Int,
@@ -78,7 +82,8 @@ enum class ProtoType(val value: Byte, private val typeName: String) {
  *
  * serializedId = (fieldNumber << 3) | wireType
  */
-fun protoType(number: UInt): ProtoType = ProtoType.valueOf(number.toInt().shl(29).ushr(29).toByte())
+fun protoType(number: UInt): ProtoType =
+    ProtoType.valueOf(number.toInt().shl(29).ushr(29).toByte())
 
 /**
  * ProtoBuf 序列化后的 id 转为序列前标记的 id

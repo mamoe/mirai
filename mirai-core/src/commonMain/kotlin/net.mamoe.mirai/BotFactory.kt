@@ -3,7 +3,7 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.network.packet.NullPacketId.factory
+
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.coroutines.CoroutineContext

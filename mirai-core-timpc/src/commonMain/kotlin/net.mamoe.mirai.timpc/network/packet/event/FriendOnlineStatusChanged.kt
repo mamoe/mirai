@@ -5,11 +5,12 @@ package net.mamoe.mirai.timpc.network.packet.event
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
+import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.event.events.FriendStatusChanged
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.packet.PacketId
-import net.mamoe.mirai.network.packet.SessionPacketFactory
-import net.mamoe.mirai.utils.OnlineStatus
+import net.mamoe.mirai.timpc.network.packet.PacketId
+
+import net.mamoe.mirai.timpc.network.packet.SessionPacketFactory
 import net.mamoe.mirai.utils.io.readQQ
 
 /**
@@ -21,7 +22,8 @@ internal object FriendOnlineStatusChangedPacket : SessionPacketFactory<FriendSta
         val qq = readQQ()
         discardExact(8)
         val statusId = readUByte()
-        val status = OnlineStatus(statusId)
+
+        val status = OnlineStatus.ofId(statusId.toInt())
         return FriendStatusChanged(handler.bot.getQQ(qq), status)
     }
 

@@ -41,7 +41,7 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 dependencies {
 
-    implementation(files("../mirai-core-timpc/build/classes/kotlin/jvm/main")) // IDE bug
+    runtimeOnly(files("../mirai-core-timpc/build/classes/kotlin/jvm/main")) // IDE bug
     implementation(project(":mirai-core-timpc"))
     // runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // classpath is not added correctly by IDE
 

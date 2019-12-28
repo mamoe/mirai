@@ -7,10 +7,13 @@ import net.mamoe.mirai.data.Gender
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.LoginResult
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.timpc.network.TIMProtocol
+import net.mamoe.mirai.timpc.network.packet.OutgoingPacket
+import net.mamoe.mirai.timpc.network.packet.PacketFactory
+import net.mamoe.mirai.timpc.network.packet.PacketId
 import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cryptor.*
 import net.mamoe.mirai.utils.io.*
 
 internal object ShareKey : DecrypterByteArray,
@@ -366,4 +369,9 @@ private fun BytePacketBuilder.writePart2() {
     this.writeCRC32()
 }
 
+internal fun BytePacketBuilder.writeCRC32() = writeCRC32(getRandomByteArray(16))
 
+internal fun BytePacketBuilder.writeCRC32(key: ByteArray) {
+    writeFully(key)//key
+    writeInt(crc32(key))
+}

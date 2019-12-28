@@ -6,8 +6,9 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.FriendNameRemark
-import net.mamoe.mirai.network.packet.*
-import net.mamoe.mirai.timpc.network.packet.buildSessionPacket
+import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.utils.PacketVersion
+
 import net.mamoe.mirai.utils.io.readUShortLVString
 import net.mamoe.mirai.utils.io.writeQQ
 import net.mamoe.mirai.utils.io.writeZero

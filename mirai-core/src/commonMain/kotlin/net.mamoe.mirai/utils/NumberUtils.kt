@@ -1,4 +1,4 @@
-package net.mamoe.mirai.utils.internal
+package net.mamoe.mirai.utils
 
 /**
  * 要求 [this] 最小为 [min].

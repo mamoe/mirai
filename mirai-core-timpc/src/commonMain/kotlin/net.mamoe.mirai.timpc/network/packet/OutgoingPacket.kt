@@ -1,13 +1,15 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "unused", "MemberVisibilityCanBePrivate")
 
-package net.mamoe.mirai.network.packet
+package net.mamoe.mirai.timpc.network.packet
 
 import kotlinx.io.core.*
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.network.BotNetworkHandler
+
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.cryptor.encryptAndWrite
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.writeQQ
 import kotlin.contracts.ExperimentalContracts
@@ -63,17 +65,14 @@ inline fun PacketFactory<*, *>.buildOutgoingPacket0(
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    BytePacketBuilder(headerSizeHint).use {
-        with(it) {
-            writeFully(head)
-            writeFully(ver)
-            writeUShort(id.value)
-            writeUShort(sequenceId)
-            block(this)
-            writeFully(tail)
-        }
-        return OutgoingPacket(name, id, sequenceId, it.build())
-    }
+    return OutgoingPacket(name, id, sequenceId, buildPacket(headerSizeHint) {
+        writeFully(head)
+        writeFully(ver)
+        writeUShort(id.value.toUShort())
+        writeUShort(sequenceId)
+        block(this)
+        writeFully(tail)
+    })
 }
 
 

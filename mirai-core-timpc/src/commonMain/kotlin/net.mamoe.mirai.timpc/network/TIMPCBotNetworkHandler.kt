@@ -7,6 +7,7 @@ import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.LoginResult
+import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.Cancellable
@@ -14,15 +15,17 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotLoginSucceedEvent
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.network.packet.*
 import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.network.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.timpc.network.handler.TemporaryPacketHandler
+import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.timpc.network.packet.login.*
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.LoginFailedException
-import net.mamoe.mirai.utils.OnlineStatus
+import net.mamoe.mirai.utils.NoLog
+import net.mamoe.mirai.utils.cryptor.Decrypter
+import net.mamoe.mirai.utils.cryptor.NoDecrypter
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext

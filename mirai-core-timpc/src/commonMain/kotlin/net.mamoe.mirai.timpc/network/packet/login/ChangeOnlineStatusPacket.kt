@@ -5,21 +5,20 @@ package net.mamoe.mirai.timpc.network.packet.login
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeFully
 import kotlinx.io.core.writeUByte
-import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
-import net.mamoe.mirai.utils.OnlineStatus
+import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.utils.cryptor.NoDecrypter
+import net.mamoe.mirai.utils.cryptor.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 
 /**
  * 改变在线状态: "我在线上", "隐身" 等
  */
-internal object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(
-    NoDecrypter
-) {
+internal object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacket.ChangeOnlineStatusResponse, NoDecrypter>(NoDecrypter) {
     operator fun invoke(
         bot: Long,
         sessionKey: SessionKey,
@@ -29,7 +28,7 @@ internal object ChangeOnlineStatusPacket : PacketFactory<ChangeOnlineStatusPacke
         writeFully(TIMProtocol.fixVer2)
         encryptAndWrite(sessionKey) {
             writeHex("01 00")
-            writeUByte(loginStatus.id)
+            writeUByte(loginStatus.id.toUByte())
             writeHex("00 01 00 01 00 04 00 00 00 00")
         }
     }

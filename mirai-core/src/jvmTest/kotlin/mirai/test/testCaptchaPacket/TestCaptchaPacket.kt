@@ -1,6 +1,6 @@
 package mirai.test.testCaptchaPacket
 
-import net.mamoe.mirai.utils.decryptBy
+import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.toUHexString
 

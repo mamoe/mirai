@@ -7,9 +7,11 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.utils.NoLog
+
 import net.mamoe.mirai.timpc.network.TIMProtocol
-import net.mamoe.mirai.timpc.network.packet.buildOutgoingPacket
+import net.mamoe.mirai.timpc.network.packet.*
+import net.mamoe.mirai.utils.cryptor.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeQQ
 

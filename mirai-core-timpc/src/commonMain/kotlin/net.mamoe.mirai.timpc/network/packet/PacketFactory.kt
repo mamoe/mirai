@@ -1,7 +1,8 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.network.packet
+package net.mamoe.mirai.timpc.network.packet
 
+import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
@@ -9,14 +10,16 @@ import kotlinx.io.core.readBytes
 import kotlinx.io.pool.useInstance
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.utils.cryptor.Decrypter
+import net.mamoe.mirai.utils.cryptor.DecrypterType
+import net.mamoe.mirai.utils.cryptor.readProtoMap
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toUHexString
-import net.mamoe.mirai.utils.readProtoMap
+
 
 /**
  * 一种数据包的处理工厂. 它可以解密解码服务器发来的这个包, 也可以编码加密要发送给服务器的这个包
@@ -40,7 +43,6 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
      */
     abstract suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler): TPacket
 
-    @Suppress("DEPRECATION")
     fun <T> ByteReadPacket.decodeProtoPacket(
         deserializer: DeserializationStrategy<T>,
         debuggingTag: String? = null
@@ -63,10 +65,16 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
     }
 
     companion object {
-        private val sequenceIdInternal = atomic(1)
+        private val sequenceId: AtomicInt = atomic(1)
 
-        @MiraiInternalAPI
-        fun atomicNextSequenceId(): UShort = sequenceIdInternal.getAndIncrement().toUShort()
+        fun atomicNextSequenceId(): UShort {
+            val id = sequenceId.getAndAdd(1)
+            if (id > Short.MAX_VALUE.toInt() * 2) {
+                sequenceId.value = 0
+                return atomicNextSequenceId()
+            }
+            return id.toUShort()
+        }
     }
 }
 

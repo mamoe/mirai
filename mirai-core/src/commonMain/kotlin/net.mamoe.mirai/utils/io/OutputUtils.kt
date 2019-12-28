@@ -4,15 +4,13 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.utils.Tested
+import net.mamoe.mirai.utils.coerceAtMostOrFail
+import net.mamoe.mirai.utils.cryptor.encryptBy
 import net.mamoe.mirai.utils.currentTime
 import net.mamoe.mirai.utils.deviceName
-import net.mamoe.mirai.utils.encryptBy
-import net.mamoe.mirai.utils.internal.coerceAtMostOrFail
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -27,6 +25,18 @@ fun BytePacketBuilder.writeRandom(length: Int) = repeat(length) { this.writeByte
 fun BytePacketBuilder.writeQQ(qq: Long) = this.writeUInt(qq.toUInt()) // same bit rep.
 fun BytePacketBuilder.writeGroup(groupId: GroupId) = this.writeUInt(groupId.value.toUInt())
 fun BytePacketBuilder.writeGroup(groupInternalId: GroupInternalId) = this.writeUInt(groupInternalId.value.toUInt())
+
+fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLength: Int) {
+    if (array.size <= maxLength) {
+        writeShort(array.size.toShort())
+        writeFully(array)
+    } else {
+        writeShort(maxLength.toShort())
+        repeat(maxLength) {
+            writeByte(array[it])
+        }
+    }
+}
 
 fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
     this.writeShort(byteArray.size.toShort())
@@ -62,8 +72,6 @@ fun BytePacketBuilder.writeHex(uHex: String) {
         }
     }
 }
-
-fun <T> BytePacketBuilder.writeProto(serializer: SerializationStrategy<T>, obj: T) = writeFully(ProtoBuf.dump(serializer, obj))
 
 
 fun BytePacketBuilder.writeTLV(tag: UByte, values: UByteArray) {

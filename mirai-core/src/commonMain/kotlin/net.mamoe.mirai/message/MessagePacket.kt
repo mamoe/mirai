@@ -10,7 +10,7 @@ import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.internal.coerceAtLeastOrFail
+import net.mamoe.mirai.utils.coerceAtLeastOrFail
 import kotlin.jvm.JvmName
 
 /**

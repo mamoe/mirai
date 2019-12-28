@@ -6,10 +6,10 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.packet.*
+import net.mamoe.mirai.utils.NoLog
 import net.mamoe.mirai.timpc.network.TIMPCBotNetworkHandler
 import net.mamoe.mirai.qqAccount
-import net.mamoe.mirai.timpc.network.packet.buildSessionPacket
+import net.mamoe.mirai.timpc.network.packet.*
 import net.mamoe.mirai.utils.io.readIoBuffer
 
 /**
