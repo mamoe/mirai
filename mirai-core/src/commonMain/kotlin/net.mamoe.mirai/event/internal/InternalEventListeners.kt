@@ -25,15 +25,6 @@ internal fun <L : Listener<E>, E : Subscribable> KClass<out E>.subscribeInternal
     return listener
 }
 
-/**
- * 事件监听器.
- *
- * @author Him188moe
- */
-internal sealed class ListenerImpl<in E : Subscribable> : Listener<E> {
-    abstract override suspend fun onEvent(event: E): ListeningStatus
-}
-
 @PublishedApi
 @Suppress("FunctionName")
 internal fun <E : Subscribable> CoroutineScope.Handler(handler: suspend (E) -> ListeningStatus): Handler<E> {
@@ -46,7 +37,7 @@ internal fun <E : Subscribable> CoroutineScope.Handler(handler: suspend (E) -> L
 @PublishedApi
 internal class Handler<in E : Subscribable>
 @PublishedApi internal constructor(parentJob: Job?, private val subscriberContext: CoroutineContext, @JvmField val handler: suspend (E) -> ListeningStatus) :
-    ListenerImpl<E>(), CompletableJob by Job(parentJob) {
+    Listener<E>, CompletableJob by Job(parentJob) {
 
     override suspend fun onEvent(event: E): ListeningStatus {
         if (isCompleted || isCancelled) return ListeningStatus.STOPPED
