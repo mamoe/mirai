@@ -38,7 +38,7 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = TIMPC.Bot(
+    val bot = TIMPC.Bot( // JVM 下也可以不写 `TIMPC.` 引用顶层函数
         readTestAccount() ?: BotAccount(//填写你的账号
             id = 1994701121,
             passwordPlainText = "123456"

@@ -15,11 +15,23 @@ interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    fun Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)? = null): Bot
+    fun Bot(account: BotAccount, configuration: BotConfiguration = BotConfiguration.Default): Bot
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)? = null): Bot =
+    fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
         this.Bot(BotAccount(qq, password), configuration)
 }
+
+/**
+ * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+ */
+inline fun BotFactory.Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)): Bot=
+    this.Bot(account, BotConfiguration().apply(configuration))
+
+/**
+ * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+ */
+inline fun BotFactory.Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
+    this.Bot(qq, password, BotConfiguration().apply(configuration))

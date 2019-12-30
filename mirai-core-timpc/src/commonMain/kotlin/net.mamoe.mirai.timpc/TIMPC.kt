@@ -15,6 +15,5 @@ object TIMPC : BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    override fun Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)?): Bot =
-        TIMPCBot(account, if (configuration == null) BotConfiguration.Default else BotConfiguration().apply(configuration))
+    override fun Bot(account: BotAccount, configuration: BotConfiguration): Bot = TIMPCBot(account, configuration)
 }
