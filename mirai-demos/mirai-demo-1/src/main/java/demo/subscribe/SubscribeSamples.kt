@@ -204,47 +204,47 @@ suspend fun directlySubscribe(bot: Bot) {
     // ```
     // 则这个 `runBlocking` 永远不会结束, 因为 `subscribeAlways` 在 `runBlocking` 的 `CoroutineScope` 下创建了一个 Job.
     // 正确的用法为:
-    bot.subscribeAlways<FriendMessage> { event ->
+    bot.subscribeAlways<FriendMessage> {
         // this: FriendMessageEvent
         // event: FriendMessageEvent
 
         // 获取第一个纯文本消息, 获取不到会抛出 NoSuchElementException
-        // val firstText = event.message.first<PlainText>()
+        // val firstText = message.first<PlainText>()
 
-        val firstText = event.message.firstOrNull<PlainText>()
+        val firstText = message.firstOrNull<PlainText>()
 
         // 获取第一个图片
-        val firstImage = event.message.firstOrNull<Image>()
+        val firstImage = message.firstOrNull<Image>()
 
         when {
-            event.message eq "你好" -> event.reply("你好!")
+            message eq "你好" -> reply("你好!")
 
-            "复读" in event.message -> event.sender.sendMessage(event.message)
+            "复读" in message -> sender.sendMessage(message)
 
-            "发群消息" in event.message -> 580266363.group().sendMessage(event.message.toString().substringAfter("发群消息"))
+            "发群消息" in message -> 580266363.group().sendMessage(message.toString().substringAfter("发群消息"))
 
-            "上传群图片" in event.message -> withTimeoutOrNull(5000) {
-                val filename = event.message.toString().substringAfter("上传群图片")
+            "上传群图片" in message -> withTimeoutOrNull(5000) {
+                val filename = message.toString().substringAfter("上传群图片")
                 val image = File(
                     "C:\\Users\\Him18\\Desktop\\$filename"
                 ).suspendToExternalImage()
                 920503456.group().uploadImage(image)
-                event.reply(image.groupImageId.value)
+                reply(image.groupImageId.value)
                 delay(100)
                 920503456.group().sendMessage(Image(image.groupImageId))
             }
 
-            "发群图片" in event.message -> {
-                920503456.group().sendMessage(Image(ImageId(event.message.toString().substringAfter("发群图片"))))
+            "发群图片" in message -> {
+                920503456.group().sendMessage(Image(ImageId(message.toString().substringAfter("发群图片"))))
             }
 
-            "发好友图片" in event.message -> {
-                event.reply(Image(ImageId(event.message.toString().substringAfter("发好友图片"))))
+            "发好友图片" in message -> {
+                reply(Image(ImageId(message.toString().substringAfter("发好友图片"))))
             }
 
-            event.message eq "发图片群2" -> 580266363.group().sendMessage(Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
+            message eq "发图片群2" -> 580266363.group().sendMessage(Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
 
-            event.message eq "发图片2" -> event.reply(PlainText("test") + Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
+            message eq "发图片2" -> reply(PlainText("test") + Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
         }
     }
 }
