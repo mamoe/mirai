@@ -6,19 +6,17 @@ import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
 
-fun <E> LockFreeLinkedList<E>.joinToString(
+inline fun <E> LockFreeLinkedList<E>.joinToString(
     separator: CharSequence = ", ",
     prefix: CharSequence = "[",
     postfix: CharSequence = "]",
-    transform: ((E) -> CharSequence)? = null
+    transform: ((E) -> CharSequence) = { it.toString() }
 ): String = prefix.toString() + buildString {
     this@joinToString.forEach {
-        if (transform != null) {
-            append(transform(it))
-        } else append(it)
+        append(transform(it))
         append(separator)
     }
-}.dropLast(2) + postfix
+}.dropLast(separator.length) + postfix
 
 /**
  * Returns a [List] containing all the elements in [this] in the same order
@@ -683,4 +681,4 @@ internal inline fun Node<*>.isHead(): Boolean = this is Head
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Node<*>.isTail(): Boolean = this is Tail
 
-// en dregion
+// end region
