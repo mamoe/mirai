@@ -7,11 +7,11 @@ enum class OnlineStatus(val id: Int) {
     /**
      * 我在线上
      */
-    ONLINE(11), // 0x0A
+    ONLINE(11),
     /**
      * 离线
      */
-    OFFLINE(21), // 0x02
+    OFFLINE(21),
     /**
      * 离开
      */
@@ -23,7 +23,7 @@ enum class OnlineStatus(val id: Int) {
     /**
      * 忙碌
      */
-    BUSY(50), // 0x32
+    BUSY(50),
     /**
      * Q 我吧
      */
