@@ -47,7 +47,7 @@ internal class Handler<in E : Subscribable>
             withContext(subscriberContext) { handler.invoke(event) }.also { if (it == ListeningStatus.STOPPED) this.complete() }
         } catch (e: Throwable) {
             e.logStacktrace()
-            //this.completeExceptionally(e)
+            this.complete() // do not `completeExceptionally`, otherwise parentJob will fail.
             ListeningStatus.STOPPED
         }
     }
