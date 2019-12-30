@@ -194,8 +194,8 @@ internal abstract class TIMPCBotBase constructor(
 
     internal suspend inline fun <reified P : Packet> OutgoingPacket.sendAndExpect(
         checkSequence: Boolean = true,
-        timeoutMillist: Long = 5.secondsToMillis
-    ): P = withTimeout(timeoutMillist) { sendAndExpectAsync<P, P>(checkSequence) { it }.await() }
+        timeoutMillis: Long = 5.secondsToMillis
+    ): P = withTimeout(timeoutMillis) { sendAndExpectAsync<P, P>(checkSequence) { it }.await() }
 
     internal suspend inline fun OutgoingPacket.send() = network.socket.sendPacket(this)
 
