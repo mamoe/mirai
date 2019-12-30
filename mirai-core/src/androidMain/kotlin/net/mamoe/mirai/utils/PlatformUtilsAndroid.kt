@@ -28,7 +28,9 @@ actual val Http: HttpClient
 /**
  * Localhost 解析
  */
-actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
+actual fun localIpAddress(): String = runCatching {
+    InetAddress.getLocalHost().hostAddress
+}.getOrElse { "192.168.1.123" }
 
 /**
  * MD5 算法

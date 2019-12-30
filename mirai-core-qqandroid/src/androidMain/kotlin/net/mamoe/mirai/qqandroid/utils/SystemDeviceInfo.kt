@@ -1,6 +1,7 @@
 package net.mamoe.mirai.qqandroid.utils
 
 import android.annotation.SuppressLint
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import kotlinx.io.core.toByteArray
@@ -33,16 +34,15 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
 
     override val fingerprint: ByteArray get() = Build.FINGERPRINT.toByteArray()
     override val procVersion: ByteArray
-        get() = File("/proc/version").useLines { it.firstOrNull() ?: "" }.toByteArray()
+        get() = kotlin.runCatching { File("/proc/version").useLines { it.firstOrNull() ?: "" }.toByteArray() }.getOrElse { byteArrayOf() }
     override val bootId: ByteArray
         get() = File("/proc/sys/kernel/random/boot_id").useLines { it.firstOrNull() ?: "" }.toByteArray()
     override val version: DeviceInfo.Version get() = Version
 
     override val simInfo: ByteArray
-        @SuppressLint("WrongConstant")
         get() {
             return kotlin.runCatching {
-                val telephonyManager = context.getSystemService("phone") as TelephonyManager
+                val telephonyManager = context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
                 if (telephonyManager.simState == 5) {
                     telephonyManager.simOperatorName.toByteArray()
                 } else byteArrayOf()
@@ -52,26 +52,21 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
     override val osType: ByteArray = "android".toByteArray()
     override val macAddress: ByteArray get() = "02:00:00:00:00:00".toByteArray()
     override val wifiBSSID: ByteArray?
-        get() = TODO("not implemented")
+        get() = kotlin.runCatching {
+            (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo.bssid.toByteArray()
+        }.getOrElse { byteArrayOf() }
+
     override val wifiSSID: ByteArray?
-        get() = TODO("not implemented")
-    override val imsiMd5: ByteArray // null due to permission READ_PHONE_STATE required
-        get() = md5(byteArrayOf())/*{
-            val telephonyManager = context.getSystemService("phone") as TelephonyManager
-            if (telephonyManager != null) {
-                val subscriberId = telephonyManager.subscriberId
-                if (subscriberId != null) {
-                    return subscriberId.toByteArray()
-                }
-            }
-            return kotlin.runCatching {
-                val telephonyManager = context.getSystemService("phone") as TelephonyManager
-                if (telephonyManager != null) {
-                    telephonyManager.subscriberId.toByteArray()
-                } else byteArrayOf()
-            }.getOrElse { byteArrayOf() }
-        }*/
-    override val ipAddress: ByteArray get() = localIpAddress().toByteArray()
+        get() = kotlin.runCatching {
+            (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo.ssid.toByteArray()
+        }.getOrElse { byteArrayOf() }
+
+    override val imsiMd5: ByteArray
+        @SuppressLint("HardwareIds")
+        get() = md5(kotlin.runCatching {
+            (context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).subscriberId.toByteArray()
+        }.getOrElse { byteArrayOf() })
+    override val ipAddress: String get() = localIpAddress()
     override val androidId: ByteArray get() = Build.ID.toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()
 
