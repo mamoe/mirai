@@ -58,5 +58,5 @@ suspend fun main() {
     }
 
     println("Filtering finished")
-    println(goodBotList.joinToString("\n") { it.account.id.toString() + "    " + it.account.password })
+    println(goodBotList.joinToString("\n") { it.account.id.toString() + "    " + it.account.passwordMd5 })
 }

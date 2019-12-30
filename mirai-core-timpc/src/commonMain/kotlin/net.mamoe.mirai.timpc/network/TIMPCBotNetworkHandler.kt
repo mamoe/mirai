@@ -339,7 +339,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     socket.sendPacket(
                         SubmitPasswordPacket(
                             bot = bot.qqAccount,
-                            password = bot.account.password,
+                            passwordMd5 = bot.account.passwordMd5,
                             loginTime = loginTime,
                             loginIP = loginIP,
                             privateKey = privateKey,
@@ -369,7 +369,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     socket.sendPacket(
                         SubmitPasswordPacket(
                             bot = bot.qqAccount,
-                            password = bot.account.password,
+                            passwordMd5 = bot.account.passwordMd5,
                             loginTime = loginTime,
                             loginIP = loginIP,
                             privateKey = privateKey,
@@ -434,7 +434,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     socket.sendPacket(
                         SubmitPasswordPacket(
                             bot = bot.qqAccount,
-                            password = bot.account.password,
+                            passwordMd5 = bot.account.passwordMd5,
                             loginTime = loginTime,
                             loginIP = loginIP,
                             privateKey = privateKey,

@@ -47,7 +47,7 @@ suspend fun main() {
     val bot = Bot(
         readTestAccount() ?: BotAccount(
             id = 913366033,
-            password = "a18260132383"
+            passwordPlainText = "a18260132383"
         )
     ) {
         // override config here.

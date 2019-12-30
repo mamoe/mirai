@@ -51,7 +51,7 @@ internal inline class SubmitPasswordResponseDecrypter(private val privateKey: Pr
 internal object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginResponse, SubmitPasswordResponseDecrypter>(SubmitPasswordResponseDecrypter) {
     operator fun invoke(
         bot: Long,
-        password: String,
+        passwordMd5: ByteArray,
         loginTime: Int,
         loginIP: String,
         privateKey: PrivateKey,
@@ -68,7 +68,7 @@ internal object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginR
 
         // shareKey 极大可能为 publicKey, key0836 计算得到
         encryptAndWrite(TIMProtocol.shareKey) {
-            writePart1(bot, password, loginTime, loginIP, privateKey, token0825, randomDeviceName, tlv0006)
+            writePart1(bot, passwordMd5, loginTime, loginIP, privateKey, token0825, randomDeviceName, tlv0006)
             if (token00BA != null) {
                 writeHex("01 10")
                 writeHex("00 3C")
@@ -272,7 +272,7 @@ internal inline class SessionResponseDecryptionKey(private val delegate: IoBuffe
 
 private fun BytePacketBuilder.writePart1(
     qq: Long,
-    password: String,
+    password: ByteArray,
     loginTime: Int,
     loginIP: String,
     privateKey: PrivateKey,
@@ -314,9 +314,8 @@ private fun BytePacketBuilder.writePart1(
     this.writeHex("60 C9 5D A7 45 70 04 7F 21 7D 84 50 5C 66 A5 C6")//key
 }
 
-private fun BytePacketBuilder.writeTLV0006(qq: Long, password: String, loginTime: Int, loginIP: String, privateKey: PrivateKey) {
-    val firstMD5 = md5(password)
-    val secondMD5 = md5(firstMD5 + byteArrayOf(0, 0, 0, 0) + qq.toUInt().toByteArray())
+private fun BytePacketBuilder.writeTLV0006(qq: Long, passwordMd5: ByteArray, loginTime: Int, loginIP: String, privateKey: PrivateKey) {
+    val secondMD5 = md5(passwordMd5 + byteArrayOf(0, 0, 0, 0) + qq.toUInt().toByteArray())
 
     this.encryptAndWrite(secondMD5) {
         writeRandom(4)
@@ -325,7 +324,7 @@ private fun BytePacketBuilder.writeTLV0006(qq: Long, password: String, loginTime
         writeFully(TIMProtocol.constantData2)
         writeHex("00 00 01")
 
-        writeFully(firstMD5)
+        writeFully(passwordMd5)
         writeInt(loginTime)
         writeByte(0)
         writeZero(4 * 3)

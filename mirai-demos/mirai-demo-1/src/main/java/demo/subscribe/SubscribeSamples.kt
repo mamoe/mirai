@@ -41,7 +41,7 @@ suspend fun main() {
     val bot = TIMPC.Bot(
         readTestAccount() ?: BotAccount(//填写你的账号
             id = 1994701121,
-            password = "123456"
+            passwordPlainText = "123456"
         )
     ) {
         // 覆盖默认的配置
