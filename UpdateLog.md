@@ -2,14 +2,15 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
-## `0.10.1` 还未发布
-**Bot 构造**
-`Bot` 构造时修改 `BotConfiguration` 而不是登录时.
-移除 `CoroutineScope.Bot`
-移除 `suspend Bot(...)`
-添加 `Bot(..., BotConfiguration.() -> Unit)`
+## `0.10.1`  *2019/12/30*
+**Bot 构造**  
+`Bot` 构造时修改 `BotConfiguration` 而不是登录时.  
+移除 `CoroutineScope.Bot`  
+移除 `suspend Bot(...)`  
+添加 `Bot(..., BotConfiguration.() -> Unit)`  
+添加 `Bot(..., BotConfiguration = BotConfiguration.Default)`
 
-**其他**
+**其他**  
 移动部分文件, 模块化
 
 ## `0.10.0`  *2019/12/23*
