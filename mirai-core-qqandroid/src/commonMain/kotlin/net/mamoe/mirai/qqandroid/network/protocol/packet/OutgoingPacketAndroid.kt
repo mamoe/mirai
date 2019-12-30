@@ -26,73 +26,9 @@ class OutgoingPacket constructor(
     }
 }
 
-/*
-private open fun writeHead(
-    always_8001: Int,
-    command: Int,
-    uin: Long,
-    encryptType: Int,
-    const8_always_0: Int,
-    appClientVersion: Int,
-    constp_always_0: Int,
-    bodyLength: Int
-) {
-    val j: Int = this.j + 1
-    this.j = j
-    this.pos = 0
-    util.int8_to_buf(this.buffer, this.pos, 2)
-    ++this.pos
-    util.int16_to_buf(this.buffer, this.pos, this.d + 2 + bodyLength)
-    this.pos += 2
-    util.int16_to_buf(this.buffer, this.pos, always_8001)
-    this.pos += 2
-    util.int16_to_buf(this.buffer, this.pos, command)
-    this.pos += 2
-    util.int16_to_buf(this.buffer, this.pos, j)
-    this.pos += 2
-    util.int32_to_buf(this.buffer, this.pos, uin.toInt())
-    this.pos += 4
-    util.int8_to_buf(this.buffer, this.pos, 3)
-    ++this.pos
-    util.int8_to_buf(this.buffer, this.pos, encryptType)
-    ++this.pos
-    util.int8_to_buf(this.buffer, this.pos, const8_always_0)
-    ++this.pos
-    util.int32_to_buf(this.buffer, this.pos, 2)
-    this.pos += 4
-    util.int32_to_buf(this.buffer, this.pos, appClientVersion)
-    this.pos += 4
-    util.int32_to_buf(this.buffer, this.pos, constp_always_0)
-    this.pos += 4
-}
-*/
-
-@UseExperimental(ExperimentalUnsignedTypes::class)
-private fun BytePacketBuilder.writeHead(
-    always_8001: Short = 8001,
-    command: Short,
-    uin: Long,
-    encryptType: Int, //
-    sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
-    const8_always_0: Byte = 0,
-    appClientVersion: Int,
-    constp_always_0: Int = 0,
-    bodyLength: Int
-) {
-    writeByte(2)
-    writeShort((27 + 2 + bodyLength).toShort())
-    writeShort(always_8001)
-    writeShort(command)
-    writeUShort(sequenceId)
-    writeInt(uin.toInt())
-    writeByte(3)
-    writeByte(encryptType.toByte())
-    writeByte(const8_always_0)
-    writeInt(2)
-    writeInt(appClientVersion)
-    writeInt(constp_always_0)
-}
-
+/**
+ * Encryption method to be used for packet body.
+ */
 @UseExperimental(ExperimentalUnsignedTypes::class)
 inline class EncryptMethod(val value: UByte) {
     companion object {
@@ -103,6 +39,30 @@ inline class EncryptMethod(val value: UByte) {
     }
 }
 
+/**
+ * Builds a outgoing packet.
+ * [OutgoingPacket] is the **outermost** packet structure.
+ * This packet will be sent to the server.
+ *
+ *
+ * **Packet Structure**
+ * byte     2 // head
+ * short    27 + 2 + body.size
+ * ushort   client.protocolVersion // const 8001
+ * ushort   sequenceId
+ * uint     client.account.id
+ * byte     3 // const
+ * ubyte    encryptMethod.value // [EncryptMethod]
+ * byte     0 // const
+ * int      2 // const
+ * int      client.appClientVersion
+ * int      0 // const
+ * bodyBlock()
+ * byte     3 // tail
+ *
+ * @param name optional name to be displayed in logs
+ *
+ */
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
     client: QQAndroidClient,
@@ -137,15 +97,17 @@ internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
 }
 
 /**
- * buildPacket{
- *     byte 1
- *     byte 1
- *     fully privateKey
- *     short 258
- *     short publicKey.length
- *     fully publicKey
- *     encryptAndWrite(shareKey, body)
- * }
+ * Encrypt the [body] by [ECDH.shareKey], then write encryption arguments stuff.
+ * This is **the second outermost** packet structure
+ *
+ * **Packet Structure**
+ * byte     1
+ * byte     1
+ * byte[]   [ECDH.privateKey]
+ * short    258
+ * short    [ECDH.publicKey].size
+ * byte[]   [ECDH.publicKey]
+ * byte[]   encrypted `body()` by [ECDH.shareKey]
  */
 inline fun BytePacketBuilder.writeECDHEncryptedPacket(
     ecdh: ECDH,
