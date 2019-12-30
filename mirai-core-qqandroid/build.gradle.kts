@@ -76,6 +76,7 @@ kotlin {
             dependencies {
                 api(kotlin("test-annotations-common"))
                 api(kotlin("test-common"))
+                implementation(kotlin("script-runtime"))
             }
         }
 

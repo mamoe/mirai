@@ -3,10 +3,13 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.qqandroid.network.QQAndroidDevice
+import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
+import net.mamoe.mirai.qqandroid.utils.ECDH
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeQQ
+import net.mamoe.mirai.utils.io.writeShortLVByteArray
 
 /**
  * 待发送给服务器的数据包. 它代表着一个 [ByteReadPacket],
@@ -101,8 +104,8 @@ inline class EncryptMethod(val value: UByte) {
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-inline fun PacketFactory<*, *>.buildOutgoingPacket(
-    device: QQAndroidDevice,
+internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
+    client: QQAndroidClient,
     encryptMethod: EncryptMethod,
     name: String? = null,
     id: PacketId = this.id,
@@ -114,15 +117,15 @@ inline fun PacketFactory<*, *>.buildOutgoingPacket(
         // Head
         writeByte(0x02) // head
         writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
-        writeShort(device.protocolVersion)
+        writeShort(client.protocolVersion)
         writeShort(id.commandId.toShort())
         writeShort(sequenceId.toShort())
-        writeQQ(device.uin)
+        writeQQ(client.account.id)
         writeByte(3) // originally const
         writeUByte(encryptMethod.value)
         writeByte(0) // const8_always_0
         writeInt(2) // originally const
-        writeInt(device.appClientVersion)
+        writeInt(client.appClientVersion)
         writeInt(0) // constp_always_0
 
         // Body
@@ -131,4 +134,55 @@ inline fun PacketFactory<*, *>.buildOutgoingPacket(
         // Tail
         writeByte(0x03) // tail
     })
+}
+
+/**
+ * buildPacket{
+ *     byte 1
+ *     byte 1
+ *     fully privateKey
+ *     short 258
+ *     short publicKey.length
+ *     fully publicKey
+ *     encryptAndWrite(shareKey, body)
+ * }
+ */
+inline fun BytePacketBuilder.writeECDHEncryptedPacket(
+    ecdh: ECDH,
+    body: BytePacketBuilder.() -> Unit
+) = ecdh.run {
+    writeByte(1) // const
+    writeByte(1) // const
+    writeFully(privateKey)
+    writeShort(258) // const
+    writeShortLVByteArray(publicKey)
+    encryptAndWrite(shareKey, body)
+}
+
+
+/**
+ * buildPacket{
+ *     byte 1
+ *     if loginState == 2:
+ *       byte 3
+ *     else:
+ *       byte 2
+ *     fully key
+ *     short 258
+ *     short 0
+ *     fully encrypted
+ * }
+ */
+inline fun BytePacketBuilder.writeTEAEncryptedPacket(
+    loginState: Int,
+    key: ByteArray,
+    body: BytePacketBuilder.() -> Unit
+) {
+    require(loginState == 2 || loginState == 3)
+    writeByte(1) // const
+    writeByte(if (loginState == 2) 3 else 2) // const
+    writeFully(key)
+    writeShort(258) // const
+    writeShort(0) // const, length of publicKey
+    encryptAndWrite(key, body)
 }
