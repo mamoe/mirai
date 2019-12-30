@@ -97,7 +97,7 @@ internal abstract class TIMPCBotBase constructor(
             is CanAddFriendResponse.RequireVerification -> {
                 val key = RequestFriendAdditionKeyPacket(qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
                 AddFriendPacket.RequestAdd(qqAccount, id, sessionKey, message, remark, key).sendAndExpect<AddFriendPacket.Response>()
-                AddFriendResult.WAITING_FOR_APPROVE
+                AddFriendResult.WAITING_FOR_APPROVAL
             } //这个做的是需要验证消息的情况, 不确定 ReadyToAdd 的是啥
 
             // 似乎 RequireVerification 和 ReadyToAdd 判断错了. 需要重新检查一下
