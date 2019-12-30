@@ -3,19 +3,12 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.utils.cryptor.Decrypter
 import net.mamoe.mirai.utils.cryptor.DecrypterType
-import net.mamoe.mirai.utils.cryptor.readProtoMap
-import net.mamoe.mirai.utils.io.debugPrint
-import net.mamoe.mirai.utils.io.read
 
 /**
  * 一种数据包的处理工厂. 它可以解密解码服务器发来的这个包, 也可以编码加密要发送给服务器的这个包
@@ -39,27 +32,6 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
      * **解码**服务器的回复数据包
      */
     abstract suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler): TPacket
-
-    fun <T> ByteReadPacket.decodeProtoPacket(
-        deserializer: DeserializationStrategy<T>,
-        debuggingTag: String? = null
-    ): T {
-        val headLength = readInt()
-        val protoLength = readInt()
-        if (debuggingTag != null) {
-            readBytes(headLength).debugPrint("$debuggingTag head")
-        } else {
-            discardExact(headLength)
-        }
-        val bytes = readBytes(protoLength)
-        // println(ByteReadPacket(bytes).readProtoMap())
-
-        if (debuggingTag != null) {
-            bytes.read { readProtoMap() }.toString().debugPrint("$debuggingTag proto")
-        }
-
-        return ProtoBuf.load(deserializer, bytes)
-    }
 
     companion object {
         private val sequenceId: AtomicInt = atomic(1)
