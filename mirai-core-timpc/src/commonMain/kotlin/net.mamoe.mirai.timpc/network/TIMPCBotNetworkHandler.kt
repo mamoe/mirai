@@ -221,9 +221,14 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                 }
             }
 
-            when (packet) {
-                is Cancellable /* Cancellable : Subscribable */ -> if ((packet as Cancellable).broadcast().cancelled) return
-                is Subscribable -> if ((packet as? BroadcastControllable)?.shouldBroadcast != false) packet.broadcast()
+            if (packet is Subscribable) {
+                if (packet is BroadcastControllable) {
+                    if (packet.shouldBroadcast) packet.broadcast()
+                } else {
+                    packet.broadcast()
+                }
+
+                if (packet is Cancellable && packet.cancelled) return
             }
 
             temporaryPacketHandlers.forEach {
