@@ -31,8 +31,8 @@ sealed class AddFriendResult {
     /**
      * 等待对方同意
      */
-    object WAITING_FOR_APPROVE : DONE() {
-        override fun toString(): String = "AddFriendResult(WaitingForApprove)"
+    object WAITING_FOR_APPROVAL : DONE() {
+        override fun toString(): String = "AddFriendResult(WaitingForApproval)"
     }
 
     /**
