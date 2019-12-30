@@ -2,12 +2,7 @@
 
 package net.mamoe.mirai
 
-import kotlinx.coroutines.CoroutineScope
-
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiLogger
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * 构造 [Bot] 的工厂.
@@ -20,7 +15,7 @@ interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    fun Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)? = null) : Bot
+    fun Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)? = null): Bot
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
