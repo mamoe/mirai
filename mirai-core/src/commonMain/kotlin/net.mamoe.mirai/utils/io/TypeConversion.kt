@@ -22,6 +22,20 @@ fun Int.toByteArray(): ByteArray = byteArrayOf(
     (shr(0) and 0xFF).toByte()
 )
 
+/**
+ * 255 -> 00 00 00 FF
+ */
+fun Long.toByteArray(): ByteArray = byteArrayOf(
+    (shr(56) and 0xFF).toByte(),
+    (shr(48) and 0xFF).toByte(),
+    (shr(40) and 0xFF).toByte(),
+    (shr(32) and 0xFF).toByte(),
+    (shr(24) and 0xFF).toByte(),
+    (shr(16) and 0xFF).toByte(),
+    (shr(8) and 0xFF).toByte(),
+    (shr(0) and 0xFF).toByte()
+)
+
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 /**
