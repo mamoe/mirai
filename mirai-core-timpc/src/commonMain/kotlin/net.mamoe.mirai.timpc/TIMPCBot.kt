@@ -225,7 +225,7 @@ internal abstract class TIMPCBotBase constructor(
 
 internal inline fun <R> inline(block: () -> R): R = block()
 
-internal suspend fun TIMPCBot.sendPacket(toSend: OutgoingPacket) = this.network.socket.sendPacket(toSend)
+internal suspend inline fun TIMPCBot.sendPacket(toSend: OutgoingPacket) = this.network.socket.sendPacket(toSend)
 
 /**
  * 以 [Bot] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
