@@ -11,6 +11,7 @@
 添加 `Bot(..., BotConfiguration = BotConfiguration.Default)`
 
 **其他**  
+全面的在线状态 (`OnlineStatus`)  
 移动部分文件, 模块化
 
 ## `0.10.0`  *2019/12/23*
