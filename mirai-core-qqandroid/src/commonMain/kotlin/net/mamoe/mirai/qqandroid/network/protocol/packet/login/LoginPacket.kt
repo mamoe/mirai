@@ -74,7 +74,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                 androidDevInfo = client.device.generateDeviceInfoData(),
                 osType = client.device.osType,
                 osVersion = client.device.version.release,
-                ipv6NetType = client.ipv6NetType,
+                networkType = client.networkType,
                 simInfo = client.device.simInfo,
                 unknown = byteArrayOf(), apn = client.device.apn,
                 isGuidFromFileNull = false,
@@ -97,7 +97,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
             // ignored t16a because array5 is null
 
             t154(client.ssoSequenceId)
-            t141(client.device.simInfo, client.ipv6NetType, client.device.apn)
+            t141(client.device.simInfo, client.networkType, client.device.apn)
             t8(2052)
 
             // ignored t511 because domain is null

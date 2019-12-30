@@ -34,7 +34,7 @@ abstract class DeviceInfo(
 
     abstract val imsiMd5: ByteArray
 
-    abstract val ipAddress: ByteArray
+    abstract val ipAddress: String
 
     abstract val androidId: ByteArray
 

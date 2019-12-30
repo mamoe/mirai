@@ -4,6 +4,7 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
+import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.utils.currentTime
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.md5
@@ -29,15 +30,14 @@ inline class LoginType(
 }
 
 @Suppress("MemberVisibilityCanBePrivate")
-fun BytePacketBuilder.t1(uin: Long, ip: ByteArray) {
-    require(ip.size == 4)
+fun BytePacketBuilder.t1(uin: Long, ip: String) {
     writeShort(0x1)
     writeShortLVPacket {
         writeShort(1) // _ip_ver
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
         writeTime()
-        writeFully(ip)
+        writeIP(ip)
         writeShort(0)
     } shouldEqualsTo 20
 }
@@ -83,9 +83,9 @@ fun BytePacketBuilder.t18(
 fun BytePacketBuilder.t106(
     appId: Long,
     subAppId: Long,
-    appClientVersion: Int,
+    appClientVersion: Int = 0,
     uin: Long,
-    ipAddress: ByteArray,
+    ipAddress: String,
     n5_always_1: Int = 1,
     passwordMd5: ByteArray,
     salt: Long,
@@ -112,7 +112,7 @@ fun BytePacketBuilder.t106(
             }
 
             writeTime()
-            writeFully(ipAddress)
+            writeIP(ipAddress)
             writeByte(n5_always_1.toByte())
             writeFully(passwordMd5)
             writeFully(tgtgtKey)
@@ -130,7 +130,7 @@ fun BytePacketBuilder.t106(
             }
             writeInt(subAppId.toInt())
             writeInt(loginType.value)
-            writeShortLVByteArray(uinAccount)
+            writeShortLVByteArray(uinAccount) // TODO check if should be empty byte[]
         }
     } shouldEqualsTo 98
 }
@@ -234,7 +234,7 @@ fun BytePacketBuilder.t144(
     // t124
     osType: ByteArray = "android".toByteArray(),
     osVersion: ByteArray,
-    ipv6NetType: Int,
+    networkType: NetworkType,
     simInfo: ByteArray,
     unknown: ByteArray,
     apn: ByteArray = "wifi".toByteArray(),
@@ -256,7 +256,7 @@ fun BytePacketBuilder.t144(
         encryptAndWrite(tgtgtKey) {
             t109(androidId)
             t52d(androidDevInfo)
-            t124(osType, osVersion, ipv6NetType, simInfo, unknown, apn)
+            t124(osType, osVersion, networkType, simInfo, unknown, apn)
             t128(isGuidFromFileNull, isGuidAvailable, isGuidChanged, guidFlag, buildModel, guid, buildBrand)
             t16e(buildModel)
         }
@@ -284,7 +284,7 @@ fun BytePacketBuilder.t52d(
 fun BytePacketBuilder.t124(
     osType: ByteArray = "android".toByteArray(),
     osVersion: ByteArray, // Build.VERSION.RELEASE.toByteArray()
-    ipv6NetType: Int,  //oicq.wlogin_sdk.tools.util#get_network_type
+    networkType: NetworkType,  //oicq.wlogin_sdk.tools.util#get_network_type
     simInfo: ByteArray, // oicq.wlogin_sdk.tools.util#get_sim_operator_name
     unknown: ByteArray,
     apn: ByteArray = "wifi".toByteArray() // oicq.wlogin_sdk.tools.util#get_apn_string
@@ -293,7 +293,7 @@ fun BytePacketBuilder.t124(
     writeShortLVPacket {
         writeShortLVByteArrayLimitedLength(osType, 16)
         writeShortLVByteArrayLimitedLength(osVersion, 16)
-        writeShort(ipv6NetType.toShort())
+        writeShort(networkType.value.toShort())
         writeShortLVByteArrayLimitedLength(simInfo, 16)
         writeShortLVByteArrayLimitedLength(unknown, 32)
         writeShortLVByteArrayLimitedLength(apn, 16)
@@ -414,14 +414,14 @@ fun BytePacketBuilder.t154(
 
 fun BytePacketBuilder.t141(
     simInfo: ByteArray,
-    ipv6NetType: Int,
+    networkType: NetworkType,
     apn: ByteArray
 ) {
     writeShort(0x141)
     writeShortLVPacket {
         writeShort(1) // version
         writeShortLVByteArray(simInfo)
-        writeShort(ipv6NetType.toShort())
+        writeShort(networkType.value.toShort())
         writeShortLVByteArray(apn)
     }
 }

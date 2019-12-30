@@ -35,11 +35,11 @@ internal open class QQAndroidClient(
     var ssoSequenceId: Int = 0
     var openAppId: Long = 715019303L
 
-    var ipv6NetType: Int = TODO()
-
     val apkVersionName: ByteArray = "8.2.0".toByteArray()
 
-    val appClientVersion: Int = TODO()
+    val appClientVersion: Int = 0
+
+    var networkType: NetworkType = NetworkType.WIFI
 
     val apkSignatureMd5: ByteArray = TODO()
 
