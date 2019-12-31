@@ -4,6 +4,8 @@ import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import kotlin.reflect.KClass
 
+private val CharsetGBK = Charset.forName("GBK")
+
 /**
  *
  * From: com.qq.taf.jce.JceOutputStream
@@ -11,7 +13,7 @@ import kotlin.reflect.KClass
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalIoApi::class)
 class JceOutput(
-    private val stringCharset: Charset = Charset.forName("GBK"),
+    private val stringCharset: Charset = CharsetGBK,
     private val output: Output = BytePacketBuilder()
 ) {
 
