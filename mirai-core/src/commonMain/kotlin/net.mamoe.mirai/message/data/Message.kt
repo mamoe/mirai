@@ -26,15 +26,6 @@ import net.mamoe.mirai.contact.sendMessage
  *   +----------+   plus  +----------+   plus  +----------+
  *   | Message1 | <------ | Message2 | <------ | Message3 |
  *   +----------+         +----------+         +----------+
- *        |                    |                    |
- *        +--------------------+--------------------+
- *                             |
- *                             | 构成
- *                             |
- *                             V
- *                      +--------------+
- *                      | MessageChain |
- *                      +--------------+
  *
  *
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
@@ -66,7 +57,7 @@ interface Message {
     operator fun contains(sub: String): Boolean = false
 
     /**
-     * 把这个消息连接到另一个消息的头部. 类似于字符串相加.
+     * 把 [this] 连接到 [tail] 的头部. 类似于字符串相加.
      *
      * 例:
      * ```kotlin
@@ -90,7 +81,20 @@ interface Message {
     }
 
     operator fun plus(another: Message): MessageChain = this.followedBy(another)
-    operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+    operator fun plus(another: String): MessageChain = this.followedBy(another.toString().toMessage())
+    // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
+    operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+
+    // do remove these primitive types, they can reduce boxing
+    operator fun plus(another: Int): MessageChain = this.followedBy(another.toString().toMessage())
+
+    operator fun plus(another: Double): MessageChain = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: Long): MessageChain = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: Short): MessageChain = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: Byte): MessageChain = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: Float): MessageChain = this.followedBy(another.toString().toMessage())
+
+    operator fun plus(another: Number): MessageChain = this.followedBy(another.toString().toMessage())
 }
 
 /**
