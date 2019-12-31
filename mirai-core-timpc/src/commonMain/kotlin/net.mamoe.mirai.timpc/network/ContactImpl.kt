@@ -20,14 +20,10 @@ import net.mamoe.mirai.timpc.network.packet.action.*
 import net.mamoe.mirai.timpc.network.packet.event.MemberJoinEventPacket
 import net.mamoe.mirai.timpc.network.packet.event.MemberQuitEvent
 import net.mamoe.mirai.timpc.sendPacket
-import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.timpc.utils.assertUnreachable
 import net.mamoe.mirai.timpc.withTIMPCBot
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.Http
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.toUHexString
-import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 
 internal sealed class ContactImpl : Contact {
