@@ -1,10 +1,7 @@
 package net.mamoe.mirai.qqandroid.network.io
 
 import kotlinx.io.charsets.Charset
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ExperimentalIoApi
-import kotlinx.io.core.toByteArray
-import kotlinx.io.core.writeFully
+import kotlinx.io.core.*
 import kotlin.reflect.KClass
 
 /**
@@ -14,9 +11,9 @@ import kotlin.reflect.KClass
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalIoApi::class)
 class JceOutput(
-    private val stringCharset: Charset = Charset.forName("GBK")
+    private val stringCharset: Charset = Charset.forName("GBK"),
+    private val output: Output = BytePacketBuilder()
 ) {
-    private val output: BytePacketBuilder = BytePacketBuilder()
 
     fun close() = output.close()
     fun flush() = output.flush()
