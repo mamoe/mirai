@@ -278,7 +278,7 @@ internal inline class MessageChainImpl constructor(
      * Elements will not be instances of [MessageChain]
      */
     private val delegate: MutableList<Message>
-) : Message, MutableList<Message>,
+) : Message, MutableList<Message>, // do not `by delegate`, bcz Inline class cannot implement an interface by delegation
     MessageChain {
 
     constructor(vararg messages: Message) : this(messages.toMutableList())
@@ -316,7 +316,7 @@ internal inline class MessageChainImpl constructor(
     override fun retainAll(elements: Collection<Message>): Boolean = delegate.retainAll(elements)
     override fun set(index: Int, element: Message): Message = delegate.set(index, element)
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> = delegate.subList(fromIndex, toIndex)
-    override fun iterator(): MutableIterator<Message> = delegate.iterator()
+    override operator fun iterator(): MutableIterator<Message> = delegate.iterator()
     override operator fun contains(element: Message): Boolean = delegate.contains(element)
     override val size: Int get() = delegate.size
     // endregion
