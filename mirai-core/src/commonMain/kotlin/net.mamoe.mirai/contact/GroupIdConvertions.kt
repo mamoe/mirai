@@ -2,15 +2,8 @@
 
 package net.mamoe.mirai.contact
 
-import kotlin.math.pow
-
-
-@Suppress("ObjectPropertyName")
-private val `10EXP6` = 10.0.pow(6)
-
-
 fun GroupId.toInternalId(): GroupInternalId {
-    if (this.value <= `10EXP6`) {
+    if (this.value <= 10.0e6) {
         return GroupInternalId(this.value)
     }
     val stringValue = this.value.toString()
@@ -33,7 +26,7 @@ fun GroupId.toInternalId(): GroupInternalId {
 }
 
 fun GroupInternalId.toId(): GroupId = with(value.toString()) {
-    if (value < `10EXP6`) {
+    if (value < 10.0e6) {
         return GroupId(value)
     }
     val left = this.dropLast(6).toLong()
