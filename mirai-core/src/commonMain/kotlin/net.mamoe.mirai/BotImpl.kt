@@ -60,14 +60,19 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     fun tryReinitializeNetworkHandler(
         cause: Throwable?
     ): Job = launch {
+        var lastFailedException: Throwable? = null
         repeat(configuration.reconnectionRetryTimes) {
             try {
                 reinitializeNetworkHandler(cause)
                 logger.info("Reconnected successfully")
                 return@launch
-            } catch (e: LoginFailedException) {
+            } catch (e: Throwable) {
+                lastFailedException = e
                 delay(configuration.reconnectPeriodMillis)
             }
+        }
+        if (lastFailedException != null) {
+            throw lastFailedException!!
         }
     }
 
