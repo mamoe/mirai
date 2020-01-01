@@ -3,7 +3,6 @@
 package hex
 
 import kotlinx.io.core.toByteArray
-import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
@@ -43,7 +42,7 @@ data class NamedHexElement(
 private fun LinkedHashSet<NamedHexElement>.initConstFileds() {
     listOf(
         TestConsts,
-        TIMProtocol,
+        //TIMProtocol,
         PacketIds
     ).forEach { obj ->
         obj::class.members.filterIsInstance<KProperty0<*>>().forEach { property ->
