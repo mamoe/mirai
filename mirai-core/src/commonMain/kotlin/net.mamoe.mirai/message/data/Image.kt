@@ -7,6 +7,8 @@ import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.utils.ExternalImage
 
 
+fun Image(id: String) = Image(ImageId(id))
+
 /**
  * 图片消息. 在发送时将会区分群图片和好友图片发送.
  * 由接收消息时构建, 可直接发送
@@ -14,7 +16,7 @@ import net.mamoe.mirai.utils.ExternalImage
  * @param id 这个图片的 [ImageId]
  */
 inline class Image(inline val id: ImageId) : Message {
-    override fun toString(): String =  "[${id.value}]"
+    override fun toString(): String = "[${id.value}]"
 
     companion object Key : Message.Key<Image>
 }
