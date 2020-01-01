@@ -38,9 +38,10 @@ fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLe
     }
 }
 
-fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray) {
+fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray): Int {
     this.writeShort(byteArray.size.toShort())
     this.writeFully(byteArray)
+    return byteArray.size
 }
 
 fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit): Int =
