@@ -3,6 +3,7 @@ package net.mamoe.mirai.qqandroid.network
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.qqandroid.utils.*
+import net.mamoe.mirai.utils.io.hexToBytes
 
 /*
  APP ID:
@@ -41,7 +42,7 @@ internal open class QQAndroidClient(
 
     var networkType: NetworkType = NetworkType.WIFI
 
-    val apkSignatureMd5: ByteArray = TODO()
+    val apkSignatureMd5: ByteArray = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D".hexToBytes()
 
     /**
      * 协议版本?, 8.2.0 的为 8001

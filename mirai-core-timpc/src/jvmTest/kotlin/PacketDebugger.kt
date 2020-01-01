@@ -16,13 +16,14 @@ import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
-
 import net.mamoe.mirai.timpc.TIMPC
 import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.timpc.network.packet.*
-import net.mamoe.mirai.timpc.network.packet.event.FriendOnlineStatusChangedPacket
 import net.mamoe.mirai.timpc.network.packet.event.IgnoredEventPacket
-import net.mamoe.mirai.timpc.network.packet.login.*
+import net.mamoe.mirai.timpc.network.packet.login.CaptchaKey
+import net.mamoe.mirai.timpc.network.packet.login.HeartbeatPacket
+import net.mamoe.mirai.timpc.network.packet.login.ShareKey
+import net.mamoe.mirai.timpc.network.packet.login.TouchKey
 import net.mamoe.mirai.utils.cryptor.Decrypter
 import net.mamoe.mirai.utils.cryptor.DecryptionFailedException
 import net.mamoe.mirai.utils.cryptor.NoDecrypter
@@ -127,7 +128,7 @@ suspend fun main() {
             listenDevice(localIp, it)
         }
         println("Using sessionKey = ${sessionKey.value.toUHexString()}")
-        println("Filter QQ = ${qq?.toLong()}")
+        println("Filter QQ = $qq")
         PacketDebugger.recorder?.let { println("Recorder is enabled") }
         Runtime.getRuntime().addShutdownHook(thread(false) {
             PacketDebugger.recorder?.writeTo(File(GMTDate().toString() + ".record"))?.also { println("${PacketDebugger.recorder.list.size} records saved.") }
@@ -183,8 +184,7 @@ internal object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey =
-        SessionKey("D8 D0 B0 DE 37 53 9B 05 A5 E7 AB 96 B2 AC AD EC".hexToBytes())
+    val sessionKey: SessionKey get() = SessionKey("D8 D0 B0 DE 37 53 9B 05 A5 E7 AB 96 B2 AC AD EC".hexToBytes())
     // TODO: 2019/12/7 无法访问 internal 是 kotlin bug, KT-34849
 
     /**
@@ -197,9 +197,9 @@ internal object PacketDebugger {
     val recorder: Recorder? = Recorder()
 
     val IgnoredPacketIdList: List<PacketId> = listOf(
-        KnownPacketId.get<FriendOnlineStatusChangedPacket>(),
-        KnownPacketId.get<ChangeOnlineStatusPacket>(),
-        KnownPacketId.get<HeartbeatPacket>()
+        // KnownPacketId.get<FriendOnlineStatusChangedPacket>(),
+        // KnownPacketId.get<ChangeOnlineStatusPacket>(),
+        // KnownPacketId.get<HeartbeatPacket>()
     )
 
     suspend fun dataReceived(data: ByteArray) {
@@ -304,7 +304,7 @@ internal object PacketDebugger {
         // 3E 03 3F A2 02 00 00 00 01 2E 01 00 00 69 35
 
         discardExact(3)//head
-        val id = net.mamoe.mirai.timpc.network.packet.matchPacketId(readUShort())
+        val id = matchPacketId(readUShort())
         val sequence = readUShort().toUHexString()
         if (IgnoredPacketIdList.contains(id)) {
             return

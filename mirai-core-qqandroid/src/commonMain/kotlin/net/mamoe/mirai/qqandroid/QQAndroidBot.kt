@@ -7,20 +7,26 @@ import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
+import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.utils.Context
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.coroutines.CoroutineContext
 
 internal expect class QQAndroidBot(
+    context: Context,
     account: BotAccount,
     configuration: BotConfiguration
 ) : QQAndroidBotBase
 
 @UseExperimental(MiraiInternalAPI::class)
 internal abstract class QQAndroidBotBase constructor(
+    context: Context,
     account: BotAccount,
     configuration: BotConfiguration
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
+    val client: QQAndroidClient = QQAndroidClient(context, account)
+
     override val qqs: ContactList<QQ>
         get() = TODO("not implemented")
 
@@ -44,10 +50,6 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override suspend fun getGroup(id: Long): Group {
-        TODO("not implemented")
-    }
-
-    override suspend fun login() {
         TODO("not implemented")
     }
 

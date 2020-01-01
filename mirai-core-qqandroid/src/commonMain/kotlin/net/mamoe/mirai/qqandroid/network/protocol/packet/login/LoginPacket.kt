@@ -21,6 +21,9 @@ class LoginPacketDecrypter(override val value: ByteArray) : DecrypterByteArray {
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, LoginPacketDecrypter>(LoginPacketDecrypter) {
+    init {
+        this._id = PacketId(0x0810, 9)
+    }
 
     operator fun invoke(
         client: QQAndroidClient
@@ -142,6 +145,15 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
         TODO()
     }
+}
+
+
+@Suppress("FunctionName")
+fun PacketId(commandId: Int, subCommandId: Int) = object : PacketId {
+    override val commandId: Int
+        get() = commandId
+    override val subCommandId: Int
+        get() = subCommandId
 }
 
 interface PacketId {

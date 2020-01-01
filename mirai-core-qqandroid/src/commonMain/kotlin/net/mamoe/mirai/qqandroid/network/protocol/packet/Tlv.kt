@@ -96,6 +96,9 @@ fun BytePacketBuilder.t106(
     loginType: LoginType
 ) {
     writeShort(0x106)
+    passwordMd5.requireSize(16)
+    tgtgtKey.requireSize(16)
+    guid?.requireSize(16)
 
     writeShortLVPacket {
         encryptAndWrite(md5(passwordMd5 + (salt.takeIf { it != 0L } ?: uin).toInt().toByteArray())) {
@@ -132,7 +135,7 @@ fun BytePacketBuilder.t106(
             writeInt(loginType.value)
             writeShortLVByteArray(uinAccount) // TODO check if should be empty byte[]
         }
-    } shouldEqualsTo 98
+    }
 }
 
 fun BytePacketBuilder.t116(
@@ -620,7 +623,8 @@ fun BytePacketBuilder.t318(
 private fun Boolean.toByte(): Byte = if (this) 1 else 0
 private fun Boolean.toInt(): Int = if (this) 1 else 0
 
-private infix fun Int.shouldEqualsTo(int: Int) = require(this == int)
+private infix fun Int.shouldEqualsTo(int: Int) = require(this == int) { "Required $int, but found $this" }
+private fun ByteArray.requireSize(exactSize: Int) = require(this.size == exactSize) { "Required size $exactSize, but found ${this.size}" }
 
 fun randomAndroidId(): String = buildString(15) {
     repeat(15) { append(Random.nextInt(10)) }
