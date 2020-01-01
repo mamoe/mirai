@@ -127,8 +127,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 无任何触发条件.
      */
     @MessageDsl
-    inline fun always(crossinline onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> {
-        return content({ true }, onEvent)
+    fun always(onEvent: @MessageDsl suspend T.(String) -> Unit): Listener<T> {
+        return subscriber(onEvent)
     }
 
     /**
