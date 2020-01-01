@@ -56,7 +56,9 @@ implementation("net.mamoe:mirai-core-timpc-jvm:VERSION")
 ```kotlin
 implementation("net.mamoe:mirai-core-timpc-android:VERSION")
 ```
-
+### Performance
+Android 上, Mirai 运行需使用 80M 内存.  
+JVM 上需 120M-150M 内存 (一个 Bot)
 ## Try
 
 ### On JVM or Android
