@@ -4,8 +4,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 @Suppress("unused", "NOTHING_TO_INLINE")
@@ -19,7 +21,7 @@ class GroupMessage(
     val permission: MemberPermission,
     sender: Member,
     override val message: MessageChain
-) : MessagePacket<Member, Group>(bot) {
+) : MessagePacket<Member, Group>(bot), BroadcastControllable {
     val group: Group by group.unsafeWeakRef()
     override val sender: Member by sender.unsafeWeakRef()
 
@@ -32,4 +34,8 @@ class GroupMessage(
     inline fun Long.member(): Member = group.getMember(this)
     override fun toString(): String =
         "GroupMessage(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
+
+
+    override val shouldBroadcast: Boolean
+        get() = bot.qqAccount != sender.id // 自己会收到自己发的消息
 }
