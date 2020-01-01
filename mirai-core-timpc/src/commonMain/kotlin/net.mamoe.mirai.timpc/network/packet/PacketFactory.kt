@@ -72,7 +72,7 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
         private fun atomicNextSequenceId0(): Int {
             val id = sequenceId.getAndAdd(1)
             if (id > Short.MAX_VALUE.toInt() * 2) {
-                sequenceId.value = 0
+                sequenceId.getAndSet(0) // do not `sequenceId.value = 0`, causes a bug
                 return sequenceId.getAndAdd(1)
             }
             return id
