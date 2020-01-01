@@ -67,13 +67,15 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
     companion object {
         private val sequenceId: AtomicInt = atomic(1)
 
-        fun atomicNextSequenceId(): UShort {
+        fun atomicNextSequenceId(): UShort = atomicNextSequenceId0().toUShort()
+
+        private fun atomicNextSequenceId0(): Int {
             val id = sequenceId.getAndAdd(1)
             if (id > Short.MAX_VALUE.toInt() * 2) {
                 sequenceId.value = 0
-                return atomicNextSequenceId()
+                return sequenceId.getAndAdd(1)
             }
-            return id.toUShort()
+            return id
         }
     }
 }
