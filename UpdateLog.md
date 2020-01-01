@@ -2,6 +2,11 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.10.3`  *2020/1/1*
+- 修复一个由 atomicfu 的 bug 导致的 VerifyError
+- 添加 `ExternalImageAndroid`
+- 事件处理抛出异常时正确地停止监听
+
 ## `0.10.1`  *2019/12/30*
 **Bot 构造**  
 `Bot` 构造时修改 `BotConfiguration` 而不是登录时.  
