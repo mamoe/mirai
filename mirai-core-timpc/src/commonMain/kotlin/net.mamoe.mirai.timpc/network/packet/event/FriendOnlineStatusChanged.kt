@@ -23,7 +23,7 @@ internal object FriendOnlineStatusChangedPacket : SessionPacketFactory<FriendSta
         discardExact(8)
         val statusId = readUByte()
 
-        val status = OnlineStatus.ofId(statusId.toInt())
+        val status = OnlineStatus.ofIdOrNull(statusId.toInt()) ?: OnlineStatus.UNKNOWN
         return FriendStatusChanged(handler.bot.getQQ(qq), status)
     }
 

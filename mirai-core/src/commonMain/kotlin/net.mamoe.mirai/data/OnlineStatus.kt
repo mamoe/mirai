@@ -35,7 +35,12 @@ enum class OnlineStatus(val id: Int) {
     /**
      * 离线但接收消息
      */
-    RECEIVE_OFFLINE_MESSAGE(95);
+    RECEIVE_OFFLINE_MESSAGE(95),
+
+    /**
+     * 解析错误等
+     */
+    UNKNOWN(-1);
 
     companion object {
         fun ofId(id: Int): OnlineStatus = values().first { it.id == id }
