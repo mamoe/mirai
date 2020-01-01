@@ -30,6 +30,12 @@ fun Bot(account: BotAccount, configuration: BotConfiguration = BotConfiguration.
 /**
  * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
+    factory.Bot(qq, password, configuration)
+
+/**
+ * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
+ */
 inline fun Bot(account: BotAccount, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(account, configuration)
 
