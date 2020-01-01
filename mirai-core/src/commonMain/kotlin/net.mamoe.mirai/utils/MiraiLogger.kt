@@ -8,7 +8,7 @@ import kotlin.jvm.JvmOverloads
  * 用于创建默认的日志记录器. 在一些需要使用日志的 Mirai 的组件, 如 [Bot], 都会通过这个函数构造日志记录器
  * 可直接修改这个变量的值来重定向日志输出.
  */
-var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger() }
+var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
 
 /**
  * 当前平台的默认的日志记录器.
