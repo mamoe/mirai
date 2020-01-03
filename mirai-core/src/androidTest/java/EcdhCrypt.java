@@ -50,13 +50,13 @@ public class EcdhCrypt {
         return s;
     }
 
-    private byte[] calShareKeyByBouncycastle(final byte[] array) {
+    private byte[] calShareKeyByBouncycastle(final byte[] pubKey) {
         String str = "3046301006072A8648CE3D020106052B8104001F03320004";
         try {
-            if (array.length < 30) {
+            if (pubKey.length < 30) {
                 str = "302E301006072A8648CE3D020106052B8104001F031A00";
             }
-            final PublicKey constructX509PublicKey = this.constructX509PublicKey(str + buf_to_string(array));
+            final PublicKey constructX509PublicKey = this.constructX509PublicKey(str + buf_to_string(pubKey));
             final KeyAgreement instance = KeyAgreement.getInstance("ECDH", "BC");
             instance.init(EcdhCrypt.pkcs8PrivateKey);
             instance.doPhase(constructX509PublicKey, true);

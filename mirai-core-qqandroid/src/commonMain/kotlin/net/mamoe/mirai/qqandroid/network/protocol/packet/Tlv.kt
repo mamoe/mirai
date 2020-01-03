@@ -64,7 +64,7 @@ fun BytePacketBuilder.t8(
 
 fun BytePacketBuilder.t18(
     appId: Long,
-    appClientVersion: Int,
+    appClientVersion: Int = 0,
     uin: Long,
     constant1_always_0: Int = 0
 ) {
@@ -81,18 +81,17 @@ fun BytePacketBuilder.t18(
 }
 
 fun BytePacketBuilder.t106(
-    appId: Long,
-    subAppId: Long,
+    appId: Long = 16L,
+    subAppId: Long = 537062845L,
     appClientVersion: Int = 0,
     uin: Long,
-    ipAddress: String,
     n5_always_1: Int = 1,
     passwordMd5: ByteArray,
     salt: Long,
-    uinAccount: ByteArray,
+    uinAccountString: ByteArray,
     tgtgtKey: ByteArray,
     isGuidAvailable: Boolean = true,
-    guid: ByteArray?, // notnull if isGuidAvailable
+    guid: ByteArray?,
     loginType: LoginType
 ) {
     writeShort(0x106)
@@ -101,7 +100,7 @@ fun BytePacketBuilder.t106(
     guid?.requireSize(16)
 
     writeShortLVPacket {
-        encryptAndWrite(md5(passwordMd5 + (salt.takeIf { it != 0L } ?: uin).toInt().toByteArray())) {
+        encryptAndWrite(md5(passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt().toByteArray())) {
             writeShort(4)//TGTGTVer
             writeInt(Random.nextInt())
             writeInt(5)//ssoVer
@@ -115,7 +114,7 @@ fun BytePacketBuilder.t106(
             }
 
             writeTime()
-            writeIP(ipAddress)
+            writeFully(ByteArray(4)) // ip // no need to write actual ip
             writeByte(n5_always_1.toByte())
             writeFully(passwordMd5)
             writeFully(tgtgtKey)
@@ -133,7 +132,8 @@ fun BytePacketBuilder.t106(
             }
             writeInt(subAppId.toInt())
             writeInt(loginType.value)
-            writeShortLVByteArray(uinAccount) // TODO check if should be empty byte[]
+            writeShortLVByteArray(uinAccountString)
+            writeShort(0)
         }
     }
 }
@@ -141,13 +141,13 @@ fun BytePacketBuilder.t106(
 fun BytePacketBuilder.t116(
     miscBitmap: Int,
     subSigMap: Int,
-    appIdList: LongArray
+    appIdList: LongArray = longArrayOf(1600000226L)
 ) {
     writeShort(0x116)
     writeShortLVPacket {
         writeByte(0) // _ver
-        writeInt(miscBitmap)
-        writeInt(subSigMap)
+        writeInt(miscBitmap) // 184024956
+        writeInt(subSigMap) // 66560
         writeByte(appIdList.size.toByte())
         appIdList.forEach {
             writeInt(it.toInt())
@@ -156,8 +156,8 @@ fun BytePacketBuilder.t116(
 }
 
 fun BytePacketBuilder.t100(
-    appId: Long,
-    subAppId: Long,
+    appId: Long = 16,
+    subAppId: Long = 537062845,
     appClientVersion: Int,
     sigMap: Int
 ) {
@@ -168,7 +168,7 @@ fun BytePacketBuilder.t100(
         writeInt(appId.toInt())
         writeInt(subAppId.toInt())
         writeInt(appClientVersion)
-        writeInt(sigMap)
+        writeInt(34869472) // 34869472?
     } shouldEqualsTo 22
 }
 
@@ -190,6 +190,7 @@ fun BytePacketBuilder.t107(
 fun BytePacketBuilder.t108(
     ksid: ByteArray
 ) {
+    require(ksid.size == 16) { "ksid should length 16" }
     writeShort(0x108)
     writeShortLVPacket {
         writeFully(ksid)
@@ -257,6 +258,7 @@ fun BytePacketBuilder.t144(
     writeShort(0x144)
     writeShortLVPacket {
         encryptAndWrite(tgtgtKey) {
+            writeShort(5) // tlv count
             t109(androidId)
             t52d(androidDevInfo)
             t124(osType, osVersion, networkType, simInfo, unknown, apn)
@@ -299,6 +301,7 @@ fun BytePacketBuilder.t124(
         writeShort(networkType.value.toShort())
         writeShortLVByteArrayLimitedLength(simInfo, 16)
         writeShortLVByteArrayLimitedLength(unknown, 32)
+        writeShort(0)
         writeShortLVByteArrayLimitedLength(apn, 16)
     }
 }
@@ -350,7 +353,7 @@ fun BytePacketBuilder.t128(
         writeByte(isGuidFromFileNull.toByte())
         writeByte(isGuidAvailable.toByte())
         writeByte(isGuidChanged.toByte())
-        writeInt(guidFlag.toInt())
+        writeInt(guidFlag.toInt()) // 11 00 00 00
         writeShortLVByteArrayLimitedLength(buildModel, 32)
         writeShortLVByteArrayLimitedLength(guid, 16)
         writeShortLVByteArrayLimitedLength(buildBrand, 16)
@@ -503,7 +506,7 @@ fun BytePacketBuilder.t187(
 ) {
     writeShort(0x187)
     writeShortLVPacket {
-        writeFully(macAddress)
+        writeFully(md5(macAddress)) // may be md5
     }
 }
 
@@ -512,7 +515,7 @@ fun BytePacketBuilder.t188(
 ) {
     writeShort(0x188)
     writeShortLVPacket {
-        writeFully(androidId)
+        writeFully(md5(androidId))
     }
 }
 
@@ -526,7 +529,7 @@ fun BytePacketBuilder.t194(
 }
 
 fun BytePacketBuilder.t191(
-    K: Int = 0
+    K: Int = 0x82
 ) {
     writeShort(0x191)
     writeShortLVPacket {
@@ -567,7 +570,7 @@ fun BytePacketBuilder.t177(
     writeShort(0x177)
     writeShortLVPacket {
         writeByte(1)
-        writeLong(unknown1)
+        writeInt(unknown1.toInt())
         writeShortLVString(unknown2)
     }
 }

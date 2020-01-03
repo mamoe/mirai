@@ -115,13 +115,16 @@ class HexDebuggerGui : View("Mirai Hex Debugger") {
                         withContext(Dispatchers.Main) {
                             input.text = current
                             updateOutputs(
-                                current.toString()
-                                    .replace("\n", " ")
+                                current?.lineSequence()
+                                    ?.map { it.substringBefore("//") }
+                                    ?.joinToString(" ")
+                                    .toString()
                                     .replace("UVarInt", "", ignoreCase = true)
                                     .replace("[", "")
                                     .replace("]", "")
                                     .replace("(", "")
                                     .replace(")", "")
+                                    .replace("  ", " ")
                                     .replace("  ", " ")
                                     .replace("  ", " ")
                                     .replace("_", "")

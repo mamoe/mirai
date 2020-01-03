@@ -44,6 +44,15 @@ fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray): Int {
     return byteArray.size
 }
 
+fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit): Int =
+    BytePacketBuilder().apply(builder).build().use {
+        if (tag != null) writeUByte(tag)
+        val length = (lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL)
+        writeInt(length.toInt())
+        writePacket(it)
+        return length.toInt()
+    }
+
 fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)

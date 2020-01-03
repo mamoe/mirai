@@ -29,11 +29,11 @@ internal open class QQAndroidClient(
 ) {
     val tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
 
-    var miscBitMap: Int = 150470524
+    var miscBitMap: Int = 184024956 // 也可能是 150470524 ?
     var mainSigMap: Int = 16724722
     var subSigMap: Int = 0x10400 //=66,560
 
-    var ssoSequenceId: Int = 0
+    var ssoSequenceId: Int = 85602
     var openAppId: Long = 715019303L
 
     val apkVersionName: ByteArray = "8.2.0".toByteArray()

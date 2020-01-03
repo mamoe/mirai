@@ -33,7 +33,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
             writeShort(LoginType.PASSWORD.value.toShort())
 
             val appId = 16L
-            val subAppId = 2L
+            val subAppId = 537062845L
 
             t18(appId, client.appClientVersion, client.account.id)
             t1(client.account.id, client.device.ipAddress)
@@ -42,7 +42,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                 subAppId /* maybe 1*/,
                 client.appClientVersion,
                 client.account.id,
-                client.device.ipAddress,
                 1,
                 client.account.passwordMd5,
                 0,
@@ -63,10 +62,11 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
             // defaults true
             if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
             */
-            t116(client.miscBitMap, client.subSigMap, longArrayOf(1600000226L))
+            t116(client.miscBitMap, client.subSigMap)
             t100(appId, subAppId, client.appClientVersion, client.mainSigMap or 0xC0)
             t107(0)
-            t108(byteArrayOf())
+
+            // t108(byteArrayOf())
             // ignored: t104()
             t142(client.apkId)
 
@@ -79,7 +79,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                 osVersion = client.device.version.release,
                 networkType = client.networkType,
                 simInfo = client.device.simInfo,
-                unknown = byteArrayOf(), apn = client.device.apn,
+                unknown = byteArrayOf(),
+                apn = client.device.apn,
                 isGuidFromFileNull = false,
                 isGuidAvailable = true,
                 isGuidChanged = false,
@@ -103,7 +104,25 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
             t141(client.device.simInfo, client.networkType, client.device.apn)
             t8(2052)
 
-            // ignored t511 because domain is null
+            t511(
+                listOf(
+                    "tenpay.com",
+                    "openmobile.qq.com",
+                    "docs.qq.com",
+                    "connect.qq.com",
+                    "qzone.qq.com",
+                    "vip.qq.com",
+                    "qun.qq.com",
+                    "game.qq.com",
+                    "qqweb.qq.com",
+                    "office.qq.com",
+                    "ti.qq.com",
+                    "mail.qq.com",
+                    "qzone.com",
+                    "mma.qq.com"
+                )
+            )
+
             // ignored t172 because rollbackSig is null
             // ignored t185 because loginType is not SMS
             // ignored t400 because of first login
@@ -114,7 +133,9 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                 t194(client.device.imsiMd5)
             }
             t191()
-            t201(N = byteArrayOf())
+
+            /*
+            t201(N = byteArrayOf())*/
 
             val bssid = client.device.wifiBSSID
             val ssid = client.device.wifiSSID
