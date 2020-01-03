@@ -9,15 +9,21 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unzip
 
 internal fun IoBuffer.parseMessageFace(): Face {
-    //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
-    //00  01  0C  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  4D
-    discardExact(1)
+    debugPrintIfFail("Analyzing Face") {
+         discardExact(1)
+        
+        //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0
+        //00 01 0C 0B 00 08 00 01 00 04 52 CC F5 D0 FF 00 02 14 4D
 
-    // FIXME: 2019/11/20  EMOJI 表情会解析失败
-    val id1 = FaceId(readLVNumber().toInt().toUByte())//可能这个是id, 也可能下面那个
-    discardExact(readByte().toLong()) // -1
-    readLVNumber()//某id?
-    return Face(id1)
+        //00 01 0D FF 00 02 14 4E
+
+        // FIXME: 2019/11/20  EMOJI 表情会解析失败
+        val id1 = FaceId(readLVNumber().toInt().toUByte())//可能这个是id, 也可能下面那个
+        // discardExact(readByte().toLong()) // -1
+        // readLVNumber()//某id?
+        discard()
+        return Face(id1)
+    }
 }
 
 internal fun IoBuffer.parsePlainTextOrAt(): Message {
