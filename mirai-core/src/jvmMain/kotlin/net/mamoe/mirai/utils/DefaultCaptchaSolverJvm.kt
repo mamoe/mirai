@@ -41,7 +41,6 @@ actual var DefaultCaptchaSolver: CaptchaSolver = {
                 if (img == null) {
                     MiraiLogger.info("无法创建字符图片. 请查看文件")
                 } else {
-                    @Suppress("BlockingMethodInNonBlockingContext")
                     MiraiLogger.info(img.createCharImg())
                 }
             }
