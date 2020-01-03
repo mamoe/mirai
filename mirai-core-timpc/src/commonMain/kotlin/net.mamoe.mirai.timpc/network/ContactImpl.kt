@@ -64,16 +64,17 @@ internal class GroupImpl internal constructor(bot: TIMPCBot, val groupId: GroupI
 
         withContext(userContext) {
             when (response) {
-                is ImageUploadInfo -> response.uKey?.let {
-                    Http.postImage(
+                is ImageUploadInfo -> response.uKey?.let { uKey ->
+                    check(Http.postImage(
                         htcmd = "0x6ff0071",
                         uin = bot.qqAccount,
                         groupId = GroupId(id),
                         imageInput = image.input,
                         inputSize = image.inputSize,
-                        uKeyHex = it.toUHexString("")
-                    )
-                } // if null: image already exists
+                        uKeyHex = uKey.toUHexString("").also { require(it.length == 128 * 2) { "Illegal uKey. expected size=256, actual size=${it.length}" } }
+                    )) { "Group image upload failed: cannot access api" }
+                    logger.verbose("group image uploaded")
+                } ?: logger.verbose("Group image upload: already exists")
 
                 // TODO: 2019/11/17 超过大小的情况
                 //is Overfile -> throw OverFileSizeMaxException()
@@ -118,14 +119,17 @@ internal class QQImpl @PublishedApi internal constructor(bot: TIMPCBot, override
         FriendImagePacket.RequestImageId(qqAccount, sessionKey, id, image).sendAndExpect<FriendImageResponse>().let {
             when (it) {
                 is FriendImageUKey -> {
-                    Http.postImage(
-                        htcmd = "0x6ff0070",
-                        uin = bot.qqAccount,
-                        groupId = null,
-                        uKeyHex = it.uKey.toUHexString(""),
-                        imageInput = image.input,
-                        inputSize = image.inputSize
-                    )
+                    check(
+                        Http.postImage(
+                            htcmd = "0x6ff0070",
+                            uin = bot.qqAccount,
+                            groupId = null,
+                            uKeyHex = it.uKey.toUHexString(""),
+                            imageInput = image.input,
+                            inputSize = image.inputSize
+                        )
+                    ) { "Friend image upload failed: cannot access api" }
+                    logger.verbose("friend image uploaded")
                     it.imageId
                 }
                 is FriendImageAlreadyExists -> it.imageId
