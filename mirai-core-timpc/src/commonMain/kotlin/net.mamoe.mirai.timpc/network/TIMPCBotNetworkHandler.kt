@@ -217,7 +217,10 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
             if (!packet::class.annotations.filterIsInstance<NoLog>().any()) {
                 if ((packet as? BroadcastControllable)?.shouldBroadcast != false) {
-                    bot.logger.verbose("Packet received: $packet")
+                    bot.logger.verbose("Packet received: ${packet.toString()
+                        .replace("\n\r", """\n""")
+                        .replace("\n", """\n""")
+                        .replace("\r", """\n""")}")
                 }
             }
 
