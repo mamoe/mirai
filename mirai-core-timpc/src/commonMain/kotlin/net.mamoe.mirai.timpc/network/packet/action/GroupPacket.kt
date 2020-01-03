@@ -103,7 +103,7 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
 
     internal interface GroupPacketResponse : Packet
 
-    @NoLog
+    //@NoLog
     internal object MessageResponse : Packet, GroupPacketResponse {
         override fun toString(): String = "GroupPacket.MessageResponse"
     }

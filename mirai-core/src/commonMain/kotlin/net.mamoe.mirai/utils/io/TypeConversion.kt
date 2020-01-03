@@ -95,7 +95,7 @@ fun Byte.fixToUHex(): String = this.toUByte().fixToUHex()
 /**
  * 转无符号十六进制表示, 并补充首位 `0`.
  */
-fun UByte.fixToUHex(): String = if (this.toInt() in 0..9) "0${this.toString(16).toUpperCase()}" else this.toString(16).toUpperCase()
+fun UByte.fixToUHex(): String = if (this.toInt() in 0..15) "0${this.toString(16).toUpperCase()}" else this.toString(16).toUpperCase()
 
 /**
  * 将无符号 Hex 转为 [ByteArray], 有根据 hex 的 [hashCode] 建立的缓存.

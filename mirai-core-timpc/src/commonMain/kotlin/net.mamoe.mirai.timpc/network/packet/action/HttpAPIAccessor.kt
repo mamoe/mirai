@@ -11,7 +11,11 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.http.userAgent
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.io.core.Input
+import kotlinx.io.core.readAvailable
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.contact.GroupId
+import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.debugPrint
 
 
 @Suppress("SpellCheckingInspection")
@@ -32,7 +36,7 @@ internal suspend inline fun HttpClient.postImage(
             parameters["htcmd"] = htcmd
             parameters["uin"] = uin.toString()
 
-            if (groupId != null) parameters["groupcode"] = groupId.value.toLong().toString()
+            if (groupId != null) parameters["groupcode"] = groupId.value.toString()
 
             parameters["term"] = "pc"
             parameters["ver"] = "5603"
@@ -41,17 +45,20 @@ internal suspend inline fun HttpClient.postImage(
             parameters["ukey"] = uKeyHex
 
             userAgent("QQClient")
+
+            buildString().debugPrint("URL")
         }
 
         body = object : OutgoingContent.WriteChannelContent() {
-            override val contentType: ContentType = ContentType.Image.PNG
+            override val contentType: ContentType = ContentType.Image.Any
             override val contentLength: Long = inputSize
 
             override suspend fun writeTo(channel: ByteWriteChannel) {
-                val buffer = byteArrayOf(1)
-                repeat(contentLength.toInt()) {
-                    imageInput.readFully(buffer, 0, 1)
-                    channel.writeFully(buffer, 0, 1)
+                ByteArrayPool.useInstance { buffer: ByteArray ->
+                    var size: Int
+                    while (imageInput.readAvailable(buffer).also { size = it } != 0) {
+                        channel.writeFully(buffer, 0, size)
+                    }
                 }
             }
         }

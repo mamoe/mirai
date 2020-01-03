@@ -64,6 +64,9 @@ internal object MemberMuteEventPacketParserAndHandler : KnownEventParserAndHandl
             }
 
             0x11u -> debugPrintIfFail("解析禁言包(0x02DC)时"){ // 猜测这个失败是撤回??
+                // 00 0A 00 04 01 00 00 00 00 0C 00 05 00 01 00 01 01 27 0B 60 E7 11 00 33 08 07 20 E7 C1 AD B8 02 5A 29 08 A6 FE C0 A4 0A 1A 19 08 BC 15 10 C1 95 BC F0 05 18 CA CA 8F DE 04 20 00 28 00 30 A6 FE C0 A4 0A 2A 02 08 00 30 00 38 00
+                // 失败
+
                 discardExact(15)
                 discardExact(2)
                 val group = bot.getGroup(readQQ())

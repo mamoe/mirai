@@ -102,7 +102,7 @@ internal object GroupImagePacket : SessionPacketFactory<GroupImageResponse>() {
             @SerialId(2) val bot: Int,
             @SerialId(3) val const1: Byte = 0,
             @SerialId(4) val md5: ByteArray,
-            @SerialId(5) val const2: Short = 0x0E2D,
+            @SerialId(5) val const2: Short = 0x0F2D,
             @SerialId(6) val const3: ByteArray = constValue3,
             @SerialId(7) val const4: Byte = 1,
             // 8 is missing
