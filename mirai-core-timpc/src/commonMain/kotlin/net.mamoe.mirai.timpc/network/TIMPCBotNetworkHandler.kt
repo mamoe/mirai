@@ -473,10 +473,17 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
                                         HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
                                     } == null) {
-                                    bot.logger.warning("Heartbeat timed out")
-                                    delay(configuration.firstReconnectDelayMillis)
-                                    bot.tryReinitializeNetworkHandler(HeartbeatTimeoutException())
-                                    return@launch
+
+                                    // retry one time
+                                    if (withTimeoutOrNull(configuration.heartbeatTimeoutMillis) {
+                                            HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
+                                        } == null) {
+                                        bot.logger.warning("Heartbeat timed out")
+
+                                        delay(configuration.firstReconnectDelayMillis)
+                                        bot.tryReinitializeNetworkHandler(HeartbeatTimeoutException())
+                                        return@launch
+                                    }
                                 }
                             }
                         }
