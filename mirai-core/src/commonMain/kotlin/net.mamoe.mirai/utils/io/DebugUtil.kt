@@ -51,7 +51,7 @@ fun ByteReadPacket.debugPrint(name: String = ""): ByteReadPacket {
     }
 }
 
-inline fun <R> ByteReadPacket.debugPrintIfFail(name: String = "", block: ByteReadPacket.() -> R): R {
+inline fun <R> Input.debugPrintIfFail(name: String = "", block: ByteReadPacket.() -> R): R {
     ByteArrayPool.useInstance {
         val count = this.readAvailable(it)
         try {
