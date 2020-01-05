@@ -15,7 +15,9 @@ import kotlin.annotation.AnnotationTarget.*
     FUNCTION,
     PROPERTY
 )
-annotation class MiraiInternalAPI
+annotation class MiraiInternalAPI(
+    val message: String = ""
+)
 
 /**
  * 标记这个类, 类型, 函数, 属性, 字段, 或构造器为实验性的.
