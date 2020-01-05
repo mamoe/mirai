@@ -1,4 +1,5 @@
 @file:Suppress("UNUSED_VARIABLE")
+import java.util.Properties
 
 plugins {
     kotlin("multiplatform")
@@ -31,21 +32,34 @@ description = "QQ protocol library"
 version = rootProject.ext.get("mirai_version")!!.toString()
 
 kotlin {
-    android("android") {
-        publishAllLibraryVariants()
-        project.android {
-            compileSdkVersion(29)
 
-            defaultConfig {
-                minSdkVersion(15)
+    val keyProps = Properties()
+    val keyFile = file("../local.properties")
+    if (keyFile.exists()) keyProps.load(keyFile.inputStream())
+    if (keyProps.getProperty("sdk.dir", "").isNotEmpty()) {
+        android("android") {
+            publishAllLibraryVariants()
+            project.android {
+                compileSdkVersion(29)
+
+                defaultConfig {
+                    minSdkVersion(15)
+                }
+
+                // sourceSets.filterIsInstance(com.android.build.gradle.api.AndroidSourceSet::class.java).forEach {
+                //     it.manifest.srcFile("src/androidMain/res/AndroidManifest.xml")
+                //     it.res.srcDirs(file("src/androidMain/res"))
+                // }
+                //(sourceSets["main"] as AndroidSourceSet).java.srcDirs(file("src/androidMain/kotlin"))
             }
-
-            // sourceSets.filterIsInstance(com.android.build.gradle.api.AndroidSourceSet::class.java).forEach {
-            //     it.manifest.srcFile("src/androidMain/res/AndroidManifest.xml")
-            //     it.res.srcDirs(file("src/androidMain/res"))
-            // }
-            //(sourceSets["main"] as AndroidSourceSet).java.srcDirs(file("src/androidMain/kotlin"))
         }
+    } else {
+        println(
+            """Android SDK 可能未安装.
+                $name 的 Android 目标编译将不会进行. 
+                这不会影响 Android 以外的平台的编译, 因此 JVM 等平台相关的编译和测试均能正常进行.
+            """.trimIndent()
+        )
     }
 
     jvm("jvm") {

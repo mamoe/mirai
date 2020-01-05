@@ -31,7 +31,16 @@ include(':mirai-api-http')
 include(':mirai-demos:mirai-demo-1')
 include(':mirai-demos:mirai-demo-gentleman')
 include(':mirai-demos')
-include(':mirai-demos:mirai-demo-android')
+
+def keyProps = new Properties()
+def keyFile = file("local.properties")
+if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
+    include(':mirai-demos:mirai-demo-android')
+    project(':mirai-demos:mirai-demo-android').projectDir = file('mirai-demos/mirai-demo-android')
+} else {
+    println("Android SDK 可能未安装. \n将不会加载模块 `mirai-demo-android`, 但这并不影响其他 demo 的加载 ")
+}
 
 def javaVersion = System.getProperty("java.version")
 if (javaVersion.substring(0, javaVersion.indexOf(".")).toInteger() >= 11) {
@@ -42,6 +51,5 @@ if (javaVersion.substring(0, javaVersion.indexOf(".")).toInteger() >= 11) {
 
 project(':mirai-demos:mirai-demo-1').projectDir = file('mirai-demos/mirai-demo-1')
 project(':mirai-demos:mirai-demo-gentleman').projectDir = file('mirai-demos/mirai-demo-gentleman')
-project(':mirai-demos:mirai-demo-android').projectDir = file('mirai-demos/mirai-demo-android')
 
 enableFeaturePreview('GRADLE_METADATA')
