@@ -1,5 +1,4 @@
 @file:Suppress("UNUSED_VARIABLE")
-import java.util.Properties
 
 plugins {
     kotlin("multiplatform")
@@ -32,10 +31,8 @@ description = "QQ protocol library"
 version = rootProject.ext.get("mirai_version")!!.toString()
 
 kotlin {
-    val keyProps = Properties()
-    val keyFile = file("../local.properties")
-    if (keyFile.exists()) keyProps.load(keyFile.inputStream())
-    if (keyProps.getProperty("sdk.dir", "").isNotEmpty()) {
+    val isAndroidSDKAvailable: Boolean by project
+    if (isAndroidSDKAvailable) {
         android("android") {
             publishAllLibraryVariants()
             project.android {
@@ -56,7 +53,13 @@ kotlin {
         println(
             """Android SDK 可能未安装.
                 $name 的 Android 目标编译将不会进行. 
-                这不会影响 Android 以外的平台的编译, 因此 JVM 等平台相关的编译和测试均能正常进行.
+                这不会影响 Android 以外的平台的编译.
+            """.trimIndent()
+        )
+        println(
+            """Android SDK might not be installed.
+                Android target of $name will not be compiled. 
+                It does no influence on the compilation of other platforms.
             """.trimIndent()
         )
     }

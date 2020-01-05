@@ -15,6 +15,15 @@ buildscript {
     }
 }
 
+def keyProps = new Properties()
+def keyFile = file("local.properties")
+if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
+    project.ext.set("isAndroidSDKAvailable", true)
+} else {
+    project.ext.set("isAndroidSDKAvailable", false)
+}
+
 allprojects {
     group = "net.mamoe"
     version = getProperty("mirai_version")
