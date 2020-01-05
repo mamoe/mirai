@@ -66,6 +66,8 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
         get() = md5(kotlin.runCatching {
             (context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).subscriberId.toByteArray()
         }.getOrElse { byteArrayOf() })
+    override val imei: String get() = "858414369211993" // TODO: 2020/1/5 get actual imei and ksid
+    override val ksid: String get() = "|454001228437590|A8.2.0.27f6ea96"
     override val ipAddress: String get() = localIpAddress()
     override val androidId: ByteArray get() = Build.ID.toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()

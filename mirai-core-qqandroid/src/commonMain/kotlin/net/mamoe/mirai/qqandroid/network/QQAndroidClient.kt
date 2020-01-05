@@ -1,8 +1,11 @@
 package net.mamoe.mirai.qqandroid.network
 
+import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.atomic
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.qqandroid.utils.*
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.hexToBytes
 
 /*
@@ -33,7 +36,11 @@ internal open class QQAndroidClient(
     var mainSigMap: Int = 16724722
     var subSigMap: Int = 0x10400 //=66,560
 
-    var ssoSequenceId: Int = 85602
+    private val _ssoSequenceId: AtomicInt = atomic(85600)
+
+    @MiraiInternalAPI("Do not use directly. Get from the lambda param of buildSsoPacket")
+    internal fun nextSsoSequenceId() = _ssoSequenceId.addAndGet(2)
+
     var openAppId: Long = 715019303L
 
     val apkVersionName: ByteArray = "8.2.0".toByteArray()

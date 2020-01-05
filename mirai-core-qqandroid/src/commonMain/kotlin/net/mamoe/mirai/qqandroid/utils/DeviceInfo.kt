@@ -33,6 +33,8 @@ abstract class DeviceInfo(
     abstract val wifiSSID: ByteArray?
 
     abstract val imsiMd5: ByteArray
+    abstract val imei: String
+    abstract val ksid: String
 
     abstract val ipAddress: String
 

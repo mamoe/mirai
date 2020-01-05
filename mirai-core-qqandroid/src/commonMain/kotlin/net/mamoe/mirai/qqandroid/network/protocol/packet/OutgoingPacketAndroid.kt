@@ -1,22 +1,25 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
 
-import kotlinx.io.core.*
+import kotlinx.io.core.BytePacketBuilder
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.qqandroid.utils.ECDH
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.encryptAndWrite
-import net.mamoe.mirai.utils.io.writeIntLVPacket
-import net.mamoe.mirai.utils.io.writeQQ
-import net.mamoe.mirai.utils.io.writeShortLVByteArray
+import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
+import net.mamoe.mirai.utils.cryptor.encryptAndWrite
+import net.mamoe.mirai.utils.cryptor.encryptBy
+import net.mamoe.mirai.utils.io.*
 
 /**
  * 待发送给服务器的数据包. 它代表着一个 [ByteReadPacket],
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-class OutgoingPacket constructor(
+internal class OutgoingPacket constructor(
     name: String?,
     val packetId: PacketId,
     val sequenceId: UShort,
@@ -27,28 +30,218 @@ class OutgoingPacket constructor(
     }
 }
 
+private val KEY_16_ZEROS = ByteArray(16)
+private val EMPTY_BYTE_ARRAY = ByteArray(0)
+
 /**
- * Encryption method to be used for packet body.
+ * Outermost packet for login
+ *
+ * **Packet structure**
+ * int      remaining.length + 4
+ * int      0x0A
+ * byte     0x02
+ * int      extra data size + 4
+ * byte[]   extra data
+ * byte     0
+ * int      [uinAccount].length + 4
+ * byte[]   uinAccount
+ *
+ * byte[]   body encrypted by 16 zero
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-inline class EncryptMethod(val value: UByte) {
-    companion object {
-        val BySessionToken = EncryptMethod(69u)
-        val ByECDH7 = EncryptMethod(7u)
-        // 登录都使用 135
-        val ByECDH135 = EncryptMethod(135u)
+internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
+    uinAccount: String,
+    extraData: ByteArray = EMPTY_BYTE_ARRAY,
+    name: String? = null,
+    id: PacketId = this.id,
+    sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
+    body: BytePacketBuilder.() -> Unit
+): OutgoingPacket = OutgoingPacket(name, id, sequenceId, buildPacket {
+    writeIntLVPacket(lengthOffset = { it + 4 }) {
+        writeInt(0x00_00_00_0A)
+        writeByte(0x02)
+        writeInt(extraData.size + 4)
+        writeFully(extraData)
+        writeByte(0x00)
+
+        writeInt(uinAccount.length + 4)
+        writeStringUtf8(uinAccount)
+
+        encryptAndWrite(KEY_16_ZEROS, body)
+    }
+})
+
+internal class CommandId(val stringValue: String, val id: Int) {
+    override fun toString(): String = stringValue
+}
+
+
+private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
+
+/**
+ * The second outermost packet for login
+ *
+ *
+ */
+@UseExperimental(MiraiInternalAPI::class)
+internal inline fun BytePacketBuilder.writeLoginSsoPacket(
+    client: QQAndroidClient,
+    subAppId: Long,
+    commandId: CommandId,
+    extraData: ByteReadPacket = BRP_STUB,
+    body: BytePacketBuilder.(ssoSequenceId: Int) -> Unit
+) {
+    val ssoSequenceId = client.nextSsoSequenceId()
+    // head
+    writeIntLVPacket(lengthOffset = { it + 4 }) {
+        writeInt(ssoSequenceId)
+        writeInt(subAppId.toInt())
+        writeInt(subAppId.toInt())
+        writeHex("01 00 00 00 00 00 00 00 00 00 01 00")
+        if (extraData === BRP_STUB) {
+            writeInt(0x04)
+        } else {
+            writeInt((extraData.remaining + 4).toInt())
+            writePacket(extraData)
+        }
+        writeInt(commandId.stringValue.length + 4)
+        writeStringUtf8(commandId.stringValue)
+
+        writeInt(4 + 4)
+        writeInt(45112203) //  02 B0 5B 8B
+
+        val imei = client.device.imei
+        writeInt(imei.length + 4)
+        writeStringUtf8(imei)
+
+        writeInt(4)
+
+        val ksid = client.device.ksid
+        writeShort((ksid.length + 2).toShort())
+        writeStringUtf8(ksid)
+
+        writeInt(4)
+    }
+
+    // body
+    writeIntLVPacket(lengthOffset = { it + 4 }) {
+        body(ssoSequenceId)
     }
 }
 
 /**
- * Builds a outgoing packet.
- * [OutgoingPacket] is the **outermost** packet structure.
- * This packet will be sent to the server.
+ * Outermost packet, not for login
  *
+ * **Packet structure**
+ * int      remaining.length + 4
+ * int      0x0B
+ * byte     0x01
+ * byte     0
+ * int      [uinAccount].length + 4
+ * byte[]   uinAccount
+ *
+ * byte[]   body encrypted by [sessionKey]
+ */
+internal inline fun PacketFactory<*, *>.buildSessionOutgoingPacket(
+    uinAccount: String,
+    sessionKey: DecrypterByteArray,
+    body: BytePacketBuilder.() -> Unit
+): ByteReadPacket = buildPacket {
+    writeIntLVPacket(lengthOffset = { it + 4 }) {
+        writeInt(0x00_00_00_0B)
+        writeByte(0x01)
+
+        writeByte(0)
+
+        writeInt(uinAccount.length + 4)
+        writeStringUtf8(uinAccount)
+
+        encryptAndWrite(sessionKey, body)
+    }
+}
+
+/**
+ * Encryption method to be used for packet body.
+ */
+@UseExperimental(ExperimentalUnsignedTypes::class)
+interface EncryptMethod {
+    val id: Int
+
+    fun BytePacketBuilder.encryptAndWrite(body: ByteReadPacket)
+}
+
+internal interface EncryptMethodSessionKey : EncryptMethod {
+    override val id: Int get() = 69
+    val currentLoginState: Int
+    val sessionKey: ByteArray
+
+    /**
+     * buildPacket{
+     *     byte 1
+     *     byte if (currentLoginState == 2) 3 else 2
+     *     fully key
+     *     short 258
+     *     short 0
+     *     fully encrypted
+     * }
+     */
+    override fun BytePacketBuilder.encryptAndWrite(body: ByteReadPacket) {
+        require(currentLoginState == 2 || currentLoginState == 3) { "currentLoginState must be either 2 or 3" }
+        writeByte(1) // const
+        writeByte(if (currentLoginState == 2) 3 else 2)
+        writeFully(sessionKey)
+        writeShort(258) // const
+        writeShort(0) // const, length of publicKey
+        body.encryptBy(sessionKey) { encrypted -> writeFully(encrypted) }
+    }
+}
+
+inline class EncryptMethodSessionKeyLoginState2(override val sessionKey: ByteArray) : EncryptMethodSessionKey {
+    override val currentLoginState: Int get() = 2
+}
+
+inline class EncryptMethodSessionKeyLoginState3(override val sessionKey: ByteArray) : EncryptMethodSessionKey {
+    override val currentLoginState: Int get() = 3
+}
+
+inline class EncryptMethodECDH135(override val ecdh: ECDH) : EncryptMethodECDH {
+    override val id: Int get() = 135
+}
+
+inline class EncryptMethodECDH7(override val ecdh: ECDH) : EncryptMethodECDH {
+    override val id: Int get() = 7
+}
+
+internal interface EncryptMethodECDH : EncryptMethod {
+    val ecdh: ECDH
+
+    /**
+     * **Packet Structure**
+     * byte     1
+     * byte     1
+     * byte[]   [ECDH.privateKey]
+     * short    258
+     * short    [ECDH.publicKey].size
+     * byte[]   [ECDH.publicKey]
+     * byte[]   encrypted `body()` by [ECDH.shareKey]
+     */
+    override fun BytePacketBuilder.encryptAndWrite(body: ByteReadPacket) = ecdh.run {
+        writeByte(1) // const
+        writeByte(1) // const
+        writeFully(privateKey)
+        writeShort(258) // const
+        writeShortLVByteArray(publicKey)
+        body.encryptBy(shareKey) { encrypted -> writeFully(encrypted) }
+    }
+}
+
+/**
+ * Writes a request packet
+ * This is the innermost packet structure
  *
  * **Packet Structure**
  * byte     2 // head flag
- * short    27 + 2 + body.size
+ * short    27 + 2 + remaining.length
  * ushort   client.protocolVersion // const 8001
  * ushort   sequenceId
  * uint     client.account.id
@@ -60,44 +253,39 @@ inline class EncryptMethod(val value: UByte) {
  * int      0 // const
  * bodyBlock()
  * byte     3 // tail
- *
- * @param name optional name to be displayed in logs
- *
  */
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal inline fun PacketFactory<*, *>.buildOutgoingPacket(
+internal inline fun BytePacketBuilder.writeRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,
-    name: String? = null,
-    id: PacketId = this.id,
+    commandId: CommandId,
     sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
     bodyBlock: BytePacketBuilder.() -> Unit
-): OutgoingPacket {
-    val body = buildPacket { bodyBlock() }
-    return OutgoingPacket(name, id, sequenceId, buildPacket {
-        writeIntLVPacket(lengthOffset = { it + 4 }) {
+) {
+    val body = encryptMethod.run {
+        buildPacket { encryptAndWrite(buildPacket { bodyBlock() }) }
+    }
+    writeIntLVPacket(lengthOffset = { it + 4 }) {
+        // Head
+        writeByte(0x02) // head
+        writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
+        writeShort(client.protocolVersion)
+        writeShort(sequenceId.toShort())
+        writeShort(commandId.id.toShort())
+        writeQQ(client.account.id)
+        writeByte(3) // originally const
+        writeByte(encryptMethod.id.toByte())
+        writeByte(0) // const8_always_0
+        writeInt(2) // originally const
+        writeInt(client.appClientVersion)
+        writeInt(0) // constp_always_0
 
-            // Head
-            writeByte(0x02) // head
-            writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
-            writeShort(client.protocolVersion)
-            writeShort(sequenceId.toShort())
-            writeShort(id.commandId.toShort())
-            writeQQ(client.account.id)
-            writeByte(3) // originally const
-            writeUByte(encryptMethod.value)
-            writeByte(0) // const8_always_0
-            writeInt(2) // originally const
-            writeInt(client.appClientVersion)
-            writeInt(0) // constp_always_0
+        // Body
+        writePacket(body)
 
-            // Body
-            writePacket(body)
-
-            // Tail
-            writeByte(0x03) // tail
-        }
-    })
+        // Tail
+        writeByte(0x03) // tail
+    }
 }
 /*
 00 00 01 64
@@ -159,56 +347,3 @@ F8 22 FC 39 2E 93 D7 73 A9 75 A2 D4 67 D2 C4 0D F1 02 1F A5 74 8F D8 0E 8E 86 AF
 00 00 00 0E 31 39 39 34 37 30 31 30 32 31 D2 D5 37 8A 3C 47 B1 84 E2 94 B2 AF BF 14 70 4D 73 17 BB 38 BE 82 73 DF A2 87 E0 0A 7A BA 8A 81 71 77 1D E1 71 7F B7 C1 66 1D 8C 3D 41 4F 51 09 6A B7 B7 7B 88 28 A6 5A AB 7E 40 25 9B C8 35 9C C6 E2 3A 5F 94 1D 70 0F D7 89 4D 41 6B 7A 29 A2 70 77 3D F8 1D 32 65 D7 D8 D1 6D 13 42 9C 0C 72 DB 48 95 4B 66 EF B9 E6 E4 C1 3B 2C 36 B0 D7 3F E2 85 C8 2A 8C 65 0F 0B 1C F1 A7 C7 E1 1F 0C 32 F5 08 14 AA 5A 43 CD 8E A8 82 14 24 97 63 F0 53 79 4E 33 8D 5F 1C F8 1C 89 3B 39 44 CC A7 63 5F FC BF 87 42 89 2D A5 F4 BC B2 69 49 54 DD AE E6 3F A2 A2 98 DC 3B D4 A2 27 10 F2 06 42 93 C5 30 4A D4 FA F5 BA A5 B2 4B 56 45 59 94 CA 4C 4B 17 55 C7 23 AF F0 8B E5 DC 3A 1B B6 A7 2E 10 BB 9A E7 70 54 BA F5 4B 70 91
 
  */
-
-/**
- * Encrypt the [body] by [ECDH.shareKey], then write encryption arguments stuff.
- * This is **the second outermost** packet structure
- *
- * **Packet Structure**
- * byte     1
- * byte     1
- * byte[]   [ECDH.privateKey]
- * short    258
- * short    [ECDH.publicKey].size
- * byte[]   [ECDH.publicKey]
- * byte[]   encrypted `body()` by [ECDH.shareKey]
- */
-inline fun BytePacketBuilder.writeECDHEncryptedPacket(
-    ecdh: ECDH,
-    body: BytePacketBuilder.() -> Unit
-) = ecdh.run {
-    writeByte(1) // const
-    writeByte(1) // const
-    writeFully(privateKey)
-    writeShort(258) // const
-    writeShortLVByteArray(publicKey)
-    encryptAndWrite(shareKey, body)
-}
-
-
-/**
- * buildPacket{
- *     byte 1
- *     if loginState == 2:
- *       byte 3
- *     else:
- *       byte 2
- *     fully key
- *     short 258
- *     short 0
- *     fully encrypted
- * }
- */
-inline fun BytePacketBuilder.writeTEAEncryptedPacket(
-    loginState: Int,
-    key: ByteArray,
-    body: BytePacketBuilder.() -> Unit
-) {
-    require(loginState == 2 || loginState == 3)
-    writeByte(1) // const
-    writeByte(if (loginState == 2) 3 else 2) // const
-    writeFully(key)
-    writeShort(258) // const
-    writeShort(0) // const, length of publicKey
-    encryptAndWrite(key, body)
-}

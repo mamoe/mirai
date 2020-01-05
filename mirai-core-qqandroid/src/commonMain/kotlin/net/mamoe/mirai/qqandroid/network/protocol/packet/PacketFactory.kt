@@ -18,7 +18,7 @@ import net.mamoe.mirai.utils.cryptor.DecrypterType
  * @param TDecrypter 服务器回复包解密器
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
+internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
 
     @Suppress("PropertyName")
     internal var _id: PacketId = NullPacketId
