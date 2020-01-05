@@ -30,8 +30,9 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 description = "QQ protocol library"
 version = rootProject.ext.get("mirai_version")!!.toString()
 
+val isAndroidSDKAvailable: Boolean by project
+
 kotlin {
-    val isAndroidSDKAvailable: Boolean by project
     if (isAndroidSDKAvailable) {
         android("android") {
             publishAllLibraryVariants()
@@ -96,17 +97,19 @@ kotlin {
             }
         }
 
-        val androidMain by getting {
-            dependencies {
+        if (isAndroidSDKAvailable) {
+            val androidMain by getting {
+                dependencies {
+                }
             }
-        }
 
-        val androidTest by getting {
-            dependencies {
-                api(kotlin("test", kotlinVersion))
-                api(kotlin("test-junit", kotlinVersion))
-                api(kotlin("test-annotations-common"))
-                api(kotlin("test-common"))
+            val androidTest by getting {
+                dependencies {
+                    api(kotlin("test", kotlinVersion))
+                    api(kotlin("test-junit", kotlinVersion))
+                    api(kotlin("test-annotations-common"))
+                    api(kotlin("test-common"))
+                }
             }
         }
 

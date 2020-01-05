@@ -29,8 +29,9 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 description = "QQ protocol library"
 
+val isAndroidSDKAvailable: Boolean by project
+
 kotlin {
-    val isAndroidSDKAvailable: Boolean by project
     if (isAndroidSDKAvailable) {
         android("android") {
             publishAllLibraryVariants()
@@ -108,23 +109,25 @@ kotlin {
             }
         }
 
-        val androidMain by getting {
-            dependencies {
-                api(kotlin("reflect", kotlinVersion))
+        if (isAndroidSDKAvailable) {
+            val androidMain by getting {
+                dependencies {
+                    api(kotlin("reflect", kotlinVersion))
 
-                api(kotlinx("serialization-runtime", serializationVersion))
-                api(kotlinx("coroutines-android", coroutinesVersion))
+                    api(kotlinx("serialization-runtime", serializationVersion))
+                    api(kotlinx("coroutines-android", coroutinesVersion))
 
-                api(ktor("client-android", ktorVersion))
+                    api(ktor("client-android", ktorVersion))
+                }
             }
-        }
 
-        val androidTest by getting {
-            dependencies {
-                api(kotlin("test", kotlinVersion))
-                api(kotlin("test-junit", kotlinVersion))
-                api(kotlin("test-annotations-common"))
-                api(kotlin("test-common"))
+            val androidTest by getting {
+                dependencies {
+                    api(kotlin("test", kotlinVersion))
+                    api(kotlin("test-junit", kotlinVersion))
+                    api(kotlin("test-annotations-common"))
+                    api(kotlin("test-common"))
+                }
             }
         }
 
