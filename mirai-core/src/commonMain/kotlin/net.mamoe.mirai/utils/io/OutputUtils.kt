@@ -44,28 +44,28 @@ fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray): Int {
     return byteArray.size
 }
 
-fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit): Int =
+inline fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
-        val length = (lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL)
+        val length = (lengthOffset.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL)
         writeInt(length.toInt())
         writePacket(it)
         return length.toInt()
     }
 
-fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit): Int =
+inline fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
-        val length = (lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL)
+        val length = (lengthOffset.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL)
         writeUShort(length.toUShort())
         writePacket(it)
         return length.toInt()
     }
 
-fun BytePacketBuilder.writeUVarIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long)? = null, builder: BytePacketBuilder.() -> Unit) =
+inline fun BytePacketBuilder.writeUVarIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit) =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
-        writeUVarInt((lengthOffset?.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL))
+        writeUVarInt((lengthOffset.invoke(it.remaining) ?: it.remaining).coerceAtMostOrFail(0xFFFFL))
         writePacket(it)
     }
 
