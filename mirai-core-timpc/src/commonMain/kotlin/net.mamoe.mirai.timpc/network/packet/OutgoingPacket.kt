@@ -25,7 +25,7 @@ class OutgoingPacket(
     val packetId: PacketId,
     val sequenceId: UShort,
     val delegate: ByteReadPacket
-) : Packet {
+) {
     val name: String by lazy {
         name ?: packetId.toString()
     }

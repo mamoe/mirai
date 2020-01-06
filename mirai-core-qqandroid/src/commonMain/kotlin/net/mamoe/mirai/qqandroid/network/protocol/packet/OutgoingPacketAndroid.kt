@@ -5,7 +5,6 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
-import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.qqandroid.utils.ECDH
@@ -24,7 +23,7 @@ internal class OutgoingPacket constructor(
     val packetId: PacketId,
     val sequenceId: Short,
     val delegate: ByteReadPacket
-) : Packet {
+) {
     val name: String by lazy {
         name ?: packetId.toString()
     }
