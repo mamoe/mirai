@@ -5,7 +5,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
@@ -21,7 +21,7 @@ class LoginPacketDecrypter(override val value: ByteArray) : DecrypterByteArray {
 
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, LoginPacketDecrypter>(LoginPacketDecrypter) {
     init {
-        this._id = PacketId(CommandId("wtlogin.login", 0x0810), 9)
+        this._id = PacketId(commandId = 0x0810, commandName = "wtlogin.login", subCommandId = 9)
     }
 
     operator fun invoke(
@@ -30,8 +30,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
         val appId = 16L
         val subAppId = 537062845L
 
-        writeLoginSsoPacket(client, subAppId, _id.commandId) { ssoSequenceId ->
-            writeRequestPacket(client, EncryptMethodECDH135(client.ecdh), _id.commandId) {
+        writeLoginSsoPacket(client, subAppId, id) { ssoSequenceId ->
+            writeRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
                 writeShort(9) // subCommand
                 writeShort(LoginType.PASSWORD.value.toShort())
 
@@ -163,30 +163,27 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
     class LoginPacketResponse : Packet
 
-    @ExperimentalUnsignedTypes
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: Short, handler: BotNetworkHandler): LoginPacketResponse {
-
-        TODO()
+    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
+        TODO("not implemented")
     }
 }
 
 
 @Suppress("FunctionName")
-internal fun PacketId(commandId: CommandId, subCommandId: Int) = object : PacketId {
-    override val commandId: CommandId
-        get() = commandId
-    override val subCommandId: Int
-        get() = subCommandId
+internal fun PacketId(commandId: Int, commandName: String, subCommandId: Int) = object : PacketId {
+    override val commandId: Int get() = commandId
+    override val commandName: String get() = commandName
+    override val subCommandId: Int get() = subCommandId
 }
 
 internal interface PacketId {
-    val commandId: CommandId // ushort actually
+    val commandId: Int // ushort actually
+    val commandName: String
     val subCommandId: Int // ushort actually
 }
 
 internal object NullPacketId : PacketId {
-    override val commandId: CommandId
-        get() = error("uninitialized")
-    override val subCommandId: Int
-        get() = error("uninitialized")
+    override val commandId: Int get() = error("uninitialized")
+    override val commandName: String get() = error("uninitialized")
+    override val subCommandId: Int get() = error("uninitialized")
 }

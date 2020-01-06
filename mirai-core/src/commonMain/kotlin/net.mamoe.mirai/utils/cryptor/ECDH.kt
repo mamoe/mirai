@@ -19,6 +19,8 @@ expect class ECDHKeyPair {
 }
 
 expect class ECDH(keyPair: ECDHKeyPair) {
+    val keyPair: ECDHKeyPair
+
     fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray
 
     companion object {
@@ -47,5 +49,5 @@ fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
                 else (byteArray_04 + this)
     } else this
 
-    return ECDH.constructPublicKey(this)
+    return ECDH.constructPublicKey(key)
 }

@@ -4,6 +4,7 @@ package net.mamoe.mirai.timpc.network.handler
 
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -25,6 +26,7 @@ interface DataPacketSocketAdapter : Closeable {
     /**
      * UDP 通道
      */
+    @MiraiInternalAPI
     val channel: PlatformDatagramChannel
 
     /**

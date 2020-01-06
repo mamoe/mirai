@@ -7,9 +7,9 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
-import net.mamoe.mirai.qqandroid.utils.ECDH
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
+import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.encryptAndWrite
 import net.mamoe.mirai.utils.cryptor.encryptBy
 import net.mamoe.mirai.utils.io.*
@@ -21,7 +21,12 @@ import net.mamoe.mirai.utils.io.*
 internal class OutgoingPacket constructor(
     name: String?,
     val packetId: PacketId,
-    val sequenceId: Short,
+    val sequenceId: Int,
+    // TODO: 2020/1/6 这个 sequenceId 设计有问题.
+    //  02 03 包里面的那个应该并不是 sequenceId.
+    //  它应该是固定的 0x001.
+    //  应该在这里填入 SSO 的 sequenceId.
+    //  同时考虑修改名称. 这可能不应该叫做 SSO. 它在全程都有
     val delegate: ByteReadPacket
 ) {
     val name: String by lazy {
@@ -52,7 +57,7 @@ internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
     name: String? = null,
     id: PacketId = this.id,
-    sequenceId: Short = PacketFactory.atomicNextSequenceId(),
+    sequenceId: Int = PacketFactory.atomicNextSequenceId(),
     body: BytePacketBuilder.() -> Unit
 ): OutgoingPacket = OutgoingPacket(name, id, sequenceId, buildPacket {
     writeIntLVPacket(lengthOffset = { it + 4 }) {
@@ -69,11 +74,6 @@ internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
     }
 })
 
-internal class CommandId(val stringValue: String, val id: Int) {
-    override fun toString(): String = stringValue
-}
-
-
 private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
 
 /**
@@ -85,7 +85,7 @@ private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
 internal inline fun BytePacketBuilder.writeLoginSsoPacket(
     client: QQAndroidClient,
     subAppId: Long,
-    commandId: CommandId,
+    packetId: PacketId,
     extraData: ByteReadPacket = BRP_STUB,
     body: BytePacketBuilder.(ssoSequenceId: Int) -> Unit
 ) {
@@ -102,21 +102,25 @@ internal inline fun BytePacketBuilder.writeLoginSsoPacket(
             writeInt((extraData.remaining + 4).toInt())
             writePacket(extraData)
         }
-        writeInt(commandId.stringValue.length + 4)
-        writeStringUtf8(commandId.stringValue)
+        packetId.commandName.let {
+            writeInt(it.length + 4)
+            writeStringUtf8(it)
+        }
 
         writeInt(4 + 4)
         writeInt(45112203) //  02 B0 5B 8B
 
-        val imei = client.device.imei
-        writeInt(imei.length + 4)
-        writeStringUtf8(imei)
+        client.device.imei.let {
+            writeInt(it.length + 4)
+            writeStringUtf8(it)
+        }
 
         writeInt(4)
 
-        val ksid = client.device.ksid
-        writeShort((ksid.length + 2).toShort())
-        writeStringUtf8(ksid)
+        client.device.ksid.let {
+            writeInt(it.length + 4)
+            writeStringUtf8(it)
+        }
 
         writeInt(4)
     }
@@ -226,10 +230,10 @@ internal interface EncryptMethodECDH : EncryptMethod {
     override fun BytePacketBuilder.encryptAndWrite(body: ByteReadPacket) = ecdh.run {
         writeByte(1) // const
         writeByte(1) // const
-        writeFully(privateKey)
+        writeFully(keyPair.privateKey.getEncoded())
         writeShort(258) // const
-        writeShortLVByteArray(publicKey)
-        body.encryptBy(shareKey) { encrypted -> writeFully(encrypted) }
+        writeShortLVByteArray(keyPair.publicKey.getEncoded().drop(23).toByteArray().also { check(it.size == 49) { "Bad publicKey generated. Expected size=49, got${it.size}" } })
+        body.encryptBy(keyPair.shareKey) { encrypted -> writeFully(encrypted) }
     }
 }
 
@@ -256,8 +260,7 @@ internal interface EncryptMethodECDH : EncryptMethod {
 internal inline fun BytePacketBuilder.writeRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,
-    commandId: CommandId,
-    sequenceId: Short = PacketFactory.atomicNextSequenceId(),
+    packetId: PacketId,
     bodyBlock: BytePacketBuilder.() -> Unit
 ) {
     val body = encryptMethod.run {
@@ -268,8 +271,8 @@ internal inline fun BytePacketBuilder.writeRequestPacket(
         writeByte(0x02) // head
         writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
         writeShort(client.protocolVersion)
-        writeShort(sequenceId)
-        writeShort(commandId.id.toShort())
+        writeShort(1)
+        writeShort(packetId.commandId.toShort())
         writeQQ(client.account.id)
         writeByte(3) // originally const
         writeByte(encryptMethod.id.toByte())

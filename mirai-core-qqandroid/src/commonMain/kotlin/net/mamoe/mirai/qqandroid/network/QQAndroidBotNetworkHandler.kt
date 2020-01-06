@@ -1,40 +1,41 @@
 package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.coroutines.*
-import kotlinx.io.core.*
-import kotlinx.io.pool.useInstance
+import kotlinx.io.core.use
+import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
+import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
+import net.mamoe.mirai.utils.LockFreeLinkedList
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.io.ClosedChannelException
+import net.mamoe.mirai.utils.io.PlatformDatagramChannel
+import net.mamoe.mirai.utils.io.ReadPacketInternalException
+import net.mamoe.mirai.utils.io.debugPrint
 import kotlin.coroutines.CoroutineContext
 
+@UseExperimental(MiraiInternalAPI::class)
 internal class QQAndroidBotNetworkHandler(override val bot: QQAndroidBot) : BotNetworkHandler() {
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
 
     private val channel: PlatformDatagramChannel = PlatformDatagramChannel("wtlogin.qq.com", 8000)
 
     override suspend fun login() {
-        launch { processReceive() }
+        launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-        val buffer = IoBuffer.Pool.borrow()
-        buffer.writePacket(LoginPacket(bot.client).delegate)
-        val shouldBeSent = buffer.readRemaining
-        check(channel.send(buffer) == shouldBeSent) {
-            "Buffer is not entirely sent. " +
-                    "Required sent length=$shouldBeSent, but after channel.send, " +
-                    "buffer remains ${buffer.readBytes().toUHexString()}"
-        }
-        buffer.release(IoBuffer.Pool)
+        LoginPacket(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
         println("Login sent")
     }
 
-    private suspend fun processReceive() {
+    private suspend inline fun processReceive() {
         while (channel.isOpen) {
-            val buffer = IoBuffer.Pool.borrow()
-
-            try {
-                channel.read(buffer)// JVM: withContext(IO)
+            val rawInput = try {
+                channel.read()
             } catch (e: ClosedChannelException) {
                 dispose()
                 return
@@ -46,33 +47,48 @@ internal class QQAndroidBotNetworkHandler(override val bot: QQAndroidBot) : BotN
             } catch (e: Throwable) {
                 bot.logger.error("Caught unexpected exceptions", e)
                 continue
-            } finally {
-                if (!buffer.canRead() || buffer.readRemaining == 0) {//size==0
-                    //bot.logger.debug("processReceive: Buffer cannot be read")
-                    buffer.release(IoBuffer.Pool)
-                    continue
-                }// sometimes exceptions are thrown without this `if` clause
             }
 
-            //buffer.resetForRead()
-            launch(CoroutineName("handleServerPacket")) {
-                // `.use`: Ensure that the packet is consumed **totally**
-                // so that all the buffers are released
-                ByteArrayPool.useInstance {
-                    val length = buffer.readRemaining - 1
-                    buffer.readFully(it, 0, length)
-                    buffer.resetForWrite()
-                    buffer.writeFully(it, 0, length)
+            launch(CoroutineName("Incoming Packet handler")) {
+                try {
+                    rawInput.debugPrint("Received")
+                } catch (e: Exception) {
+                    bot.logger.error(e)
                 }
-                ByteReadPacket(buffer, IoBuffer.Pool).use { input ->
-                    try {
-                        input.debugPrint("Received")
-                    } catch (e: Exception) {
-                        bot.logger.error(e)
+            }
+
+            rawInput.use {
+                KnownPacketFactories.parseIncomingPacket(bot, rawInput) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+                    if (PacketReceivedEvent(packet).broadcast().cancelled) {
+                        return
+                    }
+                    packetListeners.forEach { listener ->
+                        if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
+                            listener.complete(packet)
+                        }
                     }
                 }
             }
         }
+    }
+
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(): E {
+        val handler = PacketListener(packetId = packetId, sequenceId = sequenceId)
+        packetListeners.addLast(handler)
+        check(channel.send(delegate)) { packetListeners.remove(handler); "Cannot send packet" }
+        @Suppress("UNCHECKED_CAST")
+        return handler.await() as E
+    }
+
+    @PublishedApi
+    internal val packetListeners = LockFreeLinkedList<PacketListener>()
+
+    @PublishedApi
+    internal inner class PacketListener(
+        val packetId: PacketId,
+        val sequenceId: Int
+    ) : CompletableDeferred<Packet> by CompletableDeferred(supervisor) {
+        fun filter(packetId: PacketId, sequenceId: Int) = this.packetId == packetId && this.sequenceId == sequenceId
     }
 
     override suspend fun awaitDisconnection() {
