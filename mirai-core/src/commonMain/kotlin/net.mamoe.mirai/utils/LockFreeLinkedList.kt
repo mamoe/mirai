@@ -45,7 +45,7 @@ open class LockFreeLinkedList<E> {
     @PublishedApi
     internal val head: Head<E> = Head(tail)
 
-    fun removeFirst(): E {
+    open fun removeFirst(): E {
         while (true) {
             val currentFirst = head.nextNode
             if (!currentFirst.isValidElementNode()) {
@@ -57,11 +57,11 @@ open class LockFreeLinkedList<E> {
         }
     }
 
-    fun peekFirst(): E = head.nextNode.letValueIfValid { return it } ?: throw NoSuchElementException()
+    open fun peekFirst(): E = head.nextNode.letValueIfValid { return it } ?: throw NoSuchElementException()
 
-    fun peekLast(): E = head.iterateBeforeFirst { it === tail }.letValueIfValid { return it } ?: throw NoSuchElementException()
+    open fun peekLast(): E = head.iterateBeforeFirst { it === tail }.letValueIfValid { return it } ?: throw NoSuchElementException()
 
-    fun removeLast(): E {
+    open fun removeLast(): E {
         while (true) {
             val beforeLast = head.iterateBeforeFirst { it.nextNode === tail }
             if (!beforeLast.isValidElementNode()) {
@@ -74,7 +74,7 @@ open class LockFreeLinkedList<E> {
         }
     }
 
-    fun addLast(element: E) {
+    open fun addLast(element: E) {
         val node = element.asNode(tail)
 
         while (true) {
@@ -85,7 +85,7 @@ open class LockFreeLinkedList<E> {
         }
     }
 
-    operator fun plusAssign(element: E) = this.addLast(element)
+    open operator fun plusAssign(element: E) = this.addLast(element)
 
     inline fun filteringGetOrAdd(filter: (E) -> Boolean, noinline supplier: () -> E): E {
         val node = LazyNode(tail, supplier)
@@ -122,7 +122,7 @@ open class LockFreeLinkedList<E> {
         }, { it !is Tail })
     }.dropLast(4)
 
-    fun remove(element: E): Boolean {
+    open fun remove(element: E): Boolean {
         while (true) {
             val before = head.iterateBeforeNodeValue(element)
             val toRemove = before.nextNode
@@ -148,15 +148,15 @@ open class LockFreeLinkedList<E> {
 
     val size: Int get() = head.countChildIterate<Node<E>>({ it.nextNode }, { it !is Tail }) - 1 // empty head is always included
 
-    operator fun contains(element: E): Boolean {
+    open operator fun contains(element: E): Boolean {
         forEach { if (it == element) return true }
         return false
     }
 
     @Suppress("unused")
-    fun containsAll(elements: Collection<E>): Boolean = elements.all { contains(it) }
+    open fun containsAll(elements: Collection<E>): Boolean = elements.all { contains(it) }
 
-    fun isEmpty(): Boolean = head.allMatching { it.isValidElementNode().not() }
+    open fun isEmpty(): Boolean = head.allMatching { it.isValidElementNode().not() }
 
     inline fun forEach(block: (E) -> Unit) {
         var node: Node<E> = head
@@ -167,10 +167,10 @@ open class LockFreeLinkedList<E> {
         }
     }
 
-    fun addAll(elements: Collection<E>) = elements.forEach { addLast(it) }
+    open fun addAll(elements: Collection<E>) = elements.forEach { addLast(it) }
 
     @Suppress("unused")
-    fun clear() {
+    open fun clear() {
         val first = head.nextNode
         head.nextNode = tail
         first.childIterateReturnFirstUnsatisfying({
@@ -182,7 +182,7 @@ open class LockFreeLinkedList<E> {
     }
 
     @Suppress("unused")
-    fun removeAll(elements: Collection<E>): Boolean = elements.all { remove(it) }
+    open fun removeAll(elements: Collection<E>): Boolean = elements.all { remove(it) }
 
     /*
 
