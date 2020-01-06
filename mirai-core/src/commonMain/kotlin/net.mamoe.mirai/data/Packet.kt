@@ -1,6 +1,6 @@
 package net.mamoe.mirai.data
 
 /**
- * 一个包的数据 (body)
+ * 从服务器收到的包解析之后的结构化数据.
  */
 interface Packet
