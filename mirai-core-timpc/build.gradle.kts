@@ -32,23 +32,18 @@ version = rootProject.ext.get("mirai_version")!!.toString()
 
 val isAndroidSDKAvailable: Boolean by project
 
+android {
+    compileSdkVersion(29)
+    defaultConfig {
+        minSdkVersion(15)
+    }
+}
+
 kotlin {
     if (isAndroidSDKAvailable) {
         android("android") {
             publishAllLibraryVariants()
-            project.android {
-                compileSdkVersion(29)
-
-                defaultConfig {
-                    minSdkVersion(15)
-                }
-
-                // sourceSets.filterIsInstance(com.android.build.gradle.api.AndroidSourceSet::class.java).forEach {
-                //     it.manifest.srcFile("src/androidMain/res/AndroidManifest.xml")
-                //     it.res.srcDirs(file("src/androidMain/res"))
-                // }
-                //(sourceSets["main"] as AndroidSourceSet).java.srcDirs(file("src/androidMain/kotlin"))
-            }
+            project.apply(plugin = "com.android.library")
         }
     } else {
         println(
