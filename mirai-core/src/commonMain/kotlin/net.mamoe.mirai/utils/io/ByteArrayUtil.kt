@@ -7,6 +7,9 @@ import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
@@ -48,6 +51,12 @@ fun ByteArray.encodeToString(charset: Charset = Charsets.UTF_8): String = String
 
 fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size) = ByteReadPacket(this, offset = offset, length = length)
 
-inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R = this.toReadPacket().use(t)
+@UseExperimental(ExperimentalContracts::class)
+inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
+    contract {
+        callsInPlace(t, InvocationKind.EXACTLY_ONCE)
+    }
+    return this.toReadPacket().use(t)
+}
 
 fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)
