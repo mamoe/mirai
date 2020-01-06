@@ -1,16 +1,24 @@
 package net.mamoe.mirai.utils.io
 
+import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
-import kotlinx.io.core.IoBuffer
 import kotlinx.io.errors.IOException
+import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * 多平台适配的 DatagramChannel.
  */
+@MiraiInternalAPI
 expect class PlatformDatagramChannel(serverHost: String, serverPort: Short) : Closeable {
+    /**
+     * @throws SendPacketInternalException
+     */
+    suspend inline fun send(packet: ByteReadPacket): Boolean
 
-    suspend fun read(buffer: IoBuffer): Int
-    suspend fun send(buffer: IoBuffer): Int
+    /**
+     * @throws ReadPacketInternalException
+     */
+    suspend inline fun read(): ByteReadPacket
 
     val isOpen: Boolean
 }
