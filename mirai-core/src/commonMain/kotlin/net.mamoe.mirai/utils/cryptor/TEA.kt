@@ -94,21 +94,19 @@ fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemain
 
 // region ByteReadPacket extension
 
-fun ByteReadPacket.decryptBy(key: ByteArray, offset: Int = 0, length: Int = key.size - offset): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, offset, length) }
+fun ByteReadPacket.decryptBy(key: ByteArray, offset: Int = 0, length: Int = key.size - offset): ByteReadPacket = decryptAsByteArray(key, offset, length) { data -> ByteReadPacket(data) }
 
-fun ByteReadPacket.decryptBy(key: IoBuffer, offset: Int = 0, length: Int = key.readRemaining - offset): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data,  offset, length) }
+fun ByteReadPacket.decryptBy(key: IoBuffer, offset: Int = 0, length: Int = key.readRemaining - offset): ByteReadPacket = decryptAsByteArray(key, offset, length) { data -> ByteReadPacket(data) }
 
-inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
+inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, offset: Int = 0, length: Int = key.size - offset, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
-        val length = remaining.toInt()
-        readFully(it, 0, length)
+        readFully(it, offset, length)
         consumer(it.decryptBy(key, length))
     }.also { close() }
 
-inline fun <R> ByteReadPacket.decryptAsByteArray(key: IoBuffer, consumer: (ByteArray) -> R): R =
+inline fun <R> ByteReadPacket.decryptAsByteArray(key: IoBuffer, offset: Int = 0, length: Int = key.readRemaining - offset, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
-        val length = remaining.toInt()
-        readFully(it, 0, length)
+        readFully(it, offset, length)
         consumer(it.decryptBy(key, length))
     }.also { close() }
 

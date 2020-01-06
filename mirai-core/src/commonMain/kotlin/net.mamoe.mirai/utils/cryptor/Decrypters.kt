@@ -45,11 +45,14 @@ object NoDecrypter : Decrypter, DecrypterType<NoDecrypter> {
     }
 }
 
+fun Decrypter.decrypt(input: ByteReadPacket): ByteReadPacket = this.decrypt(input, 0, input.remaining.toInt())
+
 /**
  * 解密器
  */
 interface Decrypter {
-    fun decrypt(input: ByteReadPacket, offset: Int = 0, length: Int = (input.remaining - offset).toInt()): ByteReadPacket
+    // do not write with default args. NoSuchMethodError when inline classes override this function
+    fun decrypt(input: ByteReadPacket, offset: Int, length: Int): ByteReadPacket
     /**
      * 连接后将会先用 this 解密, 再用 [another] 解密
      */

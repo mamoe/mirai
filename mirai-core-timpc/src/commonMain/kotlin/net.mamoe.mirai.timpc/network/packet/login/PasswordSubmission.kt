@@ -27,7 +27,7 @@ internal inline class PrivateKey(override val value: ByteArray) : DecrypterByteA
 
 internal inline class SubmitPasswordResponseDecrypter(private val privateKey: PrivateKey) : Decrypter {
     override fun decrypt(input: ByteReadPacket, offset: Int, length: Int): ByteReadPacket {
-        var decrypted = ShareKey.decrypt(input)
+        var decrypted = ShareKey.decrypt(input, offset, length)
         (decrypted.remaining).let {
             if (it.toInt() % 8 == 0 && it >= 16) {
                 decrypted = try {
@@ -263,7 +263,7 @@ internal object SubmitPasswordPacket : PacketFactory<SubmitPasswordPacket.LoginR
 }
 
 internal inline class SessionResponseDecryptionKey(private val delegate: IoBuffer) : Decrypter {
-    override fun decrypt(input: ByteReadPacket, offset: Int, length: Int): ByteReadPacket = input.decryptBy(delegate)
+    override fun decrypt(input: ByteReadPacket, offset: Int, length: Int): ByteReadPacket = input.decryptBy(delegate, offset, length)
 
     override fun toString(): String = "SessionResponseDecryptionKey"
 
