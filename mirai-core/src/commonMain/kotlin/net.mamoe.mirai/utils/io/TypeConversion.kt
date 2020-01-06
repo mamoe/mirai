@@ -160,6 +160,9 @@ fun ByteArray.toUInt(): UInt =
 fun ByteArray.toUShort(): UShort =
     ((this[0].toUInt().and(255u) shl 8) + (this[1].toUInt().and(255u) shl 0)).toUShort()
 
+fun ByteArray.toInt(): Int =
+    (this[0].toInt().and(255) shl 24) + (this[1].toInt().and(255) shl 16) + (this[2].toInt().and(255) shl 8) + (this[3].toInt().and(255) shl 0)
+
 /**
  * 从 [IoBuffer.Pool] [borrow][ObjectPool.borrow] 一个 [IoBuffer] 然后将 [this] 写入.
  * 注意回收 ([ObjectPool.recycle])
