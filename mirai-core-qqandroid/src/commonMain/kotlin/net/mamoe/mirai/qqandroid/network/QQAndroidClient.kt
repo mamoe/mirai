@@ -6,6 +6,7 @@ import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.io.hexToBytes
 
 /*
@@ -27,7 +28,7 @@ internal open class QQAndroidClient(
     val context: Context,
     val account: BotAccount,
 
-    val ecdh: ECDH = ECDH.Default,
+    val ecdh: ECDH = ECDH(),
     val device: DeviceInfo = SystemDeviceInfo(context)
 ) {
     val tgtgtKey: ByteArray = generateTgtgtKey(device.guid)

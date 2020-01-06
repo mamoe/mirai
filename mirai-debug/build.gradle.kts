@@ -45,7 +45,7 @@ dependencies {
     implementation(project(":mirai-core-timpc"))
     // runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // classpath is not added correctly by IDE
 
-    implementation("org.bouncycastle:bcprov-jdk15:1.46")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.64")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 

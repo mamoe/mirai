@@ -136,6 +136,7 @@ kotlin {
                 api(kotlinx("io-jvm", kotlinXIoVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
 
+                api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
             }
         }
