@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.io.*
 internal class OutgoingPacket constructor(
     name: String?,
     val packetId: PacketId,
-    val sequenceId: UShort,
+    val sequenceId: Short,
     val delegate: ByteReadPacket
 ) : Packet {
     val name: String by lazy {
@@ -48,13 +48,12 @@ private val EMPTY_BYTE_ARRAY = ByteArray(0)
  *
  * byte[]   body encrypted by 16 zero
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
 internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
     uinAccount: String,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
     name: String? = null,
     id: PacketId = this.id,
-    sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
+    sequenceId: Short = PacketFactory.atomicNextSequenceId(),
     body: BytePacketBuilder.() -> Unit
 ): OutgoingPacket = OutgoingPacket(name, id, sequenceId, buildPacket {
     writeIntLVPacket(lengthOffset = { it + 4 }) {
@@ -259,7 +258,7 @@ internal inline fun BytePacketBuilder.writeRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,
     commandId: CommandId,
-    sequenceId: UShort = PacketFactory.atomicNextSequenceId(),
+    sequenceId: Short = PacketFactory.atomicNextSequenceId(),
     bodyBlock: BytePacketBuilder.() -> Unit
 ) {
     val body = encryptMethod.run {
@@ -270,7 +269,7 @@ internal inline fun BytePacketBuilder.writeRequestPacket(
         writeByte(0x02) // head
         writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
         writeShort(client.protocolVersion)
-        writeShort(sequenceId.toShort())
+        writeShort(sequenceId)
         writeShort(commandId.id.toShort())
         writeQQ(client.account.id)
         writeByte(3) // originally const

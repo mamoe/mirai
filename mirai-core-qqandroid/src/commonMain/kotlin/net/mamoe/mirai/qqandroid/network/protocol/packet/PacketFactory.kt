@@ -7,6 +7,7 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
+import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.cryptor.Decrypter
 import net.mamoe.mirai.utils.cryptor.DecrypterType
 
@@ -31,18 +32,21 @@ internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypt
     /**
      * **解码**服务器的回复数据包
      */
-    abstract suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler): TPacket
+    abstract suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: Short, handler: BotNetworkHandler): TPacket
 
     companion object {
         private val sequenceId: AtomicInt = atomic(1)
 
-        fun atomicNextSequenceId(): UShort {
+        fun atomicNextSequenceId(): Short {
             val id = sequenceId.getAndAdd(1)
             if (id > Short.MAX_VALUE.toInt() * 2) {
                 sequenceId.value = 0
                 return atomicNextSequenceId()
             }
-            return id.toUShort()
+            return id.toShort()
         }
     }
+}
+
+internal class KnownPacketFactories : LockFreeLinkedList<PacketFactory<*, *>>() {
 }

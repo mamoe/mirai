@@ -19,7 +19,6 @@ class LoginPacketDecrypter(override val value: ByteArray) : DecrypterByteArray {
     companion object : DecrypterType<LoginPacketDecrypter>
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class)
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, LoginPacketDecrypter>(LoginPacketDecrypter) {
     init {
         this._id = PacketId(CommandId("wtlogin.login", 0x0810), 9)
@@ -164,7 +163,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
     class LoginPacketResponse : Packet
 
-    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: UShort, handler: BotNetworkHandler): LoginPacketResponse {
+    @ExperimentalUnsignedTypes
+    override suspend fun ByteReadPacket.decode(id: PacketId, sequenceId: Short, handler: BotNetworkHandler): LoginPacketResponse {
 
         TODO()
     }
