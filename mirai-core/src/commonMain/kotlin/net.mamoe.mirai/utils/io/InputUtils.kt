@@ -52,8 +52,6 @@ fun Input.readIP(): String = buildString(4 + 3) {
     }
 }
 
-fun Input.readPacket(length: Int): ByteReadPacket = this.readBytes(length).toReadPacket()
-
 fun Input.readQQ(): Long = this.readUInt().toLong()
 fun Input.readGroup(): Long = this.readUInt().toLong()
 fun Input.readGroupId(): GroupId = this.readUInt().toLong().groupId()

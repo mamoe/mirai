@@ -94,9 +94,9 @@ fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemain
 
 // region ByteReadPacket extension
 
-fun ByteReadPacket.decryptBy(key: ByteArray): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+fun ByteReadPacket.decryptBy(key: ByteArray, offset: Int = 0, length: Int = key.size - offset): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, offset, length) }
 
-fun ByteReadPacket.decryptBy(key: IoBuffer): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data, 0) }
+fun ByteReadPacket.decryptBy(key: IoBuffer, offset: Int = 0, length: Int = key.readRemaining - offset): ByteReadPacket = decryptAsByteArray(key) { data -> ByteReadPacket(data,  offset, length) }
 
 inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, consumer: (ByteArray) -> R): R =
     ByteArrayPool.useInstance {
