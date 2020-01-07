@@ -59,7 +59,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
     override suspend fun login() {
 
-        TIMProtocol.SERVER_IP.sortedBy { Random.nextInt() }.forEach { ip ->
+        TIMProtocol.SERVER_IP.shuffled().forEach { ip ->
             bot.logger.info("Connecting server $ip")
             try {
                 withTimeout(3000) {
