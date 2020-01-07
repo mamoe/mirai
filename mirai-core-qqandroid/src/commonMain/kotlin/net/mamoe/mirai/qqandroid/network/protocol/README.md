@@ -8,8 +8,8 @@ notations
 PseudoCode:
 ```
 OutgoingPacket { 
+    int head.size + body.size + 4
     head {
-        int      remaining.length + 4
         int      0x0A
         byte     0x02
         int      extra data size + 4
