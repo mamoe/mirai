@@ -94,10 +94,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override suspend fun awaitDisconnection() {
-        while (true) {
-            delay(100)
-            // TODO: 2019/12/31
-        }
+        supervisor.join()
     }
 
     override fun dispose(cause: Throwable?) {

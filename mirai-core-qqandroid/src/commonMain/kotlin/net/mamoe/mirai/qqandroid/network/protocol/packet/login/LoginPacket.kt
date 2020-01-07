@@ -21,17 +21,17 @@ class LoginPacketDecrypter(override val value: ByteArray) : DecrypterByteArray {
 
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, LoginPacketDecrypter>(LoginPacketDecrypter) {
     init {
-        this._id = PacketId(commandId = 0x0810, commandName = "wtlogin.login", subCommandId = 9)
+        this._id = PacketId(commandId = 0x0810, commandName = "wtlogin.login")
     }
 
-    operator fun invoke(
-        client: QQAndroidClient
-    ): OutgoingPacket = buildLoginOutgoingPacket(client.account.id.toString()) {
+    object SubCommand9 {
         val appId = 16L
         val subAppId = 537062845L
 
-        writeLoginSsoPacket(client, subAppId, id) { ssoSequenceId ->
-            writeRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
+        operator fun invoke(
+            client: QQAndroidClient
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, 537062845L) { sequenceId ->
+            writeOicqRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
                 writeShort(9) // subCommand
                 writeShort(LoginType.PASSWORD.value.toShort())
 
@@ -100,7 +100,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
                 // ignored t16a because array5 is null
 
-                t154(ssoSequenceId)
+                t154(sequenceId)
                 t141(client.device.simInfo, client.networkType, client.device.apn)
                 t8(2052)
 
@@ -129,8 +129,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
                 t187(client.device.macAddress)
                 t188(client.device.androidId)
-                if (client.device.imsiMd5.isNotEmpty()) {
-                    t194(client.device.imsiMd5)
+
+                val imsi = client.device.imsiMd5
+                if (imsi.isNotEmpty()) {
+                    t194(imsi)
                 }
                 t191()
 
@@ -158,32 +160,36 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                 // ignored t318 because not logging in by QR
             }
         }
+
+        suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
+            TODO("not implemented")
+        }
     }
 
 
     class LoginPacketResponse : Packet
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
-        TODO("not implemented")
+        return when (val subCommand = readShort().toInt()) {
+            9 -> SubCommand9.run { decode(bot) }
+            else -> error("Unknown subCommand: $subCommand")
+        }
     }
 }
 
 
 @Suppress("FunctionName")
-internal fun PacketId(commandId: Int, commandName: String, subCommandId: Int) = object : PacketId {
+internal fun PacketId(commandId: Int, commandName: String) = object : PacketId {
     override val commandId: Int get() = commandId
     override val commandName: String get() = commandName
-    override val subCommandId: Int get() = subCommandId
 }
 
 internal interface PacketId {
     val commandId: Int // ushort actually
     val commandName: String
-    val subCommandId: Int // ushort actually
 }
 
 internal object NullPacketId : PacketId {
     override val commandId: Int get() = error("uninitialized")
     override val commandName: String get() = error("uninitialized")
-    override val subCommandId: Int get() = error("uninitialized")
 }

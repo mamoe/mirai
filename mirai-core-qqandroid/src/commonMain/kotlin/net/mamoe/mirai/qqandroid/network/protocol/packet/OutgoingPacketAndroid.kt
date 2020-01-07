@@ -22,11 +22,6 @@ internal class OutgoingPacket constructor(
     name: String?,
     val packetId: PacketId,
     val sequenceId: Int,
-    // TODO: 2020/1/6 这个 sequenceId 设计有问题.
-    //  02 03 包里面的那个应该并不是 sequenceId.
-    //  它应该是固定的 0x001.
-    //  应该在这里填入 SSO 的 sequenceId.
-    //  同时考虑修改名称. 这可能不应该叫做 SSO. 它在全程都有
     val delegate: ByteReadPacket
 ) {
     val name: String by lazy {
@@ -47,30 +42,40 @@ private val EMPTY_BYTE_ARRAY = ByteArray(0)
  * int      extra data size + 4
  * byte[]   extra data
  * byte     0
- * int      [uinAccount].length + 4
+ * int      uinAccount.length + 4
  * byte[]   uinAccount
  *
  * byte[]   body encrypted by 16 zero
  */
 internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
-    uinAccount: String,
+    client: QQAndroidClient,
+    subAppId: Long,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
     name: String? = null,
     id: PacketId = this.id,
+    ssoExtraData: ByteReadPacket = BRP_STUB,
     sequenceId: Int = PacketFactory.atomicNextSequenceId(),
-    body: BytePacketBuilder.() -> Unit
+    body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket = OutgoingPacket(name, id, sequenceId, buildPacket {
     writeIntLVPacket(lengthOffset = { it + 4 }) {
         writeInt(0x00_00_00_0A)
         writeByte(0x02)
-        writeInt(extraData.size + 4)
-        writeFully(extraData)
+        extraData.let {
+            writeInt(it.size + 4)
+            writeFully(it)
+        }
         writeByte(0x00)
 
-        writeInt(uinAccount.length + 4)
-        writeStringUtf8(uinAccount)
+        client.account.id.toString().let {
+            writeInt(it.length + 4)
+            writeStringUtf8(it)
+        }
 
-        encryptAndWrite(KEY_16_ZEROS, body)
+        encryptAndWrite(KEY_16_ZEROS) {
+            writeLoginSsoPacket(client, subAppId, id, ssoExtraData, sequenceId) {
+                body(sequenceId)
+            }
+        }
     }
 })
 
@@ -79,20 +84,38 @@ private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
 /**
  * The second outermost packet for login
  *
+ * int      headRemaining.size+4
+ * int      sequenceId
+ * int      subAppId
+ * int      subAppId
+ * hex      "01 00 00 00 00 00 00 00 00 00 01 00" // unknown values
+ * int      extraData.size+4
+ * byte[]   extraData
+ * int      commandName.length+4
+ * byte[]   commandName
+ * int      4+4
+ * int      0x02B05B8B
+ * int      imei.length+4
+ * byte[]   imei
+ * int      0+4
+ * int      ksid.length+4
+ * byte[]   ksid
+ * int      0+4
  *
+ * int      bodyRemaining.size+4
+ * byte[]   body()
  */
 @UseExperimental(MiraiInternalAPI::class)
-internal inline fun BytePacketBuilder.writeLoginSsoPacket(
+private inline fun BytePacketBuilder.writeLoginSsoPacket(
     client: QQAndroidClient,
     subAppId: Long,
     packetId: PacketId,
     extraData: ByteReadPacket = BRP_STUB,
-    body: BytePacketBuilder.(ssoSequenceId: Int) -> Unit
+    sequenceId: Int,
+    body: BytePacketBuilder.() -> Unit
 ) {
-    val ssoSequenceId = client.nextSsoSequenceId()
-    // head
     writeIntLVPacket(lengthOffset = { it + 4 }) {
-        writeInt(ssoSequenceId)
+        writeInt(sequenceId)
         writeInt(subAppId.toInt())
         writeInt(subAppId.toInt())
         writeHex("01 00 00 00 00 00 00 00 00 00 01 00")
@@ -126,9 +149,7 @@ internal inline fun BytePacketBuilder.writeLoginSsoPacket(
     }
 
     // body
-    writeIntLVPacket(lengthOffset = { it + 4 }) {
-        body(ssoSequenceId)
-    }
+    writeIntLVPacket(lengthOffset = { it + 4 }, builder = body)
 }
 
 /**
@@ -245,7 +266,7 @@ internal interface EncryptMethodECDH : EncryptMethod {
  * byte     2 // head flag
  * short    27 + 2 + remaining.length
  * ushort   client.protocolVersion // const 8001
- * ushort   sequenceId
+ * ushort   0x0001
  * uint     client.account.id
  * byte     3 // const
  * ubyte    encryptMethod.value // [EncryptMethod]
@@ -257,7 +278,7 @@ internal interface EncryptMethodECDH : EncryptMethod {
  * byte     3 // tail
  */
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal inline fun BytePacketBuilder.writeRequestPacket(
+internal inline fun BytePacketBuilder.writeOicqRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,
     packetId: PacketId,
@@ -271,7 +292,7 @@ internal inline fun BytePacketBuilder.writeRequestPacket(
         writeByte(0x02) // head
         writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
         writeShort(client.protocolVersion)
-        writeShort(1)
+        writeShort(1) // const??
         writeShort(packetId.commandId.toShort())
         writeQQ(client.account.id)
         writeByte(3) // originally const
