@@ -25,8 +25,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
     }
 
     object SubCommand9 {
-        val appId = 16L
-        val subAppId = 537062845L
+        const val appId = 16L
+        const val subAppId = 537062845L
 
         operator fun invoke(
             client: QQAndroidClient
