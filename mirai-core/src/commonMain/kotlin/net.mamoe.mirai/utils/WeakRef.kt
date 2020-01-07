@@ -62,6 +62,8 @@ fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
 /**
  * Provides a weak reference to [this].
  * The `getValue` for delegation throws an [IllegalStateException] if the referent is released by GC. Therefore it returns notnull value only
+ *
+ * **UNSTABLE API**: It is strongly suggested not to use this api
  */
 fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef())
 
