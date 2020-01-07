@@ -30,7 +30,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     override suspend fun login() {
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-        LoginPacket(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
+        LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
         println("Login sent")
     }
 
