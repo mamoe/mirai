@@ -2,7 +2,7 @@
 
 ## Overview
 
-Note: `head` and `body` functions does nothing. They just work as
+Note: `head` and `body` functions do nothing. They just work as
 notations
 
 PseudoCode:
