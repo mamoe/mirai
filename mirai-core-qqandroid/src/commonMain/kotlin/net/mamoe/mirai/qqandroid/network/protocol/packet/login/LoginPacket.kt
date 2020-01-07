@@ -25,12 +25,12 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
     }
 
     object SubCommand9 {
-        const val appId = 16L
-        const val subAppId = 537062845L
+        private const val appId = 16L
+        private const val subAppId = 537062845L
 
         operator fun invoke(
             client: QQAndroidClient
-        ): OutgoingPacket = buildLoginOutgoingPacket(client, 537062845L) { sequenceId ->
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId) { sequenceId ->
             writeOicqRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
                 writeShort(9) // subCommand
                 writeShort(LoginType.PASSWORD.value.toShort())
