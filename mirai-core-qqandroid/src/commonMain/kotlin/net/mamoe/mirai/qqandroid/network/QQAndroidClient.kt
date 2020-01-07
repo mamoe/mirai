@@ -4,7 +4,10 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.qqandroid.utils.*
+import net.mamoe.mirai.qqandroid.utils.Context
+import net.mamoe.mirai.qqandroid.utils.DeviceInfo
+import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.qqandroid.utils.SystemDeviceInfo
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.io.hexToBytes
@@ -31,7 +34,7 @@ internal open class QQAndroidClient(
     val ecdh: ECDH = ECDH(),
     val device: DeviceInfo = SystemDeviceInfo(context)
 ) {
-    val tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
+    val tgtgtKey: ByteArray = ByteArray(16) // generateTgtgtKey(device.guid)
 
     var miscBitMap: Int = 184024956 // 也可能是 150470524 ?
     var mainSigMap: Int = 16724722

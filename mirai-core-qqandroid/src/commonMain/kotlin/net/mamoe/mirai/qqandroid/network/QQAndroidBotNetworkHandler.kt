@@ -14,7 +14,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ClosedChannelException
-import net.mamoe.mirai.utils.io.PlatformDatagramChannel
+import net.mamoe.mirai.utils.io.PlatformSocket
 import net.mamoe.mirai.utils.io.ReadPacketInternalException
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -25,16 +25,18 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
 
-    private val channel: PlatformDatagramChannel = PlatformDatagramChannel("wtlogin.qq.com", 8000)
+    private lateinit var channel: PlatformSocket
 
     override suspend fun login() {
+        channel = PlatformSocket()
+        channel.connect("113.96.13.208", 8080)
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
+        println("Sending login")
         LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
-        println("Login sent")
     }
 
-    private suspend inline fun processReceive() {
+    private suspend fun processReceive() {
         while (channel.isOpen) {
             val rawInput = try {
                 channel.read()
@@ -52,21 +54,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
 
             launch(CoroutineName("Incoming Packet handler")) {
-                try {
-                    rawInput.debugPrint("Received")
-                } catch (e: Exception) {
-                    bot.logger.error(e)
-                }
-            }
-
-            rawInput.use {
-                KnownPacketFactories.parseIncomingPacket(bot, rawInput) { packet: Packet, packetId: PacketId, sequenceId: Int ->
-                    if (PacketReceivedEvent(packet).broadcast().cancelled) {
-                        return
+                rawInput.debugPrint("Received").use {
+                    if (it.remaining == 0L) {
+                        bot.logger.error("Empty packet received. Consider if bad packet was sent.")
+                        return@launch
                     }
-                    packetListeners.forEach { listener ->
-                        if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
-                            listener.complete(packet)
+                    KnownPacketFactories.parseIncomingPacket(bot, rawInput) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+                        if (PacketReceivedEvent(packet).broadcast().cancelled) {
+                            return@parseIncomingPacket
+                        }
+                        packetListeners.forEach { listener ->
+                            if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
+                                listener.complete(packet)
+                            }
                         }
                     }
                 }
@@ -77,7 +77,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(): E {
         val handler = PacketListener(packetId = packetId, sequenceId = sequenceId)
         packetListeners.addLast(handler)
-        check(channel.send(delegate)) { packetListeners.remove(handler); "Cannot send packet" }
+        //println(delegate.readBytes().toUHexString())
+        println("Sending length=" + delegate.remaining)
+        channel.send(delegate)//) { packetListeners.remove(handler); "Cannot send packet" }
+        println("Packet sent")
         @Suppress("UNCHECKED_CAST")
         return handler.await() as E
     }

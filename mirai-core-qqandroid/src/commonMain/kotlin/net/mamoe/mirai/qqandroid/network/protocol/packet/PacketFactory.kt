@@ -1,9 +1,7 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
-import kotlinx.atomicfu.AtomicInt
-import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Closeable
+import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.data.Packet
@@ -41,25 +39,11 @@ internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypt
      * **解码**服务器的回复数据包
      */
     abstract suspend fun ByteReadPacket.decode(bot: QQAndroidBot): TPacket
-
-    companion object {
-        private val sequenceId: AtomicInt = atomic(1)
-
-        fun atomicNextSequenceId(): Int {
-            TODO("使用 SSO ")
-            val id = sequenceId.getAndAdd(1)
-            if (id > Short.MAX_VALUE.toInt() * 2) {
-                sequenceId.value = 0
-                return atomicNextSequenceId()
-            }
-            // return id.toShort()
-        }
-    }
 }
 
 private val DECRYPTER_16_ZERO = ByteArray(16)
 
-internal typealias PacketConsumer = (packet: Packet, packetId: PacketId, ssoSequenceId: Int) -> Unit
+internal typealias PacketConsumer = suspend (packet: Packet, packetId: PacketId, ssoSequenceId: Int) -> Unit
 
 internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListOf() {
 
@@ -67,20 +51,25 @@ internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListO
 
     fun findPacketFactory(commandId: Int): PacketFactory<*, *> = this.first { it.id.commandName == commandName }
 
-    suspend inline fun parseIncomingPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
+    // do not inline. Exceptions thrown will not be reported correctly
+    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
         rawInput.debugPrintIfFail("Incoming packet") {
-            require(rawInput.remaining < Int.MAX_VALUE) { "rawInput is too long" }
+            require(remaining < Int.MAX_VALUE) { "rawInput is too long" }
             val expectedLength = readInt() - 4
-            check(rawInput.remaining.toInt() == expectedLength) { "Invalid packet length. Expected $expectedLength, got ${rawInput.remaining} Probably packets merged? " }
+            check(remaining.toInt() == expectedLength) { "Invalid packet length. Expected $expectedLength, got ${rawInput.remaining} Probably packets merged? " }
             // login
             when (val flag1 = readInt()) {
                 0x0A -> when (val flag2 = readByte().toInt()) {
                     0x02 -> {
+                        val extraData = readIoBuffer(readInt() - 4).debugCopyUse {
+                            this.debugPrint("Extra data")
+                        }
                         val flag3 = readByte().toInt()
                         check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
 
-                        discardExact(readInt() - 4) // uinAccount
+                        bot.logger.verbose(readString(readInt() - 4)) // uinAccount
 
+                        //debugPrint("remaining")
                         parseLoginSsoPacket(bot, decryptBy(DECRYPTER_16_ZERO), consumer)
                     }
                     else -> error("Illegal flag2. Expected 0x02, got $flag2")
@@ -90,7 +79,7 @@ internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListO
         }
 
     @UseExperimental(ExperimentalUnsignedTypes::class)
-    private suspend inline fun parseLoginSsoPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
+    private suspend fun parseLoginSsoPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
         rawInput.debugPrintIfFail("Login sso packet") {
             val commandName: String
             val ssoSequenceId: Int
@@ -136,13 +125,13 @@ internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListO
 }
 
 @UseExperimental(ExperimentalContracts::class)
-internal inline fun <I : Closeable, R> I.withUse(block: I.() -> R): R {
+internal inline fun <I : IoBuffer, R> I.withUse(block: I.() -> R): R {
     contract {
         callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
     }
     return try {
         block(this)
     } finally {
-        close()
+        this.release(IoBuffer.Pool)
     }
 }

@@ -37,7 +37,7 @@ fun BytePacketBuilder.t1(uin: Long, ip: String) {
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
         writeTime()
-        writeIP(ip)
+        writeFully(ByteArray(4))
         writeShort(0)
     } shouldEqualsTo 20
 }
@@ -273,8 +273,8 @@ fun BytePacketBuilder.t109(
 ) {
     writeShort(0x109)
     writeShortLVPacket {
-        writeFully(androidId)
-    }
+        writeFully(md5(androidId))
+    } shouldEqualsTo 16
 }
 
 fun BytePacketBuilder.t52d(
@@ -283,6 +283,9 @@ fun BytePacketBuilder.t52d(
     writeShort(0x52d)
     writeShortLVPacket {
         writeFully(androidDevInfo)
+
+        // 0A  07  75  6E  6B  6E  6F  77  6E  12  7E  4C  69  6E  75  78  20  76  65  72  73  69  6F  6E  20  34  2E  39  2E  33  31  20  28  62  75  69  6C  64  40  42  75  69  6C  64  32  29  20  28  67  63  63  20  76  65  72  73  69  6F  6E  20  34  2E  39  20  32  30  31  35  30  31  32  33  20  28  70  72  65  72  65  6C  65  61  73  65  29  20  28  47  43  43  29  20  29  20  23  31  20  53  4D  50  20  50  52  45  45  4D  50  54  20  54  68  75  20  44  65  63  20  31  32  20  31  35  3A  33  30  3A  35  35  20  49  53  54  20  32  30  31  39  1A  03  52  45  4C  22  03  33  32  37  2A  41  4F  6E  65  50  6C  75  73  2F  4F  6E  65  50  6C  75  73  35  2F  4F  6E  65  50  6C  75  73  35  3A  37  2E  31  2E  31  2F  4E  4D  46  32  36  58  2F  31  30  31  37  31  36  31  37  3A  75  73  65  72  2F  72  65  6C  65  61  73  65  2D  6B  65  79  73  32  24  36  63  39  39  37  36  33  66  2D  66  62  34  32  2D  34  38  38  31  2D  62  37  32  65  2D  63  37  61  61  38  61  36  63  31  63  61  34  3A  10  65  38  63  37  30  35  34  64  30  32  66  33  36  33  64  30  42  0A  6E  6F  20  6D  65  73  73  61  67  65  4A  03  33  32  37
+
     }
 }
 
@@ -301,7 +304,6 @@ fun BytePacketBuilder.t124(
         writeShort(networkType.value.toShort())
         writeShortLVByteArrayLimitedLength(simInfo, 16)
         writeShortLVByteArrayLimitedLength(unknown, 32)
-        writeShort(0)
         writeShortLVByteArrayLimitedLength(apn, 16)
     }
 }
@@ -385,7 +387,7 @@ fun BytePacketBuilder.t147(
 ) {
     writeShort(0x147)
     writeShortLVPacket {
-        writeLong(appId)
+        writeInt(appId.toInt())
         writeShortLVByteArrayLimitedLength(apkVersionName, 32)
         writeShortLVByteArrayLimitedLength(apkSignatureMd5, 32)
     }
@@ -516,16 +518,18 @@ fun BytePacketBuilder.t188(
     writeShort(0x188)
     writeShortLVPacket {
         writeFully(md5(androidId))
-    }
+    } shouldEqualsTo 16
 }
 
 fun BytePacketBuilder.t194(
     imsiMd5: ByteArray
 ) {
+    imsiMd5 requireSize 16
+
     writeShort(0x194)
     writeShortLVPacket {
         writeFully(imsiMd5)
-    }
+    } shouldEqualsTo 16
 }
 
 fun BytePacketBuilder.t191(
@@ -572,7 +576,7 @@ fun BytePacketBuilder.t177(
         writeByte(1)
         writeInt(unknown1.toInt())
         writeShortLVString(unknown2)
-    }
+    } shouldEqualsTo 0x11
 }
 
 fun BytePacketBuilder.t516( // 1302
@@ -581,7 +585,7 @@ fun BytePacketBuilder.t516( // 1302
     writeShort(0x516)
     writeShortLVPacket {
         writeInt(sourceType)
-    }
+    } shouldEqualsTo 4
 }
 
 fun BytePacketBuilder.t521( // 1313
@@ -592,7 +596,7 @@ fun BytePacketBuilder.t521( // 1313
     writeShortLVPacket {
         writeInt(productType)
         writeShort(unknown)
-    }
+    } shouldEqualsTo 6
 }
 
 fun BytePacketBuilder.t536( // 1334
@@ -626,8 +630,8 @@ fun BytePacketBuilder.t318(
 private fun Boolean.toByte(): Byte = if (this) 1 else 0
 private fun Boolean.toInt(): Int = if (this) 1 else 0
 
-private infix fun Int.shouldEqualsTo(int: Int) = require(this == int) { "Required $int, but found $this" }
-private fun ByteArray.requireSize(exactSize: Int) = require(this.size == exactSize) { "Required size $exactSize, but found ${this.size}" }
+private infix fun Int.shouldEqualsTo(int: Int) = check(this == int) { "Required $int, but found $this" }
+private infix fun ByteArray.requireSize(exactSize: Int) = check(this.size == exactSize) { "Required size $exactSize, but found ${this.size}" }
 
 fun randomAndroidId(): String = buildString(15) {
     repeat(15) { append(Random.nextInt(10)) }

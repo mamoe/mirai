@@ -11,7 +11,6 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.encryptAndWrite
-import net.mamoe.mirai.utils.cryptor.encryptBy
 import net.mamoe.mirai.utils.io.*
 
 /**
@@ -47,6 +46,7 @@ private val EMPTY_BYTE_ARRAY = ByteArray(0)
  *
  * byte[]   body encrypted by 16 zero
  */
+@UseExperimental(MiraiInternalAPI::class)
 internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
     subAppId: Long,
@@ -54,30 +54,33 @@ internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
     name: String? = null,
     id: PacketId = this.id,
     ssoExtraData: ByteReadPacket = BRP_STUB,
-    sequenceId: Int = PacketFactory.atomicNextSequenceId(),
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
-): OutgoingPacket = OutgoingPacket(name, id, sequenceId, buildPacket {
-    writeIntLVPacket(lengthOffset = { it + 4 }) {
-        writeInt(0x00_00_00_0A)
-        writeByte(0x02)
-        extraData.let {
-            writeInt(it.size + 4)
-            writeFully(it)
-        }
-        writeByte(0x00)
+): OutgoingPacket {
+    val sequenceId: Int = client.nextSsoSequenceId()
 
-        client.account.id.toString().let {
-            writeInt(it.length + 4)
-            writeStringUtf8(it)
-        }
+    return OutgoingPacket(name, id, sequenceId, buildPacket {
+        writeIntLVPacket(lengthOffset = { it + 4 }) {
+            writeInt(0x00_00_00_0A)
+            writeByte(0x02)
+            extraData.let {
+                writeInt(it.size + 4)
+                writeFully(it)
+            }
+            writeByte(0x00)
 
-        encryptAndWrite(KEY_16_ZEROS) {
-            writeLoginSsoPacket(client, subAppId, id, ssoExtraData, sequenceId) {
-                body(sequenceId)
+            client.account.id.toString().let {
+                writeInt(it.length + 4)
+                writeStringUtf8(it)
+            }
+
+            encryptAndWrite(KEY_16_ZEROS) {
+                writeLoginSsoPacket(client, subAppId, id, ssoExtraData, sequenceId) {
+                    body(sequenceId)
+                }
             }
         }
-    }
-})
+    })
+}
 
 private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
 
@@ -141,7 +144,7 @@ private inline fun BytePacketBuilder.writeLoginSsoPacket(
         writeInt(4)
 
         client.device.ksid.let {
-            writeInt(it.length + 4)
+            writeShort((it.length + 2).toShort())
             writeStringUtf8(it)
         }
 
@@ -190,7 +193,7 @@ internal inline fun PacketFactory<*, *>.buildSessionOutgoingPacket(
 interface EncryptMethod {
     val id: Int
 
-    fun BytePacketBuilder.encryptAndWrite(body: ByteReadPacket)
+    fun makeBody(body: BytePacketBuilder.() -> Unit): ByteReadPacket
 }
 
 internal interface EncryptMethodSessionKey : EncryptMethod {
@@ -208,14 +211,14 @@ internal interface EncryptMethodSessionKey : EncryptMethod {
      *     fully encrypted
      * }
      */
-    override fun BytePacketBuilder.encryptAndWrite(body: ByteReadPacket) {
+    override fun makeBody(body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
         require(currentLoginState == 2 || currentLoginState == 3) { "currentLoginState must be either 2 or 3" }
         writeByte(1) // const
         writeByte(if (currentLoginState == 2) 3 else 2)
         writeFully(sessionKey)
         writeShort(258) // const
         writeShort(0) // const, length of publicKey
-        body.encryptBy(sessionKey) { encrypted -> writeFully(encrypted) }
+        encryptAndWrite(sessionKey, body)
     }
 }
 
@@ -248,13 +251,22 @@ internal interface EncryptMethodECDH : EncryptMethod {
      * byte[]   [ECDH.publicKey]
      * byte[]   encrypted `body()` by [ECDH.shareKey]
      */
-    override fun BytePacketBuilder.encryptAndWrite(body: ByteReadPacket) = ecdh.run {
+    override fun makeBody(body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
         writeByte(1) // const
         writeByte(1) // const
-        writeFully(keyPair.privateKey.getEncoded())
+        writeFully(ByteArray(16))
         writeShort(258) // const
-        writeShortLVByteArray(keyPair.publicKey.getEncoded().drop(23).toByteArray().also { check(it.size == 49) { "Bad publicKey generated. Expected size=49, got${it.size}" } })
-        body.encryptBy(keyPair.shareKey) { encrypted -> writeFully(encrypted) }
+
+        writeShortLVByteArray("04 CB 36 66 98 56 1E 93 6E 80 C1 57 E0 74 CA B1 3B 0B B6 8D DE B2 82 45 48 A1 B1 8D D4 FB 61 22 AF E1 2F E4 8C 52 66 D8 D7 26 9D 76 51 A8 EB 6F E7".hexToBytes())
+
+        /*writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).take(49).toByteArray().also {
+            it.toUHexString().debugPrint("PUBLIC KEY")
+            check(it[0].toInt() == 0x04) { "Bad publicKey generated. Expected first element=0x04, got${it[0]}" }
+            //check(ecdh.calculateShareKeyByPeerPublicKey(it.adjustToPublicKey()).contentEquals(ecdh.keyPair.shareKey)) { "PublicKey Validation failed" }
+        })*/
+
+        encryptAndWrite("26 33 BA EC 86 EB 79 E6 BC E0 20 06 5E A9 56 6C".hexToBytes(), body)
+        //encryptAndWrite(ecdh.keyPair.shareKey, body)
     }
 }
 
@@ -278,36 +290,34 @@ internal interface EncryptMethodECDH : EncryptMethod {
  * byte     3 // tail
  */
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal inline fun BytePacketBuilder.writeOicqRequestPacket(
+internal fun BytePacketBuilder.writeOicqRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,
     packetId: PacketId,
     bodyBlock: BytePacketBuilder.() -> Unit
 ) {
-    val body = encryptMethod.run {
-        buildPacket { encryptAndWrite(buildPacket { bodyBlock() }) }
-    }
-    writeIntLVPacket(lengthOffset = { it + 4 }) {
-        // Head
-        writeByte(0x02) // head
-        writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
-        writeShort(client.protocolVersion)
-        writeShort(1) // const??
-        writeShort(packetId.commandId.toShort())
-        writeQQ(client.account.id)
-        writeByte(3) // originally const
-        writeByte(encryptMethod.id.toByte())
-        writeByte(0) // const8_always_0
-        writeInt(2) // originally const
-        writeInt(client.appClientVersion)
-        writeInt(0) // constp_always_0
+    val body = encryptMethod.makeBody(bodyBlock)
+    // writeIntLVPacket(lengthOffset = { it + 4 }) {
+    // Head
+    writeByte(0x02) // head
+    writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
+    writeShort(client.protocolVersion)
+    writeShort(packetId.commandId.toShort())
+    writeShort(1) // const??
+    writeQQ(client.account.id)
+    writeByte(3) // originally const
+    writeByte(encryptMethod.id.toByte())
+    writeByte(0) // const8_always_0
+    writeInt(2) // originally const
+    writeInt(client.appClientVersion)
+    writeInt(0) // constp_always_0
 
-        // Body
-        writePacket(body)
+    // Body
+    writePacket(body)
 
-        // Tail
-        writeByte(0x03) // tail
-    }
+    // Tail
+    writeByte(0x03) // tail
+    //  }
 }
 /*
 00 00 01 64

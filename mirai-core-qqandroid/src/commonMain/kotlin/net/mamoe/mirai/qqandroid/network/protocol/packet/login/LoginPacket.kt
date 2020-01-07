@@ -31,9 +31,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
         operator fun invoke(
             client: QQAndroidClient
         ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId) { sequenceId ->
-            writeOicqRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
+            writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), id) {
                 writeShort(9) // subCommand
-                writeShort(LoginType.PASSWORD.value.toShort())
+                writeShort(0x17)
+                //writeShort(LoginType.PASSWORD.value.toShort())
 
                 t18(appId, client.appClientVersion, client.account.id)
                 t1(client.account.id, client.device.ipAddress)
@@ -91,6 +92,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                     tgtgtKey = client.tgtgtKey
                 )
 
+                //this.build().debugPrint("傻逼")
                 t145(client.device.guid)
                 t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
@@ -156,6 +158,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                         writeByte(0) // data count
                     }.readBytes())
                 })
+                // this.build().debugPrint("傻逼")
 
                 // ignored t318 because not logging in by QR
             }
