@@ -25,7 +25,6 @@ import net.mamoe.mirai.utils.cryptor.Decrypter
 import net.mamoe.mirai.utils.cryptor.NoDecrypter
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.random.Random
 
 /**
  * 包处理协程调度器.
