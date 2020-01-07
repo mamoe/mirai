@@ -49,6 +49,8 @@ internal open class QQAndroidClient(
 
     val apkVersionName: ByteArray = "8.2.0".toByteArray()
 
+    var loginState = 0
+
     val appClientVersion: Int = 0
 
     var networkType: NetworkType = NetworkType.WIFI

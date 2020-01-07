@@ -54,12 +54,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
 
             launch(CoroutineName("Incoming Packet handler")) {
-                rawInput.debugPrint("Received").use {
-                    if (it.remaining == 0L) {
+                rawInput.debugPrint("Received").use { input ->
+                    if (input.remaining == 0L) {
                         bot.logger.error("Empty packet received. Consider if bad packet was sent.")
                         return@launch
                     }
-                    KnownPacketFactories.parseIncomingPacket(bot, rawInput) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+                    KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
                         if (PacketReceivedEvent(packet).broadcast().cancelled) {
                             return@parseIncomingPacket
                         }

@@ -257,16 +257,16 @@ internal interface EncryptMethodECDH : EncryptMethod {
         writeFully(ByteArray(16))
         writeShort(258) // const
 
-        writeShortLVByteArray("04 CB 36 66 98 56 1E 93 6E 80 C1 57 E0 74 CA B1 3B 0B B6 8D DE B2 82 45 48 A1 B1 8D D4 FB 61 22 AF E1 2F E4 8C 52 66 D8 D7 26 9D 76 51 A8 EB 6F E7".hexToBytes())
+        // writeShortLVByteArray("04 CB 36 66 98 56 1E 93 6E 80 C1 57 E0 74 CA B1 3B 0B B6 8D DE B2 82 45 48 A1 B1 8D D4 FB 61 22 AF E1 2F E4 8C 52 66 D8 D7 26 9D 76 51 A8 EB 6F E7".hexToBytes())
 
-        /*writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).take(49).toByteArray().also {
+        writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).take(49).toByteArray().also {
             it.toUHexString().debugPrint("PUBLIC KEY")
             check(it[0].toInt() == 0x04) { "Bad publicKey generated. Expected first element=0x04, got${it[0]}" }
             //check(ecdh.calculateShareKeyByPeerPublicKey(it.adjustToPublicKey()).contentEquals(ecdh.keyPair.shareKey)) { "PublicKey Validation failed" }
-        })*/
+        })
 
-        encryptAndWrite("26 33 BA EC 86 EB 79 E6 BC E0 20 06 5E A9 56 6C".hexToBytes(), body)
-        //encryptAndWrite(ecdh.keyPair.shareKey, body)
+        // encryptAndWrite("26 33 BA EC 86 EB 79 E6 BC E0 20 06 5E A9 56 6C".hexToBytes(), body)
+        encryptAndWrite(ecdh.keyPair.shareKey, body)
     }
 }
 
