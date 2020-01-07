@@ -27,9 +27,9 @@ OutgoingPacket {
                 int      subAppId
                 hex      "01 00 00 00 00 00 00 00 00 00 01 00" // unknown values
                 int      extraData.size + 4
-                byte[]   extraData
+                byte[]   extraData // empty when login
                 int      commandName.length + 4
-                byte[]   commandName
+                byte[]   commandName // e.g. wtlogin.login
                 int      4 + 4
                 int      0x02B05B8B
                 int      imei.length + 4
@@ -65,7 +65,7 @@ OutgoingPacket {
                             head {
                                 byte     1
                                 byte     1
-                                byte[]   [ECDH.privateKey]
+                                byte[]   privateKey // random key
                                 short    258
                                 short    [ECDH.publicKey].size // always 49
                                 byte[]   [ECDH.publicKey]
@@ -82,7 +82,7 @@ OutgoingPacket {
                                 byte     1
                                 byte     if (currentLoginState == 2) 3 else 2
                                 fully    key
-                                short    258
+                                short    258 // const
                                 short    0
                             }
                             
