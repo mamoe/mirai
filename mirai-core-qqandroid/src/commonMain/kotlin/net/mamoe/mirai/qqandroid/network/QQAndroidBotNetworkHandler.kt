@@ -17,10 +17,12 @@ import net.mamoe.mirai.utils.io.ClosedChannelException
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 import net.mamoe.mirai.utils.io.ReadPacketInternalException
 import net.mamoe.mirai.utils.io.debugPrint
+import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 
 @UseExperimental(MiraiInternalAPI::class)
-internal class QQAndroidBotNetworkHandler(override val bot: QQAndroidBot) : BotNetworkHandler() {
+internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler() {
+    override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
 
     private val channel: PlatformDatagramChannel = PlatformDatagramChannel("wtlogin.qq.com", 8000)
