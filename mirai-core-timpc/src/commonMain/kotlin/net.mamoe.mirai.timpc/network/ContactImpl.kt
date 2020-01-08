@@ -51,8 +51,9 @@ internal class GroupImpl internal constructor(bot: TIMPCBot, val groupId: GroupI
     override val announcement: String get() = info.announcement
     override val members: ContactList<Member> get() = info.members
 
+    @UseExperimental(MiraiInternalAPI::class)
     override fun getMember(id: Long): Member =
-        members.getOrNull(id) ?: throw NoSuchElementException("No such member whose id is $id in group ${groupId.value}")
+        members.delegate.filteringGetOrAdd({ it.id == id }) { MemberImpl(QQImpl(bot, id, coroutineContext), this, MemberPermission.MEMBER, coroutineContext) }
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
