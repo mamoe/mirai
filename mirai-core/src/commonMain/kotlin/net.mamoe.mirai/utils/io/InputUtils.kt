@@ -71,16 +71,19 @@ fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().
 
 private inline fun <R> inline(block: () -> R): R = block()
 
+fun Input.readTLVMap(tagSize: Int = 2): MutableMap<Int, ByteArray> = readTLVMap(true, tagSize)
+
 @Suppress("DuplicatedCode")
-fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMap<UInt, ByteArray> {
-    val map = mutableMapOf<UInt, ByteArray>()
-    var type: UShort = 0u
+fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int): MutableMap<Int, ByteArray> {
+    val map = mutableMapOf<Int, ByteArray>()
+    var type: Int = 0
 
     while (inline {
             try {
                 type = when (tagSize) {
-                    1 -> readUByte().toUShort()
-                    2 -> readUShort()
+                    1 -> readByte().toInt()
+                    2 -> readShort().toInt()
+                    4 -> readInt()
                     else -> error("Unsupported tag size: $tagSize")
                 }
             } catch (e: Exception) { // java.nio.BufferUnderflowException is not a EOFException...
@@ -92,14 +95,14 @@ fun Input.readTLVMap(expectingEOF: Boolean = false, tagSize: Int = 1): MutableMa
             type
         }.toUByte() != UByte.MAX_VALUE) {
 
-        check(!map.containsKey(type.toUInt())) {
+        check(!map.containsKey(type)) {
             "Count not readTLVMap: duplicated key 0x${type.toUInt().toUHexString("")}. " +
                     "map=$map" +
                     ", duplicating value=${this.readUShortLVByteArray().toUHexString()}" +
                     ", remaining=" + if (expectingEOF) this.readBytes().toUHexString() else "[Not expecting EOF]"
         }
         try {
-            map[type.toUInt()] = this.readUShortLVByteArray()
+            map[type] = this.readUShortLVByteArray()
         } catch (e: RuntimeException) { // BufferUnderflowException
             if (expectingEOF) {
                 return map
@@ -146,7 +149,7 @@ fun Input.readFlatTUVarIntMap(expectingEOF: Boolean = false, tagSize: Int = 1): 
     return map
 }
 
-fun Map<UInt, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 1) =
+fun Map<Int, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 1) =
     debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() }.mapKeys {
         when (keyLength) {
             1 -> it.key.toInt().toUByte().toUHexString()
@@ -161,7 +164,7 @@ internal inline fun unsupported(message: String? = null): Nothing = error(messag
 internal inline fun illegalArgument(message: String? = null): Nothing = error(message ?: "Illegal argument passed")
 
 @JvmName("printTLVStringMap")
-fun Map<UInt, String>.printTLVMap(name: String = "") =
+fun Map<Int, String>.printTLVMap(name: String = "") =
     debugPrintln("TLVMap $name= " + this.mapKeys { it.key.toInt().toUShort().toUHexString() })
 
 fun Input.readString(length: Int): String = String(this.readBytes(length))
