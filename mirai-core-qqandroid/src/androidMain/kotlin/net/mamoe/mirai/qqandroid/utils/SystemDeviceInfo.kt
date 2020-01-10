@@ -76,7 +76,6 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
                 (context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
             }
         }.getOrElse { "" }
-    override val ksid: String get() = "|454001228437590|A8.2.0.27f6ea96" // get from T108
     override val ipAddress: String get() = localIpAddress()
     override val androidId: ByteArray get() = Build.ID.toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()

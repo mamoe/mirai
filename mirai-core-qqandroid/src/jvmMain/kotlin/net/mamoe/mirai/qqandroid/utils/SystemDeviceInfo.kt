@@ -27,7 +27,6 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
     override val imsiMd5: ByteArray
         get() = ubyteArrayOf(0xD4u, 0x1Du, 0x8Cu, 0xD9u, 0x8Fu, 0x00u, 0xB2u, 0x04u, 0xE9u, 0x80u, 0x09u, 0x98u, 0xECu, 0xF8u, 0x42u, 0x7Eu).toByteArray()
     override val imei: String get() = "858414369211993"
-    override val ksid: String get() = "|454001228437590|A8.2.0.27f6ea96"
     override val ipAddress: String get() = localIpAddress()
     override val androidId: ByteArray get() = "QSR1.190920.001".toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()
