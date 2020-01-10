@@ -25,7 +25,7 @@ internal abstract class QQAndroidBotBase constructor(
     account: BotAccount,
     configuration: BotConfiguration
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
-    val client: QQAndroidClient = QQAndroidClient(context, account)
+    val client: QQAndroidClient = QQAndroidClient(context, account, bot = @Suppress("LeakingThis") this as QQAndroidBot)
 
     override val qqs: ContactList<QQ>
         get() = TODO("not implemented")
