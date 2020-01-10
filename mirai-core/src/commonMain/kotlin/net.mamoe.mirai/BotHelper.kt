@@ -23,4 +23,6 @@ suspend inline fun Bot.alsoLogin(): Bot = also { login() }
 /**
  * 取得机器人的 QQ 号
  */
-inline val Bot.qqAccount: Long get() = this.account.id
+@Deprecated(message = "Use this.uin instead", replaceWith = ReplaceWith("this.uin"), level = DeprecationLevel.WARNING)
+inline val Bot.qqAccount: Long
+    get() = this.uin

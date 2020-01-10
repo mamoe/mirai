@@ -35,7 +35,13 @@ abstract class Bot : CoroutineScope {
     /**
      * 账号信息
      */
+    @MiraiInternalAPI
     abstract val account: BotAccount
+
+    /**
+     * QQ 号码. 实际类型为 uint
+     */
+    abstract val uin: Long
 
     /**
      * 日志记录器

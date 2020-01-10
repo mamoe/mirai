@@ -129,11 +129,11 @@ internal fun IoBuffer.parseMessageImage0x03(): Image {
     // return if (tlv.containsKey(0x0Au)) {
     return Image(
         ImageId0x03(
-            String(tlv[0x02u]!!).adjustImageId(),
+            String(tlv[0x02]!!).adjustImageId(),
             //  tlv[0x0Au],
-            uniqueId = tlv[0x04u]!!.read { readUInt() },
-            height = tlv[0x16u]!!.toUInt().toInt(),
-            width = tlv[0x15u]!!.toUInt().toInt()
+            uniqueId = tlv[0x04]!!.read { readUInt() },
+            height = tlv[0x16]!!.toUInt().toInt(),
+            width = tlv[0x15]!!.toUInt().toInt()
         )//.also { debugPrintln("ImageId: $it") }
     )
     //} else {
