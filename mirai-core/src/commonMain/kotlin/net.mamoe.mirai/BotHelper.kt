@@ -18,7 +18,7 @@ import kotlin.jvm.JvmName
  *
  * @throws LoginFailedException
  */
-suspend inline fun Bot.alsoLogin(): Bot = also { login() }
+suspend inline fun <B: Bot> B.alsoLogin(): B = also { login() }
 
 /**
  * 取得机器人的 QQ 号
