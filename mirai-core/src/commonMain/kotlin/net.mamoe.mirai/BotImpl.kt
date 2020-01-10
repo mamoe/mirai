@@ -22,8 +22,11 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             ?: CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") })
 
     @Suppress("CanBePrimaryConstructorProperty") // for logger
-    override val account: BotAccount = account
-    override val logger: MiraiLogger = configuration.logger ?: DefaultLogger("Bot(" + account.id + ")")
+    final override val account: BotAccount = account
+    @UseExperimental(MiraiExperimentalAPI::class)
+    final override val uin: Long
+        get() = account.id
+    final override val logger: MiraiLogger = configuration.logger ?: DefaultLogger("Bot($uin)")
 
     init {
         @Suppress("LeakingThis")
@@ -46,7 +49,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
     }
 
-    override fun toString(): String = "Bot(${account.id})"
+    final override fun toString(): String = "Bot(${uin})"
 
     // region network
 
@@ -54,7 +57,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     private lateinit var _network: N
 
-    override suspend fun login() = reinitializeNetworkHandler(null)
+    final override suspend fun login() = reinitializeNetworkHandler(null)
 
     // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
     fun tryReinitializeNetworkHandler(
