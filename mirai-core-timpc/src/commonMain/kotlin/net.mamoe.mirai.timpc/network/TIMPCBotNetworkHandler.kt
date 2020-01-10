@@ -113,7 +113,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
         private var loginHandler: LoginHandler? = null
 
-        private suspend fun processReceive() {
+        private suspend inline fun processReceive() {
             while (channel.isOpen) {
                 val input: ByteReadPacket = try {
                     channel.read()// JVM: withContext(IO)
@@ -173,8 +173,8 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
             expectingTouchResponse = Job(supervisor)
             try {
-                launch { processReceive() }
-                launch {
+                launch(CoroutineName("Packet Receiver")) { processReceive() }
+                launch(CoroutineName("Timout checker")) {
                     if (withTimeoutOrNull(bot.configuration.touchTimeoutMillis) { expectingTouchResponse!!.join() } == null) {
                         loginResult.complete(LoginResult.TIMEOUT)
                     }
@@ -189,7 +189,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
         private var expectingTouchResponse: CompletableJob? = null
 
-        private suspend fun <TPacket : Packet> handlePacket0(
+        private suspend inline fun <TPacket : Packet> handlePacket0(
             sequenceId: UShort,
             packet: TPacket,
             factory: PacketFactory<TPacket, *>
@@ -439,7 +439,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     BotLoginSucceedEvent(bot).broadcast()
 
                     val configuration = bot.configuration
-                    heartbeatJob = this@TIMPCBotNetworkHandler.launch {
+                    heartbeatJob = this@TIMPCBotNetworkHandler.launch(CoroutineName("Heartbeat Job")) {
                         while (socket.isOpen) {
                             delay(configuration.heartbeatPeriodMillis)
                             with(bot) {
