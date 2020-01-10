@@ -42,11 +42,7 @@ internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypt
 }
 
 @JvmName("decode0")
-private suspend inline fun <P : Packet> PacketFactory<P, *>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P {
-    return this.run {
-        packet.decode(bot)
-    }
-}
+private suspend inline fun <P : Packet> PacketFactory<P, *>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P = packet.decode(bot)
 
 private val DECRYPTER_16_ZERO = ByteArray(16)
 

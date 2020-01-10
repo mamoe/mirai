@@ -103,7 +103,7 @@ fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int): MutableMap<Int
         }
         try {
             map[type] = this.readUShortLVByteArray()
-        } catch (e: RuntimeException) { // BufferUnderflowException
+        } catch (e: Exception) { // BufferUnderflowException, java.io.EOFException
             if (expectingEOF) {
                 return map
             }
