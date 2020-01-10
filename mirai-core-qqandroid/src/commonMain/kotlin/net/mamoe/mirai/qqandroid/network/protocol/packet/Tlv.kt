@@ -5,7 +5,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.utils.NetworkType
-import net.mamoe.mirai.utils.currentTime
+import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.md5
 import kotlin.random.Random
@@ -497,7 +497,7 @@ fun BytePacketBuilder.t400(
             writeFully(dpwd)
             writeInt(appId.toInt())
             writeInt(subAppId.toInt())
-            writeLong(currentTime)
+            writeLong(currentTimeMillis)
             writeFully(randomSeed)
         }
     }

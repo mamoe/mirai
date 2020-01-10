@@ -68,7 +68,7 @@ internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
             }
             writeByte(0x00)
 
-            client.account.id.toString().let {
+            client.uin.toString().let {
                 writeInt(it.length + 4)
                 writeStringUtf8(it)
             }
@@ -143,7 +143,7 @@ private inline fun BytePacketBuilder.writeLoginSsoPacket(
 
         writeInt(4)
 
-        client.device.ksid.let {
+        client.ksid.let {
             writeShort((it.length + 2).toShort())
             writeStringUtf8(it)
         }
@@ -279,7 +279,7 @@ internal interface EncryptMethodECDH : EncryptMethod {
  * short    27 + 2 + remaining.length
  * ushort   client.protocolVersion // const 8001
  * ushort   0x0001
- * uint     client.account.id
+ * uint     client.uin
  * byte     3 // const
  * ubyte    encryptMethod.value // [EncryptMethod]
  * byte     0 // const
@@ -304,7 +304,7 @@ internal fun BytePacketBuilder.writeOicqRequestPacket(
     writeShort(client.protocolVersion)
     writeShort(packetId.commandId.toShort())
     writeShort(1) // const??
-    writeQQ(client.account.id)
+    writeQQ(client.uin)
     writeByte(3) // originally const
     writeByte(encryptMethod.id.toByte())
     writeByte(0) // const8_always_0

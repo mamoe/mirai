@@ -48,7 +48,7 @@ OutgoingPacket {
                         short    27 + 2 + remaining.length
                         ushort   client.protocolVersion // const 8001
                         ushort   0x0001
-                        uint     client.account.id
+                        uint     client.uin
                         byte     3 // const
                         ubyte    encryptMethod.value // [EncryptMethod]
                         byte     0 // const
