@@ -24,10 +24,9 @@
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 Mirai 的开发。  
 
-若在使用过程中有任何疑问, 可提交 issue 或是邮件联系. 我们希望 Mirai 变得更易用.
+若在使用过程中有任何疑问, 可提交 issue 或是邮件联系(support@mamoe.net). 我们希望 Mirai 变得更易用.
 
 您的 star 是对我们最大的鼓励(点击项目右上角);  
-若要关注版本更新, 请点击 star 旁边的 watch
 
 ## Use as a library
 **把 Mirai 作为库内置于您的项目中使用.**  
@@ -38,7 +37,7 @@ repositories{
 }
 ```
 若您需要使用在跨平台项目, 您需要对各个目标平台添加不同的依赖.  
-若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.  
+**若您只需要使用在单一平台, 则只需要添加一项该平台的依赖. 如只在JVM运行则只需要`-jvm`的依赖**  
 
 您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 Mirai 目前还处于实验性阶段, 建议您时刻保持最新版本.
@@ -106,6 +105,7 @@ Mirai 使用以下开源库:
 - [tornadofx](https://github.com/edvin/tornadofx)
 - [javafx](https://github.com/openjdk/jfx)
 - [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
+- [bouncycastle](https://www.bouncycastle.org/java.html)
 
 ## License
 协议原版权归属腾讯科技股份有限公司所有，本项目其他代码遵守：  
@@ -114,8 +114,6 @@ Mirai 使用以下开源库:
 其中部分要求:  
 - (见 LICENSE 第 13 节) 尽管本许可协议有其他规定，但如果您修改本程序，则修改后的版本必须显着地为所有通过计算机网络与它进行远程交互的用户（如果您的版本支持这种交互）提供从网络服务器通过一些标准或惯用的软件复制方法**免费**访问相应的**源代码**的机会
 - (见 LICENSE 第 4 节) 您可以免费或收费地传递这个项目的源代码或目标代码(即编译结果), **但前提是提供明显的版权声明** (您需要标注本 `GitHub` 项目地址)
-
-对开源的尊重是一个程序员最基本的品质
 
 ## Wiki
 在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助
