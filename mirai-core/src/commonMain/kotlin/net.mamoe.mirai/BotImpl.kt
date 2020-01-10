@@ -41,7 +41,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
         fun instanceWhose(qq: Long): Bot {
             instances.forEach {
-                if (it.qqAccount == qq) {
+                if (it.uin == qq) {
                     return it
                 }
             }
@@ -82,7 +82,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     private suspend fun reinitializeNetworkHandler(
         cause: Throwable?
     ) {
-        logger.info("BotAccount: $qqAccount")
+        logger.info("BotAccount: $uin")
         logger.info("Initializing BotNetworkHandler")
         try {
             if (::_network.isInitialized) {

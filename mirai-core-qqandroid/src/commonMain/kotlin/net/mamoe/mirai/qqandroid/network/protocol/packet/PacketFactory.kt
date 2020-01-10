@@ -134,11 +134,11 @@ internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListO
                                 runCatching {
                                     byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.shareKey, size)
                                 }.getOrElse {
-                                    byteArrayBuffer.decryptBy(bot.client.tgtgtKey, size)
+                                    byteArrayBuffer.decryptBy(bot.client.randomKey, size)
                                 } // 这里实际上应该用 privateKey(另一个random出来的key)
                             }
                         } else {
-                            this.decryptBy(bot.client.tgtgtKey, 0, this.readRemaining - 1)
+                            this.decryptBy(bot.client.randomKey, 0, this.readRemaining - 1)
                         }
 
                         packetFactory.decode(bot, data.toReadPacket())

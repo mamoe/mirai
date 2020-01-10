@@ -10,7 +10,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.io.debugPrintIfFail
 import net.mamoe.mirai.utils.io.readQQ
 import net.mamoe.mirai.utils.io.readRemainingBytes
@@ -78,13 +77,13 @@ internal object MemberMuteEventPacketParserAndHandler : KnownEventParserAndHandl
 
                 val durationSeconds = readUInt().toInt()
                 if (durationSeconds == 0) {
-                    if (memberQQ == bot.qqAccount) {
+                    if (memberQQ == bot.uin) {
                         BeingUnmutedEvent(operator)
                     } else {
                         MemberUnmuteEvent(group.getMember(memberQQ), operator)
                     }
                 } else {
-                    if (memberQQ == bot.qqAccount) {
+                    if (memberQQ == bot.uin) {
                         BeingMutedEvent(durationSeconds, operator)
                     } else {
                         MemberMuteEvent(group.getMember(memberQQ), durationSeconds, operator)

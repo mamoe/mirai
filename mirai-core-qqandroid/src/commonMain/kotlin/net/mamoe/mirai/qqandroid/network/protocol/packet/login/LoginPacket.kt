@@ -187,9 +187,11 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
         val client = bot.client
 
         val subCommand = readShort().toInt()
+        println("subCommand=$subCommand")
         val type = readByte()
-        discardExact(3)
-        val tlvMap = this.readTLVMap()
+        println("type=$subCommand")
+        debugDiscardExact(3)
+        val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
 
         tlvMap[0x150]?.let { client.analysisTlv150(it) }
         tlvMap[0x161]?.let { client.analysisTlv161(it) }

@@ -7,7 +7,6 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 @Suppress("unused", "NOTHING_TO_INLINE")
@@ -37,5 +36,5 @@ class GroupMessage(
 
 
     override val shouldBroadcast: Boolean
-        get() = bot.qqAccount != sender.id // 自己会收到自己发的消息
+        get() = bot.uin != sender.id // 自己会收到自己发的消息
 }

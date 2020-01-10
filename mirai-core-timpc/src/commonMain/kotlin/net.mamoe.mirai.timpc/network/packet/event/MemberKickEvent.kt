@@ -8,7 +8,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.EventPacket
-import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.utils.io.*
 
 /**
@@ -54,7 +53,7 @@ internal object MemberGoneEventPacketHandler : KnownEventParserAndHandler<Member
 
         discardExact(1)
         val id = readQQ()
-        if (id == bot.qqAccount) {
+        if (id == bot.uin) {
             discardExact(1)
             return BeingKickEvent(group, group.getMember(readQQ()))
         }

@@ -190,10 +190,10 @@ internal inline fun PacketFactory<*, *>.buildSessionOutgoingPacket(
  * Encryption method to be used for packet body.
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-interface EncryptMethod {
+internal interface EncryptMethod {
     val id: Int
 
-    fun makeBody(body: BytePacketBuilder.() -> Unit): ByteReadPacket
+    fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket
 }
 
 internal interface EncryptMethodSessionKey : EncryptMethod {
@@ -211,7 +211,7 @@ internal interface EncryptMethodSessionKey : EncryptMethod {
      *     fully encrypted
      * }
      */
-    override fun makeBody(body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
+    override fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
         require(currentLoginState == 2 || currentLoginState == 3) { "currentLoginState must be either 2 or 3" }
         writeByte(1) // const
         writeByte(if (currentLoginState == 2) 3 else 2)
@@ -251,16 +251,16 @@ internal interface EncryptMethodECDH : EncryptMethod {
      * byte[]   [ECDH.publicKey]
      * byte[]   encrypted `body()` by [ECDH.shareKey]
      */
-    override fun makeBody(body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
+    override fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
         writeByte(1) // const
         writeByte(1) // const
-        writeFully(ByteArray(16))
+        writeFully(client.randomKey)
         writeShort(258) // const
 
         // writeShortLVByteArray("04 CB 36 66 98 56 1E 93 6E 80 C1 57 E0 74 CA B1 3B 0B B6 8D DE B2 82 45 48 A1 B1 8D D4 FB 61 22 AF E1 2F E4 8C 52 66 D8 D7 26 9D 76 51 A8 EB 6F E7".hexToBytes())
 
         writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).take(49).toByteArray().also {
-            it.toUHexString().debugPrint("PUBLIC KEY")
+            // it.toUHexString().debugPrint("PUBLIC KEY")
             check(it[0].toInt() == 0x04) { "Bad publicKey generated. Expected first element=0x04, got${it[0]}" }
             //check(ecdh.calculateShareKeyByPeerPublicKey(it.adjustToPublicKey()).contentEquals(ecdh.keyPair.shareKey)) { "PublicKey Validation failed" }
         })
@@ -296,7 +296,7 @@ internal fun BytePacketBuilder.writeOicqRequestPacket(
     packetId: PacketId,
     bodyBlock: BytePacketBuilder.() -> Unit
 ) {
-    val body = encryptMethod.makeBody(bodyBlock)
+    val body = encryptMethod.makeBody(client, bodyBlock)
     // writeIntLVPacket(lengthOffset = { it + 4 }) {
     // Head
     writeByte(0x02) // head

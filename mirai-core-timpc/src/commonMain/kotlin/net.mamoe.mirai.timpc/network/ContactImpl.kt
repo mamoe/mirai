@@ -13,7 +13,6 @@ import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.data.ImageId
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.packet.action.*
@@ -56,19 +55,19 @@ internal class GroupImpl internal constructor(bot: TIMPCBot, val groupId: GroupI
         members.delegate.filteringGetOrAdd({ it.id == id }) { MemberImpl(QQImpl(bot, id, coroutineContext), this, MemberPermission.MEMBER, coroutineContext) }
 
     override suspend fun sendMessage(message: MessageChain) {
-        bot.sendPacket(GroupPacket.Message(bot.qqAccount, internalId, bot.sessionKey, message))
+        bot.sendPacket(GroupPacket.Message(bot.uin, internalId, bot.sessionKey, message))
     }
 
     override suspend fun uploadImage(image: ExternalImage): ImageId = withTIMPCBot {
         val userContext = coroutineContext
-        val response = GroupImagePacket.RequestImageId(bot.qqAccount, internalId, image, sessionKey).sendAndExpect<GroupImageResponse>()
+        val response = GroupImagePacket.RequestImageId(bot.uin, internalId, image, sessionKey).sendAndExpect<GroupImageResponse>()
 
         withContext(userContext) {
             when (response) {
                 is ImageUploadInfo -> response.uKey?.let { uKey ->
                     check(Http.postImage(
                         htcmd = "0x6ff0071",
-                        uin = bot.qqAccount,
+                        uin = bot.uin,
                         groupId = GroupId(id),
                         imageInput = image.input,
                         inputSize = image.inputSize,
@@ -87,11 +86,11 @@ internal class GroupImpl internal constructor(bot: TIMPCBot, val groupId: GroupI
     }
 
     override suspend fun updateGroupInfo(): GroupInfo = withTIMPCBot {
-        GroupPacket.QueryGroupInfo(qqAccount, internalId, sessionKey).sendAndExpect<RawGroupInfo>().parseBy(this@GroupImpl).also { info = it }
+        GroupPacket.QueryGroupInfo(uin, internalId, sessionKey).sendAndExpect<RawGroupInfo>().parseBy(this@GroupImpl).also { info = it }
     }
 
     override suspend fun quit(): Boolean = withTIMPCBot {
-        GroupPacket.QuitGroup(qqAccount, sessionKey, internalId).sendAndExpect<GroupPacket.QuitGroupResponse>().isSuccess
+        GroupPacket.QuitGroup(uin, sessionKey, internalId).sendAndExpect<GroupPacket.QuitGroupResponse>().isSuccess
     }
 
     @UseExperimental(MiraiInternalAPI::class)
@@ -114,16 +113,16 @@ internal class QQImpl @PublishedApi internal constructor(bot: TIMPCBot, override
     override val bot: TIMPCBot by bot.unsafeWeakRef()
 
     override suspend fun sendMessage(message: MessageChain) =
-        bot.sendPacket(SendFriendMessagePacket(bot.qqAccount, id, bot.sessionKey, message))
+        bot.sendPacket(SendFriendMessagePacket(bot.uin, id, bot.sessionKey, message))
 
     override suspend fun uploadImage(image: ExternalImage): ImageId = withTIMPCBot {
-        FriendImagePacket.RequestImageId(qqAccount, sessionKey, id, image).sendAndExpect<FriendImageResponse>().let {
+        FriendImagePacket.RequestImageId(uin, sessionKey, id, image).sendAndExpect<FriendImageResponse>().let {
             when (it) {
                 is FriendImageUKey -> {
                     check(
                         Http.postImage(
                             htcmd = "0x6ff0070",
-                            uin = bot.qqAccount,
+                            uin = bot.uin,
                             groupId = null,
                             uKeyHex = it.uKey.toUHexString(""),
                             imageInput = image.input,
@@ -141,15 +140,15 @@ internal class QQImpl @PublishedApi internal constructor(bot: TIMPCBot, override
     }
 
     override suspend fun queryProfile(): Profile = withTIMPCBot {
-        RequestProfileDetailsPacket(bot.qqAccount, id, sessionKey).sendAndExpect<RequestProfileDetailsResponse>().profile
+        RequestProfileDetailsPacket(bot.uin, id, sessionKey).sendAndExpect<RequestProfileDetailsResponse>().profile
     }
 
     override suspend fun queryPreviousNameList(): PreviousNameList = withTIMPCBot {
-        QueryPreviousNamePacket(bot.qqAccount, sessionKey, id).sendAndExpect()
+        QueryPreviousNamePacket(bot.uin, sessionKey, id).sendAndExpect()
     }
 
     override suspend fun queryRemark(): FriendNameRemark = withTIMPCBot {
-        QueryFriendRemarkPacket(bot.qqAccount, sessionKey, id).sendAndExpect()
+        QueryFriendRemarkPacket(bot.uin, sessionKey, id).sendAndExpect()
     }
 
     @PublishedApi
@@ -177,7 +176,7 @@ internal data class MemberImpl(
         require(durationSeconds <= 30 * 24 * 3600) { "duration must be no more than 30 days" }
 
         if (permission == MemberPermission.OWNER) return false
-        val operator = group.getMember(bot.qqAccount)
+        val operator = group.getMember(bot.uin)
         check(operator.id != id) { "The bot is the owner of group ${group.id}, it cannot mute itself!" }
         when (operator.permission) {
             MemberPermission.MEMBER -> return false
@@ -186,7 +185,7 @@ internal data class MemberImpl(
             }
         }
 
-        GroupPacket.Mute(qqAccount, group.internalId, sessionKey, id, durationSeconds.toUInt()).sendAndExpect<GroupPacket.MuteResponse>()
+        GroupPacket.Mute(uin, group.internalId, sessionKey, id, durationSeconds.toUInt()).sendAndExpect<GroupPacket.MuteResponse>()
         return true
     }
 
@@ -196,6 +195,6 @@ internal data class MemberImpl(
     }
 
     override suspend fun unmute(): Unit = withTIMPCBot {
-        GroupPacket.Mute(qqAccount, group.internalId, sessionKey, id, 0u).sendAndExpect<GroupPacket.MuteResponse>()
+        GroupPacket.Mute(uin, group.internalId, sessionKey, id, 0u).sendAndExpect<GroupPacket.MuteResponse>()
     }
 }

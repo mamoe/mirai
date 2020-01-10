@@ -14,7 +14,6 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotLoginSucceedEvent
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.TIMPCBot
 import net.mamoe.mirai.timpc.network.handler.DataPacketSocketAdapter
 import net.mamoe.mirai.timpc.network.handler.TemporaryPacketHandler
@@ -178,7 +177,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                         loginResult.complete(LoginResult.TIMEOUT)
                     }
                 }
-                sendPacket(TouchPacket(bot.qqAccount, serverIp, false))
+                sendPacket(TouchPacket(bot.uin, serverIp, false))
 
                 return loginResult.await()
             } finally {
@@ -319,7 +318,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
                     socket.sendPacket(
                         SubmitPasswordPacket(
-                            bot = bot.qqAccount,
+                            bot = bot.uin,
                             passwordMd5 = bot.account.passwordMd5,
                             loginTime = loginTime,
                             loginIP = loginIP,
@@ -349,7 +348,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
                     socket.sendPacket(
                         SubmitPasswordPacket(
-                            bot = bot.qqAccount,
+                            bot = bot.uin,
                             passwordMd5 = bot.account.passwordMd5,
                             loginTime = loginTime,
                             loginIP = loginIP,
@@ -367,7 +366,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     this.captchaCache = packet.captchaPart1
 
                     this.captchaSectionId = 1
-                    socket.sendPacket(CaptchaPacket.RequestTransmission(bot.qqAccount, this.token0825, this.captchaSectionId++, packet.token00BA))
+                    socket.sendPacket(CaptchaPacket.RequestTransmission(bot.uin, this.token0825, this.captchaSectionId++, packet.token00BA))
                 }
 
                 is CaptchaPacket.CaptchaResponse.Transmission -> {
@@ -393,19 +392,19 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                         this.captchaCache = null
                         if (code == null || code.length != 4) {
                             this.captchaSectionId = 1//意味着正在刷新验证码
-                            socket.sendPacket(CaptchaPacket.Refresh(bot.qqAccount, token0825))
+                            socket.sendPacket(CaptchaPacket.Refresh(bot.uin, token0825))
                         } else {
                             this.captchaSectionId = 0//意味着已经提交验证码
-                            socket.sendPacket(CaptchaPacket.Submit(bot.qqAccount, token0825, code, packet.captchaToken))
+                            socket.sendPacket(CaptchaPacket.Submit(bot.uin, token0825, code, packet.captchaToken))
                         }
                     } else {
-                        socket.sendPacket(CaptchaPacket.RequestTransmission(bot.qqAccount, token0825, captchaSectionId++, packet.token00BA))
+                        socket.sendPacket(CaptchaPacket.RequestTransmission(bot.uin, token0825, captchaSectionId++, packet.token00BA))
                     }
                 }
 
                 is SubmitPasswordPacket.LoginResponse.Success -> {
                     this.sessionResponseDecryptionKey = packet.sessionResponseDecryptionKey
-                    socket.sendPacket(RequestSessionPacket(bot.qqAccount, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey))
+                    socket.sendPacket(RequestSessionPacket(bot.uin, socket.serverIp, packet.token38, packet.token88, packet.encryptionKey))
                 }
 
                 //是ClientPasswordSubmissionPacket之后服务器回复的可能之一
@@ -414,7 +413,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
                     socket.sendPacket(
                         SubmitPasswordPacket(
-                            bot = bot.qqAccount,
+                            bot = bot.uin,
                             passwordMd5 = bot.account.passwordMd5,
                             loginTime = loginTime,
                             loginIP = loginIP,
@@ -447,12 +446,12 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                                 if (withTimeoutOrNull(configuration.heartbeatTimeoutMillis) {
                                         // FIXME: 2019/11/26 启动被挤掉线检测
 
-                                        HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
+                                        HeartbeatPacket(bot.uin, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
                                     } == null) {
 
                                     // retry one time
                                     if (withTimeoutOrNull(configuration.heartbeatTimeoutMillis) {
-                                            HeartbeatPacket(bot.qqAccount, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
+                                            HeartbeatPacket(bot.uin, sessionKey).sendAndExpect<HeartbeatPacketResponse>()
                                         } == null) {
                                         bot.logger.warning("Heartbeat timed out")
 
@@ -474,7 +473,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
         @Suppress("MemberVisibilityCanBePrivate")
         suspend fun setOnlineStatus(status: OnlineStatus) {
-            socket.sendPacket(ChangeOnlineStatusPacket(bot.qqAccount, sessionKey, status))
+            socket.sendPacket(ChangeOnlineStatusPacket(bot.uin, sessionKey, status))
         }
 
         fun close() {

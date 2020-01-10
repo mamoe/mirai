@@ -11,7 +11,6 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageId0x03
 import net.mamoe.mirai.message.data.ImageId0x06
-import net.mamoe.mirai.qqAccount
 import net.mamoe.mirai.timpc.internal.RawGroupInfo
 import net.mamoe.mirai.timpc.network.GroupImpl
 import net.mamoe.mirai.timpc.network.MemberImpl
@@ -89,14 +88,14 @@ internal abstract class TIMPCBotBase constructor(
     }
 
     final override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
-        return when (CanAddFriendPacket(qqAccount, id, sessionKey).sendAndExpect<CanAddFriendResponse>()) {
+        return when (CanAddFriendPacket(uin, id, sessionKey).sendAndExpect<CanAddFriendResponse>()) {
             is CanAddFriendResponse.AlreadyAdded -> AddFriendResult.ALREADY_ADDED
             is CanAddFriendResponse.Rejected -> AddFriendResult.REJECTED
 
             is CanAddFriendResponse.ReadyToAdd,
             is CanAddFriendResponse.RequireVerification -> {
-                val key = RequestFriendAdditionKeyPacket(qqAccount, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
-                AddFriendPacket.RequestAdd(qqAccount, id, sessionKey, message, remark, key).sendAndExpect<AddFriendPacket.Response>()
+                val key = RequestFriendAdditionKeyPacket(uin, id, sessionKey).sendAndExpect<RequestFriendAdditionKeyPacket.Response>().key
+                AddFriendPacket.RequestAdd(uin, id, sessionKey, message, remark, key).sendAndExpect<AddFriendPacket.Response>()
                 AddFriendResult.WAITING_FOR_APPROVAL
             } //这个做的是需要验证消息的情况, 不确定 ReadyToAdd 的是啥
 
@@ -114,7 +113,7 @@ internal abstract class TIMPCBotBase constructor(
     }
 
     final override suspend fun approveFriendAddRequest(id: Long, remark: String?) {
-        AddFriendPacket.Approve(qqAccount, sessionKey, 0, id, remark).sendAndExpect<AddFriendPacket.Response>()
+        AddFriendPacket.Approve(uin, sessionKey, 0, id, remark).sendAndExpect<AddFriendPacket.Response>()
     }
 
 
@@ -134,7 +133,7 @@ internal abstract class TIMPCBotBase constructor(
     final override suspend fun getGroup(id: GroupId): Group = groups.delegate.getOrNull(id.value) ?: inline {
         val info: RawGroupInfo = try {
             when (val response =
-                GroupPacket.QueryGroupInfo(qqAccount, id.toInternalId(), sessionKey).sendAndExpect<GroupPacket.InfoResponse>()) {
+                GroupPacket.QueryGroupInfo(uin, id.toInternalId(), sessionKey).sendAndExpect<GroupPacket.InfoResponse>()) {
                 is RawGroupInfo -> response
                 is GroupNotFound -> throw GroupNotFoundException("id=${id.value}")
                 else -> assertUnreachable()
@@ -152,7 +151,7 @@ internal abstract class TIMPCBotBase constructor(
     private suspend inline fun getGroup0(id: Long): Group =
         groups.delegate.getOrNull(id) ?: inline {
             val info: RawGroupInfo = try {
-                GroupPacket.QueryGroupInfo(qqAccount, GroupId(id).toInternalId(), sessionKey).sendAndExpect()
+                GroupPacket.QueryGroupInfo(uin, GroupId(id).toInternalId(), sessionKey).sendAndExpect()
             } catch (e: Exception) {
                 e.logStacktrace()
                 error("Cannot obtain group info for id $id")
@@ -201,8 +200,8 @@ internal abstract class TIMPCBotBase constructor(
 
 
     final override suspend fun Image.getLink(): ImageLink = when (val id = this.id) {
-        is ImageId0x03 -> GroupImagePacket.RequestImageLink(qqAccount, sessionKey, id).sendAndExpect<GroupImageLink>().requireSuccess()
-        is ImageId0x06 -> FriendImagePacket.RequestImageLink(qqAccount, sessionKey, id).sendAndExpect<FriendImageLink>()
+        is ImageId0x03 -> GroupImagePacket.RequestImageLink(uin, sessionKey, id).sendAndExpect<GroupImageLink>().requireSuccess()
+        is ImageId0x06 -> FriendImagePacket.RequestImageLink(uin, sessionKey, id).sendAndExpect<FriendImageLink>()
         else -> assertUnreachable()
     }
 
