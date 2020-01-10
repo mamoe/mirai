@@ -121,7 +121,9 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                     close()
                     return
                 } catch (e: ReadPacketInternalException) {
-                    bot.logger.error("Socket channel read failed: ${e.message}")
+                    if (e.message != "java.nio.channels.AsynchronousCloseException") {
+                        bot.logger.error("Socket channel read failed: ${e.message}")
+                    }
                     continue
                 } catch (e: CancellationException) {
                     return
