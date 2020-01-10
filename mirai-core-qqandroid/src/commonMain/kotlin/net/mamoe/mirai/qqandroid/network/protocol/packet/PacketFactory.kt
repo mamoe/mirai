@@ -1,9 +1,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
+import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -113,10 +110,10 @@ internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListO
                 check(readByte().toInt() == 2)
                 this.discardExact(2) // 27 + 2 + body.size
                 this.discardExact(2) // const, =8001
-                this.readShort() // commandId
+                this.readUShort() // commandId
                 this.readShort() // const, =0x0001
-                qq = this.readInt().toLong()
-                val encryptionMethod = this.readShort().toInt()
+                qq = this.readUInt().toLong()
+                val encryptionMethod = this.readUShort().toInt()
 
                 this.discardExact(1) // const = 0
                 val packet = when (encryptionMethod) {
