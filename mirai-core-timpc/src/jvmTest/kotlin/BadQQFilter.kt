@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.timpc.TIMPC
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.util.*
 
 /**
@@ -31,6 +32,7 @@ const val qqList = "" +
         "\n" +
         "\n"
 
+@UseExperimental(MiraiInternalAPI::class)
 suspend fun main() {
     val goodBotList = Collections.synchronizedList(mutableListOf<Bot>())
 
@@ -58,5 +60,5 @@ suspend fun main() {
     }
 
     println("Filtering finished")
-    println(goodBotList.joinToString("\n") { it.account.id.toString() + "    " + it.account.passwordMd5 })
+    println(goodBotList.joinToString("\n") { it.uin.toString() + "    " + it.account.passwordMd5 })
 }

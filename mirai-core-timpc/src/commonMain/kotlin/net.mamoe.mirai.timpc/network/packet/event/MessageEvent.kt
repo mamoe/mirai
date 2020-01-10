@@ -31,14 +31,14 @@ internal object GroupMessageEventParserAndHandler : KnownEventParserAndHandler<G
 
         var senderPermission: MemberPermission = MemberPermission.MEMBER
         var senderName = ""
-        val map = readTLVMap(true)
-        if (map.containsKey(18u)) {
-            map.getValue(18u).read {
-                val tlv = readTLVMap(true)
-                senderPermission = when (tlv.takeIf { it.containsKey(0x04u) }?.get(0x04u)?.getOrNull(3)?.toUInt()) {
+        val map = readTLVMap(true, 1)
+        if (map.containsKey(18)) {
+            map.getValue(18).read {
+                val tlv = readTLVMap(true, 1)
+                senderPermission = when (tlv.takeIf { it.containsKey(0x04) }?.get(0x04)?.getOrNull(3)?.toInt()) {
                     null -> MemberPermission.MEMBER
-                    0x08u -> MemberPermission.OWNER
-                    0x10u -> MemberPermission.ADMINISTRATOR
+                    0x08 -> MemberPermission.OWNER
+                    0x10 -> MemberPermission.ADMINISTRATOR
                     else -> {
                         tlv.printTLVMap("TLV(tag=18) Map")
                         MiraiLogger.warning("Could not determine member permission, default permission MEMBER is being used")
@@ -47,8 +47,8 @@ internal object GroupMessageEventParserAndHandler : KnownEventParserAndHandler<G
                 }
 
                 senderName = when {
-                    tlv.containsKey(0x01u) -> kotlinx.io.core.String(tlv.getValue(0x01u))//这个人的qq昵称
-                    tlv.containsKey(0x02u) -> kotlinx.io.core.String(tlv.getValue(0x02u))//这个人的群名片
+                    tlv.containsKey(0x01) -> kotlinx.io.core.String(tlv.getValue(0x01))//这个人的qq昵称
+                    tlv.containsKey(0x02) -> kotlinx.io.core.String(tlv.getValue(0x02))//这个人的群名片
                     else -> {
                         tlv.printTLVMap("TLV(tag=18) Map")
                         MiraiLogger.warning("Could not determine senderName")

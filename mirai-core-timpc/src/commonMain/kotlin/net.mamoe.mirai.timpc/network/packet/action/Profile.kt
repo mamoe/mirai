@@ -185,25 +185,25 @@ internal object RequestProfileDetailsPacket : SessionPacketFactory<RequestProfil
         //map.mapValues { it.value.encodeToString() }.printTLVMap("Profile(qq=$qq) str=")
         val profile = Profile(
             qq = qq,
-            nickname = map[0x4E22u]?.encodeToString() ?: "",//error("Cannot determine nickname")
-            englishName = map[0x4E54u]?.encodeToString(),
-            chineseName = map[0x4E2Au]?.encodeToString(),
-            qAge = map[0x6597u]?.get(0)?.toInt(),
-            zipCode = map[0x4E25u]?.encodeToString(),
-            phone = map[0x4E27u]?.encodeToString(),
-            gender = when (map[0x4E29u]?.let { it[0] }?.toUInt()) {
+            nickname = map[0x4E22]?.encodeToString() ?: "",//error("Cannot determine nickname")
+            englishName = map[0x4E54]?.encodeToString(),
+            chineseName = map[0x4E2A]?.encodeToString(),
+            qAge = map[0x6597]?.get(0)?.toInt(),
+            zipCode = map[0x4E25]?.encodeToString(),
+            phone = map[0x4E27]?.encodeToString(),
+            gender = when (map[0x4E29]?.let { it[0] }?.toUInt()) {
                 null -> Gender.SECRET //error("Cannot determine gender, entry 0x4E29u not found")
                 0x02u -> Gender.FEMALE
                 0x01u -> Gender.MALE
                 else -> Gender.SECRET // 猜的
                 //else -> error("Cannot determine gender, bad value of 0x4E29u: ${map[0x4729u]!![0].toHexString()}")
             },
-            birthday = map[0x4E3Fu]?.let { GMTDate(it.toUInt().toLong()) },
-            personalStatement = map[0x4E33u]?.encodeToString(),
-            homepage = map[0x4E2Du]?.encodeToString(),
-            company = map[0x5DC8u]?.encodeToString(),
-            school = map[0x4E35u]?.encodeToString(),
-            email = map[0x4E2Bu]?.encodeToString()
+            birthday = map[0x4E3F]?.let { GMTDate(it.toUInt().toLong()) },
+            personalStatement = map[0x4E33]?.encodeToString(),
+            homepage = map[0x4E2D]?.encodeToString(),
+            company = map[0x5DC8]?.encodeToString(),
+            school = map[0x4E35]?.encodeToString(),
+            email = map[0x4E2B]?.encodeToString()
         )
         map.clear()
 
