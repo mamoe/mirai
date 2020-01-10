@@ -6,7 +6,7 @@ import net.mamoe.mirai.qqandroid.utils.ContextImpl
 import net.mamoe.mirai.utils.BotConfiguration
 
 @Suppress("FunctionName")
-internal fun QQAndroidBot(account: BotAccount, configuration: BotConfiguration) = QQAndroidBot(ContextImpl(), account, configuration)
+internal fun QQAndroidBot(account: BotAccount, configuration: BotConfiguration): QQAndroidBot = QQAndroidBot(ContextImpl(), account, configuration)
 
 internal actual class QQAndroidBot actual constructor(
     context: Context,
