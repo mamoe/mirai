@@ -32,7 +32,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
 
 @PublishedApi
 internal open class QQAndroidClient(
-    val context: Context,
+    context: Context,
     @MiraiInternalAPI("Be careful. Do not use the id in BotAccount. use client.uin instead")
     val account: BotAccount,
 
@@ -40,6 +40,7 @@ internal open class QQAndroidClient(
     val device: DeviceInfo = SystemDeviceInfo(context),
     bot: QQAndroidBot
 ) {
+    val context by context.unsafeWeakRef()
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     val tgtgtKey: ByteArray = ByteArray(16) // generateTgtgtKey(device.guid)
