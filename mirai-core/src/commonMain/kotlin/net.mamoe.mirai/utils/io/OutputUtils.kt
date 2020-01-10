@@ -9,7 +9,7 @@ import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.coerceAtMostOrFail
 import net.mamoe.mirai.utils.cryptor.encryptBy
-import net.mamoe.mirai.utils.currentTime
+import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.deviceName
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -73,7 +73,7 @@ fun BytePacketBuilder.writeShortLVString(str: String) = writeShortLVByteArray(st
 
 fun BytePacketBuilder.writeIP(ip: String) = writeFully(ip.trim().split(".").map { it.toUByte() }.toUByteArray())
 
-fun BytePacketBuilder.writeTime() = this.writeInt(currentTime.toInt())
+fun BytePacketBuilder.writeTime() = this.writeInt(currentTimeMillis.toInt())
 
 fun BytePacketBuilder.writeHex(uHex: String) {
     uHex.split(" ").forEach {

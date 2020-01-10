@@ -8,7 +8,9 @@ import io.ktor.util.date.GMTDate
 /**
  * 时间戳
  */
-inline val currentTime: Long get() = GMTDate().timestamp
+inline val currentTimeMillis: Long get() = GMTDate().timestamp
+
+inline val currentTimeSeconds: Long get() = currentTimeMillis / 1000
 
 /**
  * 设备名
