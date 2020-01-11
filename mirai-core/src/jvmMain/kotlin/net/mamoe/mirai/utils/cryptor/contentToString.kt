@@ -4,6 +4,8 @@ import java.lang.reflect.Field
 import kotlin.reflect.full.allSuperclasses
 
 
+val FIELD_TRY_SET_ACCESSIBLE = Field::class.java.declaredMethods.firstOrNull { it.name == "trySetAccessible" }
+
 actual fun Any.contentToStringReflectively(prefix: String): String {
     val newPrefix = prefix + ProtoMap.indent
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +
@@ -13,7 +15,7 @@ actual fun Any.contentToStringReflectively(prefix: String): String {
                 .joinToStringPrefixed(
                     prefix = newPrefix
                 ) {
-                    it.trySetAccessible()
+                    FIELD_TRY_SET_ACCESSIBLE?.invoke(it, true) ?: kotlin.run { it.isAccessible = true }
                     it.name + "=" + kotlin.runCatching {
                         val value = it.get(this)
                         if (value == this) "<this>"
