@@ -47,6 +47,7 @@ OutgoingPacket {
                         byte     2 // head flag
                         short    27 + 2 + remaining.length
                         ushort   client.protocolVersion // const 8001
+                        ushort   commandId // e.g. 0x0810
                         ushort   0x0001
                         uint     client.uin
                         byte     3 // const

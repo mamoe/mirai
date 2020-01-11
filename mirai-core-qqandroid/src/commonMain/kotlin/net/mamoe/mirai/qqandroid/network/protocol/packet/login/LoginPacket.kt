@@ -421,7 +421,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
      * login extra data
      */
     private fun QQAndroidClient.analysisTlv537(t537: ByteArray) = t537.read {
-        discardExact(2)
+        //discardExact(2)
         loginExtraData = LoginExtraData( // args are to correct order
             uin = readUInt().toLong(),
             ip = readUByteLVByteArray(),
@@ -509,8 +509,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
             val host = readUShortLVString()
             val port = readShort()
 
-            bot.logger.warning("更换服务器: host=$host, port=$port, type=$type")
-            // TODO: 2020/1/9 SET HOST ADDRESS ?? MAY BE IMPORTANT
+            bot.logger.warning("服务器: host=$host, port=$port, type=$type")
             // SEE oicq_request.java at method analysisT173
         }
     }
@@ -524,7 +523,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
             val host = readUShortLVString()
             val port = readShort()
 
-            // TODO: 2020/1/9 SET IPV6 ADDRESS
+            bot.logger.warning("服务器 ipv6: host=$host, port=$port, type=$type")
             // SEE oicq_request.java at method analysisT17f
         }
     }

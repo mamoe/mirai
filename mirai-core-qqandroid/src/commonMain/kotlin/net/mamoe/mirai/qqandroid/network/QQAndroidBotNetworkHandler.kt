@@ -14,10 +14,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.ClosedChannelException
-import net.mamoe.mirai.utils.io.PlatformSocket
-import net.mamoe.mirai.utils.io.ReadPacketInternalException
-import net.mamoe.mirai.utils.io.debugPrint
+import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 
@@ -35,6 +32,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         println("Sending login")
         LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
+        println("SessionTicket=${bot.client.wLoginSigInfo.wtSessionTicket.data.toUHexString()}")
+        println("SessionTicketKey=${bot.client.wLoginSigInfo.wtSessionTicketKey.toUHexString()}")
     }
 
     internal fun launchPacketProcessor(rawInput: ByteReadPacket): Job {

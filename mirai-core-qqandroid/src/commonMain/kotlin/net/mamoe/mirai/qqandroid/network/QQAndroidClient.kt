@@ -118,7 +118,7 @@ internal open class QQAndroidClient(
     var loginExtraData: LoginExtraData? = null
     lateinit var wFastLoginInfo: WFastLoginInfo
     var reserveUinInfo: ReserveUinInfo? = null
-    var wLoginSigInfo: WLoginSigInfo? = null
+    lateinit var wLoginSigInfo: WLoginSigInfo
     var tlv113: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
