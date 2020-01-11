@@ -117,10 +117,24 @@ class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, An
     }*/
 }
 
+/**
+ * 将所有元素加入转换为多行的字符串表示.
+ */
 fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) -> CharSequence): String {
     return this.joinToString(prefix = "$prefix${ProtoMap.indent}", separator = "\n$prefix${ProtoMap.indent}", transform = transform)
 }
 
+/**
+ * 将内容格式化为较可读的字符串输出.
+ *
+ * 各数字类型极其无符号类型: 十六进制表示 + 十进制表示. e.g. `0x1000(4096)`
+ * [ByteArray] 和 [UByteaArray]: 十六进制表示, 通过 [ByteArray.toUHexString]
+ * [ProtoMap]: 调用 [ProtoMap.toStringPrefixed]
+ * [Iterable], [Iterator], [Sequence]: 调用各自的 joinToString.
+ * [Map]: 多行输出. 每行显示一个值. 递归调用 [contentToString]. 嵌套结构将会以缩进表示
+ * `data class`: 调用其 [toString]
+ * 其他类型: 反射获取它和它的所有来自 Mirai 的 super 类型的所有自有属性并递归调用 [contentToString]. 嵌套结构将会以缩进表示
+ */
 fun Any?.contentToString(prefix: String = ""): String = when (this) {
     is Unit -> "Unit"
     is UInt -> "0x" + this.toUHexString("") + "($this)"
@@ -146,7 +160,9 @@ fun Any?.contentToString(prefix: String = ""): String = when (this) {
     }
 
     is ProtoMap -> "ProtoMap(size=$size){\n" + this.toStringPrefixed("$prefix${ProtoMap.indent}${ProtoMap.indent}") + "\n$prefix${ProtoMap.indent}}"
-    is Collection<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
+    is Iterable<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
+    is Iterator<*> -> this.asSequence().joinToString(prefix = "[", postfix = "]") { it.contentToString() }
+    is Sequence<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
     is Map<*, *> -> this.entries.joinToString(prefix = "{", postfix = "}") { it.key.contentToString() + "=" + it.value.contentToString() }
     else -> {
         if (this == null) "null"
