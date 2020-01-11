@@ -4,6 +4,7 @@ import kotlinx.io.core.BytePacketBuilder
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
+import net.mamoe.mirai.qqandroid.network.protocol.LoginType
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.io.*
@@ -14,25 +15,6 @@ import kotlin.random.Random
  * 显式表示一个 [ByteArray] 是一个 tlv 的 body
  */
 inline class Tlv(val value: ByteArray)
-
-inline class LoginType(
-    val value: Int
-) {
-    companion object {
-        /**
-         * 短信验证登录
-         */
-        val SMS = LoginType(3)
-        /**
-         * 密码登录
-         */
-        val PASSWORD = LoginType(1)
-        /**
-         * 微信一键登录
-         */
-        val WE_CHAT = LoginType(4)
-    }
-}
 
 @Suppress("MemberVisibilityCanBePrivate")
 fun BytePacketBuilder.t1(uin: Long, ip: String) {
