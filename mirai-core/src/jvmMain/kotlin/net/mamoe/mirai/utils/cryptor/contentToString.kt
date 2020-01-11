@@ -7,7 +7,7 @@ import kotlin.reflect.full.allSuperclasses
 actual fun Any.contentToStringReflectively(prefix: String): String {
     val newPrefix = prefix + ProtoMap.indent
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +
-            this.allFieldsFromSuperClassesMatching { it.packageName.startsWith("net.mamoe.mirai") }
+            this.allFieldsFromSuperClassesMatching { it.name.startsWith("net.mamoe.mirai") }
                 .distinctBy { it.name }
                 .filterNot { it.name.contains("$") || it.name == "Companion" || it.isSynthetic || it.name == "serialVersionUID" }
                 .joinToStringPrefixed(
