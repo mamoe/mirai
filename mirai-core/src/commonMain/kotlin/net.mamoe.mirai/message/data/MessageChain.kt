@@ -63,7 +63,7 @@ fun MessageChain(initialCapacity: Int): MessageChain =
 
 /**
  * 构造 [MessageChain]
- * 若仅提供一个参数, 请考虑使用 [Message.chain] 以优化性能
+ * 若仅提供一个参数, 请考虑使用 [Message.toChain] 以优化性能
  */
 @Suppress("FunctionName")
 fun MessageChain(vararg messages: Message): MessageChain =
@@ -81,12 +81,12 @@ fun MessageChain(messages: Iterable<Message>): MessageChain =
  * 构造单元素的不可修改的 [MessageChain]. 内部类实现为 [SingleMessageChain]
  *
  * 参数 [delegate] 不能为 [MessageChain] 的实例, 否则将会抛出异常.
- * 使用 [Message.chain] 将帮助提前处理这个问题.
+ * 使用 [Message.toChain] 将帮助提前处理这个问题.
  *
  * @param delegate 所构造的单元素 [MessageChain] 代表的 [Message]
  * @throws IllegalArgumentException 当 [delegate] 为 [MessageChain] 的实例时
  *
- * @see Message.chain receiver 模式
+ * @see Message.toChain receiver 模式
  */
 @MiraiExperimentalAPI
 @UseExperimental(ExperimentalContracts::class)
@@ -106,17 +106,13 @@ fun SingleMessageChain(delegate: Message): MessageChain {
  * 否则将调用 [MessageChain] 构造一个 [MessageChainImpl]
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun Message.chain(): MessageChain = if (this is MessageChain) this else MessageChain(
-    this
-)
+inline fun Message.toChain(): MessageChain = if (this is MessageChain) this else MessageChain(this)
 
 /**
  * 构造 [MessageChain]
  */
 @Suppress("unused", "NOTHING_TO_INLINE")
-inline fun List<Message>.messageChain(): MessageChain =
-    MessageChain(this)
-
+inline fun List<Message>.toMessageChain(): MessageChain = MessageChain(this)
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -327,6 +323,7 @@ internal inline class MessageChainImpl constructor(
  *
  * 在连接时将会把它当做一个普通 [Message] 看待, 但它不能被 [plusAssign]
  */
+@PublishedApi
 internal inline class SingleMessageChainImpl(
     private val delegate: Message
 ) : Message, MutableList<Message>,
