@@ -39,8 +39,9 @@ repositories{
 若您需要使用在跨平台项目, 您需要对各个目标平台添加不同的依赖.  
 **若您只需要使用在单一平台, 则只需要添加一项该平台的依赖. 如只在JVM运行则只需要`-jvm`的依赖**  
 
-您需要将 `VERSION` 替换为最新的版本(如 `0.5.1`): [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
-Mirai 目前还处于实验性阶段, 建议您时刻保持最新版本.
+您需要将 `VERSION` 替换为最新的版本(如 `0.10.6`):
+[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+**Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
 现在 Mirai 只支持 TIM PC 协议.  
 **common**
@@ -57,11 +58,15 @@ implementation("net.mamoe:mirai-core-timpc-android:VERSION")
 ```
 ### Performance
 Android 上, Mirai 运行需使用 80M 内存.  
-JVM 上需 120M-150M 内存 (一个 Bot)
+JVM 上需 120M-150M 内存
+
+## Wiki
+在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助
+
 ## Try
 
 ### On JVM or Android
-现在您可以开始体验低付出高效率的 Mirai
+现在体验低付出高效率的 Mirai
 
 ```kotlin
 val bot = TIMPC.Bot(qqId, password).alsoLogin()
@@ -87,14 +92,8 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 - JDK 8
 - Android SDK 29
 
-### Using Java 
-Q: 是否能只使用 Java 而不使用 Kotlin 来调用 Mirai?  
-A: 正在适配中.  
-   Mirai 大量使用协程, 内联, 扩展等 Kotlin 专有特性. 在 Java 调用这些 API 将会非常吃力. 
-   我们正在为 Java 调用提供转接。
-
 #### Libraries used
-Mirai 使用以下开源库:
+感谢:
 - [kotlin-stdlib](https://github.com/JetBrains/kotlin)
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
@@ -114,6 +113,3 @@ Mirai 使用以下开源库:
 其中部分要求:  
 - (见 LICENSE 第 13 节) 尽管本许可协议有其他规定，但如果您修改本程序，则修改后的版本必须显着地为所有通过计算机网络与它进行远程交互的用户（如果您的版本支持这种交互）提供从网络服务器通过一些标准或惯用的软件复制方法**免费**访问相应的**源代码**的机会
 - (见 LICENSE 第 4 节) 您可以免费或收费地传递这个项目的源代码或目标代码(即编译结果), **但前提是提供明显的版权声明** (您需要标注本 `GitHub` 项目地址)
-
-## Wiki
-在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助
