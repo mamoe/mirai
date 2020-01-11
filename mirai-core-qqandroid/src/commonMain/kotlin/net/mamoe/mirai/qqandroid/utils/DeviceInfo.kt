@@ -45,7 +45,7 @@ abstract class DeviceInfo(
 
     abstract val apn: ByteArray
 
-    val guid: ByteArray get() = generateGuid(androidId, macAddress)
+    val guid: ByteArray by lazy { generateGuid(androidId, macAddress) }
 
     fun generateDeviceInfoData(): ByteArray {
         @Serializable
