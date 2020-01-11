@@ -2,10 +2,12 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
-## `0.11.0`  *UNRELEASED*
+## `0.10.7`  *UNRELEASED*
 ### mirai-core
 - 弃用 `BotAccount.id`. 将来它可能会被改名成为邮箱等账号. QQ 号码需通过 `bot.uin` 获取.
 - `Gender` 由 `inline class` 改为 enum
+- `String.chain()` 改为 `String.toChain()`
+- `List<Message>.chain()` 改为 `List<Message>.toChain()`
 
 ## `0.10.6`  *2020/1/8*
 TIMPC
