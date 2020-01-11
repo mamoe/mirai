@@ -39,7 +39,7 @@ interface Contact : CoroutineScope {
     suspend fun uploadImage(image: ExternalImage): ImageId
 }
 
-suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.chain())
+suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
 
 suspend inline fun Contact.sendMessage(plain: String) = sendMessage(plain.singleChain())
 

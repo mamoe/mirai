@@ -10,7 +10,6 @@ import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.coerceAtLeastOrFail
 import kotlin.jvm.JvmName
 
 /**
@@ -50,7 +49,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      */
     suspend inline fun reply(message: MessageChain) = subject.sendMessage(message)
 
-    suspend inline fun reply(message: Message) = subject.sendMessage(message.chain())
+    suspend inline fun reply(message: Message) = subject.sendMessage(message.toChain())
     suspend inline fun reply(plain: String) = subject.sendMessage(plain.toMessage())
 
     @JvmName("reply1")

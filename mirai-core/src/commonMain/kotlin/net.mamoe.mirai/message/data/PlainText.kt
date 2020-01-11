@@ -23,4 +23,4 @@ inline fun String.toMessage(): PlainText = PlainText(this)
  * @see SingleMessageChainImpl
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun String.singleChain(): MessageChain = this.toMessage().chain()
+inline fun String.singleChain(): MessageChain = SingleMessageChainImpl(this.toMessage())

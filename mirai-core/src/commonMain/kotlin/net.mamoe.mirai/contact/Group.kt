@@ -61,8 +61,6 @@ interface Group : Contact, CoroutineScope/*, Map<UInt, Member>*/ { // TODO: 2019
 
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
-     *
-     * @see QuitGroupResponse.isSuccess 判断是否成功
      */
     suspend fun quit(): Boolean
 
