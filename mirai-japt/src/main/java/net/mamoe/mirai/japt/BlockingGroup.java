@@ -1,6 +1,6 @@
 package net.mamoe.mirai.japt;
 
-import net.mamoe.mirai.network.protocol.tim.packet.action.GroupInfo;
+import net.mamoe.mirai.data.GroupInfo;
 
 import java.util.Map;
 
@@ -9,7 +9,7 @@ public interface BlockingGroup extends BlockingContact {
     /**
      * 内部 ID. 内部 ID 为 [GroupId] 的映射
      */
-    Long getInternalId();
+    long getInternalId();
 
     /**
      * 群主 (同步事件更新)

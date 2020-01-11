@@ -1,8 +1,8 @@
 package net.mamoe.mirai.japt;
 
-import net.mamoe.mirai.contact.data.Profile;
-import net.mamoe.mirai.network.protocol.tim.packet.action.FriendNameRemark;
-import net.mamoe.mirai.network.protocol.tim.packet.action.PreviousNameList;
+import net.mamoe.mirai.data.FriendNameRemark;
+import net.mamoe.mirai.data.PreviousNameList;
+import net.mamoe.mirai.data.Profile;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")

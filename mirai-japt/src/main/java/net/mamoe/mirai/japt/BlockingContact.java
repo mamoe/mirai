@@ -1,7 +1,8 @@
 package net.mamoe.mirai.japt;
 
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.message.MessageChain;
+import net.mamoe.mirai.message.data.Message;
+import net.mamoe.mirai.message.data.MessageChain;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
@@ -19,8 +20,16 @@ public interface BlockingContact {
 
     /**
      * 向这个对象发送消息.
-     * <p>
-     * 速度太快会被服务器屏蔽(无响应). 在测试中不延迟地发送 6 条消息就会被屏蔽之后的数据包 1 秒左右.
      */
     void sendMessage(@NotNull MessageChain messages);
+
+    /**
+     * 向这个对象发送消息.
+     */
+    void sendMessage(@NotNull String message);
+
+    /**
+     * 向这个对象发送消息.
+     */
+    void sendMessage(@NotNull Message message);
 }
