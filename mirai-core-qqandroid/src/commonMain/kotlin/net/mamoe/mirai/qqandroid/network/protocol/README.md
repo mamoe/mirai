@@ -35,7 +35,7 @@ OutgoingPacket {
                 int      imei.length + 4
                 byte[]   imei
                 int      0 + 4
-                int      ksid.length + 4
+                short    ksid.length + 2
                 byte[]   ksid
                 int      0 + 4
             }
