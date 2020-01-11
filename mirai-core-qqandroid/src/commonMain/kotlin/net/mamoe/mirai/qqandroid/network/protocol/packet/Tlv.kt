@@ -16,7 +16,6 @@ import kotlin.random.Random
  */
 inline class Tlv(val value: ByteArray)
 
-@Suppress("MemberVisibilityCanBePrivate")
 fun BytePacketBuilder.t1(uin: Long, ip: String) {
     writeShort(0x1)
     writeShortLVPacket {
@@ -619,9 +618,3 @@ private fun Boolean.toInt(): Int = if (this) 1 else 0
 
 private infix fun Int.shouldEqualsTo(int: Int) = check(this == int) { "Required $int, but found $this" }
 private infix fun ByteArray.requireSize(exactSize: Int) = check(this.size == exactSize) { "Required size $exactSize, but found ${this.size}" }
-
-fun randomAndroidId(): String = buildString(15) {
-    repeat(15) { append(Random.nextInt(10)) }
-}
-
-// AndroidDevInfo: oicq.wlogin_sdk.tools.util#get_android_dev_info

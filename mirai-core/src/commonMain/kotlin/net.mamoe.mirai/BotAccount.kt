@@ -10,7 +10,7 @@ import kotlin.annotation.AnnotationTarget.*
 
 data class BotAccount(
     /**
-     * **注意**: 在 Android 协议, 总是使用 `QQAndroidClient.uin`, 而不要使用 [BotAccount.id]. 将来 [BotAccount.id] 可能会变为 [String]
+     * **注意**: 在 Android 协议, 总是使用 `QQAndroidClient.uin` 或 [Bot.uin], 而不要使用 [BotAccount.id]. 将来 [BotAccount.id] 可能会变为 [String]
      */
     @MiraiExperimentalAPI
     val id: Long,
@@ -20,7 +20,7 @@ data class BotAccount(
 }
 
 /**
- * 标记直接访问 [BotAccount.id], 而不是访问 [Bot.uin]
+ * 标记直接访问 [BotAccount.id], 而不是访问 [Bot.uin]. 这将可能会不兼容未来的 API 修改.
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)

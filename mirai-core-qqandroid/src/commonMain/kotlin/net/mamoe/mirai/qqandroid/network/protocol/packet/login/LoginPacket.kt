@@ -41,7 +41,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
         ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId) { sequenceId ->
             writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), id) {
                 writeShort(9) // subCommand
-                writeShort(0x17)
+                writeShort(17) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
 
                 t18(appId, client.appClientVersion, client.uin)
