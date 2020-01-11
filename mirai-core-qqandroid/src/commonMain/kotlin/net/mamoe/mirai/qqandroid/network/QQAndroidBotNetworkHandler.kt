@@ -1,6 +1,7 @@
 package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.coroutines.*
+import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.broadcast
@@ -36,6 +37,27 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
     }
 
+    internal fun launchPacketProcessor(rawInput: ByteReadPacket): Job {
+        return launch(CoroutineName("Incoming Packet handler")) {
+            rawInput.debugPrint("Received").use { input ->
+                if (input.remaining == 0L) {
+                    bot.logger.error("Empty packet received. Consider if bad packet was sent.")
+                    return@launch
+                }
+                KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+                    if (PacketReceivedEvent(packet).broadcast().cancelled) {
+                        return@parseIncomingPacket
+                    }
+                    packetListeners.forEach { listener ->
+                        if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
+                            listener.complete(packet)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private suspend fun processReceive() {
         while (channel.isOpen) {
             val rawInput = try {
@@ -52,25 +74,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 bot.logger.error("Caught unexpected exceptions", e)
                 continue
             }
-
-            launch(CoroutineName("Incoming Packet handler")) {
-                rawInput.debugPrint("Received").use { input ->
-                    if (input.remaining == 0L) {
-                        bot.logger.error("Empty packet received. Consider if bad packet was sent.")
-                        return@launch
-                    }
-                    KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
-                        if (PacketReceivedEvent(packet).broadcast().cancelled) {
-                            return@parseIncomingPacket
-                        }
-                        packetListeners.forEach { listener ->
-                            if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
-                                listener.complete(packet)
-                            }
-                        }
-                    }
-                }
-            }
+            launchPacketProcessor(rawInput)
         }
     }
 
@@ -96,9 +100,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         fun filter(packetId: PacketId, sequenceId: Int) = this.packetId == packetId && this.sequenceId == sequenceId
     }
 
-    override suspend fun awaitDisconnection() {
-        supervisor.join()
-    }
+    override suspend fun awaitDisconnection() = supervisor.join()
 
     override fun dispose(cause: Throwable?) {
         println("Closed")

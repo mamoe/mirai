@@ -10,6 +10,11 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.md5
 import kotlin.random.Random
 
+/**
+ * 显式表示一个 [ByteArray] 是一个 tlv 的 body
+ */
+inline class Tlv(val value: ByteArray)
+
 inline class LoginType(
     val value: Int
 ) {

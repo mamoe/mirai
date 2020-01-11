@@ -144,8 +144,8 @@ private inline fun BytePacketBuilder.writeLoginSsoPacket(
         writeInt(4)
 
         client.ksid.let {
-            writeShort((it.length + 2).toShort())
-            writeStringUtf8(it)
+            writeShort((it.size + 2).toShort())
+            writeFully(it)
         }
 
         writeInt(4)

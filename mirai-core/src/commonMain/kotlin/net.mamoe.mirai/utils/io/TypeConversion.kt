@@ -51,13 +51,13 @@ fun UShort.toByteArray(): ByteArray = with(toUInt()) {
 fun Short.toUHexString(separator: String = " "): String = this.toUShort().toUHexString(separator)
 
 fun UShort.toUHexString(separator: String = " "): String =
-    (this.toInt().shr(8).toUShort() and 255u).toByte().toUHexString() + separator + (this and 255u).toByte().toUHexString()
+    this.toInt().shr(8).toUShort().toUByte().toUHexString() + separator + this.toUByte().toUHexString()
 
 fun ULong.toUHexString(separator: String = " "): String =
     this.toLong().toUHexString(separator)
 
 fun Long.toUHexString(separator: String = " "): String =
-    this.ushr(32).toUInt().toUHexString(separator) + separator + this.ushr(32).toUInt().toUHexString(separator)
+    this.ushr(32).toUInt().toUHexString(separator) + separator + this.toUInt().toUHexString(separator)
 
 /**
  * 255 -> 00 FF

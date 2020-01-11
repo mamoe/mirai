@@ -48,6 +48,7 @@ private val DECRYPTER_16_ZERO = ByteArray(16)
 
 internal typealias PacketConsumer = suspend (packet: Packet, packetId: PacketId, ssoSequenceId: Int) -> Unit
 
+@UseExperimental(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListOf(
     LoginPacket
 ) {
@@ -60,7 +61,11 @@ internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListO
     suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
         rawInput.debugPrintIfFail("Incoming packet") {
             require(remaining < Int.MAX_VALUE) { "rawInput is too long" }
-            val expectedLength = readInt() - 4
+            val expectedLength = readUInt().toInt() - 4
+            if (expectedLength > 16e7) {
+                bot.logger.warning("Detect incomplete packet, ignoring.")
+                return@debugPrintIfFail
+            }
             check(remaining.toInt() == expectedLength) { "Invalid packet length. Expected $expectedLength, got ${rawInput.remaining} Probably packets merged? " }
             // login
             when (val flag1 = readInt()) {

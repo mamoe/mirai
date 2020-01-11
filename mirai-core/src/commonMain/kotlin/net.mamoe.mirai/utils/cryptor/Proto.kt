@@ -96,7 +96,7 @@ fun protoFieldNumber(number: UInt): Int = number.toInt().ushr(3)
 class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, Any> by map {
     companion object {
         @JvmStatic
-        val indent: String = "    "
+        internal val indent: String = "    "
     }
 
     override fun toString(): String {
@@ -117,7 +117,12 @@ class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, An
     }*/
 }
 
-internal fun Any.contentToString(prefix: String = ""): String = when (this) {
+fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) -> CharSequence): String {
+    return this.joinToString(prefix = "$prefix${ProtoMap.indent}", separator = "\n$prefix${ProtoMap.indent}", transform = transform)
+}
+
+fun Any?.contentToString(prefix: String = ""): String = when (this) {
+    is Unit -> "Unit"
     is UInt -> "0x" + this.toUHexString("") + "($this)"
     is UByte -> "0x" + this.toUHexString() + "($this)"
     is UShort -> "0x" + this.toUHexString("") + "($this)"
@@ -131,11 +136,37 @@ internal fun Any.contentToString(prefix: String = ""): String = when (this) {
 
     is Boolean -> if (this) "true" else "false"
 
-    is ByteArray -> this.toUHexString()// + " (${this.encodeToString()})"
+    is ByteArray -> {
+        if (this.size == 0) "<Empty ByteArray>"
+        else this.toUHexString()// + " (${this.encodeToString()})"
+    }
+    is UByteArray -> {
+        if (this.size == 0) "<Empty UByteArray>"
+        else this.toUHexString()// + " (${this.encodeToString()})"
+    }
 
     is ProtoMap -> "ProtoMap(size=$size){\n" + this.toStringPrefixed("$prefix${ProtoMap.indent}${ProtoMap.indent}") + "\n$prefix${ProtoMap.indent}}"
-    else -> this.toString()
+    is Collection<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
+    is Map<*, *> -> this.entries.joinToString(prefix = "{", postfix = "}") { it.key.contentToString() + "=" + it.value.contentToString() }
+    else -> {
+        if (this == null) "null"
+        else if (this::class.isData) this.toString()
+        else {
+            if (this::class.qualifiedName?.startsWith("net.mamoe.mirai.") == true) {
+                this.contentToStringReflectively(prefix + ProtoMap.indent)
+            } else this.toString()
+            /*
+            (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + "{\n" +
+                    this::class.members.asSequence().filterIsInstance<KProperty<*>>().filter { !it.isSuspend && it.visibility == KVisibility.PUBLIC }
+                        .joinToStringPrefixed(
+                            prefix = ProtoMap.indent
+                        ) { it.name + "=" + kotlin.runCatching { it.call(it).contentToString(ProtoMap.indent) }.getOrElse { "<!>" } }
+             */
+        }
+    }
 }
+
+expect fun Any.contentToStringReflectively(prefix: String = ""): String
 
 fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
     val map = ProtoMap(mutableMapOf())

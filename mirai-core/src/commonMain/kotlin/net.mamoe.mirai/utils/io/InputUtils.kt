@@ -9,6 +9,8 @@ import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.contact.groupId
 import net.mamoe.mirai.contact.groupInternalId
+import net.mamoe.mirai.utils.assertUnreachable
+import net.mamoe.mirai.utils.cryptor.contentToString
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
@@ -76,14 +78,14 @@ fun Input.readTLVMap(tagSize: Int = 2): MutableMap<Int, ByteArray> = readTLVMap(
 @Suppress("DuplicatedCode")
 fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int): MutableMap<Int, ByteArray> {
     val map = mutableMapOf<Int, ByteArray>()
-    var type: Int = 0
+    var key = 0
 
     while (inline {
             try {
-                type = when (tagSize) {
-                    1 -> readByte().toInt()
-                    2 -> readShort().toInt()
-                    4 -> readInt()
+                key = when (tagSize) {
+                    1 -> readUByte().toInt()
+                    2 -> readUShort().toInt()
+                    4 -> readUInt().toInt()
                     else -> error("Unsupported tag size: $tagSize")
                 }
             } catch (e: Exception) { // java.nio.BufferUnderflowException is not a EOFException...
@@ -92,22 +94,33 @@ fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int): MutableMap<Int
                 }
                 throw e
             }
-            type
+            key
         }.toUByte() != UByte.MAX_VALUE) {
 
-        check(!map.containsKey(type)) {
-            "Count not readTLVMap: duplicated key 0x${type.toUInt().toUHexString("")}. " +
-                    "map=$map" +
-                    ", duplicating value=${this.readUShortLVByteArray().toUHexString()}" +
-                    ", remaining=" + if (expectingEOF) this.readBytes().toUHexString() else "[Not expecting EOF]"
-        }
-        try {
-            map[type] = this.readUShortLVByteArray()
-        } catch (e: Exception) { // BufferUnderflowException, java.io.EOFException
-            if (expectingEOF) {
-                return map
+        if (map.containsKey(key)) {
+            DebugLogger.error(
+                @Suppress("IMPLICIT_CAST_TO_ANY")
+                """
+                Error readTLVMap: 
+                duplicated key ${when (tagSize) {
+                    1 -> key.toByte()
+                    2 -> key.toShort()
+                    4 -> key
+                    else -> assertUnreachable()
+                }.contentToString()}
+                map=${map.contentToString()}
+                duplicating value=${this.readUShortLVByteArray().toUHexString()}
+                """.trimIndent()
+            )
+        } else {
+            try {
+                map[key] = this.readUShortLVByteArray()
+            } catch (e: Exception) { // BufferUnderflowException, java.io.EOFException
+                // if (expectingEOF) {
+                //     return map
+                // }
+                throw e
             }
-            throw e
         }
     }
     return map

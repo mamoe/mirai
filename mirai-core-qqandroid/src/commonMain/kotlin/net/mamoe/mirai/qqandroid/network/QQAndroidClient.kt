@@ -6,6 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
 import net.mamoe.mirai.qqandroid.utils.Context
 import net.mamoe.mirai.qqandroid.utils.DeviceInfo
 import net.mamoe.mirai.qqandroid.utils.NetworkType
@@ -13,6 +14,7 @@ import net.mamoe.mirai.qqandroid.utils.SystemDeviceInfo
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.ECDH
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.unsafeWeakRef
 
@@ -40,6 +42,11 @@ internal open class QQAndroidClient(
     val device: DeviceInfo = SystemDeviceInfo(context),
     bot: QQAndroidBot
 ) {
+    @UseExperimental(MiraiInternalAPI::class)
+    override fun toString(): String { // net.mamoe.mirai.utils.cryptor.ProtoKt.contentToString
+        return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.contentToString()}, randomKey=${randomKey.contentToString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, _ssoSequenceId=$_ssoSequenceId, openAppId=$openAppId, apkVersionName=${apkVersionName.contentToString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.contentToString()}, protocolVersion=$protocolVersion, apkId=${apkId.contentToString()}, t150=${t150?.contentToString()}, rollbackSig=${rollbackSig?.contentToString()}, ipFromT149=${ipFromT149?.contentToString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.contentToString()}, t528=${t528?.contentToString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.contentToString()}, qrPushSig=${qrPushSig.contentToString()}, mainDisplayName='$mainDisplayName')"
+    }
+
     val context by context.unsafeWeakRef()
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
@@ -81,7 +88,7 @@ internal open class QQAndroidClient(
      */
 
 
-    var t150: ByteArray? = null
+    var t150: Tlv? = null
     var rollbackSig: ByteArray? = null
     var ipFromT149: ByteArray? = null
     /**
@@ -100,7 +107,7 @@ internal open class QQAndroidClient(
     /**
      * t108 时更新
      */
-    var ksid: String = "|454001228437590|A8.2.0.27f6ea96"
+    var ksid: ByteArray = "|454001228437590|A8.2.0.27f6ea96".toByteArray()
     /**
      * t186
      */
@@ -110,19 +117,23 @@ internal open class QQAndroidClient(
      */
     var loginExtraData: LoginExtraData? = null
     lateinit var wFastLoginInfo: WFastLoginInfo
-    lateinit var reserveUinInfo: ReserveUinInfo
+    var reserveUinInfo: ReserveUinInfo? = null
     var wLoginSigInfo: WLoginSigInfo? = null
     var tlv113: ByteArray? = null
     lateinit var qrPushSig: ByteArray
 
-    lateinit var mainDisplayName: String
+    lateinit var mainDisplayName: ByteArray
 }
 
 class ReserveUinInfo(
     val imgType: ByteArray,
     val imgFormat: ByteArray,
     val imgUrl: ByteArray
-)
+) {
+    override fun toString(): String {
+        return "ReserveUinInfo(imgType=${imgType.contentToString()}, imgFormat=${imgFormat.contentToString()}, imgUrl=${imgUrl.contentToString()})"
+    }
+}
 
 class WFastLoginInfo(
     val outA1: ByteReadPacket,
@@ -130,7 +141,11 @@ class WFastLoginInfo(
     var iconUrl: String = "",
     var profileUrl: String = "",
     var userJson: String = ""
-)
+) {
+    override fun toString(): String {
+        return "WFastLoginInfo(outA1=$outA1, adUrl='$adUrl', iconUrl='$iconUrl', profileUrl='$profileUrl', userJson='$userJson')"
+    }
+}
 
 class WLoginSimpleInfo(
     val uin: Long, // uin
@@ -142,14 +157,22 @@ class WLoginSimpleInfo(
     val imgFormat: ByteArray,
     val imgUrl: ByteArray,
     val mainDisplayName: ByteArray
-)
+) {
+    override fun toString(): String {
+        return "WLoginSimpleInfo(uin=$uin, face=$face, age=$age, gender=$gender, nick='$nick', imgType=${imgType.contentToString()}, imgFormat=${imgFormat.contentToString()}, imgUrl=${imgUrl.contentToString()}, mainDisplayName=${mainDisplayName.contentToString()})"
+    }
+}
 
 class LoginExtraData(
     val uin: Long,
     val ip: ByteArray,
     val time: Int,
     val version: Int
-)
+) {
+    override fun toString(): String {
+        return "LoginExtraData(uin=$uin, ip=${ip.contentToString()}, time=$time, version=$version)"
+    }
+}
 
 class WLoginSigInfo(
     val uin: Long,
@@ -193,7 +216,11 @@ class WLoginSigInfo(
     val wtSessionTicket: WtSessionTicket,
     val wtSessionTicketKey: ByteArray,
     val deviceToken: ByteArray
-)
+) {
+    override fun toString(): String {
+        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1.contentToString()}, noPicSig=${noPicSig.contentToString()}, G=${G.contentToString()}, dpwd=${dpwd.contentToString()}, randSeed=${randSeed.contentToString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.contentToString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.contentToString()}, userStSig=$userStSig, userStKey=${userStKey.contentToString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.contentToString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.contentToString()}, sid=$sid, aqSig=$aqSig, psKey=$psKey, superKey=${superKey.contentToString()}, payToken=${payToken.contentToString()}, pf=${pf.contentToString()}, pfKey=${pfKey.contentToString()}, da2=${da2.contentToString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.contentToString()}, deviceToken=${deviceToken.contentToString()})"
+    }
+}
 
 class UserStSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 class LSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)

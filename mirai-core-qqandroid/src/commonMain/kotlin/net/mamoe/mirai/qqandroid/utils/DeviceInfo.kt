@@ -3,6 +3,7 @@ package net.mamoe.mirai.qqandroid.utils
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 abstract class DeviceInfo(
@@ -75,9 +76,15 @@ abstract class DeviceInfo(
         )
     }
 
+    override fun toString(): String { // net.mamoe.mirai.utils.cryptor.ProtoKt.contentToString
+        return "DeviceInfo(display=${display.contentToString()}, product=${product.contentToString()}, device=${device.contentToString()}, board=${board.contentToString()}, brand=${brand.contentToString()}, model=${model.contentToString()}, bootloader=${bootloader.contentToString()}, fingerprint=${fingerprint.contentToString()}, bootId=${bootId.contentToString()}, procVersion=${procVersion.contentToString()}, baseBand=${baseBand.contentToString()}, version=$version, simInfo=${simInfo.contentToString()}, osType=${osType.contentToString()}, macAddress=${macAddress.contentToString()}, wifiBSSID=${wifiBSSID?.contentToString()}, wifiSSID=${wifiSSID?.contentToString()}, imsiMd5=${imsiMd5.contentToString()}, imei='$imei', ipAddress='$ipAddress', androidId=${androidId.contentToString()}, apn=${apn.contentToString()})"
+    }
+
     interface Version {
         val incremental: ByteArray
         val release: ByteArray
         val codename: ByteArray
     }
+
+
 }

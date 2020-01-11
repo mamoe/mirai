@@ -28,6 +28,8 @@ expect class ECDH(keyPair: ECDHKeyPair) {
         fun generateKeyPair(): ECDHKeyPair
         fun calculateShareKey(privateKey: ECDHPrivateKey, publicKey: ECDHPublicKey): ByteArray
     }
+
+    override fun toString(): String
 }
 
 @Suppress("FunctionName")
