@@ -181,7 +181,7 @@ internal object PacketDebugger {
      * 7. 运行完 `mov eax,dword ptr ss:[ebp+10]`
      * 8. 查看内存, `eax` 到 `eax+10` 的 16 字节就是 `sessionKey`
      */
-    val sessionKey: SessionKey get() = SessionKey("D8 D0 B0 DE 37 53 9B 05 A5 E7 AB 96 B2 AC AD EC".hexToBytes())
+    val sessionKey: SessionKey get() = SessionKey("84 CF F9 57 77 E8 92 56 32 DD 61 A5 E0 AA CB 4C".hexToBytes())
     // TODO: 2019/12/7 无法访问 internal 是 kotlin bug, KT-34849
 
     /**
@@ -207,7 +207,8 @@ internal object PacketDebugger {
             val id = matchPacketId(readUShort())
             val sequenceId = readUShort()
             val packetQQ = readQQ()
-            if (id == KnownPacketId.get<HeartbeatPacket>() || (qq != null && packetQQ != qq))
+
+            if (id == HeartbeatPacket.id || (qq != null && packetQQ != qq))
                 return@read
 
             if (IgnoredPacketIdList.contains(id)) {
