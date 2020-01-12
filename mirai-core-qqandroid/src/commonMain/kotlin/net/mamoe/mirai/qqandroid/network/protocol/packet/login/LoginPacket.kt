@@ -198,7 +198,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
         tlvMap[0x150]?.let { client.analysisTlv150(it) }
         tlvMap[0x161]?.let { client.analysisTlv161(it) }
-        tlvMap[0x172]?.let { client.rollbackSig = it }
         tlvMap[0x119]?.let { t119Data ->
             t119Data.decryptBy(client.tgtgtKey).toReadPacket().debugPrint("0x119data").apply {
                 discardExact(2) // always discarded.  00 1C
@@ -476,6 +475,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
         tlv[0x173]?.let { analysisTlv173(it) }
         tlv[0x17f]?.let { analysisTlv17f(it) }
+        tlv[0x172]?.let { rollbackSig = it }
     }
 
     /**
