@@ -73,8 +73,7 @@ internal object MemberJoinPacketHandler : KnownEventParserAndHandler<MemberJoinE
 
         discardExact(1) // 01
         val qq = bot.getQQ(readQQ())
-        val member = with(bot) {
-            this as? TIMPCBot ?: error("wrong Bot type passed")
+        val member = with(bot as? TIMPCBot ?: error("wrong Bot type passed")) {
             group.Member(qq, MemberPermission.MEMBER)
         }
 
