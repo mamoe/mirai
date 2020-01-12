@@ -55,7 +55,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     final override val network: N get() = _network
 
-    private lateinit var _network: N
+    internal lateinit var _network: N
 
     final override suspend fun login() = reinitializeNetworkHandler(null)
 

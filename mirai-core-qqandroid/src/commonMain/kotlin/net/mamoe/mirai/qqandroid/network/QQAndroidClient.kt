@@ -50,7 +50,7 @@ internal open class QQAndroidClient(
     val context by context.unsafeWeakRef()
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
-    val tgtgtKey: ByteArray = ByteArray(16) // generateTgtgtKey(device.guid)
+    var tgtgtKey: ByteArray = ByteArray(16) // generateTgtgtKey(device.guid)
     val randomKey: ByteArray = ByteArray(16) // 加密使用
 
     var miscBitMap: Int = 184024956 // 也可能是 150470524 ?
