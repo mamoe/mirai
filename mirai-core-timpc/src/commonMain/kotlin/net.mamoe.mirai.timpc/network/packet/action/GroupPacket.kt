@@ -155,9 +155,13 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
                         40 23 00 40
                         3E 03 3F A2 群主
 
-                        01 00 00 00 00 00 00 00 00 27 19 01 F4 01
+                        01 00
+                        00 00 00 00
+                        00 00 00 27
+                        19 01 F4 01
                         00 00 00 01 00 00
                         00 2B
+
                         05 4D 69 72 61 69 群名
                         00
                         00
@@ -182,6 +186,55 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
                         discardExact(22)
                         val groupName = readUByteLVString()
 
+                        /*
+                        来自群2的完整数据, 需要回答问题然后经管理员审核
+                        00
+                        00
+                        95 E7 AC AC 4D 2B 31 E6 AC A1 E5 85 A8 E7 BE A4 E4 B8 AD E5 B0 8F E5 92 B8 E9 B1 BC E8 81 9A E4 BC 97 E5 88 92 E6 B0 B4 EF BC 9B 0A E5 AE 9A E4 BA 8E E3 80 90 31 2E 31 31 EF BC 88 E5 91 A8 E5 85 AD EF BC 89 E4 B8 80 E6 A0 A1 E5 8C BA E3 80 91 E5 91 A8 E8 BE B9 E4 B8 BE E8 A1 8C EF BC 9B 0A E4 B8 AD E5 8D 88 31 EF BC 9A 30 30 E4 BA 8E E8 A5 BF E8 8B 91 E5 AE BE E9 A6 86 E9 9B 86 E5 90 88 EF BC 8C E5 90 9B E4 B8 B4 E5 9F 8E 2B E9 9F A9 E7 9B 9B 2F
+                        00
+                        00
+                        38 86 35 BF ED DD 19 4A 1B FD C8 8C 18 89 6C 78 3D A7 F3 A3 47 0D 53 C0 81 B8 D5 D0 42 21 12 24 D1 43 88 79 BA 6A 69 A8 48 0D 2D DF C8 C5 B7 EC 30 D8 4D 65 DE FB 43 A0 77
+                        00
+                        0F
+                        00 00 00 00
+
+                        07
+                        00
+                        01
+                        00
+                        1C 42 58 32 31 E6 98 AF E5 93 AA E4 B8 AA E6 A0 A1 E5 8C BA E5 93 AA E6 A0 8B E6 A5 BC
+
+                        00
+                        03 00 02 00 03 00
+                        04 00 04 00 00 00 06 00 05 00
+                        04 58 B5 48 78
+                        00 06 00 04 00 18 00 10 00 07 00 04 00 04 20 00 00 09 00 01 00
+
+                        46 70 19 A0  01
+                        06 20 98 58 00 00 08 1F 88 5C 00 00 10 0F 94 C5 00 00 11 3C B8 8C 00 00 11 4D 47 6B 00 00 11 AA 9B 45 00 00 13 8B 67 2F 00 00 14 24 5B 7D 00 00 14 9C 62 B9 00 00 14 F4 28 2A 00 00 15 0A 6F 5E 00 00 15 A5 8D 0C 00 00 17 B5 89 32 00 00 19 4E 07 87 00 00 1A 92 53 3C 00 00 1A CA 57 D1 00 00 1B 58 72 29 00 00 21 F8 67 A1 00 01 23 53 B0 8E 00 00 23 B5 55 61 00 00 23 B8 27 65 00 00 23 E8 5F 65 00 00 24 C6 B4 9B 00 00 25 2D A1 41 00 00 25 8E E2 CF 00 00 26 8B CB 82 00 00 2B 2A 0A B5 00 00 2B 2C 15 29 00 00 2C 0B 4B F3 00 00 2C DD 05 DC 00 00 2D BB 44 D6 00 01 2E EA 62 3E 00 00 2F 51 2C 3F 00 00 30 20 D3 5B 00 00 30 D6 0C 2E 00 00 31 B9 3E 72 00 00 31 FD E1 E8 00 00 32 70 75 0C 00 00 33 17 C2 62 00 00 33 73 74 62 00 00 35 58 8C 77 00 00 36 43 7E 2B 00 00 36 A5 8D AC 00 01 36 CF 1A 56 00 00 37 E6 20 8A 00 00 38 3B 42 07 00 01 38 42 CB 8F 00 00 39 0C 01 C9 00 00 39 53 A1 5A 00 00 39 79 9E CF 00 00 3A 17 AF 4A 00 00 3A 24 E6 6F 00 00 3A 83 8E A4 00 00 3A 91 3D D8 00 00 3A BF 77 3A 00 00 3A D4 C6 93 00 00 3B DA B0 79 00 00 3B DA BC 23 00 00 3C C0 C9 23 00 00 3D 3A 9C 64 00 00 3E 03 3F A2 00 00 3E 7A 07 E4 00 00 3F C5 CD 13 00 00 40 A8 6D F7 00 00 41 2A A7 B1 00 00 43 33 F3 F0 00 00 43 A1 51 93 00 00 43 C4 D3 8D 00 00 44 00 F8 A6 00 00 44 05 64 4F 00 00 44 7A A8 1D 00 00 45 0D B4 0D 00 01 46 07 29 CD 00 00 46 70 19 A0 00 00
+                         */
+
+                        /*
+                        来自群1的从现在这个位置的数据, 直接加入群
+                        00
+                        0F
+                        00 00 00 00
+
+                        06
+
+                        00
+                        03 00 02 00 00 00
+                        04 00 04 00 00 00 01 00 05 00
+                        04 5D F5 37 65
+                        00 06 00 04 04 08 00 00 00 07 00 04 00 00 00 00 00 09 00 01 00
+
+                        76 E4 B8 DD 00
+                        38 B5 21 5D 00 00
+                        3B E7 BB BC 00 00
+                        3E 03 3F A2 00 00
+                        76 E4 B8 DD 00 00
+                         */
+
                         discardExact(readUByte()) // 00
                         discardExact(readUByte()) // 00
                         val announcement = readUByteLVString()
@@ -189,7 +242,26 @@ internal object GroupPacket : SessionPacketFactory<GroupPacket.GroupPacketRespon
                         discardExact(readUByte()) // 00
                         discardExact(readUByte()) // 38 ... 未知
 
-                        discardExact(50)
+                        discardExact(2 + 4)
+
+
+                        // 验证类型,
+                        when (val verifyType = readByte().toInt()) {
+                            6 -> { // 允许任何人
+                            }
+
+                            7 -> { // 需要回答问题?
+                                discardExact(3) // 00 01 00, 需要提交给管理员审核
+                                readUByteLVString() // 验证问题
+                            }
+
+                            else -> {
+                                DebugLogger.error("Cannot parse GroupPacket.QueryGroupInfo. unknown verifyType=$verifyType. Still trying to parse...")
+                                discardExact(3)
+                                readUByteLVString() // 验证问题
+                            }
+                        }
+                        discardExact(43)
 
                         val stop = readUInt().toLong() // 标记读取群成员的结束
                         discardExact(1) // 00
