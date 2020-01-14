@@ -113,3 +113,7 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 其中部分要求:  
 - (见 LICENSE 第 13 节) 尽管本许可协议有其他规定，但如果您修改本程序，则修改后的版本必须显着地为所有通过计算机网络与它进行远程交互的用户（如果您的版本支持这种交互）提供从网络服务器通过一些标准或惯用的软件复制方法**免费**访问相应的**源代码**的机会
 - (见 LICENSE 第 4 节) 您可以免费或收费地传递这个项目的源代码或目标代码(即编译结果), **但前提是提供明显的版权声明** (您需要标注本 `GitHub` 项目地址)
+
+## Acknowledgement
+特别感谢 [JetBrains](https://www.jetbrains.com/) 提供的免费 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 等 IDE 授权  
+[<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/)
