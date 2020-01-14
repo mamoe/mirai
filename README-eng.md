@@ -91,3 +91,8 @@ Mirai uses these open-source libraries.
 - [tornadofx](https://github.com/edvin/tornadofx)
 - [javafx](https://github.com/openjdk/jfx)
 - [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
+
+
+## Acknowledgement
+Thanks to [JetBrains](https://www.jetbrains.com/?from=mirai) for allocating free open-source licences for IDEs such as [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai).  
+[<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
