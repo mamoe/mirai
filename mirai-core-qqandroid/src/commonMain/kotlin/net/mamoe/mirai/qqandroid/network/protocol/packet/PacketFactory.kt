@@ -19,13 +19,15 @@ import kotlin.jvm.JvmName
 
 /**
  * 一种数据包的处理工厂. 它可以解密解码服务器发来的这个包, 也可以编码加密要发送给服务器的这个包
- * 应由一个 `object` 实现, 且实现 `operator fun invoke`
+ * 应由一个 `object` 实现, 且实现 `operator fun invoke` 或按 subCommand 或其意义命名的函数来构造 [OutgoingPacket]
  *
  * @param TPacket 服务器回复包解析结果
  * @param TDecrypter 服务器回复包解密器
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
+
+    // TODO: 2020/1/12 Decrypter 多余. 需要删除
 
     @Suppress("PropertyName")
     internal var _id: PacketId = NullPacketId

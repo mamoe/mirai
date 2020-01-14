@@ -13,7 +13,8 @@ import net.mamoe.mirai.utils.cryptor.encryptAndWrite
 import net.mamoe.mirai.utils.io.*
 
 /**
- * 待发送给服务器的数据包. 它代表着一个 [ByteReadPacket],
+ * 待发送给服务器的数据包. 它代表着一个 [ByteReadPacket].
+ * 只有最终的包才会被包装为 [OutgoingPacket].
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal class OutgoingPacket constructor(
@@ -31,7 +32,10 @@ private val KEY_16_ZEROS = ByteArray(16)
 private val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 /**
- * Outermost packet for login
+ * 最外层的包. 结构适用于登录.
+ *
+ * 在 QQ 中这个被以 JNI 实现:
+ * com.tencent.qphone.base.util.CodecWarpper#encodeRequest(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, byte[], int, int, java.lang.String, byte, byte, byte, byte[], byte[], boolean)
  *
  * **Packet structure**
  * int      remaining.length + 4
