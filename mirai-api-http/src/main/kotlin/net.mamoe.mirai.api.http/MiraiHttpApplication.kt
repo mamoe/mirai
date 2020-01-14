@@ -50,8 +50,8 @@ fun Application.mirai() {
         mirai("/addFriend") {
             Bot.instanceWhose(qq = param("bot")).addFriend(
                 id = param("qq"),
-                message = paramOrNull<String?>("message")?.let { it },
-                remark = paramOrNull<String?>("remark")?.let { it }
+                message = paramOrNull("message"),
+                remark = paramOrNull("remark")
             )
 
             call.ok()

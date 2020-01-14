@@ -16,6 +16,9 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.hexToBytes
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.readUShortLVByteArray
+import net.mamoe.mirai.utils.io.readUShortLVString
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 /*
@@ -123,6 +126,8 @@ internal open class QQAndroidClient(
     lateinit var qrPushSig: ByteArray
 
     lateinit var mainDisplayName: ByteArray
+
+    var transportSequenceId = 1
 }
 
 class ReserveUinInfo(
@@ -191,6 +196,9 @@ class WLoginSigInfo(
     val a2CreationTime: Long,
     val tgtKey: ByteArray,
     val userStSig: UserStSig,
+    /**
+     * TransEmpPacket 加密使用
+     */
     val userStKey: ByteArray,
     val userStWebSig: UserStWebSig,
     val userA5: UserA5,
@@ -206,7 +214,8 @@ class WLoginSigInfo(
     val d2Key: ByteArray,
     val sid: Sid,
     val aqSig: AqSig,
-    val psKey: PSKey,
+    val psKeyMap: PSKeyMap,
+    val pt4TokenMap: Pt4TokenMap,
     val superKey: ByteArray,
     val payToken: ByteArray,
     val pf: ByteArray,
@@ -218,7 +227,7 @@ class WLoginSigInfo(
     val deviceToken: ByteArray
 ) {
     override fun toString(): String {
-        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1.contentToString()}, noPicSig=${noPicSig.contentToString()}, G=${G.contentToString()}, dpwd=${dpwd.contentToString()}, randSeed=${randSeed.contentToString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.contentToString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.contentToString()}, userStSig=$userStSig, userStKey=${userStKey.contentToString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.contentToString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.contentToString()}, sid=$sid, aqSig=$aqSig, psKey=$psKey, superKey=${superKey.contentToString()}, payToken=${payToken.contentToString()}, pf=${pf.contentToString()}, pfKey=${pfKey.contentToString()}, da2=${da2.contentToString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.contentToString()}, deviceToken=${deviceToken.contentToString()})"
+        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1.contentToString()}, noPicSig=${noPicSig.contentToString()}, G=${G.contentToString()}, dpwd=${dpwd.contentToString()}, randSeed=${randSeed.contentToString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.contentToString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.contentToString()}, userStSig=$userStSig, userStKey=${userStKey.contentToString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.contentToString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.contentToString()}, sid=$sid, aqSig=$aqSig, psKey=${psKeyMap.contentToString()}, superKey=${superKey.contentToString()}, payToken=${payToken.contentToString()}, pf=${pf.contentToString()}, pfKey=${pfKey.contentToString()}, da2=${da2.contentToString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.contentToString()}, deviceToken=${deviceToken.contentToString()})"
     }
 }
 
@@ -235,7 +244,27 @@ class AccessToken(data: ByteArray, creationTime: Long) : KeyWithCreationTime(dat
 class D2(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
 class Sid(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
 class AqSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-class PSKey(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+
+class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+
+typealias PSKeyMap = MutableMap<String, PSKey>
+typealias Pt4TokenMap = MutableMap<String, Pt4Token>
+
+internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, expireTime: Long, outPSKeyMap: PSKeyMap, outPt4TokenMap: Pt4TokenMap) = data.read {
+    repeat(readShort().toInt()) {
+        val domain = readUShortLVString()
+        val psKey = readUShortLVByteArray()
+        val pt4token = readUShortLVByteArray()
+
+        when{
+            psKey.size > 0 -> outPSKeyMap[domain] = PSKey(psKey, creationTime, expireTime)
+            pt4token.size > 0 -> outPt4TokenMap[domain] = Pt4Token(pt4token, creationTime, expireTime)
+        }
+    }
+}
+
+class PSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+
 class WtSessionTicket(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 
 open class KeyWithExpiry(

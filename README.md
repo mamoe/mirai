@@ -115,5 +115,5 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 - (见 LICENSE 第 4 节) 您可以免费或收费地传递这个项目的源代码或目标代码(即编译结果), **但前提是提供明显的版权声明** (您需要标注本 `GitHub` 项目地址)
 
 ## Acknowledgement
-特别感谢 [JetBrains](https://www.jetbrains.com/) 提供的免费 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 等 IDE 授权  
-[<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/)
+特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 提供的免费 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 授权  
+[<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)

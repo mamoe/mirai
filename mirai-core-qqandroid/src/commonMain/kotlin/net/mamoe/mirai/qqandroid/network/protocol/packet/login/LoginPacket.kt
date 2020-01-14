@@ -312,9 +312,17 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                     }
                 }
 
+
+                // TODO sigMap??? =0x21410e0 // from qq
+
                 val creationTime = currentTimeSeconds
                 val expireTime = creationTime + 2160000L
-                @Suppress("UNREACHABLE_CODE") // FOR STUB
+
+                val outPSKeyMap: PSKeyMap = mutableMapOf()
+                val outPt4TokenMap: Pt4TokenMap = mutableMapOf()
+
+                parsePSKeyMapAndPt4TokenMap(tlvMap119[0x512]?: error("Cannot find tlv 0x512, which is pskeyMap and pt4tokenMap"), creationTime, expireTime, outPSKeyMap, outPt4TokenMap)
+
                 client.wLoginSigInfo = WLoginSigInfo(
                     uin = client.uin,
                     encryptA1 = inline {
@@ -354,7 +362,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                     d2Key = tlvMap119.getOrEmpty(0x305),
                     sid = Sid(tlvMap119.getOrEmpty(0x164), creationTime, expireTime),
                     aqSig = AqSig(tlvMap119.getOrEmpty(0x171), creationTime),
-                    psKey = PSKey(tlvMap119.getOrEmpty(0x512), creationTime),
+                    psKeyMap = outPSKeyMap,
+                    pt4TokenMap = outPt4TokenMap,
                     superKey = tlvMap119.getOrEmpty(0x16d),
                     payToken = payToken,
                     pf = pf,
