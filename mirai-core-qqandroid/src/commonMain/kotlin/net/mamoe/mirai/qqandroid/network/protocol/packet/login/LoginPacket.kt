@@ -10,7 +10,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
-import net.mamoe.mirai.qqandroid.utils.inline
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
 import net.mamoe.mirai.utils.cryptor.DecrypterType
@@ -321,18 +320,27 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                 val outPSKeyMap: PSKeyMap = mutableMapOf()
                 val outPt4TokenMap: Pt4TokenMap = mutableMapOf()
 
-                parsePSKeyMapAndPt4TokenMap(tlvMap119[0x512]?: error("Cannot find tlv 0x512, which is pskeyMap and pt4tokenMap"), creationTime, expireTime, outPSKeyMap, outPt4TokenMap)
+                parsePSKeyMapAndPt4TokenMap(
+                    tlvMap119[0x512] ?: error("Cannot find tlv 0x512, which is pskeyMap and pt4tokenMap"),
+                    creationTime,
+                    expireTime,
+                    outPSKeyMap,
+                    outPt4TokenMap
+                )
+
+                var a1: ByteArray? = null
+                var noPicSig: ByteArray? = null
+                tlvMap119[0x531]?.let {
+                    analysisTlv0x531(it){ arg1, arg2 ->
+                        a1 = arg1
+                        noPicSig = arg2
+                    }
+                }
 
                 client.wLoginSigInfo = WLoginSigInfo(
                     uin = client.uin,
-                    encryptA1 = inline {
-                        val t10c = tlvMap119[0x10c]
-                        val t106 = tlvMap119[0x106]
-                        if (t106 != null && t10c != null) {
-                            t106 + t10c
-                        } else ByteArray(0)
-                    },
-                    noPicSig = tlvMap119.getOrEmpty(0x16a),
+                    encryptA1 = a1,
+                    noPicSig = noPicSig,
                     G = byteArrayOf(), // defaults {}, from asyncContext._G
                     dpwd = byteArrayOf(), // defaults {}, from asyncContext._G
                     randSeed = tlvMap119.getOrEmpty(0x403), // or from asyncContext._t403.get_body_data()
@@ -391,6 +399,19 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
 
     private fun Map<Int, ByteArray>.getOrEmpty(key: Int): ByteArray {
         return this[key] ?: byteArrayOf()
+    }
+
+    private inline fun analysisTlv0x531(t531: ByteArray, handler: (a1: ByteArray, noPicSig: ByteArray) -> Unit) {
+        val map = t531.toReadPacket().readTLVMap()
+
+        val t106 = map[0x106]
+        val t16a = map[0x16a]
+        val t113 = map[0x113]
+        val t10c = map[0x10c]
+
+        if (t106 != null && t16a != null && t113 != null && t10c != null) {
+            handler(t106 + t10c, t16a)
+        }
     }
 
     /**

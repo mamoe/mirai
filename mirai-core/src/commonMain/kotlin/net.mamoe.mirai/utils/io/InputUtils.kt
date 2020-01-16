@@ -162,15 +162,15 @@ fun Input.readFlatTUVarIntMap(expectingEOF: Boolean = false, tagSize: Int = 1): 
     return map
 }
 
-fun Map<Int, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 1) =
+fun Map<Int, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 2) =
     debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() }.mapKeys {
         when (keyLength) {
-            1 -> it.key.toInt().toUByte().toUHexString()
-            2 -> it.key.toInt().toUShort().toUHexString()
-            4 -> it.key.toInt().toUInt().toUHexString()
+            1 -> it.key.toUByte().toUHexString()
+            2 -> it.key.toUShort().toUHexString()
+            4 -> it.key.toUInt().toUHexString()
             else -> illegalArgument("Expecting 1, 2 or 4 for keyLength")
         }
-    })
+    }.entries.joinToString(prefix = "{", postfix = "}", separator = "\n"))
 
 internal inline fun unsupported(message: String? = null): Nothing = error(message ?: "Unsupported")
 

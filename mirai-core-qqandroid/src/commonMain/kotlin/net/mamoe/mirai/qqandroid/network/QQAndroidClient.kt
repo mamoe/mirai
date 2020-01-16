@@ -181,8 +181,8 @@ class LoginExtraData(
 
 class WLoginSigInfo(
     val uin: Long,
-    val encryptA1: ByteArray, // sigInfo[0]
-    val noPicSig: ByteArray, // sigInfo[1]
+    val encryptA1: ByteArray?, // sigInfo[0]
+    val noPicSig: ByteArray?, // sigInfo[1]
     val G: ByteArray, // sigInfo[2]
     val dpwd: ByteArray,
     val randSeed: ByteArray,
