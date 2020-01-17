@@ -32,7 +32,7 @@ operator fun <T> UnsafeWeakRef<T>.provideDelegate(thisRef: Any?, property: KProp
  * Provides delegate value.
  *
  * ```kotlin
- * val bot: Bot by param.unsafeWeakRef()
+ * val bot: Bot? by param.weakRef()
  * ```
  */
 operator fun <T> WeakRef<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T?> {
