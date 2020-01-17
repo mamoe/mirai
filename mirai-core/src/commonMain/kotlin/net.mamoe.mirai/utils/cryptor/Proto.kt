@@ -184,6 +184,7 @@ fun Any?.contentToString(prefix: String = ""): String = when (this) {
 
 expect fun Any.contentToStringReflectively(prefix: String = ""): String
 
+@Suppress("UNCHECKED_CAST")
 fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
     val map = ProtoMap(mutableMapOf())
 
@@ -206,14 +207,8 @@ fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
             }
 
             if (map.containsKey(id)) {
-                if (map[id] is MutableList<*>) {
-                    @Suppress("UNCHECKED_CAST")
-                    (map[id] as MutableList<Any>) += readValue()
-                } else {
-                    map[id] = mutableListOf(map[id]!!)
-                    @Suppress("UNCHECKED_CAST")
-                    (map[id] as MutableList<Any>) += readValue()
-                }
+                if (map[id] !is MutableList<*>) map[id] = mutableListOf(map[id]!!)
+                (map[id] as MutableList<Any>) += readValue()
             } else {
                 map[id] = readValue()
             }

@@ -126,6 +126,9 @@ abstract class Bot : CoroutineScope {
 
     // endregion
 
+    /**
+     * 关闭这个 [Bot], 停止一切相关活动. 不可重新登录.
+     */
     abstract fun dispose(throwable: Throwable?)
 
     // region extensions
