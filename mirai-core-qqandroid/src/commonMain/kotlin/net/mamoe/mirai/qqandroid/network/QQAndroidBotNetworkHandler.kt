@@ -12,8 +12,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.RegPushReason
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
@@ -33,7 +36,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         println("Sending login")
         LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
         println("SessionTicket=${bot.client.wLoginSigInfo.wtSessionTicket.data.toUHexString()}")
+        println("SessionTicketKey=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         println("SessionTicketKey=${bot.client.wLoginSigInfo.wtSessionTicketKey.toUHexString()}")
+        delay(2000)
+        SvcReqRegisterPacket(bot.client, RegPushReason.setOnlineStatus).sendAndExpect<SvcReqRegisterPacket.Response>()
     }
 
     internal fun launchPacketProcessor(rawInput: ByteReadPacket): Job = launch(CoroutineName("Incoming Packet handler")) {

@@ -11,8 +11,6 @@ import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
-import net.mamoe.mirai.utils.cryptor.DecrypterType
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.currentTimeMillis
@@ -20,14 +18,17 @@ import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
 
-class LoginPacketDecrypter(override val value: ByteArray) : DecrypterByteArray {
-    companion object : DecrypterType<LoginPacketDecrypter>
-}
-
+/**
+ * OicqRequest
+ */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, LoginPacketDecrypter>(LoginPacketDecrypter) {
+internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
     init {
         this._id = PacketId(commandId = 0x0810, commandName = "wtlogin.login")
+    }
+
+    fun hahahaha() {
+
     }
 
     object SubCommand9 {
@@ -59,6 +60,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse, Log
                     client.device.guid,
                     LoginType.PASSWORD
                 )
+
+                hahahaha()
 
                 /* // from GetStWithPasswd
                 int mMiscBitmap = this.mMiscBitmap;

@@ -3,7 +3,10 @@ package net.mamoe.mirai.qqandroid.utils
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769.Oidb0x769
 import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 abstract class DeviceInfo(
@@ -84,7 +87,18 @@ abstract class DeviceInfo(
         val incremental: ByteArray
         val release: ByteArray
         val codename: ByteArray
+        val sdk: Int
     }
-
-
 }
+
+/*
+fun DeviceInfo.toOidb0x769DeviceInfo() : Oidb0x769.DeviceInfo = Oidb0x769.DeviceInfo(
+    brand = brand.encodeToString(),
+    model = model.encodeToString(),
+    os = Oidb0x769.OS(
+        version = version.release.encodeToString(),
+        sdk = version.sdk.toString(),
+        kernel = version.kernel
+    )
+)
+*/
