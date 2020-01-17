@@ -2,7 +2,6 @@
 
 package net.mamoe.mirai
 
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.io.OutputStream
 import kotlinx.io.core.ByteReadPacket
@@ -145,7 +144,6 @@ abstract class Bot : CoroutineScope {
     /**
      * 需要调用者自行 close [output]
      */
-    @UseExperimental(KtorExperimentalAPI::class)
     suspend inline fun Image.downloadTo(output: OutputStream) =
         download().use { input -> input.transferTo(output) }
 
