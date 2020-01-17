@@ -2,7 +2,6 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 /**
@@ -20,28 +19,7 @@ inline class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
  * val bot: Bot by param.unsafeWeakRef()
  * ```
  */
-operator fun <T> UnsafeWeakRef<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T> {
-    return object : ReadOnlyProperty<Any?, T> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-            return get()
-        }
-    }
-}
-
-/**
- * Provides delegate value.
- *
- * ```kotlin
- * val bot: Bot? by param.weakRef()
- * ```
- */
-operator fun <T> WeakRef<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T?> {
-    return object : ReadOnlyProperty<Any?, T?> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): T? {
-            return get()
-        }
-    }
-}
+operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
 
 /**
  * Weak Reference.

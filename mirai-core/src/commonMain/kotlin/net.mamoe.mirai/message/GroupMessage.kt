@@ -7,6 +7,7 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 @Suppress("unused", "NOTHING_TO_INLINE")

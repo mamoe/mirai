@@ -2,6 +2,7 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.EventPacket
+import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.jvm.JvmOverloads
 
