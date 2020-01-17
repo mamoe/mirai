@@ -346,12 +346,12 @@ internal inline class SingleMessageChainImpl(
     // endregion
 
     // region MutableList override
-    override fun containsAll(elements: Collection<Message>): Boolean = elements.all { it === delegate }
+    override fun containsAll(elements: Collection<Message>): Boolean = elements.all { it == delegate }
 
     override operator fun get(index: Int): Message = if (index == 0) delegate else throw NoSuchElementException()
-    override fun indexOf(element: Message): Int = if (delegate === element) 0 else -1
+    override fun indexOf(element: Message): Int = if (delegate == element) 0 else -1
     override fun isEmpty(): Boolean = false
-    override fun lastIndexOf(element: Message): Int = if (delegate === element) 0 else -1
+    override fun lastIndexOf(element: Message): Int = if (delegate == element) 0 else -1
     override fun add(element: Message): Boolean = throw UnsupportedOperationException()
     override fun add(index: Int, element: Message) = throw UnsupportedOperationException()
     override fun addAll(index: Int, elements: Collection<Message>): Boolean = throw UnsupportedOperationException()
