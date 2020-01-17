@@ -80,6 +80,8 @@ interface Message {
         else MessageChainImpl(this, tail)
     }
 
+    override fun toString(): String
+
     operator fun plus(another: Message): MessageChain = this.followedBy(another)
     operator fun plus(another: String): MessageChain = this.followedBy(another.toString().toMessage())
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`

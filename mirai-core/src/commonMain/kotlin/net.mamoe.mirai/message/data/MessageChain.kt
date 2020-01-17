@@ -32,6 +32,8 @@ interface MessageChain : Message, MutableList<Message> {
         this.plusAssign(plain.toMessage())
     }
 
+    override fun toString(): String
+
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例
      *
