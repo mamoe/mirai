@@ -31,8 +31,8 @@ internal class OutgoingPacket constructor(
     }
 }
 
-private val KEY_16_ZEROS = ByteArray(16)
-private val EMPTY_BYTE_ARRAY = ByteArray(0)
+internal val KEY_16_ZEROS = ByteArray(16)
+internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 /**
  * 最外层的包. 结构适用于登录之后的过程.
@@ -61,16 +61,31 @@ private val EMPTY_BYTE_ARRAY = ByteArray(0)
  * 31 39 39 34 37 30 31 30 32 31
  * 18 5D 8F 17 7D 67 71 61 FE DB 30 A4 4D 16 DD 0E 8D 84 0A F2 44 BE FB BB 11 BB B4 AC 79 50 50 9F 4C 99 CC 77 0B AA B6 E0 06 0C F7 91 79 99 57 31 3D EF 38 92 2C C8 81 33 79 83 FF C6 2F BA 18 2A 33 F8 D9 4E CD 62 07 D8 08 B7 1A 1E C7 EB AC AB B4 1E C9 9D A9 15 9C 29 29 2A 99 F6 BB D0 43 65 D6 5E 9C 93 A8 8D 17 08 5B 6A 29 92 58 6A 75 C9 B5 45 B3 0E A5 D3 52 8F 9A A4 88 36 A0 14 3A 21 F2 46 C3 91 66 A3 73 67 6A 3E F7 9D 8E 44 52 87 7B 8A C7 1B E2 D3 98 62 E8 25 30 2A 43 5C 5A B2 C6 45 F5 39 EC 85 81 BF 7D 22 4C E8 01 87 92 48 38 06 6B A0 83 70 0B 51 ED CF 7A FF E2 F2 06 3E A7 95 4E E5 29 23 32 1C FE 79 C6 08 C5 7A 39 B9 AF CD 4F 80 3E 5D 74 4D 0B E1 10 33 8D F0 54 8E 0E 22 96 B4 06 7F 29 01 1E CA 30 35 FD 8A 2E 51 04 20 79 7B 08 DC DF F6 64 21 6B C5 95 34 B3 40 D2 E8 CE BB DC 69 89 75 62 A6 0B 4A 49 9D 90 BA 68 2B BD 8A 50 2D 68 6B 56 40 0C 39 F2 08 20 1B EB A4 A5 20 1D 1F 7E FA 4B B8 2E 58 79 2A 16 54 26 6C C8 44 6C 4F 64 2D 5C 0C 47 2E 90 13 A9 D7 33 4A 51 17 6E 3F 3E 48 AE 39 D8 45 05 2C 0C 3C 9F 92 39 DB 62 B3 BB 64 EE 7E 91 C5 84 92 10 96 D9 F1 13 02 94 00 EA DA 87 7C 85 7B 68 BA 8D A1 AB F5 CD 9C EB 4C CD A0 38 78 43 80 DD E5 1D 28 25 1F F0 25 EF 0D 95 91 0F 21 5D 41 06 00 03 48 77 E0 98 09 3E 04 5A B0 93 63 3B AE 8E 49 0C C2 12 BA DD C3 5A ED FF 68 98 22 C4 5E F6 1E 85 57 15 E8 7E 26 22 E3 70 C2 57 F4 CE 2F CB C4 DC 39 4A 9C FE DE 27 18 D3 36 66 88 92 D7 69 D0 04 8E 93 9B AD E9 2E 5A 2C 91 CD 28 DF BE 62 CF 2C 72 8E FD A9 1F 0E 8E 00 9E 54 28 50 25 0C E7 DC 98 85 C9 B3 59 A8 97 F5 2E 7F 44 4C 43 3C C4 65 E5 AB DB 5B 3C 50 2D 53 B3 EA 74 3C 39 F4 0A 52 31 34 30 F5 E6 82 CD 36 D9
  */
-internal inline fun PacketFactory<*, *>.buildOutgingPacket(
+@UseExperimental(MiraiInternalAPI::class)
+internal inline fun PacketFactory<*>.buildOutgingPacket(
     client: QQAndroidClient,
-    subAppId: Long,
-    extraData: ByteArray = EMPTY_BYTE_ARRAY,
     name: String? = null,
     id: PacketId = this.id,
-    ssoExtraData: ByteReadPacket = BRP_STUB,
+    key: ByteArray,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
-){
+): OutgoingPacket {
+    val sequenceId: Int = client.nextSsoSequenceId()
 
+    return OutgoingPacket(name, id, sequenceId, buildPacket {
+        writeIntLVPacket(lengthOffset = { it + 4 }) {
+            writeInt(0x0B)
+            writeByte(1)
+            writeInt(sequenceId)
+            writeByte(0)
+            client.uin.toString().let {
+                writeInt(it.length + 4)
+                writeStringUtf8(it)
+            }
+            encryptAndWrite(key) {
+                body(sequenceId)
+            }
+        }
+    })
 }
 
 /**
@@ -92,7 +107,7 @@ internal inline fun PacketFactory<*, *>.buildOutgingPacket(
  * byte[]   body encrypted by 16 zero
  */
 @UseExperimental(MiraiInternalAPI::class)
-internal inline fun PacketFactory<*, *>.buildLoginOutgoingPacket(
+internal inline fun PacketFactory<*>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
     subAppId: Long,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
@@ -214,7 +229,7 @@ private inline fun BytePacketBuilder.writeLoginSsoPacket(
  *
  * byte[]   body encrypted by [sessionKey]
  */
-internal inline fun PacketFactory<*, *>.buildSessionOutgoingPacket(
+internal inline fun PacketFactory<*>.buildSessionOutgoingPacket(
     uinAccount: String,
     sessionKey: DecrypterByteArray,
     body: BytePacketBuilder.() -> Unit

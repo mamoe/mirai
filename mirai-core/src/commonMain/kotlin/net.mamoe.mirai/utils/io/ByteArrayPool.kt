@@ -4,7 +4,7 @@ import kotlinx.io.pool.DefaultPool
 import kotlinx.io.pool.ObjectPool
 
 internal const val DEFAULT_BYTE_ARRAY_POOL_SIZE = 256
-internal const val DEFAULT_BYTE_ARRAY_SIZE = 4096
+internal const val DEFAULT_BYTE_ARRAY_SIZE = 8192
 
 val ByteArrayPool: ObjectPool<ByteArray> = ByteArrayPoolImpl
 

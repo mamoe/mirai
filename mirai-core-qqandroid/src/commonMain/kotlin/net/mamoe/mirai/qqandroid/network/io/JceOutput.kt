@@ -2,9 +2,20 @@ package net.mamoe.mirai.qqandroid.network.io
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
+import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.readRemainingBytes
 import kotlin.reflect.KClass
 
 private val CharsetGBK = Charset.forName("GBK")
+
+fun buildJcePacket(stringCharset: Charset = CharsetGBK, block: JceOutput.() -> Unit): ByteReadPacket {
+    return JceOutput(stringCharset).apply(block).build()
+}
+
+fun BytePacketBuilder.writeJcePacket(stringCharset: Charset = CharsetGBK, block: JceOutput.() -> Unit) {
+    return this.writePacket(buildJcePacket(stringCharset, block))
+}
 
 /**
  *
@@ -13,9 +24,11 @@ private val CharsetGBK = Charset.forName("GBK")
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalIoApi::class)
 class JceOutput(
-    private val stringCharset: Charset = CharsetGBK,
-    private val output: Output = BytePacketBuilder()
+    private val stringCharset: Charset = CharsetGBK
 ) {
+    private val output: BytePacketBuilder = BytePacketBuilder()
+
+    fun build(): ByteReadPacket = output.build()
 
     fun close() = output.close()
     fun flush() = output.flush()
@@ -197,9 +210,35 @@ class JceOutput(
             is FloatArray -> writeFully(v, tag)
             is DoubleArray -> writeFully(v, tag)
             is Array<*> -> writeFully(v, tag)
+            is String -> writeString(v, tag)
+
+//
+//            is ByteReadPacket -> ByteArrayPool.useInstance {
+//                v.readAvailable(it)
+//                writeFully(it, tag)
+//            }
             else -> error("unsupported type: ${v.getClassName()}")
         }
     }
+
+    fun write(v: Int, tag: Int) = writeInt(v, tag)
+    fun write(v: Byte, tag: Int) = writeByte(v, tag)
+    fun write(v: Short, tag: Int) = writeShort(v, tag)
+    fun write(v: Long, tag: Int) = writeLong(v, tag)
+    fun write(v: Float, tag: Int) = writeFloat(v, tag)
+    fun write(v: Double, tag: Int) = writeDouble(v, tag)
+    fun write(v: String, tag: Int) = writeString(v, tag)
+    fun write(v: Boolean, tag: Int) = writeBoolean(v, tag)
+    fun write(v: Collection<*>, tag: Int) = writeCollection(v, tag)
+    fun write(v: Map<*, *>, tag: Int) = writeMap(v, tag)
+    fun write(v: ByteArray, tag: Int) = writeFully(v, tag)
+    fun write(v: IntArray, tag: Int) = writeFully(v, tag)
+    fun write(v: BooleanArray, tag: Int) = writeFully(v, tag)
+    fun write(v: LongArray, tag: Int) = writeFully(v, tag)
+    fun write(v: ShortArray, tag: Int) = writeFully(v, tag)
+    fun write(v: Array<*>, tag: Int) = writeFully(v, tag)
+    fun write(v: FloatArray, tag: Int) = writeFully(v, tag)
+    fun write(v: DoubleArray, tag: Int) = writeFully(v, tag)
 
     @PublishedApi
     internal companion object {

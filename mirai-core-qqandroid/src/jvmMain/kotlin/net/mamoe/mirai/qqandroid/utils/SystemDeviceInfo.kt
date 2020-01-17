@@ -35,6 +35,7 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
         override val incremental: ByteArray get() = "5891938".toByteArray()
         override val release: ByteArray get() = "10".toByteArray()
         override val codename: ByteArray get() = "REL".toByteArray()
+        override val sdk: Int get() = 29
     }
 }
 

@@ -5,6 +5,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
 import net.mamoe.mirai.qqandroid.utils.Context
@@ -15,6 +16,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readUShortLVByteArray
@@ -50,7 +52,9 @@ internal open class QQAndroidClient(
         return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.contentToString()}, randomKey=${randomKey.contentToString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.contentToString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.contentToString()}, protocolVersion=$protocolVersion, apkId=${apkId.contentToString()}, t150=${t150?.contentToString()}, rollbackSig=${rollbackSig?.contentToString()}, ipFromT149=${ipFromT149?.contentToString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.contentToString()}, t528=${t528?.contentToString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.contentToString()}, qrPushSig=${qrPushSig.contentToString()}, mainDisplayName='$mainDisplayName')"
     }
 
-    val context by context.unsafeWeakRef()
+    var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
+
+    val context: Context by context.unsafeWeakRef()
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     var tgtgtKey: ByteArray = ByteArray(16) // generateTgtgtKey(device.guid)

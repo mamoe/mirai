@@ -8,7 +8,7 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.utils.io.toReadPacket
 
-internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response, LoginPacketDecrypter>(LoginPacketDecrypter) {
+internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>() {
 
     init {
         _id = PacketId(0x0812, "wtlogin.trans_emp")

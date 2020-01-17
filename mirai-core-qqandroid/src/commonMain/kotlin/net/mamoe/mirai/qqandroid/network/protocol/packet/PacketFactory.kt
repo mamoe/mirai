@@ -25,9 +25,7 @@ import kotlin.jvm.JvmName
  * @param TDecrypter 服务器回复包解密器
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val decrypterType: DecrypterType<TDecrypter>) {
-
-    // TODO: 2020/1/12 Decrypter 多余. 需要删除
+internal abstract class PacketFactory<out TPacket : Packet> {
 
     @Suppress("PropertyName")
     internal var _id: PacketId = NullPacketId
@@ -44,20 +42,20 @@ internal abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypt
 }
 
 @JvmName("decode0")
-private suspend inline fun <P : Packet> PacketFactory<P, *>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P = packet.decode(bot)
+private suspend inline fun <P : Packet> PacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P = packet.decode(bot)
 
 private val DECRYPTER_16_ZERO = ByteArray(16)
 
 internal typealias PacketConsumer = suspend (packet: Packet, packetId: PacketId, ssoSequenceId: Int) -> Unit
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal object KnownPacketFactories : List<PacketFactory<*, *>> by mutableListOf(
+internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     LoginPacket
 ) {
 
-    fun findPacketFactory(commandName: String): PacketFactory<*, *> = this.first { it.id.commandName == commandName }
+    fun findPacketFactory(commandName: String): PacketFactory<*> = this.first { it.id.commandName == commandName }
 
-    fun findPacketFactory(commandId: Int): PacketFactory<*, *> = this.first { it.id.commandName == commandName }
+    fun findPacketFactory(commandId: Int): PacketFactory<*> = this.first { it.id.commandName == commandName }
 
     // do not inline. Exceptions thrown will not be reported correctly
     suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
