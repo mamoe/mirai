@@ -18,10 +18,48 @@ import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelineInterceptor
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.sendMessage
+import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.hexToUBytes
 
-fun main() {
+fun main(args: Array<String>) {
+    val logger =  DefaultLogger("Mirai HTTP API")
+    //write default first
+    SessionManager.authKey = generateSessionKey()//用于验证的key, 使用和SessionKey相同的方法生成, 但意义不同
+    var port = 8080//start port
+
+    args.forEach {
+        if(it.contains("=")) {
+            when {
+                it.toLowerCase().contains("authkey") -> {
+                    SessionManager.authKey = it.split("=")[1].trim()
+                    if(it.length !in 8..128){
+                        logger.error("Expected authKey length is between 8 to 128")
+                        SessionManager.authKey = generateSessionKey()
+                    }
+                    logger.info("Session Auth Key now is ${SessionManager.authKey}")
+                }
+                it.toLowerCase().contains("port") -> {
+                    try {
+                        port = it.split("=")[1].trim().toInt()
+                    }catch (e:Exception){
+                        logger.error("Expected -port=xxxxx, xxxxx to be numbers")
+                    }
+                    if(port !in 1025..65535){
+                        logger.error("Expected -port=xxxxx, xxxxx > 1024 && <65536")
+                        port = 8080
+                    }
+                    logger.info("HTTP API Listening port now is $port")
+                }
+            }
+        }
+        if(it.contains("help")){
+            logger.info("-authkey=XXXXXXXX to use custom Session Auth Key, note that key is case sensitive")
+            logger.info("-port=XXXXX to use custom listener port, default using 8080")
+        }
+    }
+
+
     Application(applicationEngineEnvironment {}).apply { mirai() }
 }
 
