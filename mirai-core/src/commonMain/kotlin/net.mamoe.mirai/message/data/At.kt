@@ -14,6 +14,10 @@ inline class At(val target: Long) : Message {
     override fun toString(): String = "[@$target]" // TODO: 2019/11/25 使用群名称进行 at. 因为手机端只会显示这个文字
 
     companion object Key : Message.Key<At>
+
+    override fun eq(other: Message): Boolean {
+        return other is At && other.target == this.target
+    }
 }
 
 /**

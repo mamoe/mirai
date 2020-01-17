@@ -97,6 +97,8 @@ interface Message {
     operator fun plus(another: Float): MessageChain = this.followedBy(another.toString().toMessage())
 
     operator fun plus(another: Number): MessageChain = this.followedBy(another.toString().toMessage())
+
+
 }
 
 /**
