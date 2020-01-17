@@ -28,11 +28,13 @@ abstract class Event : Subscribable {
     /**
      * 事件是否已取消. 事件需实现 [Cancellable] 才可以被取消, 否则这个字段为常量值 false
      */
-    var cancelled: Boolean = false
+    val cancelled: Boolean get() = _cancelled
+
+    private var _cancelled: Boolean = false
         get() = field.takeIf { this is Cancellable } ?: false
-        private set(value) = if (this is Cancellable) {
-            check(!field); field = value
-        } else throw UnsupportedOperationException()
+        private set(value) =
+            if (this is Cancellable) field = value
+            else throw UnsupportedOperationException()
 
     /**
      * 取消事件. 事件需实现 [Cancellable] 才可以被取消
@@ -40,7 +42,7 @@ abstract class Event : Subscribable {
      * @throws UnsupportedOperationException 如果事件没有实现 [Cancellable]
      */
     fun cancel() {
-        cancelled = true
+        _cancelled = true
     }
 }
 
