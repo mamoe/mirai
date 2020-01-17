@@ -11,19 +11,34 @@ import kotlin.reflect.KProperty
 inline class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
     fun get(): T = weakRef.get() ?: error("WeakRef is released")
     fun clear() = weakRef.clear()
+}
 
-    /**
-     * Provides delegate value.
-     *
-     * ```kotlin
-     * val bot: Bot by param.unsafeWeakRef()
-     * ```
-     */
-    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T> {
-        return object : ReadOnlyProperty<Any?, T> {
-            override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-                return get()
-            }
+/**
+ * Provides delegate value.
+ *
+ * ```kotlin
+ * val bot: Bot by param.unsafeWeakRef()
+ * ```
+ */
+operator fun <T> UnsafeWeakRef<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T> {
+    return object : ReadOnlyProperty<Any?, T> {
+        override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+            return get()
+        }
+    }
+}
+
+/**
+ * Provides delegate value.
+ *
+ * ```kotlin
+ * val bot: Bot by param.unsafeWeakRef()
+ * ```
+ */
+operator fun <T> WeakRef<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T?> {
+    return object : ReadOnlyProperty<Any?, T?> {
+        override fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+            return get()
         }
     }
 }
