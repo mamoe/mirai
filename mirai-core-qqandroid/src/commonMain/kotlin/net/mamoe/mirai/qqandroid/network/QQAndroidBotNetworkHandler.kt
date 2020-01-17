@@ -36,21 +36,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         println("SessionTicketKey=${bot.client.wLoginSigInfo.wtSessionTicketKey.toUHexString()}")
     }
 
-    internal fun launchPacketProcessor(rawInput: ByteReadPacket): Job {
-        return launch(CoroutineName("Incoming Packet handler")) {
-            rawInput.debugPrint("Received").use { input ->
-                if (input.remaining == 0L) {
-                    bot.logger.error("Empty packet received. Consider if bad packet was sent.")
-                    return@launch
+    internal fun launchPacketProcessor(rawInput: ByteReadPacket): Job = launch(CoroutineName("Incoming Packet handler")) {
+        rawInput.debugPrint("Received").use { input ->
+            if (input.remaining == 0L) {
+                bot.logger.error("Empty packet received. Consider if bad packet was sent.")
+                return@launch
+            }
+            KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+                if (PacketReceivedEvent(packet).broadcast().cancelled) {
+                    return@parseIncomingPacket
                 }
-                KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
-                    if (PacketReceivedEvent(packet).broadcast().cancelled) {
-                        return@parseIncomingPacket
-                    }
-                    packetListeners.forEach { listener ->
-                        if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
-                            listener.complete(packet)
-                        }
+                packetListeners.forEach { listener ->
+                    if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
+                        listener.complete(packet)
                     }
                 }
             }
