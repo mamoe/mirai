@@ -41,6 +41,11 @@ interface MessageChain : Message, MutableList<Message> {
      */
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
 
+    override fun eq(other: Message): Boolean {
+        if(other is MessageChain && other.size != this.size)
+            return false
+        return this.toString() == other.toString()
+    }
 }
 
 /**

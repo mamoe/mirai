@@ -19,6 +19,10 @@ inline class Image(inline val id: ImageId) : Message {
     override fun toString(): String = "[${id.value}]"
 
     companion object Key : Message.Key<Image>
+
+    override fun eq(other: Message): Boolean {
+        return other is Image && other.id == this.id
+    }
 }
 
 inline val Image.idValue: String get() = id.value

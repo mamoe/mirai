@@ -6,6 +6,13 @@ inline class PlainText(val stringValue: String) : Message {
     override fun toString(): String = stringValue
 
     companion object Key : Message.Key<PlainText>
+
+    override fun eq(other: Message): Boolean {
+        if(other is MessageChain){
+            return other eq this.toString()
+        }
+        return other is PlainText && other.stringValue == this.stringValue
+    }
 }
 
 /**

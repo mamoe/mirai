@@ -9,6 +9,10 @@ inline class Face(val id: FaceId) : Message {
     override fun toString(): String = "[face${id.value}]"
 
     companion object Key : Message.Key<Face>
+
+    override fun eq(other: Message): Boolean {
+        return other is Face && other.id == this.id
+    }
 }
 
 /**
