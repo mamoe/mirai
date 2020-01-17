@@ -1,13 +1,11 @@
 package net.mamoe.mirai.api.http
 
-import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import java.lang.StringBuilder
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-tailrec fun generateSessionKey():String{
+tailrec fun generateSessionKey(): String {
     fun generateRandomSessionKey(): String {
         val all = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890qwertyuiopasdfghjklzxcvbnm"
         return buildString(capacity = 8) {
@@ -18,7 +16,7 @@ tailrec fun generateSessionKey():String{
     }
 
     val key = generateRandomSessionKey()
-    if(!SessionManager.allSession.containsKey(key)){
+    if (!SessionManager.allSession.containsKey(key)) {
         return key
     }
 
@@ -27,16 +25,14 @@ tailrec fun generateSessionKey():String{
 
 object SessionManager {
 
-    val allSession:MutableMap<String,Session> = mutableMapOf()
+    val allSession: MutableMap<String, Session> = mutableMapOf()
 
-    fun createTempSession():TempSession = TempSession(EmptyCoroutineContext).also { allSession[it.key] = it }
+    fun createTempSession(): TempSession = TempSession(EmptyCoroutineContext).also { allSession[it.key] = it }
 
-    fun closeSession(sessionKey: String) = allSession.remove(sessionKey)?.also {it.close() }
+    fun closeSession(sessionKey: String) = allSession.remove(sessionKey)?.also { it.close() }
 
     fun closeSession(session: Session) = closeSession(session.key)
 }
-
-
 
 
 /**
@@ -44,18 +40,19 @@ object SessionManager {
  * 这个用于管理不同Client与Mirai HTTP的会话
  */
 abstract class Session internal constructor(
+    coroutineContext: CoroutineContext
+) : CoroutineScope {
+    private val supervisorJob = SupervisorJob()
+    final override val coroutineContext: CoroutineContext = supervisorJob + coroutineContext
 
-): CoroutineScope {
-    private val sessionJob = SupervisorJob()
-    val key:String = generateSessionKey()
+    val key: String = generateSessionKey()
 
 
-    internal fun close(){
-        sessionJob.cancel()
+    internal fun close() {
+        supervisorJob.cancel()
     }
 
 }
-
 
 
 /**
@@ -63,7 +60,7 @@ abstract class Session internal constructor(
  *
  * TempSession在建立180s内没有转变为[AuthedSession]应被清除
  */
-class TempSession internal constructor(override val coroutineContext: CoroutineContext) : Session() {
+class TempSession internal constructor(coroutineContext: CoroutineContext) : Session(coroutineContext) {
 
 }
 
@@ -71,7 +68,7 @@ class TempSession internal constructor(override val coroutineContext: CoroutineC
  * 任何[TempSession]认证后转化为一个[AuthedSession]
  * 在这一步[AuthedSession]应该已经有assigned的bot
  */
-class AuthedSession internal constructor(botNumber:Int, override val coroutineContext: CoroutineContext):Session(){
+class AuthedSession internal constructor(botNumber: Int, coroutineContext: CoroutineContext) : Session(coroutineContext) {
 
 
 }
