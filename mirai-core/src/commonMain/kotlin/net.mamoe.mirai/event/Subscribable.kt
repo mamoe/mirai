@@ -57,7 +57,6 @@ interface Cancellable : Subscribable {
  * 广播一个事件的唯一途径.
  */
 suspend fun <E : Subscribable> E.broadcast(): E {
-    @Suppress("EXPERIMENTAL_API_USAGE")
     this@broadcast.broadcastInternal() // inline, no extra cost
     return this
 }
