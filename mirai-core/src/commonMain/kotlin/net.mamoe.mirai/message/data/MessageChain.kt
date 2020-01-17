@@ -409,7 +409,7 @@ internal inline class SingleMessageChainImpl(
         override fun remove() = throw UnsupportedOperationException()
     }
 
-    override operator fun contains(element: Message): Boolean = element === delegate
+    override operator fun contains(element: Message): Boolean = element == delegate
     override val size: Int get() = 1
     // endregion
 }
