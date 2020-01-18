@@ -15,7 +15,7 @@ var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
  * 在 _JVM 控制台_ 端的实现为 [println]
  * 在 _Android_ 端的实现为 [android.util.Log]
  *
- * 不应该直接构造这个类的实例. 请使用 [DefaultLogger]
+ * 不应该直接构造这个类的实例. 请使用 [DefaultLogger], 或使用默认的顶层日志记录 [MiraiLogger.Companion]
  */
 expect open class PlatformLogger @JvmOverloads internal constructor(identity: String? = "Mirai") : MiraiLoggerPlatformBase
 
@@ -35,7 +35,7 @@ fun MiraiLogger.withSwitch(default: Boolean = true): MiraiLoggerWithSwitch = Mir
  */
 interface MiraiLogger {
     /**
-     * 顶层日志记录器
+     * 顶层日志记录器.
      */
     companion object : MiraiLogger by DefaultLogger("Mirai")
 
@@ -130,29 +130,21 @@ interface MiraiLogger {
 object SilentLogger : PlatformLogger() {
     override val identity: String? = null
 
-    override fun error0(any: Any?) {
-    }
-
-    override fun debug0(any: Any?) {
-    }
-
-    override fun warning0(any: Any?) {
-    }
-
-    override fun verbose0(any: Any?) {
-    }
-
-    override fun info0(any: Any?) {
-    }
+    override fun error0(any: Any?) = Unit
+    override fun debug0(any: Any?) = Unit
+    override fun warning0(any: Any?) = Unit
+    override fun verbose0(any: Any?) = Unit
+    override fun info0(any: Any?) = Unit
 }
-
-@Suppress("FunctionName")
-fun SimpleLogger(logger: (String?, Throwable?) -> Unit): SimpleLogger = SimpleLogger(null, logger)
 
 /**
  * 简易日志记录, 所有类型日志都会被重定向 [logger]
  */
 class SimpleLogger(override val identity: String?, private val logger: (String?, Throwable?) -> Unit) : MiraiLoggerPlatformBase() {
+    companion object {
+        operator fun invoke(logger: (String?, Throwable?) -> Unit): SimpleLogger = SimpleLogger(null, logger)
+    }
+
     override fun verbose0(any: Any?) = logger(any?.toString(), null)
     override fun verbose0(message: String?, e: Throwable?) = logger(message, e)
     override fun debug0(any: Any?) = logger(any?.toString(), null)
