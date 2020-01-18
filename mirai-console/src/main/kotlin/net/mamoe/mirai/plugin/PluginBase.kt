@@ -1,6 +1,6 @@
 package net.mamoe.mirai.plugin
 
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
@@ -11,8 +11,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 
-abstract class PluginBase : CoroutineScope {
-    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
+    constructor() : this(EmptyCoroutineContext)
+
+    private val supervisorJob = SupervisorJob()
+    final override val coroutineContext: CoroutineContext = coroutineContext + supervisorJob
 
     val dataFolder: File by lazy {
         File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
@@ -39,6 +42,15 @@ abstract class PluginBase : CoroutineScope {
 
     }
 
+    internal fun enable() {
+        this.onEnable()
+    }
+
+    @JvmOverloads
+    internal fun disable(throwable: CancellationException? = null) {
+        this.coroutineContext[Job]!!.cancelChildren(throwable)
+        this.onDisable()
+    }
 
     private lateinit var pluginDescription: PluginDescription
 
@@ -233,19 +245,17 @@ object PluginManager {
         }
 
         nameToPluginBaseMap.values.forEach {
-            it.onEnable()
+            it.enable()
         }
-
-
     }
 
 
-    fun disableAllPlugins() {
+    @JvmOverloads
+    fun disableAllPlugins(throwable: CancellationException? = null) {
         nameToPluginBaseMap.values.forEach {
-            it.onDisable()
+            it.disable(throwable)
         }
     }
-
 }
 
 
