@@ -158,25 +158,25 @@ object PluginManager{
 
 
         fun loadPlugin(description: PluginDescription):Boolean{
-            if(!description.noCircularDepend){
+            if (!description.noCircularDepend) {
                 return false.also {
                     logger.error("Failed to load plugin " + description.pluginName + " because it has circular dependency")
                 }
             }
 
             //load depends first
-            description.depends.forEach{
-                if(!pluginsFound.containsKey(it)){
+            description.depends.forEach { dependent ->
+                if (!pluginsFound.containsKey(dependent)) {
                     return false.also { _ ->
-                        logger.error("Failed to load plugin " + description.pluginName + " because it need " + it + " as dependency")
+                        logger.error("Failed to load plugin " + description.pluginName + " because it need " + dependent + " as dependency")
                     }
                 }
-                val depend = pluginsFound[it]!!
+                val depend = pluginsFound[dependent]!!
                 //还没有加载
-                if(!depend.loaded) {
-                    if (!loadPlugin(pluginsFound[it]!!)) {
+                if (!depend.loaded) {
+                    if (!loadPlugin(pluginsFound[dependent]!!)) {
                         return false.also { _ ->
-                            logger.error("Failed to load plugin " + description.pluginName + " because " + it + " as dependency failed to load")
+                            logger.error("Failed to load plugin " + description.pluginName + " because " + dependent + " as dependency failed to load")
                         }
                     }
                 }
