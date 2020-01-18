@@ -74,7 +74,9 @@ class PluginDescription(
                         lowercaseLine.startsWith("info") || lowercaseLine.startsWith("information") -> {
                             info = line.substringAfter(":").trim()
                         }
-                        lowercaseLine.startsWith("path") || lowercaseLine.startsWith("basepath") -> {
+                        lowercaseLine.startsWith("main") || lowercaseLine.startsWith("path") || lowercaseLine.startsWith(
+                            "basepath"
+                        ) -> {
                             basePath = line.substringAfter(":").trim()
                         }
                         lowercaseLine.startsWith("version") || lowercaseLine.startsWith("ver") -> {
