@@ -96,12 +96,10 @@ object PluginManager{
         File(it).mkdirs()
     }
 
-    private val logger = DefaultLogger("Plugin Manager")
+    private val logger = DefaultLogger("Mirai Plugin Manager")
 
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
-
-
 
 
 
@@ -210,11 +208,11 @@ object PluginManager{
                     logger.error("failed to load plugin " + description.pluginName + " , Main class not found under " + description.pluginBasePath)
                 }
             }
-
-
         }
 
-        pluginsFound.values.forEach{ loadPlugin(it) }
+        pluginsFound.values.forEach {
+            loadPlugin(it)
+        }
     }
 
 
