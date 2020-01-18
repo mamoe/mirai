@@ -1,7 +1,12 @@
 package net.mamoe.mirai.plugin
 
 import net.mamoe.mirai.utils.DefaultLogger
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.JarURLConnection
+import java.net.URL
 import java.util.jar.JarFile
 
 
@@ -48,6 +53,10 @@ class PluginDescription(
     internal var loaded: Boolean = false,
     internal var noCircularDepend: Boolean = true
 ) {
+
+    override fun toString(): String {
+        return "name: $pluginName\nauthor: $pluginAuthor\npath: $pluginBasePath\nver: $pluginVersion\ninfo: $pluginInfo\ndepends: $depends"
+    }
 
     companion object {
         fun readFromContent(content_: String): PluginDescription {
@@ -116,11 +125,23 @@ object PluginManager{
             if (file != null) {
                 if (file.extension == "jar") {
                     val jar = JarFile(file)
-                    val pluginYml = jar.entries().asIterator().asSequence().filter { it.name.toLowerCase().contains("resource/plugin.yml") }.firstOrNull()
+                    val pluginYml =
+                        jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
                     if (pluginYml == null) {
                         logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
                     } else {
-                        val description = PluginDescription.readFromContent(pluginYml.extra.toString())
+                        val url = URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name)
+                        val jarConnection: JarURLConnection = url
+                            .openConnection() as JarURLConnection
+                        val inputStream: InputStream = jarConnection.getInputStream()
+                        val br = BufferedReader(InputStreamReader(inputStream, "UTF-8"))
+                        var con: String?
+                        val sb = StringBuffer()
+                        while (br.readLine().also { con = it } != null) {
+                            sb.append(con).append("\n")
+                        }
+                        val description = PluginDescription.readFromContent(sb.toString())
+                        println(description)
                         pluginsFound[description.pluginName] = description
                         pluginsLocation[description.pluginName] = jar
                     }
@@ -206,6 +227,7 @@ object PluginManager{
                     }
                 }
             } catch (e: ClassNotFoundException) {
+                e.printStackTrace()
                 return false.also {
                     logger.error("failed to load plugin " + description.pluginName + " , Main class not found under " + description.pluginBasePath)
                 }
