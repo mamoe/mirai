@@ -115,7 +115,7 @@ object PluginManager {
                 val pluginYml =
                     jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
                 if (pluginYml == null) {
-                    logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
+                    logger.info("plugin.yml not found in jar " + jar.name + ", it will not be considered as a Plugin")
                 } else {
                     val description =
                         PluginDescription.readFromContent(URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.readAllBytes().encodeToString())
