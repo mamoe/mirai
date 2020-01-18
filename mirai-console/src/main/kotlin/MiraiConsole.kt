@@ -17,6 +17,7 @@ fun main() {
     println("\"login qqnumber qqpassword \" to login a bot")
     println("\"login qq号 qq密码 \" 来登陆一个BOT")
 
+
     thread {
         loop@ while (true) {
             var command = readLine()
