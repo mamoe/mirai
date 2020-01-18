@@ -97,13 +97,7 @@ class PluginDescription(
     }
 }
 
-
-internal class PluginClassLoader(file: File, parent: ClassLoader) : URLClassLoader(arrayOf(file.toURI().toURL()), parent) {
-    override fun findClass(moduleName: String?, name: String?): Class<*> {
-        return super.findClass(name)
-    }
-}
-
+internal class PluginClassLoader(file: File, parent: ClassLoader) : URLClassLoader(arrayOf(file.toURI().toURL()), parent)
 
 object PluginManager {
     internal val pluginsPath = System.getProperty("user.dir") + "/plugins/".replace("//", "/").also {
