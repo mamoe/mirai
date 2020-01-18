@@ -1,14 +1,19 @@
 package net.mamoe.mirai.plugin
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.jar.JarFile
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
-abstract class PluginBase constructor() {
+abstract class PluginBase : CoroutineScope {
+    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+
     val dataFolder: File by lazy {
         File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
     }
