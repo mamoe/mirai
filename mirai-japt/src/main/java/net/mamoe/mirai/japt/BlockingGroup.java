@@ -1,6 +1,7 @@
 package net.mamoe.mirai.japt;
 
 import net.mamoe.mirai.data.GroupInfo;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -15,18 +16,21 @@ public interface BlockingGroup extends BlockingContact {
      * 群主 (同步事件更新)
      * 进行 [updateGroupInfo] 时将会更新这个值.
      */
+    @NotNull
     BlockingMember getOwner();
 
     /**
      * 群名称 (同步事件更新)
      * 进行 [updateGroupInfo] 时将会更新这个值.
      */
+    @NotNull
     String getName();
 
     /**
      * 入群公告, 没有时为空字符串. (同步事件更新)
      * 进行 [updateGroupInfo] 时将会更新这个值.
      */
+    @NotNull
     String getAnnouncement();
 
     /**
@@ -34,11 +38,13 @@ public interface BlockingGroup extends BlockingContact {
      * <p>
      * **注意**: 获得的列表仅为这一时刻的成员列表的镜像. 它将不会被更新
      */
+    @NotNull
     Map<Long, BlockingMember> getMembers();
 
     /**
      * 获取群成员. 若此 ID 的成员不存在, 则会抛出 [kotlin.NoSuchElementException]
      */
+    @NotNull
     BlockingMember getMember(long id);
 
     /**
@@ -46,6 +52,7 @@ public interface BlockingGroup extends BlockingContact {
      *
      * @return 这一时刻的群资料
      */
+    @NotNull
     GroupInfo updateGroupInfo();
 
     /**
@@ -53,5 +60,6 @@ public interface BlockingGroup extends BlockingContact {
      */
     boolean quit();
 
+    @NotNull
     String toFullString();
 }

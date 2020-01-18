@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public interface BlockingBot {
     /**
      * 账号信息
@@ -46,6 +47,7 @@ public interface BlockingBot {
     /**
      * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会线程安全地创建一个.
      */
+    @NotNull
     BlockingQQ getQQ(long id);
 
     /**
