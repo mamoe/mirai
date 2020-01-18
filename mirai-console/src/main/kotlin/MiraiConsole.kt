@@ -21,6 +21,10 @@ fun main() {
     thread { processNextCommandLine() }
 
     PluginManager.loadPlugins()
+
+    Runtime.getRuntime().addShutdownHook(thread {
+        PluginManager.disableAllPlugins()
+    })
 }
 
 tailrec fun processNextCommandLine() {

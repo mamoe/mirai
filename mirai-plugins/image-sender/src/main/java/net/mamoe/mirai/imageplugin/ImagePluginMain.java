@@ -15,5 +15,6 @@ public class ImagePluginMain extends PluginBase {
     @Override
     public void onEnable() {
         System.out.println("Enabled");
+
     }
 }
