@@ -2,10 +2,7 @@ package net.mamoe.mirai.plugin
 
 import net.mamoe.mirai.utils.DefaultLogger
 import java.io.File
-import java.lang.Exception
-import java.nio.charset.Charset
 import java.util.jar.JarFile
-import kotlin.math.log
 
 
 abstract class PluginBase{
@@ -181,6 +178,7 @@ object PluginManager{
                 }
             }
             //在这里所有的depends都已经加载了
+
 
             //loadPlugin
 
