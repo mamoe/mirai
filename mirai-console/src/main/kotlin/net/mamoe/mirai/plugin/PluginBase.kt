@@ -1,7 +1,6 @@
 package net.mamoe.mirai.plugin
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
@@ -19,19 +18,24 @@ abstract class PluginBase : CoroutineScope {
         File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
     }
 
+    /**
+     * 当一个插件被加载时调用
+     */
     open fun onLoad() {
 
     }
 
+    /**
+     * 当所有插件全部被加载后被调用
+     */
     open fun onEnable() {
 
     }
 
+    /**
+     * 当插件关闭前被调用
+     */
     open fun onDisable() {
-
-    }
-
-    open fun onBotAdd(bot: Bot) {
 
     }
 
@@ -235,6 +239,12 @@ object PluginManager {
 
     }
 
+
+    fun disableAllPlugins() {
+        nameToPluginBaseMap.values.forEach {
+            it.onDisable()
+        }
+    }
 
 }
 
