@@ -18,34 +18,27 @@ fun main() {
     println("\"login qqnumber qqpassword \" to login a bot")
     println("\"login qq号 qq密码 \" 来登陆一个BOT")
 
+    thread { processNextCommandLine() }
 
-    thread {
-        loop@ while (true) {
-            var command = readLine()
-            if (command != null) {
-                var commandArgs = command.split(" ")
-                when (commandArgs[0]) {
-                    "login" -> {
-                        if (commandArgs.size < 3) {
-                            println("\"login qqnumber qqpassword \" to login a bot")
-                            println("\"login qq号 qq密码 \" 来登陆一个BOT")
-                            continue@loop
-                        }
-                        val qqNumber = commandArgs[1].toLong()
-                        val qqPassword = commandArgs[2]
-                        println("login...")
-                        GlobalScope.launch {
-                            Bot(qqNumber, qqPassword)
-                        }
-                    }
-                }
+    PluginManager.loadPlugins()
+}
+
+tailrec fun processNextCommandLine() {
+    val commandArgs = readLine()?.split(" ") ?: return
+    when (commandArgs[0]) {
+        "login" -> {
+            if (commandArgs.size < 3) {
+                println("\"login qqnumber qqpassword \" to login a bot")
+                println("\"login qq号 qq密码 \" 来登录一个BOT")
+                return processNextCommandLine()
+            }
+            val qqNumber = commandArgs[1].toLong()
+            val qqPassword = commandArgs[2]
+            println("login...")
+            GlobalScope.launch {
+                Bot(qqNumber, qqPassword)
             }
         }
     }
-
-    PluginManager.loadPlugins()
-
-
+    return processNextCommandLine()
 }
-
-
