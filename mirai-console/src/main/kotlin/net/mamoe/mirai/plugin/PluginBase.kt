@@ -7,7 +7,7 @@ import java.net.URL
 import java.util.jar.JarFile
 
 
-abstract class PluginBase constructor() {
+abstract class PluginBase {
     val dataFolder by lazy {
         File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
     }
@@ -56,7 +56,7 @@ class PluginDescription(
             var basePath = "net.mamoe.mirai.PluginMain"
             var info = "Unknown"
             var version = "1.0.0"
-            val depends = mutableListOf<String>();
+            val depends = mutableListOf<String>()
 
             content.forEach {
                 val line = it.trim()
