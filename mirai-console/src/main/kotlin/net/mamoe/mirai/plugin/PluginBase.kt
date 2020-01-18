@@ -7,6 +7,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.JarURLConnection
 import java.net.URL
+import java.net.URLClassLoader
 import java.util.jar.JarFile
 
 
@@ -92,17 +93,24 @@ class PluginDescription(
                             version = line.substringAfter(":").trim()
                         }
                     }
-                }else if(line.startsWith("-")){
+                } else if (line.startsWith("-")) {
                     depends.add(line.substringAfter("-").trim())
                 }
             }
-            return PluginDescription(name,author,basePath,version,info,depends)
+            return PluginDescription(name, author, basePath, version, info, depends)
         }
     }
 }
 
 
-object PluginManager{
+class PluginClassLoader(file: File, parent: ClassLoader) : URLClassLoader(arrayOf(file.toURI().toURL()), parent) {
+    override fun findClass(moduleName: String?, name: String?): Class<*> {
+        return super.findClass(name)
+    }
+}
+
+
+object PluginManager {
     internal val pluginsPath = System.getProperty("user.dir") + "/plugins/".replace("//", "/").also {
         File(it).mkdirs()
     }
@@ -119,7 +127,7 @@ object PluginManager{
      */
     fun loadPlugins(){
         val pluginsFound: MutableMap<String, PluginDescription> = mutableMapOf()
-        val pluginsLocation: MutableMap<String, JarFile> = mutableMapOf()
+        val pluginsLocation: MutableMap<String, File> = mutableMapOf()
 
         File(pluginsPath).listFiles()?.forEach { file ->
             if (file != null) {
@@ -143,7 +151,7 @@ object PluginManager{
                         val description = PluginDescription.readFromContent(sb.toString())
                         println(description)
                         pluginsFound[description.pluginName] = description
-                        pluginsLocation[description.pluginName] = jar
+                        pluginsLocation[description.pluginName] = file
                     }
                 }
             }
@@ -209,9 +217,11 @@ object PluginManager{
             logger.info("loading plugin " + description.pluginName)
 
             try {
-                this.javaClass.classLoader.loadClass(description.pluginBasePath)
+                val pluginClass =
+                    PluginClassLoader((pluginsLocation[description.pluginName]!!), this.javaClass.classLoader)
+                        .loadClass(description.pluginBasePath)
                 return try {
-                    val subClass = javaClass.asSubclass(PluginBase::class.java)
+                    val subClass = pluginClass.asSubclass(PluginBase::class.java)
                     val plugin: PluginBase = subClass.getDeclaredConstructor().newInstance()
                     description.loaded = true
                     logger.info("successfully loaded plugin " + description.pluginName)
@@ -219,7 +229,6 @@ object PluginManager{
 
                     nameToPluginBaseMap[description.pluginName] = plugin
                     plugin.init(description)
-
                     true
                 } catch (e: ClassCastException) {
                     false.also {
