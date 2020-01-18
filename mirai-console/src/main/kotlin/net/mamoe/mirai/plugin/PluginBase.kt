@@ -134,7 +134,7 @@ object PluginManager {
             }
         }
 
-        fun checkNoCircularDependsCheck(
+        fun checkNoCircularDepends(
             target: PluginDescription,
             needDepends: List<String>,
             existDepends: MutableList<String>
@@ -154,14 +154,14 @@ object PluginManager {
 
             needDepends.forEach {
                 if (pluginsFound.containsKey(it)) {
-                    checkNoCircularDependsCheck(pluginsFound[it]!!, pluginsFound[it]!!.depends, existDepends)
+                    checkNoCircularDepends(pluginsFound[it]!!, pluginsFound[it]!!.depends, existDepends)
                 }
             }
         }
 
 
         pluginsFound.values.forEach {
-            checkNoCircularDependsCheck(it, it.depends, mutableListOf())
+            checkNoCircularDepends(it, it.depends, mutableListOf())
         }
 
         //load
