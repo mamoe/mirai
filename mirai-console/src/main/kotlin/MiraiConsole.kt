@@ -1,6 +1,7 @@
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.plugin.PluginManager
 import kotlin.concurrent.thread
 
 fun main() {
@@ -41,6 +42,9 @@ fun main() {
             }
         }
     }
+
+    PluginManager.loadPlugins()
+
 
 }
 
