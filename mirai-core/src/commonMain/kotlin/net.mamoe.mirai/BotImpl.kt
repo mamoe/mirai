@@ -3,6 +3,8 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.logStacktrace
@@ -41,6 +43,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
         fun instanceWhose(qq: Long): Bot {
             instances.forEach {
+                @Suppress("PropertyName")
                 if (it.uin == qq) {
                     return it
                 }
@@ -55,6 +58,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     final override val network: N get() = _network
 
+    @Suppress("PropertyName")
     internal lateinit var _network: N
 
     final override suspend fun login() = reinitializeNetworkHandler(null)
@@ -86,6 +90,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         logger.info("Initializing BotNetworkHandler")
         try {
             if (::_network.isInitialized) {
+                BotOfflineEvent(this).broadcast()
                 _network.dispose(cause)
             }
         } catch (e: Exception) {
