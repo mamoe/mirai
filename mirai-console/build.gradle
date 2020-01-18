@@ -3,6 +3,7 @@ apply plugin: "java"
 
 dependencies {
     api project(':mirai-core')
+    api project(':mirai-core-timpc')
     runtimeOnly files('../mirai-core/build/classes/kotlin/jvm/main')
     // classpath is not set correctly by IDE
 }
