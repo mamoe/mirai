@@ -1,6 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-package net.mamoe.mirai.japt
+package net.mamoe.mirai.japt.internal
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Group
@@ -11,6 +11,10 @@ import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.japt.BlockingBot
+import net.mamoe.mirai.japt.BlockingGroup
+import net.mamoe.mirai.japt.BlockingMember
+import net.mamoe.mirai.japt.BlockingQQ
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.toChain

@@ -1,4 +1,4 @@
-package net.mamoe.mirai.japt
+package net.mamoe.mirai.japt.internal
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.core.ByteReadPacket
@@ -7,6 +7,9 @@ import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.ImageLink
+import net.mamoe.mirai.japt.BlockingBot
+import net.mamoe.mirai.japt.BlockingGroup
+import net.mamoe.mirai.japt.BlockingQQ
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.MiraiInternalAPI
