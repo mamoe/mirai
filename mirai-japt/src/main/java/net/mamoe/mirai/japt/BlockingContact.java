@@ -1,6 +1,5 @@
 package net.mamoe.mirai.japt;
 
-import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.message.data.Message;
 import net.mamoe.mirai.message.data.MessageChain;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +10,7 @@ public interface BlockingContact {
      * 这个联系人所属 [Bot]
      */
     @NotNull
-    Bot getBot();
+    BlockingBot getBot();
 
     /**
      * 可以是 QQ 号码或者群号码 [GroupId].

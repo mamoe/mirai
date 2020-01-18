@@ -3,7 +3,6 @@
 package net.mamoe.mirai.japt
 
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
@@ -20,7 +19,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.toList
 
 internal class BlockingQQImpl(private val delegate: QQ) : BlockingQQ {
-    override fun getBot(): Bot = delegate.bot
+    override fun getBot(): BlockingBot = delegate.bot.blocking()
     override fun getId(): Long = delegate.id
     override fun sendMessage(messages: MessageChain) = runBlocking { delegate.sendMessage(messages) }
     override fun sendMessage(message: String) = runBlocking { delegate.sendMessage(message.toMessage().toChain()) }
@@ -41,7 +40,7 @@ internal class BlockingGroupImpl(private val delegate: Group) : BlockingGroup {
     override fun updateGroupInfo(): GroupInfo = runBlocking { delegate.updateGroupInfo() }
     override fun toFullString(): String = delegate.toFullString()
     override fun getMember(id: Long): BlockingMember = delegate.getMember(id).blocking()
-    override fun getBot(): Bot = delegate.bot
+    override fun getBot(): BlockingBot = delegate.bot.blocking()
     override fun getAnnouncement(): String = delegate.announcement
     @UseExperimental(MiraiInternalAPI::class)
     override fun getMembers(): Map<Long, BlockingMember> =

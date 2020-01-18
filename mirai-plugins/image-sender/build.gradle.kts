@@ -32,9 +32,6 @@ dependencies {
     api(project(":mirai-console"))
     runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // classpath is not added correctly by IDE
 
-    implementation(group = 'com.alibaba', name = 'fastjson', version = '1.2.62')
-    implementation("org.jsoup:jsoup:1.12.1")
-
     api(kotlin("stdlib", kotlinVersion))
     api(kotlinx("io-jvm", kotlinXIoVersion))
     api(kotlinx("io", kotlinXIoVersion))
