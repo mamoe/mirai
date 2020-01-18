@@ -1,16 +1,16 @@
 package net.mamoe.mirai.plugin
 
 import net.mamoe.mirai.utils.DefaultLogger
-import java.io.BufferedReader
+import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.net.JarURLConnection
 import java.net.URL
 import java.util.jar.JarFile
 
 
 abstract class PluginBase constructor() {
+    val dataFolder by lazy {
+        File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
+    }
 
     open fun onLoad() {
 
@@ -24,38 +24,27 @@ abstract class PluginBase constructor() {
 
     }
 
-    fun getPluginManager(): PluginManager {
-        return PluginManager
-    }
-
     private lateinit var pluginDescription: PluginDescription
 
     internal fun init(pluginDescription: PluginDescription) {
         this.pluginDescription = pluginDescription
         this.onLoad()
     }
-
-    fun getDataFolder(): File {
-        return File(PluginManager.pluginsPath + pluginDescription.pluginName).also {
-            it.mkdirs()
-        }
-    }
-
 }
 
 class PluginDescription(
-    val pluginName: String,
-    val pluginAuthor: String,
-    val pluginBasePath: String,
-    val pluginVersion: String,
-    val pluginInfo: String,
+    val name: String,
+    val author: String,
+    val basePath: String,
+    val version: String,
+    val info: String,
     val depends: List<String>,//插件的依赖
     internal var loaded: Boolean = false,
     internal var noCircularDepend: Boolean = true
 ) {
 
     override fun toString(): String {
-        return "name: $pluginName\nauthor: $pluginAuthor\npath: $pluginBasePath\nver: $pluginVersion\ninfo: $pluginInfo\ndepends: $depends"
+        return "name: $name\nauthor: $author\npath: $basePath\nver: $version\ninfo: $info\ndepends: $depends"
     }
 
     companion object {
@@ -69,11 +58,11 @@ class PluginDescription(
             var version = "1.0.0"
             val depends = mutableListOf<String>();
 
-            content.forEach{
+            content.forEach {
                 val line = it.trim()
                 val lowercaseLine = line.toLowerCase()
-                if(it.contains(":")) {
-                    when{
+                if (it.contains(":")) {
+                    when {
                         lowercaseLine.startsWith("name") -> {
                             name = line.substringAfter(":").trim()
                         }
@@ -83,9 +72,9 @@ class PluginDescription(
                         lowercaseLine.startsWith("info") || lowercaseLine.startsWith("information") -> {
                             info = line.substringAfter(":").trim()
                         }
-                        lowercaseLine.startsWith("main") || lowercaseLine.startsWith("path") || lowercaseLine.startsWith(
-                            "basepath"
-                        ) -> {
+                        lowercaseLine.startsWith("main") ||
+                                lowercaseLine.startsWith("path") ||
+                                lowercaseLine.startsWith("basepath") -> {
                             basePath = line.substringAfter(":").trim()
                         }
                         lowercaseLine.startsWith("version") || lowercaseLine.startsWith("ver") -> {
@@ -113,49 +102,37 @@ object PluginManager {
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
 
 
-
     /**
      * 尝试加载全部插件
      */
-    fun loadPlugins(){
+    fun loadPlugins() {
         val pluginsFound: MutableMap<String, PluginDescription> = mutableMapOf()
         val pluginsLocation: MutableMap<String, JarFile> = mutableMapOf()
 
         File(pluginsPath).listFiles()?.forEach { file ->
-            if (file != null) {
-                if (file.extension == "jar") {
-                    val jar = JarFile(file)
-                    val pluginYml =
-                        jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
-                    if (pluginYml == null) {
-                        logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
-                    } else {
-                        val url = URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name)
-                        val jarConnection: JarURLConnection = url
-                            .openConnection() as JarURLConnection
-                        val inputStream: InputStream = jarConnection.getInputStream()
-                        val br = BufferedReader(InputStreamReader(inputStream, "UTF-8"))
-                        var con: String?
-                        val sb = StringBuffer()
-                        while (br.readLine().also { con = it } != null) {
-                            sb.append(con).append("\n")
-                        }
-                        val description = PluginDescription.readFromContent(sb.toString())
-                        println(description)
-                        pluginsFound[description.pluginName] = description
-                        pluginsLocation[description.pluginName] = jar
-                    }
+            if (file != null && file.extension == "jar") {
+                val jar = JarFile(file)
+                val pluginYml =
+                    jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
+                if (pluginYml == null) {
+                    logger.info("plugin.yml not found in jar " + jar.name + ", it will not be considered as a Plugin")
+                } else {
+                    val description =
+                        PluginDescription.readFromContent(URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.readAllBytes().encodeToString())
+                    println(description)
+                    pluginsFound[description.name] = description
+                    pluginsLocation[description.name] = jar
                 }
             }
         }
 
-        fun checkNoCircularDepends (target:PluginDescription, needDepends: List<String>,existDepends: MutableList<String>) {
+        fun checkNoCircularDepends(target: PluginDescription, needDepends: List<String>, existDepends: MutableList<String>) {
 
             if (!target.noCircularDepend) {
                 return
             }
 
-            existDepends.add(target.pluginName)
+            existDepends.add(target.name)
 
             if (needDepends.any { existDepends.contains(it) }) {
                 target.noCircularDepend = false
@@ -172,65 +149,58 @@ object PluginManager {
 
 
         pluginsFound.values.forEach {
-            checkNoCircularDepends(it,it.depends, mutableListOf())
+            checkNoCircularDepends(it, it.depends, mutableListOf())
         }
 
         //load
 
 
-        fun loadPlugin(description: PluginDescription):Boolean{
-            if(!description.noCircularDepend){
-                return false.also {
-                    logger.error("Failed to load plugin " + description.pluginName + " because it has circular dependency")
-                }
+        fun loadPlugin(description: PluginDescription): Boolean {
+            if (!description.noCircularDepend) {
+                logger.error("Failed to load plugin " + description.name + " because it has circular dependency")
+                return false
             }
 
             //load depends first
-            description.depends.forEach{
-                if(!pluginsFound.containsKey(it)){
-                    return false.also { _ ->
-                        logger.error("Failed to load plugin " + description.pluginName + " because it need " + it + " as dependency")
-                    }
+            description.depends.forEach { dependentName ->
+                val dependent = pluginsFound[dependentName]
+                if (dependent == null) {
+                    logger.error("Failed to load plugin " + description.name + " because it need " + dependentName + " as dependency")
+                    return false
                 }
-                val depend = pluginsFound[it]!!
                 //还没有加载
-                if(!depend.loaded) {
-                    if (!loadPlugin(pluginsFound[it]!!)) {
-                        return false.also { _ ->
-                            logger.error("Failed to load plugin " + description.pluginName + " because " + it + " as dependency failed to load")
-                        }
-                    }
+                if (!dependent.loaded && !loadPlugin(dependent)) {
+                    logger.error("Failed to load plugin " + description.name + " because " + dependentName + " as dependency failed to load")
+                    return false
                 }
             }
             //在这里所有的depends都已经加载了
 
 
             //real load
-            logger.info("loading plugin " + description.pluginName)
+            logger.info("loading plugin " + description.name)
 
             try {
-                this.javaClass.classLoader.loadClass(description.pluginBasePath)
+                this.javaClass.classLoader.loadClass(description.basePath)
                 return try {
                     val subClass = javaClass.asSubclass(PluginBase::class.java)
                     val plugin: PluginBase = subClass.getDeclaredConstructor().newInstance()
                     description.loaded = true
-                    logger.info("successfully loaded plugin " + description.pluginName)
-                    logger.info(description.pluginInfo)
+                    logger.info("successfully loaded plugin " + description.name)
+                    logger.info(description.info)
 
-                    nameToPluginBaseMap[description.pluginName] = plugin
+                    nameToPluginBaseMap[description.name] = plugin
                     plugin.init(description)
 
                     true
                 } catch (e: ClassCastException) {
-                    false.also {
-                        logger.error("failed to load plugin " + description.pluginName + " , Main class does not extends PluginBase ")
-                    }
+                    logger.error("failed to load plugin " + description.name + " , Main class does not extends PluginBase ")
+                    false
                 }
             } catch (e: ClassNotFoundException) {
                 e.printStackTrace()
-                return false.also {
-                    logger.error("failed to load plugin " + description.pluginName + " , Main class not found under " + description.pluginBasePath)
-                }
+                logger.error("failed to load plugin " + description.name + " , Main class not found under " + description.basePath)
+                return false
             }
         }
 
@@ -238,8 +208,6 @@ object PluginManager {
             loadPlugin(it)
         }
     }
-
-
 
 
 }
