@@ -5,24 +5,36 @@ import java.io.File
 import java.util.jar.JarFile
 
 
-abstract class PluginBase{
+abstract class PluginBase constructor() {
 
-    open fun onLoad(){
-
-    }
-
-    open fun onEnable(){
+    open fun onLoad() {
 
     }
 
-    open fun onDisable(){
+    open fun onEnable() {
 
     }
 
-    fun getPluginManager():PluginManager{
+    open fun onDisable() {
+
+    }
+
+    fun getPluginManager(): PluginManager {
         return PluginManager
     }
 
+    private lateinit var pluginDescription: PluginDescription
+
+    internal fun init(pluginDescription: PluginDescription) {
+        this.pluginDescription = pluginDescription
+        this.onLoad()
+    }
+
+    fun getDataFolder(): File {
+        return File(PluginManager.pluginsPath + pluginDescription.pluginName).also {
+            it.mkdirs()
+        }
+    }
 
 }
 
@@ -33,9 +45,8 @@ class PluginDescription(
     val pluginVersion: String,
     val pluginInfo: String,
     val depends: List<String>,//插件的依赖
-    //internal
-    var loaded: Boolean = false,
-    var noCircularDepend: Boolean = true
+    internal var loaded: Boolean = false,
+    internal var noCircularDepend: Boolean = true
 ) {
 
     companion object {
@@ -81,23 +92,17 @@ class PluginDescription(
 
 
 object PluginManager{
-    private val pluginsPath = System.getProperty("user.dir") + "/plugins/".replace("//","/").also {
+    internal val pluginsPath = System.getProperty("user.dir") + "/plugins/".replace("//", "/").also {
         File(it).mkdirs()
     }
 
     private val logger = DefaultLogger("Plugin Manager")
 
     //已完成加载的
-    private val nameToDescriptionMap: Map<String, PluginDescription> = mutableMapOf()
-    private val pluginBaseToDescriptionMap: Map<PluginBase, PluginDescription> = mutableMapOf()
+    private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
 
 
-    fun getPluginDataFolder(plugin: PluginBase):File{
-        val name = (pluginBaseToDescriptionMap[plugin] ?: error("Plugin not loaded")).pluginName
-        return File(pluginsPath + name).also {
-            it.mkdirs()
-        }
-    }
+
 
 
     /**
@@ -179,10 +184,35 @@ object PluginManager{
             //在这里所有的depends都已经加载了
 
 
-            //loadPlugin
+            //real load
+            logger.info("loading plugin " + description.pluginName)
+
+            try {
+                this.javaClass.classLoader.loadClass(description.pluginBasePath)
+                return try {
+                    val subClass = javaClass.asSubclass(PluginBase::class.java)
+                    val plugin: PluginBase = subClass.getDeclaredConstructor().newInstance()
+                    description.loaded = true
+                    logger.info("successfully loaded plugin " + description.pluginName)
+                    logger.info(description.pluginInfo)
+
+                    nameToPluginBaseMap[description.pluginName] = plugin
+                    plugin.init(description)
+
+                    true
+                } catch (e: ClassCastException) {
+                    false.also {
+                        logger.error("failed to load plugin " + description.pluginName + " , Main class does not extends PluginBase ")
+                    }
+                }
+            } catch (e: ClassNotFoundException) {
+                return false.also {
+                    logger.error("failed to load plugin " + description.pluginName + " , Main class not found under " + description.pluginBasePath)
+                }
+            }
+
 
         }
-
 
         pluginsFound.values.forEach{ loadPlugin(it) }
     }
