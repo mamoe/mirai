@@ -3,13 +3,11 @@ package net.mamoe.mirai.utils
 import java.text.SimpleDateFormat
 import java.util.*
 
-actual typealias PlatformLogger = Console
-
 /**
  * JVM 控制台日志实现
  */
-open class Console @JvmOverloads internal constructor(
-    override val identity: String? = "Mirai"
+actual open class PlatformLogger @JvmOverloads internal actual constructor(
+    override val identity: String?
 ) : MiraiLoggerPlatformBase() {
     override fun verbose0(any: Any?) = println(any, LoggerTextFormat.RESET)
     override fun verbose0(message: String?, e: Throwable?) {
