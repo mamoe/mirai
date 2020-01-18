@@ -27,21 +27,19 @@ abstract class PluginBase{
 }
 
 class PluginDescription(
-    val pluginName:String,
-    val pluginAuthor:String,
+    val pluginName: String,
+    val pluginAuthor: String,
     val pluginBasePath: String,
     val pluginVersion: String,
-    val pluginInfo:String,
+    val pluginInfo: String,
     val depends: List<String>,//插件的依赖
     //internal
-    var loaded:Boolean = false,
-    var noCircularDepend :Boolean = true
-    )
+    var loaded: Boolean = false,
+    var noCircularDepend: Boolean = true
+) {
 
-{
-
-    companion object{
-        fun readFromContent(content_:String):PluginDescription{
+    companion object {
+        fun readFromContent(content_: String): PluginDescription {
             val content = content_.split("\n")
 
             var name = "Plugin"
@@ -125,21 +123,22 @@ object PluginManager{
             }
         }
 
-        fun checkNoCircularDepends (target:PluginDescription, needDepends: List<String>,existDepends: MutableList<String>){
+        fun checkNoCircularDepends (target:PluginDescription, needDepends: List<String>,existDepends: MutableList<String>) {
 
-            if(!target.noCircularDepend){
+            if (!target.noCircularDepend) {
                 return
             }
 
-            if(needDepends.any { existDepends.contains(it) }){
+            existDepends.add(target.pluginName)
+
+            if (needDepends.any { existDepends.contains(it) }) {
                 target.noCircularDepend = false
             }
 
             existDepends.addAll(needDepends)
-            existDepends.add(target.pluginName)
 
-            needDepends.forEach{
-                if(pluginsFound.containsKey(it)){
+            needDepends.forEach {
+                if (pluginsFound.containsKey(it)) {
                     checkNoCircularDepends(pluginsFound[it]!!, pluginsFound[it]!!.depends, existDepends)
                 }
             }
