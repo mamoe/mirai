@@ -4,7 +4,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.ImageLink
@@ -27,9 +26,8 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     @UseExperimental(MiraiInternalAPI::class)
     override fun getGroups(): List<BlockingGroup> = bot.groups.delegate.toList().map { it.blocking() }
 
-    override fun getGroup(id: Long): BlockingGroup = runBlocking { bot.getGroup(id) }.blocking()
-    override fun getGroup(id: GroupId): BlockingGroup = runBlocking { bot.getGroup(id) }.blocking()
-    override fun getGroup(internalId: GroupInternalId): BlockingGroup = runBlocking { bot.getGroup(internalId) }.blocking()
+    override fun getGroup(id: Long): BlockingGroup = runBlocking { bot.getGroup(id).blocking() }
+    override fun getGroupByInternalId(internalId: Long): BlockingGroup = runBlocking { bot.getGroup(GroupInternalId(internalId)).blocking() }
     override fun getNetwork(): BotNetworkHandler = bot.network
     override fun login() = runBlocking { bot.login() }
     override fun getLink(image: Image): ImageLink = bot.run { runBlocking { image.getLink() } }

@@ -21,7 +21,7 @@ public final class BlockingContacts {
         return new BlockingMemberImpl(member);
     }
 
-    public static BlockingBotImpl createBlocking(Bot bot) {
+    public static BlockingBot createBlocking(Bot bot) {
         return new BlockingBotImpl(bot);
     }
 }

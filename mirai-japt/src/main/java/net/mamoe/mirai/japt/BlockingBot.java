@@ -2,8 +2,6 @@ package net.mamoe.mirai.japt;
 
 import kotlinx.io.core.ByteReadPacket;
 import net.mamoe.mirai.BotAccount;
-import net.mamoe.mirai.contact.GroupId;
-import net.mamoe.mirai.contact.GroupInternalId;
 import net.mamoe.mirai.data.AddFriendResult;
 import net.mamoe.mirai.data.ImageLink;
 import net.mamoe.mirai.message.data.Image;
@@ -65,17 +63,10 @@ public interface BlockingBot {
 
     /**
      * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
-     * 若 {@code id} 无效, 将会抛出 {@link GroupNotFoundException}
-     */
-    @NotNull
-    BlockingGroup getGroup(@NotNull GroupId id);
-
-    /**
-     * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
      * 若 {@code internalId} 无效, 将会抛出 {@link GroupNotFoundException}
      */
     @NotNull
-    BlockingGroup getGroup(@NotNull GroupInternalId internalId);
+    BlockingGroup getGroupByInternalId(long internalId);
 
     // endregion
 
