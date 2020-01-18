@@ -1,5 +1,6 @@
 package net.mamoe.mirai.plugin
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
@@ -24,6 +25,11 @@ abstract class PluginBase constructor() {
     open fun onDisable() {
 
     }
+
+    open fun onBotAdd(bot: Bot) {
+
+    }
+
 
     private lateinit var pluginDescription: PluginDescription
 
@@ -200,7 +206,7 @@ object PluginManager {
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
                     val plugin: PluginBase = subClass.getDeclaredConstructor().newInstance()
                     description.loaded = true
-                    logger.info("successfully loaded plugin " + description.name)
+                    logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
                     logger.info(description.info)
 
                     nameToPluginBaseMap[description.name] = plugin
@@ -220,6 +226,12 @@ object PluginManager {
         pluginsFound.values.forEach {
             loadPlugin(it)
         }
+
+        nameToPluginBaseMap.values.forEach {
+            it.onEnable()
+        }
+
+
     }
 
 
