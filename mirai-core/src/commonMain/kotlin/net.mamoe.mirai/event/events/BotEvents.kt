@@ -16,3 +16,5 @@ abstract class BotEvent : Event {
 }
 
 class BotLoginSucceedEvent(bot: Bot) : BotEvent(bot)
+
+class BotOfflineEvent(bot: Bot) : BotEvent(bot)

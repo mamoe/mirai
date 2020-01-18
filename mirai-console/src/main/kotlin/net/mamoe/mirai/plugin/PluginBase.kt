@@ -101,13 +101,7 @@ class PluginDescription(
     }
 }
 
-
-internal class PluginClassLoader(file: File, parent: ClassLoader) : URLClassLoader(arrayOf(file.toURI().toURL()), parent) {
-    override fun findClass(moduleName: String?, name: String?): Class<*> {
-        return super.findClass(name)
-    }
-}
-
+internal class PluginClassLoader(file: File, parent: ClassLoader) : URLClassLoader(arrayOf(file.toURI().toURL()), parent)
 
 object PluginManager {
     internal val pluginsPath = System.getProperty("user.dir") + "/plugins/".replace("//", "/").also {
@@ -136,7 +130,9 @@ object PluginManager {
                     logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
                 } else {
                     val description =
-                        PluginDescription.readFromContent(URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.readAllBytes().encodeToString())
+                        PluginDescription.readFromContent(URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
+                            it.readBytes().encodeToString()
+                        })
                     println(description)
                     pluginsFound[description.name] = description
                     pluginsLocation[description.name] = file

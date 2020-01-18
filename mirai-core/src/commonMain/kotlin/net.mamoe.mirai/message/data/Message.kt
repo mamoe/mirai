@@ -86,19 +86,6 @@ interface Message {
     operator fun plus(another: String): MessageChain = this.followedBy(another.toString().toMessage())
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
-
-    // do remove these primitive types, they can reduce boxing
-    operator fun plus(another: Int): MessageChain = this.followedBy(another.toString().toMessage())
-
-    operator fun plus(another: Double): MessageChain = this.followedBy(another.toString().toMessage())
-    operator fun plus(another: Long): MessageChain = this.followedBy(another.toString().toMessage())
-    operator fun plus(another: Short): MessageChain = this.followedBy(another.toString().toMessage())
-    operator fun plus(another: Byte): MessageChain = this.followedBy(another.toString().toMessage())
-    operator fun plus(another: Float): MessageChain = this.followedBy(another.toString().toMessage())
-
-    operator fun plus(another: Number): MessageChain = this.followedBy(another.toString().toMessage())
-
-
 }
 
 /**
