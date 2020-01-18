@@ -130,20 +130,11 @@ interface MiraiLogger {
 object SilentLogger : PlatformLogger() {
     override val identity: String? = null
 
-    override fun error0(any: Any?) {
-    }
-
-    override fun debug0(any: Any?) {
-    }
-
-    override fun warning0(any: Any?) {
-    }
-
-    override fun verbose0(any: Any?) {
-    }
-
-    override fun info0(any: Any?) {
-    }
+    override fun error0(any: Any?) = Unit
+    override fun debug0(any: Any?) = Unit
+    override fun warning0(any: Any?) = Unit
+    override fun verbose0(any: Any?) = Unit
+    override fun info0(any: Any?) = Unit
 }
 
 /**
