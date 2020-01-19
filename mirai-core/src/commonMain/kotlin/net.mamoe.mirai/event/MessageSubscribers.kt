@@ -225,7 +225,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     ): Listener<T> {
         return if (trim) {
             val toCheck = sub.trim()
-            content({ it.trimStart().contains(toCheck, ignoreCase = ignoreCase) }, {
+            content({ it.contains(toCheck, ignoreCase = ignoreCase) }, {
                 onEvent(this, this.message.toString().trim())
             })
         } else {
