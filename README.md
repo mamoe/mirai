@@ -28,6 +28,10 @@
 
 您的 star 是对我们最大的鼓励(点击项目右上角);  
 
+## Use directly
+**直接使用Mirai(终端环境/网页面板）.**  
+[Mirai-Console](https://github.com/mamoe/mirai/mirai-console)
+
 ## Use as a library
 **把 Mirai 作为库内置于您的项目中使用.**  
 Mirai 只上传在 `jcenter`, 因此请确保在 `build.gradle` 添加 `jcenter()` 仓库  
