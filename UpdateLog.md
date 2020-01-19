@@ -2,6 +2,31 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.12.0`  *2020/1/19*
+### mirai-core
+1. 监听消息时允许使用条件式的表达式, 如:
+```kotlin
+(contains("1") and has<Image>()){
+    reply("Your message has a string '1' and an image contained")
+}
+
+(contains("1") or endsWith("2")){
+
+}
+```
+原有单一条件语法不变:
+```kotlin
+contains("1"){
+
+}
+
+"Hello" reply "World"
+```
+
+2. Message: 修复 `eq` 无法正确判断的问题; 性能优化.
+3. 简化 logger 结构(API 不变).
+4. 事件 `cancelled` 属性修改为 `val` (以前是 `var` with `private set`)
+
 ## `0.11.0`  *2020/1/12*
 ### mirai-core
 - 弃用 `BotAccount.id`. 将来它可能会被改名成为邮箱等账号. QQ 号码需通过 `bot.uin` 获取.
