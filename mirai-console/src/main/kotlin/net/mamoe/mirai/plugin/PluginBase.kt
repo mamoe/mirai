@@ -223,9 +223,14 @@ object PluginManager {
             logger.info("loading plugin " + description.name)
 
             try {
-                val pluginClass =
+                val pluginClass = try {
                     PluginClassLoader((pluginsLocation[description.name]!!), this.javaClass.classLoader)
                         .loadClass(description.basePath)
+                } catch (e: ClassNotFoundException) {
+                    logger.info("failed to find Main: " + description.basePath + " checking if it's kotlin's path")
+                    PluginClassLoader((pluginsLocation[description.name]!!), this.javaClass.classLoader)
+                        .loadClass("${description.basePath}Kt")
+                }
                 return try {
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
                     val plugin: PluginBase = subClass.getDeclaredConstructor().newInstance()

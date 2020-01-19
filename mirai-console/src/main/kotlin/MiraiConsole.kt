@@ -1,6 +1,7 @@
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.plugin.PluginManager
 import kotlin.concurrent.thread
 
@@ -22,7 +23,7 @@ fun main() {
 
     PluginManager.loadPlugins()
 
-    Runtime.getRuntime().addShutdownHook(thread {
+    Runtime.getRuntime().addShutdownHook(Thread {
         PluginManager.disableAllPlugins()
     })
 }
@@ -40,7 +41,7 @@ tailrec fun processNextCommandLine() {
             val qqPassword = commandArgs[2]
             println("login...")
             GlobalScope.launch {
-                Bot(qqNumber, qqPassword)
+                Bot(qqNumber, qqPassword).alsoLogin()
             }
         }
     }
