@@ -32,19 +32,21 @@
 
 #### how to add plugins
 <ul>
-    <li>download mirai-console.jar</li>
-    <li>open command line/terminal</li>
-    <li>create a folder and put mirai-console.jar in</li>
-    <li>cd that folder</li>
-    <li>"java -jar mirai-console.jar"</li>
+    <li>After first time of running mirai console</li>
+    <li>/plugins/folder will be created next to mirai-console.jar</li>
+    <li>put plugin(.jar) into /plugins/</li>
+    <li>restart mirai console</li>
+    <li>checking logger and check if the plugin is loaded successfully</li>
+    <li>if the plugin has it own Config file, it normally appears in /plugins/{pluginName}/</li>
 </ul>
 
 <ul>
-    <li>下载mirai-console.jar</li>
-    <li>打开终端</li>
-    <li>在任何地方创建一个文件夹, 并放入mirai-console.jar</li>
-    <li>在终端中打开该文件夹"cd"</li>
-    <li>输入"java -jar mirai-console.jar"</li>
+    <li>在首次运行mirai console后</li>
+    <li>mirai-console.jar 的同级会出现/plugins/文件夹</li>
+    <li>将插件(.jar)放入/plugins/文件夹</li>
+    <li>重启mirai console</li>
+    <li>在开启后检查日志, 是否成功加载</li>
+    <li>如该插件有配置文件, 配置文件一般会创建在/plugins/插件名字/ 文件夹下</li>
 </ul>
 
 
