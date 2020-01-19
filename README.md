@@ -30,7 +30,7 @@
 
 ## Use directly
 **直接使用Mirai(终端环境/网页面板）.**  
-[Mirai-Console](https://github.com/mamoe/mirai/mirai-console) 插件支持, 在终端中启动Mirai并获得机器人服务
+[Mirai-Console](https://github.com/mamoe/mirai/tree/master/mirai-console) 插件支持, 在终端中启动Mirai并获得机器人服务
 
 ## Use as a library
 **把 Mirai 作为库内置于您的项目中使用.**  
