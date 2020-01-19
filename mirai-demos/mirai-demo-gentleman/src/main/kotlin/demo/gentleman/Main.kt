@@ -138,6 +138,10 @@ suspend fun main() {
             }.reply()
         }
 
+        (contains("1") and has<Image>()){
+            reply("Your message has a string \"1\" and an image contained")
+        }
+
         has<Image> {
             if (this is FriendMessage || (this is GroupMessage && this.permission == MemberPermission.ADMINISTRATOR)) withContext(IO) {
                 val image: Image by message
