@@ -27,10 +27,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
         this._id = PacketId(commandId = 0x0810, commandName = "wtlogin.login")
     }
 
-    fun hahahaha() {
-
-    }
-
     object SubCommand9 {
         private const val appId = 16L
         private const val subAppId = 537062845L
@@ -60,8 +56,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
                     client.device.guid,
                     LoginType.PASSWORD
                 )
-
-                hahahaha()
 
                 /* // from GetStWithPasswd
                 int mMiscBitmap = this.mMiscBitmap;
@@ -199,6 +193,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
         println("TLV KEYS: " + tlvMap.keys.joinToString { it.contentToString() })
 
         tlvMap[0x150]?.let { client.analysisTlv150(it) }
+        tlvMap[0x305]?.let { println("TLV 0x305=${it.toUHexString()}") }
         tlvMap[0x161]?.let { client.analysisTlv161(it) }
         tlvMap[0x119]?.let { t119Data ->
             t119Data.decryptBy(client.tgtgtKey).toReadPacket().debugPrint("0x119data").apply {
