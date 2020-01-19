@@ -1,5 +1,4 @@
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.plugin.PluginManager
@@ -40,8 +39,13 @@ tailrec fun processNextCommandLine() {
             val qqNumber = commandArgs[1].toLong()
             val qqPassword = commandArgs[2]
             println("login...")
-            GlobalScope.launch {
-                Bot(qqNumber, qqPassword).alsoLogin()
+
+            runBlocking {
+                try {
+                    Bot(qqNumber, qqPassword).alsoLogin()
+                } catch (e: Exception) {
+                    println("login failed")
+                }
             }
         }
     }
