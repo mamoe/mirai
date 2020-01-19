@@ -2,6 +2,7 @@ package net.mamoe.mirai.plugin
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
 import java.net.URL
@@ -57,6 +58,12 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     internal fun init(pluginDescription: PluginDescription) {
         this.pluginDescription = pluginDescription
         this.onLoad()
+    }
+
+    fun getPluginManager() = PluginManager
+
+    val logger: MiraiLogger by lazy {
+        DefaultLogger(pluginDescription.name)
     }
 }
 
@@ -125,7 +132,7 @@ object PluginManager {
         File(it).mkdirs()
     }
 
-    private val logger = DefaultLogger("Mirai Plugin Manager")
+    val logger = DefaultLogger("Mirai Plugin Manager")
 
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
