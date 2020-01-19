@@ -23,7 +23,7 @@ fun main() {
 
     PluginManager.loadPlugins()
 
-    Runtime.getRuntime().addShutdownHook(Thread {
+    Runtime.getRuntime().addShutdownHook(thread(start = false) {
         PluginManager.disableAllPlugins()
     })
 }

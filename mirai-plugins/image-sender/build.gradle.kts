@@ -1,7 +1,10 @@
 plugins {
     kotlin("jvm")
     java
+    id("com.github.johnrengelman.shadow") version "5.2.0"
 }
+
+version = "1.0.0"
 
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
@@ -37,8 +40,8 @@ dependencies {
     api(kotlinx("io", kotlinXIoVersion))
     api(kotlinx("coroutines-io", coroutinesIoVersion))
     api(kotlinx("coroutines-core", coroutinesVersion))
-    implementation("org.jsoup:jsoup:1.12.1")
-    implementation(group = "com.alibaba", name = "fastjson", version = "1.2.62")
+    api("org.jsoup:jsoup:1.12.1")
+    api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
 }
 
 tasks.withType<JavaCompile>() {
