@@ -173,6 +173,23 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
 
     /**
      * 如果消息内容 `==` [equals]
+     */
+    @MessageDsl
+    fun case(
+        equals: String,
+        ignoreCase: Boolean = false,
+        trim: Boolean = true
+    ): ListeningFilter {
+        return if (trim) {
+            val toCheck = equals.trim()
+            content { it.trim().equals(toCheck, ignoreCase = ignoreCase) }
+        } else {
+            content { it.equals(equals, ignoreCase = ignoreCase) }
+        }
+    }
+
+    /**
+     * 如果消息内容 `==` [equals]
      * @param trim `true` 则删除首尾空格后比较
      * @param ignoreCase `true` 则不区分大小写
      */
@@ -199,16 +216,35 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     /**
      * 如果消息内容包含 [sub]
      */
+    @MessageDsl
     inline fun contains(
         sub: String,
         ignoreCase: Boolean = false,
         trim: Boolean = true,
         crossinline onEvent: MessageListener<T>
     ): Listener<T> {
-        val toCheck = if (trim) sub.trim() else sub
-        return content({ (if (trim) it.trim() else it).contains(toCheck, ignoreCase = ignoreCase) }, {
-            onEvent(this, this.message.toString())
-        })
+        return if (trim) {
+            val toCheck = sub.trim()
+            content({ it.trimStart().contains(toCheck, ignoreCase = ignoreCase) }, {
+                onEvent(this, this.message.toString().trim())
+            })
+        } else {
+            content({ it.contains(sub, ignoreCase = ignoreCase) }, {
+                onEvent(this, this.message.toString())
+            })
+        }
+    }
+
+    /**
+     * 如果消息的前缀是 [prefix]
+     */
+    @MessageDsl
+    fun startsWith(
+        prefix: String,
+        trim: Boolean = true
+    ): ListeningFilter {
+        val toCheck = if (trim) prefix.trim() else prefix
+        return content { (if (trim) it.trim() else it).startsWith(toCheck) }
     }
 
     /**
@@ -221,11 +257,18 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         trim: Boolean = true,
         crossinline onEvent: @MessageDsl suspend T.(String) -> Unit
     ): Listener<T> {
-        val toCheck = if (trim) prefix.trim() else prefix
-        return content({ (if (trim) it.trim() else it).startsWith(toCheck) }, {
-            if (removePrefix) this.onEvent(this.message.toString().substringAfter(toCheck))
-            else onEvent(this, this.message.toString())
-        })
+        return if (trim) {
+            val toCheck = prefix.trim()
+            content({ it.trimStart().startsWith(toCheck) }, {
+                if (removePrefix) this.onEvent(this.message.toString().substringAfter(toCheck).trim())
+                else onEvent(this, this.message.toString().trim())
+            })
+        } else {
+            content({ it.startsWith(prefix) }, {
+                if (removePrefix) this.onEvent(this.message.toString().removePrefix(prefix))
+                else onEvent(this, this.message.toString())
+            })
+        }
     }
 
     /**
@@ -234,6 +277,30 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     @MessageDsl
     fun endsWith(suffix: String): ListeningFilter =
         content { it.endsWith(suffix) }
+
+    /**
+     * 如果消息的结尾是 [suffix]
+     */
+    @MessageDsl
+    inline fun endsWith(
+        suffix: String,
+        removeSuffix: Boolean = true,
+        trim: Boolean = true,
+        crossinline onEvent: @MessageDsl suspend T.(String) -> Unit
+    ): Listener<T> {
+        return if (trim) {
+            val toCheck = suffix.trim()
+            content({ it.trimStart().startsWith(toCheck) }, {
+                if (removeSuffix) this.onEvent(this.message.toString().substringBeforeLast(toCheck).trim())
+                else onEvent(this, this.message.toString().trim())
+            })
+        } else {
+            content({ it.startsWith(suffix) }, {
+                if (removeSuffix) this.onEvent(this.message.toString().removeSuffix(suffix))
+                else onEvent(this, this.message.toString())
+            })
+        }
+    }
 
     /**
      * 如果是这个人发的消息. 消息可以是好友消息也可以是群消息
@@ -323,8 +390,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果 [filter] 返回 `true`
      */
     @MessageDsl
-    inline fun content(crossinline filter: T.(String) -> Boolean): ListeningFilter =
-        ListeningFilter { filter(this, it) }
+    fun content(filter: T.(String) -> Boolean): ListeningFilter =
+        ListeningFilter(filter)
 
     /**
      * 如果 [filter] 返回 `true` 就执行 `onEvent`
