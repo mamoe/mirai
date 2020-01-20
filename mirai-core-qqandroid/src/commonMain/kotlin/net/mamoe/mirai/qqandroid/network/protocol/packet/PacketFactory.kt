@@ -8,6 +8,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId.commandName
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
@@ -48,7 +49,8 @@ internal typealias PacketConsumer = suspend (packet: Packet, packetId: PacketId,
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
-    LoginPacket
+    LoginPacket,
+    SvcReqRegisterPacket
 ) {
 
     fun findPacketFactory(commandName: String): PacketFactory<*> = this.first { it.id.commandName == commandName }

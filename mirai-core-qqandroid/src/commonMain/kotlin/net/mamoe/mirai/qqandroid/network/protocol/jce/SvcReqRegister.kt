@@ -1,5 +1,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.jce
 
+import net.mamoe.mirai.qqandroid.network.io.JceInput
 import net.mamoe.mirai.qqandroid.network.io.JceOutput
 import net.mamoe.mirai.qqandroid.network.io.JceStruct
 
@@ -41,7 +42,12 @@ class SvcReqRegister(
     val vecGuid: ByteArray? = null,
     val vecServerBuf: ByteArray? = null
 ) : JceStruct() {
-    
+    companion object : Factory<RequestPacket> {
+        override fun newInstanceFrom(input: JceInput): RequestPacket {
+            TODO("not implemented")
+        }
+    }
+
     override fun writeTo(builder: JceOutput) {
         builder.write(lUin, 0)
         builder.write(lBid, 1)

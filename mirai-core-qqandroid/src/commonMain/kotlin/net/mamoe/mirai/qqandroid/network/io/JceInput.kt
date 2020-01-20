@@ -1,18 +1,330 @@
 package net.mamoe.mirai.qqandroid.network.io
 
-import kotlinx.io.core.Input
+import kotlinx.io.core.*
+import net.mamoe.mirai.utils.io.readString
+import kotlin.experimental.and
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 inline class JceHead(private val value: Long) {
+    constructor(tag: Int, type: Byte) : this(tag.shl(32).toLong() and type.toLong())
+
     val tag: Int get() = (value ushr 32).toInt()
-    val type: Int get() = value.toUInt().toInt()
+    val type: Byte get() = value.toUInt().toByte()
 }
 
+@Suppress("MemberVisibilityCanBePrivate")
+@UseExperimental(ExperimentalUnsignedTypes::class)
 class JceInput(
-    private val input: Input
-): Input by input {
+    @PublishedApi
+    internal val input: Input
+) {
 
-    private fun readHead(): JceHead {
+    @PublishedApi
+    internal fun readHead(): JceHead = input.run {
+        val var2 = readByte()
+        val type = var2 and 15
+        var tag = (var2.toInt() and 240) shr 4
+        if (tag == 15)
+            tag = readByte().toInt() and 255
+        return JceHead(tag = tag, type = type)
+    }
 
+    fun readBoolean(tag: Int): Boolean = readBooleanOrNull(tag) ?: error("cannot find tag $tag")
+    fun readByte(tag: Int): Byte = readByteOrNull(tag) ?: error("cannot find tag $tag")
+    fun readShort(tag: Int): Short = readShortOrNull(tag) ?: error("cannot find tag $tag")
+    fun readInt(tag: Int): Int = readIntOrNull(tag) ?: error("cannot find tag $tag")
+    fun readLong(tag: Int): Long = readLongOrNull(tag) ?: error("cannot find tag $tag")
+    fun readFloat(tag: Int): Float = readFloatOrNull(tag) ?: error("cannot find tag $tag")
+    fun readDouble(tag: Int): Double = readDoubleOrNull(tag) ?: error("cannot find tag $tag")
+
+    fun readString(tag: Int): String = readStringOrNull(tag) ?: error("cannot find tag $tag")
+
+    fun readByteArray(tag: Int): ByteArray = readByteArrayOrNull(tag) ?: error("cannot find tag $tag")
+    fun readShortArray(tag: Int): ShortArray = readShortArrayOrNull(tag) ?: error("cannot find tag $tag")
+    fun readLongArray(tag: Int): LongArray = readLongArrayOrNull(tag) ?: error("cannot find tag $tag")
+    fun readFloatArray(tag: Int): FloatArray = readFloatArrayOrNull(tag) ?: error("cannot find tag $tag")
+    fun readDoubleArray(tag: Int): DoubleArray = readDoubleArrayOrNull(tag) ?: error("cannot find tag $tag")
+    fun readIntArray(tag: Int): IntArray = readIntArrayOrNull(tag) ?: error("cannot find tag $tag")
+    fun readBooleanArray(tag: Int): BooleanArray = readBooleanArrayOrNull(tag) ?: error("cannot find tag $tag")
+    fun <K, V> readMap(defaultKey: K, defaultValue: V, tag: Int): Map<K, V> = readMapOrNull(defaultKey, defaultValue, tag) ?: error("cannot find tag $tag")
+    fun <T> readList(defaultElement: T, tag: Int): List<T> = readListOrNull(defaultElement, tag) ?: error("cannot find tag $tag")
+    fun <T> readSimpleArray(defaultElement: T, tag: Int): Array<T> = readArrayOrNull(defaultElement, tag) ?: error("cannot find tag $tag")
+    fun <J : JceStruct> readJceStruct(factory: JceStruct.Factory<J>, tag: Int): J = readJceStructOrNull(factory, tag) ?: error("cannot find tag $tag")
+    fun readStringArray(tag: Int): Array<String> = readArrayOrNull("", tag) ?: error("cannot find tag $tag")
+
+    fun readLongOrNull(tag: Int): Long? = skipToTagOrNull(tag) {
+        return when (it.type.toInt()) {
+            12 -> 0
+            0 -> input.readByte().toLong()
+            1 -> input.readShort().toLong()
+            3 -> input.readLong()
+            else -> error("type mismatch: ${it.type}")
+        }
+    }
+
+    fun readShortOrNull(tag: Int): Short? = skipToTagOrNull(tag) {
+        return when (it.type.toInt()) {
+            12 -> 0
+            0 -> input.readByte().toShort()
+            1 -> input.readShort()
+            else -> error("type mismatch: ${it.type}")
+        }
+    }
+
+    fun readIntOrNull(tag: Int): Int? = skipToTagOrNull(tag) {
+        return when (it.type.toInt()) {
+            12 -> 0
+            0 -> input.readByte().toInt()
+            1 -> input.readShort().toInt()
+            2 -> input.readInt()
+            else -> error("type mismatch: ${it.type}")
+        }
+    }
+
+    fun readByteOrNull(tag: Int): Byte? = skipToTagOrNull(tag) {
+        return when (it.type.toInt()) {
+            12 -> 0
+            0 -> input.readByte()
+            else -> error("type mismatch")
+        }
+    }
+
+    fun readFloatOrNull(tag: Int): Float? = skipToTagOrNull(tag) {
+        return when (it.type.toInt()) {
+            12 -> 0f
+            4 -> input.readFloat()
+            else -> error("type mismatch: ${it.type}")
+        }
+    }
+
+    fun readDoubleOrNull(tag: Int): Double? = skipToTagOrNull(tag) {
+        return when (it.type.toInt()) {
+            12 -> 0.0
+            4 -> input.readFloat().toDouble()
+            5 -> input.readDouble()
+            else -> error("type mismatch: ${it.type}")
+        }
+    }
+
+    fun readBooleanOrNull(tag: Int): Boolean? = this.readByteOrNull(tag)?.let { it.toInt() != 0 }
+
+    fun readByteArrayOrNull(tag: Int): ByteArray? = skipToTagOrNull(tag) {
+        when (it.type.toInt()) {
+            9 -> ByteArray(input.readInt()) { readByte(tag) }
+            13 -> {
+                val head = readHead()
+                check(head.type.toInt() == 0) { "type mismatch" }
+                input.readBytes(input.readInt())
+            }
+            else -> error("type mismatch")
+        }
+    }
+
+    fun readShortArrayOrNull(tag: Int): ShortArray? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        ShortArray(input.readInt()) { readShort(tag) }
+    }
+
+    fun readDoubleArrayOrNull(tag: Int): DoubleArray? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        DoubleArray(input.readInt()) { readDouble(tag) }
+    }
+
+    fun readFloatArrayOrNull(tag: Int): FloatArray? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        FloatArray(input.readInt()) { readFloat(tag) }
+    }
+
+    fun readIntArrayOrNull(tag: Int): IntArray? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        IntArray(input.readInt()) { readInt(tag) }
+    }
+
+    fun readLongArrayOrNull(tag: Int): LongArray? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        LongArray(input.readInt()) { readLong(tag) }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T> readArrayOrNull(tag: Int): Array<T>? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        Array(input.readInt()) { readSimpleObject<T>(tag) }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> readArrayOrNull(defaultElement: T, tag: Int): Array<T>? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        Array(input.readInt()) { readObject(defaultElement, tag) as Any } as Array<T>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <J : JceStruct> readJceStructArrayOrNull(factory: JceStruct.Factory<J>, tag: Int): Array<J>? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        Array(input.readInt()) { readObject(factory, tag) as Any } as Array<J>
+    }
+
+    fun readBooleanArrayOrNull(tag: Int): BooleanArray? = skipToTagOrNull(tag) {
+        require(it.type.toInt() == 9) { "type mismatch" }
+        BooleanArray(input.readInt()) { readBoolean(tag) }
+    }
+
+    fun readStringOrNull(tag: Int): String? = skipToTagOrNull(tag) { head ->
+        return when (head.type.toInt()) {
+            6 -> input.readString(input.readUByte().toInt())
+            7 -> input.readString(input.readUInt().also { require(it.toInt() in 1 until 104857600) { "bad string length: $it" } }.toInt())
+            else -> error("type mismatch: ${head.type}")
+        }
+    }
+
+    fun <T : Map<K, V>, K, V> readMapOrNull(defaultKey: K, defaultValue: V, tag: Int): Map<K, V>? = skipToTagOrNull(tag) {
+        check(it.type.toInt() == 8) { "type mismatch" }
+        val size = readInt(0)
+        val map = HashMap<K, V>(size)
+        repeat(size) {
+            map[readObject(defaultKey, 0)] = readObject(defaultValue, 0)
+        }
+        return map
+    }
+
+    fun <T> readListOrNull(defaultElement: T, tag: Int): List<T>? = skipToTagOrNull(tag) { head ->
+        check(head.type.toInt() == 9) { "type mismatch" }
+        val size = readInt(0)
+        val list = ArrayList<T>(size)
+        repeat(size) {
+            list[it] = readObject(defaultElement, tag)
+        }
+        return list
+    }
+
+    fun <J : JceStruct> readJceStructOrNull(factory: JceStruct.Factory<J>, tag: Int): J? = skipToTagOrNull(tag) { head ->
+        readHead()
+        return factory.newInstanceFrom(this).also { skipToStructEnd() }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> readArrayOrNull(default: Array<T>, tag: Int): Array<T>? = skipToTagOrNull(tag) { head ->
+        val defaultElement = default[0]
+        check(head.type.toInt() == 9) { "type mismatch" }
+        return Array(readInt(0)) { readObject(defaultElement, tag) as Any } as Array<T>
+    }
+
+    @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
+    fun <T> readObject(default: T, tag: Int): T = when (default) {
+        is Byte -> readByte(tag)
+        is Boolean -> readBoolean(tag)
+        is Short -> readShort(tag)
+        is Int -> readInt(tag)
+        is Long -> readLong(tag)
+        is Float -> readFloat(tag)
+        is Double -> readDouble(tag)
+        is String -> readString(tag)
+        is BooleanArray -> readBooleanArray(tag)
+        is ShortArray -> readShortArray(tag)
+        is IntArray -> readIntArray(tag)
+        is LongArray -> readLongArray(tag)
+        is ByteArray -> readByteArray(tag)
+        is FloatArray -> readByteArray(tag)
+        is DoubleArray -> readDoubleArrayOrNull(tag)
+        is JceStruct.Factory<JceStruct> -> readJceStruct(default, tag) as T
+        is List<*> -> {
+            readList(default[0], tag)
+        }
+        is Map<*, *> -> {
+            val entry = default.entries.first()
+            readMap(entry.key, entry.value, tag)
+        }
+        is Array<*> -> readSimpleArray(default, tag)
+        else -> error("unsupported type")
+    } as T
+
+    @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
+    inline fun <reified T> readSimpleObject(tag: Int): T = when (T::class) {
+        Byte::class -> readByte(tag)
+        Boolean::class -> readBoolean(tag)
+        Short::class -> readShort(tag)
+        Int::class -> readInt(tag)
+        Long::class -> readLong(tag)
+        Float::class -> readFloat(tag)
+        Double::class -> readDouble(tag)
+
+        String::class -> readString(tag)
+
+        BooleanArray::class -> readBooleanArray(tag)
+        ShortArray::class -> readShortArray(tag)
+        IntArray::class -> readIntArray(tag)
+        LongArray::class -> readLongArray(tag)
+        ByteArray::class -> readByteArray(tag)
+        FloatArray::class -> readByteArray(tag)
+        DoubleArray::class -> readDoubleArrayOrNull(tag)
+        else -> error("Type is not supported: ${T::class.simpleName}")
+    } as T
+
+    private fun skipField() {
+        skipField(readHead().type)
+    }
+
+    private fun skipToStructEnd() {
+        var head: JceHead
+        do {
+            head = readHead()
+            skipField(head.type)
+        } while (head.type.toInt() != 11)
+    }
+
+    @UseExperimental(ExperimentalUnsignedTypes::class)
+    @PublishedApi
+    internal fun skipField(type: Byte) = when (type.toInt()) {
+        0 -> this.input.discardExact(1)
+        1 -> this.input.discardExact(2)
+        2 -> this.input.discardExact(4)
+        3 -> this.input.discardExact(8)
+        4 -> this.input.discardExact(4)
+        5 -> this.input.discardExact(8)
+        6 -> this.input.discardExact(this.input.readUByte().toInt())
+        7 -> this.input.discardExact(this.input.readInt())
+        8 -> { // map
+            val length = this.readInt(0)
+            var read = 0
+            while (read < length * 2) {
+                skipField()
+                ++read
+            }
+        }
+        9 -> { // list
+            val length = this.readInt(0)
+            var read = 0
+            while (read < length) {
+                skipField()
+                ++read
+            }
+        }
+        10 -> this.skipToStructEnd()
+        11, 12 -> {
+
+        }
+        13 -> {
+            val head = readHead()
+            check(head.type.toInt() == 0) { "skipField with invalid type, type value: " + type + ", " + head.type }
+            this.input.discardExact(this.readInt(0))
+        }
+        else -> error("invalid type.")
+    }
+}
+
+private inline fun <R> JceInput.skipToTag(tag: Int, block: (JceHead) -> R): R {
+    return skipToTagOrNull(tag) { block(it) } ?: error("cannot find required tag $tag")
+}
+
+@PublishedApi
+internal inline fun <R> JceInput.skipToTagOrNull(tag: Int, block: (JceHead) -> R): R? {
+    while (true) {
+        if (this.input.endOfInput)
+            return null
+
+        val head = readHead()
+        if (head.tag == tag) {
+            return block(head)
+        }
+        this.skipField(head.type)
     }
 }

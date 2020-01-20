@@ -1,5 +1,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.jce
 
+import net.mamoe.mirai.qqandroid.network.io.JceInput
 import net.mamoe.mirai.qqandroid.network.io.JceOutput
 import net.mamoe.mirai.qqandroid.network.io.JceStruct
 
@@ -17,6 +18,12 @@ class RequestPacket(
     val sServantName: String = "",
     val status: Map<String, String> = EMPTY_MAP
 ) : JceStruct() {
+    companion object : Factory<RequestPacket> {
+        override fun newInstanceFrom(input: JceInput): RequestPacket {
+            TODO("not implemented")
+        }
+    }
+
     override fun writeTo(builder: JceOutput) {
         builder.write(this.iVersion, 1)
         builder.write(this.cPacketType, 2)
