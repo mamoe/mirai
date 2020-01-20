@@ -8,8 +8,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId.commandName
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
-import net.mamoe.mirai.utils.cryptor.Decrypter
-import net.mamoe.mirai.utils.cryptor.DecrypterType
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
@@ -59,12 +57,12 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
 
     // do not inline. Exceptions thrown will not be reported correctly
     suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
-        rawInput.debugPrintIfFail("Incoming packet") {
+        rawInput.debugIfFail("Incoming packet") {
             require(remaining < Int.MAX_VALUE) { "rawInput is too long" }
             val expectedLength = readUInt().toInt() - 4
             if (expectedLength > 16e7) {
                 bot.logger.warning("Detect incomplete packet, ignoring.")
-                return@debugPrintIfFail
+                return@debugIfFail
             }
             check(remaining.toInt() == expectedLength) { "Invalid packet length. Expected $expectedLength, got ${rawInput.remaining} Probably packets merged? " }
             // login
@@ -87,7 +85,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
 
     @UseExperimental(ExperimentalUnsignedTypes::class)
     private suspend fun parseLoginSsoPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
-        rawInput.debugPrintIfFail("Login sso packet") {
+        rawInput.debugIfFail("Login sso packet") {
             val commandName: String
             val ssoSequenceId: Int
             readIoBuffer(readInt() - 4).withUse {
