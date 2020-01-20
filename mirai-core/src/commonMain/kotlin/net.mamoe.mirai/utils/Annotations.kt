@@ -25,9 +25,21 @@ annotation class MiraiInternalAPI(
  * 这些 API 不具有稳定性, 且可能会在任意时刻更改.
  * 不建议在发行版本中使用这些 API.
  */
-@Experimental(level = Experimental.Level.ERROR)
+@Experimental(level = Experimental.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 annotation class MiraiExperimentalAPI(
+    val message: String = ""
+)
+
+/**
+ * 标记这个类, 类型, 函数, 属性, 字段, 或构造器为仅供调试阶段使用的.
+ *
+ * 这些 API 不具有稳定性, 可能会在任意时刻更改, 并且效率非常低下.
+ * 非常不建议在发行版本中使用这些 API.
+ */
+@Experimental(level = Experimental.Level.WARNING)
+@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
+annotation class MiraiDebugAPI(
     val message: String = ""
 )
 
@@ -43,13 +55,13 @@ annotation class SinceMirai(val version: String)
  * 包的最后一次修改时间, 和分析时使用的 TIM 版本
  */
 @MustBeDocumented
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
+@Target(FUNCTION, CLASS, PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
 annotation class PacketVersion(val date: String, val timVersion: String)
 
 /**
  * 带有这个注解的 [Packet] 将不会被记录在 log 中.
  */
-@Target(AnnotationTarget.CLASS)
+@Target(CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class NoLog
