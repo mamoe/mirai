@@ -3,10 +3,8 @@ package net.mamoe.mirai.qqandroid.utils
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoBuf
-import net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769.Oidb0x769
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 abstract class DeviceInfo(
@@ -42,7 +40,7 @@ abstract class DeviceInfo(
     abstract val imsiMd5: ByteArray
     abstract val imei: String
 
-    abstract val ipAddress: String
+    abstract val ipAddress: ByteArray
 
     abstract val androidId: ByteArray
 

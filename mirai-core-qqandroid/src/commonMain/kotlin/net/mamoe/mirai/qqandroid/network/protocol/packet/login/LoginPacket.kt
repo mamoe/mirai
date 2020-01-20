@@ -10,6 +10,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
@@ -174,6 +175,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
         object Success : LoginPacketResponse()
     }
 
+    @UseExperimental(MiraiDebugAPI::class)
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse = this.debugPrint("login解析").run {
         // 00 09 sub cmd
         // 00 type
