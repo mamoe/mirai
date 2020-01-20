@@ -8,6 +8,7 @@ import kotlin.annotation.AnnotationTarget.*
  * 这些 API 可能会在任意时刻更改, 且不会发布任何预警.
  * 非常不建议在发行版本中使用这些 API.
  */
+@Retention(AnnotationRetention.SOURCE)
 @Experimental(level = Experimental.Level.ERROR)
 @Target(
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
@@ -25,6 +26,7 @@ annotation class MiraiInternalAPI(
  * 这些 API 不具有稳定性, 且可能会在任意时刻更改.
  * 不建议在发行版本中使用这些 API.
  */
+@Retention(AnnotationRetention.SOURCE)
 @Experimental(level = Experimental.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 annotation class MiraiExperimentalAPI(
@@ -37,6 +39,7 @@ annotation class MiraiExperimentalAPI(
  * 这些 API 不具有稳定性, 可能会在任意时刻更改, 并且效率非常低下.
  * 非常不建议在发行版本中使用这些 API.
  */
+@Retention(AnnotationRetention.SOURCE)
 @Experimental(level = Experimental.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 annotation class MiraiDebugAPI(
