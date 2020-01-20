@@ -76,6 +76,7 @@ inline fun <R> Input.debugIfFail(name: String = "", onFail: (ByteArray) -> ByteR
         try {
             return block(it.toReadPacket(0, count))
         } catch (e: Throwable) {
+            onFail(it.take(count).toByteArray()).readAvailable(it)
             DebugLogger.debug("Error in ByteReadPacket $name=" + it.toUHexString(offset = 0, length = count))
             throw e
         }
