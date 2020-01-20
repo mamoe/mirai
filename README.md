@@ -33,7 +33,7 @@
 [Mirai-Console](https://github.com/mamoe/mirai/tree/master/mirai-console) 插件支持, 在终端中启动Mirai并获得机器人服务
 
 ## Use as a library
-**把 Mirai 作为库内置于您的项目中使用.**  
+**mirai-core 为独立设计, 可以作为库内置于您的任意 Java/Android 项目中使用.**  
 Mirai 只上传在 `jcenter`, 因此请确保在 `build.gradle` 添加 `jcenter()` 仓库  
 ```kotlin
 repositories{
