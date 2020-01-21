@@ -20,7 +20,7 @@ internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>() {
     @Suppress("FunctionName")
     fun SubCommand1(
         client: QQAndroidClient
-    ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId, ssoExtraData = byteArrayOf().toReadPacket()) {
+    ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2, subAppId = subAppId, ssoExtraData = byteArrayOf().toReadPacket()) {
         writeOicqRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
 
             // oicq.wlogin_sdk.request.trans_emp_1#packTransEmpBody

@@ -35,137 +35,139 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient
-        ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId) { sequenceId ->
-            writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), id) {
-                writeShort(9) // subCommand
-                writeShort(17) // count of TLVs, probably ignored by server?
-                //writeShort(LoginType.PASSWORD.value.toShort())
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId = subAppId, bodyType = 2) { sequenceId ->
+            writeLoginSsoPacket(client, subAppId, id, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), id) {
+                    writeShort(9) // subCommand
+                    writeShort(17) // count of TLVs, probably ignored by server?
+                    //writeShort(LoginType.PASSWORD.value.toShort())
 
-                t18(appId, client.appClientVersion, client.uin)
-                t1(client.uin, client.device.ipAddress)
-                t106(
-                    appId,
-                    subAppId /* maybe 1*/,
-                    client.appClientVersion,
-                    client.uin,
-                    1,
-                    client.account.passwordMd5,
-                    0,
-                    client.uin.toByteArray(),
-                    client.tgtgtKey,
-                    true,
-                    client.device.guid,
-                    LoginType.PASSWORD
-                )
-
-                /* // from GetStWithPasswd
-                int mMiscBitmap = this.mMiscBitmap;
-                if (t.uinDeviceToken) {
-                    mMiscBitmap = (this.mMiscBitmap | 0x2000000);
-                }
-
-
-                // defaults true
-                if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
-                */
-                t116(client.miscBitMap, client.subSigMap)
-                t100(appId, subAppId, client.appClientVersion, client.mainSigMap or 0xC0)
-                t107(0)
-
-                // t108(byteArrayOf())
-                // ignored: t104()
-                t142(client.apkId)
-
-                // if login with non-number uin
-                // t112()
-                t144(
-                    androidId = client.device.androidId,
-                    androidDevInfo = client.device.generateDeviceInfoData(),
-                    osType = client.device.osType,
-                    osVersion = client.device.version.release,
-                    networkType = client.networkType,
-                    simInfo = client.device.simInfo,
-                    unknown = byteArrayOf(),
-                    apn = client.device.apn,
-                    isGuidFromFileNull = false,
-                    isGuidAvailable = true,
-                    isGuidChanged = false,
-                    guidFlag = guidFlag(GuidSource.FROM_STORAGE, MacOrAndroidIdChangeFlag.NoChange),
-                    buildModel = client.device.model,
-                    guid = client.device.guid,
-                    buildBrand = client.device.brand,
-                    tgtgtKey = client.tgtgtKey
-                )
-
-                //this.build().debugPrint("傻逼")
-                t145(client.device.guid)
-                t147(appId, client.apkVersionName, client.apkSignatureMd5)
-
-                if (client.miscBitMap and 0x80 != 0) {
-                    t166(1)
-                }
-
-                // ignored t16a because array5 is null
-
-                t154(sequenceId)
-                t141(client.device.simInfo, client.networkType, client.device.apn)
-                t8(2052)
-
-                t511(
-                    listOf(
-                        "tenpay.com",
-                        "openmobile.qq.com",
-                        "docs.qq.com",
-                        "connect.qq.com",
-                        "qzone.qq.com",
-                        "vip.qq.com",
-                        "qun.qq.com",
-                        "game.qq.com",
-                        "qqweb.qq.com",
-                        "office.qq.com",
-                        "ti.qq.com",
-                        "mail.qq.com",
-                        "qzone.com",
-                        "mma.qq.com"
+                    t18(appId, client.appClientVersion, client.uin)
+                    t1(client.uin, client.device.ipAddress)
+                    t106(
+                        appId,
+                        subAppId /* maybe 1*/,
+                        client.appClientVersion,
+                        client.uin,
+                        1,
+                        client.account.passwordMd5,
+                        0,
+                        client.uin.toByteArray(),
+                        client.tgtgtKey,
+                        true,
+                        client.device.guid,
+                        LoginType.PASSWORD
                     )
-                )
 
-                // ignored t172 because rollbackSig is null
-                // ignored t185 because loginType is not SMS
-                // ignored t400 because of first login
+                    /* // from GetStWithPasswd
+                    int mMiscBitmap = this.mMiscBitmap;
+                    if (t.uinDeviceToken) {
+                        mMiscBitmap = (this.mMiscBitmap | 0x2000000);
+                    }
 
-                t187(client.device.macAddress)
-                t188(client.device.androidId)
 
-                val imsi = client.device.imsiMd5
-                if (imsi.isNotEmpty()) {
-                    t194(imsi)
+                    // defaults true
+                    if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
+                    */
+                    t116(client.miscBitMap, client.subSigMap)
+                    t100(appId, subAppId, client.appClientVersion, client.mainSigMap or 0xC0)
+                    t107(0)
+
+                    // t108(byteArrayOf())
+                    // ignored: t104()
+                    t142(client.apkId)
+
+                    // if login with non-number uin
+                    // t112()
+                    t144(
+                        androidId = client.device.androidId,
+                        androidDevInfo = client.device.generateDeviceInfoData(),
+                        osType = client.device.osType,
+                        osVersion = client.device.version.release,
+                        networkType = client.networkType,
+                        simInfo = client.device.simInfo,
+                        unknown = byteArrayOf(),
+                        apn = client.device.apn,
+                        isGuidFromFileNull = false,
+                        isGuidAvailable = true,
+                        isGuidChanged = false,
+                        guidFlag = guidFlag(GuidSource.FROM_STORAGE, MacOrAndroidIdChangeFlag.NoChange),
+                        buildModel = client.device.model,
+                        guid = client.device.guid,
+                        buildBrand = client.device.brand,
+                        tgtgtKey = client.tgtgtKey
+                    )
+
+                    //this.build().debugPrint("傻逼")
+                    t145(client.device.guid)
+                    t147(appId, client.apkVersionName, client.apkSignatureMd5)
+
+                    if (client.miscBitMap and 0x80 != 0) {
+                        t166(1)
+                    }
+
+                    // ignored t16a because array5 is null
+
+                    t154(sequenceId)
+                    t141(client.device.simInfo, client.networkType, client.device.apn)
+                    t8(2052)
+
+                    t511(
+                        listOf(
+                            "tenpay.com",
+                            "openmobile.qq.com",
+                            "docs.qq.com",
+                            "connect.qq.com",
+                            "qzone.qq.com",
+                            "vip.qq.com",
+                            "qun.qq.com",
+                            "game.qq.com",
+                            "qqweb.qq.com",
+                            "office.qq.com",
+                            "ti.qq.com",
+                            "mail.qq.com",
+                            "qzone.com",
+                            "mma.qq.com"
+                        )
+                    )
+
+                    // ignored t172 because rollbackSig is null
+                    // ignored t185 because loginType is not SMS
+                    // ignored t400 because of first login
+
+                    t187(client.device.macAddress)
+                    t188(client.device.androidId)
+
+                    val imsi = client.device.imsiMd5
+                    if (imsi.isNotEmpty()) {
+                        t194(imsi)
+                    }
+                    t191()
+
+                    /*
+                    t201(N = byteArrayOf())*/
+
+                    val bssid = client.device.wifiBSSID
+                    val ssid = client.device.wifiSSID
+                    if (bssid != null && ssid != null) {
+                        t202(bssid, ssid)
+                    }
+
+                    t177()
+                    t516()
+                    t521()
+
+                    t525(buildPacket {
+                        t536(buildPacket {
+                            //com.tencent.loginsecsdk.ProtocolDet#packExtraData
+                            writeByte(1) // const
+                            writeByte(0) // data count
+                        }.readBytes())
+                    })
+                    // this.build().debugPrint("傻逼")
+
+                    // ignored t318 because not logging in by QR
                 }
-                t191()
-
-                /*
-                t201(N = byteArrayOf())*/
-
-                val bssid = client.device.wifiBSSID
-                val ssid = client.device.wifiSSID
-                if (bssid != null && ssid != null) {
-                    t202(bssid, ssid)
-                }
-
-                t177()
-                t516()
-                t521()
-
-                t525(buildPacket {
-                    t536(buildPacket {
-                        //com.tencent.loginsecsdk.ProtocolDet#packExtraData
-                        writeByte(1) // const
-                        writeByte(0) // data count
-                    }.readBytes())
-                })
-                // this.build().debugPrint("傻逼")
-
-                // ignored t318 because not logging in by QR
             }
         }
     }
@@ -335,7 +337,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
                 var a1: ByteArray? = null
                 var noPicSig: ByteArray? = null
                 tlvMap119[0x531]?.let {
-                    analysisTlv0x531(it){ arg1, arg2 ->
+                    analysisTlv0x531(it) { arg1, arg2 ->
                         a1 = arg1
                         noPicSig = arg2
                     }

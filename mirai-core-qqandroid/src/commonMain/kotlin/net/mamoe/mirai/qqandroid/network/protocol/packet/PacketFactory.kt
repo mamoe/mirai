@@ -68,22 +68,32 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             }
             check(remaining.toInt() == expectedLength) { "Invalid packet length. Expected $expectedLength, got ${rawInput.remaining} Probably packets merged? " }
             // login
-            when (val flag1 = readInt()) {
-                0x0A -> when (val flag2 = readByte().toInt()) {
-                    0x02 -> {
-                        val flag3 = readByte().toInt()
-                        check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
-
-                        bot.logger.verbose(readString(readInt() - 4)) // uinAccount
-
-                        //debugPrint("remaining")
-                        parseLoginSsoPacket(bot, decryptBy(DECRYPTER_16_ZERO), consumer)
-                    }
-                    else -> error("Illegal flag2. Expected 0x02, got $flag2")
+            val flag1 = readInt()
+            when (val flag2 = readByte().toInt()) {
+                0x02 -> {
+                    val flag3 = readByte().toInt()
+                    check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
+                    bot.logger.verbose("got uinAccount = " + readString(readInt() - 4)) // uinAccount
+                    //debugPrint("remaining")
                 }
-                // 00 00 00 60 00 00 00 0B 02 00 00 00 00 0E 31 39 39 34 37 30 31 30 32 31 CE 35 53 19 84 A8 1A B8 5B 48 E3 7C D0 A6 BA 58 6A EB CE 50 B9 A0 98 D5 B9 D0 1C 72 E2 86 24 FC 55 44 6C 6E E3 F9 15 6C EC 6C 6B 94 40 F7 B4 45 CF B4 D0 79 84 FE 30 EA 98 84 44 84 02 32 70 DD D7 07 07 72 DE 87 59 AC
-                0x0B ->
-                else -> error("Illegal flag1. Expected 0x0A or 0x0B, got $flag1")
+                else -> error("Illegal flag2. Expected 0x02, got $flag2")
+            }
+            when (flag1) {
+                0x0A -> parseLoginSsoPacket(bot, decryptBy(DECRYPTER_16_ZERO), consumer)
+                0x0B -> parseUniPacket(bot, decryptBy(DECRYPTER_16_ZERO), consumer)
+            }
+        }
+
+    private suspend fun parseUniPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
+        rawInput.debugIfFail("Login sso packet") {
+            readIoBuffer(readInt() - 4).withUse {
+                //00 01 4E 64 FF FF D8 E8 00 00 00 14 6E 65 65 64 20 41 32 20 61 6E 64 20 49 4D 45 49 00 00 00 04 00 00 00 08 60 7F B6 23 00 00 00 00 00 00 00 04
+                val sequenceId = readInt()
+
+            }
+
+            readIoBuffer(readInt() - 4).withUse {
+                debugPrintln("收到 UniPacket 的 body=${this.readBytes().toUHexString()}")
             }
         }
 
