@@ -17,6 +17,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.writeLoginSsoPacket
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.encodeToString
+import net.mamoe.mirai.utils.io.toReadPacket
 
 @Suppress("EnumEntryName")
 enum class RegPushReason {
@@ -48,10 +49,12 @@ internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Respon
         client,
         bodyType = 1,
         extraData = client.wLoginSigInfo.d2.data,
-        key = client.wLoginSigInfo.d2Key,
-        subAppId = subAppId
+        key = client.wLoginSigInfo.d2Key
     ) { sequenceId ->
-        writeLoginSsoPacket(client, subAppId= subAppId, packetId = id, sequenceId = sequenceId){
+        writeLoginSsoPacket(
+            client, subAppId = subAppId, packetId = id,
+            extraData = client.wLoginSigInfo.tgt.toReadPacket(), sequenceId = sequenceId
+        ) {
             writeUniRequestPacket {
                 sServantName = "PushService"
                 sFuncName = "SvcReqRegister"

@@ -35,7 +35,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient
-        ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId = subAppId, bodyType = 2) { sequenceId ->
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
             writeLoginSsoPacket(client, subAppId, id, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), id) {
                     writeShort(9) // subCommand

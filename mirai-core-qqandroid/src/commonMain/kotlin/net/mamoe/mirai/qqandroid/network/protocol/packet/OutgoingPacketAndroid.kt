@@ -110,12 +110,10 @@ internal inline fun PacketFactory<*>.buildOutgingPacket(
 @UseExperimental(MiraiInternalAPI::class)
 internal inline fun PacketFactory<*>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
-    subAppId: Long,
-    bodyType: Byte, // login=2, uni=1
+    bodyType: Byte,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
     name: String? = null,
     id: PacketId = this.id,
-    ssoExtraData: ByteReadPacket = BRP_STUB,
     key: ByteArray = KEY_16_ZEROS,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
