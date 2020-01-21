@@ -2,19 +2,29 @@ package net.mamoe.mirai.qqandroid.network.io
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
-import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.readRemainingBytes
 import kotlin.reflect.KClass
 
-private val CharsetGBK = Charset.forName("GBK")
+@PublishedApi
+internal val CharsetGBK = Charset.forName("GBK")
 
-fun buildJcePacket(stringCharset: Charset = CharsetGBK, block: JceOutput.() -> Unit): ByteReadPacket {
+inline fun buildJcePacket(stringCharset: Charset = CharsetGBK, block: JceOutput.() -> Unit): ByteReadPacket {
     return JceOutput(stringCharset).apply(block).build()
 }
 
-fun BytePacketBuilder.writeJcePacket(stringCharset: Charset = CharsetGBK, block: JceOutput.() -> Unit) {
+inline fun BytePacketBuilder.writeJcePacket(stringCharset: Charset = CharsetGBK, block: JceOutput.() -> Unit) {
     return this.writePacket(buildJcePacket(stringCharset, block))
+}
+
+fun jceStruct(tag: Int, struct: JceStruct): ByteArray{
+    return buildJcePacket {
+        writeJceStruct(struct, tag)
+    }.readBytes()
+}
+
+fun <K, V> jceMap(tag: Int, vararg entries: Pair<K, V>): ByteArray {
+    return buildJcePacket {
+        writeMap(mapOf(*entries), tag)
+    }.readBytes()
 }
 
 /**

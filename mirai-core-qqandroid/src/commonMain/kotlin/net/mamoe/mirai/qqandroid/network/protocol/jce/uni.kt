@@ -5,8 +5,8 @@ import net.mamoe.mirai.qqandroid.network.io.JceOutput
 import net.mamoe.mirai.qqandroid.network.io.buildJcePacket
 import net.mamoe.mirai.qqandroid.network.io.writeJcePacket
 
-fun BytePacketBuilder.writeUniRequestPacket(requestPacket: RequestPacket) {
+inline fun BytePacketBuilder.writeUniRequestPacket(requestPacket: RequestPacket.() -> Unit) {
     writeJcePacket {
-        requestPacket.writeTo(this)
+        RequestPacket().apply(requestPacket).writeTo(this)
     }
 }

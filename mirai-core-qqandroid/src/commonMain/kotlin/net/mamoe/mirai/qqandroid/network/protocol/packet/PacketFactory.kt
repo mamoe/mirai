@@ -81,6 +81,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     }
                     else -> error("Illegal flag2. Expected 0x02, got $flag2")
                 }
+                // 00 00 00 60 00 00 00 0B 02 00 00 00 00 0E 31 39 39 34 37 30 31 30 32 31 CE 35 53 19 84 A8 1A B8 5B 48 E3 7C D0 A6 BA 58 6A EB CE 50 B9 A0 98 D5 B9 D0 1C 72 E2 86 24 FC 55 44 6C 6E E3 F9 15 6C EC 6C 6B 94 40 F7 B4 45 CF B4 D0 79 84 FE 30 EA 98 84 44 84 02 32 70 DD D7 07 07 72 DE 87 59 AC
+                0x0B ->
                 else -> error("Illegal flag1. Expected 0x0A or 0x0B, got $flag1")
             }
         }

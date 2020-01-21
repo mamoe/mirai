@@ -29,6 +29,22 @@ class JceInput(
         return JceHead(tag = tag, type = type)
     }
 
+    fun read(default: Byte, tag: Int): Byte = readByteOrNull(tag) ?: default
+    fun read(default: Short, tag: Int): Short = readShortOrNull(tag) ?: default
+    fun read(default: Int, tag: Int): Int = readIntOrNull(tag) ?: default
+    fun read(default: Long, tag: Int): Long = readLongOrNull(tag) ?: default
+    fun read(default: Float, tag: Int): Float = readFloatOrNull(tag) ?: default
+    fun read(default: Double, tag: Int): Double = readDoubleOrNull(tag) ?: default
+    fun read(default: Boolean, tag: Int): Boolean = readBooleanOrNull(tag) ?: default
+
+    fun read(default: ByteArray, tag: Int): ByteArray = readByteArrayOrNull(tag) ?: default
+    fun read(default: ShortArray, tag: Int): ShortArray = readShortArrayOrNull(tag) ?: default
+    fun read(default: IntArray, tag: Int): IntArray = readIntArrayOrNull(tag) ?: default
+    fun read(default: LongArray, tag: Int): LongArray = readLongArrayOrNull(tag) ?: default
+    fun read(default: FloatArray, tag: Int): FloatArray = readFloatArrayOrNull(tag) ?: default
+    fun read(default: DoubleArray, tag: Int): DoubleArray = readDoubleArrayOrNull(tag) ?: default
+    fun read(default: BooleanArray, tag: Int): BooleanArray = readBooleanArrayOrNull(tag) ?: default
+
     fun readBoolean(tag: Int): Boolean = readBooleanOrNull(tag) ?: error("cannot find tag $tag")
     fun readByte(tag: Int): Byte = readByteOrNull(tag) ?: error("cannot find tag $tag")
     fun readShort(tag: Int): Short = readShortOrNull(tag) ?: error("cannot find tag $tag")
@@ -176,12 +192,22 @@ class JceInput(
         }
     }
 
-    fun <T : Map<K, V>, K, V> readMapOrNull(defaultKey: K, defaultValue: V, tag: Int): Map<K, V>? = skipToTagOrNull(tag) {
+    fun <K, V> readMapOrNull(defaultKey: K, defaultValue: V, tag: Int): Map<K, V>? = skipToTagOrNull(tag) {
         check(it.type.toInt() == 8) { "type mismatch" }
         val size = readInt(0)
         val map = HashMap<K, V>(size)
         repeat(size) {
             map[readObject(defaultKey, 0)] = readObject(defaultValue, 0)
+        }
+        return map
+    }
+
+    inline fun <reified K, reified V> readMapOrNull(tag: Int): Map<K, V>? = skipToTagOrNull(tag) {
+        check(it.type.toInt() == 8) { "type mismatch" }
+        val size = readInt(0)
+        val map = HashMap<K, V>(size)
+        repeat(size) {
+            map[readSimpleObject(0)] = readSimpleObject(0)
         }
         return map
     }
