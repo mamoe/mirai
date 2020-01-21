@@ -3,7 +3,6 @@
 plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
-    id("com.android.library")
     id("kotlinx-serialization")
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.4-jetbrains-3" // DO NOT CHANGE THIS VERSION UNLESS YOU WANT TO WASTE YOUR TIME
@@ -31,16 +30,9 @@ description = "QQ protocol library"
 
 val isAndroidSDKAvailable: Boolean by project
 
-android {
-    compileSdkVersion(29)
-    defaultConfig {
-        minSdkVersion(15)
-    }
-}
-
 kotlin {
     if (isAndroidSDKAvailable) {
-        project.apply(plugin = "com.android.library")
+        apply(from = rootProject.file("gradle/android.gradle"))
         android("android") {
             publishAllLibraryVariants()
         }

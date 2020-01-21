@@ -1,5 +1,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.jce
 
+import net.mamoe.mirai.qqandroid.network.io.JceInput
 import net.mamoe.mirai.qqandroid.network.io.JceOutput
 import net.mamoe.mirai.qqandroid.network.io.JceStruct
 
@@ -25,15 +26,15 @@ class SvcReqRegister(
     val lBid: Long = 0L,
     val lCpId: Long = 0L,
     val lUin: Long = 0L,
-    val sBuildVer: String? = "",
-    val sChannelNo: String? = "",
+    val sBuildVer: String? = null,
+    val sChannelNo: String? = null,
     val sOther: String = "",
-    val strDevName: String? = "",
-    val strDevType: String? = "",
-    val strIOSIdfa: String? = "",
-    val strOSVer: String? = "",
-    val strVendorName: String? = "",
-    val strVendorOSName: String? = "",
+    val strDevName: String? = null,
+    val strDevType: String? = null,
+    val strIOSIdfa: String? = null,
+    val strOSVer: String? = null,
+    val strVendorName: String? = null,
+    val strVendorOSName: String? = null,
     val timeStamp: Long = 0L,
     val uNewSSOIp: Long = 0L,
     val uOldSSOIp: Long = 0L,
@@ -41,7 +42,12 @@ class SvcReqRegister(
     val vecGuid: ByteArray? = null,
     val vecServerBuf: ByteArray? = null
 ) : JceStruct() {
-    
+    companion object : Factory<RequestPacket> {
+        override fun newInstanceFrom(input: JceInput): RequestPacket {
+            TODO("not implemented")
+        }
+    }
+
     override fun writeTo(builder: JceOutput) {
         builder.write(lUin, 0)
         builder.write(lBid, 1)

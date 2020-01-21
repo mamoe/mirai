@@ -14,6 +14,8 @@ import kotlin.jvm.JvmSynthetic
  *
  * Some code from http://wiki.vg/Protocol.
  *
+ * Source project: [Nukkit](http://github.com/nukkit/nukkit)
+ *
  * @author MagicDroidX of Nukkit Project
  * @author lmlstarqaq of Nukkit Project
  */

@@ -8,8 +8,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.NullPacketId.commandName
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
-import net.mamoe.mirai.utils.cryptor.Decrypter
-import net.mamoe.mirai.utils.cryptor.DecrypterType
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
@@ -50,7 +49,8 @@ internal typealias PacketConsumer = suspend (packet: Packet, packetId: PacketId,
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
-    LoginPacket
+    LoginPacket,
+    SvcReqRegisterPacket
 ) {
 
     fun findPacketFactory(commandName: String): PacketFactory<*> = this.first { it.id.commandName == commandName }
@@ -59,12 +59,12 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
 
     // do not inline. Exceptions thrown will not be reported correctly
     suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
-        rawInput.debugPrintIfFail("Incoming packet") {
+        rawInput.debugIfFail("Incoming packet") {
             require(remaining < Int.MAX_VALUE) { "rawInput is too long" }
             val expectedLength = readUInt().toInt() - 4
             if (expectedLength > 16e7) {
                 bot.logger.warning("Detect incomplete packet, ignoring.")
-                return@debugPrintIfFail
+                return@debugIfFail
             }
             check(remaining.toInt() == expectedLength) { "Invalid packet length. Expected $expectedLength, got ${rawInput.remaining} Probably packets merged? " }
             // login
@@ -81,13 +81,15 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     }
                     else -> error("Illegal flag2. Expected 0x02, got $flag2")
                 }
+                // 00 00 00 60 00 00 00 0B 02 00 00 00 00 0E 31 39 39 34 37 30 31 30 32 31 CE 35 53 19 84 A8 1A B8 5B 48 E3 7C D0 A6 BA 58 6A EB CE 50 B9 A0 98 D5 B9 D0 1C 72 E2 86 24 FC 55 44 6C 6E E3 F9 15 6C EC 6C 6B 94 40 F7 B4 45 CF B4 D0 79 84 FE 30 EA 98 84 44 84 02 32 70 DD D7 07 07 72 DE 87 59 AC
+                0x0B ->
                 else -> error("Illegal flag1. Expected 0x0A or 0x0B, got $flag1")
             }
         }
 
     @UseExperimental(ExperimentalUnsignedTypes::class)
     private suspend fun parseLoginSsoPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
-        rawInput.debugPrintIfFail("Login sso packet") {
+        rawInput.debugIfFail("Login sso packet") {
             val commandName: String
             val ssoSequenceId: Int
             readIoBuffer(readInt() - 4).withUse {

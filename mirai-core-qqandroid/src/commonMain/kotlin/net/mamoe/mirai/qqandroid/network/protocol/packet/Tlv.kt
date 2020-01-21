@@ -16,14 +16,15 @@ import kotlin.random.Random
  */
 inline class Tlv(val value: ByteArray)
 
-fun BytePacketBuilder.t1(uin: Long, ip: String) {
+fun BytePacketBuilder.t1(uin: Long, ip: ByteArray) {
+    require(ip.size == 4) { "ip.size must == 4" }
     writeShort(0x1)
     writeShortLVPacket {
         writeShort(1) // _ip_ver
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
         writeTime()
-        writeFully(ByteArray(4))
+        writeFully(ip)
         writeShort(0)
     } shouldEqualsTo 20
 }

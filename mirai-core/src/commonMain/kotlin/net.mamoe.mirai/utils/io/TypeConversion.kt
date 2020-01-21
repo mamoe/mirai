@@ -99,6 +99,8 @@ fun UByte.fixToUHex(): String = if (this.toInt() in 0..15) "0${this.toString(16)
 
 /**
  * 将无符号 Hex 转为 [ByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
+ *
+ * 这个方法很累, 不建议经常使用.
  */
 fun String.hexToBytes(): ByteArray =
     this.split(" ")
@@ -110,12 +112,24 @@ fun String.hexToBytes(): ByteArray =
 
 /**
  * 每 2 char 为一组, 转换 Hex 为 [ByteArray]
+ *
+ * 这个方法很累, 不建议经常使用.
  */
 fun String.chunkedHexToBytes(): ByteArray =
     this.asSequence().chunked(2).map { (it[0].toString() + it[1]).toUByte(16).toByte() }.toList().toByteArray()
 
 /**
+ * 删掉全部空格和换行后每 2 char 为一组, 转换 Hex 为 [ByteArray].
+ *
+ * 这个方法很累, 不建议经常使用.
+ */
+fun String.autoHexToBytes(): ByteArray =
+    this.replace("\n", "").replace(" ", "").asSequence().chunked(2).map { (it[0].toString() + it[1]).toUByte(16).toByte() }.toList().toByteArray()
+
+/**
  * 将无符号 Hex 转为 [UByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
+ *
+ * 这个方法很累, 不建议经常使用.
  */
 fun String.hexToUBytes(): UByteArray =
     this.split(" ")

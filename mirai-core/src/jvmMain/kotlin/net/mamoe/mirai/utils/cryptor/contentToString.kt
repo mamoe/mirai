@@ -12,6 +12,7 @@ actual fun Any.contentToStringReflectively(prefix: String): String {
             this.allFieldsFromSuperClassesMatching { it.name.startsWith("net.mamoe.mirai") }
                 .distinctBy { it.name }
                 .filterNot { it.name.contains("$") || it.name == "Companion" || it.isSynthetic || it.name == "serialVersionUID" }
+                .filterNot { it.isEnumConstant }
                 .joinToStringPrefixed(
                     prefix = newPrefix
                 ) {

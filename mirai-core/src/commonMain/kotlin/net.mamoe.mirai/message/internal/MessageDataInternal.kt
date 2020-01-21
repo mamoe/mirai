@@ -9,7 +9,7 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unzip
 
 internal fun IoBuffer.parseMessageFace(): Face {
-    debugPrintIfFail("Analyzing Face") {
+    debugIfFail("Analyzing Face") {
          discardExact(1)
         
         //00  01  AF  0B  00  08  00  01  00  04  52  CC  F5  D0  FF  00  02  14  F0

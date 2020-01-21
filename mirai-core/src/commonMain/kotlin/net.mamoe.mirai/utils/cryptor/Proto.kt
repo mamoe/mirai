@@ -163,7 +163,7 @@ fun Any?.contentToString(prefix: String = ""): String = when (this) {
     is Iterable<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
     is Iterator<*> -> this.asSequence().joinToString(prefix = "[", postfix = "]") { it.contentToString() }
     is Sequence<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
-    is Map<*, *> -> this.entries.joinToString(prefix = "{", postfix = "}") { it.key.contentToString() + "=" + it.value.contentToString() }
+    is Map<*, *> -> this.entries.joinToString(prefix = "{", postfix = "}") { it.key.contentToString(prefix) + "=" + it.value.contentToString(prefix) }
     else -> {
         if (this == null) "null"
         else if (this::class.isData) this.toString()

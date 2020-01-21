@@ -5,7 +5,7 @@ import kotlin.reflect.full.allSuperclasses
 
 
 actual fun Any.contentToStringReflectively(prefix: String): String {
-    val newPrefix = prefix + ProtoMap.indent
+    val newPrefix = prefix
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +
             this.allFieldsFromSuperClassesMatching { it.name.startsWith("net.mamoe.mirai") }
                 .distinctBy { it.name }
