@@ -14,21 +14,16 @@ class ImageProvider {
 
     val image: Deferred<Image> by lazy {
         GlobalScope.async {
-            //delay((Math.random() * 5000L).toLong())
-            class Result {
-                var id: String = ""
-            }
-
             withTimeoutOrNull(5 * 1000) {
                 withContext(Dispatchers.IO) {
-                    val result = JSON.parseObject(
-                        Jsoup.connect("http://dev.itxtech.org:10322/v2/randomImg.uue").ignoreContentType(true).timeout(
+                    val result = JSON.parseArray(
+                        Jsoup.connect("https://yande.re/post.json?limit=1&page=${(Math.random() * 10000).toInt()}").ignoreContentType(
+                            true
+                        ).timeout(
                             10_0000
-                        ).get().body().text(),
-                        Result::class.java
+                        ).get().body().text()
                     )
-
-                    Jsoup.connect("http://dev.itxtech.org:10322/img.uue?size=large&id=${result.id}")
+                    Jsoup.connect(result.getJSONObject(0).getString("jpeg_url"))
                         .userAgent("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; ja-jp) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27")
                         .timeout(10_0000)
                         .ignoreContentType(true)
@@ -36,7 +31,7 @@ class ImageProvider {
                         .execute()
                         .bodyStream()
                 }
-            }?.uploadAsImage(contact) ?: error("Unable to download image")
+            }?.uploadAsImage(contact) ?: error("Unable to download image|连接这个图站需要你的网络在外网")
         }
     }
 
