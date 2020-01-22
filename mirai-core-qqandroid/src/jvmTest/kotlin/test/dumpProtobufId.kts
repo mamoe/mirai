@@ -3,7 +3,8 @@
 package test
 
 import net.mamoe.mirai.utils.cryptor.protoFieldNumber
+import net.mamoe.mirai.utils.cryptor.protoType
 
-intArrayOf(10, 18, 26, 34, 42, 50, 58, 66, 74).forEach {
-    println(protoFieldNumber(it.toUInt()))
+intArrayOf(8, 18, 26, 34, 80).forEach {
+    println(protoFieldNumber(it.toUInt()).toString() + " -> " + protoType(it.toUInt()))
 }
