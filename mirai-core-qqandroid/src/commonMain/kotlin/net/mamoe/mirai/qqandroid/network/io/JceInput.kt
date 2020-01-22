@@ -1,26 +1,41 @@
 package net.mamoe.mirai.qqandroid.network.io
 
 import kotlinx.io.core.*
+import kotlinx.io.pool.ObjectPool
 import net.mamoe.mirai.utils.io.readString
+import net.mamoe.mirai.utils.io.toIoBuffer
 import kotlin.experimental.and
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 inline class JceHead(private val value: Long) {
-    constructor(tag: Int, type: Byte) : this(tag.shl(32).toLong() and type.toLong())
+    constructor(tag: Int, type: Byte) : this(tag.toLong().shl(32) or type.toLong())
 
     val tag: Int get() = (value ushr 32).toInt()
     val type: Byte get() = value.toUInt().toByte()
 }
 
+fun ByteArray.asJceInput(): JceInput = JceInput(this.toIoBuffer())
+
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalUnsignedTypes::class)
 class JceInput(
     @PublishedApi
-    internal val input: Input
-) {
+    internal val input: IoBuffer,
+    private val pool: ObjectPool<IoBuffer> = IoBuffer.Pool
+) : Closeable {
+    constructor(input: Input) : this(IoBuffer.Pool.borrow().also { input.readAvailable(it) })
+
+    override fun close() {
+        input.release(pool)
+    }
 
     @PublishedApi
-    internal fun readHead(): JceHead = input.run {
+    internal fun readHead(): JceHead = input.readHead()
+
+    @PublishedApi
+    internal fun peakHead(): JceHead = input.makeView().readHead()
+
+    private fun IoBuffer.readHead(): JceHead {
         val var2 = readByte()
         val type = var2 and 15
         var tag = (var2.toInt() and 240) shr 4
@@ -73,6 +88,7 @@ class JceInput(
             12 -> 0
             0 -> input.readByte().toLong()
             1 -> input.readShort().toLong()
+            2 -> input.readInt().toLong()
             3 -> input.readLong()
             else -> error("type mismatch: ${it.type}")
         }
@@ -130,7 +146,7 @@ class JceInput(
             13 -> {
                 val head = readHead()
                 check(head.type.toInt() == 0) { "type mismatch" }
-                input.readBytes(input.readInt())
+                input.readBytes(readInt(0))
             }
             else -> error("type mismatch")
         }
@@ -193,11 +209,11 @@ class JceInput(
     }
 
     fun <K, V> readMapOrNull(defaultKey: K, defaultValue: V, tag: Int): Map<K, V>? = skipToTagOrNull(tag) {
-        check(it.type.toInt() == 8) { "type mismatch" }
+        check(it.type.toInt() == 8) { "type mismatch: ${it.type}" }
         val size = readInt(0)
         val map = HashMap<K, V>(size)
         repeat(size) {
-            map[readObject(defaultKey, 0)] = readObject(defaultValue, 0)
+            map[readObject(defaultKey, 0)] = readObject(defaultValue, 1)
         }
         return map
     }
@@ -207,7 +223,7 @@ class JceInput(
         val size = readInt(0)
         val map = HashMap<K, V>(size)
         repeat(size) {
-            map[readSimpleObject(0)] = readSimpleObject(0)
+            map[readSimpleObject(0)] = readSimpleObject(1)
         }
         return map
     }
@@ -223,7 +239,7 @@ class JceInput(
     }
 
     fun <J : JceStruct> readJceStructOrNull(factory: JceStruct.Factory<J>, tag: Int): J? = skipToTagOrNull(tag) { head ->
-        readHead()
+        check(head.type.toInt() == 10) { "type mismatch" }
         return factory.newInstanceFrom(this).also { skipToStructEnd() }
     }
 
@@ -333,7 +349,7 @@ class JceInput(
             check(head.type.toInt() == 0) { "skipField with invalid type, type value: " + type + ", " + head.type }
             this.input.discardExact(this.readInt(0))
         }
-        else -> error("invalid type.")
+        else -> error("invalid type: $type")
     }
 }
 
@@ -347,7 +363,11 @@ internal inline fun <R> JceInput.skipToTagOrNull(tag: Int, block: (JceHead) -> R
         if (this.input.endOfInput)
             return null
 
-        val head = readHead()
+        val head = peakHead()
+        if (head.tag > tag) {
+            return null
+        }
+        readHead()
         if (head.tag == tag) {
             return block(head)
         }

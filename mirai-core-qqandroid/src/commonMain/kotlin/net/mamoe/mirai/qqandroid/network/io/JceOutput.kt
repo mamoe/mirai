@@ -177,7 +177,7 @@ class JceOutput(
             writeInt(map.size, 0)
             map.forEach { (key, value) ->
                 writeObject(key, 0)
-                writeObject(value, 0)
+                writeObject(value, 1)
             }
         }
     }
@@ -274,7 +274,7 @@ class JceOutput(
     @PublishedApi
     internal fun writeHead(type: Int, tag: Int) {
         if (tag < 15) {
-            this.output.writeByte((tag shl 4 or type).toByte())
+            this.output.writeByte(((tag shl 4) or type).toByte())
             return
         }
         if (tag < 256) {
