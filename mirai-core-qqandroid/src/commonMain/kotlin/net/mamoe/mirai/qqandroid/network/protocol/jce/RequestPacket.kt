@@ -11,7 +11,7 @@ class RequestPacket() : JceStruct() {
     var cPacketType: Byte = 0
     var iMessageType: Int = 0
     var iRequestId: Int = 0
-    var iTimeout: Int = 3000
+    var iTimeout: Int = 0
     var iVersion: Short = 3
     var context: Map<String, String> = EMPTY_MAP
     var sFuncName: String = ""
@@ -23,7 +23,7 @@ class RequestPacket() : JceStruct() {
         cPacketType: Byte = 0,
         iMessageType: Int = 0,
         iRequestId: Int = 0,
-        iTimeout: Int = 3000,
+        iTimeout: Int = 0,
         iVersion: Short = 3,
         context: Map<String, String> = EMPTY_MAP,
         sFuncName: String = "",

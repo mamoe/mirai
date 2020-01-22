@@ -6,6 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
@@ -109,11 +110,11 @@ internal inline fun PacketFactory<*>.buildOutgingPacket(
 @UseExperimental(MiraiInternalAPI::class)
 internal inline fun PacketFactory<*>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
-    subAppId: Long,
+    bodyType: Byte,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
     name: String? = null,
     id: PacketId = this.id,
-    ssoExtraData: ByteReadPacket = BRP_STUB,
+    key: ByteArray = KEY_16_ZEROS,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
     val sequenceId: Int = client.nextSsoSequenceId()
@@ -121,7 +122,7 @@ internal inline fun PacketFactory<*>.buildLoginOutgoingPacket(
     return OutgoingPacket(name, id, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x00_00_00_0A)
-            writeByte(0x02)
+            writeByte(bodyType)
             extraData.let {
                 writeInt(it.size + 4)
                 writeFully(it)
@@ -133,10 +134,8 @@ internal inline fun PacketFactory<*>.buildLoginOutgoingPacket(
                 writeStringUtf8(it)
             }
 
-            encryptAndWrite(KEY_16_ZEROS) {
-                writeLoginSsoPacket(client, subAppId, id, ssoExtraData, sequenceId) {
-                    body(sequenceId)
-                }
+            encryptAndWrite(key) {
+                body(sequenceId)
             }
         }
     })
@@ -169,7 +168,7 @@ private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
  * byte[]   body()
  */
 @UseExperimental(MiraiInternalAPI::class)
-private inline fun BytePacketBuilder.writeLoginSsoPacket(
+internal inline fun BytePacketBuilder.writeLoginSsoPacket(
     client: QQAndroidClient,
     subAppId: Long,
     packetId: PacketId,

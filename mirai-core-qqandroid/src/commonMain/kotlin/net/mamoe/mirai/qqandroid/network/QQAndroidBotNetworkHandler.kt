@@ -37,9 +37,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         println("Sending login")
         LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
         println("SessionTicket=${bot.client.wLoginSigInfo.wtSessionTicket.data.toUHexString()}")
-        println("SessionTicketKey=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+        println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         println("SessionTicketKey=${bot.client.wLoginSigInfo.wtSessionTicketKey.toUHexString()}")
         delay(2000)
+        println()
+        println()
+        println()
+        println("Sending ReqRegister")
         SvcReqRegisterPacket(bot.client, RegPushReason.setOnlineStatus).sendAndExpect<SvcReqRegisterPacket.Response>()
     }
 

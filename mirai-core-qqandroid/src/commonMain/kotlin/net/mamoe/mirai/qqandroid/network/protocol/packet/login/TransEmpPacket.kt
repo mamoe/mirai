@@ -6,7 +6,6 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
-import net.mamoe.mirai.utils.io.toReadPacket
 
 internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>() {
 
@@ -20,7 +19,7 @@ internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>() {
     @Suppress("FunctionName")
     fun SubCommand1(
         client: QQAndroidClient
-    ): OutgoingPacket = buildLoginOutgoingPacket(client, subAppId, ssoExtraData = byteArrayOf().toReadPacket()) {
+    ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) {
         writeOicqRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
 
             // oicq.wlogin_sdk.request.trans_emp_1#packTransEmpBody
