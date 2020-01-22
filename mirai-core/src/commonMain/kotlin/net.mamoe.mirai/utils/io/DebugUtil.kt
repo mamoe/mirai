@@ -2,7 +2,10 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiDebugAPI
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.withSwitch
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -74,7 +77,7 @@ inline fun <R> Input.debugIfFail(name: String = "", onFail: (ByteArray) -> ByteR
     ByteArrayPool.useInstance {
         val count = this.readAvailable(it)
         try {
-            return block(it.toReadPacket(0, count))
+            return it.toReadPacket(0, count).use(block)
         } catch (e: Throwable) {
             onFail(it.take(count).toByteArray()).readAvailable(it)
             DebugLogger.debug("Error in ByteReadPacket $name=" + it.toUHexString(offset = 0, length = count))

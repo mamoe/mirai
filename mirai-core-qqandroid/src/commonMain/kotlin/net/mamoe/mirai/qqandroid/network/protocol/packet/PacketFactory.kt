@@ -62,16 +62,13 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     // 00 00 08 E0 00 00 00 0A 01 00 00 00 00 0E 31 39 39 34 37 30 31 30 32 31 B4 16 A6 D7 A3 E4 9E 53 99 CD 77 14 70 1F 51 3E 8B 79 F6 93 2B E0 92 E4 32 E2 87 6C 3A 9C 1B 29 87 CB 3C 60 45 9C 41 71 63 6A F6 99 FC 05 01 68 86 B3 6F 37 97 52 C5 D3 0E 66 B3 F6 40 CC EB 18 A3 AE 15 3E 31 B1 E9 7C 6F EC E4 4D 31 F1 1E 2C 0C 1C 45 66 CD F7 1B 90 11 9A D8 CE DD 6D 6C 63 9F EB CD 69 33 AF 6C 8E BA 8C CB C3 FF 27 A2 A6 C3 28 06 4A B5 79 79 12 AB 52 04 62 CA 7D 11 59 85 5C 0B D6 8D 2A E7 9C 04 97 62 7D 05 11 3E 2C 11 60 E3 E3 B3 DA 7A 7C 13 AF 22 01 53 80 69 D0 F9 C8 86 EC 25 8C F3 67 5C 82 45 08 FB 34 43 50 01 0E EA 43 77 D8 CF EC 55 E6 4E 66 5B 26 21 C9 E8 78 92 AE 5C 61 F0 5E 0B E7 34 1F 53 D6 EA 28 9C 02 1A E9 F0 55 61 4B 06 F8 56 3B AC 93 B2 2C CD 66 0D D1 18 CB BD 29 50 DE 0F 82 6D 28 63 AB 21 E1 6C BA B1 9F 69 A4 E3 C9 20 F8 11 82 39 04 2B 54 44 50 FA 2E 86 68 6D DC 5D 9E 18 F4 DD 19 09 BC CF E8 41 68 A3 8D 86 42 80 51 C4 C1 ED 54 DB 50 F5 1D A7 28 2A 0D E8 14 1A 4E F7 96 29 00 6C 9D 4A 2E 3E 7B 4C AC 20 78 F1 3C 70 6B 61 96 D7 EC 77 AD CB AD AF BB 47 C3 1F A0 6C 6C 9C 9F F3 6C EB 6C A4 D0 7F 2B E1 AA 68 26 99 B9 C8 A1 F5 C4 7E E7 E7 81 EE 66 00 96 33 49 C0 EE A2 F9 F6 52 C5 A6 5D EE 9D C5 E5 CE DA 31 FC FF 4B 02 97 68 3D 6A 99 4A CF 69 D9 F4 53 68 31 E7 32 2F 85 E7 7F 16 82 AE FA 73 D5 42 09 9C CB 53 26 79 41 63 80 B0 E2 6A 8B B9 C6 71 08 B4 2B E0 48 D3 C4 0F B0 00 D0 FA 8C 29 DE E9 71 6A D7 89 76 E7 5D 33 14 10 6F E2 44 6A A0 DC C1 CB F3 9A C3 13 CB D1 82 2C DF 34 68 79 E3 09 BD CC 2B 25 79 A8 E7 BE 29 6C 97 C3 D7 F4 0E CC 2B 74 71 02 BA 2B 5B 57 1B C2 C8 C2 BF 54 23 72 EA E4 38 54 20 7D 88 E4 39 7C C5 8A 1B C0 EC D2 1E 7D 1B 6B 7A BC EC 73 1E 53 4A 6F 4F EA F0 56 12 80 BD 0B 37 67 BD FD A8 29 23 2D 8E 66 7E 31 A9 F6 CE 7E BC 4F 38 D0 33 D4 C7 4A E9 43 9D 28 2E 8F 7C D5 81 F4 8C F9 6F 21 AC A1 08 FD F4 01 FB E8 CE 61 91 BE 68 5B E4 3A 5F F8 FB DA 5D 9B 2A AF E2 0C D3 A4 1F 42 90 96 E1 28 44 85 8D E1 CF 19 A9 47 04 8D 28 D9 B3 35 79 48 70 D9 ED 45 B6 24 B5 56 FA 1E DE 02 F3 EB 69 08 7D 24 9C 60 35 97 8D 13 4A 5A 57 BA B3 14 C1 EE 70 22 CA B2 65 F7 BB 3F A2 D9 14 AA 4C 52 E6 E4 10 D3 FD C6 2B DD BF C0 CF E5 35 57 9E 9F D0 77 C8 E6 EF 2B 8E 01 88 96 F8 68 95 A7 0D 58 81 30 60 88 44 CC 31 5B C1 D4 92 6E ED 17 CA 0A 01 69 90 4E 6A C0 D7 09 6C E5 33 64 CA 6E 5C 07 C3 AD 46 36 F9 DF DE B7 71 B2 87 CB 3D 76 C0 44 B8 6B 15 27 B2 03 99 C7 51 8A 00 35 C9 1C 76 55 32 AE 49 5A 34 6A 4E FD 20 7A 24 BF 34 E8 B4 18 BC 92 64 A1 F3 0A 2E 7B 00 EA B6 52 E7 AC 34 FD AE FF 1E 5D 6D D6 1F 6D 06 31 09 9D A9 9C 86 DB 5E 05 07 BA 4A 49 2B D2 7F EE 88 64 B2 6F 15 70 39 1B E9 57 6A 4E 29 4A A4 57 EA 80 3D 86 4C E9 F7 F5 2B C4 9F 35 62 76 09 0E 1C A4 99 50 99 82 2F 84 90 0E 9E 9F 75 C3 15 B0 61 34 D1 67 2D 30 16 FE D3 BF 59 6A B1 74 02 C4 EF 92 85 E0 16 4B 0C C5 9D 65 BB 5D 52 8F 52 5B 7C 7B 74 D9 EC 41 A9 5B FA 2D 95 D4 AE 5D F1 68 88 F6 82 ED 09 05 21 2E 5D 93 64 A0 96 15 64 A6 50 3C 03 2B FC 3E 80 89 90 62 CC D9 23 8E D7 BD 05 02 30 86 32 31 6A 5F F8 C4 BD 61 D0 CE B9 54 4E 93 E9 AE B9 4F 2B 98 DC 23 31 CC A8 06 89 A8 08 60 99 DC D4 81 98 13 C9 27 36 32 24 C1 B0 6B F0 3D EB CC 3B 32 5F 20 72 23 B3 DF 0B 48 3C 35 FD F1 FB DC 3E 2A BE B9 0F 42 56 F1 39 94 86 85 C6 1E A0 4C EC B8 69 45 5F 3D AB 3C 3B A2 70 61 91 9D 2C DD 6D C5 E9 EF 47 36 A6 A3 E0 96 C2 B8 EF 92 E9 E0 26 88 C6 B5 51 BA DE FD C5 BA 4C 6A 9A FE 6F DE B8 10 05 7F 9C 5D 40 11 39 75 CD 36 4F 6B A8 A1 94 57 5F 8F F2 D0 E2 36 A0 A4 24 05 FD 9E F5 51 93 C9 6E 5A 10 8D C3 33 2D E5 09 7A E0 DB 44 63 9C EA A5 ED BF 0B 98 32 F1 BA 04 96 F6 14 49 F1 F8 58 EA 6E 5E 5E 49 CA 2D E2 93 E6 AD 20 B2 CD 98 A7 3E BA 3E A8
 
 
+    /**
+     * full packet without length
+     */
     // do not inline. Exceptions thrown will not be reported correctly
-    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
+    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer) =
         rawInput.debugIfFail("Incoming packet") {
             require(remaining < Int.MAX_VALUE) { "rawInput is too long" }
-            val expectedLength = readUInt().toInt() - 4
-            if (expectedLength > 16e7) {
-                bot.logger.warning("Detect incomplete packet, ignoring.")
-                return@debugIfFail
-            }
-            check(remaining.toInt() == expectedLength) { "Invalid packet length. Expected $expectedLength, got ${this.remaining} Probably packets merged? " }
             // login
             val flag1 = readInt()
 
@@ -88,12 +85,12 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             //debugPrint("remaining")
 
             when (flag1) {
-                0x0A -> parseLoginSsoPacket(bot, decryptBy(DECRYPTER_16_ZERO), consumer)
+                0x0A -> parseLoginSsoPacket(bot, if (flag2 == 2) decryptBy(DECRYPTER_16_ZERO) else decryptBy(bot.client.wLoginSigInfo.d2Key), consumer)
                 0x0B -> parseUniPacket(bot, decryptBy(DECRYPTER_16_ZERO), consumer)
             }
         }
 
-    private suspend fun parseUniPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
+    private fun parseUniPacket(bot: QQAndroidBot, rawInput: ByteReadPacket, consumer: PacketConsumer) =
         rawInput.debugIfFail("Login sso packet") {
             readIoBuffer(readInt() - 4).withUse {
                 //00 01 4E 64 FF FF D8 E8 00 00 00 14 6E 65 65 64 20 41 32 20 61 6E 64 20 49 4D 45 49 00 00 00 04 00 00 00 08 60 7F B6 23 00 00 00 00 00 00 00 04

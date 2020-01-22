@@ -3,12 +3,15 @@ package net.mamoe.mirai.utils
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.ByteArrayOutputStream
 import java.io.DataInput
 import java.io.EOFException
 import java.io.InputStream
 import java.net.InetAddress
 import java.security.MessageDigest
+import java.util.concurrent.Executors
 import java.util.zip.CRC32
 import java.util.zip.Inflater
 
@@ -91,4 +94,8 @@ actual fun ByteArray.unzip(): ByteArray {
     }
     inflater.end()
     return output.toByteArray()
+}
+
+actual fun newCoroutineDispatcher(threadCount: Int): CoroutineDispatcher {
+    return Executors.newFixedThreadPool(threadCount).asCoroutineDispatcher()
 }
