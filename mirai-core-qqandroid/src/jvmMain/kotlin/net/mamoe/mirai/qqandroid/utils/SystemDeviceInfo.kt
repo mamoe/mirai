@@ -4,14 +4,14 @@ import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.utils.localIpAddress
 
 actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(context) {
-    override val display: ByteArray get() = "QSR1.190920.001".toByteArray()
-    override val product: ByteArray get() = "sdk_gphone_x86".toByteArray()
-    override val device: ByteArray get() = "generic_x86".toByteArray()
-    override val board: ByteArray get() = "goldfish_x86".toByteArray()
-    override val brand: ByteArray get() = "google".toByteArray()
+    override val display: ByteArray get() = "MIRAI.200122.001".toByteArray()
+    override val product: ByteArray get() = "mirai".toByteArray()
+    override val device: ByteArray get() = "mirai".toByteArray()
+    override val board: ByteArray get() = "mirai".toByteArray()
+    override val brand: ByteArray get() = "mamoe".toByteArray()
     override val model: ByteArray get() = "Android SDK built for x86".toByteArray()
     override val bootloader: ByteArray get() = "unknown".toByteArray()
-    override val fingerprint: ByteArray get() = "google/sdk_gphone_x86/generic_x86:10/QSR1.190920.001/5891938:user/release-keys".toByteArray()
+    override val fingerprint: ByteArray get() = "mamoe/mirai/mirai:10/MIRAI.200122.001/5891938:user/release-keys".toByteArray()
     override val bootId: ByteArray get() = "5974cb66-bb69-4e82-a436-836b98ebd88c".toByteArray()
     override val procVersion: ByteArray get() = "Linux version 3.0.31-g6fb96c9 (android-build@xxx.xxx.xxx.xxx.com)".toByteArray()
     override val baseBand: ByteArray get() = byteArrayOf()
@@ -26,11 +26,11 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
     @UseExperimental(ExperimentalUnsignedTypes::class)
     override val imsiMd5: ByteArray
         get() = ubyteArrayOf(0xD4u, 0x1Du, 0x8Cu, 0xD9u, 0x8Fu, 0x00u, 0xB2u, 0x04u, 0xE9u, 0x80u, 0x09u, 0x98u, 0xECu, 0xF8u, 0x42u, 0x7Eu).toByteArray()
-    override val imei: String get() = "858414369211993"
+    override val imei: String get() = "858414524711993"
     @UseExperimental(ExperimentalUnsignedTypes::class)
     override val ipAddress: ByteArray
         get() = localIpAddress().split(".").map { it.toUByte().toByte() }.takeIf { it.size == 4 }?.toByteArray() ?: byteArrayOf()
-    override val androidId: ByteArray get() = "QSR1.190920.001".toByteArray()
+    override val androidId: ByteArray get() = display
     override val apn: ByteArray get() = "wifi".toByteArray()
 
     object Version : DeviceInfo.Version {
