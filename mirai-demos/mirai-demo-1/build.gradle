@@ -2,6 +2,7 @@ apply plugin: "kotlin"
 apply plugin: "java"
 
 dependencies {
+    implementation files("../../mirai-core/build/classes/kotlin/jvm/main") // IDE bug
 
     implementation files("../../mirai-core-timpc/build/classes/kotlin/jvm/main") // IDE bug
     implementation project(":mirai-core-timpc")
