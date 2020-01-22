@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.coroutines.*
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.readBytes
 import kotlinx.io.core.use
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.broadcast
@@ -42,24 +43,42 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         SvcReqRegisterPacket(bot.client, RegPushReason.setOnlineStatus).sendAndExpect<SvcReqRegisterPacket.Response>()
     }
 
-    internal fun launchPacketProcessor(rawInput: ByteReadPacket): Job = launch(CoroutineName("Incoming Packet handler")) {
-        rawInput.debugPrint("Received").use { input ->
-            if (input.remaining == 0L) {
-                bot.logger.error("Empty packet received. Consider if bad packet was sent.")
-                return@launch
-            }
-            KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
-                if (PacketReceivedEvent(packet).broadcast().cancelled) {
-                    return@parseIncomingPacket
+
+    var lastPacket: ByteArray? = null
+    internal fun launchPacketProcessor(rawInput: ByteReadPacket): Job =
+        launch(CoroutineName("Incoming Packet handler")) {
+            rawInput.debugPrint("Received").use { input ->
+                if (input.remaining == 0L) {
+                    bot.logger.error("Empty packet received. Consider if bad packet was sent.")
+                    return@launch
                 }
-                packetListeners.forEach { listener ->
-                    if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
-                        listener.complete(packet)
+                val fixedInput = if (lastPacket == null) {
+                    input
+                } else {
+                    ByteReadPacket((lastPacket ?: ByteArray(0)) + input.readBytes(input.remaining.toInt()))
+                }
+                while (true) {
+                    val pk1Length = fixedInput.readInt() - 4
+                    if (pk1Length > fixedInput.remaining) {
+                        lastPacket = pk1Length.toByteArray().plus(fixedInput.readBytes(fixedInput.remaining.toInt()))
+                        break
+                    }
+                    KnownPacketFactories.parseIncomingPacket(
+                        bot,
+                        fixedInput.readBytes(pk1Length).toReadPacket()
+                    ) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+                        if (PacketReceivedEvent(packet).broadcast().cancelled) {
+                            return@parseIncomingPacket
+                        }
+                        packetListeners.forEach { listener ->
+                            if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
+                                listener.complete(packet)
+                            }
+                        }
                     }
                 }
             }
         }
-    }
 
     private suspend fun processReceive() {
         while (channel.isOpen) {
