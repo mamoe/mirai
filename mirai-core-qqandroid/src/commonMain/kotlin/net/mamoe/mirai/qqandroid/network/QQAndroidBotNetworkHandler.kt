@@ -11,7 +11,6 @@ import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.RegPushReason
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.*
@@ -101,12 +100,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      */
     suspend fun parsePacket(input: Input) {
         try {
-            KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+            KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, commandName: String, sequenceId: Int ->
                 if (PacketReceivedEvent(packet).broadcast().cancelled) {
                     return@parseIncomingPacket
                 }
                 packetListeners.forEach { listener ->
-                    if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
+                    if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
                         listener.complete(packet)
                     }
                 }
@@ -202,7 +201,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(): E {
-        val handler = PacketListener(packetId = packetId, sequenceId = sequenceId)
+        val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
         packetListeners.addLast(handler)
         //println(delegate.readBytes().toUHexString())
         println("Sending length=" + delegate.remaining)
@@ -217,10 +216,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     @PublishedApi
     internal inner class PacketListener(
-        val packetId: PacketId,
+        val commandName: String,
         val sequenceId: Int
     ) : CompletableDeferred<Packet> by CompletableDeferred(supervisor) {
-        fun filter(packetId: PacketId, sequenceId: Int) = this.packetId == packetId && this.sequenceId == sequenceId
+        fun filter(commandName: String, sequenceId: Int) = this.commandName == commandName && this.sequenceId == sequenceId
     }
 
     override suspend fun awaitDisconnection() = supervisor.join()

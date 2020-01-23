@@ -6,13 +6,12 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object ImagePacket : PacketFactory<ImagePacket.RequestImgUrlResponse>() {
     init {
-        this._id = PacketId(commandId = 0x0000, commandName = "LongConn.OffPicDown")
+        this._commandName = "LongConn.OffPicDown"
     }
 
 
@@ -21,7 +20,7 @@ internal object ImagePacket : PacketFactory<ImagePacket.RequestImgUrlResponse>()
     }
 
 
-    fun createCmd0x325Packet(req: ImgReq, networkType: Int = 5): Cmd0x352Packet {
+    private fun createCmd0x325Packet(req: ImgReq, networkType: Int = 5): Cmd0x352Packet {
         if (req is UploadImgReq)
             return Cmd0x352Packet(1, req, null, null, networkType)
         if (req is GetImgUrlReq)
