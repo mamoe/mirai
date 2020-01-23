@@ -4,9 +4,11 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
 import net.mamoe.mirai.qqandroid.utils.Context
 import net.mamoe.mirai.qqandroid.utils.DeviceInfo
@@ -16,11 +18,10 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.cryptor.decryptBy
+import net.mamoe.mirai.utils.cryptor.initialPublicKey
 import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.io.hexToBytes
-import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.readUShortLVByteArray
-import net.mamoe.mirai.utils.io.readUShortLVString
+import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 /*
@@ -47,6 +48,36 @@ internal open class QQAndroidClient(
     val device: DeviceInfo = SystemDeviceInfo(context),
     bot: QQAndroidBot
 ) {
+    val keys: Map<String, ByteArray> by lazy {
+        mapOf(
+            "16 zero" to ByteArray(16),
+            "D2 key" to wLoginSigInfo.d2Key,
+            "wtSessionTicketKey" to wLoginSigInfo.wtSessionTicketKey,
+            "userStKey" to wLoginSigInfo.userStKey,
+            "tgtgtKey" to tgtgtKey,
+            "tgtKey" to wLoginSigInfo.tgtKey,
+            "deviceToken" to wLoginSigInfo.deviceToken,
+            "shareKeyCalculatedByConstPubKey" to ecdh.calculateShareKeyByPeerPublicKey(initialPublicKey)
+            //"t108" to wLoginSigInfo.t1,
+            //"t10c" to t10c,
+            //"t163" to t163
+        )
+    }
+
+    internal inline fun <R> tryDecryptOrNull(data: ByteReadPacket, mapper: (ByteArray) -> R): R? {
+        ByteArrayPool.useInstance {
+            data.readAvailable(it)
+
+            keys.forEach { (key, value) ->
+                kotlin.runCatching {
+                    return mapper(it.decryptBy(value).also { PacketLogger.verbose("成功使用 $key 解密") })
+                }
+            }
+
+        }
+        return null
+    }
+
     @UseExperimental(MiraiInternalAPI::class)
     override fun toString(): String { // net.mamoe.mirai.utils.cryptor.ProtoKt.contentToString
         return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.contentToString()}, randomKey=${randomKey.contentToString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.contentToString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.contentToString()}, protocolVersion=$protocolVersion, apkId=${apkId.contentToString()}, t150=${t150?.contentToString()}, rollbackSig=${rollbackSig?.contentToString()}, ipFromT149=${ipFromT149?.contentToString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.contentToString()}, t528=${t528?.contentToString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.contentToString()}, qrPushSig=${qrPushSig.contentToString()}, mainDisplayName='$mainDisplayName')"
@@ -254,18 +285,19 @@ class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithE
 typealias PSKeyMap = MutableMap<String, PSKey>
 typealias Pt4TokenMap = MutableMap<String, Pt4Token>
 
-internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, expireTime: Long, outPSKeyMap: PSKeyMap, outPt4TokenMap: Pt4TokenMap) = data.read {
-    repeat(readShort().toInt()) {
-        val domain = readUShortLVString()
-        val psKey = readUShortLVByteArray()
-        val pt4token = readUShortLVByteArray()
+internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, expireTime: Long, outPSKeyMap: PSKeyMap, outPt4TokenMap: Pt4TokenMap) =
+    data.read {
+        repeat(readShort().toInt()) {
+            val domain = readUShortLVString()
+            val psKey = readUShortLVByteArray()
+            val pt4token = readUShortLVByteArray()
 
-        when{
-            psKey.size > 0 -> outPSKeyMap[domain] = PSKey(psKey, creationTime, expireTime)
-            pt4token.size > 0 -> outPt4TokenMap[domain] = Pt4Token(pt4token, creationTime, expireTime)
+            when {
+                psKey.size > 0 -> outPSKeyMap[domain] = PSKey(psKey, creationTime, expireTime)
+                pt4token.size > 0 -> outPt4TokenMap[domain] = Pt4Token(pt4token, creationTime, expireTime)
+            }
         }
     }
-}
 
 class PSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
 

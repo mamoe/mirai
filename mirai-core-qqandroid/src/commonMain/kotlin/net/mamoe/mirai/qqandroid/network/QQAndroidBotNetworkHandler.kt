@@ -100,15 +100,20 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
     suspend fun parsePacket(input: Input) {
-        KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
-            if (PacketReceivedEvent(packet).broadcast().cancelled) {
-                return@parseIncomingPacket
-            }
-            packetListeners.forEach { listener ->
-                if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
-                    listener.complete(packet)
+        try {
+            KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, packetId: PacketId, sequenceId: Int ->
+                if (PacketReceivedEvent(packet).broadcast().cancelled) {
+                    return@parseIncomingPacket
+                }
+                packetListeners.forEach { listener ->
+                    if (listener.filter(packetId, sequenceId) && packetListeners.remove(listener)) {
+                        listener.complete(packet)
+                    }
                 }
             }
+        } finally {
+            println()
+            println() // separate for debugging
         }
     }
 

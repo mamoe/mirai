@@ -75,8 +75,9 @@ internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Respon
                                 bKikPC = 0, // 是否把 PC 踢下线
                                 bKikWeak = 0,
                                 timeStamp = currentTimeSeconds, // millis or seconds??
-                                iLargeSeq = 0,
+                                iLargeSeq = 1551, // ?
                                 bOpenPush = 1,
+                                iLocaleID = 2052,
                                 bRegType =
                                 (if (regPushReason == RegPushReason.appRegister ||
                                     regPushReason == RegPushReason.fillRegProxy ||
@@ -96,7 +97,7 @@ internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Respon
                                     acc or ((s.toLong() shl (index * 16)))
                                 },
                                 strVendorName = "MIUI",
-                                strVendorOSName = "",
+                                strVendorOSName = "?ONEPLUS A5000_23_17",
                                 // register 时还需要
                                 /*
                                 var44.uNewSSOIp = field_127445;
@@ -109,7 +110,7 @@ internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Respon
                                         rpt_config_list = listOf(
                                             Oidb0x769.ConfigSeq(
                                                 type = 46,
-                                                version = 4
+                                                version = 0
                                             ),
                                             Oidb0x769.ConfigSeq(
                                                 type = 283,
