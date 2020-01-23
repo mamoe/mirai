@@ -10,7 +10,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>() {
 
     init {
-        _id = PacketId(0x0812, "wtlogin.trans_emp")
+        _commandName = "wtlogin.trans_emp"
     }
 
     private const val appId = 16L
@@ -20,7 +20,7 @@ internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>() {
     fun SubCommand1(
         client: QQAndroidClient
     ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) {
-        writeOicqRequestPacket(client, EncryptMethodECDH135(client.ecdh), id) {
+        writeOicqRequestPacket(client, EncryptMethodECDH135(client.ecdh), TODO()) {
 
             // oicq.wlogin_sdk.request.trans_emp_1#packTransEmpBody
         }

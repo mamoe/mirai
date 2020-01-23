@@ -15,7 +15,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769.Oidb0x769
-import net.mamoe.mirai.qqandroid.network.protocol.packet.writeLoginSsoPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.debugPrint
@@ -40,10 +40,10 @@ internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Respon
 
     internal object Response : Packet
 
-    const val subAppId = 537062845L
+    private const val subAppId = 537062845L
 
     init {
-        _id = PacketId(0, "StatSvc.register")
+        _commandName = "StatSvc.register"
     }
 
     operator fun invoke(
@@ -55,8 +55,8 @@ internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Respon
         extraData = client.wLoginSigInfo.d2.data,
         key = client.wLoginSigInfo.d2Key
     ) { sequenceId ->
-        writeLoginSsoPacket(
-            client, subAppId = subAppId, packetId = id,
+        writeSsoPacket(
+            client, subAppId = subAppId, commandName = commandName,
             extraData = client.wLoginSigInfo.tgt.toReadPacket(), sequenceId = sequenceId
         ) {
             writeUniRequestPacket {

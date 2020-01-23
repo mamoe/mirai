@@ -6,8 +6,6 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.PacketId
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.DecrypterByteArray
 import net.mamoe.mirai.utils.cryptor.encryptAndWrite
@@ -23,12 +21,12 @@ import net.mamoe.mirai.utils.io.writeQQ
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal class OutgoingPacket constructor(
     name: String?,
-    val packetId: PacketId,
+    val commandName: String,
     val sequenceId: Int,
     val delegate: ByteReadPacket
 ) {
     val name: String by lazy {
-        name ?: packetId.toString()
+        name ?: commandName.toString()
     }
 }
 
@@ -66,13 +64,13 @@ internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 internal inline fun PacketFactory<*>.buildOutgingPacket(
     client: QQAndroidClient,
     name: String? = null,
-    id: PacketId = this.id,
+    commandName: String = this.commandName,
     key: ByteArray,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
     val sequenceId: Int = client.nextSsoSequenceId()
 
-    return OutgoingPacket(name, id, sequenceId, buildPacket {
+    return OutgoingPacket(name, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x0B)
             writeByte(1)
@@ -113,13 +111,13 @@ internal inline fun PacketFactory<*>.buildLoginOutgoingPacket(
     bodyType: Byte,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
     name: String? = null,
-    id: PacketId = this.id,
+    commandName: String = this.commandName,
     key: ByteArray = KEY_16_ZEROS,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
     val sequenceId: Int = client.nextSsoSequenceId()
 
-    return OutgoingPacket(name, id, sequenceId, buildPacket {
+    return OutgoingPacket(name, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x00_00_00_0A)
             writeByte(bodyType)
@@ -168,10 +166,10 @@ private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
  * byte[]   body()
  */
 @UseExperimental(MiraiInternalAPI::class)
-internal inline fun BytePacketBuilder.writeLoginSsoPacket(
+internal inline fun BytePacketBuilder.writeSsoPacket(
     client: QQAndroidClient,
     subAppId: Long,
-    packetId: PacketId,
+    commandName: String,
     extraData: ByteReadPacket = BRP_STUB,
     sequenceId: Int,
     body: BytePacketBuilder.() -> Unit
@@ -187,7 +185,7 @@ internal inline fun BytePacketBuilder.writeLoginSsoPacket(
             writeInt((extraData.remaining + 4).toInt())
             writePacket(extraData)
         }
-        packetId.commandName.let {
+        commandName.let {
             writeInt(it.length + 4)
             writeStringUtf8(it)
         }
@@ -269,7 +267,7 @@ internal inline fun PacketFactory<*>.buildSessionOutgoingPacket(
 internal fun BytePacketBuilder.writeOicqRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,
-    packetId: PacketId,
+    commandId: Int,
     bodyBlock: BytePacketBuilder.() -> Unit
 ) {
     val body = encryptMethod.makeBody(client, bodyBlock)
@@ -278,7 +276,7 @@ internal fun BytePacketBuilder.writeOicqRequestPacket(
     writeByte(0x02) // head
     writeShort((27 + 2 + body.remaining).toShort()) // orthodox algorithm
     writeShort(client.protocolVersion)
-    writeShort(packetId.commandId.toShort())
+    writeShort(commandId.toShort())
     writeShort(1) // const??
     writeQQ(client.uin)
     writeByte(3) // originally const

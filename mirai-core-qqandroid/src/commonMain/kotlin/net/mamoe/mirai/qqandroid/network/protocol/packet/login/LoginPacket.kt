@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.io.discardExact
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
     init {
-        this._id = PacketId(commandId = 0x0810, commandName = "wtlogin.login")
+        this._commandName =  "wtlogin.login"
     }
 
     object SubCommand9 {
@@ -36,8 +36,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
         operator fun invoke(
             client: QQAndroidClient
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-            writeLoginSsoPacket(client, subAppId, id, sequenceId = sequenceId) {
-                writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), id) {
+            writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
                     writeShort(9) // subCommand
                     writeShort(17) // count of TLVs, probably ignored by server?
                     //writeShort(LoginType.PASSWORD.value.toShort())
@@ -563,21 +563,4 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
             // SEE oicq_request.java at method analysisT17f
         }
     }
-}
-
-
-@Suppress("FunctionName")
-internal fun PacketId(commandId: Int, commandName: String) = object : PacketId {
-    override val commandId: Int get() = commandId
-    override val commandName: String get() = commandName
-}
-
-internal interface PacketId {
-    val commandId: Int // ushort actually
-    val commandName: String
-}
-
-internal object NullPacketId : PacketId {
-    override val commandId: Int get() = error("uninitialized")
-    override val commandName: String get() = error("uninitialized")
 }
