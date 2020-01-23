@@ -397,9 +397,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
             }
         }
 
-        if (type.toInt() == 0) {
-            return LoginPacketResponse.Success
-        } else TODO("Unknown type")
+        if (type.toInt() != 0) {
+            DebugLogger.debug("unknown login result type: $type")
+        }
+        return LoginPacketResponse.Success
     }
 
 

@@ -33,7 +33,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         println("SessionTicket=${bot.client.wLoginSigInfo.wtSessionTicket.data.toUHexString()}")
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         println("SessionTicketKey=${bot.client.wLoginSigInfo.wtSessionTicketKey.toUHexString()}")
-        delay(2000)
         println()
         println()
         println()
