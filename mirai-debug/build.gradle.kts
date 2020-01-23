@@ -41,8 +41,11 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 dependencies {
 
+    runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // IDE bug
     runtimeOnly(files("../mirai-core-timpc/build/classes/kotlin/jvm/main")) // IDE bug
     implementation(project(":mirai-core-timpc"))
+    runtimeOnly(files("../mirai-core-qqandroid/build/classes/kotlin/jvm/main")) // IDE bug
+    implementation(project(":mirai-core-qqandroid"))
     // runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // classpath is not added correctly by IDE
 
     implementation("org.bouncycastle:bcprov-jdk15on:1.64")
@@ -69,5 +72,10 @@ dependencies {
     implementation(ktor("client-cio", ktorVersion))
     implementation(ktor("client-core", ktorVersion))
     implementation(ktor("network", ktorVersion))
+
+    testImplementation(kotlin("test-annotations-common"))
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
+    testImplementation(kotlin("script-runtime"))
 
 }
