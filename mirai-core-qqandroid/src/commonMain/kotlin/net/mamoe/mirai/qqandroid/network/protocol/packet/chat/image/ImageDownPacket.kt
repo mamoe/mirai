@@ -19,8 +19,8 @@ internal object ImageDownPacket : PacketFactory<ImageDownPacket.ImageDownPacketR
     operator fun invoke(client: QQAndroidClient, req: GetImgUrlReq): OutgoingPacket {
         return buildOutgingPacket(client, this._commandName, this._commandName, client.wLoginSigInfo.d2Key) {
             ProtoBuf.dump(
-                Cmd0x325Packet.serializer(),
-                Cmd0x325Packet.createByImageRequest(req)
+                Cmd0x352Packet.serializer(),
+                Cmd0x352Packet.createByImageRequest(req)
             )
         }
     }

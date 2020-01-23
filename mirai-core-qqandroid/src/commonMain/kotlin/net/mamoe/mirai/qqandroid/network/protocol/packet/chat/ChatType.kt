@@ -9,7 +9,7 @@ enum class ChatType(val internalID: Int) {
 
     CONTACT(1006),
 
-    //未知，推测为"组"
+    //推测为"群"
     TROOP(1),
     TROOP_HCTOPIC(1026),
 
