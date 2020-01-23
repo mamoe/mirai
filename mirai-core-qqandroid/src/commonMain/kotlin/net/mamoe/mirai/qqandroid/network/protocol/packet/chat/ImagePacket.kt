@@ -1,4 +1,4 @@
-package net.mamoe.mirai.qqandroid.network.protocol.packet.image
+package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.SerialId
@@ -23,11 +23,24 @@ internal object ImagePacket : PacketFactory<ImagePacket.RequestImgUrlResponse>()
 
     fun createCmd0x325Packet(req: ImgReq, networkType: Int = 5): Cmd0x352Packet {
         if (req is UploadImgReq)
-            return Cmd0x352Packet(1, req, null, null, networkType)
+            return Cmd0x352Packet(
+                1,
+                req,
+                null,
+                null,
+                networkType
+            )
         if (req is GetImgUrlReq)
-            return Cmd0x352Packet(2, null, req, null, networkType)
+            return Cmd0x352Packet(
+                2,
+                null,
+                req,
+                null,
+                networkType
+            )
         error("Unknown ImgReq")
     }
+
 
     @Serializable
     internal class Cmd0x352Packet(
@@ -72,7 +85,7 @@ internal object ImagePacket : PacketFactory<ImagePacket.RequestImgUrlResponse>()
         @SerialId(2) val dstUni: Int,
         @SerialId(3) val fileResID: String,//UUID
         /**
-         * UUID例子:
+         * UUID例子: 没有找到
          */
         @SerialId(4) val urlFlag: Int = 1,
         //5 unknown, 好像没用
@@ -81,15 +94,7 @@ internal object ImagePacket : PacketFactory<ImagePacket.RequestImgUrlResponse>()
         @SerialId(8) val requestPlatformType: Int = 9,//确定
         @SerialId(9) val srcFileType: Int = 1,//2=ftn，1=picplatform，255
         @SerialId(10) val innerIP: Int = 0,//确定
-        @SerialId(11) val addressBook: Int = 0,//chatType == 1006为1 我觉得发0没问题
-        /**
-         * chattype
-         * 1008时为Troop
-         * 1   时为?
-         * 9999时为？
-         * 1036时为？
-         * 1006时为？
-         */
+        @SerialId(11) val addressBook: Int = 0,//[ChatType.internalID]== 1006为1[为CONTACT时] 我觉得发0没问题
         @SerialId(12) val buType: Int = 1,//确定
         @SerialId(13) val buildVer: String = "8.2.0.1296",//版本号
         @SerialId(14) val timestamp: Int = currentTimeSeconds.toInt(),//(pic_up_timestamp)
