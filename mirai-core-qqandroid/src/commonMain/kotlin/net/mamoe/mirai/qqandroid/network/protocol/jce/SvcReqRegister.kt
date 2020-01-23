@@ -26,12 +26,12 @@ class SvcReqRegister(
     var lBid: Long = 0L,
     var lCpId: Long = 0L,
     var lUin: Long = 0L,
-    var sBuildVer: String? = null,
-    var sChannelNo: String? = null,
+    var sBuildVer: String? = "",
+    var sChannelNo: String? = "",
     var sOther: String = "",
     var strDevName: String? = null,
     var strDevType: String? = null,
-    var strIOSIdfa: String? = null,
+    var strIOSIdfa: String? = "",
     var strOSVer: String? = null,
     var strVendorName: String? = null,
     var strVendorOSName: String? = null,
@@ -59,7 +59,7 @@ class SvcReqRegister(
             this.timeStamp = input.readLong(10)
             this.iOSVersion = input.readLong(11)
             this.cNetType = input.readByte(12)
-            this.sBuildVer = input.readString(13)
+            this.sBuildVer = input.readStringOrNull(13)
             this.bRegType = input.readByte(14)
             this.vecDevParam = input.readByteArrayOrNull(15)
             this.vecGuid = input.readByteArrayOrNull(16)

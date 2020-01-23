@@ -4,7 +4,6 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
-import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -21,7 +20,10 @@ import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.cryptor.initialPublicKey
 import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.io.hexToBytes
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.readUShortLVByteArray
+import net.mamoe.mirai.utils.io.readUShortLVString
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 /*
@@ -64,16 +66,11 @@ internal open class QQAndroidClient(
         )
     }
 
-    internal inline fun <R> tryDecryptOrNull(data: ByteReadPacket, mapper: (ByteArray) -> R): R? {
-        ByteArrayPool.useInstance {
-            data.readAvailable(it)
-
-            keys.forEach { (key, value) ->
-                kotlin.runCatching {
-                    return mapper(it.decryptBy(value).also { PacketLogger.verbose("成功使用 $key 解密") })
-                }
+    internal inline fun <R> tryDecryptOrNull(data: ByteArray, size: Int = data.size, mapper: (ByteArray) -> R): R? {
+        keys.forEach { (key, value) ->
+            kotlin.runCatching {
+                return mapper(data.decryptBy(value, size).also { PacketLogger.verbose("成功使用 $key 解密") })
             }
-
         }
         return null
     }

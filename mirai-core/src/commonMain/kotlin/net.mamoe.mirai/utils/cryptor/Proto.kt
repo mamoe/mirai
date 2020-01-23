@@ -152,11 +152,51 @@ fun Any?.contentToString(prefix: String = ""): String = when (this) {
 
     is ByteArray -> {
         if (this.size == 0) "<Empty ByteArray>"
-        else this.toUHexString()// + " (${this.encodeToString()})"
+        else this.toUHexString()
     }
     is UByteArray -> {
         if (this.size == 0) "<Empty UByteArray>"
-        else this.toUHexString()// + " (${this.encodeToString()})"
+        else this.toUHexString()
+    }
+    is ShortArray -> {
+        if (this.size == 0) "<Empty ShortArray>"
+        else this.iterator().contentToString()
+    }
+    is IntArray -> {
+        if (this.size == 0) "<Empty IntArray>"
+        else this.iterator().contentToString()
+    }
+    is LongArray -> {
+        if (this.size == 0) "<Empty LongArray>"
+        else this.iterator().contentToString()
+    }
+    is FloatArray -> {
+        if (this.size == 0) "<Empty FloatArray>"
+        else this.iterator().contentToString()
+    }
+    is DoubleArray -> {
+        if (this.size == 0) "<Empty DoubleArray>"
+        else this.iterator().contentToString()
+    }
+    is UShortArray -> {
+        if (this.size == 0) "<Empty ShortArray>"
+        else this.iterator().contentToString()
+    }
+    is UIntArray -> {
+        if (this.size == 0) "<Empty IntArray>"
+        else this.iterator().contentToString()
+    }
+    is ULongArray -> {
+        if (this.size == 0) "<Empty LongArray>"
+        else this.iterator().contentToString()
+    }
+    is Array<*> -> {
+        if (this.size == 0) "<Empty Array>"
+        else this.iterator().contentToString()
+    }
+    is BooleanArray -> {
+        if (this.size == 0) "<Empty BooleanArray>"
+        else this.iterator().contentToString()
     }
 
     is ProtoMap -> "ProtoMap(size=$size){\n" + this.toStringPrefixed("$prefix${ProtoMap.indent}${ProtoMap.indent}") + "\n$prefix${ProtoMap.indent}}"

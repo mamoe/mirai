@@ -353,6 +353,8 @@ public final class JceInputStream {
                 throw new JceDecodeException(var5.getMessage());
             }
 
+            System.out.println(var1.toString());
+
             var4 = new JceInputStream$HeadData();
             this.readHead(var4);
             if (var4.type != 10) {

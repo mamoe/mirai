@@ -64,7 +64,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
      * full packet without length
      */
     // do not inline. Exceptions thrown will not be reported correctly
-    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer) {
+    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer): Unit {
         rawInput.readBytes().let {
             PacketLogger.verbose("开始处理包: ${it.toUHexString()}")
             it.toReadPacket()
@@ -89,28 +89,34 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
 
             //debugPrint("remaining")
 
-            (if (flag2 == 2) {
-                PacketLogger.verbose("SSO, 尝试使用 16 zero 解密.")
-                kotlin.runCatching {
-                    decryptBy(DECRYPTER_16_ZERO).also { PacketLogger.verbose("成功使用 16 zero 解密") }
+            ByteArrayPool.useInstance { data ->
+                val size = this.readAvailable(data)
+
+                (if (flag2 == 2) {
+                    PacketLogger.verbose("SSO, 尝试使用 16 zero 解密.")
+                    kotlin.runCatching {
+                        data.decryptBy(DECRYPTER_16_ZERO, size).also { PacketLogger.verbose("成功使用 16 zero 解密") }
+                    }
+                } else {
+                    PacketLogger.verbose("Uni, 尝试使用 d2Key 解密.")
+                    kotlin.runCatching {
+                        data.decryptBy(bot.client.wLoginSigInfo.d2Key, size).also { PacketLogger.verbose("成功使用 d2Key 解密") }
+                    }
+                }).getOrElse {
+                    PacketLogger.verbose("失败, 尝试其他各种key")
+                    bot.client.tryDecryptOrNull(data) { it }
+                }?.toReadPacket()?.also { decryptedData ->
+                    when (flag1) {
+                        0x0A -> parseLoginSsoPacket(bot, decryptedData, consumer)
+                        0x0B -> parseUniPacket(bot, decryptedData, consumer)
+                    }
+                } ?: inline {
+                    PacketLogger.error("任何key都无法解密: ${data.toUHexString()}")
+                    return
                 }
-            } else {
-                PacketLogger.verbose("Uni, 尝试使用 d2Key 解密.")
-                kotlin.runCatching {
-                    decryptBy(bot.client.wLoginSigInfo.d2Key).also { PacketLogger.verbose("成功使用 d2Key 解密") }
-                }
-            }).getOrElse {
-                PacketLogger.verbose("失败, 尝试其他各种key")
-                bot.client.tryDecryptOrNull(this) { it.toReadPacket() }
-            }?.also { decryptedData ->
-               when(flag1) {
-                   0x0A -> parseLoginSsoPacket(bot, decryptedData, consumer)
-                   0x0B ->  parseUniPacket(bot, decryptedData, consumer)
-               }
-            } ?: inline {
-                PacketLogger.error("任何key都无法解密")
-                return
             }
+
+            Unit
         }
     }
 
@@ -155,6 +161,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
 
             if (packetFactory == null) {
                 bot.logger.warning("找不到包 PacketFactory")
+                PacketLogger.verbose("最外层解密后的 body = ${this.readBytes().toUHexString()}")
                 return
             }
 

@@ -221,13 +221,9 @@ internal class JceOutputTest {
     @Test
     fun writeCollection() {
         buildJcePacket {
-            writeMap(mapOf("" to ""), 1)
-            writeMap(mapOf("" to 123), 2)
-            writeMap(mapOf(123.0 to "Hello"), 3)
+            writeCollection(listOf("啊", "333", "1"), 1)
         } shouldEqualTo qqJce {
-            write(mapOf("" to ""), 1)
-            write(mapOf("" to 123), 2)
-            write(mapOf(123.0 to "Hello"), 3)
+            write(listOf("啊", "333", "1"), 1)
         }
     }
 
@@ -248,12 +244,18 @@ internal class JceOutputTest {
     class TestQQStruct(
         private var message: String
     ) : JceStruct() {
+        constructor() : this("")
+
         override fun readFrom(var1: JceInputStream) {
             message = var1.read("", 0, true)
         }
 
         override fun writeTo(var1: JceOutputStream) {
             var1.write(message, 0)
+        }
+
+        override fun toString(): String {
+            return "TestMiraiStruct(message=$message)"
         }
     }
 

@@ -400,18 +400,18 @@ public class JceOutputStream {
       }
    }
 
-   public void writeHead(byte var1, int var2) {
-      byte var3;
-      if (var2 < 15) {
-         var3 = (byte) (var2 << 4 | var1);
-         this.field_80728.put(var3);
-      } else if (var2 < 256) {
-         var3 = (byte) (var1 | 240);
-         this.field_80728.put(var3);
-         this.field_80728.put((byte) var2);
-      } else {
-         throw new JceEncodeException("tag is too large: " + var2);
-      }
+   public void writeHead(byte var1, int tag) {
+       byte var3;
+       if (tag < 15) {
+           var3 = (byte) (tag << 4 | var1);
+           this.field_80728.put(var3);
+       } else if (tag < 256) {
+           var3 = (byte) (var1 | 240);
+           this.field_80728.put(var3);
+           this.field_80728.put((byte) tag);
+       } else {
+           throw new JceEncodeException("tag is too large: " + tag);
+       }
    }
 
    public void writeStringByte(String var1, int var2) {

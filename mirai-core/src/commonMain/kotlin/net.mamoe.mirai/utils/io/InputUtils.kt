@@ -3,6 +3,8 @@
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.OutputStream
+import kotlinx.io.charsets.Charset
+import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.contact.GroupId
@@ -180,13 +182,13 @@ internal inline fun illegalArgument(message: String? = null): Nothing = error(me
 fun Map<Int, String>.printTLVMap(name: String = "") =
     debugPrintln("TLVMap $name= " + this.mapKeys { it.key.toInt().toUShort().toUHexString() })
 
-fun Input.readString(length: Int): String = String(this.readBytes(length))
-fun Input.readString(length: Long): String = String(this.readBytes(length.toInt()))
-fun Input.readString(length: Short): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: Int, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length), charset = charset)
+fun Input.readString(length: Long, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
+fun Input.readString(length: Short, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
 @JvmSynthetic
-fun Input.readString(length: UShort): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: UShort, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
 
-fun Input.readString(length: Byte): String = String(this.readBytes(length.toInt()))
+fun Input.readString(length: Byte, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
 
 @JvmSynthetic
 fun Input.readStringUntil(stopSignalExclude: UByte, expectingEOF: Boolean = false): String = readStringUntil(stopSignalExclude.toByte(), expectingEOF)

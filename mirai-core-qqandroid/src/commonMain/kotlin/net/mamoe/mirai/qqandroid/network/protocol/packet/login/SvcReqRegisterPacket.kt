@@ -1,12 +1,10 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.readBytes
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.io.buildJcePacket
 import net.mamoe.mirai.qqandroid.network.io.jceMap
 import net.mamoe.mirai.qqandroid.network.io.jceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.jce.SvcReqRegister
@@ -17,7 +15,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacke
 import net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769.Oidb0x769
 import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
 import net.mamoe.mirai.qqandroid.utils.NetworkType
-import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.toReadPacket
@@ -64,65 +61,64 @@ internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Respon
                 sFuncName = "SvcReqRegister"
                 sBuffer = jceMap(
                     0,
-                    "SvcReqRegister" to buildJcePacket {
-                        writeObject(jceStruct(
-                            0,
-                            SvcReqRegister(
-                                cConnType = 0,
-                                lBid = 1 or 2 or 4,
-                                lUin = client.uin,
-                                iStatus = client.onlineStatus.id,
-                                bKikPC = 0, // 是否把 PC 踢下线
-                                bKikWeak = 0,
-                                timeStamp = currentTimeSeconds, // millis or seconds??
-                                iLargeSeq = 1551, // ?
-                                bOpenPush = 1,
-                                iLocaleID = 2052,
-                                bRegType =
+                    "SvcReqRegister" to jceStruct(
+                        0,
+                        SvcReqRegister().apply {
+                            cConnType = 0
+                            lBid = 1 or 2 or 4
+                            lUin = client.uin
+                            iStatus = client.onlineStatus.id
+                            bKikPC = 0 // 是否把 PC 踢下线
+                            bKikWeak = 0
+                            timeStamp = 0
+                            // timeStamp = currentTimeSeconds // millis or seconds??
+                            iLargeSeq = 1551 // ?
+                            bOpenPush = 1
+                            iLocaleID = 2052
+                            bRegType =
                                 (if (regPushReason == RegPushReason.appRegister ||
                                     regPushReason == RegPushReason.fillRegProxy ||
                                     regPushReason == RegPushReason.createDefaultRegInfo ||
                                     regPushReason == RegPushReason.setOnlineStatus
-                                ) 0 else 1).toByte(),
-                                bIsSetStatus = if (regPushReason == RegPushReason.setOnlineStatus) 1 else 0,
-                                iOSVersion = client.device.version.sdk.toLong(),
-                                cNetType = if (client.networkType == NetworkType.WIFI) 1 else 0,
-                                vecGuid = client.device.guid,
-                                strDevName = client.device.model.encodeToString(),
-                                strDevType = client.device.model.encodeToString(),
-                                strOSVer = client.device.version.release.encodeToString(),
+                                ) 0 else 1).toByte()
+                            bIsSetStatus = if (regPushReason == RegPushReason.setOnlineStatus) 1 else 0
+                            iOSVersion = client.device.version.sdk.toLong()
+                            cNetType = if (client.networkType == NetworkType.WIFI) 1 else 0
+                            vecGuid = client.device.guid
+                            strDevName = client.device.model.encodeToString()
+                            strDevType = client.device.model.encodeToString()
+                            strOSVer = client.device.version.release.encodeToString()
 
-                                uOldSSOIp = 0,
-                                uNewSSOIp = localIpAddress().split(".").foldIndexed(0L) { index: Int, acc: Long, s: String ->
-                                    acc or ((s.toLong() shl (index * 16)))
-                                },
-                                strVendorName = "MIUI",
-                                strVendorOSName = "?ONEPLUS A5000_23_17",
-                                // register 时还需要
-                                /*
-                                var44.uNewSSOIp = field_127445;
-                                var44.uOldSSOIp = field_127444;
-                                var44.strVendorName = ROMUtil.getRomName();
-                                var44.strVendorOSName = ROMUtil.getRomVersion(20);
-                                */
-                                bytes_0x769_reqbody = ProtoBuf.dump(
-                                    Oidb0x769.RequestBody.serializer(), Oidb0x769.RequestBody(
-                                        rpt_config_list = listOf(
-                                            Oidb0x769.ConfigSeq(
-                                                type = 46,
-                                                version = 0
-                                            ),
-                                            Oidb0x769.ConfigSeq(
-                                                type = 283,
-                                                version = 0
-                                            )
+                            uOldSSOIp = 0
+                            uNewSSOIp = localIpAddress().split(".").foldIndexed(0L) { index: Int, acc: Long, s: String ->
+                                acc or ((s.toLong() shl (index * 16)))
+                            }
+                            strVendorName = "MIUI"
+                            strVendorOSName = "?ONEPLUS A5000_23_17"
+                            // register 时还需要
+                            /*
+                            var44.uNewSSOIp = field_127445;
+                            var44.uOldSSOIp = field_127444;
+                            var44.strVendorName = ROMUtil.getRomName();
+                            var44.strVendorOSName = ROMUtil.getRomVersion(20);
+                            */
+                            bytes_0x769_reqbody = ProtoBuf.dump(
+                                Oidb0x769.RequestBody.serializer(), Oidb0x769.RequestBody(
+                                    rpt_config_list = listOf(
+                                        Oidb0x769.ConfigSeq(
+                                            type = 46,
+                                            version = 0
+                                        ),
+                                        Oidb0x769.ConfigSeq(
+                                            type = 283,
+                                            version = 0
                                         )
                                     )
-                                ),
-                                bSetMute = 0
+                                )
                             )
-                        ), 0)
-                    }.readBytes()
+                            bSetMute = 0
+                        }
+                    )
                 )
             }
             this.writePacket(this.build().debugPrint("sso body"))

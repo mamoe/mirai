@@ -11,7 +11,6 @@ import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.RegPushReason
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
@@ -39,7 +38,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         println()
         println()
         println("Sending ReqRegister")
-        SvcReqRegisterPacket(bot.client, RegPushReason.setOnlineStatus).sendAndExpect<SvcReqRegisterPacket.Response>()
+        SvcReqRegisterPacket(bot.client).sendAndExpect<SvcReqRegisterPacket.Response>()
     }
 
     /**

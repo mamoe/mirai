@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network.io
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
+import kotlin.experimental.or
 import kotlin.reflect.KClass
 
 @PublishedApi
@@ -45,7 +46,7 @@ class JceOutput(
 
     fun writeByte(v: Byte, tag: Int) {
         if (v.toInt() == 0) {
-            writeHead(ZERO_TAG, tag)
+            writeHead(ZERO_TYPE, tag)
         } else {
             writeHead(BYTE, tag)
             output.writeByte(v)
@@ -147,7 +148,7 @@ class JceOutput(
         if (v in Byte.MIN_VALUE..Byte.MAX_VALUE) {
             writeByte(v.toByte(), tag)
         } else {
-            writeHead(BYTE, tag)
+            writeHead(SHORT, tag)
             output.writeShort(v)
         }
     }
@@ -266,7 +267,7 @@ class JceOutput(
         const val STRING4: Int = 7
         const val STRUCT_BEGIN: Int = 10
         const val STRUCT_END: Int = 11
-        const val ZERO_TAG: Int = 12
+        const val ZERO_TYPE: Int = 12
 
         private fun Any?.getClassName(): KClass<out Any> = if (this == null) Unit::class else this::class
     }
@@ -278,7 +279,7 @@ class JceOutput(
             return
         }
         if (tag < 256) {
-            this.output.writeByte((type or 0xF0).toByte())
+            this.output.writeByte((type.toByte() or 0xF0.toByte()))
             this.output.writeByte(tag.toByte())
             return
         }
