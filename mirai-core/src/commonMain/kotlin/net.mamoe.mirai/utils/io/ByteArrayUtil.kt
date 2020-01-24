@@ -15,6 +15,9 @@ import kotlin.jvm.JvmSynthetic
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun ByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
+    if (length == 0) {
+        return ""
+    }
     val lastIndex = offset + length
     return buildString(length * 2) {
         this@toUHexString.forEachIndexed { index, it ->
@@ -32,6 +35,9 @@ fun ByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 @ExperimentalUnsignedTypes
 fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
+    if (length == 0) {
+        return ""
+    }
     val lastIndex = offset + length
     return buildString(length * 2) {
         this@toUHexString.forEachIndexed { index, it ->
