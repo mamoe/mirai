@@ -159,7 +159,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
 
             if (packetFactory == null) {
                 bot.logger.warning("找不到包 PacketFactory")
-                PacketLogger.verbose("最外层解密后的 body = ${this.readBytes().toUHexString()}")
+                PacketLogger.verbose("传递给 PacketFactory 的数据 = ${this.readBytes().toUHexString()}")
                 return
             }
 
