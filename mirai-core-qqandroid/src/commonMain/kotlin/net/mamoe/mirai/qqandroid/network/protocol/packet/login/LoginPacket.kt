@@ -216,10 +216,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     @UseExperimental(MiraiDebugAPI::class)
     fun ByteReadPacket.onSolveLoginCaptcha(bot: QQAndroidBot) = this.debugPrint("login验证码解析").run {
-        val client = bot.client
         val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
-        tlvMap[0x104]?.let { client.analysisTlv150(it) }
-        tlvMap[0x192]?.let { client.analysisTlv150(it) }
+        tlvMap[0x150]?.let { client.analysisTlv150(it) }
     }
 
     @UseExperimental(MiraiDebugAPI::class)
