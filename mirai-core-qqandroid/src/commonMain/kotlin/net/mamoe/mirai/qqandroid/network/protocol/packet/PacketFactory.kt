@@ -64,7 +64,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
      * full packet without length
      */
     // do not inline. Exceptions thrown will not be reported correctly
-    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer): Unit {
+    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer) {
         rawInput.readBytes().let {
             PacketLogger.verbose("开始处理包: ${it.toUHexString()}")
             it.toReadPacket()
@@ -115,8 +115,6 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     return
                 }
             }
-
-            Unit
         }
     }
 
