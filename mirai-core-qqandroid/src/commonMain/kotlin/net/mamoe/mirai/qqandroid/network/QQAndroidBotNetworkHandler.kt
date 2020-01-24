@@ -11,6 +11,8 @@ import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.Captcha
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.Success
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
@@ -28,15 +30,23 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         channel.connect("113.96.13.208", 8080)
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-        println("Sending login")
-        LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
-        println("SessionTicket=${bot.client.wLoginSigInfo.wtSessionTicket.data.toUHexString()}")
+        bot.logger.info("Trying login")
+        when (val response = LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()) {
+            is Captcha -> when (response) {
+                is Captcha.Picture -> {
+                    bot.logger.info("需要图片验证码")
+                }
+                is Captcha.Slider -> {
+                    bot.logger.info("需要滑动验证码")
+                }
+            }
+
+            is Success -> {
+                bot.logger.info("Login successful")
+            }
+        }
+
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        println("SessionTicketKey=${bot.client.wLoginSigInfo.wtSessionTicketKey.toUHexString()}")
-        println()
-        println()
-        println()
-        println("Sending ReqRegister")
         SvcReqRegisterPacket(bot.client).sendAndExpect<SvcReqRegisterPacket.Response>()
     }
 
@@ -118,7 +128,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 处理从服务器接收过来的包. 这些包可能是粘在一起的, 也可能是不完整的. 将会自动处理
      */
     @UseExperimental(ExperimentalCoroutinesApi::class)
-    internal suspend fun processPacket(rawInput: ByteReadPacket): Unit = rawInput.debugPrint("Received").let { input: ByteReadPacket ->
+    internal fun processPacket(rawInput: ByteReadPacket): Unit = rawInput.debugPrint("Received").let { input: ByteReadPacket ->
         if (input.remaining == 0L) {
             return
         }
@@ -167,10 +177,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     writePacket(input)
                 }
             }
-        }
-        if (input.remaining == 0L) {
-            bot.logger.error("Empty packet received. Consider if bad packet was sent.")
-            return
         }
     }
 

@@ -172,6 +172,15 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     sealed class LoginPacketResponse : Packet {
         object Success : LoginPacketResponse()
+        sealed class Captcha : LoginPacketResponse() {
+            class Slider(
+                val data: IoBuffer
+            ) : Captcha()
+
+            class Picture(
+                val data: IoBuffer
+            ) : Captcha()
+        }
     }
 
     @UseExperimental(MiraiDebugAPI::class)

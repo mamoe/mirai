@@ -3,6 +3,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.jce
 import net.mamoe.mirai.qqandroid.network.io.JceInput
 import net.mamoe.mirai.qqandroid.network.io.JceOutput
 import net.mamoe.mirai.qqandroid.network.io.JceStruct
+import net.mamoe.mirai.utils.cryptor.contentToString
 
 private val EMPTY_MAP = mapOf<String, String>()
 
@@ -69,5 +70,9 @@ class RequestPacket() : JceStruct() {
         builder.write(this.iTimeout, 8)
         builder.write(this.context, 9)
         builder.write(this.status, 10)
+    }
+
+    override fun toString(): String {
+        return this.contentToString()
     }
 }
