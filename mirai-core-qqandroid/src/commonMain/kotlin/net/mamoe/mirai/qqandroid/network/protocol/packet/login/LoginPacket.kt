@@ -172,6 +172,12 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     sealed class LoginPacketResponse : Packet {
         object Success : LoginPacketResponse()
+        data class Error(
+            val title: String,
+            val message: String,
+            val errorInfo: String
+        ) : LoginPacketResponse()
+
         sealed class Captcha : LoginPacketResponse() {
             class Slider(
                 val data: IoBuffer
@@ -197,32 +203,38 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         println("subCommand=$subCommand")
         val type = readByte()
         println("type=$type")
-        when (type.toInt()) {
-            0 -> {
-                onLoginSuccess(bot)
-            }
-            1 -> {
-                throw Exception("Wrong Password")
-            }
-            2 -> {
-                onSolveLoginCaptcha(bot)
-            }
+        return when (type.toInt()) {
+            0 -> onLoginSuccess(bot)
+            1, 15 -> onErrorMessage()
+            2 -> onSolveLoginCaptcha(bot)
+            else -> error("unknown login result type: $type")
         }
-        if (type.toInt() != 0) {
-            DebugLogger.debug("unknown login result type: $type")
-        }
-        return LoginPacketResponse.Success
+    }
+
+    private fun ByteReadPacket.onErrorMessage(): LoginPacketResponse.Error {
+        discardExact(2)
+        val tlvMap = readTLVMap()
+        tlvMap[0x146]?.toReadPacket()?.run {
+            readShort() // ver
+            readShort() // code
+
+            val title = readUShortLVString()
+            val message = readUShortLVString()
+            val errorInfo = readUShortLVString()
+
+            return LoginPacketResponse.Error(title, message, errorInfo)
+        } ?: error("Cannot find error message")
     }
 
     @UseExperimental(MiraiDebugAPI::class)
-    suspend fun ByteReadPacket.onSolveLoginCaptcha(bot: QQAndroidBot) = this.debugPrint("login验证码解析").run {
+    suspend fun ByteReadPacket.onSolveLoginCaptcha(bot: QQAndroidBot): LoginPacketResponse.Captcha = this.debugPrint("login验证码解析").run {
         val client = bot.client
         debugDiscardExact(2)
         val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
-       // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
+        // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
         println()
         val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
-        when(question[18].toUHexString()){
+        when (question[18].toUHexString()) {
             "36" -> {
                 //图片验证
                 debugPrint("是一个图片验证码")
@@ -236,10 +248,11 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                 error("UNKNOWN CAPTCHA QUESTION: $question")
             }
         }
+        return TODO()
     }
 
     @UseExperimental(MiraiDebugAPI::class)
-    fun ByteReadPacket.onLoginSuccess(bot: QQAndroidBot) = this.debugPrint("login成功解析").run {
+    private fun ByteReadPacket.onLoginSuccess(bot: QQAndroidBot): LoginPacketResponse.Success {
         val client = bot.client
         debugDiscardExact(2)
         val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
@@ -446,6 +459,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             }
         }
 
+        return LoginPacketResponse.Success
     }
 
 
