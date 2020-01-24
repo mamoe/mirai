@@ -228,7 +228,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     }
 
     @UseExperimental(MiraiDebugAPI::class)
-    suspend fun onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Captcha {
+    private suspend fun onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Captcha {
         val client = bot.client
         // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
         println()
@@ -240,7 +240,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                 val imageData = tlvMap[0x165]
                 bot.configuration.captchaSolver.invoke(
                     bot,
-                    (tlvMap[0x165] ?: error("Captcha Image Data Not Found")).toIoBuffer()
+                    (tlvMap[0x105] ?: error("Captcha Image Data Not Found")).toIoBuffer()
                 )
             }
             else -> {
