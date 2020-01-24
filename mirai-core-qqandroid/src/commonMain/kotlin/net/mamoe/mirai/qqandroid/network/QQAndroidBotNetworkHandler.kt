@@ -11,6 +11,8 @@ import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.Captcha
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.Success
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
@@ -28,13 +30,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         channel.connect("113.96.13.208", 8080)
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
+        bot.logger.info("Trying login")
         when (val response = LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()) {
-            is LoginPacket.LoginPacketResponse.Captcha ->{
-
+            is Captcha -> when (response) {
+                is Captcha.Picture -> {
+                    bot.logger.info("需要图片验证码")
+                }
+                is Captcha.Slider -> {
+                    bot.logger.info("需要滑动验证码")
+                }
             }
 
-            is LoginPacket.LoginPacketResponse.Success -> {
-
+            is Success -> {
+                bot.logger.info("Login successful")
             }
         }
 

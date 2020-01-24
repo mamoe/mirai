@@ -172,7 +172,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     sealed class LoginPacketResponse : Packet {
         object Success : LoginPacketResponse()
-        sealed class Captcha {
+        sealed class Captcha : LoginPacketResponse {
             class Slider(
                 val data: IoBuffer
             ) : Captcha()
