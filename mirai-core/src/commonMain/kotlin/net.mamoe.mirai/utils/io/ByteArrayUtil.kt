@@ -11,6 +11,27 @@ import kotlin.contracts.contract
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
+
+@JvmOverloads
+@Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
+@UseExperimental(ExperimentalUnsignedTypes::class)
+fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
+    if (length == 0) {
+        return ""
+    }
+    val lastIndex = offset + length
+    return buildString(length * 2) {
+        this@toUHexString.forEachIndexed { index, it ->
+            if (index in offset until lastIndex) {
+                var ret = it.toUByte().toString(16).toUpperCase()
+                if (ret.length == 1) ret = "0$ret"
+                append(ret)
+                if (index < lastIndex - 1) append(separator)
+            }
+        }
+    }
+}
+
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 @UseExperimental(ExperimentalUnsignedTypes::class)

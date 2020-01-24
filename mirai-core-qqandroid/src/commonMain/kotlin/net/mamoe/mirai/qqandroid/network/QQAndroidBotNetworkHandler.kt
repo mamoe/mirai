@@ -118,7 +118,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 处理从服务器接收过来的包. 这些包可能是粘在一起的, 也可能是不完整的. 将会自动处理
      */
     @UseExperimental(ExperimentalCoroutinesApi::class)
-    internal suspend fun processPacket(rawInput: ByteReadPacket): Unit = rawInput.debugPrint("Received").let { input: ByteReadPacket ->
+    internal fun processPacket(rawInput: ByteReadPacket): Unit = rawInput.debugPrint("Received").let { input: ByteReadPacket ->
         if (input.remaining == 0L) {
             return
         }
@@ -167,10 +167,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     writePacket(input)
                 }
             }
-        }
-        if (input.remaining == 0L) {
-            bot.logger.error("Empty packet received. Consider if bad packet was sent.")
-            return
         }
     }
 
