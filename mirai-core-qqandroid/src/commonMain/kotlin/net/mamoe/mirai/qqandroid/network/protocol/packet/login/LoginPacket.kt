@@ -219,10 +219,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         val client = bot.client
         debugDiscardExact(2)
         val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
-        // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
+       // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
         println()
         val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
-        when (question[18].toUHexString()) {
+        when(question[18].toUHexString()){
             "36" -> {
                 //图片验证
                 debugPrint("是一个图片验证码")
