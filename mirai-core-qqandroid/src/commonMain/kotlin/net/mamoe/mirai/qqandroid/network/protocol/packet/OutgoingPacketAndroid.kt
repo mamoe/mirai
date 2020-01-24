@@ -63,7 +63,7 @@ internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 @UseExperimental(MiraiInternalAPI::class)
 internal inline fun PacketFactory<*>.buildOutgingPacket(
     client: QQAndroidClient,
-    name: String? = null,
+    name: String? = this.commandName,
     commandName: String = this.commandName,
     key: ByteArray,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
