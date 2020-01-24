@@ -214,7 +214,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
-    private fun ByteReadPacket.onErrorMessage(tlvMap: Map<Int, ByteArray>): LoginPacketResponse.Error {
+    private fun onErrorMessage(tlvMap: Map<Int, ByteArray>): LoginPacketResponse.Error {
         return tlvMap[0x146]?.toReadPacket()?.run {
             readShort() // ver
             readShort() // code
@@ -228,31 +228,30 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     }
 
     @UseExperimental(MiraiDebugAPI::class)
-    suspend fun ByteReadPacket.onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Captcha =
-        this.debugPrint("login验证码解析").run {
-            val client = bot.client
-            // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
-            println()
-            val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
-            when (question[18].toUHexString()) {
-                "36" -> {
-                    //图片验证
-                    debugPrint("是一个图片验证码")
-                    val imageData = tlvMap[0x165]
-                    bot.configuration.captchaSolver.invoke(
-                        bot,
-                        (tlvMap[0x165] ?: error("Captcha Image Data Not Found")).toIoBuffer()
-                    )
-                }
-                else -> {
-                    error("UNKNOWN CAPTCHA QUESTION: $question")
-                }
+    suspend fun onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Captcha {
+        val client = bot.client
+        // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
+        println()
+        val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
+        when (question[18].toUHexString()) {
+            "36" -> {
+                //图片验证
+                DebugLogger.debug("是一个图片验证码")
+                val imageData = tlvMap[0x165]
+                bot.configuration.captchaSolver.invoke(
+                    bot,
+                    (tlvMap[0x165] ?: error("Captcha Image Data Not Found")).toIoBuffer()
+                )
             }
-            return TODO()
+            else -> {
+                error("UNKNOWN CAPTCHA QUESTION: $question")
+            }
         }
+        return TODO()
+    }
 
     @UseExperimental(MiraiDebugAPI::class)
-    private fun ByteReadPacket.onLoginSuccess(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Success {
+    private fun onLoginSuccess(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Success {
         val client = bot.client
         println("TLV KEYS: " + tlvMap.keys.joinToString { it.contentToString() })
 
