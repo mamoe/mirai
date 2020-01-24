@@ -348,7 +348,7 @@ public final class JceInputStream {
         JceInputStream$HeadData var4 = null;
         if (this.skipToTag(var2)) {
             try {
-                var1 = var1.getClass().newInstance();
+                var1 = var1.getClass().getConstructor().newInstance();
             } catch (Exception var5) {
                 throw new JceDecodeException(var5.getMessage());
             }
@@ -875,7 +875,7 @@ public final class JceInputStream {
                         default:
                             throw new JceDecodeException("type mismatch.");
                         case 12:
-                            var6.add(new Integer(0));
+                            var6.add(0);
                     }
                 }
             } else {

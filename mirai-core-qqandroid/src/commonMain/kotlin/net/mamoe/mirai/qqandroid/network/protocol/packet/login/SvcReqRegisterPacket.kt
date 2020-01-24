@@ -33,15 +33,11 @@ enum class RegPushReason {
     unknown
 }
 
-internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Response>() {
+internal object SvcReqRegisterPacket : PacketFactory<SvcReqRegisterPacket.Response>("StatSvc.register") {
 
     internal object Response : Packet
 
     private const val subAppId = 537062845L
-
-    init {
-        _commandName = "StatSvc.register"
-    }
 
     operator fun invoke(
         client: QQAndroidClient,

@@ -23,10 +23,7 @@ import net.mamoe.mirai.utils.io.discardExact
  * OicqRequest
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>() {
-    init {
-        this._commandName =  "wtlogin.login"
-    }
+internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login") {
 
     object SubCommand9 {
         private const val appId = 16L

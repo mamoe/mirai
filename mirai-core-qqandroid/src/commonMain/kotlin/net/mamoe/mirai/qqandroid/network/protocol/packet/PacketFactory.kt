@@ -22,16 +22,12 @@ import kotlin.jvm.JvmName
  * @param TPacket 服务器回复包解析结果
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal abstract class PacketFactory<out TPacket : Packet> {
-
-    @Suppress("PropertyName")
-    internal lateinit var _commandName: String
-
+internal abstract class PacketFactory<out TPacket : Packet>(
     /**
      * 命令名. 如 `wtlogin.login`, `ConfigPushSvc.PushDomain`
      */
-    open val commandName: String get() = _commandName
-
+    val commandName: String
+) {
     /**
      * **解码**服务器的回复数据包
      */

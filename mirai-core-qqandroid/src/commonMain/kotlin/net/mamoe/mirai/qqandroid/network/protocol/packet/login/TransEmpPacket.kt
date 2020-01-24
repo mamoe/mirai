@@ -7,11 +7,7 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 
-internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>() {
-
-    init {
-        _commandName = "wtlogin.trans_emp"
-    }
+internal object TransEmpPacket : PacketFactory<TransEmpPacket.Response>("wtlogin.trans_emp") {
 
     private const val appId = 16L
     private const val subAppId = 537062845L

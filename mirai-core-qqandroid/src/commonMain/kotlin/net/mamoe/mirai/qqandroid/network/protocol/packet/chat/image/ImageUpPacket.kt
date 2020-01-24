@@ -9,15 +9,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgingPacket
 
-internal object ImageUpPacket : PacketFactory<ImageUpPacket.ImageUpPacketResponse>() {
-
-    init {
-        this._commandName = "LongConn.OffPicUp"
-    }
-
+internal object ImageUpPacket : PacketFactory<ImageUpPacket.ImageUpPacketResponse>("LongConn.OffPicUp") {
 
     operator fun invoke(client: QQAndroidClient, req: UploadImgReq): OutgoingPacket {
-        return buildOutgingPacket(client, this._commandName, this._commandName, client.wLoginSigInfo.d2Key) {
+        return buildOutgingPacket(client, this.commandName, this.commandName, client.wLoginSigInfo.d2Key) {
             ProtoBuf.dump(
                 Cmd0x352Packet.serializer(),
                 Cmd0x352Packet.createByImageRequest(req)
