@@ -215,9 +215,27 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     }
 
     @UseExperimental(MiraiDebugAPI::class)
-    fun ByteReadPacket.onSolveLoginCaptcha(bot: QQAndroidBot) = this.debugPrint("login验证码解析").run {
+    suspend fun ByteReadPacket.onSolveLoginCaptcha(bot: QQAndroidBot) = this.debugPrint("login验证码解析").run {
+        val client = bot.client
+        debugDiscardExact(2)
         val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
-        tlvMap[0x150]?.let { client.analysisTlv150(it) }
+        // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
+        println()
+        val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
+        when (question[18].toUHexString()) {
+            "36" -> {
+                //图片验证
+                debugPrint("是一个图片验证码")
+                val imageData = tlvMap[0x165]
+                bot.configuration.captchaSolver.invoke(
+                    bot,
+                    (tlvMap[0x165] ?: error("Captcha Image Data Not Found")).toIoBuffer()
+                )
+            }
+            else -> {
+                error("UNKNOWN CAPTCHA QUESTION: $question")
+            }
+        }
     }
 
     @UseExperimental(MiraiDebugAPI::class)
