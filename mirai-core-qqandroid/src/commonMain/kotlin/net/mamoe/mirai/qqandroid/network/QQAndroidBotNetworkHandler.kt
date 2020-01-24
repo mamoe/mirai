@@ -28,15 +28,17 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         channel.connect("113.96.13.208", 8080)
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-        println("Sending login")
-        LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()
-        println("SessionTicket=${bot.client.wLoginSigInfo.wtSessionTicket.data.toUHexString()}")
+        when (val response = LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()) {
+            is LoginPacket.LoginPacketResponse.Captcha ->{
+
+            }
+
+            is LoginPacket.LoginPacketResponse.Success -> {
+
+            }
+        }
+
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        println("SessionTicketKey=${bot.client.wLoginSigInfo.wtSessionTicketKey.toUHexString()}")
-        println()
-        println()
-        println()
-        println("Sending ReqRegister")
         SvcReqRegisterPacket(bot.client).sendAndExpect<SvcReqRegisterPacket.Response>()
     }
 
