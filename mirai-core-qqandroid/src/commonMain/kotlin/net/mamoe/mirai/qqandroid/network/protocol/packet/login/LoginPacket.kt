@@ -204,7 +204,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         val type = readByte()
         println("type=$type")
 
-        debugDiscardExact(2)
+        discardExact(2)
         val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
         return when (type.toInt()) {
             0 -> onLoginSuccess(tlvMap, bot)

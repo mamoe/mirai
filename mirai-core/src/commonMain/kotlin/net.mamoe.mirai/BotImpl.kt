@@ -28,7 +28,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @UseExperimental(MiraiExperimentalAPI::class)
     final override val uin: Long
         get() = account.id
-    final override val logger: MiraiLogger = configuration.logger ?: DefaultLogger("Bot($uin)")
+    final override val logger: MiraiLogger = configuration.logger ?: DefaultLogger("Bot($uin)").also { configuration.logger = it }
 
     init {
         @Suppress("LeakingThis")

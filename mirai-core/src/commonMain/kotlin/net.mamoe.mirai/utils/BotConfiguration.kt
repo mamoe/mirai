@@ -4,7 +4,6 @@ import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmStatic
 
 /**
@@ -26,7 +25,7 @@ class BotConfiguration {
     /**
      * 日志记录器
      */
-    var logger: PlatformLogger? = null
+    var logger: MiraiLogger? = null
 
     /**
      * 父 [CoroutineContext]
