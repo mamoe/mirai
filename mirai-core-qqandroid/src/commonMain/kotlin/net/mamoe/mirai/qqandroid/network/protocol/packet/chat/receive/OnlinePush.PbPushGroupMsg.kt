@@ -59,7 +59,7 @@ internal class OnlinePush {
                 permission = when {
                     flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
                     flags and 8 != 0 -> MemberPermission.OWNER
-                    flags and 0 != 0 -> MemberPermission.MEMBER
+                    flags == 0 -> MemberPermission.MEMBER
                     else -> {
                         bot.logger.warning("判断群员权限失败")
                         MemberPermission.MEMBER
