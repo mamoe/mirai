@@ -70,6 +70,7 @@ repositories{
 **Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
 现在 Mirai 只支持 TIM PC 协议.  QQ Android 协议正在开发中.
+
 **common**
 ```kotlin
 implementation("net.mamoe:mirai-core-timpc-common:VERSION")
