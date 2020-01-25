@@ -222,7 +222,7 @@ fun Any?.contentToString(prefix: String = ""): String = when (this) {
     }
 }
 
-expect fun Any.contentToStringReflectively(prefix: String = ""): String
+expect fun Any.contentToStringReflectively(prefix: String = "", filter: ((String, Any?) -> Boolean)? = null): String
 
 @Suppress("UNCHECKED_CAST")
 fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {

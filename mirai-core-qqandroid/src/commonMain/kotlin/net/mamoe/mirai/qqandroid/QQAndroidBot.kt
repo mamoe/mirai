@@ -10,6 +10,7 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.utils.Context
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.coroutines.CoroutineContext
 
@@ -27,30 +28,30 @@ internal abstract class QQAndroidBotBase constructor(
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
     val client: QQAndroidClient = QQAndroidClient(context, account, bot = @Suppress("LeakingThis") this as QQAndroidBot)
 
-    override val qqs: ContactList<QQ>
-        get() = TODO("not implemented")
+    override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     override fun getQQ(id: Long): QQ {
-        TODO("not implemented")
+        return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this, coroutineContext, id) })
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
         return QQAndroidBotNetworkHandler(this as QQAndroidBot)
     }
 
-    override val groups: ContactList<Group>
-        get() = TODO("not implemented")
+    override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
     override suspend fun getGroup(id: GroupId): Group {
-        TODO("not implemented")
+        return groups.delegate.filteringGetOrAdd({ it.id == id.value }, { GroupImpl(this, coroutineContext, id.value) })
     }
 
     override suspend fun getGroup(internalId: GroupInternalId): Group {
-        TODO("not implemented")
+        internalId.toId().value.let { id ->
+            return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this, coroutineContext, id) })
+        }
     }
 
     override suspend fun getGroup(id: Long): Group {
-        TODO("not implemented")
+        return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this, coroutineContext, id) })
     }
 
     override suspend fun Image.getLink(): ImageLink {
