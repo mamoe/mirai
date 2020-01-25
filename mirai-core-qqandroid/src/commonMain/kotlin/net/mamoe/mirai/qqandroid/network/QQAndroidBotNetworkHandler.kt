@@ -11,8 +11,7 @@ import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.Captcha
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.Success
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
@@ -31,7 +30,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
         bot.logger.info("Trying login")
-        when (val response = LoginPacket.SubCommand9(bot.client).sendAndExpect<LoginPacket.LoginPacketResponse>()) {
+        when (val response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()) {
             is Captcha -> when (response) {
                 is Captcha.Picture -> {
                     bot.logger.info("需要图片验证码")
@@ -40,6 +39,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     bot.logger.info("需要滑动验证码")
                 }
             }
+
+            is Error -> error(response.toString())
 
             is Success -> {
                 bot.logger.info("Login successful")
@@ -207,10 +208,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(): E {
         val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
         packetListeners.addLast(handler)
-        //println(delegate.readBytes().toUHexString())
-        println("Sending length=" + delegate.remaining)
-        channel.send(delegate)//) { packetListeners.remove(handler); "Cannot send packet" }
-        println("Packet sent")
+        channel.send(delegate)
         @Suppress("UNCHECKED_CAST")
         return handler.await() as E
     }
