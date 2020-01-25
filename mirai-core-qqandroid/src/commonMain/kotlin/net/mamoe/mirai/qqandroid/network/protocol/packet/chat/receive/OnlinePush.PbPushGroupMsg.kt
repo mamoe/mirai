@@ -1,3 +1,5 @@
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
@@ -5,8 +7,10 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.ImageId
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -14,6 +18,15 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.MsgOnlinePush
 import net.mamoe.mirai.utils.io.encodeToString
+
+internal class ImageIdQQA(
+    override val value: String,
+    originalLink: String
+) : ImageId {
+    val link: ImageLink = ImageLinkQQA(originalLink)
+}
+
+internal inline class ImageLinkQQA(override val original: String) : ImageLink
 
 internal class OnlinePush {
     internal object PbPushGroupMsg : PacketFactory<GroupMessage>("OnlinePush.PbPushGroupMsg") {
@@ -28,7 +41,7 @@ internal class OnlinePush {
 
             pbPushMsg.msg.msgBody!!.richText!!.elems!!.forEach {
                 when {
-                    it.customFace != null -> message.add(Image(it.customFace.filePath))
+                    it.customFace != null -> message.add(Image(ImageIdQQA(it.customFace.filePath, it.customFace.origUrl)))
                     it.text != null -> message.add(it.text.str.encodeToString().toMessage())
                     it.extraInfo != null -> extraInfo = it.extraInfo
                 }
@@ -36,14 +49,14 @@ internal class OnlinePush {
 
             val group = bot.getGroup(pbPushMsg.msg.msgHead!!.groupInfo!!.groupCode)
 
-            val flags = extraInfo?.flags?:0
+            val flags = extraInfo?.flags ?: 0
             return GroupMessage(
                 bot = bot,
                 group = group,
                 senderName = pbPushMsg.msg.msgHead.groupInfo!!.groupCard.encodeToString(),
                 sender = group.getMember(pbPushMsg.msg.msgHead.fromUin),
                 message = message,
-                permission = when{
+                permission = when {
                     flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
                     flags and 8 != 0 -> MemberPermission.OWNER
                     flags and 0 != 0 -> MemberPermission.MEMBER

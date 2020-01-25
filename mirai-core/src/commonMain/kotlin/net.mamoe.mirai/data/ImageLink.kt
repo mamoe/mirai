@@ -14,6 +14,5 @@ interface ImageLink {
 
     suspend fun downloadAsByteArray(): ByteArray = download().readBytes()
 
-    @UseExperimental(KtorExperimentalAPI::class)
     suspend fun download(): ByteReadPacket = Http.get(original)
 }

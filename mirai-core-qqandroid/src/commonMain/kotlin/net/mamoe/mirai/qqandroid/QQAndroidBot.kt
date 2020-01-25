@@ -8,6 +8,7 @@ import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.ImageIdQQA
 import net.mamoe.mirai.qqandroid.utils.Context
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LockFreeLinkedList
@@ -55,7 +56,8 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override suspend fun Image.getLink(): ImageLink {
-        TODO("not implemented")
+        require(this.id is ImageIdQQA) { "image.id must be ImageIdQQA" }
+        return (this.id as ImageIdQQA).link
     }
 
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
