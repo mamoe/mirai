@@ -1,11 +1,13 @@
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.plugin.Command
+import net.mamoe.mirai.plugin.CommandManager
 import net.mamoe.mirai.plugin.PluginManager
 import kotlin.concurrent.thread
 
-fun main() {
+val bots = mutableMapOf<Long, Bot>()
 
+fun main() {
     println("loading Mirai in console environments")
     println("正在控制台环境中启动Mirai ")
     println()
@@ -15,39 +17,56 @@ fun main() {
     println("Mirai-console now running on " + System.getProperty("user.dir"))
     println("Mirai-console 正在 " + System.getProperty("user.dir") + " 运行")
     println()
-    println("\"login qqnumber qqpassword \" to login a bot")
-    println("\"login qq号 qq密码 \" 来登陆一个BOT")
+    println("\"/login qqnumber qqpassword \" to login a bot")
+    println("\"/login qq号 qq密码 \" 来登陆一个BOT")
 
     thread { processNextCommandLine() }
 
     PluginManager.loadPlugins()
+    defaultCommands()
 
     Runtime.getRuntime().addShutdownHook(thread(start = false) {
         PluginManager.disableAllPlugins()
     })
 }
 
-tailrec fun processNextCommandLine() {
-    val commandArgs = readLine()?.split(" ") ?: return
-    when (commandArgs[0]) {
-        "login" -> {
-            if (commandArgs.size < 3) {
-                println("\"login qqnumber qqpassword \" to login a bot")
-                println("\"login qq号 qq密码 \" 来登录一个BOT")
-                return processNextCommandLine()
-            }
-            val qqNumber = commandArgs[1].toLong()
-            val qqPassword = commandArgs[2]
-            println("login...")
 
+fun defaultCommands() {
+    class LoginCommand : Command(
+        "login"
+    ) {
+        override fun onCommand(args: List<String>): Boolean {
+            if (args.size < 2) {
+                println("\"/login qqnumber qqpassword \" to login a bot")
+                println("\"/login qq号 qq密码 \" 来登录一个BOT")
+                return false
+            }
+            val qqNumber = args[0].toLong()
+            val qqPassword = args[1]
+            println("login...")
             runBlocking {
                 try {
-                    Bot(qqNumber, qqPassword).alsoLogin()
+                    Bot(qqNumber, qqPassword).also {
+                        it.login()
+                        bots[qqNumber] = it
+                    }
                 } catch (e: Exception) {
-                    println("login failed")
+                    println("$qqNumber login failed")
                 }
             }
+            return true
         }
     }
-    return processNextCommandLine()
+    CommandManager.register(LoginCommand())
+}
+
+tailrec fun processNextCommandLine() {
+    val fullCommand = readLine()
+    if (fullCommand != null && fullCommand.startsWith("/")) {
+        if (!CommandManager.runCommand(fullCommand)) {
+            println("unknown command $fullCommand")
+            println("未知指令 $fullCommand")
+        }
+    }
+    processNextCommandLine();
 }

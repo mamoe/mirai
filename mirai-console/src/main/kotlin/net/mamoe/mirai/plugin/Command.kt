@@ -16,6 +16,24 @@ object CommandManager {
         }
     }
 
+    fun runCommand(fullCommand: String): Boolean {
+        val blocks = fullCommand.split(" ")
+        val commandHead = blocks[0].replace("/", "")
+        if (!registeredCommand.containsKey(commandHead)) {
+            return false
+        }
+        val args = blocks.subList(1, blocks.size)
+        registeredCommand[commandHead]?.run {
+            if (onCommand(
+                    blocks.subList(1, blocks.size)
+                )
+            ) {
+                PluginManager.onCommand(this, args)
+            }
+        }
+        return true
+    }
+
 
 }
 
@@ -27,7 +45,7 @@ abstract class Command(
      * 最高优先级监听器
      * 如果return [false] 这次指令不会被[PluginBase]的全局onCommand监听器监听
      * */
-    fun onCommand(args: List<String>): Boolean {
+    open fun onCommand(args: List<String>): Boolean {
         return true
     }
 }
