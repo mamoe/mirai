@@ -236,8 +236,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
         println()
         val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
-        when (question[18].toUHexString()) {
-            "36" -> {
+        when (question[18].toInt()) {
+            0x36 -> {
                 //图片验证
                 DebugLogger.debug("是一个图片验证码")
                 val imageData = tlvMap[0x105]!!.toReadPacket()

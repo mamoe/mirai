@@ -9,10 +9,7 @@ import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
-import net.mamoe.mirai.qqandroid.utils.Context
-import net.mamoe.mirai.qqandroid.utils.DeviceInfo
-import net.mamoe.mirai.qqandroid.utils.NetworkType
-import net.mamoe.mirai.qqandroid.utils.SystemDeviceInfo
+import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.ECDH
@@ -20,10 +17,7 @@ import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.cryptor.initialPublicKey
 import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.io.hexToBytes
-import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.readUShortLVByteArray
-import net.mamoe.mirai.utils.io.readUShortLVString
+import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 /*
@@ -85,8 +79,8 @@ internal open class QQAndroidClient(
     val context: Context by context.unsafeWeakRef()
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
-    var tgtgtKey: ByteArray = ByteArray(16) // generateTgtgtKey(device.guid)
-    val randomKey: ByteArray = ByteArray(16) // 加密使用
+    var tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
+    val randomKey: ByteArray = getRandomByteArray(16)
 
     var miscBitMap: Int = 184024956 // 也可能是 150470524 ?
     var mainSigMap: Int = 16724722
