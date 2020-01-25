@@ -242,7 +242,7 @@ object NullMessageChain : MessageChain {
 
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
     override fun contains(element: Message): Boolean = error("accessing NullMessageChain")
-    override fun followedBy(tail: Message): MessageChain = error("accessing NullMessageChain")
+    override fun followedBy(tail: Message): MessageChain = tail.toChain()
 
     override val size: Int get() = error("accessing NullMessageChain")
     override fun containsAll(elements: Collection<Message>): Boolean = error("accessing NullMessageChain")

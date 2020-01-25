@@ -9,6 +9,8 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.Cmd0x352Packet
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.GetImgUrlReq
 import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
 
 internal object ImageDownPacket : PacketFactory<ImageDownPacket.ImageDownPacketResponse>("LongConn.OffPicDown") {

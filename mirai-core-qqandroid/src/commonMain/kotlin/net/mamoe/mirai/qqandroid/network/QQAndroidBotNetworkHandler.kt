@@ -4,6 +4,9 @@ import kotlinx.coroutines.*
 import kotlinx.io.core.*
 import kotlinx.io.pool.ObjectPool
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.event.BroadcastControllable
+import net.mamoe.mirai.event.Cancellable
+import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -12,7 +15,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
@@ -48,7 +51,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        SvcReqRegisterPacket(bot.client).sendAndExpect<SvcReqRegisterPacket.Response>()
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
     }
 
     /**
@@ -113,11 +116,26 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 if (PacketReceivedEvent(packet).broadcast().cancelled) {
                     return@parseIncomingPacket
                 }
+
+                // pass to listeners (attached by sendAndExpect).
                 packetListeners.forEach { listener ->
                     if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
                         listener.complete(packet)
                     }
                 }
+
+                // broadcast
+                if (packet is Subscribable) {
+                    if (packet is BroadcastControllable) {
+                        if (packet.shouldBroadcast) packet.broadcast()
+                    } else {
+                        packet.broadcast()
+                    }
+
+                    if (packet is Cancellable && packet.cancelled) return@parseIncomingPacket
+                }
+
+                bot.logger.info(packet)
             }
         } finally {
             println()

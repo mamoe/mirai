@@ -6,6 +6,7 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.io.JceInput
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.SvcReqRegisterPacket
 import net.mamoe.mirai.utils.DefaultLogger
@@ -49,7 +50,8 @@ internal val PacketLogger: MiraiLogger = DefaultLogger("Packet")
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     LoginPacket,
-    SvcReqRegisterPacket
+    SvcReqRegisterPacket,
+    OnlinePush.PbPushGroupMsg
 ) {
 
     fun findPacketFactory(commandName: String): PacketFactory<*>? = this.firstOrNull { it.commandName == commandName }
@@ -117,7 +119,14 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     }
 
                     when (flag2) {
-                        1 -> it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
+                        1 ->//it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
+                        {
+                            consumer(
+                                it.packetFactory.run { decode(bot, it.data) },
+                                it.packetFactory.commandName,
+                                it.sequenceId
+                            )
+                        }
                         2 -> it.data.parseOicqResponse(bot, it.packetFactory, it.sequenceId, consumer)
                         else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
                     }
