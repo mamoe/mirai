@@ -28,8 +28,29 @@
 
 您的 star 是对我们最大的鼓励(点击项目右上角);  
 
+## Features
+#### mirai-core 
+通用 API 模块，请参考此模块调用 Mirai.    
+#### mirai-core-timpc 
+TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅新增少量 API. 详见 [README.md](mirai-core-timpc/)   
+支持的功能： 
+- 消息收发：图片文字复合消息，图片消息
+- 群管功能：群员列表，禁言
+（目前不再更新，请关注安卓协议）
+
+#### mirai-core-qqandroid 
+QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前还未完成。   
+- 高兼容性：Mirai 协议仅含极少部分为硬编码，其余全部随官方方式动态生成
+- 高安全性：密匙随机，ECDH 动态计算，硬件信息真机模拟（Android 平台获取真机信息）
+
+开发进度：  
+- 完成 密码登录 （2020/1/23）
+- 进行中 验证码登录
+- 进行中 消息解析
+- 进行中 图片上传下载
+
 ## Use directly
-**直接使用Mirai(终端环境/网页面板）.**  
+**直接使用Mirai(终端环境/网页面板（将来））.**  
 [Mirai-Console](https://github.com/mamoe/mirai/tree/master/mirai-console) 插件支持, 在终端中启动Mirai并获得机器人服务
 
 ## Use as a library
