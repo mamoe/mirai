@@ -23,7 +23,7 @@ internal class ImageIdQQA(
     override val value: String,
     originalLink: String
 ) : ImageId {
-    val link: ImageLink = ImageLinkQQA(originalLink)
+    val link: ImageLink = ImageLinkQQA("http://gchat.qpic.cn$originalLink")
 }
 
 internal inline class ImageLinkQQA(override val original: String) : ImageLink
