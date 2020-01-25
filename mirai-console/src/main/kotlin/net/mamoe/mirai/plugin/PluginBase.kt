@@ -1,6 +1,8 @@
 package net.mamoe.mirai.plugin
 
 import kotlinx.coroutines.*
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.encodeToString
@@ -43,9 +45,46 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
 
     }
 
+    /**
+     * 当任意指令被使用
+     */
+    open fun onCommand(command: Command) {
+
+    }
+
+
     internal fun enable() {
         this.onEnable()
     }
+
+    @UnstableDefault
+    fun loadConfig(fileName: String = "config.json"): ConfigSection {
+        var content = File(dataFolder.name + "/" + fileName)
+            .also {
+                if (!it.exists()) it.createNewFile()
+            }.readText()
+
+        if (content == "") {
+            content = "{}"
+        }
+        return Json.parse(
+            ConfigSection.serializer(),
+            content
+        )
+    }
+
+    @UnstableDefault
+    fun saveConfig(config: ConfigSection, fileName: String = "config.json") {
+        val content = Json.stringify(
+            ConfigSection.serializer(),
+            config
+        )
+        File(dataFolder.name + "/" + fileName)
+            .also {
+                if (!it.exists()) it.createNewFile()
+            }.writeText(content)
+    }
+
 
     @JvmOverloads
     internal fun disable(throwable: CancellationException? = null) {
