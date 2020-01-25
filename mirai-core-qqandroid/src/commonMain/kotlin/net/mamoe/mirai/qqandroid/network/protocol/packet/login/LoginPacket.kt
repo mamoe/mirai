@@ -1,6 +1,7 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 
+import io.ktor.util.InternalAPI
 import kotlinx.io.core.*
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -189,6 +190,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
+    @InternalAPI
     @UseExperimental(MiraiDebugAPI::class)
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse = this.debugPrint("login解析").run {
         // 00 09 sub cmd
@@ -227,6 +229,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         } ?: error("Cannot find error message")
     }
 
+    @InternalAPI
     @UseExperimental(MiraiDebugAPI::class)
     private suspend fun onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Captcha {
         val client = bot.client
@@ -237,11 +240,17 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             "36" -> {
                 //图片验证
                 DebugLogger.debug("是一个图片验证码")
-                val imageData = tlvMap[0x165]
-                bot.configuration.captchaSolver.invoke(
-                    bot,
-                    (tlvMap[0x105] ?: error("Captcha Image Data Not Found")).toIoBuffer()
-                )
+                val imageData = tlvMap[0x105]!!.toReadPacket()
+                println(tlvMap[0x105]!!.toUHexString())
+                val signInfoLength = imageData.readShort()
+                val picLength = imageData.readShort()
+                val sign = imageData.readBytes(signInfoLength.toInt())
+                val tv104 = tlvMap[0x104]!!
+                val ssoSign =
+                    bot.configuration.captchaSolver.invoke(
+                        bot,
+                        imageData.readRemainingBytes().toIoBuffer()
+                    )
             }
             else -> {
                 error("UNKNOWN CAPTCHA QUESTION: $question")
