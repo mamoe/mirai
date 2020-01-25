@@ -5,9 +5,8 @@
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **[English](README-eng.md)**  
 
-**TIM PC 协议** 跨平台 QQ 协议支持库.  
-**纯 Kotlin 实现协议和支持框架. 目前可运行在 JVM 或 Android.**  
-部分协议来自网络上开源项目.   
+**TIM PC 和 QQ Android 协议** 跨平台 QQ 协议支持库.  
+**纯 Kotlin 实现协议和支持框架. 目前可运行在 JVM 或 Android.**   
 
 **一切开发旨在学习，请勿用于非法用途**  
 
@@ -16,17 +15,6 @@
 ## Update log
 在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划  
 在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
-
-## Contribution
-
-我们 (Mamoe, NaturalHG & Him188) 将会一直维护这个项目，除非遇到不可抗力因素。
-
-我们欢迎一切形式的贡献。  
-我们也期待有更多人能加入 Mirai 的开发。  
-
-若在使用过程中有任何疑问, 可提交 issue 或是邮件联系(support@mamoe.net). 我们希望 Mirai 变得更易用.
-
-您的 star 是对我们最大的鼓励(点击项目右上角);  
 
 ## Features
 #### mirai-core 
@@ -46,9 +34,11 @@ QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前还�
 
 开发进度：  
 - 完成 密码登录 （2020/1/23）
-- 进行中 验证码登录
-- 进行中 消息解析
-- 进行中 图片上传下载
+- 完成 群消息解析 (2020/1/25）
+- 进行中 免密登录
+- 进行中 图片验证码登录
+- 进行中 消息解析和发送
+- 进行中 图片上传和下载
 
 ## Use directly
 **直接使用Mirai(终端环境/网页面板（将来））.**  
@@ -87,8 +77,19 @@ implementation("net.mamoe:mirai-core-timpc-android:VERSION")
 Android 上, Mirai 运行需使用 80M 内存.  
 JVM 上需 120M-150M 内存
 
+## Contribution
+
+我们 (Mamoe, NaturalHG & Him188) 将会一直维护这个项目，除非遇到不可抗力因素。
+
+我们欢迎一切形式的贡献。  
+我们也期待有更多人能加入 Mirai 的开发。  
+
+若在使用过程中有任何疑问, 可提交 issue 或是邮件联系(support@mamoe.net). 我们希望 Mirai 变得更易用.
+
+您的 star 是对我们最大的鼓励(点击项目右上角);  
+
 ## Wiki
-在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助
+在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助，如 API 示例。
 
 ## Try
 
@@ -115,9 +116,9 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 ## Build Requirements
 
-- Kotlin 1.3.61  
-- JDK 8
-- Android SDK 29
+- Kotlin 1.3.61 
+- JDK 8 (required)
+- Android SDK 29 (for Android target, optional)
 
 #### Libraries used
 感谢:
