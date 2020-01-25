@@ -246,7 +246,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                 val picLength = imageData.readShort()
                 val sign = imageData.readBytes(signInfoLength.toInt())
                 val tv104 = tlvMap[0x104]!!
-                val ssoSign =
+                val ssoSign = //
                     bot.configuration.captchaSolver.invoke(
                         bot,
                         imageData.readRemainingBytes().toIoBuffer()
