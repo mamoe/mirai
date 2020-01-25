@@ -22,9 +22,15 @@ object CommandManager {
         if (!registeredCommand.containsKey(commandHead)) {
             return false
         }
-        registeredCommand[commandHead]?.onCommand(
-            blocks.subList(1, blocks.size)
-        )
+        val args = blocks.subList(1, blocks.size)
+        registeredCommand[commandHead]?.run {
+            if (onCommand(
+                    blocks.subList(1, blocks.size)
+                )
+            ) {
+                PluginManager.onCommand(this, args)
+            }
+        }
         return true
     }
 

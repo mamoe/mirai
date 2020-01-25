@@ -48,7 +48,7 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     /**
      * 当任意指令被使用
      */
-    open fun onCommand(command: Command) {
+    open fun onCommand(command: Command, args: List<String>) {
 
     }
 
@@ -176,6 +176,11 @@ object PluginManager {
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
 
+    fun onCommand(command: Command, args: List<String>) {
+        this.nameToPluginBaseMap.values.forEach {
+            it.onCommand(command, args)
+        }
+    }
 
     /**
      * 尝试加载全部插件
