@@ -1,4 +1,4 @@
-package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image
+package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
