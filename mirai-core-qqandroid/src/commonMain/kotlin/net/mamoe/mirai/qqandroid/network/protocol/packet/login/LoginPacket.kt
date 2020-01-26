@@ -38,6 +38,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
             writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeShort(2) // subCommand
+                    writeShort(4) // count of TLVs, probably ignored by server?
                     t2(captchaAnswer, captchaSign, 0)
                     t8(2052)
                     t104(client.t104)

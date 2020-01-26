@@ -43,7 +43,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         result = "ABCD"
                     }
                     bot.logger.info("提交验证码")
-                    LoginPacket.SubCommand2(bot.client, response.sign, result)
+                    val captchaResponse: LoginPacket.LoginPacketResponse =
+                        LoginPacket.SubCommand2(bot.client, response.sign, result).sendAndExpect()
                 }
                 is Captcha.Slider -> {
                     bot.logger.info("需要滑动验证码")
