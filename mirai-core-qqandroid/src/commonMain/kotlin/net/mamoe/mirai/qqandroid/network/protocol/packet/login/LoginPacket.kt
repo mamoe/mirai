@@ -203,17 +203,24 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         ) : LoginPacketResponse()
 
         sealed class Captcha : LoginPacketResponse() {
-            lateinit var answer: String
 
             class Slider(
                 val data: IoBuffer,
                 val sign: ByteArray
-            ) : Captcha()
+            ) : Captcha(){
+                override fun toString(): String {
+                    return "LoginPacketResponse.Captcha.Slider"
+                }
+            }
 
             class Picture(
                 val data: IoBuffer,
                 val sign: ByteArray
-            ) : Captcha()
+            ) : Captcha(){
+                override fun toString(): String {
+                    return "LoginPacketResponse.Captcha.Picture"
+                }
+            }
         }
     }
 
@@ -258,7 +265,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     @InternalAPI
     @UseExperimental(MiraiDebugAPI::class)
-    private suspend fun onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Captcha {
+    private suspend fun onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse. Captcha {
         val client = bot.client
         // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
         println()

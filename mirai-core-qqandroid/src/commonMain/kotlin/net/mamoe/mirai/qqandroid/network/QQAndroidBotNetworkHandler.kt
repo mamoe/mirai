@@ -14,7 +14,6 @@ import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
@@ -33,28 +32,36 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
         bot.logger.info("Trying login")
-        when (val response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()) {
-            is Captcha -> when (response) {
-                is Captcha.Picture -> {
-                    bot.logger.info("需要图片验证码")
-                    var result = bot.configuration.captchaSolver.invoke(bot, response.data)
-                    if (result === null || result.length != 4) {
-                        //refresh captcha
-                        result = "ABCD"
+
+        var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+        captcha@ while (true) {
+            when (response) {
+                is LoginPacket.LoginPacketResponse.Captcha -> when (response) {
+                    is LoginPacket.LoginPacketResponse.Captcha.Picture -> {
+                        bot.logger.info("需要图片验证码")
+                        var result = bot.configuration.captchaSolver.invoke(bot, response.data)
+                        if (result === null || result.length != 4) {
+                            //refresh captcha
+                            @Suppress("SpellCheckingInspection")
+                            result = "ABCD"
+                        }
+                        bot.logger.info("提交验证码")
+
+                        response = LoginPacket.SubCommand2(bot.client, response.sign, result).sendAndExpect()
+                        // goto outer when
                     }
-                    bot.logger.info("提交验证码")
-                    val captchaResponse: LoginPacket.LoginPacketResponse =
-                        LoginPacket.SubCommand2(bot.client, response.sign, result).sendAndExpect()
-                }
-                is Captcha.Slider -> {
-                    bot.logger.info("需要滑动验证码")
-                }
-            }
 
-            is Error -> error(response.toString())
+                    is LoginPacket.LoginPacketResponse.Captcha.Slider -> {
+                        error("需要滑动验证码")
+                    }
+                }
 
-            is Success -> {
-                bot.logger.info("Login successful")
+                is LoginPacket.LoginPacketResponse.Error -> error(response.toString())
+
+                is LoginPacket.LoginPacketResponse.Success -> {
+                    bot.logger.info("Login successful")
+                    break@captcha
+                }
             }
         }
 
