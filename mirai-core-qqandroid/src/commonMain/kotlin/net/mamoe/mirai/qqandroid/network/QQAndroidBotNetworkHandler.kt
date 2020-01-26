@@ -34,14 +34,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         bot.logger.info("Trying login")
         when (val response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()) {
-            is UnsafeLogin -> {
-                bot.logger.info("Login unsuccessful, device auth is needed")
-                bot.logger.info("登陆失败, 原因为非常用设备登陆")
-                bot.logger.info("Open the following URL in QQ browser and complete the verification")
-                bot.logger.info("将下面这个链接在QQ浏览器中打开并完成认证后尝试再次登陆")
-                bot.logger.info(response.url)
-                return
-            }
             is Captcha -> when (response) {
                 is Captcha.Picture -> {
                     bot.logger.info("需要图片验证码")

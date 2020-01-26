@@ -15,7 +15,6 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
-import net.mamoe.mirai.utils.cryptor.initialPublicKey
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -54,7 +53,7 @@ internal open class QQAndroidClient(
             "tgtgtKey" to tgtgtKey,
             "tgtKey" to wLoginSigInfo.tgtKey,
             "deviceToken" to wLoginSigInfo.deviceToken,
-            "shareKeyCalculatedByConstPubKey" to ecdh.calculateShareKeyByPeerPublicKey(initialPublicKey)
+            "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.shareKey
             //"t108" to wLoginSigInfo.t1,
             //"t10c" to t10c,
             //"t163" to t163
@@ -287,8 +286,8 @@ internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, ex
             val pt4token = readUShortLVByteArray()
 
             when {
-                psKey.size > 0 -> outPSKeyMap[domain] = PSKey(psKey, creationTime, expireTime)
-                pt4token.size > 0 -> outPt4TokenMap[domain] = Pt4Token(pt4token, creationTime, expireTime)
+                psKey.isNotEmpty() -> outPSKeyMap[domain] = PSKey(psKey, creationTime, expireTime)
+                pt4token.isNotEmpty() -> outPt4TokenMap[domain] = Pt4Token(pt4token, creationTime, expireTime)
             }
         }
     }
