@@ -46,6 +46,7 @@ internal open class QQAndroidClient(
     @MiraiInternalAPI("Be careful. Do not use the id in BotAccount. use client.uin instead")
     val account: BotAccount,
 
+
     val ecdh: ECDH = ECDH(),
     val device: DeviceInfo = SystemDeviceInfo(context),
     bot: QQAndroidBot
@@ -160,6 +161,8 @@ internal open class QQAndroidClient(
     lateinit var mainDisplayName: ByteArray
 
     var transportSequenceId = 1
+
+    lateinit var t104: ByteArray
 }
 
 class ReserveUinInfo(

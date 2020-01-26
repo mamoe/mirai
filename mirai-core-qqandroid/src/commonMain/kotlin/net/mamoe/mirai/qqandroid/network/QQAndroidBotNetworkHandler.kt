@@ -37,6 +37,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             is Captcha -> when (response) {
                 is Captcha.Picture -> {
                     bot.logger.info("需要图片验证码")
+                    var result = bot.configuration.captchaSolver.invoke(bot, response.data)
+                    if (result === null || result.length != 4) {
+                        //refresh captcha
+                        result = "ABCD"
+                    }
+                    bot.logger.info("提交验证码")
+                    LoginPacket.SubCommand2(bot.client, response.sign, result)
                 }
                 is Captcha.Slider -> {
                     bot.logger.info("需要滑动验证码")

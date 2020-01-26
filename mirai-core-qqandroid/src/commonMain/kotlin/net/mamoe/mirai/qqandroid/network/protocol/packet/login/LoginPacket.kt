@@ -26,6 +26,27 @@ import net.mamoe.mirai.utils.io.discardExact
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login") {
 
+    object SubCommand2 {
+        private const val appId = 16L
+        private const val subAppId = 537062845L
+
+        @UseExperimental(MiraiInternalAPI::class)
+        operator fun invoke(
+            client: QQAndroidClient,
+            captchaSign: ByteArray,
+            captchaAnswer: String
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+            writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    t2(captchaAnswer, captchaSign, 0)
+                    t8(2052)
+                    t104(client.t104)
+                    t116(150470524, 66560)
+                }
+            }
+        }
+    }
+
     object SubCommand9 {
         private const val appId = 16L
         private const val subAppId = 537062845L
@@ -180,12 +201,16 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         ) : LoginPacketResponse()
 
         sealed class Captcha : LoginPacketResponse() {
+            lateinit var answer: String
+
             class Slider(
-                val data: IoBuffer
+                val data: IoBuffer,
+                val sign: ByteArray
             ) : Captcha()
 
             class Picture(
-                val data: IoBuffer
+                val data: IoBuffer,
+                val sign: ByteArray
             ) : Captcha()
         }
     }
@@ -240,17 +265,15 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             "36" -> {
                 //图片验证
                 DebugLogger.debug("是一个图片验证码")
+                bot.client.t104 = tlvMap[0x104]!!
                 val imageData = tlvMap[0x105]!!.toReadPacket()
-                println(tlvMap[0x105]!!.toUHexString())
                 val signInfoLength = imageData.readShort()
-                val picLength = imageData.readShort()
+                imageData.discardExact(2)//image Length
                 val sign = imageData.readBytes(signInfoLength.toInt())
-                val tv104 = tlvMap[0x104]!!
-                val ssoSign = //
-                    bot.configuration.captchaSolver.invoke(
-                        bot,
-                        imageData.readRemainingBytes().toIoBuffer()
-                    )
+                return LoginPacketResponse.Captcha.Picture(
+                    data = imageData.readRemainingBytes().toIoBuffer(),
+                    sign = sign
+                )
             }
             else -> {
                 error("UNKNOWN CAPTCHA QUESTION: $question")
