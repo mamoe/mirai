@@ -49,14 +49,12 @@ import kotlin.text.toByteArray
 // ConfigPushSvc.PushResp, ** StatSvc.register send 20da22db750806141ef448110800450002f85124400080060000c0a8030a71600dd0fe501f908b8c558508cee2605018020045cd0000000000ac0000000b01a4da6eb0000000000e3139393437303130323122465f76192ce454d64e90a36fe651eb96d052893396c002a815851dc04994d16f7a596b06ca02b4743077fb387442f00409806ece8bf2f533a129073db60c8d5a22b9d4224387629e8ce29959a683f505b741aa1a83068239f6df0f97a4e5499c1035092e7466b005307110460211aecd1f11c10cea0cc861007e08882accb0bbaec68cd9c9a83fd19bb5eebda016ff000002240000000a0100000044e0e22a59327abb9ce80cf63be86694210344fab2f2b065d7785a32cacfa4075cd509f49cb37a075ad0685cbd472344bfdef1ede611c0ad81129be9e2d7e476d2000000000e31393934373031303231f4cf6ac405adbbfab64c0905f9f1f4b3236e4b17c34bc8aaefd77b184f012c036978eea06bb7f9e6d443a9d71f6eaf8b08b3c49858269de0405d7acf5076fd3000357cdbced53142200fcd8f87dc2a047ecfdd0d374aa0bb1b5c97b35e59a7cc77f146c930d04be6b70a75be3d71704d1b95794cbc36ef0ffe96533d61521c7b4b676f6b067859c0760ae5689f146b3c1a19668b694a50aa1d561f2feb76b49d507dc530d49007ba08f84297b23290177539d0b2a3ceb0a2ef8a64b65494e574ed78857fc1c93911c7639dce6699d5fde605f432d4ab7dfd6cf8cc5451950b29d79f5e755f90faadf55dfcb3993d9b4fb9479f44e47c1a0702205da298327b0deb180e2976d07be7b6ac0302b128d792200a092e084ca6908fe0c13e142d50f42783009029b3d2da23bd1050a2cc56023f943ce3b164002fa31fdf9624a255455cc77b774223726f36cccb2603240ca528534ee1533eb66872b007ea20bb5e76f87efa35d7dcb4be7e5f410ed7276c09e20f04db63ea4b79fd7d2201ef0ec14b5f9795bd2bd028e58b3ab8d3461a188f113a8b50406e9c3db9f8b2115924faadc9f2707c6715dc2dda73119228079467fbe145cf951cf1948e755aa428f4e478a6ab9708ad39ded4
 
 
-internal val wtSessionTicketKey = "B6 9D E4 EC 65 38 64 FD C8 3A D8 33 54 35 0C 73".hexToBytes()
-internal val tgtgtKey = "D7 71 03 E3 4C E5 8F 6B 05 D8 C7 8C 96 FB FB 23".hexToBytes()
-internal val deviceToken = "CE 1E 2E DC 69 24 4F 9B FF 2F 52 D8 8F 69 DD 40".hexToBytes()
-internal val D2Key = "44 28 6B 35 7A 54 2D 45 45 5D 56 32 44 33 47 49".hexToBytes()
-internal val userStKey = "35 29 42 54 78 62 47 68 5E 77 68 54 6B 76 57 5F".hexToBytes()
-internal val userStWebSig =
-    "63 A2 BD 78 FC 88 58 AC 12 95 6C 15 6A 9B A1 EB B0 E8 66 D0 95 D2 0E B4 BC C3 48 05 C1 D9 54 FB 65 8F 21 29 E5 5D 84 BA A1 63 48 5C 24 F3 84 A3".hexToBytes()
-internal val tgtKey = "44 24 3F 43 3F 21 37 2B 29 44 6E 47 70 3A 4E 3D".hexToBytes()
+internal var wtSessionTicketKey = "B6 9D E4 EC 65 38 64 FD C8 3A D8 33 54 35 0C 73".hexToBytes()
+internal var tgtgtKey = "D7 71 03 E3 4C E5 8F 6B 05 D8 C7 8C 96 FB FB 23".hexToBytes()
+internal var deviceToken = "CE 1E 2E DC 69 24 4F 9B FF 2F 52 D8 8F 69 DD 40".hexToBytes()
+internal var D2Key = "44 28 6B 35 7A 54 2D 45 45 5D 56 32 44 33 47 49".hexToBytes()
+internal var userStKey = "35 29 42 54 78 62 47 68 5E 77 68 54 6B 76 57 5F".hexToBytes()
+internal var tgtKey = "44 24 3F 43 3F 21 37 2B 29 44 6E 47 70 3A 4E 3D".hexToBytes()
 
 internal val t108 = "BD 12 96 6C 83 53 EF DD 06 16 52 16 B8 1B 25 69".hexToBytes()
 internal val t10c = "23 7D 2C 7A 3F 4A 41 35 7D 3B 45 51 6D 3D 2A 56".hexToBytes()
@@ -66,6 +64,10 @@ internal val shareKeyCalculatedByConstPubKey = ECDH.calculateShareKey(
     loadPrivateKey("97a52992cb7a2110413629af94a3c249c68a3b731510caa8"),
     initialPublicKey
 )
+
+var ecdhPrivateKeyS = "97a52992cb7a2110413629af94a3c249c68a3b731510caa8"
+var passwordMd5: ByteArray = byteArrayOf()
+var uin: Long = 0L
 
 fun main() {
     val data = """
@@ -80,23 +82,32 @@ fun main() {
                 bytes
             } else bytes.dropTCPHead()
         }.flatMap { it.toList() }.toByteArray()
-    data.debugPrint("input").read {
-        var count = 0
-        while (remaining != 0L) {
-            readBytes((readUInt() - 4u).toInt()).toReadPacket().runCatching { analysisOneFullPacket() }.exceptionOrNull()?.printStackTrace()
-            count++
-            if (remaining != 0L) {
-                println()
-                println()
-                println()
-                println()
-                println()
-            } else DebugLogger.info("共有 $count 个包")
-        }
-    }
+    data.read { decodeMultiClientToServerPackets() }
 }
 
-fun ByteReadPacket.analysisOneFullPacket() = debugIfFail("Failed", { buildPacket { writeInt(it.size + 4); writeFully(it) } }) {
+/**
+ * 顶层方法. TCP 切掉头后直接来这里
+ */
+fun ByteReadPacket.decodeMultiClientToServerPackets() {
+    println("=======================处理客户端到服务器=======================")
+    var count = 0
+    while (remaining != 0L) {
+        readBytes((readUInt() - 4u).toInt()).toReadPacket().runCatching { analysisOneFullPacket() }.exceptionOrNull()?.printStackTrace()
+        count++
+        if (remaining != 0L) {
+            println()
+            println()
+            println()
+            println()
+            println()
+        } else DebugLogger.info("=======================共有 $count 个包=======================")
+    }
+    println()
+}
+
+val firstShareKey = ECDH.calculateShareKey(loadPrivateKey(ecdhPrivateKeyS), initialPublicKey)
+
+fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed", { buildPacket { writeInt(it.size + 4); writeFully(it) } }) {
     val flag1 = readInt()
     println("flag1=" + flag1.contentToString())
     val flag2 = readByte().toInt()
@@ -125,6 +136,109 @@ fun ByteReadPacket.analysisOneFullPacket() = debugIfFail("Failed", { buildPacket
         when (flag1) {
             0x0A -> decodeSso()
             0x0B -> decodeUni()
+            else -> error("unknown flag1: $flag1")
+        }
+
+        when (flag2) {
+
+            2 -> {
+
+                this.debugPrint("Oicq Request").apply {
+                    /*
+                   byte     2 // head flag
+                   short    27 + 2 + remaining.length
+                   ushort   client.protocolVersion // const 8001
+                   ushort   0x0001 // const0
+                   uint     client.uin
+                   byte     3 // const1
+                   ubyte    encryptMethod.value // [EncryptMethod]
+                   byte     0 // const2
+                   int      2 // const3
+                   int      client.appClientVersion
+                   int      0 // const4
+                    */
+                    discardExact(3)
+                    readShort().toInt().takeIf { it != 8001 }?.let {
+                        println("  got new protocolVersion=$it")
+                    }
+                    println("  commandId=${readUShort()}")
+                    readUShort().toInt().takeIf { it != 1 }?.let {
+                        println("  got new const0=$it")
+                    }
+                    println("  uin=${readUInt()}")
+                    readByte().toInt().takeIf { it != 3 }?.let {
+                        println("  got new const1=$it")
+                    }
+                    val encryptionMethod = readUByte().toInt()
+                    readByte().toInt().takeIf { it != 0 }?.let {
+                        println("  got new const2=$it")
+                    }
+                    readInt().takeIf { it != 2 }?.let {
+                        println("  got new const3=$it")
+                    }
+                    readInt().takeIf { it != 0 }?.let {
+                        println("  got new appClientVersion=$it")
+                    }
+                    readInt().takeIf { it != 0 }?.let {
+                        println("  got new const4=$it")
+                    }
+
+
+                    discardExact(1)
+                    discardExact(1)
+                    val randomKey = readBytes(16)
+                    println("randomKey= ${randomKey.toUHexString()}")
+                    readUShort().toInt().takeIf { it != 258 }?.let {
+                        println("  got new const in ECDH head(originally=258)=$it")
+                    }
+                    val publicKey = readBytes(readShort().toInt())
+                    println("ecdh publicKey=" + publicKey.toUHexString())
+
+
+                    val encrypt = when (encryptionMethod) {
+                        135, 7 -> {
+                            ECDH.calculateShareKey(
+                                loadPrivateKey(ecdhPrivateKeyS),
+                                //"04cb366698561e936e80c157e074cab13b0bb68ddeb2824548a1b18dd4fb6122afe12fe48c5266d8d7269d7651a8eb6fe7".chunkedHexToBytes().adjustToPublicKey() // QQ: 04cb366698561e936e80c157e074cab13b0bb68ddeb2824548a1b18dd4fb6122afe12fe48c5266d8d7269d7651a8eb6fe7
+                                publicKey.adjustToPublicKey()
+                            )
+                        }
+
+                        69 -> {
+                            error("encryptionMethod 69")
+                        }
+                        else -> error("unknown encryptionMethod=$encryptionMethod")
+                    }
+
+                    val encryptedBody = readBytes((remaining - 1).toInt())
+
+                    val decrypted = kotlin.runCatching {
+                        encryptedBody.decryptBy(encrypt).also { println("first by calculatedShareKey or sessionKey(method=7)") }
+                    }.getOrElse {
+                        encryptedBody.decryptBy(shareKeyCalculatedByConstPubKey).also { println("first by shareKeyCalculatedByConstPubKey") }
+                    }.let { firstDecrypted ->
+                        runCatching {
+                            firstDecrypted.decryptBy(encrypt).also { println("second by calculatedShareKey") }
+                        }.getOrElse {
+                            kotlin.runCatching {
+                                firstDecrypted.decryptBy(firstShareKey)
+                            }.getOrDefault(firstDecrypted)
+                        }
+                    }
+
+                    decrypted.debugPrint("Real body").apply {
+                        discardExact(4)
+                        readTLVMap()[0x106]?.decryptBy(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray())?.read {
+                            discardExact(2 + 4 * 4 + 8 + 4 + 4 + 1 + 16)
+                            tgtgtKey = readBytes(16)
+                        }
+
+                    }
+                }
+            }
+            else -> {
+                this.debugPrint("uni packet")
+            }
         }
     }
 }
@@ -137,8 +251,10 @@ fun ByteReadPacket.decodeUni() {
     // 00 00 00 5B 10 03 2C 3C 4C 56 23 51 51 53 65 72 76 69 63 65 2E 43 6F 6E 66 69 67 50 75 73 68 53 76 63 2E 4D 61 69 6E 53 65 72 76 61 6E 74 66 08 50 75 73 68 52 65 73 70 7D 00 00 1A 08 00 01 06 08 50 75 73 68 52 65 73 70 1D 00 00 09 0A 10 01 22 14 DA 6E B1 0B 8C 98 0C A8 0C
     println("// 尝试解 Uni")
     println("// head")
+    return
     readBytes(readInt() - 4).debugPrint("head").toReadPacket().apply {
         val commandName = readString(readInt() - 4).also { println("commandName=$it") }
+        println(commandName)
         println("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
         // 00 00 00 1A 43 6F 6E 66 69 67 50 75 73 68 53 76 63 2E 50 75 73 68 52 65 73 70
         // 00 00 00 08 02 B0 5B 8B
@@ -202,108 +318,20 @@ fun ByteReadPacket.decodeSso() {
     discardExact(4)
     println("// body(maybe OicqRequest)")
 
-    this.debugPrint("SSO Body").apply {
-        /*
-       byte     2 // head flag
-       short    27 + 2 + remaining.length
-       ushort   client.protocolVersion // const 8001
-       ushort   0x0001 // const0
-       uint     client.uin
-       byte     3 // const1
-       ubyte    encryptMethod.value // [EncryptMethod]
-       byte     0 // const2
-       int      2 // const3
-       int      client.appClientVersion
-       int      0 // const4
-        */
-        discardExact(3)
-        readShort().toInt().takeIf { it != 8001 }?.let {
-            println("  got new protocolVersion=$it")
-        }
-        println("  commandId=${readUShort()}")
-        readUShort().toInt().takeIf { it != 1 }?.let {
-            println("  got new const0=$it")
-        }
-        println("  uin=${readUInt()}")
-        readByte().toInt().takeIf { it != 3 }?.let {
-            println("  got new const1=$it")
-        }
-        val encryptionMethod = readUByte().toInt()
-        readByte().toInt().takeIf { it != 0 }?.let {
-            println("  got new const2=$it")
-        }
-        readInt().takeIf { it != 2 }?.let {
-            println("  got new const3=$it")
-        }
-        readInt().takeIf { it != 0 }?.let {
-            println("  got new appClientVersion=$it")
-        }
-        readInt().takeIf { it != 0 }?.let {
-            println("  got new const4=$it")
-        }
-
-        val firstShareKey = "8bcf4c91a46b6959685094fa2bf7597d".chunkedHexToBytes()
-
-        discardExact(1)
-        discardExact(1)
-        val randomKey = readBytes(16)
-        println("randomKey= ${randomKey.toUHexString()}")
-        readUShort().toInt().takeIf { it != 258 }?.let {
-            println("  got new const in ECDH head(originally=258)=$it")
-        }
-        val publicKey = readBytes(readShort().toInt())
-        println("ecdh publicKey=" + publicKey.toUHexString())
-
-
-        val encrypt = when (encryptionMethod) {
-            135, 7 -> {
-                ECDH.calculateShareKey(
-                    loadPrivateKey("97a52992cb7a2110413629af94a3c249c68a3b731510caa8"),
-                    //"04cb366698561e936e80c157e074cab13b0bb68ddeb2824548a1b18dd4fb6122afe12fe48c5266d8d7269d7651a8eb6fe7".chunkedHexToBytes().adjustToPublicKey() // QQ: 04cb366698561e936e80c157e074cab13b0bb68ddeb2824548a1b18dd4fb6122afe12fe48c5266d8d7269d7651a8eb6fe7
-                    publicKey.adjustToPublicKey()
-                )
-            }
-
-            69 -> {
-                error("encryptionMethod 7")
-            }
-            else -> error("unknown encryptionMethod=$encryptionMethod")
-        }
-
-        val encryptedBody = readBytes((remaining - 1).toInt())
-
-        val decrypted = kotlin.runCatching {
-            encryptedBody.decryptBy(encrypt).also { println("first by calculatedShareKey or sessionKey(method=7)") }
-        }.getOrElse {
-            encryptedBody.decryptBy(shareKeyCalculatedByConstPubKey).also { println("first by shareKeyCalculatedByConstPubKey") }
-        }.let { firstDecrypted ->
-            runCatching {
-                firstDecrypted.decryptBy(encrypt).also { println("second by calculatedShareKey") }
-            }.getOrElse {
-                kotlin.runCatching {
-                    firstDecrypted.decryptBy(firstShareKey)
-                }.getOrDefault(firstDecrypted)
-            }
-        }
-
-        decrypted.debugPrint("Real body")
-        decrypted.read {
-
-        }
-    }
 }
 
-val keys = mapOf(
-    "16 zero" to ByteArray(16),
-    "wtSessionTicketKey" to wtSessionTicketKey,
-    "D2 key" to D2Key,
-    "tgtgtKey" to tgtgtKey,
-    "tgtKey" to tgtKey,
-    "userStKey" to userStKey,
-    "deviceToken" to deviceToken,
-    "shareKeyCalculatedByConstPubKey" to shareKeyCalculatedByConstPubKey,
-    "t108" to t108,
-    "t10c" to t10c,
+val keys: Map<String, ByteArray>
+    get() = mapOf(
+        "16 zero" to ByteArray(16),
+        "wtSessionTicketKey" to wtSessionTicketKey,
+        "D2 key" to D2Key,
+        "tgtgtKey" to tgtgtKey,
+        "tgtKey" to tgtKey,
+        "userStKey" to userStKey,
+        "deviceToken" to deviceToken,
+        "shareKeyCalculatedByConstPubKey" to shareKeyCalculatedByConstPubKey,
+        "t108" to t108,
+        "t10c" to t10c,
     "t163" to t163
 )
 
