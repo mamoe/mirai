@@ -112,7 +112,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                         isGuidFromFileNull = false,
                         isGuidAvailable = true,
                         isGuidChanged = false,
-                        guidFlag = guidFlag(GuidSource.FROM_STORAGE, MacOrAndroidIdChangeFlag.NoChange),
+                        guidFlag = guidFlag(GuidSource.FROM_STORAGE, MacOrAndroidIdChangeFlag(0)),
                         buildModel = client.device.model,
                         guid = client.device.guid,
                         buildBrand = client.device.brand,
@@ -222,6 +222,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                 }
             }
         }
+
+        class UnsafeLogin(val url: String) : LoginPacketResponse()
+
+        class DeviceLockLogin() : LoginPacketResponse()
     }
 
     @InternalAPI
@@ -246,8 +250,22 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             0 -> onLoginSuccess(tlvMap, bot)
             1, 15 -> onErrorMessage(tlvMap)
             2 -> onSolveLoginCaptcha(tlvMap, bot)
+            -96 -> onUnsafeDeviceLogin(tlvMap, bot)
+            -52 -> onDeviceLockLogin(tlvMap, bot)
             else -> error("unknown login result type: $type")
         }
+    }
+
+
+    private fun onDeviceLockLogin(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.DeviceLockLogin {
+        println(tlvMap[0x104]!!.toUHexString())
+        println(tlvMap[0x402]!!.toUHexString())
+        println(tlvMap[0x403]!!.toUHexString())
+        return LoginPacketResponse.DeviceLockLogin();
+    }
+
+    private fun onUnsafeDeviceLogin(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.UnsafeLogin {
+        return LoginPacketResponse.UnsafeLogin(tlvMap[0x204]!!.toReadPacket().readRemainingBytes().encodeToString())
     }
 
     private fun onErrorMessage(tlvMap: Map<Int, ByteArray>): LoginPacketResponse.Error {
