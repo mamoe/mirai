@@ -1,164 +1,69 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
-import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.qqandroid.io.JceInput
-import net.mamoe.mirai.qqandroid.io.JceOutput
+import kotlinx.serialization.SerialId
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
-class RequestPushNotify(
-    val uin: Long,
-    val ctype: Byte,
-    val strService: String,
-    val strCmd: String,
-    val vNotifyCookie: ByteArray,
-    val usMsgType: Int,
-    val wUserActive: Int,
-    val wGeneralFlag: Int,
-    val bindedUin: Long,
-    val stMsgInfo: MsgInfo,
-    val msgCtrlBuf: String,
-    val serverBuf: ByteArray,
-    val pingFlag: Long,
-    val svrip: Int
-) : Packet, JceStruct() {
-    override fun writeTo(builder: JceOutput) {
-        //not needed
-    }
+@Serializable
+internal class RequestPushNotify(
+    @SerialId(0) val uin: Long = 0L,
+    @SerialId(1) val ctype: Byte = 0,
+    @SerialId(2) val strService: String?,
+    @SerialId(3) val strCmd: String?,
+    @SerialId(4) val vNotifyCookie: ByteArray = EMPTY_BYTE_ARRAY,
+    @SerialId(5) val usMsgType: Int?,
+    @SerialId(6) val wUserActive: Int?,
+    @SerialId(7) val wGeneralFlag: Int?,
+    @SerialId(8) val bindedUin: Long?,
+    @SerialId(9) val stMsgInfo: MsgInfo?,
+    @SerialId(10) val msgCtrlBuf: String?,
+    @SerialId(11) val serverBuf: ByteArray?,
+    @SerialId(12) val pingFlag: Long?,
+    @SerialId(13) val svrip: Int?
+) : JceStruct
 
-    companion object : Factory<RequestPushNotify> {
-        override fun newInstanceFrom(input: JceInput): RequestPushNotify {
-            return RequestPushNotify(
-                input.read(0L, 0),
-                input.read(0.toByte(), 1),
-                input.readString(2),
-                input.readString(3),
-                input.read(EMPTY_BYTE_ARRAY, 4),
-                input.read(0, 5),
-                input.read(0, 6),
-                input.read(0, 7),
-                input.read(0L, 8),
-                input.readJceStruct(MsgInfo, 9),
-                input.readString(10),
-                input.readByteArray(11),
-                input.readLong(12),
-                input.readInt(13)
-            )
-        }
-    }
+@Serializable
+internal class MsgInfo(
+    @SerialId(0) val lFromUin: Long = 0L,
+    @SerialId(1) val uMsgTime: Long = 0L,
+    @SerialId(2) val shMsgType: Short?,
+    @SerialId(3) val shMsgSeq: Short?,
+    @SerialId(4) val strMsg: String?,
+    @SerialId(5) val uRealMsgTime: Int?,
+    @SerialId(6) val vMsg: ByteArray?,
+    @SerialId(7) val uAppShareID: Long?,
+    @SerialId(8) val vMsgCookies: ByteArray = EMPTY_BYTE_ARRAY,
+    @SerialId(9) val vAppShareCookie: ByteArray = EMPTY_BYTE_ARRAY,
+    @SerialId(10) val lMsgUid: Long?,
+    @SerialId(11) val lLastChangeTime: Long?,
+    @SerialId(12) val vCPicInfo: List<CPicInfo>?,
+    @SerialId(13) val stShareData: ShareData?,
+    @SerialId(14) val lFromInstId: Long?,
+    @SerialId(15) val vRemarkOfSender: ByteArray?,
+    @SerialId(16) val strFromMobile: String?,
+    @SerialId(17) val strFromName: String?,
+    @SerialId(18) val vNickName: List<String>?,
+    @SerialId(19) val stC2CTmpMsgHead: TempMsgHead?
+) : JceStruct
 
-}
 
-class MsgInfo(
-    val lFromUin: Long,
-    val uMsgTime: Long,
-    val shMsgType: Short,
-    val shMsgSeq: Short,
-    val strMsg: String,
-    val uRealMsgTime: Int,
-    val vMsg: ByteArray,
-    val uAppShareID: Long,
-    val vMsgCookies: ByteArray,
-    val vAppShareCookie: ByteArray,
-    val lMsgUid: Long,
-    val lLastChangeTime: Long,
-    val vCPicInfo: List<CPicInfo>,
-    val stShareData: ShareData,
-    val lFromInstId: Long,
-    val vRemarkOfSender: ByteArray,
-    val strFromMobile: String,
-    val strFromName: String,
-    val vNickName: List<String>,
-    val stC2CTmpMsgHead: TempMsgHead?
-) : JceStruct() {
-    companion object : Factory<MsgInfo> {
-        override fun newInstanceFrom(input: JceInput): MsgInfo = with(input) {
-            return MsgInfo(
-                readLong(0),
-                readLong(1),
-                readShort(2),
-                readShort(3),
-                readString(4),
-                readInt(5),
-                readByteArray(6),
-                readLong(7),
-                readByteArray(8),
-                readByteArray(9),
-                readLong(10),
-                readLong(11),
-                readJceStructList(CPicInfo, 12),
-                readJceStruct(ShareData, 13),
-                readLong(14),
-                readByteArray(15),
-                readString(16),
-                readString(17),
-                readList(18),
-                readJceStructOrNull(TempMsgHead, 19)
-            )
-        }
-
-    }
-
-    override fun writeTo(builder: JceOutput) {
-        // not needed
-    }
-}
-
+@Serializable
 class ShareData(
-    val pkgname: String = "",
-    val msgtail: String = "",
-    val picurl: String = "",
-    val url: String = ""
-) : JceStruct() {
-    companion object : Factory<ShareData> {
-        override fun newInstanceFrom(input: JceInput): ShareData {
-            return ShareData(
-                input.readString(0),
-                input.readString(1),
-                input.readString(2),
-                input.readString(3)
-            )
-        }
-    }
+    @SerialId(0) val pkgname: String = "",
+    @SerialId(1) val msgtail: String = "",
+    @SerialId(2) val picurl: String = "",
+    @SerialId(3) val url: String = ""
+) : JceStruct
 
-    override fun writeTo(builder: JceOutput) {
-        // not needed
-    }
-}
-
+@Serializable
 class TempMsgHead(
-    val c2c_type: Int,
-    val serviceType: Int
-) : JceStruct() {
-    override fun writeTo(builder: JceOutput) {
+    @SerialId(0) val c2c_type: Int = 0,
+    @SerialId(1) val serviceType: Int = 0
+) : JceStruct
 
-    }
-
-    companion object : Factory<TempMsgHead> {
-        override fun newInstanceFrom(input: JceInput): TempMsgHead {
-            return TempMsgHead(
-                input.readInt(0),
-                input.readInt(1)
-            )
-        }
-    }
-}
-
+@Serializable
 class CPicInfo(
-    val vPath: ByteArray,
-    val vHost: ByteArray?
-) : JceStruct() {
-    override fun writeTo(builder: JceOutput) {
-
-    }
-
-    companion object : Factory<CPicInfo> {
-        override fun newInstanceFrom(input: JceInput): CPicInfo {
-            return CPicInfo(
-                input.readByteArray(0),
-                input.readByteArray(1)
-            )
-        }
-    }
-
-}
+    @SerialId(0) val vPath: ByteArray = EMPTY_BYTE_ARRAY,
+    @SerialId(1) val vHost: ByteArray = EMPTY_BYTE_ARRAY
+) : JceStruct
