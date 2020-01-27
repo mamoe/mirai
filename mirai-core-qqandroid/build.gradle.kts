@@ -64,7 +64,6 @@ kotlin {
                 api(project(":mirai-core"))
 
                 api(kotlin("stdlib", kotlinVersion))
-                api(kotlin("serialization", kotlinVersion))
 
                 api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
                 api(kotlinx("io", kotlinXIoVersion))
@@ -74,6 +73,7 @@ kotlin {
         }
         commonMain {
             dependencies {
+                api(kotlinx("serialization-runtime-common", serializationVersion))
             }
         }
         commonTest {
@@ -103,6 +103,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
+                api(kotlinx("serialization-runtime", serializationVersion))
             }
         }
 

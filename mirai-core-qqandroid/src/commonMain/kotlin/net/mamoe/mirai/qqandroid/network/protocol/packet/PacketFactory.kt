@@ -4,7 +4,7 @@ import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.network.io.JceInput
+import net.mamoe.mirai.qqandroid.io.JceInput
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush

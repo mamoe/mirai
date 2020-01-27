@@ -1,4 +1,4 @@
-package net.mamoe.mirai.qqandroid.network.io
+package net.mamoe.mirai.qqandroid.io
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
@@ -33,7 +33,8 @@ fun <J : JceStruct> ByteReadPacket.readJceStruct(factory: JceStruct.Factory<J>, 
     }
 }
 
-fun ByteArray.asJceInput(charset: Charset = CharsetUTF8): JceInput = JceInput(this.toIoBuffer(), charset)
+fun ByteArray.asJceInput(charset: Charset = CharsetUTF8): JceInput =
+    JceInput(this.toIoBuffer(), charset)
 
 fun <J : JceStruct> ByteReadPacket.readJceRequestBufferMapVersion2ToJceStruct(factory: JceStruct.Factory<J>, charset: Charset = CharsetUTF8): J {
     this.use {
@@ -70,7 +71,8 @@ fun ByteReadPacket.readJceRequestBufferMapVersion3(charset: Charset = CharsetUTF
     }
 }
 
-fun ByteReadPacket.asJceInput(charset: Charset = CharsetUTF8): JceInput = JceInput(this.readIoBuffer(), charset)
+fun ByteReadPacket.asJceInput(charset: Charset = CharsetUTF8): JceInput =
+    JceInput(this.readIoBuffer(), charset)
 
 inline fun <R> IoBuffer.useIoBuffer(block: IoBuffer.() -> R): R {
     return try {

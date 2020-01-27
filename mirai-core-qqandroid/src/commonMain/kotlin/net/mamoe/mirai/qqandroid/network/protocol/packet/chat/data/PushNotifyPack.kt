@@ -1,9 +1,9 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.qqandroid.network.io.JceInput
-import net.mamoe.mirai.qqandroid.network.io.JceOutput
-import net.mamoe.mirai.qqandroid.network.io.JceStruct
+import net.mamoe.mirai.qqandroid.io.JceInput
+import net.mamoe.mirai.qqandroid.io.JceOutput
+import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 class RequestPushNotify(

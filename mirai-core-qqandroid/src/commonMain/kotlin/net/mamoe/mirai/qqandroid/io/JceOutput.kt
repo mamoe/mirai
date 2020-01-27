@@ -1,4 +1,4 @@
-package net.mamoe.mirai.qqandroid.network.io
+package net.mamoe.mirai.qqandroid.io
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*

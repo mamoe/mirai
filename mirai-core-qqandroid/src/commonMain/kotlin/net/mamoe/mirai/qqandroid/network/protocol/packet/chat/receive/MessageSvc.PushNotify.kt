@@ -2,7 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.network.io.readJceRequestBufferMapVersion2ToJceStruct
+import net.mamoe.mirai.qqandroid.io.readJceRequestBufferMapVersion2ToJceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.RequestPushNotify
 import net.mamoe.mirai.utils.cryptor.contentToString
