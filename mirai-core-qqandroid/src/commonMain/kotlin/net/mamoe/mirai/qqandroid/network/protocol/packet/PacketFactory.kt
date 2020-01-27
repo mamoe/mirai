@@ -188,7 +188,6 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
         }
 
         // body
-        // TODO: 2020/1/23 在这里处理 Uni 解析
         val packetFactory = findPacketFactory(commandName)
 
         bot.logger.verbose(commandName)
