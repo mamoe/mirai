@@ -33,37 +33,53 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
         bot.logger.info("Trying login")
-        when (val response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()) {
-            is UnsafeLogin -> {
-                bot.logger.info("Login unsuccessful, device auth is needed")
-                bot.logger.info("登陆失败, 原因为非常用设备登陆")
-                bot.logger.info("Open the following URL in QQ browser and complete the verification")
-                bot.logger.info("将下面这个链接在QQ浏览器中打开并完成认证后尝试再次登陆")
-                bot.logger.info(response.url)
-                return
-            }
+        var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+        mainloop@ while (true) {
+            when (response) {
+                is UnsafeLogin -> {
+                    bot.logger.info("Login unsuccessful, device auth is needed")
+                    bot.logger.info("登陆失败, 原因为非常用设备登陆")
+                    bot.logger.info("Open the following URL in QQ browser and complete the verification")
+                    bot.logger.info("将下面这个链接在QQ浏览器中打开并完成认证后尝试再次登陆")
+                    bot.logger.info(response.url)
+                    return
+                }
 
-            is Captcha -> when (response) {
-                is Captcha.Picture -> {
-                    bot.logger.info("需要图片验证码")
-                    var result = bot.configuration.captchaSolver.invoke(bot, response.data)
-                    if (result === null || result.length != 4) {
-                        //refresh captcha
-                        result = "ABCD"
+                is Captcha -> when (response) {
+                    is Captcha.Picture -> {
+                        bot.logger.info("需要图片验证码")
+                        var result = bot.configuration.loginSolver.onSolvePicCaptcha(bot, response.data)
+                        if (result === null || result.length != 4) {
+                            //refresh captcha
+                            result = "ABCD"
+                        }
+                        bot.logger.info("提交验证码")
+                        response = LoginPacket.SubCommand2(bot.client, response.sign, result).sendAndExpect()
+                        continue@mainloop
                     }
-                    bot.logger.info("提交验证码")
-                    val captchaResponse: LoginPacket.LoginPacketResponse =
-                        LoginPacket.SubCommand2(bot.client, response.sign, result).sendAndExpect()
+                    is Captcha.Slider -> {
+                        bot.logger.info("需要滑动验证码")
+                        TODO("滑动验证码")
+                    }
                 }
-                is Captcha.Slider -> {
-                    bot.logger.info("需要滑动验证码")
+
+                is Error -> error(response.toString())
+
+                is SMSVerifyCodeNeeded -> {
+                    val result = bot.configuration.loginSolver.onGetPhoneNumber()
+                    response = LoginPacket.SubCommand7(
+                        bot.client,
+                        response.t174,
+                        response.t402,
+                        result
+                    ).sendAndExpect()
+                    continue@mainloop
                 }
-            }
 
-            is Error -> error(response.toString())
-
-            is Success -> {
-                bot.logger.info("Login successful")
+                is Success -> {
+                    bot.logger.info("Login successful")
+                    break@mainloop
+                }
             }
         }
 

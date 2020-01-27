@@ -11,12 +11,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
-import net.mamoe.mirai.utils.MiraiDebugAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
 
@@ -44,6 +41,33 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                     t8(2052)
                     t104(client.t104)
                     t116(150470524, 66560)
+                }
+            }
+        }
+    }
+
+    object SubCommand7 {
+        private const val appId = 16L
+        private const val subAppId = 537062845L
+
+        @UseExperimental(MiraiInternalAPI::class)
+        operator fun invoke(
+            client: QQAndroidClient,
+            t174: ByteArray,
+            t402: ByteArray,
+            phoneNumber: String
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+            writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeShort(7) // subCommand
+                    writeShort(7) // count of TLVs, probably ignored by server?TODO
+                    t8(2052)
+                    t104(client.t104)
+                    t116(150470524, 66560)
+                    t174(t174)
+                    t17c(phoneNumber.toByteArray())
+                    t401(md5(client.device.guid + "1234567890123456".toByteArray() + t402))
+                    t19e(0)//==tlv408
                 }
             }
         }
@@ -225,7 +249,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
         class UnsafeLogin(val url: String) : LoginPacketResponse()
 
-        class DeviceLockLogin() : LoginPacketResponse()
+        class SMSVerifyCodeNeeded(val t174: ByteArray, val t402: ByteArray) : LoginPacketResponse()
     }
 
     @InternalAPI
@@ -251,17 +275,18 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             1, 15 -> onErrorMessage(tlvMap)
             2 -> onSolveLoginCaptcha(tlvMap, bot)
             -96 -> onUnsafeDeviceLogin(tlvMap, bot)
-            -52 -> onDeviceLockLogin(tlvMap, bot)
+            -52 -> onSMSVerifyNeeded(tlvMap, bot)
             else -> error("unknown login result type: $type")
         }
     }
 
 
-    private fun onDeviceLockLogin(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.DeviceLockLogin {
-        println(tlvMap[0x104]!!.toUHexString())
-        println(tlvMap[0x402]!!.toUHexString())
-        println(tlvMap[0x403]!!.toUHexString())
-        return LoginPacketResponse.DeviceLockLogin();
+    private fun onSMSVerifyNeeded(
+        tlvMap: Map<Int, ByteArray>,
+        bot: QQAndroidBot
+    ): LoginPacketResponse.SMSVerifyCodeNeeded {
+        bot.client.t104 = tlvMap[0x104]!!
+        return LoginPacketResponse.SMSVerifyCodeNeeded(tlvMap[0x174] ?: EMPTY_BYTE_ARRAY, tlvMap[0x402]!!)
     }
 
     private fun onUnsafeDeviceLogin(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.UnsafeLogin {

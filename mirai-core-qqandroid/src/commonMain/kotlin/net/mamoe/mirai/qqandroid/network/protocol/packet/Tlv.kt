@@ -142,6 +142,7 @@ fun BytePacketBuilder.t116(
     }
 }
 
+
 fun BytePacketBuilder.t100(
     appId: Long = 16,
     subAppId: Long = 537062845,
@@ -190,6 +191,44 @@ fun BytePacketBuilder.t104(
     writeShort(0x104)
     writeShortLVPacket {
         writeFully(t104Data)
+    }
+}
+
+fun BytePacketBuilder.t174(
+    t174Data: ByteArray
+) {
+    writeShort(0x174)
+    writeShortLVPacket {
+        writeFully(t174Data)
+    }
+}
+
+fun BytePacketBuilder.t19e(
+    value: Int = 0
+) {
+    writeShort(0x19e)
+    writeShortLVPacket {
+        writeShort(1)
+        writeByte(value.toByte())
+    }
+}
+
+fun BytePacketBuilder.t17c(
+    t17cData: ByteArray
+) {
+    writeShort(0x17c)
+    writeShortLVPacket {
+        writeShort(t17cData.size.toShort())
+        writeFully(t17cData)
+    }
+}
+
+fun BytePacketBuilder.t401(
+    t401Data: ByteArray
+) {
+    writeShort(0x401)
+    writeShortLVPacket {
+        writeFully(t401Data)
     }
 }
 

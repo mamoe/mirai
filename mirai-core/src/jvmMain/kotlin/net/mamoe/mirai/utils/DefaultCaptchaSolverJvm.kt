@@ -10,7 +10,9 @@ import kotlinx.coroutines.io.reader
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.use
+import net.mamoe.mirai.Bot
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -23,31 +25,68 @@ import kotlin.coroutines.CoroutineContext
  *
  * 可被修改, 除覆盖配置外全局生效.
  */
-actual var DefaultCaptchaSolver: CaptchaSolver = {
-    captchaLock.withLock {
-        val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
-        withContext(Dispatchers.IO) {
-            tempFile.createNewFile()
-            MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
-            try {
-                tempFile.writeChannel().use { writeFully(it) }
-                MiraiLogger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
-            } catch (e: Exception) {
-                MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
-            }
+actual var defaultLoginSolver: LoginSolver = DefaultLoginSolver()
 
-            tempFile.inputStream().use {
-                val img = ImageIO.read(it)
-                if (img == null) {
-                    MiraiLogger.info("无法创建字符图片. 请查看文件")
-                } else {
-                    MiraiLogger.info(img.createCharImg())
+
+class DefaultLoginSolver(): LoginSolver(){
+    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+        loginSolverLock.withLock {
+            val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
+            withContext(Dispatchers.IO) {
+                tempFile.createNewFile()
+                MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
+                try {
+                    tempFile.writeChannel().use { writeFully(data) }
+                    MiraiLogger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
+                } catch (e: Exception) {
+                    MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+                }
+
+                tempFile.inputStream().use {
+                    val img = ImageIO.read(it)
+                    if (img == null) {
+                        MiraiLogger.info("无法创建字符图片. 请查看文件")
+                    } else {
+                        MiraiLogger.info(img.createCharImg())
+                    }
+                }
+            }
+            MiraiLogger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
+            return readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
+        }
+    }
+
+    override suspend fun onSolveSliderCaptcha(bot: Bot, data: IoBuffer): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override suspend fun onGetPhoneNumber(): String {
+        loginSolverLock.withLock {
+            while (true){
+                MiraiLogger.info("请输入你的手机号码")
+                val var0 = readLine()
+                if(var0!==null && var0.length > 10){
+                    return var0;
                 }
             }
         }
-        MiraiLogger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
-        readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
+        return "";
     }
+
+    override suspend fun onGetSMSVerifyCode(): String {
+        loginSolverLock.withLock {
+            while (true){
+                MiraiLogger.info("请输入你刚刚收到的手机验证码[6位数字]")
+                val var0 = readLine()
+                if(var0!==null && var0.length == 6){
+                    return var0;
+                }
+            }
+        }
+        return "";
+    }
+
+
 }
 
 // Copied from Ktor CIO
@@ -62,7 +101,7 @@ private fun File.writeChannel(
 }.channel
 
 
-private val captchaLock = Mutex()
+private val loginSolverLock = Mutex()
 
 /**
  * @author NaturalHG

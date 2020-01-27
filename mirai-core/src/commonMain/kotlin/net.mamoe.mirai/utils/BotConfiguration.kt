@@ -7,16 +7,21 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmStatic
 
 /**
- * 验证码处理器. 需挂起(阻塞)直到处理完成验证码.
- *
- * 返回长度为 4 的验证码. 为空则刷新验证码
  */
-typealias CaptchaSolver = suspend Bot.(IoBuffer) -> String?
+abstract class LoginSolver {
+    abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?
+
+    abstract suspend fun onSolveSliderCaptcha(bot: Bot, data: IoBuffer): String?
+
+    abstract suspend fun onGetPhoneNumber(): String
+
+    abstract suspend fun onGetSMSVerifyCode(): String
+}
 
 /**
  * 在各平台实现的默认的验证码处理器.
  */
-expect var DefaultCaptchaSolver: CaptchaSolver
+expect var defaultLoginSolver: LoginSolver
 
 /**
  * 网络和连接配置
@@ -70,7 +75,7 @@ class BotConfiguration {
     /**
      * 验证码处理器
      */
-    var captchaSolver: CaptchaSolver = DefaultCaptchaSolver
+    var loginSolver: LoginSolver = defaultLoginSolver
     /**
      * 登录完成后几秒会收到好友消息的历史记录,
      * 这些历史记录不会触发事件.
