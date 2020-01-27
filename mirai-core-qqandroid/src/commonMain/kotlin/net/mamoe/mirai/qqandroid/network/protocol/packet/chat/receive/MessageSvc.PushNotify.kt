@@ -3,24 +3,17 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.network.io.JceInput
-import net.mamoe.mirai.qqandroid.network.io.JceOutput
-import net.mamoe.mirai.qqandroid.network.io.JceStruct
+import net.mamoe.mirai.qqandroid.network.io.*
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.utils.io.discardExact
-import net.mamoe.mirai.utils.io.readIoBuffer
-import net.mamoe.mirai.utils.io.toReadPacket
 import net.mamoe.mirai.utils.io.toUHexString
 
 internal object PushNotify : PacketFactory<PushNotify.MessageNotification>("MessageSvc.PushNotify") {
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MessageNotification {
-        val pk = RequestPacket.newInstanceFrom(JceInput(this.apply { discardExact(4) }.readIoBuffer()))
-        println(pk.sFuncName)
-        println(pk.sServantName)
-        println(pk.sBuffer.toUHexString())
-        return MessageNotification.newInstanceFrom(JceInput(pk.sBuffer.toReadPacket(4)))
+        val request = RequestPacket.newInstanceFrom(this.apply { discardExact(4) }.asJceInput(CharsetUTF8))
+        return MessageNotification.newInstanceFrom(request.sBuffer.asJceInput(CharsetUTF8))
     }
 
 
