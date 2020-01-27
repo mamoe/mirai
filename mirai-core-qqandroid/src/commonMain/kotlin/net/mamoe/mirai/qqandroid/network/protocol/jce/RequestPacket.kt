@@ -1,8 +1,8 @@
 package net.mamoe.mirai.qqandroid.network.protocol.jce
 
-import net.mamoe.mirai.qqandroid.network.io.JceInput
-import net.mamoe.mirai.qqandroid.network.io.JceOutput
-import net.mamoe.mirai.qqandroid.network.io.JceStruct
+import net.mamoe.mirai.qqandroid.io.JceInput
+import net.mamoe.mirai.qqandroid.io.JceOutput
+import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.utils.cryptor.contentToString
 
 private val EMPTY_MAP = mapOf<String, String>()

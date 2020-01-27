@@ -1,8 +1,8 @@
 package net.mamoe.mirai.qqandroid.network.protocol.jce
 
-import net.mamoe.mirai.qqandroid.network.io.JceInput
-import net.mamoe.mirai.qqandroid.network.io.JceOutput
-import net.mamoe.mirai.qqandroid.network.io.JceStruct
+import net.mamoe.mirai.qqandroid.io.JceInput
+import net.mamoe.mirai.qqandroid.io.JceOutput
+import net.mamoe.mirai.qqandroid.io.JceStruct
 
 class SvcReqRegister(
     var bIsOnline: Byte = 0,
