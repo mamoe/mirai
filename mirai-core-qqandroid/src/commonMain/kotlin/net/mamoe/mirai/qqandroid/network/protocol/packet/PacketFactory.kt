@@ -6,8 +6,8 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.io.JceInput
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.PushNotify
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.DefaultLogger
@@ -53,7 +53,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     LoginPacket,
     StatSvc.Register,
     OnlinePush.PbPushGroupMsg,
-    PushNotify
+    MessageSvc.PushNotify
 ) {
 
     fun findPacketFactory(commandName: String): PacketFactory<*>? = this.firstOrNull { it.commandName == commandName }

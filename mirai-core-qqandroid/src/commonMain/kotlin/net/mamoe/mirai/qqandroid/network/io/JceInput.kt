@@ -3,6 +3,8 @@ package net.mamoe.mirai.qqandroid.network.io
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import kotlinx.io.pool.ObjectPool
+import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
+import net.mamoe.mirai.utils.io.DebugLogger
 import net.mamoe.mirai.utils.io.readIoBuffer
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toIoBuffer
@@ -19,9 +21,76 @@ inline class JceHead(private val value: Long) {
     }
 }
 
-fun ByteArray.asJceInput(charset: Charset = CharsetGBK): JceInput = JceInput(this.toIoBuffer(), charset)
+fun <J : JceStruct> ByteArray.readJceStruct(factory: JceStruct.Factory<J>, tag: Int = 0, charset: Charset = CharsetUTF8): J {
+    this.asJceInput(charset).use {
+        return it.readJceStruct(factory, tag)
+    }
+}
 
-fun ByteReadPacket.asJceInput(charset: Charset = CharsetGBK): JceInput = JceInput(this.readIoBuffer(), charset)
+fun <J : JceStruct> ByteReadPacket.readJceStruct(factory: JceStruct.Factory<J>, tag: Int = 0, charset: Charset = CharsetUTF8): J {
+    this.asJceInput(charset).use {
+        return it.readJceStruct(factory, tag)
+    }
+}
+
+fun ByteArray.asJceInput(charset: Charset = CharsetUTF8): JceInput = JceInput(this.toIoBuffer(), charset)
+
+fun <J : JceStruct> ByteReadPacket.readJceRequestBufferMapVersion2ToJceStruct(factory: JceStruct.Factory<J>, charset: Charset = CharsetUTF8): J {
+    this.use {
+        val bytes =
+            readJceRequestBufferMapVersion2(charset).values.also { if (it.size != 1) DebugLogger.debug("读取 jce RequestPacket 时发现多个包在 map 中") }.firstOrNull()
+                ?: error("empty request map")
+        return bytes.readJceStruct(factory, 0)
+    }
+}
+
+fun <J : JceStruct> ByteReadPacket.readJceRequestBufferMapVersion3ToJceStruct(factory: JceStruct.Factory<J>, charset: Charset = CharsetUTF8): J {
+    this.use {
+        val bytes = readJceRequestBufferMapVersion3(charset).values.firstOrNull() ?: error("empty request map")
+        return bytes.readJceStruct(factory, 0, charset)
+    }
+}
+
+fun ByteReadPacket.readJceRequestBufferMapVersion2(charset: Charset = CharsetUTF8): Map<String, ByteArray> {
+    this.use {
+        discardExact(8)
+        val request = this.asJceInput(charset).use { RequestPacket.newInstanceFrom(it) }
+        val map = request.sBuffer.asJceInput(charset).withUse {
+            readNestedMap<String, String, ByteArray>(0)
+        }
+        return map.mapValues { it.value.values.first() }
+    }
+}
+
+fun ByteReadPacket.readJceRequestBufferMapVersion3(charset: Charset = CharsetUTF8): Map<String, ByteArray> {
+    this.use {
+        discardExact(8)
+        val request = this.asJceInput(charset).use { RequestPacket.newInstanceFrom(it) }
+        return request.sBuffer.asJceInput(charset).withUse { readMap(0) }
+    }
+}
+
+fun ByteReadPacket.asJceInput(charset: Charset = CharsetUTF8): JceInput = JceInput(this.readIoBuffer(), charset)
+
+inline fun <R> IoBuffer.useIoBuffer(block: IoBuffer.() -> R): R {
+    return try {
+        block(this)
+    } catch (first: Throwable) {
+        throw first
+    } finally {
+        release(IoBuffer.Pool)
+    }
+}
+
+inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
+    return try {
+        block(this)
+    } catch (first: Throwable) {
+        throw first
+    } finally {
+        close()
+    }
+}
 
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalUnsignedTypes::class)
@@ -87,7 +156,16 @@ class JceInput(
     fun readIntArray(tag: Int): IntArray = readIntArrayOrNull(tag) ?: error("cannot find tag $tag")
     fun readBooleanArray(tag: Int): BooleanArray = readBooleanArrayOrNull(tag) ?: error("cannot find tag $tag")
     fun <K, V> readMap(defaultKey: K, defaultValue: V, tag: Int): Map<K, V> = readMapOrNull(defaultKey, defaultValue, tag) ?: error("cannot find tag $tag")
+    inline fun <reified K, reified V> readMap(tag: Int): Map<K, V> = readMapOrNull(tag) ?: error("cannot find tag $tag")
+    inline fun <reified K, reified InnerK, reified InnerV> readNestedMap(tag: Int): Map<K, Map<InnerK, InnerV>> =
+        readNestedMapOrNull(tag) ?: error("cannot find tag $tag")
+
+    inline fun <reified J : JceStruct> readStringToJceStructMap(factory: JceStruct.Factory<J>, tag: Int): Map<String, J> =
+        readStringToJceStructMapOrNull(factory, tag) ?: error("cannot find tag $tag")
+
     fun <T> readList(defaultElement: T, tag: Int): List<T> = readListOrNull(defaultElement, tag) ?: error("cannot find tag $tag")
+    inline fun <reified J: JceStruct> readJceStructList(factory: JceStruct.Factory<J>, tag: Int): List<J> = readJceStructListOrNull( factory, tag) ?: error("cannot find tag $tag")
+    inline fun <reified T> readList(tag: Int): List<T> = readListOrNull( tag) ?: error("cannot find tag $tag")
     inline fun <reified T> readSimpleArray(defaultElement: T, tag: Int): Array<T> = readArrayOrNull(defaultElement, tag) ?: error("cannot find tag $tag")
     fun <J : JceStruct> readJceStruct(factory: JceStruct.Factory<J>, tag: Int): J = readJceStructOrNull(factory, tag) ?: error("cannot find tag $tag")
     fun readStringArray(tag: Int): Array<String> = readArrayOrNull("", tag) ?: error("cannot find tag $tag")
@@ -217,12 +295,33 @@ class JceInput(
         }
     }
 
+    inline fun <reified J : JceStruct> readStringToJceStructMapOrNull(factory: JceStruct.Factory<J>, tag: Int): Map<String, J>? = skipToTagOrNull(tag) {
+        check(it.type.toInt() == 8) { "type mismatch: ${it.type}" }
+        val size = readInt(0)
+        val map = HashMap<String, J>(size)
+        repeat(size) {
+            map[readString(0)] = readJceStruct(factory, 1)
+        }
+        return map
+    }
+
+
     fun <K, V> readMapOrNull(defaultKey: K, defaultValue: V, tag: Int): Map<K, V>? = skipToTagOrNull(tag) {
         check(it.type.toInt() == 8) { "type mismatch: ${it.type}" }
         val size = readInt(0)
         val map = HashMap<K, V>(size)
         repeat(size) {
             map[readObject(defaultKey, 0)] = readObject(defaultValue, 1)
+        }
+        return map
+    }
+
+    inline fun <reified K, reified InnerK, reified InnerV> readNestedMapOrNull(tag: Int): Map<K, Map<InnerK, InnerV>>? = skipToTagOrNull(tag) {
+        check(it.type.toInt() == 8) { "type mismatch" }
+        val size = readInt(0)
+        val map = HashMap<K, Map<InnerK, InnerV>>(size)
+        repeat(size) {
+            map[readSimpleObject(0)] = readMap(1)
         }
         return map
     }
@@ -235,6 +334,26 @@ class JceInput(
             map[readSimpleObject(0)] = readSimpleObject(1)
         }
         return map
+    }
+
+    inline fun <reified J : JceStruct> readJceStructListOrNull(factory: JceStruct.Factory<J>, tag: Int): List<J>? = skipToTagOrNull(tag) { head ->
+        check(head.type.toInt() == 9) { "type mismatch" }
+        val size = readInt(0)
+        val list = ArrayList<J>(size)
+        repeat(size) {
+            list.add(readJceStruct(factory, 0))
+        }
+        return list
+    }
+
+    inline fun <reified T> readListOrNull(tag: Int): List<T>? = skipToTagOrNull(tag) { head ->
+        check(head.type.toInt() == 9) { "type mismatch" }
+        val size = readInt(0)
+        val list = ArrayList<T>(size)
+        repeat(size) {
+            list.add(readSimpleObject(0))
+        }
+        return list
     }
 
     fun <T> readListOrNull(defaultElement: T, tag: Int): List<T>? = skipToTagOrNull(tag) { head ->
