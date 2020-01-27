@@ -28,7 +28,7 @@ import kotlin.coroutines.CoroutineContext
 actual var defaultLoginSolver: LoginSolver = DefaultLoginSolver()
 
 
-class DefaultLoginSolver(): LoginSolver(){
+class DefaultLoginSolver : LoginSolver() {
     override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
         loginSolverLock.withLock {
             val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }

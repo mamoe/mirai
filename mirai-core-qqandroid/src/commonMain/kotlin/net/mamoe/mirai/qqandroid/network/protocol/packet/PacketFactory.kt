@@ -4,7 +4,7 @@ import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.JceInput
+import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
@@ -248,7 +248,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     }
 
     private suspend fun ByteReadPacket.parseUniResponse(bot: QQAndroidBot, packetFactory: PacketFactory<*>, ssoSequenceId: Int, consumer: PacketConsumer) {
-        val uni = RequestPacket.newInstanceFrom(JceInput(readIoBuffer(readInt() - 4)))
+        val uni = readBytes(readInt() - 4).loadAs(RequestPacket.serializer())
         PacketLogger.verbose(uni.toString())
         consumer(packetFactory.decode(bot, uni.sBuffer.toReadPacket()), uni.sServantName + "." + uni.sFuncName, ssoSequenceId)
     }
