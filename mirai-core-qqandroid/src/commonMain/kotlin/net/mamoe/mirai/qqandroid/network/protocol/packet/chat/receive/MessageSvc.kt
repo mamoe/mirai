@@ -14,6 +14,5 @@ class MessageSvc {
             println(messageNotification.contentToString())
             TODO()
         }
-
     }
 }
