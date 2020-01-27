@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
@@ -21,7 +22,7 @@ internal class RequestPushNotify(
     @SerialId(11) val serverBuf: ByteArray?,
     @SerialId(12) val pingFlag: Long?,
     @SerialId(13) val svrip: Int?
-) : JceStruct
+) : JceStruct, Packet
 
 @Serializable
 internal class MsgInfo(

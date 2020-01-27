@@ -55,7 +55,10 @@ fun <J : JceStruct> ByteReadPacket.readJceRequestBufferMapVersion3ToJceStruct(fa
 fun ByteReadPacket.readJceRequestBufferMapVersion2(charset: Charset = CharsetUTF8): Map<String, ByteArray> {
     this.use {
         discardExact(8)
-        val request = this.asJceInput(charset).use { RequestPacket.newInstanceFrom(it) }
+        val request = this.asJceInput(charset).use {
+            Jce
+            RequestPacket.serializer()
+        }
         val map = request.sBuffer.asJceInput(charset).withUse {
             readNestedMap<String, String, ByteArray>(0)
         }

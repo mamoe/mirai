@@ -1,78 +1,22 @@
 package net.mamoe.mirai.qqandroid.network.protocol.jce
 
-import net.mamoe.mirai.qqandroid.io.JceInput
-import net.mamoe.mirai.qqandroid.io.JceOutput
+import kotlinx.serialization.SerialId
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 private val EMPTY_MAP = mapOf<String, String>()
 
-class RequestPacket() : JceStruct() {
-    lateinit var sBuffer: ByteArray
-    var cPacketType: Byte = 0
-    var iMessageType: Int = 0
-    var iRequestId: Int = 0
-    var iTimeout: Int = 0
-    var iVersion: Short = 3
-    var context: Map<String, String> = EMPTY_MAP
-    var sFuncName: String = ""
-    var sServantName: String = ""
-    var status: Map<String, String> = EMPTY_MAP
-
-    constructor(
-        sBuffer: ByteArray,
-        cPacketType: Byte = 0,
-        iMessageType: Int = 0,
-        iRequestId: Int = 0,
-        iTimeout: Int = 0,
-        iVersion: Short = 3,
-        context: Map<String, String> = EMPTY_MAP,
-        sFuncName: String = "",
-        sServantName: String = "",
-        status: Map<String, String> = EMPTY_MAP
-    ) : this() {
-        this.sBuffer = sBuffer
-        this.cPacketType = cPacketType
-        this.iMessageType = iMessageType
-        this.iRequestId = iRequestId
-        this.iTimeout = iTimeout
-        this.iVersion = iVersion
-        this.context = context
-        this.sFuncName = sFuncName
-        this.sServantName = sServantName
-        this.status = status
-    }
-
-    companion object : Factory<RequestPacket> {
-        override fun newInstanceFrom(input: JceInput): RequestPacket {
-            val iVersion = input.readShort(1)
-            val cPacketType = input.readByte(2)
-            val iMessageType = input.readInt(3)
-            val iRequestId = input.readInt(4)
-            val sServantName = input.readString(5)
-            val sFuncName = input.readString(6)
-            val sBuffer = input.readByteArray(7)
-            val iTimeout = input.readInt(8)
-            val context = input.readMap("", "", 9)
-            val status = input.readMap("", "", 10)
-            return RequestPacket(sBuffer, cPacketType, iMessageType, iRequestId, iTimeout, iVersion, context, sFuncName, sServantName, status)
-        }
-    }
-
-    override fun writeTo(builder: JceOutput) {
-        builder.write(this.iVersion, 1)
-        builder.write(this.cPacketType, 2)
-        builder.write(this.iMessageType, 3)
-        builder.write(this.iRequestId, 4)
-        builder.write(this.sServantName, 5)
-        builder.write(this.sFuncName, 6)
-        builder.write(this.sBuffer, 7)
-        builder.write(this.iTimeout, 8)
-        builder.write(this.context, 9)
-        builder.write(this.status, 10)
-    }
-
-    override fun toString(): String {
-        return this.contentToString()
-    }
-}
+@Serializable
+class RequestPacket(
+    @SerialId(1) val iVersion: Short = 3,
+    @SerialId(2) val cPacketType: Byte = 0,
+    @SerialId(3) val iMessageType: Int = 0,
+    @SerialId(4) val iRequestId: Int = 0,
+    @SerialId(5) val sServantName: String = "",
+    @SerialId(6) val sFuncName: String = "",
+    @SerialId(7) val sBuffer: ByteArray = EMPTY_BYTE_ARRAY,
+    @SerialId(8) val iTimeout: Int = 0,
+    @SerialId(9) val context: Map<String, String> = EMPTY_MAP,
+    @SerialId(10) val status: Map<String, String> = EMPTY_MAP
+) : JceStruct
