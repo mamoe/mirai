@@ -10,6 +10,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
+import net.mamoe.mirai.qqandroid.io.CharsetUTF8
 import net.mamoe.mirai.qqandroid.io.JceEncodeException
 import net.mamoe.mirai.qqandroid.io.JceOutput
 import net.mamoe.mirai.utils.io.toUHexString
@@ -309,6 +310,14 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
     companion object {
         val UTF8 = Jce(JceCharset.UTF8)
         val GBK = Jce(JceCharset.GBK)
+
+        public fun byCharSet(c: Charset): Jce {
+            return if (c === CharsetUTF8) {
+                UTF8
+            } else {
+                GBK
+            }
+        }
 
         internal const val BYTE: Int = 0
         internal const val DOUBLE: Int = 5

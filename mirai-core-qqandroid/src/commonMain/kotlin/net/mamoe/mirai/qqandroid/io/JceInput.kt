@@ -3,6 +3,8 @@ package net.mamoe.mirai.qqandroid.io
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import kotlinx.io.pool.ObjectPool
+import kotlinx.serialization.DeserializationStrategy
+import net.mamoe.mirai.qqandroid.io.serialization.Jce
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
 import net.mamoe.mirai.utils.io.DebugLogger
 import net.mamoe.mirai.utils.io.readIoBuffer
@@ -18,12 +20,16 @@ inline class JceHead(private val value: Long) {
 
     override fun toString(): String {
         return "JceHead(tag=$tag, type=$type)"
-    }
+    }Z
 }
 
-fun <J : JceStruct> ByteArray.readJceStruct(factory: JceStruct.Factory<J>, tag: Int = 0, charset: Charset = CharsetUTF8): J {
+fun <J : JceStruct> ByteArray.readJceStruct(
+    deserializer: DeserializationStrategy<J>,
+    tag: Int = 0,
+    charset: Charset = CharsetUTF8
+): J {
     this.asJceInput(charset).use {
-        return it.readJceStruct(factory, tag)
+        return Jce.byCharSet(charset).load(deserializer, this.)
     }
 }
 
