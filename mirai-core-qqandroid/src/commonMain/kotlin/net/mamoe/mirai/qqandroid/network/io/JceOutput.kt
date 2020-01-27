@@ -7,6 +7,8 @@ import kotlin.reflect.KClass
 
 @PublishedApi
 internal val CharsetGBK = Charset.forName("GBK")
+@PublishedApi
+internal val CharsetUTF8 = Charset.forName("UTF8")
 
 inline fun buildJcePacket(stringCharset: Charset = CharsetGBK, block: JceOutput.() -> Unit): ByteReadPacket {
     return JceOutput(stringCharset).apply(block).build()
