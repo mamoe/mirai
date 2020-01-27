@@ -3,6 +3,7 @@ package net.mamoe.mirai.qqandroid.network.io
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import kotlinx.io.pool.ObjectPool
+import net.mamoe.mirai.utils.io.readIoBuffer
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toIoBuffer
 
@@ -19,6 +20,8 @@ inline class JceHead(private val value: Long) {
 }
 
 fun ByteArray.asJceInput(charset: Charset = CharsetGBK): JceInput = JceInput(this.toIoBuffer(), charset)
+
+fun ByteReadPacket.asJceInput(charset: Charset = CharsetGBK): JceInput = JceInput(this.readIoBuffer(), charset)
 
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(ExperimentalUnsignedTypes::class)
