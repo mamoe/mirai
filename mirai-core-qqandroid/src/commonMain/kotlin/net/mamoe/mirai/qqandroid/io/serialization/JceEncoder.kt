@@ -12,8 +12,7 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.CharsetUTF8
 import net.mamoe.mirai.qqandroid.io.JceEncodeException
-import net.mamoe.mirai.qqandroid.io.JceOutput
-import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.qqandroid.io.JceStruct
 import kotlin.reflect.KClass
 
 fun <T> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: Charset): T {
@@ -68,17 +67,16 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         defaultStringCharset: JceCharset,
         private val count: Int,
         private val tag: JceDesc,
-        private val parentEncoder: JceEncoder,
-        private val stream: ByteArrayOutputStream = ByteArrayOutputStream()
-    ) : JceEncoder(defaultStringCharset, stream) {
+        private val parentEncoder: JceEncoder
+    ) : JceEncoder(defaultStringCharset, ByteArrayOutputStream()) {
         override fun SerialDescriptor.getTag(index: Int): JceDesc {
             return JceDesc(0, getCharset(index))
         }
 
         override fun endEncode(desc: SerialDescriptor) {
-            parentEncoder.writeHead(JceOutput.LIST, this.tag.id)
+            parentEncoder.writeHead(LIST, this.tag.id)
             parentEncoder.encodeTaggedInt(JceDesc.STUB_FOR_PRIMITIVE_NUMBERS_GBK, count)
-            parentEncoder.output.write(stream.toByteArray())
+            parentEncoder.output.write(this.output.toByteArray())
         }
     }
 
@@ -89,28 +87,35 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         private val stream: ByteArrayOutputStream = ByteArrayOutputStream()
     ) : JceEncoder(defaultStringCharset, stream) {
         override fun endEncode(desc: SerialDescriptor) {
-            parentEncoder.writeHead(JceOutput.STRUCT_BEGIN, this.tag.id)
+            parentEncoder.writeHead(STRUCT_BEGIN, this.tag.id)
             parentEncoder.output.write(stream.toByteArray())
-            parentEncoder.writeHead(JceOutput.STRUCT_END, 0)
+            parentEncoder.writeHead(STRUCT_END, 0)
         }
     }
 
     private inner class JceMapWriter(
         defaultStringCharset: JceCharset,
-        private val count: Int,
-        private val tag: JceDesc,
-        private val parentEncoder: JceEncoder
-    ) : JceEncoder(defaultStringCharset, ByteArrayOutputStream()) {
+        output: ByteArrayOutputStream
+    ) : JceEncoder(defaultStringCharset, output) {
         override fun SerialDescriptor.getTag(index: Int): JceDesc {
             return if (index % 2 == 0) JceDesc(0, getCharset(index))
             else JceDesc(1, getCharset(index))
         }
 
+        /*
         override fun endEncode(desc: SerialDescriptor) {
-            parentEncoder.writeHead(JceOutput.MAP, this.tag.id)
+            parentEncoder.writeHead(MAP, this.tag.id)
             parentEncoder.encodeTaggedInt(JceDesc.STUB_FOR_PRIMITIVE_NUMBERS_GBK, count)
             println(this.output.toByteArray().toUHexString())
             parentEncoder.output.write(this.output.toByteArray())
+        }*/
+
+        override fun beginCollection(desc: SerialDescriptor, collectionSize: Int, vararg typeParams: KSerializer<*>): CompositeEncoder {
+            return this
+        }
+
+        override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder {
+            return this
         }
     }
 
@@ -142,31 +147,27 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder = when (desc.kind) {
             StructureKind.LIST -> this
             StructureKind.MAP -> this
-            StructureKind.CLASS, UnionKind.OBJECT -> {
-                val currentTag = currentTagOrNull
-                if (currentTag == null) {
-                    this
-                } else {
-                    JceStructWriter(defaultStringCharset, currentTag, this)
-                }
-            }
-            is PolymorphicKind -> error("unsupported: PolymorphicKind")
+            StructureKind.CLASS, UnionKind.OBJECT -> this
+            is PolymorphicKind -> this
             else -> throw SerializationException("Primitives are not supported at top-level")
         }
 
         @Suppress("UNCHECKED_CAST", "NAME_SHADOWING")
         override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) = when (serializer.descriptor) {
-            // encode maps as collection of map entries, not merged collection of key-values
             is MapLikeDescriptor -> {
+                println("hello")
                 val entries = (value as Map<*, *>).entries
                 val serializer = (serializer as MapLikeSerializer<Any?, Any?, T, *>)
                 val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
-                HashSetSerializer(mapEntrySerial).serialize(JceMapWriter(charset, entries.size, popTag(), this), entries)
+
+                this.writeHead(MAP, currentTag.id)
+                this.encodeTaggedInt(JceDesc.STUB_FOR_PRIMITIVE_NUMBERS_GBK, entries.count())
+                HashSetSerializer(mapEntrySerial).serialize(JceMapWriter(charset, this.output), entries)
             }
             ByteArraySerializer.descriptor -> encodeTaggedByteArray(popTag(), value as ByteArray)
             is PrimitiveArrayDescriptor -> {
                 if (value is ByteArray) {
-                    this.encodeTaggedByteArray(currentTag, value)
+                    this.encodeTaggedByteArray( popTag(), value)
                 } else{
                     serializer.serialize(
                         ListWriter(charset, when(value){
@@ -177,24 +178,34 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                             is DoubleArray -> value.size
                             is CharArray -> value.size
                             else -> error("unknown array type: ${value.getClassName()}")
-                        }, currentTag, this),
+                        },  popTag(), this),
                         value
                     )
                 }
             }
             is ArrayClassDesc-> {
                 serializer.serialize(
-                    ListWriter(charset, (value as Array<*>).size, currentTag, this),
+                    ListWriter(charset, (value as Array<*>).size,  popTag(), this),
                     value
                 )
             }
             is ListLikeDescriptor -> {
                 serializer.serialize(
-                    ListWriter(charset, (value as Collection<*>).size, currentTag, this),
+                    ListWriter(charset, (value as Collection<*>).size,  popTag(), this),
                     value
                 )
             }
-            else -> serializer.serialize(this, value)
+            else -> {
+                if (value is JceStruct) {
+                    if (currentTagOrNull == null) {
+                        serializer.serialize(this, value)
+                    } else {
+                        this.writeHead(STRUCT_BEGIN, currentTag.id)
+                        serializer.serialize(this, value)
+                        this.writeHead(STRUCT_END, 0)
+                    }
+                } else serializer.serialize(this, value)
+            }
         }
 
         override fun encodeTaggedByte(tag: JceDesc, value: Byte) {
@@ -263,8 +274,8 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         }
 
         fun encodeTaggedByteArray(tag: JceDesc, bytes: ByteArray) {
-            writeHead(JceOutput.SIMPLE_LIST, tag.id)
-            writeHead(JceOutput.BYTE, 0)
+            writeHead(SIMPLE_LIST, tag.id)
+            writeHead(BYTE, 0)
             encodeTaggedInt(JceDesc.STUB_FOR_PRIMITIVE_NUMBERS_GBK, bytes.size)
             output.write(bytes)
         }
