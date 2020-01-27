@@ -16,6 +16,11 @@ import net.mamoe.mirai.qqandroid.io.JceOutput
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.reflect.KClass
 
+fun <T> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: Charset): T {
+    return Jce.byCharSet(c).load(deserializer, this)
+}
+
+
 enum class JceCharset(val kotlinCharset: Charset) {
     GBK(Charset.forName("GBK")),
     UTF8(Charset.forName("UTF8"))
@@ -354,5 +359,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
     override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
         TODO()
     }
+
+    override fun <T>
 
 }
