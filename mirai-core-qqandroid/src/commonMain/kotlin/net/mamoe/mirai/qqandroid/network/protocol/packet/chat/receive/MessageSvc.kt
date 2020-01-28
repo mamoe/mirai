@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.Jce
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
@@ -22,7 +23,9 @@ class MessageSvc {
                 req.sBuffer[0]!!
             )
             println(messageNotification.contentToString())
+            ProtoBuf
             TODO()
         }
     }
 }
+

@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 class MessageCommon {
 
@@ -36,25 +37,25 @@ class MessageCommon {
         @SerialId(9) val resUrlBig: String = "",
         @SerialId(10) val resUrlSmall: String = "",
         @SerialId(11) val resConf: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     data class AppShareInfo(
-        @ProtoType(ProtoNumberType.FIXED)    @SerialId(1) val id: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @SerialId(1) val id: Int = 0,
         @SerialId(2) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val resource: PluginInfo = PluginInfo()
-    )
+    ) : ProtoBuf
 
     @Serializable
     data class ContentHead(
         @SerialId(1) val pkgNum: Int = 0,
         @SerialId(2) val pkgIndex: Int = 0,
-           @SerialId(3) val divSeq: Int = 0,
+        @SerialId(3) val divSeq: Int = 0,
         @SerialId(4) val autoReply: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     data class Msg(
         val s: String
-    )
+    ) : ProtoBuf
 }

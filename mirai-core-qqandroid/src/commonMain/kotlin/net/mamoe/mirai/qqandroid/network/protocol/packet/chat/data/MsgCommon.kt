@@ -3,18 +3,19 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 /**
  * msf.msgcomm.msg_comm
  */
 @Serializable
-class MsgComm {
+class MsgComm : ProtoBuf {
     @Serializable
     class AppShareInfo(
         @SerialId(1) val appshareId: Int = 0,
         @SerialId(2) val appshareCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val appshareResource: PluginInfo? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class C2CTmpMsgHead(
@@ -29,7 +30,7 @@ class MsgComm {
         @SerialId(9) val lockDisplay: Int = 0,
         @SerialId(10) val directionFlag: Int = 0,
         @SerialId(11) val reserved: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ContentHead(
@@ -37,7 +38,7 @@ class MsgComm {
         @SerialId(2) val pkgIndex: Int = 0,
         @SerialId(3) val divSeq: Int = 0,
         @SerialId(4) val autoReply: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class DiscussInfo(
@@ -46,13 +47,13 @@ class MsgComm {
         @SerialId(3) val discussInfoSeq: Long = 0L,
         @SerialId(4) val discussRemark: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(5) val discussName: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ExtGroupKeyInfo(
         @SerialId(1) val curMaxSeq: Int = 0,
         @SerialId(2) val curTime: Long = 0L
-    )
+    ) : ProtoBuf
 
     @Serializable
     class GroupInfo(
@@ -64,7 +65,7 @@ class MsgComm {
         @SerialId(6) val groupLevel: Int = 0,
         @SerialId(7) val groupCardType: Int = 0,
         @SerialId(8) val groupName: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Msg(
@@ -72,7 +73,7 @@ class MsgComm {
         @SerialId(2) val contentHead: ContentHead? = null,
         @SerialId(3) val msgBody: ImMsgBody.MsgBody? = null,
         @SerialId(4) val appshareInfo: AppShareInfo? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MsgHead(
@@ -104,19 +105,19 @@ class MsgComm {
         @SerialId(26) val multiCompatibleText: String = "",
         @SerialId(27) val authSex: Int = 0,
         @SerialId(28) val isSrcMsg: Boolean = false
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MsgType0x210(
         @SerialId(1) val subMsgType: Int = 0,
         @SerialId(2) val msgContent: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MutilTransHead(
         @SerialId(1) val status: Int = 0,
         @SerialId(2) val msgId: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class PluginInfo(
@@ -131,13 +132,13 @@ class MsgComm {
         @SerialId(9) val resUrlBig: String = "",
         @SerialId(10) val resUrlSmall: String = "",
         @SerialId(11) val resConf: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Uin2Nick(
         @SerialId(1) val uin: Long = 0L,
         @SerialId(2) val nick: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     class UinPairMsg(
@@ -149,5 +150,5 @@ class MsgComm {
         @SerialId(8) val c2cType: Int = 0,
         @SerialId(9) val serviceType: Int = 0,
         @SerialId(10) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 }

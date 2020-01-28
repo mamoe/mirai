@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 @Serializable
 internal class Cmd0x352Packet(
@@ -10,7 +11,7 @@ internal class Cmd0x352Packet(
     @SerialId(3) val getImgUrlReq: GetImgUrlReq? = null,// optional
     @SerialId(4) val deleteImgReq: String? = "",// optional (没有做也不准备做, 没用)
     @SerialId(10) val networkType: Int = 5// 数据网络=5
-) {
+) : ProtoBuf {
     companion object {
         fun createByImageRequest(req: ImgReq, networkType: Int = 5): Cmd0x352Packet {
             if (req is UploadImgReq)
@@ -32,5 +33,4 @@ internal class Cmd0x352Packet(
             error("Unknown ImgReq")
         }
     }
-
 }

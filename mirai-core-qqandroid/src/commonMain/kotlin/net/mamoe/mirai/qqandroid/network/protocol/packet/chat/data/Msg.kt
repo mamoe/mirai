@@ -5,28 +5,29 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 @Serializable
-class ImCommon {
+class ImCommon : ProtoBuf {
     @Serializable
     class GroupInfo(
         @SerialId(1) val groupId: Long = 0L,
         @SerialId(2) val groupType: Int /* enum */ = 1
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Signature(
         @SerialId(1) val keyType: Int = 0,
         @SerialId(2) val sessionAppId: Int = 0,
         @SerialId(3) val sessionKey: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Token(
         @SerialId(1) val buf: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val c2cType: Int = 0,
         @SerialId(3) val serviceType: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class User(
@@ -40,11 +41,11 @@ class ImCommon {
         @SerialId(8) val platformId: Int = 0,
         @SerialId(9) val language: Int = 0,
         @SerialId(10) val equipKey: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 }
 
 @Serializable
-class ImImagent {
+class ImImagent : ProtoBuf {
     @Serializable
     class ImAgentHead(
         @SerialId(1) val command: Int /* enum */ = 1,
@@ -57,45 +58,45 @@ class ImImagent {
         @SerialId(8) val signature: Signature? = null,
         @SerialId(9) val subCmd: Int = 0,
         @SerialId(10) val serverIp: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ImAgentPackage(
         @SerialId(1) val head: ImAgentHead? = null,
         @SerialId(11) val msgSendReq: ImMsg.MsgSendReq? = null,
         @SerialId(12) val msgSendResp: ImMsg.MsgSendResp? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Requestinfo(
         @ProtoType(ProtoNumberType.FIXED) @SerialId(1) val reqIp: Int = 0,
         @SerialId(2) val reqPort: Int = 0,
         @SerialId(3) val reqFlag: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Signature(
         @SerialId(1) val keyType: Int = 0,
         @SerialId(2) val sessionAppId: Int = 0,
         @SerialId(3) val sessionKey: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 }
 
 @Serializable
-class ImMsg {
+class ImMsg : ProtoBuf {
     @Serializable
     class C2C(
         @SerialId(1) val sender: ImCommon.User? = null,
         @SerialId(2) val receiver: ImCommon.User? = null,
         @SerialId(3) val c2cRelation: C2CRelation? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class C2CRelation(
         @SerialId(1) val c2cType: Int /* enum */ = 0,
         @SerialId(2) val groupInfo: ImCommon.GroupInfo? = null,
         @SerialId(3) val token: ImCommon.Token? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ContentHead(
@@ -109,27 +110,27 @@ class ImMsg {
         @SerialId(8) val msgdbSeq: Int = 0,
         @SerialId(9) val wordMsgSeq: Int = 0,
         @SerialId(10) val msgRand: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Group(
         @SerialId(1) val sender: ImCommon.User? = null,
         @SerialId(2) val receiver: ImCommon.User? = null,
         @SerialId(3) val groupInfo: ImCommon.GroupInfo? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Msg(
         @SerialId(1) val head: MsgHead? = null,
         @SerialId(2) val body: ImMsgBody.MsgBody? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MsgHead(
         @SerialId(1) val routingHead: RoutingHead? = null,
         @SerialId(2) val contentHead: ContentHead? = null,
         @SerialId(3) val gbkTmpMsgBody: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MsgSendReq(
@@ -138,7 +139,7 @@ class ImMsg {
         @SerialId(3) val msgTailId: Int = 0,
         @SerialId(4) val connMsgFlag: Int = 0,
         @SerialId(5) val cookie: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MsgSendResp
@@ -147,11 +148,11 @@ class ImMsg {
     class RoutingHead(
         @SerialId(1) val c2c: C2C? = null,
         @SerialId(2) val group: Group? = null
-    )
+    ) : ProtoBuf
 }
 
 @Serializable
-class ImMsgBody {
+class ImMsgBody : ProtoBuf {
     @Serializable
     class AnonymousGroupMsg(
         @SerialId(1) val flags: Int = 0,
@@ -161,7 +162,7 @@ class ImMsgBody {
         @SerialId(5) val expireTime: Int = 0,
         @SerialId(6) val bubbleId: Int = 0,
         @SerialId(7) val rankColor: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ApolloActMsg(
@@ -178,7 +179,7 @@ class ImMsgBody {
         @SerialId(11) val diytextContent: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(12) val inputText: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(13) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ArkAppElem(
@@ -186,7 +187,7 @@ class ImMsgBody {
         @SerialId(2) val minVersion: String = "",
         @SerialId(3) val xmlTemplate: String = "",
         @SerialId(4) val data: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Attr(
@@ -200,32 +201,32 @@ class ImMsgBody {
         @SerialId(8) val pitchAndFamily: Int = 90,
         @SerialId(9) val fontName: String = "Times New Roman",
         @SerialId(10) val reserveData: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class BitAppMsg(
         @SerialId(1) val buf: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class BlessingMessage(
         @SerialId(1) val msgType: Int = 0,
         @SerialId(2) val exFlag: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class CommonElem(
         @SerialId(1) val serviceType: Int = 0,
         @SerialId(2) val pbElem: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val businessType: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ConferenceTipsInfo(
         @SerialId(1) val sessionType: Int = 0,
         @SerialId(2) val sessionUin: Long = 0L,
         @SerialId(3) val text: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     class CrmElem(
@@ -234,7 +235,7 @@ class ImMsgBody {
         @SerialId(3) val qidianFlag: Int = 0,
         @SerialId(4) val pushFlag: Int = 0,
         @SerialId(5) val countFlag: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class CustomElem(
@@ -243,7 +244,7 @@ class ImMsgBody {
         @SerialId(3) val enumType: Int /* enum */ = 1,
         @SerialId(4) val ext: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(5) val sound: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class CustomFace(
@@ -281,7 +282,7 @@ class ImMsgBody {
         @SerialId(32) val _400Width: Int = 0,
         @SerialId(33) val _400Height: Int = 0,
         @SerialId(34) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class DeliverGiftMsg(
@@ -307,13 +308,13 @@ class ImMsgBody {
         @SerialId(20) val receiverName: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(21) val receiverPic: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(22) val stmessageGifturl: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class EIMInfo(
         @SerialId(1) val rootId: Long = 0L,
         @SerialId(2) val flag: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Elem(
@@ -370,13 +371,13 @@ class ImMsgBody {
         @SerialId(51) val lightApp: ImMsgBody.LightAppElem? = null,
         @SerialId(52) val eimInfo: ImMsgBody.EIMInfo? = null,
         @SerialId(53) val commonElem: ImMsgBody.CommonElem? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ElemFlags(
         @SerialId(1) val flags1: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val businessData: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ElemFlags2(
@@ -394,7 +395,7 @@ class ImMsgBody {
         @SerialId(12) val customFont: Int = 0,
         @SerialId(13) val pcSupportDef: ImMsgBody.PcSupportDef? = null,
         @SerialId(14) val crmFlags: Int = 0
-    ) {
+    ) : ProtoBuf {
         @Serializable
         class Inst(
             @SerialId(1) val appId: Int = 0,
@@ -416,19 +417,19 @@ class ImMsgBody {
         @SerialId(10) val msgStateFlag: Int = 0,
         @SerialId(11) val apnsSoundType: Int = 0,
         @SerialId(12) val newGroupFlag: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Face(
         @SerialId(1) val index: Int = 0,
         @SerialId(2) val old: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(11) val buf: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class FSJMessageElem(
         @SerialId(1) val msgType: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class FunFace(
@@ -469,7 +470,7 @@ class ImMsgBody {
         @SerialId(17) val pendantId: Long = 0L,
         @SerialId(18) val rpIndex: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(19) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class GroupBusinessMsg(
@@ -481,7 +482,7 @@ class ImMsgBody {
         @SerialId(6) val rank: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(7) val rankColor: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(8) val rankBgcolor: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class GroupFile(
@@ -495,18 +496,18 @@ class ImMsgBody {
         @SerialId(8) val batchItemId: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(9) val feedMsgTime: Int = 0,
         @SerialId(10) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class GroupPostElem(
         @SerialId(1) val transType: Int = 0,
         @SerialId(2) val transMsg: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class GroupPubAccountInfo(
         @SerialId(1) val pubAccount: Long = 0L
-    )
+    ) : ProtoBuf
 
     @Serializable
     class LifeOnlineAccount(
@@ -519,20 +520,20 @@ class ImMsgBody {
         @SerialId(7) val gdtImpData: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(8) val gdtCliData: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(9) val viewId: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class LightAppElem(
         @SerialId(1) val data: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val msgResid: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class LocationInfo(
         @SerialId(1) val longitude: Double = 0.0,
         @SerialId(2) val latitude: Double = 0.0,
         @SerialId(3) val desc: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class LolaMsg(
@@ -540,7 +541,7 @@ class ImMsgBody {
         @SerialId(2) val encodeContent: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val longMsgUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val downloadKey: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class LowVersionTips(
@@ -549,7 +550,7 @@ class ImMsgBody {
         @SerialId(3) val sessionUin: Long = 0L,
         @SerialId(4) val senderUin: Long = 0L,
         @SerialId(5) val text: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MarketFace(
@@ -566,7 +567,7 @@ class ImMsgBody {
         @SerialId(11) val imageHeight: Int = 0,
         @SerialId(12) val mobileparam: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(13) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MarketTrans(
@@ -575,26 +576,26 @@ class ImMsgBody {
         @SerialId(3) val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val ability: Int = 0,
         @SerialId(5) val minAbility: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MsgBody(
         @SerialId(1) val richText: ImMsgBody.RichText? = null,
         @SerialId(2) val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val msgEncryptContent: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class MsgBodySubtype4(
         @SerialId(1) val msgNotOnlineFile: ImMsgBody.NotOnlineFile? = null,
         @SerialId(2) val msgTime: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class NearByMessageType(
         @SerialId(1) val type: Int = 0,
         @SerialId(2) val identifyType: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class NotOnlineFile(
@@ -617,7 +618,7 @@ class ImMsgBody {
         @SerialId(54) val clientType: Int = 0,
         @SerialId(55) val expireTime: Int = 0,
         @SerialId(56) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class NotOnlineImage(
@@ -650,25 +651,25 @@ class ImMsgBody {
         @SerialId(27) val _400Width: Int = 0,
         @SerialId(28) val _400Height: Int = 0,
         @SerialId(29) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class OnlineImage(
         @SerialId(1) val guid: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val filePath: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class OpenQQData(
         @SerialId(1) val carQqData: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class PatsElem(
         @SerialId(1) val patType: Int = 0,
         @SerialId(2) val patCount: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class PcSupportDef(
@@ -678,7 +679,7 @@ class ImMsgBody {
         @SerialId(4) val macPtlEnd: Int = 0,
         @SerialId(5) val ptlsSupport: List<Int>? = null,
         @SerialId(6) val ptlsNotSupport: List<Int>? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Ptt(
@@ -706,7 +707,7 @@ class ImMsgBody {
         @SerialId(30) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(31) val bytesPttUrls: List<ByteArray>? = null,
         @SerialId(32) val downloadFlag: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class PubAccInfo(
@@ -714,13 +715,13 @@ class ImMsgBody {
         @SerialId(2) val ingMsgTemplateId: String = "",
         @SerialId(3) val ingLongMsgUrl: String = "",
         @SerialId(4) val downloadKey: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class PubAccount(
         @SerialId(1) val buf: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val pubAccountUin: Long = 0L
-    )
+    ) : ProtoBuf
 
     @Serializable
     class PubGroup(
@@ -728,7 +729,7 @@ class ImMsgBody {
         @SerialId(2) val gender: Int = 0,
         @SerialId(3) val age: Int = 0,
         @SerialId(4) val distance: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class QQLiveOld(
@@ -736,7 +737,7 @@ class ImMsgBody {
         @SerialId(2) val showText: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val param: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val introduce: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class QQWalletAioBody(
@@ -761,7 +762,7 @@ class ImMsgBody {
         @SerialId(19) val redchannel: Int = 0,
         @SerialId(20) val grapUin: List<Long>? = null,
         @SerialId(21) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class QQWalletAioElem(
@@ -786,17 +787,17 @@ class ImMsgBody {
         @SerialId(19) val aioImageRight: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(20) val cftImage: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(21) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class QQWalletMsg(
         @SerialId(1) val aioBody: ImMsgBody.QQWalletAioBody? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class RedBagInfo(
         @SerialId(1) val redbagType: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class RichMsg(
@@ -806,7 +807,7 @@ class ImMsgBody {
         @SerialId(4) val rand: Int = 0,
         @SerialId(5) val seq: Int = 0,
         @SerialId(6) val flags: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class RichText(
@@ -816,7 +817,7 @@ class ImMsgBody {
         @SerialId(4) val ptt: ImMsgBody.Ptt? = null,
         @SerialId(5) val tmpPtt: ImMsgBody.TmpPtt? = null,
         @SerialId(6) val trans211TmpMsg: ImMsgBody.Trans211TmpMsg? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class SecretFileMsg(
@@ -835,20 +836,20 @@ class ImMsgBody {
         @SerialId(13) val elemFlags2: ImMsgBody.ElemFlags2? = null,
         @SerialId(14) val opertype: Int = 0,
         @SerialId(15) val fromphonenum: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ShakeWindow(
         @SerialId(1) val type: Int = 0,
         @SerialId(2) val reserve: Int = 0,
         @SerialId(3) val uin: Long = 0L
-    )
+    ) : ProtoBuf
 
     @Serializable
     class SmallEmoji(
         @SerialId(1) val packIdSum: Int = 0,
         @SerialId(2) val imageType: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class SourceMsg(
@@ -863,7 +864,7 @@ class ImMsgBody {
         @SerialId(9) val srcMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(10) val toUin: Long = 0L,
         @SerialId(11) val troopName: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Text(
@@ -873,12 +874,12 @@ class ImMsgBody {
         @SerialId(4) val attr7Buf: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(11) val buf: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(12) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class TipsInfo(
         @SerialId(1) val text: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     class TmpPtt(
@@ -894,19 +895,19 @@ class ImMsgBody {
         @SerialId(10) val msgId: Long = 0L,
         @SerialId(30) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(31) val pttEncodeData: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Trans211TmpMsg(
         @SerialId(1) val msgBody: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val c2cCmd: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class TransElem(
         @SerialId(1) val elemType: Int = 0,
         @SerialId(2) val elemValue: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class VideoFile(
@@ -934,17 +935,17 @@ class ImMsgBody {
         @SerialId(22) val thumbDownloadFlag: Int = 0,
         @SerialId(23) val videoDownloadFlag: Int = 0,
         @SerialId(24) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class WorkflowNotifyMsg(
         @SerialId(1) val extMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val createUin: Long = 0L
-    )
+    ) : ProtoBuf
 }
 
 @Serializable
-class ImMsgHead {
+class ImMsgHead : ProtoBuf {
     @Serializable
     class C2CHead(
         @SerialId(1) val toUin: Long = 0L,
@@ -958,7 +959,7 @@ class ImMsgHead {
         @SerialId(9) val clientTime: Int = 0,
         @SerialId(10) val rand: Int = 0,
         @SerialId(11) val ingPhoneNumber: String = ""
-    )
+    ) : ProtoBuf
 
     @Serializable
     class CSHead(
@@ -986,7 +987,7 @@ class ImMsgHead {
         @SerialId(22) val instanceId: Int = 0,
         @SerialId(23) val sessionId: Long = 0L,
         @SerialId(24) val idcId: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class DeltaHead(
@@ -997,7 +998,7 @@ class ImMsgHead {
         @SerialId(5) val ackCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(6) val result: Int = 0,
         @SerialId(7) val flags: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class Head(
@@ -1011,7 +1012,7 @@ class ImMsgHead {
         @SerialId(8) val msgC2cHead: C2CHead? = null,
         @SerialId(9) val msgSconnHead: SConnHead? = null,
         @SerialId(10) val msgInstCtrl: InstCtrl? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class HttpConnHead(
@@ -1040,14 +1041,14 @@ class ImMsgHead {
         @SerialId(23) val commandId: Int = 0,
         @SerialId(24) val serviceCmdid: Int = 0,
         @SerialId(25) val msgOidbhead: TransOidbHead? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class InstCtrl(
         @SerialId(1) val msgSendToInst: List<InstInfo>? = null,
         @SerialId(2) val msgExcludeInst: List<InstInfo>? = null,
         @SerialId(3) val msgFromInst: InstInfo? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class InstInfo(
@@ -1055,13 +1056,13 @@ class ImMsgHead {
         @SerialId(2) val instid: Int = 0,
         @SerialId(3) val platform: Int = 0,
         @SerialId(10) val enumDeviceType: Int /* enum */ = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class LoginSig(
         @SerialId(1) val type: Int = 0,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
-    )
+    ) : ProtoBuf
 
     @Serializable
     class RedirectMsg(
@@ -1070,7 +1071,7 @@ class ImMsgHead {
         @ProtoType(ProtoNumberType.FIXED) @SerialId(3) val redirectIp: Int = 0,
         @SerialId(4) val redirectPort: Int = 0,
         @SerialId(5) val redirectCount: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class S2CHead(
@@ -1081,10 +1082,10 @@ class ImMsgHead {
         @ProtoType(ProtoNumberType.FIXED) @SerialId(5) val relayIp: Int = 0,
         @SerialId(6) val relayPort: Int = 0,
         @SerialId(7) val toUin: Long = 0L
-    )
+    ) : ProtoBuf
 
     @Serializable
-    class SConnHead
+    class SConnHead : ProtoBuf
 
     @Serializable
     class TransOidbHead(
@@ -1092,44 +1093,44 @@ class ImMsgHead {
         @SerialId(2) val serviceType: Int = 0,
         @SerialId(3) val result: Int = 0,
         @SerialId(4) val errorMsg: String = ""
-    )
+    ) : ProtoBuf
 }
 
 @Serializable
-class ImReceipt {
+class ImReceipt : ProtoBuf {
     @Serializable
     class MsgInfo(
         @SerialId(1) val fromUin: Long = 0L,
         @SerialId(2) val toUin: Long = 0L,
         @SerialId(3) val msgSeq: Int = 0,
         @SerialId(4) val msgRandom: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ReceiptInfo(
         @SerialId(1) val readTime: Long = 0L
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ReceiptReq(
         @SerialId(1) val command: Int /* enum */ = 1,
         @SerialId(2) val msgInfo: MsgInfo? = null
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ReceiptResp(
         @SerialId(1) val command: Int /* enum */ = 1,
         @SerialId(2) val receiptInfo: ReceiptInfo? = null
-    )
+    ) : ProtoBuf
 }
 
 @Serializable
-class ObjMsg {
+class ObjMsg : ProtoBuf {
     @Serializable
     class MsgContentInfo(
         @SerialId(1) val contentInfoId: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val msgFile: MsgFile? = null
-    ) {
+    ) : ProtoBuf {
         @Serializable
         class MsgFile(
             @SerialId(1) val busId: Int = 0,
@@ -1139,7 +1140,7 @@ class ObjMsg {
             @SerialId(5) val int64DeadTime: Long = 0L,
             @SerialId(6) val fileSha1: ByteArray = EMPTY_BYTE_ARRAY,
             @SerialId(7) val ext: ByteArray = EMPTY_BYTE_ARRAY
-        )
+        ) : ProtoBuf
     }
 
     @Serializable
@@ -1147,7 +1148,7 @@ class ObjMsg {
         @SerialId(1) val smallPicUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val originalPicUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val localPicId: Int = 0
-    )
+    ) : ProtoBuf
 
     @Serializable
     class ObjMsg(
@@ -1158,5 +1159,5 @@ class ObjMsg {
         @SerialId(6) val msgPic: List<MsgPic>? = null,
         @SerialId(7) val msgContentInfo: List<MsgContentInfo>? = null,
         @SerialId(8) val reportIdShow: Int = 0
-    )
+    ) : ProtoBuf
 }

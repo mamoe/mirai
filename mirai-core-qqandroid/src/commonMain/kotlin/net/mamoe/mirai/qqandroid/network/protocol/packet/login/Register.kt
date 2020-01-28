@@ -4,9 +4,10 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.io.JceInput
 import net.mamoe.mirai.qqandroid.io.jceMap
 import net.mamoe.mirai.qqandroid.io.jceStruct
+import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.jce.SvcReqRegister
 import net.mamoe.mirai.qqandroid.network.protocol.jce.writeUniRequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
@@ -55,6 +56,7 @@ class StatSvc {
                 client, subAppId = subAppId, commandName = commandName,
                 extraData = client.wLoginSigInfo.tgt.toReadPacket(), sequenceId = sequenceId
             ) {
+                JceInput
                 writeUniRequestPacket {
                     sServantName = "PushService"
                     sFuncName = "SvcReqRegister"
