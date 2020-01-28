@@ -26,7 +26,7 @@ internal class OutgoingPacket constructor(
     val delegate: ByteReadPacket
 ) {
     val name: String by lazy {
-        name ?: commandName.toString()
+        name ?: commandName
     }
 }
 
