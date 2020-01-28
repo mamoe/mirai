@@ -6,8 +6,8 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 
 
-internal object GetFriendListRequest :
-    PacketFactory<GetFriendListRequest.GetFriendListResponse>("friendlist.GetFriendListReq") {
+internal object FriendListPacket :
+    PacketFactory<FriendListPacket.GetFriendListResponse>("friendlist.GetFriendListReq") {
 
     class GetFriendListResponse() : Packet
 
