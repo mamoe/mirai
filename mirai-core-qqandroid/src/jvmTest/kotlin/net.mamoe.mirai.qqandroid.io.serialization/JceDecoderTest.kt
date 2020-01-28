@@ -72,7 +72,7 @@ class JceDecoderTest {
                 writeJceStruct(TestSimpleJceStruct(), 10)
                 writeCollection(listOf(listOf(1, 2, 3), listOf(1, 2, 3)), 11)
             }.readBytes().toUHexString(),
-            TestComplexJceStruct().toByteArray(TestComplexJceStruct.serializer()).toUHexString()
+            TestComplexNullableJceStruct().toByteArray(TestComplexNullableJceStruct.serializer()).toUHexString()
         )
     }
 

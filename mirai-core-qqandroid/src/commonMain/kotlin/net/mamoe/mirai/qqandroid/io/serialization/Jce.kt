@@ -330,6 +330,9 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         override fun decodeTaggedString(tag: Int): String = input.readString(tag)
         override fun decodeTaggedBoolean(tag: Int): Boolean = input.readBoolean(tag)
 
+
+        override fun decodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor): Int =
+            TODO()
         /**
          * 在 [KSerializer.serialize] 前
          */
@@ -365,13 +368,23 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 }
 
                 is MapLikeDescriptor -> {
-                        val tag = currentTagOrNull
+                    val tag = currentTagOrNull
 
-                        if (tag != null && input.skipToTagOrNull(tag) { popTag() } == null && desc.isNullable) {
-                            return NullReader(this.input)
-                        }
+                    if (tag != null && input.skipToTagOrNull(tag) { popTag() } == null && desc.isNullable) {
+                        return NullReader(this.input)
+                    }
 
+                    if (tag!=null) {
+                        popTag()
+                    }
                     return JceMapReader(input.readInt(0), this.input)
+                }
+            }
+
+            if (!input.input.endOfInput) {
+                val tag = currentTagOrNull
+                if (tag != null && input.peakHead().tag > tag) {
+                    return NullReader(this.input)
                 }
             }
 
@@ -390,18 +403,20 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 return this // top-level
             }
 
-            if (!input.input.endOfInput) {
-                val tag = currentTagOrNull
-                if (tag != null && input.peakHead().tag > tag) {
-                    return NullReader(this.input)
-                }
-            }
-
             return super.beginStructure(desc, *typeParams)
+        }
+
+        override fun decodeTaggedNull(tag: Int): Nothing? {
+            return null
+        }
+
+        override fun decodeTaggedNotNullMark(tag: Int): Boolean {
+            return !input.input.endOfInput && input.peakHead().tag <= tag
         }
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
+            println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
             if (deserializer is NullReader) {
                 return null
             }
@@ -421,6 +436,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     ) {
                         return input.readByteArray(popTag()).toMutableList() as T
                     }
+                    return super.decodeSerializableValue(deserializer)
                 }
                 is MapLikeDescriptor -> {
                     // 将 mapOf(k1 to v1, k2 to v2, ...) 转换为 listOf(k1, v1, k2, v2, ...) 以便于写入.
@@ -430,16 +446,18 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     return setOfEntries.associateBy({ it.key }, { it.value }) as T
                 }
             }
-            return super.decodeSerializableValue(deserializer)
+            val tag = currentTagOrNull ?: return deserializer.deserialize(this)
+            return if (this.decodeTaggedNotNullMark(tag)){
+                deserializer.deserialize(this)
+            } else {
+                null
+            }
         }
 
         @Suppress("UNCHECKED_CAST")
         override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
             return decodeNullableSerializableValue(deserializer as DeserializationStrategy<Any?>) as? T ?: error("value is not optional but cannot find")
         }
-
-        override fun decodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor): Int =
-            TODO()
     }
 
 
