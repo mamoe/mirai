@@ -1,3 +1,5 @@
 package net.mamoe.mirai.qqandroid.io
 
-interface JceStruct
+interface JceStruct {
+    fun writeTo(output: JceOutput) = Unit
+}
