@@ -8,7 +8,6 @@ import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 private val EMPTY_MAP = mapOf<String, String>()
-private val EMPTY_SBUFFER_MAP = mapOf<Int, ByteArray>()
 
 @Serializable
 class RequestPacket(

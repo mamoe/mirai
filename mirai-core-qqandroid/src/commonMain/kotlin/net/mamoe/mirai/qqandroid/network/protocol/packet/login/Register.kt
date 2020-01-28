@@ -1,11 +1,11 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.writeFully
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
+import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestDataStructSvcReqRegister
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestDataVersion3
@@ -56,7 +56,8 @@ class StatSvc {
                 client, subAppId = subAppId, commandName = commandName,
                 extraData = client.wLoginSigInfo.tgt.toReadPacket(), sequenceId = sequenceId
             ) {
-                writeFully(
+                writeJceStruct(
+                    RequestPacket.serializer(),
                     RequestPacket(
                         sServantName = "PushService",
                         sFuncName = "SvcReqRegister",
@@ -121,7 +122,7 @@ class StatSvc {
                                 ).toByteArray(RequestDataStructSvcReqRegister.serializer())
                             )
                         ).toByteArray(RequestDataVersion3.serializer())
-                    ).toByteArray(RequestPacket.serializer())
+                    )
                 )
             }
         }

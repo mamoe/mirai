@@ -7,9 +7,7 @@ import net.mamoe.mirai.qqandroid.io.JceOutput
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.buildJcePacket
 import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 fun main() {
     JceDecoderTest().testSimpleMap()
@@ -41,7 +39,8 @@ class JceDecoderTest {
 
     @Serializable
     class TestComplexJceStruct(
-        @SerialId(7) val byteArray: ByteArray = byteArrayOf(1, 2, 3),
+        @SerialId(6) val string: String = "haha",
+        @SerialId(7) val byteArray: ByteArray = ByteArray(2000),
         @SerialId(8) val byteList: List<Byte> = listOf(1, 2, 3), // error here
         @SerialId(9) val map: Map<String, Map<String, ByteArray>> = mapOf("哈哈" to mapOf("哈哈" to byteArrayOf(1, 2, 3))),
         //   @SerialId(10) val nestedJceStruct: TestSimpleJceStruct = TestSimpleJceStruct(),
@@ -50,10 +49,11 @@ class JceDecoderTest {
 
     @Serializable
     class TestComplexNullableJceStruct(
-        @SerialId(7) val byteArray: ByteArray? = byteArrayOf(1, 2, 3),
+        @SerialId(6) val string: String = "haha",
+        @SerialId(7) val byteArray: ByteArray = ByteArray(2000),
         @SerialId(8) val byteList: List<Byte>? = listOf(1, 2, 3), // error here
         @SerialId(9) val map: Map<String, Map<String, ByteArray>>? = mapOf("哈哈" to mapOf("哈哈" to byteArrayOf(1, 2, 3))),
-        @SerialId(10) val nestedJceStruct: TestSimpleJceStruct? = TestSimpleJceStruct(),
+        @SerialId(10) val nestedJceStruct: TestComplexJceStruct? = TestComplexJceStruct(),
         @SerialId(11) val byteList2: List<List<Int>>? = listOf(listOf(1, 2, 3), listOf(1, 2, 3))
     ) : JceStruct
 
@@ -63,19 +63,9 @@ class JceDecoderTest {
     }
 
     @Test
-    fun testEncoder2() {
-        assertEquals(
-            buildJcePacket {
-                writeFully(byteArrayOf(1, 2, 3), 7)
-                writeCollection(listOf(1, 2, 3), 8)
-                writeMap(mapOf("哈哈" to mapOf("哈哈" to byteArrayOf(1, 2, 3))), 9)
-                writeJceStruct(TestSimpleJceStruct(), 10)
-                writeCollection(listOf(listOf(1, 2, 3), listOf(1, 2, 3)), 11)
-            }.readBytes().toUHexString(),
-            TestComplexNullableJceStruct().toByteArray(TestComplexNullableJceStruct.serializer()).toUHexString()
-        )
+    fun testEncoder3() {
+        println(TestComplexNullableJceStruct().toByteArray(TestComplexNullableJceStruct.serializer()).loadAs(TestComplexNullableJceStruct.serializer()).contentToString())
     }
-
 
     @Test
     fun testNestedList() {
@@ -133,6 +123,6 @@ class JceDecoderTest {
         )
         println(buildJcePacket {
             writeMap(mapOf(byteArrayOf(1) to mapOf(byteArrayOf(1) to shortArrayOf(2))), 7)
-        }.readBytes().loadAs(TestNestedMap.serializer()).map.entries.first().value!!.contentToString())
+        }.readBytes().loadAs(TestNestedMap.serializer()).map.entries.first().value.contentToString())
     }
 }

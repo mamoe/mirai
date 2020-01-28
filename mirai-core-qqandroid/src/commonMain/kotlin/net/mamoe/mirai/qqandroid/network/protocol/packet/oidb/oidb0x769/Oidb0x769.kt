@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 class Oidb0x769 {
     @Serializable
@@ -13,19 +14,19 @@ class Oidb0x769 {
        // @SerialId(5) val city: String,
        // @SerialId(6) val req_debug_msg: Int = 0,
        // @SerialId(101) val query_uin_package_usage_req: QueryUinPackageUsageReq
-    )
+    ) : ProtoBuf
 
     @Serializable
     class QueryUinPackageUsageReq(
         @SerialId(1) val type: Int,
         @SerialId(2) val uinFileSize: Long = 0
-    )
+    ): ProtoBuf
 
     @Serializable
     class ConfigSeq(
         @SerialId(1) val type: Int, // uint
         @SerialId(2) val version: Int // uint
-    )
+    ): ProtoBuf
 
     @Serializable
     class DeviceInfo(
@@ -37,7 +38,7 @@ class Oidb0x769 {
         //@SerialId(6) val storage: Storage,
         //@SerialId(7) val screen: Screen,
         //@SerialId(8) val camera: Camera
-    )
+    ): ProtoBuf
 
     @Serializable
     class OS(
@@ -46,27 +47,27 @@ class Oidb0x769 {
         @SerialId(3) val sdk: String,
         @SerialId(4) val kernel: String,
         @SerialId(5) val rom: String
-    )
+    ): ProtoBuf
 
     @Serializable
     class Camera(
         @SerialId(1) val primary: Long,
         @SerialId(2) val secondary: Long,
         @SerialId(3) val flag: Boolean
-    )
+    ): ProtoBuf
 
     @Serializable
     class CPU(
         @SerialId(1) val model: String,
         @SerialId(2) val frequency: Int,
         @SerialId(3) val cores: Int
-    )
+    ): ProtoBuf
 
     @Serializable
     class Memory(
         @SerialId(1) val total: Int,
         @SerialId(2) val process: Int
-    )
+    ): ProtoBuf
 
     @Serializable
     class Screen(
@@ -75,11 +76,11 @@ class Oidb0x769 {
         @SerialId(3) val height: Int,
         @SerialId(4) val dpi: Int,
         @SerialId(5) val multiTouch: Boolean
-    )
+    ): ProtoBuf
 
     @Serializable
     class Storage(
         @SerialId(1) val builtin: Int,
         @SerialId(2) val external: Int
-    )
+    ): ProtoBuf
 }

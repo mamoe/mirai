@@ -250,7 +250,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     private suspend fun ByteReadPacket.parseUniResponse(bot: QQAndroidBot, packetFactory: PacketFactory<*>, ssoSequenceId: Int, consumer: PacketConsumer) {
         val uni = readBytes(readInt() - 4).loadAs(RequestPacket.serializer())
         PacketLogger.verbose(uni.toString())
-        consumer(packetFactory.decode(bot, uni.sBuffer.toReadPacket()), uni.sServantName + "." + uni.sFuncName, ssoSequenceId)
+       /// consumer(packetFactory.decode(bot, uni.sBuffer.toReadPacket()), uni.sServantName + "." + uni.sFuncName, ssoSequenceId)
     }
 }
 
