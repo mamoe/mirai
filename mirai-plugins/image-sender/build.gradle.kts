@@ -20,6 +20,7 @@ kotlin {
     sourceSets {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
+            languageSettings.enableLanguageFeature("NewInference")
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
         }
     }
