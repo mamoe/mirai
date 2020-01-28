@@ -13,7 +13,6 @@ import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toIoBuffer
-import kotlin.reflect.KClass
 
 @PublishedApi
 internal val CharsetGBK = Charset.forName("GBK")
@@ -24,7 +23,7 @@ fun <T> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset
     return Jce.byCharSet(c).load(deserializer, this)
 }
 
-fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.UTF8): ByteArray = Jce.byCharSet(c).dump(serializer, this)
+fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray = Jce.byCharSet(c).dump(serializer, this)
 
 enum class JceCharset(val kotlinCharset: Charset) {
     GBK(Charset.forName("GBK")),
@@ -104,7 +103,6 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         @Suppress("UNCHECKED_CAST", "NAME_SHADOWING")
         override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) = when (serializer.descriptor) {
             is MapLikeDescriptor -> {
-                println("hello")
                 val entries = (value as Map<*, *>).entries
                 val serializer = (serializer as MapLikeSerializer<Any?, Any?, T, *>)
                 val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
@@ -115,24 +113,26 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
             ByteArraySerializer.descriptor -> encodeTaggedByteArray(popTag(), value as ByteArray)
             is PrimitiveArrayDescriptor -> {
-                if (value is ByteArray) {
-                    this.encodeTaggedByteArray(popTag(), value)
-                } else {
-                    serializer.serialize(
-                        ListWriter(
-                            when (value) {
-                                is ShortArray -> value.size
-                                is IntArray -> value.size
-                                is LongArray -> value.size
-                                is FloatArray -> value.size
-                                is DoubleArray -> value.size
-                                is CharArray -> value.size
-                                else -> error("unknown array type: ${value.getClassName()}")
-                            }, popTag(), this
-                        ),
-                        value
-                    )
-                }
+                //  if (value is ByteArray) {
+                //      this.encodeTaggedByteArray(popTag(), value)
+                //  } else {
+                serializer.serialize(
+                    ListWriter(
+                        when (value) {
+                            is ShortArray -> value.size
+                            is IntArray -> value.size
+                            is LongArray -> value.size
+                            is FloatArray -> value.size
+                            is DoubleArray -> value.size
+                            is CharArray -> value.size
+                            is ByteArray -> value.size
+                            is BooleanArray -> value.size
+                            else -> error("unknown array type: ${value.getClassName()}")
+                        }, popTag(), this
+                    ),
+                    value
+                )
+                //  }
             }
             is ArrayClassDesc -> {
                 serializer.serialize(
@@ -260,19 +260,58 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         }
 
         @PublishedApi
-        internal fun writeHead(type: Int, tag: Int) {
+        internal fun writeHead(type: Byte, tag: Int) {
             if (tag < 15) {
-                this.output.write((tag shl 4) or type)
+                this.output.write((tag shl 4) or type.toInt())
                 return
             }
             if (tag < 256) {
-                this.output.write(type or 0xF0)
+                this.output.write(type.toInt() or 0xF0)
                 this.output.write(tag)
                 return
             }
             error("tag is too large: $tag")
         }
     }
+
+    private open inner class JceMapReader(
+        val size: Int,
+        input: JceInput
+    ) : JceDecoder(input) {
+        override fun decodeCollectionSize(desc: SerialDescriptor): Int {
+            return size
+        }
+
+        override fun SerialDescriptor.getTag(index: Int): Int {
+            // 奇数 0, 即 key; 偶数 1, 即 value
+            return if (index % 2 == 0) 0 else 1
+        }
+    }
+
+    private open inner class JceListReader(
+        val size: Int,
+        input: JceInput
+    ) : JceDecoder(input) {
+        override fun decodeCollectionSize(desc: SerialDescriptor): Int {
+            return size
+        }
+
+        override fun SerialDescriptor.getTag(index: Int): Int {
+            return 0
+        }
+    }
+
+    private open inner class JceStructReader(
+        input: JceInput
+    ) : JceDecoder(input) {
+        override fun endStructure(desc: SerialDescriptor) {
+            input.readHead() // STRUCT_END
+        }
+    }
+
+    private open inner class NullReader(
+        input: JceInput
+    ) : JceDecoder(input)
 
     private open inner class JceDecoder(
         internal val input: JceInput
@@ -291,73 +330,134 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         override fun decodeTaggedString(tag: Int): String = input.readString(tag)
         override fun decodeTaggedBoolean(tag: Int): Boolean = input.readBoolean(tag)
 
-        @Suppress("UNCHECKED_CAST")
-        override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T = when (deserializer.descriptor) {
-            is MapLikeDescriptor -> {
-                deserializer as MapLikeSerializer<Any?, Any?, T, *>
-
-                val tag = popTag()
-                this.input.skipToTagOrNull(tag) {
-                    check(it.type.toInt() == 8) { "type mismatch: ${it.type}" }
-                    val size = this.input.readInt(0)
-                    val map = HashMap<Any?, Any?>(size)
-                    repeat(size) {
-                        pushTag(0)
-                        val key = deserializer.keySerializer.deserialize(this)
-                        pushTag(1)
-                        val value = deserializer.valueSerializer.deserialize(this)
-                        map[key] = value
-                    }
-                    return map as T
-                } ?: error("cannot find tag $tag")
-            }
-            ByteArraySerializer.descriptor -> input.readByteArray(popTag()) as T
-            ShortArraySerializer.descriptor -> input.readShortArray(popTag()) as T
-            IntArraySerializer.descriptor -> input.readIntArray(popTag()) as T
-            LongArraySerializer.descriptor -> input.readLongArray(popTag()) as T
-            FloatArraySerializer.descriptor -> input.readFloatArray(popTag()) as T
-            DoubleArraySerializer.descriptor -> input.readDoubleArray(popTag()) as T
-            CharArraySerializer.descriptor -> input.readByteArray(popTag()).map { it.toChar() }.toCharArray() as T
-            BooleanArraySerializer.descriptor -> input.readBooleanArray(popTag()) as T
-
-            is ArrayClassDesc -> {
-                deserializer as ArrayListSerializer<Any?>
-
-                val tag = popTag()
-                input.skipToTagOrNull(tag) { head ->
-                    return Array(input.readInt(0)) {
-                        input.readHead()
-                        deserializer.deserialize(this)
-                    } as T
-                } ?: error("cannot find tag $tag")
-            }
-            is ListLikeDescriptor -> {
-                deserializer as ListLikeSerializer<Any?, T, *>
-
-                val tag = currentTag
-                input.skipToTagOrNull(tag) { head ->
-                    val size = input.readInt(0)
-                    val list = ArrayList<Any?>(size)
-
-                    repeat(size) {
-                        //input.readHead()
-                        this.pushTag( 0)
-                        list.add(deserializer.typeParams[0].also { println(it.getClassName()) }.deserialize(this))
-                    }
-
-                    return list as T
-                } ?: error("cannot find tag $tag")
-            }
-            else -> {
-                if (input.peakHead().type.toInt() == STRUCT_BEGIN) {
-                    input.readHead()
-                    deserializer.deserialize(this).also { input.readHead() }
-                } else deserializer.deserialize(this)
-            }
-        }
 
         override fun decodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor): Int =
             TODO()
+        /**
+         * 在 [KSerializer.serialize] 前
+         */
+        override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+            println("beginStructure: desc=${desc.getClassName()}, typeParams: ${typeParams.contentToString()}")
+            when (desc) {
+                // 由于 Byte 的数组有两种方式写入, 需特定读取器
+                ByteArraySerializer.descriptor -> {
+                    // ByteArray, 交给 decodeSerializableValue 进行处理
+                    return this
+                }
+                is ListLikeDescriptor -> {
+                    if (typeParams.isNotEmpty() && typeParams[0] is ByteSerializer) {
+                        // Array<Byte>
+                        return this // 交给 decodeSerializableValue
+                    }
+
+                    val tag = currentTagOrNull
+                    @Suppress("SENSELESS_COMPARISON") // 推断 bug
+                    if (tag != null && input.skipToTagOrNull(tag) {
+                            popTag()
+                            if (it.type == SIMPLE_LIST) {
+                                input.readHead() // list 里面元素类型, 没必要知道
+                            }
+                            return when (it.type) {
+                                SIMPLE_LIST, LIST -> JceListReader(input.readInt(0), this.input)
+                                MAP -> JceMapReader(input.readInt(0), this.input)
+                                else -> error("type mismatch")
+                            }
+                        } == null && desc.isNullable) {
+                        return NullReader(this.input)
+                    }
+                }
+
+                is MapLikeDescriptor -> {
+                    val tag = currentTagOrNull
+
+                    if (tag != null && input.skipToTagOrNull(tag) { popTag() } == null && desc.isNullable) {
+                        return NullReader(this.input)
+                    }
+
+                    if (tag!=null) {
+                        popTag()
+                    }
+                    return JceMapReader(input.readInt(0), this.input)
+                }
+            }
+
+            if (!input.input.endOfInput) {
+                val tag = currentTagOrNull
+                if (tag != null && input.peakHead().tag > tag) {
+                    return NullReader(this.input)
+                }
+            }
+
+            if (desc.kind == StructureKind.CLASS || desc.kind == UnionKind.OBJECT) {
+                val tag = currentTagOrNull
+                if (tag != null) {
+                    @Suppress("SENSELESS_COMPARISON") // 推断 bug
+                    if (input.skipToTagOrNull(tag) {
+                            popTag()
+                            return JceStructReader(input)
+                        } == null && desc.isNullable) {
+                        return NullReader(this.input)
+                    }
+                }
+
+                return this // top-level
+            }
+
+            return super.beginStructure(desc, *typeParams)
+        }
+
+        override fun decodeTaggedNull(tag: Int): Nothing? {
+            return null
+        }
+
+        override fun decodeTaggedNotNullMark(tag: Int): Boolean {
+            return !input.input.endOfInput && input.peakHead().tag <= tag
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
+            println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
+            if (deserializer is NullReader) {
+                return null
+            }
+            when (deserializer.descriptor) {
+                ByteArraySerializer.descriptor -> {
+                    return input.readByteArray(popTag()) as T
+                }
+                is ListLikeDescriptor -> {
+                    if (deserializer is ReferenceArraySerializer<*, *>
+                        && (deserializer as ListLikeSerializer<Any?, T, Any?>).typeParams.isNotEmpty()
+                        && (deserializer as ListLikeSerializer<Any?, T, Any?>).typeParams[0] is ByteSerializer
+                    ) {
+                        return input.readByteArray(popTag()).toTypedArray() as T
+                    } else if (deserializer is ArrayListSerializer<*>
+                        && (deserializer as ArrayListSerializer<*>).typeParams.isNotEmpty()
+                        && (deserializer as ArrayListSerializer<*>).typeParams[0] is ByteSerializer
+                    ) {
+                        return input.readByteArray(popTag()).toMutableList() as T
+                    }
+                    return super.decodeSerializableValue(deserializer)
+                }
+                is MapLikeDescriptor -> {
+                    // 将 mapOf(k1 to v1, k2 to v2, ...) 转换为 listOf(k1, v1, k2, v2, ...) 以便于写入.
+                    val serializer = (deserializer as MapLikeSerializer<Any?, Any?, T, *>)
+                    val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
+                    val setOfEntries = HashSetSerializer(mapEntrySerial).deserialize(this)
+                    return setOfEntries.associateBy({ it.key }, { it.value }) as T
+                }
+            }
+            val tag = currentTagOrNull ?: return deserializer.deserialize(this)
+            return if (this.decodeTaggedNotNullMark(tag)){
+                deserializer.deserialize(this)
+            } else {
+                null
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
+            return decodeNullableSerializableValue(deserializer as DeserializationStrategy<Any?>) as? T ?: error("value is not optional but cannot find")
+        }
     }
 
 
@@ -606,23 +706,23 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        internal const val BYTE: Int = 0
-        internal const val DOUBLE: Int = 5
-        internal const val FLOAT: Int = 4
-        internal const val INT: Int = 2
+        internal const val BYTE: Byte = 0
+        internal const val DOUBLE: Byte = 5
+        internal const val FLOAT: Byte = 4
+        internal const val INT: Byte = 2
         internal const val JCE_MAX_STRING_LENGTH = 104857600
-        internal const val LIST: Int = 9
-        internal const val LONG: Int = 3
-        internal const val MAP: Int = 8
-        internal const val SHORT: Int = 1
-        internal const val SIMPLE_LIST: Int = 13
-        internal const val STRING1: Int = 6
-        internal const val STRING4: Int = 7
-        internal const val STRUCT_BEGIN: Int = 10
-        internal const val STRUCT_END: Int = 11
-        internal const val ZERO_TYPE: Int = 12
+        internal const val LIST: Byte = 9
+        internal const val LONG: Byte = 3
+        internal const val MAP: Byte = 8
+        internal const val SHORT: Byte = 1
+        internal const val SIMPLE_LIST: Byte = 13
+        internal const val STRING1: Byte = 6
+        internal const val STRING4: Byte = 7
+        internal const val STRUCT_BEGIN: Byte = 10
+        internal const val STRUCT_END: Byte = 11
+        internal const val ZERO_TYPE: Byte = 12
 
-        private fun Any?.getClassName(): KClass<out Any> = if (this == null) Unit::class else this::class
+        private fun Any?.getClassName(): String = (if (this == null) Unit::class else this::class).simpleName ?: "<unnamed class>"
     }
 
     override fun <T> dump(serializer: SerializationStrategy<T>, obj: T): ByteArray {
