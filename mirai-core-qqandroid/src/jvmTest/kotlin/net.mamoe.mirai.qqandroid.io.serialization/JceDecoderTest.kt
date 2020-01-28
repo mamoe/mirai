@@ -9,10 +9,6 @@ import net.mamoe.mirai.qqandroid.io.buildJcePacket
 import net.mamoe.mirai.utils.cryptor.contentToString
 import kotlin.test.Test
 
-fun main() {
-    JceDecoderTest().testSimpleMap()
-}
-
 class JceDecoderTest {
 
     @Serializable
@@ -40,7 +36,7 @@ class JceDecoderTest {
     @Serializable
     class TestComplexJceStruct(
         @SerialId(6) val string: String = "haha",
-        @SerialId(7) val byteArray: ByteArray = ByteArray(2000),
+        @SerialId(7) val byteArray: ByteArray = ByteArray(500),
         @SerialId(8) val byteList: List<Byte> = listOf(1, 2, 3), // error here
         @SerialId(9) val map: Map<String, Map<String, ByteArray>> = mapOf("哈哈" to mapOf("哈哈" to byteArrayOf(1, 2, 3))),
         //   @SerialId(10) val nestedJceStruct: TestSimpleJceStruct = TestSimpleJceStruct(),
@@ -59,12 +55,22 @@ class JceDecoderTest {
 
     @Test
     fun testEncoder() {
-        println(TestComplexJceStruct().toByteArray(TestComplexJceStruct.serializer()).loadAs(TestComplexNullableJceStruct.serializer()).contentToString())
+        println(
+            TestComplexJceStruct().toByteArray(TestComplexJceStruct.serializer()).loadAs(
+                TestComplexNullableJceStruct.serializer(),
+                JceCharset.UTF8
+            ).contentToString()
+        )
     }
 
     @Test
     fun testEncoder3() {
-        println(TestComplexNullableJceStruct().toByteArray(TestComplexNullableJceStruct.serializer()).loadAs(TestComplexNullableJceStruct.serializer()).contentToString())
+        println(
+            TestComplexNullableJceStruct().toByteArray(TestComplexNullableJceStruct.serializer()).loadAs(
+                TestComplexNullableJceStruct.serializer(),
+                JceCharset.UTF8
+            ).contentToString()
+        )
     }
 
     @Test

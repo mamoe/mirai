@@ -35,7 +35,7 @@ class MessageSvc {
                 .readRemainingAsJceStruct(RequestPushNotify.serializer())
 
             println(requestPushNotify.contentToString())
-            TODO()
+            return requestPushNotify
         }
     }
 }

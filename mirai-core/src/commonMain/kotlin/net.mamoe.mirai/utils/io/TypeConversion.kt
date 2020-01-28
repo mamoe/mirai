@@ -181,4 +181,4 @@ fun ByteArray.toInt(): Int =
  * 从 [IoBuffer.Pool] [borrow][ObjectPool.borrow] 一个 [IoBuffer] 然后将 [this] 写入.
  * 注意回收 ([ObjectPool.recycle])
  */
-fun ByteArray.toIoBuffer(offset: Int = 0, length: Int = this.size - offset): IoBuffer = IoBuffer.Pool.borrow().let { it.writeFully(this, offset, length); it }
+fun ByteArray.toIoBuffer(offset: Int = 0, length: Int = this.size - offset, pool: ObjectPool<IoBuffer> = IoBuffer.Pool): IoBuffer = pool.borrow().let { it.writeFully(this, offset, length); it }
