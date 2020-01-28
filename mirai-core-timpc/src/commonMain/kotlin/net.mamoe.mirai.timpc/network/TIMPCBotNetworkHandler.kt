@@ -389,7 +389,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                             close()
                             return
                         }
-                        val code = configuration.loginSolver(bot, captchaCache!!)
+                        val code = configuration.loginSolver.onSolvePicCaptcha(bot, captchaCache!!)
 
                         this.captchaCache = null
                         if (code == null || code.length != 4) {

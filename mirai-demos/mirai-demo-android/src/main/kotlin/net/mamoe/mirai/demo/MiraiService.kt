@@ -10,11 +10,13 @@ import android.os.IBinder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.timpc.TIMPC
 import net.mamoe.mirai.utils.LoginFailedException
+import net.mamoe.mirai.utils.LoginSolver
 import java.lang.ref.WeakReference
 
 class MiraiService : Service() {
@@ -42,12 +44,27 @@ class MiraiService : Service() {
     private fun login(qq: Long, pwd: String) {
         GlobalScope.launch {
             mBot = TIMPC.Bot(qq, pwd) {
-                captchaSolver = {
-                    val bytes = it.readBytes()
-                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    mCaptchaDeferred = CompletableDeferred()
-                    mCallback?.get()?.onCaptcha(bitmap)
-                    mCaptchaDeferred.await()
+                loginSolver = object : LoginSolver() {
+                    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+                        val bytes = data.readBytes()
+                        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        mCaptchaDeferred = CompletableDeferred()
+                        mCallback?.get()?.onCaptcha(bitmap)
+                        return mCaptchaDeferred.await()
+                    }
+
+                    override suspend fun onSolveSliderCaptcha(bot: Bot, data: IoBuffer): String? {
+                        TODO("not implemented")
+                    }
+
+                    override suspend fun onGetPhoneNumber(): String {
+                        TODO("not implemented")
+                    }
+
+                    override suspend fun onGetSMSVerifyCode(): String {
+                        TODO("not implemented")
+                    }
+
                 }
             }.apply {
                 try {

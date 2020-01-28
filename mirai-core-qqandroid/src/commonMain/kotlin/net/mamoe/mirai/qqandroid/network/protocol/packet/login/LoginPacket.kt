@@ -219,7 +219,11 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
 
     sealed class LoginPacketResponse : Packet {
-        object Success : LoginPacketResponse()
+        object Success : LoginPacketResponse(){
+            override fun toString(): String {
+                return "LoginPacketResponse.Success"
+            }
+        }
         data class Error(
             val title: String,
             val message: String,
