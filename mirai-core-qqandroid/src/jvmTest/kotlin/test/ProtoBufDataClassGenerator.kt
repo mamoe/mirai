@@ -143,7 +143,7 @@ fun String.generateProtoBufDataClass(): GeneratedClass {
         val javaClassname = substringBetween("class", "{")
         val superclasses = javaClassname.split("$").map { it.trim().adjustClassName() }.toMutableList().apply { removeAt(this.lastIndex) }
         val className = substringBetween("class", "{").substringAfterLast("$").trim().adjustClassName()
-        return GeneratedClass(superclasses, className, "@Serializable\nclass $className")
+        return GeneratedClass(superclasses, className, "@Serializable\nclass $className : ProtoBuf")
     }
 
     val superclasses = substringBetween("class", "extends").split("$").map { it.trim().adjustClassName() }.toMutableList()
@@ -154,7 +154,7 @@ fun String.generateProtoBufDataClass(): GeneratedClass {
     val ids = substringBetween("new int[]{", "}").split(",").map { it.trim() }
 
     if (ids.all { it.isBlank() }) {
-        return GeneratedClass(superclasses, className, "@Serializable\nclass $className")
+        return GeneratedClass(superclasses, className, "@Serializable\nclass $className : ProtoBuf")
     }
 
     val names = substringBetween("new String[]{", "}").split(",").map { it.trim() }
@@ -326,7 +326,7 @@ fun String.generateProtoBufDataClass(): GeneratedClass {
                 append("\n")
             }
 
-        append(")")
+        append(") : ProtoBuf")
     }
 
     return GeneratedClass(superclasses, className, source)
