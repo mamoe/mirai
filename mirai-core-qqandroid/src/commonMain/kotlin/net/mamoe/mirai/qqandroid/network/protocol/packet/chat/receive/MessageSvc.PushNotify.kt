@@ -16,7 +16,6 @@ import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.io.toUHexString
 
 class MessageSvc {
     internal object PushNotify : PacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
@@ -35,6 +34,8 @@ class MessageSvc {
                 .readRemainingAsJceStruct(RequestPushNotify.serializer())
 
             println(requestPushNotify.contentToString())
+
+
             return requestPushNotify
         }
     }

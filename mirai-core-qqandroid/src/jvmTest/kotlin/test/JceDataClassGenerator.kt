@@ -24,13 +24,6 @@ class JCEInfo(
 
     override fun toString(): String {
         properties = properties.sortedBy { it->it.jceID }
-        /**
-         *
-        @Serializable
-        class RequestDataVersion2(
-        @SerialId(0) val map: Map<String, Map<String, ByteArray>>
-        ) : JceStruct
-         */
         val max = (properties.size - 1).toString().length
         val builder:StringBuilder = StringBuilder("@Serializable")
         builder.append("\n").append("internal class ").append(className).append("(")
@@ -45,10 +38,11 @@ class JCEInfo(
 }
 
 class Property(
-    val name:String,
+    var name:String,
     var type:String,
     var defaultValue:String? = null
 ){
+    var isRequired: Boolean = true
     var jceID:Int = -1
     //convert type/default value to kotlin format
     init {
@@ -59,6 +53,28 @@ class Property(
             .replace("int", "Int")
             .replace("short", "Short")
             .replace("long", "Long")
+
+        if(name.length >1 && name.get(1).isUpperCase()){
+            if(name.get(0) == 'l' || name.get(0) =='c' || name.get(0) == 'b'){
+                name = name.substring(1)
+            }
+        }
+
+        if(name.startsWith("str") || name.startsWith("bytes")){
+            name = name.replace("str","").replace("bytes","")
+        }
+
+        if(name.contains("_")){
+            val x = name.split("_")
+            name = x.get(0);
+            var z = 1;
+            repeat(x.size-1){
+                name+= "" + x.get(z).get(0).toUpperCase() + x.get(z).substring(1).toLowerCase()
+                ++z;
+            }
+        }
+
+        name = "" + name.get(0).toLowerCase() + "" + name.substring(1)
     }
     //@SerialId(1) val iVersion: Short = 3,
     override fun toString(): String {
@@ -70,10 +86,19 @@ class Property(
 
     fun toStringWithSpacing(maxIDLength:Int): String {
         val space = " ".repeat(maxIDLength - (jceID.toString().length))
-        if (defaultValue != null) {
-            return "    @SerialId(" + jceID + ") " + space + "val " + name + ":" + type + " = " + defaultValue
+        var base = "    @SerialId(" + jceID + ") " + space + "val " + name + ":" + type + ""
+        if(!isRequired){
+            if(defaultValue == null) {
+                base += "? = null"
+            }else{
+                base += "? = $defaultValue"
+            }
+        }else{
+            if(defaultValue != null) {
+                base+=" = " + defaultValue
+            }
         }
-        return "    @SerialId(" + jceID + ") "+ space +"val " + name + ":" + type+"? = null"
+        return base
     }
 
 }
@@ -128,10 +153,14 @@ fun toJCEInfo(source:String):JCEInfo{
                 if(!allProperties.containsKey(key)){
                     println(key + " is found in readFrom but not in properties")
                 }
-                val id = it
-                    .substringBetween(".read(",");")
-                    .split(",")[1].trim().toInt()
-                allProperties.get(key)?.jceID = id;
+                val src = it
+                    .replace(".readString(",".read(\" \",")
+                    .substringBetween("(",");")
+                    .split(",")
+                with(allProperties.get(key)!!){
+                    this.jceID = src[1].trim().toInt()
+                    this.isRequired = src[2].trim().toBoolean()
+                }
             }
         }
     }
