@@ -22,15 +22,9 @@ class MessageSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RequestPushNotify {
             discardExact(8)
 
-            @Serializable
-            class ResponseDataRequestPushNotify(
-                @SerialId(0) val notify: RequestPushNotify
-            ) : JceStruct
-
             val requestPushNotify = readRemainingAsJceStruct(RequestPacket.serializer()).sBuffer
                 .loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue()
                 .toReadPacket().apply { discardExact(1) }
-                .debugPrint()
                 .readRemainingAsJceStruct(RequestPushNotify.serializer())
 
             println(requestPushNotify.contentToString())
