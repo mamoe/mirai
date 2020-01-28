@@ -58,7 +58,7 @@ class JceDecoderTest {
         println(
             TestComplexJceStruct().toByteArray(TestComplexJceStruct.serializer()).loadAs(
                 TestComplexNullableJceStruct.serializer(),
-                JceCharset.UTF8
+                JceCharset.GBK
             ).contentToString()
         )
     }
@@ -68,7 +68,7 @@ class JceDecoderTest {
         println(
             TestComplexNullableJceStruct().toByteArray(TestComplexNullableJceStruct.serializer()).loadAs(
                 TestComplexNullableJceStruct.serializer(),
-                JceCharset.UTF8
+                JceCharset.GBK
             ).contentToString()
         )
     }
