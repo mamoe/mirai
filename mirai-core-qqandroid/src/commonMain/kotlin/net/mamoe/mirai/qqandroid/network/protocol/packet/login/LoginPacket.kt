@@ -279,7 +279,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             1, 15 -> onErrorMessage(tlvMap)
             2 -> onSolveLoginCaptcha(tlvMap, bot)
             -96 -> onUnsafeDeviceLogin(tlvMap)
-            -52 -> onSMSVerifyNeeded(tlvMap, bot)
+            -52 /*0xCC=204*/ -> onSMSVerifyNeeded(tlvMap, bot)
             else -> error("unknown login result type: $type")
         }
     }
