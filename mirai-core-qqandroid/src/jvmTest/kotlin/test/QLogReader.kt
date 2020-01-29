@@ -9,7 +9,7 @@ object QLogReader {
     @JvmStatic
     fun main(args: Array<String>) {
 
-        println(readQLog(File("C:\\Users\\Him18\\Desktop\\log\\wtlogin_20200101.log")))
+        println(readQLog(File("/Users/jiahua.liu/Downloads/wtlogin_20200129.log")))
     }
 
     fun readQLog(file: File): String {

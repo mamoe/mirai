@@ -70,7 +70,7 @@ fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
         commonHeadFor02 + this
     } else if (!this.toUHexString("").startsWith(constantHead)) {
         commonHeadForNot02 +
-                if (this[0].toInt() == 0x04) this
+                if (this[0].toInt() == 0x04 || this[0].toInt() == 0x03) this
                 else (byteArray_04 + this)
     } else this
 
