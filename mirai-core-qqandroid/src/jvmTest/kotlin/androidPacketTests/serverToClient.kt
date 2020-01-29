@@ -95,19 +95,24 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
             val bytes = it.data.readBytes()
             if (flag2 == 2 && it.packetFactory != null) {
                 PacketLogger.debug("Oicq Reuqest= " + bytes.toUHexString())
-                try{
+                try {
                     bytes.toReadPacket().parseOicqResponse {
-                        if (it.packetFactory.commandName == "wtlogin.login") {
-                            DebugLogger.info("服务器发来了 wtlogin.login. 正在解析 key")
-                            try {
-                                val subCommand = readUShort().toInt()
-                                println("subCommand=$subCommand")
-                                val type = readUByte().toInt()
-                                println("type=$type")
-                                if (type == 0) {
+                        debugIfFail {
+                            if (it.packetFactory.commandName == "wtlogin.login") {
+                                DebugLogger.info("服务器发来了 wtlogin.login. 正在解析 key")
+                                try {
+                                    val subCommand = readUShort().toInt()
+                                    println("subCommand=$subCommand")
+                                    val type = readUByte().toInt()
+                                    println("type=$type")
 
                                     discardExact(2)
                                     val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
+                                    println("tlvMap: ")
+                                    tlvMap.forEach {
+                                        println(it.key.toShort().toUHexString() + " = " + it.value.toUHexString())
+                                    }
+
                                     tlvMap[0x119]?.let { t119Data ->
                                         t119Data.decryptBy(tgtgtKey).toReadPacket().debugPrint("0x119data").apply {
                                             discardExact(2) // always discarded.  00 1C
@@ -123,9 +128,9 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
                                             DebugLogger.info("D2Key=${D2Key.toUHexString()}")
                                         }
                                     }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
                                 }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
                             }
                         }
                     }
