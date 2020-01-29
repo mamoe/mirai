@@ -469,7 +469,7 @@ class ImMsgBody : ProtoBuf {
         @SerialId(16) val bubbleSubId: Int = 0,
         @SerialId(17) val pendantId: Long = 0L,
         @SerialId(18) val rpIndex: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(19) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @SerialId(19) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY // 78 00 F8 01 00 C8 02 00
     ) : ProtoBuf
 
     @Serializable
@@ -811,12 +811,12 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class RichText(
-        @SerialId(1) val attr: Attr? = Attr(),
+        @SerialId(1) val attr: Attr? = null,
         @SerialId(2) val elems: MutableList<Elem> = mutableListOf(),
-        @SerialId(3) val notOnlineFile: NotOnlineFile? = NotOnlineFile(),
-        @SerialId(4) val ptt: Ptt? = Ptt(),
-        @SerialId(5) val tmpPtt: TmpPtt? = TmpPtt(),
-        @SerialId(6) val trans211TmpMsg: Trans211TmpMsg? = Trans211TmpMsg()
+        @SerialId(3) val notOnlineFile: NotOnlineFile? =null,
+        @SerialId(4) val ptt: Ptt? =null,
+        @SerialId(5) val tmpPtt: TmpPtt? = null,
+        @SerialId(6) val trans211TmpMsg: Trans211TmpMsg? = null
     ) : ProtoBuf
 
     @Serializable

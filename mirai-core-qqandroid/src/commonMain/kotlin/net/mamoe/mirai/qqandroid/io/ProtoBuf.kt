@@ -7,6 +7,7 @@ import kotlinx.io.core.writeFully
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
+import net.mamoe.mirai.utils.io.toUHexString
 
 /**
  * 仅有标示作用
@@ -14,7 +15,10 @@ import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
 interface ProtoBuf
 
 fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
-    this.writeFully(v.toByteArray(serializer))
+
+    this.writeFully(v.toByteArray(serializer).also {
+        println("发送 protobuf: ${it.toUHexString()}")
+    })
 }
 
 /**

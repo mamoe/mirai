@@ -5,13 +5,13 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 
 
-internal fun MessageChain.toRichText(): ImMsgBody.RichText {
-    val richText = ImMsgBody.RichText()
+internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
+    val elems = mutableListOf<ImMsgBody.Elem>()
 
     this.forEach {
         when (it) {
             is PlainText -> {
-                richText.elems.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
+                elems.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
             }
             is At -> {
 
@@ -19,7 +19,7 @@ internal fun MessageChain.toRichText(): ImMsgBody.RichText {
         }
     }
 
-    return richText
+    return elems
 }
 
 
