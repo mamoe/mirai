@@ -3,6 +3,7 @@
 package androidPacketTests
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.utils.cryptor.*
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
@@ -322,7 +323,7 @@ fun ByteReadPacket.decodeSso() {
     println("  unknownHex=" + readBytes(12).toUHexString())
     println("  extraData=" + readBytes(readInt() - 4).toUHexString())
     val commandName = readBytes(readInt() - 4).encodeToString()
-    println("  commandName=" + commandName)
+    PacketLogger.info("  commandName=" + commandName)
     ("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
     ("  imei=" + readBytes(readInt() - 4).toUHexString())
     ("  0 bytes=" + readBytes(readInt() - 4).toUHexString())
