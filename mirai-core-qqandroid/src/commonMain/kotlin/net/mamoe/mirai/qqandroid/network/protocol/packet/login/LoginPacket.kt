@@ -270,17 +270,18 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
         val subCommand = readUShort().toInt()
         println("subCommand=$subCommand")
-        val type = readByte()
+        val type = readUByte()
         println("type=$type")
 
         discardExact(2)
         val tlvMap: TlvMap = this.readTLVMap()
+        tlvMap.printTLVMap()
         return when (type.toInt()) {
             0 -> onLoginSuccess(tlvMap, bot)
             1, 15 -> onErrorMessage(tlvMap)
             2 -> onSolveLoginCaptcha(tlvMap, bot)
-            -96 -> onUnsafeDeviceLogin(tlvMap)
-            -52 /*0xCC=204*/ -> onSMSVerifyNeeded(tlvMap, bot)
+            160 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
+            204 /*-52*/ -> onSMSVerifyNeeded(tlvMap, bot)
             else -> error("unknown login result type: $type")
         }
     }
