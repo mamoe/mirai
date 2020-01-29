@@ -32,7 +32,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  DOMAINS
  Pskey: "openmobile.qq.com"
  */
-
+@UseExperimental(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
 @PublishedApi
 internal open class QQAndroidClient(
     context: Context,
@@ -69,7 +69,6 @@ internal open class QQAndroidClient(
         return null
     }
 
-    @UseExperimental(MiraiInternalAPI::class)
     override fun toString(): String { // net.mamoe.mirai.utils.cryptor.ProtoKt.contentToString
         return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.contentToString()}, randomKey=${randomKey.contentToString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.contentToString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.contentToString()}, protocolVersion=$protocolVersion, apkId=${apkId.contentToString()}, t150=${t150?.contentToString()}, rollbackSig=${rollbackSig?.contentToString()}, ipFromT149=${ipFromT149?.contentToString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.contentToString()}, t528=${t528?.contentToString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.contentToString()}, qrPushSig=${qrPushSig.contentToString()}, mainDisplayName='$mainDisplayName')"
     }
@@ -95,7 +94,6 @@ internal open class QQAndroidClient(
 
     val apkVersionName: ByteArray = "8.2.0".toByteArray()
 
-    var loginState = 0
 
     val appClientVersion: Int = 0
 
@@ -108,14 +106,14 @@ internal open class QQAndroidClient(
      */
     val protocolVersion: Short = 8001
 
+    /*
+     * 以下登录使用
+     */
     @Suppress("SpellCheckingInspection")
     @PublishedApi
     internal val apkId: ByteArray = "com.tencent.mobileqq".toByteArray()
 
-    /*
-     * 以下登录使用
-     */
-
+    var loginState = 0
 
     var t150: Tlv? = null
     var rollbackSig: ByteArray? = null
@@ -129,8 +127,11 @@ internal open class QQAndroidClient(
      *
      * **注意**: 总是使用这个属性, 而不要使用 [BotAccount.id]. 将来它可能会变为 [String]
      */
-    @UseExperimental(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
-    var uin: Long = bot.account.id
+    val uin: Long get() = _uin
+
+    @Suppress("PropertyName")
+    internal var _uin: Long = bot.account.id
+
     var t530: ByteArray? = null
     var t528: ByteArray? = null
     /**
