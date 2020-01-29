@@ -8,14 +8,14 @@ import net.mamoe.mirai.utils.coerceAtLeastOrFail
 
 
 /**
- * 群.
+ * 群. 在 QQ Android 中叫做 "Troop"
  *
  * Group ID 与 Group Number 并不是同一个值.
  * - Group Number([Group.id]) 是通常使用的群号码.(在 QQ 客户端中可见)
  * - Group ID([Group.internalId]) 是与调用 API 时使用的 id.(在 QQ 客户端中不可见)
  * @author Him188moe
  */
-interface Group : Contact, CoroutineScope/*, Map<UInt, Member>*/ { // TODO: 2019/12/4 在 inline 稳定后实现 Map<UInt, Member>. 目前这样做会导致问题
+interface Group : Contact, CoroutineScope/*, Map<UInt, Member>*/ { // TODO: 2020/1/29 实现接口 Map<Long, Memebr>
     /**
      * 内部 ID. 内部 ID 为 [GroupId] 的映射
      */
@@ -86,7 +86,10 @@ fun Long.groupInternalId(): GroupInternalId = GroupInternalId(this)
 /**
  * 将无符号整数格式的 [Long] 转为 [GroupId].
  *
- * 注: 在 Java 中常用 [Long] 来表示 [UInt]
+ * 注: 在 Java 中常用 [Long] 来表示 [UInt].
+ *
+ * 注: 在 Kotlin/Java, 有符号的数据类型的二进制最高位为符号标志.
+ * 如一个 byte, `1000 0000` 最高位为 1, 则为负数.
  */
 fun Long.groupId(): GroupId = GroupId(this.coerceAtLeastOrFail(0))
 

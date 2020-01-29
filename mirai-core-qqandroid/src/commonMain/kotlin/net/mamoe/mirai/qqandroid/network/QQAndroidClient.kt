@@ -53,7 +53,7 @@ internal open class QQAndroidClient(
             "tgtgtKey" to tgtgtKey,
             "tgtKey" to wLoginSigInfo.tgtKey,
             "deviceToken" to wLoginSigInfo.deviceToken,
-            "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.shareKey
+            "shareKeyCalculatedByConstPubKey" to ecdh.keyPair.initialShareKey
             //"t108" to wLoginSigInfo.t1,
             //"t10c" to t10c,
             //"t163" to t163

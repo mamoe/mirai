@@ -7,8 +7,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.utils.cryptor.*
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
+import net.mamoe.mirai.utils.md5
 import kotlin.text.toByteArray
-
 
 // sessionTicket = 55 F7 24 8B 04 4E AA A8 98 E6 77 D2 D6 54 A9 B4 43 91 94 A3 0D DA CF 8F E8 94 E0 F4 A2 6B B4 8B 2B 4F 78 8D 21 EE D4 95 A6 F7 A4 3D B5 87 9B 3D
 // sessionTicketKey = B6 9D E4 EC 65 38 64 FD C8 3A D8 33 54 35 0C 73
@@ -239,13 +239,12 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                                 discardExact(4)
                                 readTLVMap()[0x106]
                                     ?.also { DebugLogger.info("找到了 0x106") }
-                                    ?.decryptBy(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray())
+                                    ?.decryptBy(md5(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()))
                                     ?.read {
                                         discardExact(2 + 4 * 4 + 8 + 4 + 4 + 1 + 16)
                                         tgtgtKey = readBytes(16)
                                         DebugLogger.info("获取 tgtgtKey=${tgtgtKey.toUHexString()}")
-                                    }
-                                DebugLogger.info("tlv map里面没有 0x106")
+                                    } ?: DebugLogger.info("找不到 0x106")
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -269,9 +268,9 @@ fun ByteReadPacket.decodeUni() {
     // 00 00 00 5B 10 03 2C 3C 4C 56 23 51 51 53 65 72 76 69 63 65 2E 43 6F 6E 66 69 67 50 75 73 68 53 76 63 2E 4D 61 69 6E 53 65 72 76 61 6E 74 66 08 50 75 73 68 52 65 73 70 7D 00 00 1A 08 00 01 06 08 50 75 73 68 52 65 73 70 1D 00 00 09 0A 10 01 22 14 DA 6E B1 0B 8C 98 0C A8 0C
     println("// 尝试解 Uni")
     println("// head")
-    return
+    //return
     readBytes(readInt() - 4).debugPrint("head").toReadPacket().apply {
-        val commandName = readString(readInt() - 4).also { println("commandName=$it") }
+        val commandName = readString(readInt() - 4).also { PacketLogger.warning("commandName=$it") }
         println(commandName)
         println("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
         // 00 00 00 1A 43 6F 6E 66 69 67 50 75 73 68 53 76 63 2E 50 75 73 68 52 65 73 70

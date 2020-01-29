@@ -111,7 +111,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     // 解析外层包装
                     when (flag1) {
                         0x0A -> parseSsoFrame(bot, decryptedData)
-                        0x0B -> parseUniFrame(bot, decryptedData)
+                        0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
                         else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
                     }
                 }?.let {
@@ -214,7 +214,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             this.discardExact(1) // const = 0
             val packet = when (encryptionMethod) {
                 4 -> { // peer public key, ECDH
-                    var data = this.decryptBy(bot.client.ecdh.keyPair.shareKey, this.readRemaining - 1)
+                    var data = this.decryptBy(bot.client.ecdh.keyPair.initialShareKey, this.readRemaining - 1)
 
                     val peerShareKey = bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
                     data = data.decryptBy(peerShareKey)
@@ -228,7 +228,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                             this.readFully(byteArrayBuffer, 0, size)
 
                             runCatching {
-                                byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.shareKey, size)
+                                byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.initialShareKey, size)
                             }.getOrElse {
                                 byteArrayBuffer.decryptBy(bot.client.randomKey, size)
                             } // 这里实际上应该用 privateKey(另一个random出来的key)
