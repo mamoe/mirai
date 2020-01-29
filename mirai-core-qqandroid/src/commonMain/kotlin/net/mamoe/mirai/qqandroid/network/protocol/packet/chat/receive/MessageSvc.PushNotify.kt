@@ -8,9 +8,12 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.readRemainingAsJceStruct
+import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.RequestPushNotify
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.firstValue
@@ -35,9 +38,18 @@ class MessageSvc {
 
             println(requestPushNotify.contentToString())
 
+            with(bot.network) {
+                GetMsgRequest(
+                    bot.client,
+                    requestPushNotify
+                ).sendAndExpect<MsgSvc.PbGetMsgResp>()
+            }
+
 
             return requestPushNotify
         }
     }
+
+
 }
 

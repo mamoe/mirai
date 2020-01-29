@@ -203,6 +203,25 @@ fun BytePacketBuilder.t174(
     }
 }
 
+
+fun BytePacketBuilder.t17a(
+    value: Int = 0
+) {
+    writeShort(0x17a)
+    writeShortLVPacket {
+        writeInt(value)
+    }
+}
+
+fun BytePacketBuilder.t197(
+    value: ByteArray
+) {
+    writeShort(0x197)
+    writeShortLVPacket {
+        writeFully(value)
+    }
+}
+
 fun BytePacketBuilder.t19e(
     value: Int = 0
 ) {

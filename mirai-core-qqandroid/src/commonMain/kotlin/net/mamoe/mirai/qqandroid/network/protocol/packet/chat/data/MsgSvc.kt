@@ -2,7 +2,9 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 @Serializable
@@ -24,7 +26,7 @@ class MsgSvc : ProtoBuf {
         @SerialId(8) val pubaccountCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(9) val isPartialSync: Boolean = false,
         @SerialId(10) val msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
+    ) : ProtoBuf, Packet
 
     @Serializable
     class PbGroupMsgWithDrawReq(
