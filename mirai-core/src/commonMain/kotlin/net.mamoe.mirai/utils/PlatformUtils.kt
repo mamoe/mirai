@@ -24,7 +24,10 @@ expect val deviceName: String
  */
 expect fun crc32(key: ByteArray): Int
 
-expect fun ByteArray.unzip(): ByteArray
+/**
+ * 解 zip 压缩
+ */
+expect fun ByteArray.unzip(offset: Int = 0, length: Int = this.size - offset): ByteArray
 
 /**
  * MD5 算法
@@ -49,3 +52,9 @@ expect fun localIpAddress(): String
 expect val Http: HttpClient
 
 expect fun newCoroutineDispatcher(threadCount: Int): CoroutineDispatcher
+
+internal fun ByteArray.checkOffsetAndLength(offset: Int, length: Int){
+    require(offset >= 0) { "offset shouldn't be negative: $offset" }
+    require(length >= 0) { "length shouldn't be negative: $length" }
+    require(offset + length <= this.size) { "offset ($offset) + length ($length) > array.size (${this.size})" }
+}

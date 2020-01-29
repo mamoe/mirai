@@ -8,7 +8,7 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
-import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.utils.io.readIoBuffer
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toIoBuffer

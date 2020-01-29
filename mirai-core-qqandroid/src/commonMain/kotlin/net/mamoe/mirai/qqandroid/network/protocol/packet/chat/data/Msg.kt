@@ -4,8 +4,8 @@ import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
+import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 @Serializable
 class ImCommon : ProtoBuf {
@@ -318,59 +318,59 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class Elem(
-        @SerialId(1) val text: ImMsgBody.Text? = null,
-        @SerialId(2) val face: ImMsgBody.Face? = null,
-        @SerialId(3) val onlineImage: ImMsgBody.OnlineImage? = null,
-        @SerialId(4) val notOnlineImage: ImMsgBody.NotOnlineImage? = null,
-        @SerialId(5) val transElemInfo: ImMsgBody.TransElem? = null,
-        @SerialId(6) val marketFace: ImMsgBody.MarketFace? = null,
-        @SerialId(7) val elemFlags: ImMsgBody.ElemFlags? = null,
-        @SerialId(8) val customFace: ImMsgBody.CustomFace? = null,
-        @SerialId(9) val elemFlags2: ImMsgBody.ElemFlags2? = null,
-        @SerialId(10) val funFace: ImMsgBody.FunFace? = null,
-        @SerialId(11) val secretFile: ImMsgBody.SecretFileMsg? = null,
-        @SerialId(12) val richMsg: ImMsgBody.RichMsg? = null,
-        @SerialId(13) val groupFile: ImMsgBody.GroupFile? = null,
-        @SerialId(14) val pubGroup: ImMsgBody.PubGroup? = null,
-        @SerialId(15) val marketTrans: ImMsgBody.MarketTrans? = null,
-        @SerialId(16) val extraInfo: ImMsgBody.ExtraInfo? = null,
-        @SerialId(17) val shakeWindow: ImMsgBody.ShakeWindow? = null,
-        @SerialId(18) val pubAccount: ImMsgBody.PubAccount? = null,
-        @SerialId(19) val videoFile: ImMsgBody.VideoFile? = null,
-        @SerialId(20) val tipsInfo: ImMsgBody.TipsInfo? = null,
-        @SerialId(21) val anonGroupMsg: ImMsgBody.AnonymousGroupMsg? = null,
-        @SerialId(22) val qqLiveOld: ImMsgBody.QQLiveOld? = null,
-        @SerialId(23) val lifeOnline: ImMsgBody.LifeOnlineAccount? = null,
-        @SerialId(24) val qqwalletMsg: ImMsgBody.QQWalletMsg? = null,
-        @SerialId(25) val crmElem: ImMsgBody.CrmElem? = null,
-        @SerialId(26) val conferenceTipsInfo: ImMsgBody.ConferenceTipsInfo? = null,
-        @SerialId(27) val redbagInfo: ImMsgBody.RedBagInfo? = null,
-        @SerialId(28) val lowVersionTips: ImMsgBody.LowVersionTips? = null,
+        @SerialId(1) val text: Text? = null,
+        @SerialId(2) val face: Face? = null,
+        @SerialId(3) val onlineImage: OnlineImage? = null,
+        @SerialId(4) val notOnlineImage: NotOnlineImage? = null,
+        @SerialId(5) val transElemInfo: TransElem? = null,
+        @SerialId(6) val marketFace: MarketFace? = null,
+        @SerialId(7) val elemFlags: ElemFlags? = null,
+        @SerialId(8) val customFace: CustomFace? = null,
+        @SerialId(9) val elemFlags2: ElemFlags2? = null,
+        @SerialId(10) val funFace: FunFace? = null,
+        @SerialId(11) val secretFile: SecretFileMsg? = null,
+        @SerialId(12) val richMsg: RichMsg? = null,
+        @SerialId(13) val groupFile: GroupFile? = null,
+        @SerialId(14) val pubGroup: PubGroup? = null,
+        @SerialId(15) val marketTrans: MarketTrans? = null,
+        @SerialId(16) val extraInfo: ExtraInfo? = null,
+        @SerialId(17) val shakeWindow: ShakeWindow? = null,
+        @SerialId(18) val pubAccount: PubAccount? = null,
+        @SerialId(19) val videoFile: VideoFile? = null,
+        @SerialId(20) val tipsInfo: TipsInfo? = null,
+        @SerialId(21) val anonGroupMsg: AnonymousGroupMsg? = null,
+        @SerialId(22) val qqLiveOld: QQLiveOld? = null,
+        @SerialId(23) val lifeOnline: LifeOnlineAccount? = null,
+        @SerialId(24) val qqwalletMsg: QQWalletMsg? = null,
+        @SerialId(25) val crmElem: CrmElem? = null,
+        @SerialId(26) val conferenceTipsInfo: ConferenceTipsInfo? = null,
+        @SerialId(27) val redbagInfo: RedBagInfo? = null,
+        @SerialId(28) val lowVersionTips: LowVersionTips? = null,
         @SerialId(29) val bankcodeCtrlInfo: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(30) val nearByMsg: ImMsgBody.NearByMessageType? = null,
-        @SerialId(31) val customElem: ImMsgBody.CustomElem? = null,
-        @SerialId(32) val locationInfo: ImMsgBody.LocationInfo? = null,
-        @SerialId(33) val pubAccInfo: ImMsgBody.PubAccInfo? = null,
-        @SerialId(34) val smallEmoji: ImMsgBody.SmallEmoji? = null,
-        @SerialId(35) val fsjMsgElem: ImMsgBody.FSJMessageElem? = null,
-        @SerialId(36) val arkApp: ImMsgBody.ArkAppElem? = null,
-        @SerialId(37) val generalFlags: ImMsgBody.GeneralFlags? = null,
-        @SerialId(38) val hcFlashPic: ImMsgBody.CustomFace? = null,
-        @SerialId(39) val deliverGiftMsg: ImMsgBody.DeliverGiftMsg? = null,
-        @SerialId(40) val bitappMsg: ImMsgBody.BitAppMsg? = null,
-        @SerialId(41) val openQqData: ImMsgBody.OpenQQData? = null,
-        @SerialId(42) val apolloMsg: ImMsgBody.ApolloActMsg? = null,
-        @SerialId(43) val groupPubAccInfo: ImMsgBody.GroupPubAccountInfo? = null,
-        @SerialId(44) val blessMsg: ImMsgBody.BlessingMessage? = null,
-        @SerialId(45) val srcMsg: ImMsgBody.SourceMsg? = null,
-        @SerialId(46) val lolaMsg: ImMsgBody.LolaMsg? = null,
-        @SerialId(47) val groupBusinessMsg: ImMsgBody.GroupBusinessMsg? = null,
-        @SerialId(48) val msgWorkflowNotify: ImMsgBody.WorkflowNotifyMsg? = null,
-        @SerialId(49) val patElem: ImMsgBody.PatsElem? = null,
-        @SerialId(50) val groupPostElem: ImMsgBody.GroupPostElem? = null,
-        @SerialId(51) val lightApp: ImMsgBody.LightAppElem? = null,
-        @SerialId(52) val eimInfo: ImMsgBody.EIMInfo? = null,
-        @SerialId(53) val commonElem: ImMsgBody.CommonElem? = null
+        @SerialId(30) val nearByMsg: NearByMessageType? = null,
+        @SerialId(31) val customElem: CustomElem? = null,
+        @SerialId(32) val locationInfo: LocationInfo? = null,
+        @SerialId(33) val pubAccInfo: PubAccInfo? = null,
+        @SerialId(34) val smallEmoji: SmallEmoji? = null,
+        @SerialId(35) val fsjMsgElem: FSJMessageElem? = null,
+        @SerialId(36) val arkApp: ArkAppElem? = null,
+        @SerialId(37) val generalFlags: GeneralFlags? = null,
+        @SerialId(38) val hcFlashPic: CustomFace? = null,
+        @SerialId(39) val deliverGiftMsg: DeliverGiftMsg? = null,
+        @SerialId(40) val bitappMsg: BitAppMsg? = null,
+        @SerialId(41) val openQqData: OpenQQData? = null,
+        @SerialId(42) val apolloMsg: ApolloActMsg? = null,
+        @SerialId(43) val groupPubAccInfo: GroupPubAccountInfo? = null,
+        @SerialId(44) val blessMsg: BlessingMessage? = null,
+        @SerialId(45) val srcMsg: SourceMsg? = null,
+        @SerialId(46) val lolaMsg: LolaMsg? = null,
+        @SerialId(47) val groupBusinessMsg: GroupBusinessMsg? = null,
+        @SerialId(48) val msgWorkflowNotify: WorkflowNotifyMsg? = null,
+        @SerialId(49) val patElem: PatsElem? = null,
+        @SerialId(50) val groupPostElem: GroupPostElem? = null,
+        @SerialId(51) val lightApp: LightAppElem? = null,
+        @SerialId(52) val eimInfo: EIMInfo? = null,
+        @SerialId(53) val commonElem: CommonElem? = null
     ) : ProtoBuf
 
     @Serializable
@@ -387,13 +387,13 @@ class ImMsgBody : ProtoBuf {
         @SerialId(4) val pttChangeBit: Int = 0,
         @SerialId(5) val vipStatus: Int = 0,
         @SerialId(6) val compatibleId: Int = 0,
-        @SerialId(7) val insts: List<ImMsgBody.ElemFlags2.Inst>? = null,
+        @SerialId(7) val insts: List<Inst>? = null,
         @SerialId(8) val msgRptCnt: Int = 0,
-        @SerialId(9) val srcInst: ImMsgBody.ElemFlags2.Inst? = null,
+        @SerialId(9) val srcInst: Inst? = null,
         @SerialId(10) val longtitude: Int = 0,
         @SerialId(11) val latitude: Int = 0,
         @SerialId(12) val customFont: Int = 0,
-        @SerialId(13) val pcSupportDef: ImMsgBody.PcSupportDef? = null,
+        @SerialId(13) val pcSupportDef: PcSupportDef? = null,
         @SerialId(14) val crmFlags: Int = 0
     ) : ProtoBuf {
         @Serializable
@@ -433,8 +433,8 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class FunFace(
-        @SerialId(1) val msgTurntable: ImMsgBody.FunFace.Turntable? = null,
-        @SerialId(2) val msgBomb: ImMsgBody.FunFace.Bomb? = null
+        @SerialId(1) val msgTurntable: Turntable? = null,
+        @SerialId(2) val msgBomb: Bomb? = null
     ) {
         @Serializable
         class Bomb(
@@ -580,14 +580,14 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class MsgBody(
-        @SerialId(1) val richText: ImMsgBody.RichText? = null,
+        @SerialId(1) val richText: RichText = RichText(),
         @SerialId(2) val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val msgEncryptContent: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     class MsgBodySubtype4(
-        @SerialId(1) val msgNotOnlineFile: ImMsgBody.NotOnlineFile? = null,
+        @SerialId(1) val msgNotOnlineFile: NotOnlineFile? = null,
         @SerialId(2) val msgTime: Int = 0
     ) : ProtoBuf
 
@@ -622,7 +622,7 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class NotOnlineImage(
-        @SerialId(1) val filePath: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(1) val filePath: String = "",
         @SerialId(2) val fileLen: Int = 0,
         @SerialId(3) val downloadPath: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
@@ -631,7 +631,7 @@ class ImMsgBody : ProtoBuf {
         @SerialId(7) val picMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(8) val picHeight: Int = 0,
         @SerialId(9) val picWidth: Int = 0,
-        @SerialId(10) val resId: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(10) val resId: String = "",
         @SerialId(11) val flag: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(12) val thumbUrl: String = "",
         @SerialId(13) val original: Int = 0,
@@ -742,8 +742,8 @@ class ImMsgBody : ProtoBuf {
     @Serializable
     class QQWalletAioBody(
         @SerialId(1) val senduin: Long = 0L,
-        @SerialId(2) val sender: ImMsgBody.QQWalletAioElem? = null,
-        @SerialId(3) val receiver: ImMsgBody.QQWalletAioElem? = null,
+        @SerialId(2) val sender: QQWalletAioElem? = null,
+        @SerialId(3) val receiver: QQWalletAioElem? = null,
         @ProtoType(ProtoNumberType.SIGNED) @SerialId(4) val sint32Channelid: Int = 0,
         @ProtoType(ProtoNumberType.SIGNED) @SerialId(5) val sint32Templateid: Int = 0,
         @SerialId(6) val resend: Int = 0,
@@ -791,7 +791,7 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class QQWalletMsg(
-        @SerialId(1) val aioBody: ImMsgBody.QQWalletAioBody? = null
+        @SerialId(1) val aioBody: QQWalletAioBody? = null
     ) : ProtoBuf
 
     @Serializable
@@ -811,12 +811,12 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class RichText(
-        @SerialId(1) val attr: ImMsgBody.Attr? = null,
-        @SerialId(2) val elems: List<ImMsgBody.Elem>? = null,
-        @SerialId(3) val notOnlineFile: ImMsgBody.NotOnlineFile? = null,
-        @SerialId(4) val ptt: ImMsgBody.Ptt? = null,
-        @SerialId(5) val tmpPtt: ImMsgBody.TmpPtt? = null,
-        @SerialId(6) val trans211TmpMsg: ImMsgBody.Trans211TmpMsg? = null
+        @SerialId(1) val attr: Attr? = null,
+        @SerialId(2) val elems: MutableList<Elem> = mutableListOf(),
+        @SerialId(3) val notOnlineFile: NotOnlineFile? = null,
+        @SerialId(4) val ptt: Ptt? = null,
+        @SerialId(5) val tmpPtt: TmpPtt? = null,
+        @SerialId(6) val trans211TmpMsg: Trans211TmpMsg? = null
     ) : ProtoBuf
 
     @Serializable
@@ -832,8 +832,8 @@ class ImMsgBody : ProtoBuf {
         @SerialId(9) val encryptKey: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(10) val readTimes: Int = 0,
         @SerialId(11) val leftTime: Int = 0,
-        @SerialId(12) val notOnlineImage: ImMsgBody.NotOnlineImage? = null,
-        @SerialId(13) val elemFlags2: ImMsgBody.ElemFlags2? = null,
+        @SerialId(12) val notOnlineImage: NotOnlineImage? = null,
+        @SerialId(13) val elemFlags2: ElemFlags2? = null,
         @SerialId(14) val opertype: Int = 0,
         @SerialId(15) val fromphonenum: String = ""
     ) : ProtoBuf
@@ -857,7 +857,7 @@ class ImMsgBody : ProtoBuf {
         @SerialId(2) val senderUin: Long = 0L,
         @SerialId(3) val time: Int = 0,
         @SerialId(4) val flag: Int = 0,
-        @SerialId(5) val elems: List<ImMsgBody.Elem>? = null,
+        @SerialId(5) val elems: List<Elem>? = null,
         @SerialId(6) val type: Int = 0,
         @SerialId(7) val richMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(8) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
@@ -868,7 +868,7 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class Text(
-        @SerialId(1) val str: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(1) val str: String = "",
         @SerialId(2) val link: String = "",
         @SerialId(3) val attr6Buf: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val attr7Buf: ByteArray = EMPTY_BYTE_ARRAY,

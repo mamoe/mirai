@@ -38,6 +38,14 @@ fun ByteReadPacket.transferTo(outputStream: OutputStream) {
     }
 }
 
+fun <R> ByteReadPacket.useBytes(
+    n: Int = remaining.toInt(),//not that safe but adequate
+    block: (data: ByteArray, length: Int) -> R
+): R = ByteArrayPool.useInstance {
+    this.readFully(it, 0, n)
+    block(it, n)
+}
+
 fun ByteReadPacket.readRemainingBytes(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteArray = ByteArray(n).also { readAvailable(it, 0, n) }
@@ -75,10 +83,21 @@ fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().
 
 private inline fun <R> inline(block: () -> R): R = block()
 
-fun Input.readTLVMap(tagSize: Int = 2): MutableMap<Int, ByteArray> = readTLVMap(true, tagSize)
+
+typealias TlvMap = MutableMap<Int, ByteArray>
+
+fun TlvMap.getOrFail(tag: Int): ByteArray {
+    return this[tag] ?: error("cannot find tlv 0x${tag.toUHexString("")}($tag)")
+}
+
+inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteArray {
+    return this[tag] ?: error(lazyMessage(tag))
+}
+
+fun Input.readTLVMap(tagSize: Int = 2): TlvMap = readTLVMap(true, tagSize)
 
 @Suppress("DuplicatedCode")
-fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int): MutableMap<Int, ByteArray> {
+fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int): TlvMap {
     val map = mutableMapOf<Int, ByteArray>()
     var key = 0
 

@@ -2,7 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.ProtoBuf
 
 @Serializable
 internal class Cmd0x352Packet(

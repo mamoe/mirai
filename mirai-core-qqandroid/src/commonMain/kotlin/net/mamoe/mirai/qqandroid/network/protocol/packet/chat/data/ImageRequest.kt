@@ -3,7 +3,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 interface ImgReq : ProtoBuf

@@ -36,7 +36,11 @@ actual class PlatformSocket : Closeable {
      * @throws SendPacketInternalException
      */
     actual suspend inline fun send(packet: ByteReadPacket) {
-        writeChannel.writePacket(packet)
+        try {
+            writeChannel.writePacket(packet)
+        } catch (e: Exception) {
+            throw SendPacketInternalException(e)
+        }
     }
 
     /**
@@ -45,7 +49,11 @@ actual class PlatformSocket : Closeable {
     actual suspend inline fun read(): ByteReadPacket {
         // do not use readChannel.readRemaining() !!! this function never returns
         ByteArrayPool.useInstance { buffer ->
-            val count = readChannel.readAvailable(buffer)
+            val count = try {
+                readChannel.readAvailable(buffer)
+            } catch (e: Exception) {
+                throw ReadPacketInternalException(e)
+            }
             return buffer.toReadPacket(0, count)
         }
     }

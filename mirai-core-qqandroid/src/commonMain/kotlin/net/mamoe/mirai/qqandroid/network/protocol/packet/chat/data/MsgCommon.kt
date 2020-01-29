@@ -2,8 +2,8 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
 
 /**
  * msf.msgcomm.msg_comm
@@ -60,7 +60,7 @@ class MsgComm : ProtoBuf {
         @SerialId(1) val groupCode: Long = 0L,
         @SerialId(2) val groupType: Int = 0,
         @SerialId(3) val groupInfoSeq: Long = 0L,
-        @SerialId(4) val groupCard: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(4) val groupCard: String = "",
         @SerialId(5) val groupRank: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(6) val groupLevel: Int = 0,
         @SerialId(7) val groupCardType: Int = 0,
@@ -69,9 +69,9 @@ class MsgComm : ProtoBuf {
 
     @Serializable
     class Msg(
-        @SerialId(1) val msgHead: MsgHead? = null,
+        @SerialId(1) val msgHead: MsgHead,
         @SerialId(2) val contentHead: ContentHead? = null,
-        @SerialId(3) val msgBody: ImMsgBody.MsgBody? = null,
+        @SerialId(3) val msgBody: ImMsgBody.MsgBody,
         @SerialId(4) val appshareInfo: AppShareInfo? = null
     ) : ProtoBuf
 
@@ -145,7 +145,7 @@ class MsgComm : ProtoBuf {
         @SerialId(1) val lastReadTime: Int = 0,
         @SerialId(2) val peerUin: Long = 0L,
         @SerialId(3) val msgCompleted: Int = 0,
-        @SerialId(4) val msg: List<Msg>? = null,
+        @SerialId(4) val msg: List<Msg>,
         @SerialId(5) val unreadMsgNum: Int = 0,
         @SerialId(8) val c2cType: Int = 0,
         @SerialId(9) val serviceType: Int = 0,

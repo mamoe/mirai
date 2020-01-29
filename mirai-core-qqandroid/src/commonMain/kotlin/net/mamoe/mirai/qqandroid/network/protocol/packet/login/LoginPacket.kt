@@ -46,7 +46,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
-    object SubCommand8 {
+    object SubCommand7 {
         private const val appId = 16L
         private const val subAppId = 537062845L
 
@@ -59,26 +59,16 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
             writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
-                    writeShort(8) // subCommand
-                    writeShort(6) // count of TLVs, probably ignored by server?TODO
+                    writeShort(7) // subCommand
+                    writeShort(7) // count of TLVs, probably ignored by server?TODO
                     t8(2052)
                     t104(client.t104)
                     t116(150470524, 66560)
                     t174(t174)
-                    t17a(9)
-                    t197(byteArrayOf(0.toByte()))
-                    //t401(md5(client.device.guid + "12 34567890123456".toByteArray() + t402))
-                    //t19e(0)//==tlv408
+                    t17c(phoneNumber.toByteArray())
+                    t401(md5(client.device.guid + "1234567890123456".toByteArray() + t402))
+                    t19e(0)//==tlv408
                 }
-                /**
-                 *
-                 * 0x00000008(8)=00 00 00 00 08 04 00 00,//2052固定
-                0x00000104(260)=41 69 78 39 46 68 4E 44 6C 41 42 30 54 79 46 30 4B 36 67 78 37 45 6E 2B 30 7A 39 35 65 35 30 6E 66 41 3D 3D,//服务器给的tv104
-                0x00000116(278)=00 08 F7 FF 7C 00 01 04 00 01 5F 5E 10 E2//116（this.mMiscBitmap, this.mSubSigMap, var10._sub_appid_list）
-                0x00000174(372)=45 66 43 39 46 4B 63 70 47 30 5F 5A 55 41 4F 6A 4E 4C 6F 72 56 30 77 66 4B 67 49 4D 33 33 6E 58 44 37 5F 4B 61 75 56 6D 4F 6F 54 68 6A 64 38 62 72 44 64 69 5F 62 48 51 5A 66 37 6E 4F 6B 78 43 35 6E 47 4E 38 6B 6A 35 39 6D 37 32 71 47 66 78 4E 76 50 51 53 39 33 66 37 6B 72 71 66 71 78 63 5F//服务器给的tv174
-                0x0000017A(378)=00 00 00 09, //9 固定
-                0x00000197(407)=00//固定
-                 */
             }
         }
     }

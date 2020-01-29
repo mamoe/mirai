@@ -17,7 +17,7 @@ actual class ECDHKeyPair(
     actual val privateKey: ECDHPrivateKey get() = delegate.private
     actual val publicKey: ECDHPublicKey get() = delegate.public
 
-    actual val shareKey: ByteArray = ECDH.calculateShareKey(privateKey, initialPublicKey)
+    actual val initialShareKey: ByteArray = ECDH.calculateShareKey(privateKey, initialPublicKey)
 }
 
 @Suppress("FunctionName")

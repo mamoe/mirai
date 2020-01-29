@@ -5,6 +5,8 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.utils.io.ByteArrayPool
 import java.io.ByteArrayOutputStream
 import java.io.DataInput
 import java.io.EOFException
@@ -83,17 +85,23 @@ actual fun crc32(key: ByteArray): Int = CRC32().apply { update(key) }.value.toIn
  */
 actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
 
-actual fun ByteArray.unzip(): ByteArray {
+actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
+    this.checkOffsetAndLength(offset, length)
+    if (length == 0) return ByteArray(0)
+
     val inflater = Inflater()
     inflater.reset()
-    val output = ByteArrayOutputStream()
-    inflater.setInput(this)
-    val buffer = ByteArray(128)
-    while (!inflater.finished()) {
-        output.write(buffer, 0, inflater.inflate(buffer))
+    ByteArrayOutputStream().use { output ->
+        inflater.setInput(this, offset, length)
+        ByteArrayPool.useInstance {
+            while (!inflater.finished()) {
+                output.write(it, 0, inflater.inflate(it))
+            }
+        }
+
+        inflater.end()
+        return output.toByteArray()
     }
-    inflater.end()
-    return output.toByteArray()
 }
 
 actual fun newCoroutineDispatcher(threadCount: Int): CoroutineDispatcher {

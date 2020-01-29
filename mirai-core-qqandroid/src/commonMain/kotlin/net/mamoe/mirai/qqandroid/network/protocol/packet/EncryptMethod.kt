@@ -95,6 +95,6 @@ internal interface EncryptMethodECDH : EncryptMethod {
             })
 
             // encryptAndWrite("26 33 BA EC 86 EB 79 E6 BC E0 20 06 5E A9 56 6C".hexToBytes(), body)
-            encryptAndWrite(ecdh.keyPair.shareKey, body)
+            encryptAndWrite(ecdh.keyPair.initialShareKey, body)
         }
 }

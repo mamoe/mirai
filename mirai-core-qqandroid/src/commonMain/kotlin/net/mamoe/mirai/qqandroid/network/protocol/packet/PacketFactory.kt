@@ -3,18 +3,20 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
-import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.unzip
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.jvm.JvmName
@@ -26,16 +28,21 @@ import kotlin.jvm.JvmName
  * @param TPacket 服务器回复包解析结果
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal abstract class PacketFactory<out TPacket : Packet>(
+internal abstract class PacketFactory<TPacket : Packet>(
     /**
      * 命令名. 如 `wtlogin.login`, `ConfigPushSvc.PushDomain`
      */
     val commandName: String
 ) {
     /**
-     * **解码**服务器的回复数据包
+     * **解码**服务器的回复数据包. 返回的包若是 [Subscribable], 则会 broadcast.
      */
     abstract suspend fun ByteReadPacket.decode(bot: QQAndroidBot): TPacket
+
+    /**
+     * 可选的处理这个包. 可以在这里面发新的包.
+     */
+    open suspend fun QQAndroidBot.handle(packet: TPacket) {}
 }
 
 @JvmName("decode0")
@@ -43,7 +50,7 @@ private suspend inline fun <P : Packet> PacketFactory<P>.decode(bot: QQAndroidBo
 
 internal val DECRYPTER_16_ZERO = ByteArray(16)
 
-internal typealias PacketConsumer = suspend (packet: Packet, commandName: String, ssoSequenceId: Int) -> Unit
+internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>, packet: T, commandName: String, ssoSequenceId: Int) -> Unit
 
 @PublishedApi
 internal val PacketLogger: MiraiLogger = DefaultLogger("Packet")
@@ -53,7 +60,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     LoginPacket,
     StatSvc.Register,
     OnlinePush.PbPushGroupMsg,
-    MessageSvc.PushNotify
+    MessageSvc.PushNotify,
+    MessageSvc.PbGetMsg
 ) {
 
     fun findPacketFactory(commandName: String): PacketFactory<*>? = this.firstOrNull { it.commandName == commandName }
@@ -66,7 +74,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
      * full packet without length
      */
     // do not inline. Exceptions thrown will not be reported correctly
-    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer) {
+    @Suppress("UNCHECKED_CAST")
+    suspend fun <T : Packet> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) {
         rawInput.readBytes().let {
             PacketLogger.verbose("开始处理包: ${it.toUHexString()}")
             it.toReadPacket()
@@ -111,12 +120,14 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     // 解析外层包装
                     when (flag1) {
                         0x0A -> parseSsoFrame(bot, decryptedData)
-                        0x0B -> parseUniFrame(bot, decryptedData)
+                        0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
                         else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
                     }
                 }?.let {
                     // 处理内层真实的包
                     if (it.packetFactory == null) {
+                        PacketLogger.warning("找不到 PacketFactory")
+                        PacketLogger.verbose("传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}")
                         return
                     }
 
@@ -124,12 +135,13 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                         1 ->//it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
                         {
                             consumer(
+                                it.packetFactory as PacketFactory<T>,
                                 it.packetFactory.run { decode(bot, it.data) },
                                 it.packetFactory.commandName,
                                 it.sequenceId
                             )
                         }
-                        2 -> it.data.parseOicqResponse(bot, it.packetFactory, it.sequenceId, consumer)
+                        2 -> it.data.parseOicqResponse(bot, it.packetFactory as PacketFactory<T>, it.sequenceId, consumer)
                         else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
                     }
                 } ?: inline {
@@ -137,7 +149,6 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     PacketLogger.error("任何key都无法解密: ${data.take(size).toUHexString()}")
                     return
                 }
-
             }
         }
     }
@@ -173,7 +184,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket {
         val commandName: String
         val ssoSequenceId: Int
-
+        val dataCompressed: Int
         // head
         input.readIoBuffer(input.readInt() - 4).withUse {
             ssoSequenceId = readInt()
@@ -186,35 +197,46 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             val unknown = readBytes(readInt() - 4)
             if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 
-            check(readInt() == 0)
+            dataCompressed = readInt()
+        }
+
+        val packet = when (dataCompressed) {
+            0 -> input
+            1 -> {
+                input.discardExact(4)
+                input.useBytes { data, length ->
+                    data.unzip(length = length)
+                }.toReadPacket()
+            }
+            else -> error("unknown dataCompressed flag: $dataCompressed")
         }
 
         // body
         val packetFactory = findPacketFactory(commandName)
 
-        bot.logger.verbose(commandName)
-        if (packetFactory == null) {
-            bot.logger.warning("找不到包 PacketFactory")
-            PacketLogger.verbose("传递给 PacketFactory 的数据 = ${input.readBytes().toUHexString()}")
-        }
-        return IncomingPacket(packetFactory, ssoSequenceId, input)
+        bot.logger.info("Received: $commandName")
+        return IncomingPacket(packetFactory, ssoSequenceId, packet)
     }
 
-    private suspend fun ByteReadPacket.parseOicqResponse(bot: QQAndroidBot, packetFactory: PacketFactory<*>, ssoSequenceId: Int, consumer: PacketConsumer) {
-        val qq: Long
+    private suspend fun <T : Packet> ByteReadPacket.parseOicqResponse(
+        bot: QQAndroidBot,
+        packetFactory: PacketFactory<T>,
+        ssoSequenceId: Int,
+        consumer: PacketConsumer<T>
+    ) {
         readIoBuffer(readInt() - 4).withUse {
             check(readByte().toInt() == 2)
             this.discardExact(2) // 27 + 2 + body.size
             this.discardExact(2) // const, =8001
             this.readUShort() // commandId
             this.readShort() // const, =0x0001
-            qq = this.readUInt().toLong()
+            this.readUInt().toLong() // qq
             val encryptionMethod = this.readUShort().toInt()
 
             this.discardExact(1) // const = 0
             val packet = when (encryptionMethod) {
                 4 -> { // peer public key, ECDH
-                    var data = this.decryptBy(bot.client.ecdh.keyPair.shareKey, this.readRemaining - 1)
+                    var data = this.decryptBy(bot.client.ecdh.keyPair.initialShareKey, this.readRemaining - 1)
 
                     val peerShareKey = bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
                     data = data.decryptBy(peerShareKey)
@@ -228,7 +250,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                             this.readFully(byteArrayBuffer, 0, size)
 
                             runCatching {
-                                byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.shareKey, size)
+                                byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.initialShareKey, size)
                             }.getOrElse {
                                 byteArrayBuffer.decryptBy(bot.client.randomKey, size)
                             } // 这里实际上应该用 privateKey(另一个random出来的key)
@@ -243,14 +265,19 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                 else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
             }
 
-            consumer(packet, packetFactory.commandName, ssoSequenceId)
+            consumer(packetFactory, packet, packetFactory.commandName, ssoSequenceId)
         }
     }
 
-    private suspend fun ByteReadPacket.parseUniResponse(bot: QQAndroidBot, packetFactory: PacketFactory<*>, ssoSequenceId: Int, consumer: PacketConsumer) {
+    private suspend fun ByteReadPacket.parseUniResponse(
+        bot: QQAndroidBot,
+        packetFactory: PacketFactory<*>,
+        ssoSequenceId: Int,
+        consumer: PacketConsumer<Packet>
+    ) {
         val uni = readBytes(readInt() - 4).loadAs(RequestPacket.serializer())
         PacketLogger.verbose(uni.toString())
-       /// consumer(packetFactory.decode(bot, uni.sBuffer.toReadPacket()), uni.sServantName + "." + uni.sFuncName, ssoSequenceId)
+        /// consumer(packetFactory.decode(bot, uni.sBuffer.toReadPacket()), uni.sServantName + "." + uni.sFuncName, ssoSequenceId)
     }
 }
 

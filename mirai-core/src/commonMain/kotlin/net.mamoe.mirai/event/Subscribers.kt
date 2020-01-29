@@ -112,7 +112,7 @@ inline fun <reified E : Subscribable, T> CoroutineScope.subscribeUntil(valueIfSt
  * @see subscribe 获取更多说明
  */
 inline fun <reified E : Subscribable, T> CoroutineScope.subscribeWhile(valueIfContinue: T, crossinline listener: suspend E.(E) -> T): Listener<E> =
-    E::class.subscribeInternal(Handler { if (it.listener(it) !== valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
+    E::class.subscribeInternal(Handler { if (it.listener(it) != valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
 // endregion
 

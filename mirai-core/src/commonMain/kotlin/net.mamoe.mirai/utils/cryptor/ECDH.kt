@@ -15,23 +15,46 @@ expect class ECDHKeyPair {
     val privateKey: ECDHPrivateKey
     val publicKey: ECDHPublicKey
 
-    val shareKey: ByteArray
+    /**
+     * 私匙和固定公匙([initialPublicKey]) 计算得到的 shareKey
+     */
+    val initialShareKey: ByteArray
 }
 
+/**
+ * 椭圆曲线密码, ECDH 加密
+ */
 expect class ECDH(keyPair: ECDHKeyPair) {
     val keyPair: ECDHKeyPair
 
+    /**
+     * 由 [keyPair] 的私匙和 [peerPublicKey] 计算 shareKey
+     */
     fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray
 
     companion object {
+        /**
+         * 由完整的 publicKey ByteArray 得到 [ECDHPublicKey]
+         */
         fun constructPublicKey(key: ByteArray): ECDHPublicKey
+
+        /**
+         * 生成随机密匙对
+         */
         fun generateKeyPair(): ECDHKeyPair
+
+        /**
+         * 由一对密匙计算 shareKey
+         */
         fun calculateShareKey(privateKey: ECDHPrivateKey, publicKey: ECDHPublicKey): ByteArray
     }
 
     override fun toString(): String
 }
 
+/**
+ *
+ */
 @Suppress("FunctionName")
 expect fun ECDH(): ECDH
 

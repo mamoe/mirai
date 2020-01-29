@@ -5,6 +5,7 @@ package net.mamoe.mirai.network
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
@@ -18,22 +19,26 @@ import net.mamoe.mirai.utils.io.PlatformDatagramChannel
  *
  * [BotNetworkHandler] 的协程包含:
  * - UDP 包接收: [PlatformDatagramChannel.read]
- * - 心跳 Job [HeartbeatPacket]
- * - SKey 刷新 [RequestSKeyPacket]
+ * - 心跳 Job
+ * - Key 刷新
  * - 所有数据包处理和发送
  *
- * [BotNetworkHandler.dispose] 时将会 [取消][kotlin.coroutines.CoroutineContext.cancelChildren] 所有此作用域下的协程
- *
- * A BotNetworkHandler is used to connect with Tencent servers.
+ * [BotNetworkHandler.dispose] 时将会 [取消][Job.cancel] 所有此作用域下的协程
  */
 @Suppress("PropertyName")
 abstract class BotNetworkHandler : CoroutineScope {
+    /**
+     * 所属 [Bot]. 为弱引用
+     */
     abstract val bot: Bot
 
+    /**
+     * 监管 child [Job]s
+     */
     abstract val supervisor: CompletableJob
 
     /**
-     * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回登录结果
+     * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回.
      * 本函数将挂起直到登录成功.
      */
     abstract suspend fun login()
@@ -47,21 +52,12 @@ abstract class BotNetworkHandler : CoroutineScope {
      * 关闭网络接口, 停止所有有关协程和任务
      */
     open fun dispose(cause: Throwable? = null) {
-        supervisor.cancel(CancellationException("handler closed", cause))
+        if (supervisor.isActive) {
+            if (cause != null) {
+                supervisor.cancel(CancellationException("handler closed", cause))
+            } else {
+                supervisor.cancel()
+            }
+        }
     }
-
-/*
-    @PublishedApi
-    internal abstract fun CoroutineScope.QQ(bot: Bot, id: Long, coroutineContext: CoroutineContext): QQ
-
-    @PublishedApi
-    internal abstract fun CoroutineScope.Group(bot: Bot, groupId: GroupId, info: RawGroupInfo, context: CoroutineContext): Group
-
-    @PublishedApi
-    internal abstract fun Group.Member(delegate: QQ, permission: MemberPermission, coroutineContext: CoroutineContext): Member
-
-
- */
-
-
 }
