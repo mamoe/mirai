@@ -1,9 +1,7 @@
-package net.mamoe.mirai.qqandroid.network.protocol.jce
+package net.mamoe.mirai.qqandroid.network.protocol.packet.login.data
 
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 

@@ -2,19 +2,15 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
-import kotlinx.serialization.SerialId
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.readRemainingAsJceStruct
-import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestDataVersion2
-import net.mamoe.mirai.qqandroid.network.protocol.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion2
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.RequestPushNotify
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.firstValue
-import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.toReadPacket
 
 class MessageSvc {

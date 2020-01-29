@@ -2,7 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.qqandroid.network.protocol.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.ProtoBuf
 
 class Oidb0x769 {
     @Serializable

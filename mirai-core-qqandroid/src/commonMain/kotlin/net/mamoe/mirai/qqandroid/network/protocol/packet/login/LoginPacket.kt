@@ -22,11 +22,10 @@ import net.mamoe.mirai.utils.io.discardExact
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login") {
+    private const val appId = 16L
+    private const val subAppId = 537062845L
 
     object SubCommand2 {
-        private const val appId = 16L
-        private const val subAppId = 537062845L
-
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
@@ -47,9 +46,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     }
 
     object SubCommand7 {
-        private const val appId = 16L
-        private const val subAppId = 537062845L
-
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
@@ -74,9 +70,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     }
 
     object SubCommand9 {
-        private const val appId = 16L
-        private const val subAppId = 537062845L
-
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient
