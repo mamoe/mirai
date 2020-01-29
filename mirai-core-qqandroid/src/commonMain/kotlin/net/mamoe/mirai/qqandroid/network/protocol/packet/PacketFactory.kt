@@ -61,8 +61,12 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     StatSvc.Register,
     OnlinePush.PbPushGroupMsg,
     MessageSvc.PushNotify,
-    MessageSvc.PbGetMsg
+    MessageSvc.PbGetMsg,
+    MessageSvc.PushForceOffline
 ) {
+    // SvcReqMSFLoginNotify 自己的其他设备上限
+    // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机
+    // OnlinePush.PbC2CMsgSync 电脑发消息给别人, 同步给手机
 
     fun findPacketFactory(commandName: String): PacketFactory<*>? = this.firstOrNull { it.commandName == commandName }
 

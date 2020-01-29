@@ -7,8 +7,13 @@ import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion2
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion3
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
+import net.mamoe.mirai.utils.firstValue
+import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readIoBuffer
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toIoBuffer
@@ -28,6 +33,28 @@ fun <T> BytePacketBuilder.writeJceStruct(serializer: SerializationStrategy<T>, s
 
 fun <T> ByteReadPacket.readRemainingAsJceStruct(serializer: DeserializationStrategy<T>, charset: JceCharset = JceCharset.UTF8): T {
     return Jce.byCharSet(charset).load(serializer, this)
+}
+
+/**
+ * 先解析为 [RequestPacket], 即 `UniRequest`, 再按版本解析 map, 再找出指定数据并反序列化
+ */
+fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
+    val request = this.readRemainingAsJceStruct(RequestPacket.serializer())
+
+    fun ByteArray.doReadInner(): T = read {
+        discardExact(1)
+        this.readRemainingAsJceStruct(deserializer)
+    }
+
+    return if (name == null) when (request.iVersion.toInt()) {
+        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue().doReadInner()
+        3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.firstValue().doReadInner()
+        else -> error("unsupported version ${request.iVersion}")
+    } else when (request.iVersion.toInt()) {
+        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.getOrElse(name) { error("cannot find $name") }.firstValue().doReadInner()
+        3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.getOrElse(name) { error("cannot find $name") }.doReadInner()
+        else -> error("unsupported version ${request.iVersion}")
+    }
 }
 
 fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray = Jce.byCharSet(c).dump(serializer, this)
@@ -480,7 +507,8 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @Suppress("UNCHECKED_CAST")
         override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
-            return decodeNullableSerializableValue(deserializer as DeserializationStrategy<Any?>) as? T ?: error("value with tag $currentTagOrNull is not optional but cannot find")
+            return decodeNullableSerializableValue(deserializer as DeserializationStrategy<Any?>) as? T
+                ?: error("value with tag $currentTagOrNull is not optional but cannot find")
         }
     }
 

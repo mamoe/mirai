@@ -9,9 +9,9 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.ImMsgBody
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.MsgOnlinePush
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 
 

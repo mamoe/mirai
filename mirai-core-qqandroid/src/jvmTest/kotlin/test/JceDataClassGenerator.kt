@@ -1,14 +1,20 @@
 package test;
 
-import net.mamoe.mirai.utils.cryptor.contentToString
 import java.io.File
-import java.lang.StringBuilder
 
 fun main(){
-    val var9 = toJCEInfo(File("/Users/jiahua.liu/Desktop/mirai/mirai-core-qqandroid/src/jvmTest/kotlin/test/GetFriendListReq").readText())
-    println("import kotlinx.serialization.SerialId\n" +
-            "import kotlinx.serialization.Serializable\n" +
-            "import net.mamoe.mirai.qqandroid.io.JceStruct\n")
+    val var9 = toJCEInfo(
+        File(
+            """
+        E:\Projects\QQAndroidFF\app\src\main\java\PushNotifyPack\RequestPushForceOffline.java
+    """.trimIndent()
+        ).readText()
+    )
+    println(
+        "import kotlinx.serialization.SerialId\n" +
+                "import kotlinx.serialization.Serializable\n" +
+                "import net.mamoe.mirai.qqandroid.io.JceStruct\n"
+    )
     println(var9.toString())
 }
 

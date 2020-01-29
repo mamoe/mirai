@@ -2,8 +2,8 @@ package net.mamoe.mirai.qqandroid.utils
 
 import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.ImMsgBody
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.MsgSvc
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 
 
 internal fun MessageChain.constructPbSendMsgReq(): MsgSvc.PbSendMsgReq {

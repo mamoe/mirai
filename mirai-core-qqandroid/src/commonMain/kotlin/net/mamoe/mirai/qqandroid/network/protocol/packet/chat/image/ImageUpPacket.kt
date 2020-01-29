@@ -10,8 +10,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.Cmd0x352Packet
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.UploadImgReq
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352Packet
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.UploadImgReq
 
 internal object ImageUpPacket : PacketFactory<ImageUpPacket.ImageUpPacketResponse>("LongConn.OffPicUp") {
 

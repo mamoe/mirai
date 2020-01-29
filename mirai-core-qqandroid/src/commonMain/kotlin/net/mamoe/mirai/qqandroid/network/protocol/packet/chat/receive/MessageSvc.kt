@@ -5,17 +5,19 @@ import kotlinx.io.core.discardExact
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.io.readRemainingAsProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.readRemainingAsJceStruct
 import net.mamoe.mirai.qqandroid.io.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushNotify
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.MsgSvc
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.RequestPushNotify
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
@@ -32,10 +34,7 @@ class MessageSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RequestPushNotify {
             discardExact(8)
 
-            return readRemainingAsJceStruct(RequestPacket.serializer()).sBuffer
-                .loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue()
-                .toReadPacket().apply { discardExact(1) }
-                .readRemainingAsJceStruct(RequestPushNotify.serializer())
+            return decodeUniPacket(RequestPushNotify.serializer())
         }
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify) {
@@ -50,7 +49,9 @@ class MessageSvc {
      * 进行刷新消息
      */
     internal object PbGetMsg : PacketFactory<MultiPacket<FriendMessage>>("MessageSvc.PbGetMsg") {
-        val EXTRA_DATA = "08 00 12 33 6D 6F 64 65 6C 3A 78 69 61 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
+        val EXTRA_DATA =
+            "08 00 12 33 6D 6F 64 65 6C 3A 78 69 61 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
+
         operator fun invoke(
             client: QQAndroidClient,
             from: RequestPushNotify
@@ -67,7 +68,7 @@ class MessageSvc {
                     latestRambleNumber = 20,
                     otherRambleNumber = 3,
                     onlineSyncFlag = 1,
-                  //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
+                    //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
                     syncCookie = client.c2cMessageSync.syncCookie,
                     syncFlag = client.c2cMessageSync.syncFlag,
                     msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
@@ -103,6 +104,17 @@ class MessageSvc {
                     else -> null
                 }
             }.toList())
+        }
+    }
+
+    /**
+     * 被挤下线
+     */
+    internal object PushForceOffline : PacketFactory<ForceOfflineEvent>("MessageSvc.PushForceOffline") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ForceOfflineEvent {
+            discardExact(4)
+            val struct = this.decodeUniPacket(RequestPushForceOffline.serializer())
+            return ForceOfflineEvent(bot, title = struct.title ?: "", tips = struct.tips ?: "")
         }
     }
 }
