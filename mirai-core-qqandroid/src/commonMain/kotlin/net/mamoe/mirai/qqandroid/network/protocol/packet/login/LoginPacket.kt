@@ -136,7 +136,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                         tgtgtKey = client.tgtgtKey
                     )
 
-                    //this.build().debugPrint("傻逼")
                     t145(client.device.guid)
                     t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
@@ -212,11 +211,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
 
     sealed class LoginPacketResponse : Packet {
-        object Success : LoginPacketResponse(){
-            override fun toString(): String {
-                return "LoginPacketResponse.Success"
-            }
+        object Success : LoginPacketResponse() {
+            override fun toString(): String = "LoginPacketResponse.Success"
         }
+
         data class Error(
             val title: String,
             val message: String,
@@ -228,25 +226,25 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             class Slider(
                 val data: IoBuffer,
                 val sign: ByteArray
-            ) : Captcha(){
-                override fun toString(): String {
-                    return "LoginPacketResponse.Captcha.Slider"
-                }
+            ) : Captcha() {
+                override fun toString(): String = "LoginPacketResponse.Captcha.Slider"
             }
 
             class Picture(
                 val data: IoBuffer,
                 val sign: ByteArray
-            ) : Captcha(){
-                override fun toString(): String {
-                    return "LoginPacketResponse.Captcha.Picture"
-                }
+            ) : Captcha() {
+                override fun toString(): String = "LoginPacketResponse.Captcha.Picture"
             }
         }
 
-        class UnsafeLogin(val url: String) : LoginPacketResponse()
+        class UnsafeLogin(val url: String) : LoginPacketResponse() {
+            override fun toString(): String = "LoginPacketResponse.UnsafeLogin"
+        }
 
-        class SMSVerifyCodeNeeded(val t174: ByteArray, val t402: ByteArray) : LoginPacketResponse()
+        class SMSVerifyCodeNeeded(val t174: ByteArray, val t402: ByteArray) : LoginPacketResponse() {
+            override fun toString(): String = "LoginPacketResponse.SMSVerifyCodeNeeded(t174=${t174.toUHexString()}, t402=${t402.toUHexString()})"
+        }
     }
 
     @InternalAPI
@@ -266,12 +264,12 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         println("type=$type")
 
         discardExact(2)
-        val tlvMap: Map<Int, ByteArray> = this.readTLVMap()
+        val tlvMap: TlvMap = this.readTLVMap()
         return when (type.toInt()) {
             0 -> onLoginSuccess(tlvMap, bot)
             1, 15 -> onErrorMessage(tlvMap)
             2 -> onSolveLoginCaptcha(tlvMap, bot)
-            -96 -> onUnsafeDeviceLogin(tlvMap, bot)
+            -96 -> onUnsafeDeviceLogin(tlvMap)
             -52 -> onSMSVerifyNeeded(tlvMap, bot)
             else -> error("unknown login result type: $type")
         }
@@ -279,19 +277,19 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
 
     private fun onSMSVerifyNeeded(
-        tlvMap: Map<Int, ByteArray>,
+        tlvMap: TlvMap,
         bot: QQAndroidBot
     ): LoginPacketResponse.SMSVerifyCodeNeeded {
-        bot.client.t104 = tlvMap[0x104]!!
-        return LoginPacketResponse.SMSVerifyCodeNeeded(tlvMap[0x174] ?: EMPTY_BYTE_ARRAY, tlvMap[0x402]!!)
+        bot.client.t104 = tlvMap[0x104] ?: error("cannot find tlv0x104")
+        return LoginPacketResponse.SMSVerifyCodeNeeded(tlvMap[0x174] ?: EMPTY_BYTE_ARRAY, tlvMap.getOrFail(0x402))
     }
 
-    private fun onUnsafeDeviceLogin(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.UnsafeLogin {
-        return LoginPacketResponse.UnsafeLogin(tlvMap[0x204]!!.toReadPacket().readRemainingBytes().encodeToString())
+    private fun onUnsafeDeviceLogin(tlvMap: TlvMap): LoginPacketResponse.UnsafeLogin {
+        return LoginPacketResponse.UnsafeLogin(tlvMap.getOrFail(0x204).encodeToString())
     }
 
-    private fun onErrorMessage(tlvMap: Map<Int, ByteArray>): LoginPacketResponse.Error {
-        return tlvMap[0x146]?.toReadPacket()?.run {
+    private fun onErrorMessage(tlvMap: TlvMap): LoginPacketResponse.Error {
+        return tlvMap[0x146]?.read {
             readShort() // ver
             readShort() // code
 
@@ -305,17 +303,16 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     @InternalAPI
     @UseExperimental(MiraiDebugAPI::class)
-    private fun onSolveLoginCaptcha(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse. Captcha {
-        val client = bot.client
+    private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
         // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
         println()
-        val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
+        val question = tlvMap.getOrFail(0x165) { "CAPTCHA QUESTION UNKNOWN" }
         when (question[18].toInt()) {
             0x36 -> {
                 //图片验证
                 DebugLogger.debug("是一个图片验证码")
-                bot.client.t104 = tlvMap[0x104]!!
-                val imageData = tlvMap[0x105]!!.toReadPacket()
+                bot.client.t104 = tlvMap.getOrFail(0x104)
+                val imageData = tlvMap.getOrFail(0x105).toReadPacket()
                 val signInfoLength = imageData.readShort()
                 imageData.discardExact(2)//image Length
                 val sign = imageData.readBytes(signInfoLength.toInt())
@@ -324,15 +321,12 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                     sign = sign
                 )
             }
-            else -> {
-                error("UNKNOWN CAPTCHA QUESTION: $question")
-            }
+            else -> error("UNKNOWN CAPTCHA QUESTION: $question")
         }
-        return TODO()
     }
 
     @UseExperimental(MiraiDebugAPI::class)
-    private fun onLoginSuccess(tlvMap: Map<Int, ByteArray>, bot: QQAndroidBot): LoginPacketResponse.Success {
+    private fun onLoginSuccess(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Success {
         val client = bot.client
         println("TLV KEYS: " + tlvMap.keys.joinToString { it.contentToString() })
 
@@ -536,7 +530,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     }
 
 
-    private fun Map<Int, ByteArray>.getOrEmpty(key: Int): ByteArray {
+    private fun TlvMap.getOrEmpty(key: Int): ByteArray {
         return this[key] ?: byteArrayOf()
     }
 
@@ -615,7 +609,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
      * 设置 [QQAndroidClient.uin]
      */
     private fun QQAndroidClient.analysisTlv113(t113: ByteArray) = t113.read {
-        uin = readUInt().toLong()
+        _uin = readUInt().toLong()
 
         /*
         // nothing to do
