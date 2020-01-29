@@ -14,7 +14,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.data.MsgOnlinePush
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 
+
 internal class OnlinePush {
+    /**
+     * 接受群消息
+     */
     internal object PbPushGroupMsg : PacketFactory<GroupMessage>("OnlinePush.PbPushGroupMsg") {
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GroupMessage {
