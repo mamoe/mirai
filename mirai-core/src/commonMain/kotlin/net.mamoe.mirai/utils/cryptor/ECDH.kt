@@ -66,13 +66,7 @@ private const val constantHead = "3046301006072A8648CE3D020106052B8104001F033200
 private val byteArray_04 = byteArrayOf(0x04)
 
 fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
-    val key = if (this[0].toInt() == 0x02) { // from server
-        commonHeadFor02 + this
-    } else if (!this.toUHexString("").startsWith(constantHead)) {
-        commonHeadForNot02 +
-                if (this[0].toInt() == 0x04 || this[0].toInt() == 0x03) this
-                else (byteArray_04 + this)
-    } else this
+    val head = if(this.size<30) "302E301006072A8648CE3D020106052B8104001F031A00" else "3046301006072A8648CE3D020106052B8104001F03320004"
 
-    return ECDH.constructPublicKey(key)
+    return ECDH.constructPublicKey((head + this.toUHexString("")).chunkedHexToBytes())
 }

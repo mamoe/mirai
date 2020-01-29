@@ -4,7 +4,10 @@ package androidPacketTests
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
-import net.mamoe.mirai.utils.cryptor.*
+import net.mamoe.mirai.utils.cryptor.ECDH
+import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.cryptor.decryptBy
+import net.mamoe.mirai.utils.cryptor.initialPublicKey
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.md5
@@ -205,7 +208,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                             ECDH.calculateShareKey(
                                 loadPrivateKey(ecdhPrivateKeyS),
                                 //"04cb366698561e936e80c157e074cab13b0bb68ddeb2824548a1b18dd4fb6122afe12fe48c5266d8d7269d7651a8eb6fe7".chunkedHexToBytes().adjustToPublicKey() // QQ: 04cb366698561e936e80c157e074cab13b0bb68ddeb2824548a1b18dd4fb6122afe12fe48c5266d8d7269d7651a8eb6fe7
-                                publicKey.adjustToPublicKey()
+                                ECDH.constructPublicKey("30 46 30 10 06 07 2A 86 48 CE 3D 02 01 06 05 2B 81 04 00 1F 03 32 00".hexToBytes() + publicKey)
                             )
                         }
 
@@ -237,7 +240,9 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                             DebugLogger.info("发送 login!! 正在获取 tgtgtKey")
                             try {
                                 discardExact(4)
-                                readTLVMap()[0x106]
+                                val tlvMap = readTLVMap()
+                                tlvMap.printTLVMap()
+                                tlvMap[0x106]
                                     ?.also { DebugLogger.info("找到了 0x106") }
                                     ?.decryptBy(md5(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()))
                                     ?.read {

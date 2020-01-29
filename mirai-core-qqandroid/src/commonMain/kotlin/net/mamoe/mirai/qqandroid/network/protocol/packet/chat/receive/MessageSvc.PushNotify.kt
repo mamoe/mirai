@@ -67,7 +67,7 @@ class MessageSvc {
                     latestRambleNumber = 20,
                     otherRambleNumber = 3,
                     onlineSyncFlag = 1,
-                    serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
+                  //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
                     syncCookie = client.c2cMessageSync.syncCookie,
                     syncFlag = client.c2cMessageSync.syncFlag,
                     msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
