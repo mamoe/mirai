@@ -60,12 +60,15 @@ internal val t108 = "BD 12 96 6C 83 53 EF DD 06 16 52 16 B8 1B 25 69".hexToBytes
 internal val t10c = "23 7D 2C 7A 3F 4A 41 35 7D 3B 45 51 6D 3D 2A 56".hexToBytes()
 internal val t163 = "2C 7A 7B 23 4E 24 3F 24 24 47 62 6B 69 2E 47 50".hexToBytes()
 
-internal val shareKeyCalculatedByConstPubKey = ECDH.calculateShareKey(
-    loadPrivateKey("97a52992cb7a2110413629af94a3c249c68a3b731510caa8"),
-    initialPublicKey
-)
 
 var ecdhPrivateKeyS = "97a52992cb7a2110413629af94a3c249c68a3b731510caa8"
+
+internal val shareKeyCalculatedByConstPubKey
+    get() = ECDH.calculateShareKey(
+        loadPrivateKey(ecdhPrivateKeyS),
+        initialPublicKey
+    )
+
 var passwordMd5: ByteArray = byteArrayOf()
 var uin: Long = 0L
 
@@ -105,8 +108,6 @@ fun ByteReadPacket.decodeMultiClientToServerPackets() {
     println()
 }
 
-val firstShareKey = ECDH.calculateShareKey(loadPrivateKey(ecdhPrivateKeyS), initialPublicKey)
-
 fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed", { buildPacket { writeInt(it.size + 4); writeFully(it) } }) {
     val flag1 = readInt()
     println("flag1=" + flag1.contentToString())
@@ -119,13 +120,13 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
             println("extra data=" + readBytes(readInt() - 4).toUHexString())
         }
     } else {
-        if (flag2 == 1) {
-            val loginExtraData = readBytes(readInt() - 4)
-            loginExtraData.debugPrint("loginExtraData")
-        } else {
-            this.debugPrint()
-            error("未知 flag2")
-        }
+        //if (flag2 == 1) {
+        val loginExtraData = readBytes(readInt() - 4)
+        loginExtraData.debugPrint("loginExtraData")
+        // } else {
+        //     this.debugPrint()
+        //     error("未知 flag2")
+        // }
     }
 
     println("flag3=" + readByte().toUHexString())
@@ -159,9 +160,12 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                     */
                     discardExact(3)
                     readShort().toInt().takeIf { it != 8001 }?.let {
+                        println("这个包不是 oicqRequest")
+                        return@debugIfFail this
                         println("  got new protocolVersion=$it")
                     }
-                    println("  commandId=${readUShort()}")
+                    val commandId = readUShort().toInt()
+                    println("  commandId=${commandId}")
                     readUShort().toInt().takeIf { it != 1 }?.let {
                         println("  got new const0=$it")
                     }
@@ -221,16 +225,26 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                             firstDecrypted.decryptBy(encrypt).also { println("second by calculatedShareKey") }
                         }.getOrElse {
                             kotlin.runCatching {
-                                firstDecrypted.decryptBy(firstShareKey)
+                                firstDecrypted.decryptBy(shareKeyCalculatedByConstPubKey)
                             }.getOrDefault(firstDecrypted)
                         }
                     }
 
-                    decrypted.debugPrint("Real body").apply {
-                        discardExact(4)
-                        readTLVMap()[0x106]?.decryptBy(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray())?.read {
-                            discardExact(2 + 4 * 4 + 8 + 4 + 4 + 1 + 16)
-                            tgtgtKey = readBytes(16)
+                    decrypted.debugPrint("Real body").toReadPacket().apply {
+                        if (commandId == 0x0810) {
+                            DebugLogger.info("发送 login!! 正在获取 tgtgtKey")
+                            try {
+                                discardExact(4)
+                                readTLVMap()[0x106]
+                                    ?.also { DebugLogger.info("找到了 0x106") }?.decryptBy(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray())?.read {
+                                        discardExact(2 + 4 * 4 + 8 + 4 + 4 + 1 + 16)
+                                        tgtgtKey = readBytes(16)
+                                        DebugLogger.info("获取 tgtgtKey=${tgtgtKey.toUHexString()}")
+                                    }
+                                DebugLogger.info("tlv map里面没有 0x106")
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
 
                     }
@@ -302,22 +316,22 @@ fun ByteReadPacket.decodeSso() {
     println("// 尝试解 SSO")
     println("// head")
     discardExact(4)
-    println("  sequenceId=" + readUInt())
+    ("  sequenceId=" + readUInt())
     println("  subAppId=" + readUInt())
     println("  subAppId2=" + readUInt())
     println("  unknownHex=" + readBytes(12).toUHexString())
     println("  extraData=" + readBytes(readInt() - 4).toUHexString())
-    println("  commandName=" + readBytes(readInt() - 4).encodeToString())
-    println("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
-    println("  imei=" + readBytes(readInt() - 4).toUHexString())
-    println("  0 bytes=" + readBytes(readInt() - 4).toUHexString())
-    println("  ksid=" + readBytes(readShort() - 2).toUHexString())
-    println("  0 bytes=" + readBytes(readInt() - 4).toUHexString())
+    val commandName = readBytes(readInt() - 4).encodeToString()
+    println("  commandName=" + commandName)
+    ("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
+    ("  imei=" + readBytes(readInt() - 4).toUHexString())
+    ("  0 bytes=" + readBytes(readInt() - 4).toUHexString())
+    ("  ksid=" + readBytes(readShort() - 2).toUHexString())
+    ("  0 bytes=" + readBytes(readInt() - 4).toUHexString())
 
     println()
     discardExact(4)
     println("// body(maybe OicqRequest)")
-
 }
 
 val keys: Map<String, ByteArray>
