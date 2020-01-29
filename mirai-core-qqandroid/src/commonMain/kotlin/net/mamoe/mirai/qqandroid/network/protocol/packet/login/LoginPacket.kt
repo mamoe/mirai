@@ -11,12 +11,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
-import net.mamoe.mirai.utils.MiraiDebugAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
 
@@ -66,7 +63,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                     t8(2052)
                     t104(client.t104)
                     t116(150470524, 66560)
-                    t401(client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402)
+                    t401(md5(client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402))
                 }
             }
         }
