@@ -73,11 +73,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                 is SMSVerifyCodeNeeded -> {
                     val result = bot.configuration.loginSolver.onGetPhoneNumber()
-                    response = LoginPacket.SubCommand7(
+                    response = LoginPacket.SubCommand20(
                         bot.client,
-                        response.t174,
                         response.t402,
-                        result
+                        response.t403
                     ).sendAndExpect()
                     continue@mainloop
                 }

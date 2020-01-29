@@ -46,6 +46,29 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
+    object SubCommand20 {
+        private const val appId = 16L
+        private const val subAppId = 537062845L
+
+        @UseExperimental(MiraiInternalAPI::class)
+        operator fun invoke(
+            client: QQAndroidClient,
+            t402: ByteArray,
+            t403: ByteArray
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+            writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeShort(20) // subCommand
+                    writeShort(4) // count of TLVs, probably ignored by server?
+                    t8(2052)
+                    t104(client.t104)
+                    t116(150470524, 66560)
+                    t401(client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402)
+                }
+            }
+        }
+    }
+
     object SubCommand7 {
         private const val appId = 16L
         private const val subAppId = 537062845L
@@ -253,7 +276,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
         class UnsafeLogin(val url: String) : LoginPacketResponse()
 
-        class SMSVerifyCodeNeeded(val t174: ByteArray, val t402: ByteArray) : LoginPacketResponse()
+        class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse()
     }
 
     @InternalAPI
@@ -290,7 +313,8 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         bot: QQAndroidBot
     ): LoginPacketResponse.SMSVerifyCodeNeeded {
         bot.client.t104 = tlvMap.getOrFail(0x104)
-        return LoginPacketResponse.SMSVerifyCodeNeeded(tlvMap[0x174] ?: EMPTY_BYTE_ARRAY, tlvMap.getOrFail(0x402))
+        println("403： " + tlvMap[0x403]?.toUHexString())
+        return LoginPacketResponse.SMSVerifyCodeNeeded(tlvMap[0x402]!!, tlvMap.getOrFail(0x403))
     }
 
     private fun onUnsafeDeviceLogin(tlvMap: TlvMap): LoginPacketResponse.UnsafeLogin {
