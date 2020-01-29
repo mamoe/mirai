@@ -267,9 +267,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     sealed class LoginPacketResponse : Packet {
         object Success : LoginPacketResponse() {
-            override fun toString(): String {
-                return "LoginPacketResponse.Success"
-            }
+            override fun toString(): String = "LoginPacketResponse.Success"
         }
 
         data class Error(
@@ -283,24 +281,24 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             class Slider(
                 val url: String
             ) : Captcha() {
-                override fun toString(): String {
-                    return "LoginPacketResponse.Captcha.Slider"
-                }
+                override fun toString(): String = "LoginPacketResponse.Captcha.Slider"
             }
 
             class Picture(
                 val data: IoBuffer,
                 val sign: ByteArray
             ) : Captcha() {
-                override fun toString(): String {
-                    return "LoginPacketResponse.Captcha.Picture"
-                }
+                override fun toString(): String = "LoginPacketResponse.Captcha.Picture"
             }
         }
 
-        class UnsafeLogin(val url: String) : LoginPacketResponse()
+        data class UnsafeLogin(val url: String) : LoginPacketResponse()
 
-        class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse()
+        class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse(){
+            override fun toString(): String {
+                return "LoginPacketResponse.SMSVerifyCodeNeeded"
+            }
+        }
     }
 
     @InternalAPI
