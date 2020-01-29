@@ -49,7 +49,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     object SubCommand7 {
         private const val appId = 16L
         private const val subAppId = 537062845L
-
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
@@ -57,14 +56,14 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             t402: ByteArray,
             phoneNumber: String
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-            writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+            writeSmsSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
                     writeShort(8) // subCommand
                     writeShort(6) // count of TLVs, probably ignored by server?TODO
                     t8(2052)
                     t104(client.t104)
                     t116(150470524, 66560)
-                    t174(t174)
+                    t174(EMPTY_BYTE_ARRAY)
                     t17a(9)
                     t197(byteArrayOf(0.toByte()))
                     //t401(md5(client.device.guid + "12 34567890123456".toByteArray() + t402))

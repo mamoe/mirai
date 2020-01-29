@@ -263,6 +263,52 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
     writeIntLVPacket(lengthOffset = { it + 4 }, builder = body)
 }
 
+internal inline fun BytePacketBuilder.writeSmsSsoPacket(
+    client: QQAndroidClient,
+    subAppId: Long,
+    commandName: String,
+    extraData: ByteReadPacket = BRP_STUB,
+    sequenceId: Int,
+    body: BytePacketBuilder.() -> Unit
+) {
+    writeIntLVPacket(lengthOffset = { it + 4 }) {
+        writeInt(sequenceId)
+        writeInt(subAppId.toInt())
+        writeInt(subAppId.toInt())
+        writeHex("00 00 00 00 00 00 00 00 00 00 01 00")
+        if (extraData === BRP_STUB) {
+            writeInt(0x04)
+        } else {
+            writeInt((extraData.remaining + 4).toInt())
+            writePacket(extraData)
+        }
+        commandName.let {
+            writeInt(it.length + 4)
+            writeStringUtf8(it)
+        }
+
+        writeInt(4 + 4)
+        writeInt(45112203) //  02 B0 5B 8B
+
+        client.device.imei.let {
+            writeInt(it.length + 4)
+            writeStringUtf8(it)
+        }
+
+        writeInt(4)
+
+        client.ksid.let {
+            writeShort((it.size + 2).toShort())
+            writeFully(it)
+        }
+
+        writeInt(4)
+    }
+
+    // body
+    writeIntLVPacket(lengthOffset = { it + 4 }, builder = body)
+}
+
 
 /**
  * Writes a request packet
