@@ -23,12 +23,30 @@ import net.mamoe.mirai.utils.io.discardExact
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login") {
 
+    /**
+     * 提交验证码
+     */
     object SubCommand2 {
         private const val appId = 16L
         private const val subAppId = 537062845L
 
-        @UseExperimental(MiraiInternalAPI::class)
-        operator fun invoke(
+        fun SubmitSliderCaptcha(
+            client: QQAndroidClient,
+            ticket: String
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+            writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeShort(2) // subCommand
+                    writeShort(4) // count of TLVs
+                    t193(ticket)
+                    t8(2052)
+                    t104(client.t104)
+                    t116(150470524, 66560)
+                }
+            }
+        }
+
+        fun SubmitPictureCaptcha(
             client: QQAndroidClient,
             captchaSign: ByteArray,
             captchaAnswer: String
@@ -36,7 +54,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
                     writeShort(2) // subCommand
-                    writeShort(4) // count of TLVs, probably ignored by server?
+                    writeShort(4) // count of TLVs
                     t2(captchaAnswer, captchaSign, 0)
                     t8(2052)
                     t104(client.t104)
@@ -69,6 +87,9 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
+    /**
+     * 提交 SMS
+     */
     object SubCommand7 {
         private const val appId = 16L
         private const val subAppId = 537062845L
@@ -79,7 +100,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             t402: ByteArray,
             phoneNumber: String
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-            writeSmsSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+            writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId, unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00") {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
                     writeShort(8) // subCommand
                     writeShort(6) // count of TLVs, probably ignored by server?TODO
@@ -96,6 +117,9 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
+    /**
+     * 密码登录
+     */
     object SubCommand9 {
         private const val appId = 16L
         private const val subAppId = 537062845L
@@ -257,8 +281,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         sealed class Captcha : LoginPacketResponse() {
 
             class Slider(
-                val data: IoBuffer,
-                val sign: ByteArray
+                val url: String
             ) : Captcha() {
                 override fun toString(): String {
                     return "LoginPacketResponse.Captcha.Slider"
@@ -340,10 +363,12 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     @UseExperimental(MiraiDebugAPI::class)
     private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
         // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
-        println()
-        val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
-        when (question[18].toInt()) {
-            0x36 -> {
+        tlvMap[0x192]?.let {
+            bot.client.t104 = tlvMap.getOrFail(0x104)
+            return LoginPacketResponse.Captcha.Slider(it.encodeToString())
+        }
+        tlvMap[0x165]?.let { question ->
+            if (question[18].toInt() == 0x36) {
                 //图片验证
                 DebugLogger.debug("是一个图片验证码")
                 bot.client.t104 = tlvMap.getOrFail(0x104)
@@ -356,8 +381,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                     sign = sign
                 )
             }
-            else -> error("UNKNOWN CAPTCHA QUESTION: $question")
+            else error("UNKNOWN CAPTCHA QUESTION: $question")
         }
+
+        error("UNKNOWN CAPTCHA")
     }
 
     @UseExperimental(MiraiDebugAPI::class)

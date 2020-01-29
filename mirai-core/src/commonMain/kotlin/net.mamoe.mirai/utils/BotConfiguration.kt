@@ -11,7 +11,7 @@ import kotlin.jvm.JvmStatic
 abstract class LoginSolver {
     abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?
 
-    abstract suspend fun onSolveSliderCaptcha(bot: Bot, data: IoBuffer): String?
+    abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
 
     abstract suspend fun onGetPhoneNumber(): String
 

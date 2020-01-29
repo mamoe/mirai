@@ -566,6 +566,15 @@ fun BytePacketBuilder.t188(
     } shouldEqualsTo 16
 }
 
+fun BytePacketBuilder.t193(
+    ticket: String
+) {
+    writeShort(0x193)
+    writeShortLVPacket {
+        writeFully(ticket.toByteArray())
+    }
+}
+
 fun BytePacketBuilder.t194(
     imsiMd5: ByteArray
 ) {

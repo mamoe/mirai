@@ -11,7 +11,7 @@ actual var defaultLoginSolver: LoginSolver = object : LoginSolver() {
         error("should be implemented manually by you")
     }
 
-    override suspend fun onSolveSliderCaptcha(bot: Bot, data: IoBuffer): String? {
+    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
         error("should be implemented manually by you")
     }
 

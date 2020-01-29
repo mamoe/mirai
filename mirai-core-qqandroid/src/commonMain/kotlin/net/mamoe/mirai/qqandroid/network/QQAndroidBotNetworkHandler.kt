@@ -53,19 +53,21 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                 is Captcha -> when (response) {
                     is Captcha.Picture -> {
-                        bot.logger.info("需要图片验证码")
                         var result = bot.configuration.loginSolver.onSolvePicCaptcha(bot, response.data)
-                        if (result === null || result.length != 4) {
+                        if (result == null || result.length != 4) {
                             //refresh captcha
                             result = "ABCD"
                         }
-                        bot.logger.info("提交验证码")
-                        response = LoginPacket.SubCommand2(bot.client, response.sign, result).sendAndExpect()
+                        response = LoginPacket.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
                         continue@mainloop
                     }
                     is Captcha.Slider -> {
-                        bot.logger.info("需要滑动验证码")
-                        TODO("滑动验证码")
+                        var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
+                        if (ticket == null) {
+                            ticket = ""
+                        }
+                        response = LoginPacket.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
+                        continue@mainloop
                     }
                 }
 

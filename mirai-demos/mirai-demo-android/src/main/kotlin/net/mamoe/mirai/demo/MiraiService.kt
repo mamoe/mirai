@@ -53,7 +53,7 @@ class MiraiService : Service() {
                         return mCaptchaDeferred.await()
                     }
 
-                    override suspend fun onSolveSliderCaptcha(bot: Bot, data: IoBuffer): String? {
+                    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
                         TODO("not implemented")
                     }
 

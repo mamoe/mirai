@@ -34,38 +34,41 @@ class DefaultLoginSolver : LoginSolver() {
             val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
             withContext(Dispatchers.IO) {
                 tempFile.createNewFile()
-                MiraiLogger.info("需要验证码登录, 验证码为 4 字母")
+                bot.logger.info("需要图片验证码登录, 验证码为 4 字母")
                 try {
                     tempFile.writeChannel().use { writeFully(data) }
-                    MiraiLogger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
+                    bot.logger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
                 } catch (e: Exception) {
-                    MiraiLogger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+                    bot.logger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
                 }
 
                 tempFile.inputStream().use {
                     val img = ImageIO.read(it)
                     if (img == null) {
-                        MiraiLogger.info("无法创建字符图片. 请查看文件")
+                        bot.logger.info("无法创建字符图片. 请查看文件")
                     } else {
-                        MiraiLogger.info(img.createCharImg())
+                        bot.logger.info(img.createCharImg())
                     }
                 }
             }
-            MiraiLogger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
+            bot.logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
             return readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
         }
     }
 
-    override suspend fun onSolveSliderCaptcha(bot: Bot, data: IoBuffer): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+        bot.logger.info("需要滑动验证码")
+        bot.logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
+        bot.logger.info(url)
+        return readLine()
     }
 
     override suspend fun onGetPhoneNumber(): String {
         loginSolverLock.withLock {
-            while (true){
+            while (true) {
                 MiraiLogger.info("请输入你的手机号码")
                 val var0 = readLine()
-                if(var0!==null && var0.length > 10){
+                if (var0 !== null && var0.length > 10) {
                     return var0;
                 }
             }
