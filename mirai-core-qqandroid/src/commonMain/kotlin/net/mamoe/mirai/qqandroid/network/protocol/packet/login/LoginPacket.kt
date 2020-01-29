@@ -11,9 +11,12 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiDebugAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
+import net.mamoe.mirai.utils.currentTimeMillis
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
 
@@ -220,11 +223,12 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
 
     sealed class LoginPacketResponse : Packet {
-        object Success : LoginPacketResponse(){
+        object Success : LoginPacketResponse() {
             override fun toString(): String {
                 return "LoginPacketResponse.Success"
             }
         }
+
         data class Error(
             val title: String,
             val message: String,
@@ -236,7 +240,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             class Slider(
                 val data: IoBuffer,
                 val sign: ByteArray
-            ) : Captcha(){
+            ) : Captcha() {
                 override fun toString(): String {
                     return "LoginPacketResponse.Captcha.Slider"
                 }
@@ -245,7 +249,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             class Picture(
                 val data: IoBuffer,
                 val sign: ByteArray
-            ) : Captcha(){
+            ) : Captcha() {
                 override fun toString(): String {
                     return "LoginPacketResponse.Captcha.Picture"
                 }
@@ -282,7 +286,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             2 -> onSolveLoginCaptcha(tlvMap, bot)
             160 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
             204 /*-52*/ -> onSMSVerifyNeeded(tlvMap, bot)
-            else -> error("unknown login result type: $type")
+            else -> tlvMap[0x149]?.let { bot.client.analysisTlv149(it) } ?: error("unknown login result type: $type")
         }
     }
 
@@ -314,7 +318,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
     @InternalAPI
     @UseExperimental(MiraiDebugAPI::class)
-    private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse. Captcha {
+    private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
         // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
         println()
         val question = tlvMap[0x165] ?: error("CAPTCHA QUESTION UNKNOWN")
@@ -358,7 +362,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
                     DebugLogger.warning(bytes.encodeToString())
                 }
 
-                tlvMap119[0x149]?.let { client.analysisTlv149(it) }
                 tlvMap119[0x130]?.let { client.analysisTlv130(it) }
                 tlvMap119[0x113]?.let { client.analysisTlv113(it) }
 
@@ -655,22 +658,16 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     /**
      * 错误消息
      */
-    private fun QQAndroidClient.analysisTlv149(t149: ByteArray) {
-        data class ErrorMessage(
-            val type: Short,
-            val title: String,
-            val content: String,
-            val otherInfo: String
-        )
+    private fun QQAndroidClient.analysisTlv149(t149: ByteArray): LoginPacketResponse.Error {
 
-        t149.read {
+        return t149.read {
             val type: Short = readShort()
             val title: String = readUShortLVString()
             val content: String = readUShortLVString()
             val otherInfo: String = readUShortLVString()
 
             // do not write class into read{} block. CompilationException!!
-            error("Got error message: " + ErrorMessage(type, title, content, otherInfo)) // nice toString
+            LoginPacketResponse.Error(title = title, message = content, errorInfo = otherInfo) // nice toString
         }
     }
 
