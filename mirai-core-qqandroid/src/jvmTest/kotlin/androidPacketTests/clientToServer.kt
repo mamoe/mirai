@@ -237,7 +237,9 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                             DebugLogger.info("发送 login!! 正在获取 tgtgtKey")
                             try {
                                 discardExact(4)
-                                readTLVMap()[0x106]
+                                val tlvMap = readTLVMap()
+                                tlvMap.printTLVMap()
+                                tlvMap[0x106]
                                     ?.also { DebugLogger.info("找到了 0x106") }
                                     ?.decryptBy(md5(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()))
                                     ?.read {

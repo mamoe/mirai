@@ -111,7 +111,7 @@ internal open class QQAndroidClient(
     class C2cMessageSyncData {
         var syncCookie = EMPTY_BYTE_ARRAY
         var pubAccountCookie = EMPTY_BYTE_ARRAY
-        var syncFlag: Int = 2
+        var syncFlag: Int = 0
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
     }
 
