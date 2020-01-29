@@ -201,11 +201,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (packet is Cancellable && packet.cancelled) return
         }
 
+        bot.logger.info(packet)
+
         packetFactory?.run {
             bot.handle(packet)
         }
-
-        bot.logger.info(packet)
     }
 
     /**
