@@ -186,9 +186,9 @@ fun Input.readFlatTUVarIntMap(expectingEOF: Boolean = false, tagSize: Int = 1): 
 fun Map<Int, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 2) =
     debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() }.mapKeys {
         when (keyLength) {
-            1 -> it.key.toUByte().toUHexString()
-            2 -> it.key.toUShort().toUHexString()
-            4 -> it.key.toUInt().toUHexString()
+            1 -> it.key.toUByte().contentToString()
+            2 -> it.key.toUShort().contentToString()
+            4 -> it.key.toUInt().contentToString()
             else -> illegalArgument("Expecting 1, 2 or 4 for keyLength")
         }
     }.entries.joinToString(prefix = "{", postfix = "}", separator = "\n"))
