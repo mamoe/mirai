@@ -5,6 +5,7 @@ package net.mamoe.mirai.utils.io
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
+import net.mamoe.mirai.utils.checkOffsetAndLength
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -16,6 +17,7 @@ import kotlin.jvm.JvmSynthetic
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
+    this.checkOffsetAndLength(offset, length)
     if (length == 0) {
         return ""
     }
@@ -36,6 +38,7 @@ fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, length: In
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun ByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
+    this.checkOffsetAndLength(offset, length)
     if (length == 0) {
         return ""
     }
@@ -72,7 +75,8 @@ fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: In
     }
 }
 
-fun ByteArray.encodeToString(): String = String(this)
+@Suppress("NOTHING_TO_INLINE")
+inline fun ByteArray.encodeToString(): String = String(this)
 
 fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size) = ByteReadPacket(this, offset = offset, length = length)
 
