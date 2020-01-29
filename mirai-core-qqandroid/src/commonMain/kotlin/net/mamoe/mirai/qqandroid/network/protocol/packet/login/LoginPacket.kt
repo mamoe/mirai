@@ -25,6 +25,9 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     private const val appId = 16L
     private const val subAppId = 537062845L
 
+    /**
+     * 提交/刷新验证码
+     */
     object SubCommand2 {
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
@@ -45,6 +48,9 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
+    /**
+     * 设备锁 (SMS)
+     */
     object SubCommand7 {
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
@@ -69,6 +75,9 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         }
     }
 
+    /**
+     * 密码登录
+     */
     object SubCommand9 {
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
