@@ -623,7 +623,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
      * 设置 [QQAndroidClient.uin]
      */
     private fun QQAndroidClient.analysisTlv113(t113: ByteArray) = t113.read {
-        uin = readUInt().toLong()
+        val uin = readUInt().toLong()
 
         /*
         // nothing to do
