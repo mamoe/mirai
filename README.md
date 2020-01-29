@@ -5,27 +5,30 @@
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **[English](README-eng.md)**  
 
-**TIM PC 和 QQ Android 协议** 跨平台 QQ 协议支持库.  
-**纯 Kotlin 实现协议和支持框架. 目前可运行在 JVM 或 Android.**   
+跨平台 **TIM PC 和 QQ Android** 协议支持库.   
+纯 Kotlin 实现协议和支持框架，模块全部开源。  
+目前可运行在 JVM 或 Android。
 
 **一切开发旨在学习，请勿用于非法用途**  
 
-您可在 Gitter 提问, 或加入 QQ 群: 655057127
+加入 Gitter, 或加入 QQ 群: 655057127
 
 ## Update log
-在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划  
-在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录
+在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划（更新不及时）   
+在 [UpdateLog](https://github.com/mamoe/mirai/blob/master/UpdateLog.md) 查看版本更新记录（准确更新发布的版本）   
 
-## Features
+## Modules
 #### mirai-core 
-通用 API 模块，请参考此模块调用 Mirai.    
+通用 API 模块，一套 API 适配两套协议。  
+**请参考此模块的 API**  
+  
 #### mirai-core-timpc 
 TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅新增少量 API. 详见 [README.md](mirai-core-timpc/)   
 支持的功能： 
 - 消息收发：图片文字复合消息，图片消息
 - 群管功能：群员列表，禁言
 
-（目前不再更新，请关注安卓协议）
+（目前不再更新此协议，请关注下文的安卓协议）
 
 #### mirai-core-qqandroid 
 QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前还未完成。   
@@ -42,25 +45,31 @@ QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前还�
 - 进行中 图片上传和下载
 
 ## Use directly
-**直接使用Mirai(终端环境/网页面板（将来））.**  
-[Mirai-Console](https://github.com/mamoe/mirai/tree/master/mirai-console) 插件支持, 在终端中启动Mirai并获得机器人服务
+**直接使用 Mirai(终端环境/网页面板（将来））.**  
+[Mirai-Console](https://github.com/mamoe/mirai/tree/master/mirai-console) 插件支持, 在终端中启动 Mirai 并获得机器人服务  
+本模块还未完善。
 
 ## Use as a library
-**mirai-core 为独立设计, 可以作为库内置于您的任意 Java/Android 项目中使用.**  
-Mirai 只上传在 `jcenter`, 因此请确保在 `build.gradle` 添加 `jcenter()` 仓库  
+**mirai-core 为独立设计, 可以作为库内置于任意 Java(JVM)/Android 项目中使用.**   
+
+### Gradle
+Mirai 只发布在 `jcenter`, 因此请确保在 `build.gradle` 添加 `jcenter()` 仓库：  
 ```kotlin
 repositories{
   jcenter()
 }
 ```
-若您需要使用在跨平台项目, 您需要对各个目标平台添加不同的依赖.  
-**若您只需要使用在单一平台, 则只需要添加一项该平台的依赖. 如只在JVM运行则只需要`-jvm`的依赖**  
+若您需要使用在跨平台项目, 则要对各个目标平台添加不同的依赖，这与 kotlin 相关跨平台库的依赖是类似的。   
+**若您只需要使用在单一平台, 则只需要添加一项该平台的依赖. 如只在 JVM 运行则只需要`-jvm`的依赖**  
 
-您需要将 `VERSION` 替换为最新的版本(如 `0.10.6`):
+请将 `VERSION` 替换为最新的版本(如 `0.10.6`):
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
-现在 Mirai 只支持 TIM PC 协议.  QQ Android 协议正在开发中.
+**注意：**
+Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。  
+只添加 API 模块将无法正常工作。  
+现在只推荐使用 TIMPC 协议，请参照下文选择对应目标平台的依赖添加。
 
 **common**
 ```kotlin
@@ -90,7 +99,7 @@ JVM 上需 120M-150M 内存
 您的 star 是对我们最大的鼓励(点击项目右上角);  
 
 ## Wiki
-在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助，如 API 示例。
+在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助，**如 API 示例**（可能过时，待 QQ Android 协议完成后会重写）。
 
 ## Try
 
@@ -110,6 +119,8 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 }
 ```
 
+我们也考虑到了 Java 兼容的问题，这正在计划中，但不是高优先的。
+
 1. Clone
 2. Import as Gradle project
 3. 运行 Demo 程序: [mirai-demo](#mirai-demo) 示例和演示程序
@@ -119,6 +130,7 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 
 - Kotlin 1.3.61 
 - JDK 8 (required)
+- JDK 11（for protocol tools, optional）
 - Android SDK 29 (for Android target, optional)
 
 #### Libraries used
@@ -144,5 +156,5 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 - (见 LICENSE 第 4 节) 您可以免费或收费地传递这个项目的源代码或目标代码(即编译结果), **但前提是提供明显的版权声明** (您需要标注本 `GitHub` 项目地址)
 
 ## Acknowledgement
-特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 提供的免费 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 授权  
+特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
