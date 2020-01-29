@@ -166,7 +166,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                         println("  got new protocolVersion=$it")
                     }
                     val commandId = readUShort().toInt()
-                    println("  commandId=${commandId}")
+                    println("  commandId=0x${commandId.toShort().toUHexString()}")
                     readUShort().toInt().takeIf { it != 1 }?.let {
                         println("  got new const0=$it")
                     }
@@ -237,7 +237,9 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                             try {
                                 discardExact(4)
                                 readTLVMap()[0x106]
-                                    ?.also { DebugLogger.info("找到了 0x106") }?.decryptBy(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray())?.read {
+                                    ?.also { DebugLogger.info("找到了 0x106") }
+                                    ?.decryptBy(passwordMd5 + ByteArray(4) + uin.toInt().toByteArray())
+                                    ?.read {
                                         discardExact(2 + 4 * 4 + 8 + 4 + 4 + 1 + 16)
                                         tgtgtKey = readBytes(16)
                                         DebugLogger.info("获取 tgtgtKey=${tgtgtKey.toUHexString()}")
@@ -323,7 +325,7 @@ fun ByteReadPacket.decodeSso() {
     println("  unknownHex=" + readBytes(12).toUHexString())
     println("  extraData=" + readBytes(readInt() - 4).toUHexString())
     val commandName = readBytes(readInt() - 4).encodeToString()
-    PacketLogger.info("  commandName=" + commandName)
+    PacketLogger.warning("  commandName=$commandName")
     ("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
     ("  imei=" + readBytes(readInt() - 4).toUHexString())
     ("  0 bytes=" + readBytes(readInt() - 4).toUHexString())
