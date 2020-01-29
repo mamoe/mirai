@@ -59,15 +59,16 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
             writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
-                    writeShort(7) // subCommand
-                    writeShort(7) // count of TLVs, probably ignored by server?TODO
+                    writeShort(8) // subCommand
+                    writeShort(6) // count of TLVs, probably ignored by server?TODO
                     t8(2052)
                     t104(client.t104)
                     t116(150470524, 66560)
                     t174(t174)
-                    t17c(phoneNumber.toByteArray())
-                    t401(md5(client.device.guid + "1234567890123456".toByteArray() + t402))
-                    t19e(0)//==tlv408
+                    t17a(9)
+                    t197(byteArrayOf(0.toByte()))
+                    //t401(md5(client.device.guid + "12 34567890123456".toByteArray() + t402))
+                    //t19e(0)//==tlv408
                 }
             }
         }

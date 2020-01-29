@@ -68,22 +68,38 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
         val flag3 = readByte().toInt()
         check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
 
+<<<<<<< Updated upstream
         val uinAccount = readString(readInt() - 4)//uin
+=======
+        println("uinAccount=" + readString(readInt() - 4))//uin
+>>>>>>> Stashed changes
 
         //debugPrint("remaining")
 
         (if (flag2 == 2) {
+<<<<<<< Updated upstream
             //PacketLogger.verbose("SSO, 尝试使用 16 zero 解密.")
+=======
+            PacketLogger.verbose("SSO, 尝试使用 16 zero 解密.")
+>>>>>>> Stashed changes
             kotlin.runCatching {
                 decryptBy(DECRYPTER_16_ZERO).also { PacketLogger.verbose("成功使用 16 zero 解密") }
             }
         } else {
+<<<<<<< Updated upstream
             //PacketLogger.verbose("Uni, 尝试使用 d2Key 解密.")
+=======
+            PacketLogger.verbose("Uni, 尝试使用 d2Key 解密.")
+>>>>>>> Stashed changes
             kotlin.runCatching {
                 decryptBy(D2Key).also { PacketLogger.verbose("成功使用 d2Key 解密") }
             }
         }).getOrElse {
+<<<<<<< Updated upstream
             PacketLogger.verbose("解密失败, 尝试其他各种key")
+=======
+            PacketLogger.verbose("失败, 尝试其他各种key")
+>>>>>>> Stashed changes
             this.readBytes().tryDecryptOrNull()?.toReadPacket()
         }?.debugPrint("sso/uni body=")?.let {
             if (flag1 == 0x0A) {
@@ -95,7 +111,11 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
             val bytes = it.data.readBytes()
             if (flag2 == 2 && it.packetFactory != null) {
                 PacketLogger.debug("Oicq Reuqest= " + bytes.toUHexString())
+<<<<<<< Updated upstream
                 try {
+=======
+                try{
+>>>>>>> Stashed changes
                     bytes.toReadPacket().parseOicqResponse {
                         if (it.packetFactory.commandName == "wtlogin.login") {
                             DebugLogger.info("服务器发来了 wtlogin.login. 正在解析 key")
@@ -129,7 +149,11 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
                             }
                         }
                     }
+<<<<<<< Updated upstream
                 } catch (e: Exception) {
+=======
+                }catch (e: Exception){
+>>>>>>> Stashed changes
                     e.printStackTrace()
                 }
             } else // always discarded.  00 1C
@@ -165,9 +189,15 @@ private fun ByteReadPacket.parseOicqResponse(body: ByteReadPacket.() -> Unit) {
         val packet = when (encryptionMethod) {
             4 -> { // peer public key, ECDH
                 var data = this.decryptBy(shareKeyCalculatedByConstPubKey, 0, this.readRemaining - 1)
+<<<<<<< Updated upstream
                 data.read {
                     println("第一层解密: ${data.toUHexString()}")
                     val peerShareKey = ECDH.calculateShareKey(loadPrivateKey(ecdhPrivateKeyS), readUShortLVByteArray().adjustToPublicKey())
+=======
+                data.read{
+                println("第一层解密: ${data.toUHexString()}")
+                val peerShareKey = ECDH.calculateShareKey(loadPrivateKey(ecdhPrivateKeyS), readUShortLVByteArray().adjustToPublicKey())
+>>>>>>> Stashed changes
                     body(this.decryptBy(peerShareKey))
                 }
             }
