@@ -7,8 +7,10 @@ import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.io.core.copyTo
+import kotlinx.io.pool.useInstance
 import kotlinx.io.streams.asInput
 import kotlinx.io.streams.asOutput
+import net.mamoe.mirai.utils.io.ByteArrayPool
 import java.io.*
 import java.net.InetAddress
 import java.security.MessageDigest
@@ -56,18 +58,23 @@ actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
 actual val Http: HttpClient get() = HttpClient(CIO)
 
-actual fun ByteArray.unzip(): ByteArray {
+actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
+    this.checkOffsetAndLength(offset, length)
+    if (length == 0) return ByteArray(0)
+
     val inflater = Inflater()
     inflater.reset()
-    val input = this
-    val output = ByteArrayOutputStream()
-    inflater.setInput(input)
-    val buffer = ByteArray(128)
-    while (!inflater.finished()) {
-        output.write(buffer, 0, inflater.inflate(buffer))
+    ByteArrayOutputStream().use { output ->
+        inflater.setInput(this, offset, length)
+        ByteArrayPool.useInstance {
+            while (!inflater.finished()) {
+                output.write(it, 0, inflater.inflate(it))
+            }
+        }
+
+        inflater.end()
+        return output.toByteArray()
     }
-    inflater.end()
-    return output.toByteArray()
 }
 
 actual fun newCoroutineDispatcher(threadCount: Int): CoroutineDispatcher {

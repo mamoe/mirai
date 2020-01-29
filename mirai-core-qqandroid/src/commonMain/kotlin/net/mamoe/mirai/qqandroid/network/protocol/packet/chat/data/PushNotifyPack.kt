@@ -6,8 +6,9 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
+@Suppress("ArrayInDataClass")
 @Serializable
-internal class RequestPushNotify(
+internal data class RequestPushNotify(
     @SerialId(0) val uin: Long = 0L,
     @SerialId(1) val ctype: Byte = 0,
     @SerialId(2) val strService: String?,

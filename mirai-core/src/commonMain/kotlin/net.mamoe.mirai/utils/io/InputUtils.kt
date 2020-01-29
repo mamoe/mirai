@@ -38,6 +38,14 @@ fun ByteReadPacket.transferTo(outputStream: OutputStream) {
     }
 }
 
+fun <R> ByteReadPacket.useBytes(
+    n: Int = remaining.toInt(),//not that safe but adequate
+    block: (data: ByteArray, length: Int) -> R
+): R = ByteArrayPool.useInstance {
+    this.readFully(it, 0, n)
+    block(it, n)
+}
+
 fun ByteReadPacket.readRemainingBytes(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteArray = ByteArray(n).also { readAvailable(it, 0, n) }
@@ -79,11 +87,11 @@ private inline fun <R> inline(block: () -> R): R = block()
 typealias TlvMap = MutableMap<Int, ByteArray>
 
 fun TlvMap.getOrFail(tag: Int): ByteArray {
-    return this[tag]?: error("cannot find tlv 0x${tag.toUHexString("")}($tag)")
+    return this[tag] ?: error("cannot find tlv 0x${tag.toUHexString("")}($tag)")
 }
 
 inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteArray {
-    return this[tag]?: error(lazyMessage(tag))
+    return this[tag] ?: error(lazyMessage(tag))
 }
 
 fun Input.readTLVMap(tagSize: Int = 2): TlvMap = readTLVMap(true, tagSize)

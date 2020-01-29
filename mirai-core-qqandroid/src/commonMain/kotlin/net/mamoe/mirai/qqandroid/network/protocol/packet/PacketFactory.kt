@@ -14,9 +14,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacke
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
-import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.unzip
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.jvm.JvmName
@@ -126,6 +126,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                 }?.let {
                     // 处理内层真实的包
                     if (it.packetFactory == null) {
+                        PacketLogger.warning("找不到 PacketFactory")
+                        PacketLogger.verbose("传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}")
                         return
                     }
 
@@ -147,7 +149,6 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                     PacketLogger.error("任何key都无法解密: ${data.take(size).toUHexString()}")
                     return
                 }
-
             }
         }
     }
@@ -183,7 +184,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket {
         val commandName: String
         val ssoSequenceId: Int
-
+        val dataCompressed: Int
         // head
         input.readIoBuffer(input.readInt() - 4).withUse {
             ssoSequenceId = readInt()
@@ -196,26 +197,25 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             val unknown = readBytes(readInt() - 4)
             if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 
-            readInt().let {
-                if (it != 0) {
-                    DebugLogger.debug("!! 得到一个原本是 0, 现在是 ${it.contentToString()}")
-                    if (it == 1){
-                        PacketLogger.info("无法处理的数据 = ${input.readBytes().toUHexString()}")
-                        return IncomingPacket(null, ssoSequenceId, input)
-                    }
-                }
+            dataCompressed = readInt()
+        }
+
+        val packet = when (dataCompressed) {
+            0 -> input
+            1 -> {
+                input.discardExact(4)
+                input.useBytes { data, length ->
+                    data.unzip(length = length)
+                }.toReadPacket()
             }
+            else -> error("unknown dataCompressed flag: $dataCompressed")
         }
 
         // body
         val packetFactory = findPacketFactory(commandName)
 
-        bot.logger.verbose(commandName)
-        if (packetFactory == null) {
-            bot.logger.warning("找不到包 PacketFactory")
-            PacketLogger.verbose("传递给 PacketFactory 的数据 = ${input.readBytes().toUHexString()}")
-        }
-        return IncomingPacket(packetFactory, ssoSequenceId, input)
+        bot.logger.info("Received: $commandName")
+        return IncomingPacket(packetFactory, ssoSequenceId, packet)
     }
 
     private suspend fun <T : Packet> ByteReadPacket.parseOicqResponse(
@@ -224,14 +224,13 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
         ssoSequenceId: Int,
         consumer: PacketConsumer<T>
     ) {
-        val qq: Long
         readIoBuffer(readInt() - 4).withUse {
             check(readByte().toInt() == 2)
             this.discardExact(2) // 27 + 2 + body.size
             this.discardExact(2) // const, =8001
             this.readUShort() // commandId
             this.readShort() // const, =0x0001
-            qq = this.readUInt().toLong()
+            this.readUInt().toLong() // qq
             val encryptionMethod = this.readUShort().toInt()
 
             this.discardExact(1) // const = 0
