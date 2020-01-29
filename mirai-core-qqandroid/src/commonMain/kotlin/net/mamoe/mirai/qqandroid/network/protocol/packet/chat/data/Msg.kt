@@ -622,7 +622,7 @@ class ImMsgBody : ProtoBuf {
 
     @Serializable
     class NotOnlineImage(
-        @SerialId(1) val filePath: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(1) val filePath: String = "",
         @SerialId(2) val fileLen: Int = 0,
         @SerialId(3) val downloadPath: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
@@ -631,7 +631,7 @@ class ImMsgBody : ProtoBuf {
         @SerialId(7) val picMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(8) val picHeight: Int = 0,
         @SerialId(9) val picWidth: Int = 0,
-        @SerialId(10) val resId: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(10) val resId: String = "",
         @SerialId(11) val flag: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(12) val thumbUrl: String = "",
         @SerialId(13) val original: Int = 0,
