@@ -231,7 +231,8 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                         }
                     }
 
-                    decrypted.debugPrint("Real body").toReadPacket().apply {
+                    PacketLogger.info("Real body=" + decrypted.toUHexString())
+                    decrypted.toReadPacket().apply {
                         if (commandId == 0x0810) {
                             DebugLogger.info("发送 login!! 正在获取 tgtgtKey")
                             try {
