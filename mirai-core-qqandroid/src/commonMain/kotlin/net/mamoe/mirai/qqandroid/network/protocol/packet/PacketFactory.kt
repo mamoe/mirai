@@ -3,6 +3,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
@@ -33,9 +34,14 @@ internal abstract class PacketFactory<out TPacket : Packet>(
     val commandName: String
 ) {
     /**
-     * **解码**服务器的回复数据包
+     * **解码**服务器的回复数据包. 返回的包若是 [Subscribable], 则会 broadcast.
      */
     abstract suspend fun ByteReadPacket.decode(bot: QQAndroidBot): TPacket
+
+    /**
+     * 可选的处理这个包. 可以在这里面发新的包.
+     */
+    open suspend fun @UnsafeVariance TPacket.handle(bot: QQAndroidBot) {}
 }
 
 @JvmName("decode0")
@@ -43,7 +49,7 @@ private suspend inline fun <P : Packet> PacketFactory<P>.decode(bot: QQAndroidBo
 
 internal val DECRYPTER_16_ZERO = ByteArray(16)
 
-internal typealias PacketConsumer = suspend (packet: Packet, commandName: String, ssoSequenceId: Int) -> Unit
+internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>, packet: T, commandName: String, ssoSequenceId: Int) -> Unit
 
 @PublishedApi
 internal val PacketLogger: MiraiLogger = DefaultLogger("Packet")
@@ -66,7 +72,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
      * full packet without length
      */
     // do not inline. Exceptions thrown will not be reported correctly
-    suspend fun parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer) {
+    @Suppress("UNCHECKED_CAST")
+    suspend fun <T : Packet> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) {
         rawInput.readBytes().let {
             PacketLogger.verbose("开始处理包: ${it.toUHexString()}")
             it.toReadPacket()
@@ -124,12 +131,13 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                         1 ->//it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
                         {
                             consumer(
+                                it.packetFactory as PacketFactory<T>,
                                 it.packetFactory.run { decode(bot, it.data) },
                                 it.packetFactory.commandName,
                                 it.sequenceId
                             )
                         }
-                        2 -> it.data.parseOicqResponse(bot, it.packetFactory, it.sequenceId, consumer)
+                        2 -> it.data.parseOicqResponse(bot, it.packetFactory as PacketFactory<T>, it.sequenceId, consumer)
                         else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
                     }
                 } ?: inline {
@@ -200,7 +208,12 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
         return IncomingPacket(packetFactory, ssoSequenceId, input)
     }
 
-    private suspend fun ByteReadPacket.parseOicqResponse(bot: QQAndroidBot, packetFactory: PacketFactory<*>, ssoSequenceId: Int, consumer: PacketConsumer) {
+    private suspend fun <T : Packet> ByteReadPacket.parseOicqResponse(
+        bot: QQAndroidBot,
+        packetFactory: PacketFactory<T>,
+        ssoSequenceId: Int,
+        consumer: PacketConsumer<T>
+    ) {
         val qq: Long
         readIoBuffer(readInt() - 4).withUse {
             check(readByte().toInt() == 2)
@@ -243,14 +256,19 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
                 else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
             }
 
-            consumer(packet, packetFactory.commandName, ssoSequenceId)
+            consumer(packetFactory, packet, packetFactory.commandName, ssoSequenceId)
         }
     }
 
-    private suspend fun ByteReadPacket.parseUniResponse(bot: QQAndroidBot, packetFactory: PacketFactory<*>, ssoSequenceId: Int, consumer: PacketConsumer) {
+    private suspend fun ByteReadPacket.parseUniResponse(
+        bot: QQAndroidBot,
+        packetFactory: PacketFactory<*>,
+        ssoSequenceId: Int,
+        consumer: PacketConsumer<Packet>
+    ) {
         val uni = readBytes(readInt() - 4).loadAs(RequestPacket.serializer())
         PacketLogger.verbose(uni.toString())
-       /// consumer(packetFactory.decode(bot, uni.sBuffer.toReadPacket()), uni.sServantName + "." + uni.sFuncName, ssoSequenceId)
+        /// consumer(packetFactory.decode(bot, uni.sBuffer.toReadPacket()), uni.sServantName + "." + uni.sFuncName, ssoSequenceId)
     }
 }
 

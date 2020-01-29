@@ -13,6 +13,7 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
@@ -20,6 +21,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 
+@Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(MiraiInternalAPI::class)
 internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
@@ -145,17 +147,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      */
     suspend fun parsePacket(input: Input) {
         try {
-            KnownPacketFactories.parseIncomingPacket(bot, input) { packet: Packet, commandName: String, sequenceId: Int ->
-                if (PacketReceivedEvent(packet).broadcast().cancelled) {
-                    return@parseIncomingPacket
-                }
-
-                // pass to listeners (attached by sendAndExpect).
+            KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<Packet>, packet: Packet, commandName: String, sequenceId: Int ->
+                // highest priority: pass to listeners (attached by sendAndExpect).
                 packetListeners.forEach { listener ->
                     if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
                         listener.complete(packet)
                     }
                 }
+
+                // check top-level cancelling
+                if (PacketReceivedEvent(packet).broadcast().cancelled) {
+                    return@parseIncomingPacket
+                }
+
 
                 // broadcast
                 if (packet is Subscribable) {
@@ -167,6 +171,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                     if (packet is Cancellable && packet.cancelled) return@parseIncomingPacket
                 }
+
+                packetFactory.run { packet.handle(bot) }
 
                 bot.logger.info(packet)
             }
