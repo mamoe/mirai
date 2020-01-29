@@ -13,6 +13,7 @@ import kotlin.coroutines.CoroutineContext
 /*
  * 泛型 N 不需要向外(接口)暴露.
  */
+@UseExperimental(MiraiExperimentalAPI::class)
 @MiraiInternalAPI
 abstract class BotImpl<N : BotNetworkHandler> constructor(
     account: BotAccount,
@@ -25,8 +26,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     @Suppress("CanBePrimaryConstructorProperty") // for logger
     final override val account: BotAccount = account
-    @UseExperimental(MiraiExperimentalAPI::class)
-    final override val uin: Long
+    override val uin: Long
         get() = account.id
     final override val logger: MiraiLogger = configuration.logger ?: DefaultLogger("Bot($uin)").also { configuration.logger = it }
 
