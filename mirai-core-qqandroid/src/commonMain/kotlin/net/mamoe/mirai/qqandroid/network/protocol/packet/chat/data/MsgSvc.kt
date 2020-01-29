@@ -21,7 +21,7 @@ class MsgSvc : ProtoBuf {
         @SerialId(5) val uinPairMsgs: List<MsgComm.UinPairMsg>? = null,
         @SerialId(6) val bindUin: Long = 0L,
         @SerialId(7) val msgRspType: Int = 0,
-        @SerialId(8) val pubaccountCookie: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(8) val pubAccountCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(9) val isPartialSync: Boolean = false,
         @SerialId(10) val msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
