@@ -8,9 +8,9 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion2
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion3
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
 import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.read

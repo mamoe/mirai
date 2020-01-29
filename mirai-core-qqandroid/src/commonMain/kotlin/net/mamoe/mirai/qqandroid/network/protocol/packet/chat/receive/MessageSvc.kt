@@ -8,8 +8,6 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.io.readRemainingAsProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
-import net.mamoe.mirai.qqandroid.io.serialization.loadAs
-import net.mamoe.mirai.qqandroid.io.serialization.readRemainingAsJceStruct
 import net.mamoe.mirai.qqandroid.io.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
@@ -18,11 +16,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion2
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.toReadPacket
 

@@ -7,10 +7,10 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataStructSvcReqRegister
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestDataVersion3
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.SvcReqRegister
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataStructSvcReqRegister
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.SvcReqRegister
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket

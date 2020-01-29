@@ -6,11 +6,11 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
@@ -79,80 +79,74 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
      */
     // do not inline. Exceptions thrown will not be reported correctly
     @Suppress("UNCHECKED_CAST")
-    suspend fun <T : Packet> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) {
-        rawInput.readBytes().let {
-            PacketLogger.verbose("开始处理包: ${it.toUHexString()}")
-            it.toReadPacket()
-        }.apply {
-            require(remaining < Int.MAX_VALUE) { "rawInput is too long" }
-            // login
-            val flag1 = readInt()
+    suspend fun <T : Packet> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) = with(rawInput) {
+        // login
+        val flag1 = readInt()
 
-            PacketLogger.verbose("flag1(0A/0B) = ${flag1.toUByte().toUHexString()}")
-            // 00 00 05 30
-            // 00 00 00 0A // flag 1
-            // 01 // packet type. 02: sso, 01: uni
-            //
-            // 00 00 00 00 0E 31 39 39 34 37 30 31 30 32 31 40 3C 63 DC A2 8F FC E7 09 66 62 11 A3 5A B6 AB DC 6E A1 CA CF E2 0A 6F A8 6D 36 64 4E 22 4B A9 8A ED 07 7A 0A 9E F3 C7 7B 72 EF C1 C7 6E 9A 28 27 10 F8 2A 7F 37 49 B6 48 35 52 E9 CF 2A B5 F3 26 90 33 68 9B 5A 04 2A 8B F5 78 13 82 FE 3C 13 C4 F9 38 39 0E 02 4C 3D 91 0A 2A 94 3F 9F A6 52 B9 14 89 C5 D9 57 0F 96 F8 0E 7D 32 81 8E 10 DB C0 CA BE C7 3F EC D0 B1 F0 9D A2 4B 9F B3 8D E0 EB 1F 42 52 EA 5E 9E 76 E2 F4 13 9D 0E 7E 6D 0A E3 56 C3 EE 8A 80 24 DE FB 08 82 FB B7 AF CE 2A 69 16 E3 C3 79 5C C7 CD 44 BA AA 08 A2 51 0B 43 31 69 A1 12 D1 AE 48 15 AE 76 E9 AB BB D2 E0 16 03 EB 2D 47 A4 61 24 65 5E CC C5 03 B3 96 3E 7A 39 90 3D DB 63 56 2B 23 85 CE 5F 9E 04 20 45 31 79 7B BF 78 33 77 34 C1 8E 83 B3 50 88 2A 01 C0 C4 E4 BF 2D 0D B9 37 32 AB E0 BB 82 36 B1 4E 51 4B F7 07 6A 12 3E 79 EA 93 3D BD 06 4E AE 1C 49 82 17 14 00 09 59 40 A6 A9 01 56 1A 23 86 A8 33 B3 9A 70 7B 3A C1 F9 31 03 FD DB 4B 5C 7B F9 BB 43 94 65 A0 1C DA 2B 85 AA AD 7B 79 42 F2 EB 25 5E F0 DA B7 E7 AD 4B 25 02 36 BB 78 5F 83 7F F7 78 F0 99 D2 B5 A3 0C 4A 7F 0E B0 A6 C4 99 F7 9E 0B C6 4D FC F5 8D 6B 5F 35 27 36 D3 DB D0 46 C7 10 76 7D 96 91 48 EA 1C B2 B7 D7 2F D2 88 A8 4C 87 D6 A9 40 33 4C 76 C5 48 3E 32 4D C1 C3 7F 5C D9 B3 22 00 88 BE 04 82 64 A9 73 AA E1 65 1A EF 49 B4 54 74 53 FF 75 B6 E9 57 1B 89 2D 6F 2A 6A CE 23 BF 41 CB 55 B3 A0 53 87 AD A0 22 EE 6B 3F 4A 97 23 36 BF 7E 08 2D 0A 9E 2E 4B F2 2E 00 59 EC F1 21 34 45 75 DB 6B F2 EC 65 24 30 69 50 CC 45 78 00 AF C8 F6 3D 8E 03 60 CF CA A1 88 14 18 82 6F 56 58 D0 BC E0 48 FD AA 86 63 CA C1 01 63 07 16 4A 79 79 17 9D 1F E2 40 4B B6 77 6E 44 84 DE BE 02 4C 33 7A F5 2F 93 21 3E 17 62 38 81 95 E6 84 8B 7C C8 7B E2 23 FB 12 4F E8 42 5F 1D 48 92 84 B1 45 FF 69 97 3C 30 C9 09 E8 84 E8 07 0E 17 D4 A1 CC 35 D6 FE 7B D2 9A 44 8B 17 BF E7 D6 98 1D 98 D7 30 BE 55 19 A9 F4 D6 0D E8 18 80 35 85 B6 AB B9 20 32 C7 ED C6 AD A7 AE 19 48 B7 17 02 B3 45 C3 A2 B9 C9 B7 58 B5 8B 4C AF 52 AD A1 E1 62 45 AB 58 26 67 20 C7 64 AA DA 7E F3 70 8B C2 92 69 E3 3E 3E 6F 39 6F 2B 35 35 0F 00 FC 52 B5 5C 5B 73 FE F6 F5 10 55 36 7C 9A 84 FC A6 23 29 4A 75 49 7C 13 1C CA 54 A2 A2 FA 2A 63 A5 4C 9A B4 27 E8 5F 9F 23 96 B2 E7 AA E6 8B E0 E2 6A 75 8A B2 F4 E4 7E 09 E8 22 70 2A 42 8B E3 DC AD E8 A8 A2 92 71 6B A2 12 78 E1 DA CC 70 57 67 F5 B4 52 F3 B4 4C 17 AB 05 33 DA 6E 47 52 C5 B2 B7 9A D2 A8 BC 44 64 D3 26 1A 6B C6 C5 36 1C 2B 8F BD B7 27 91 3E C0 C2 FC 03 41 FE 02 D3 4B B1 E5 5F 5B 50 05 29 BD 3A 64 85 E3 8C FB 11 F2 1D 94 DB D7 78 AF AD 77 A3 9C D4 39 5D 8B EA DF 9D 08 CA 92 7C 5F D5 17 49 0E FA A1 21 1C 9F C3 88 1A DC E7 D8 82 80 85 86 32 99 15 E4 89 BA 91 2B 4B FB 87 EC 44 B4 D9 83 CC 79 77 A4 A0 D0 50 E3 4F 00 E7 DA DA 79 38 1E D8 04 86 16 CD 25 BE BA 76 E4 8C F9 86 91 69 6E C7 A0 EF 6B 44 2B C9 C3 DC 8D 2D 65 60 7A F4 37 02 D4 8F 38 D0 D5 20 30 DE A5 F5 A8 75 C7 EE 0B 0F 1B 88 C2 8A CC 6F 70 1D E4 D8 4E DD 04 A5 5B B8 04 B1 29 42 08 92 19 78 E2 26 EB 6B 07 49 DE 8A AF A3 41 72 1D E2 3C 62 0F 7E 7B DE A3 0F 71 8C 5D EC E9 96 96 45 A9 39 33 8A 87 C9 93 CE 3B 6D 75 50 21 1F 4C 03 E9 A7 AD 03 0F 5E A9 EE 60 CC EA 05 4F DF E1 B1 13 A6 7D C7 B9 37 58 53 3B 06 1A AD 98 E5 06 D9 74 2A B1 96 75 DE A6 B7 89 25 53 2A A3 07 B6 70 C6 86 1F 59 EB 53 08 57 6E 86 D7 A1 5C DB 26 D7 86 3E 97 BB FD 6A 0A 4C E1 81 B9 4C C1 A0 49 89 57 29 E0 CD 79 6F 0A 46 C1 C6 62 75 49 C6 9A B9 22 75 EE 10 C7 56 E6 D5 DE 4D EC 89 5A 6F AC 60 0F B3 CC 37 9E F2 BE 49 A7 77 3C 05 AE 92 66 C8 BE 16 E5 35 17 24 18 A5 CE B8 BB AE CD 88 DE 01 53 40 84 E0 06 C6 77 96 09 DF D7 76 3B CA C9 B5 B2 91 95 07 54 6F 51 EB 12 58 16 8A AF C3 E3 B9 4A EC 25 A5 D1 19 59 72 F5 E3 4F 7C 40 B2 D0 4E 9F 50 13 FB 86 C3 6A 88 32 5B 67 EC 4F 0E 0B 31 F8 0C 02 6C CE 8D 50 55 A2 B3 57 73 7C 78 D3 43 1F 48 33 51 E7 0A D0 6D 46 71 4A AD 66 50 F9 96 11 4F A5 5B 3C A0 3E 46 D2 CB 3B A1 03 84 9C 8E 4E 2D 83 69 2E 17 9B F8 36 63 F1 93 CA F9 32 57 2B AB 4E 14 A3 5A F1 39 B0 3F 0F 99 CC 9B FB 7E BC 0A AA C9 65 3C C8 B4 B0 1F
-            val flag2 = readByte().toInt()
-            PacketLogger.verbose("包类型(flag2) = $flag2. (可能是 ${if (flag2 == 2) "OicqRequest" else "Uni"})")
+        PacketLogger.verbose("flag1(0A/0B) = ${flag1.toUByte().toUHexString()}")
+        // 00 00 05 30
+        // 00 00 00 0A // flag 1
+        // 01 // packet type. 02: sso, 01: uni
+        //
+        // 00 00 00 00 0E 31 39 39 34 37 30 31 30 32 31 40 3C 63 DC A2 8F FC E7 09 66 62 11 A3 5A B6 AB DC 6E A1 CA CF E2 0A 6F A8 6D 36 64 4E 22 4B A9 8A ED 07 7A 0A 9E F3 C7 7B 72 EF C1 C7 6E 9A 28 27 10 F8 2A 7F 37 49 B6 48 35 52 E9 CF 2A B5 F3 26 90 33 68 9B 5A 04 2A 8B F5 78 13 82 FE 3C 13 C4 F9 38 39 0E 02 4C 3D 91 0A 2A 94 3F 9F A6 52 B9 14 89 C5 D9 57 0F 96 F8 0E 7D 32 81 8E 10 DB C0 CA BE C7 3F EC D0 B1 F0 9D A2 4B 9F B3 8D E0 EB 1F 42 52 EA 5E 9E 76 E2 F4 13 9D 0E 7E 6D 0A E3 56 C3 EE 8A 80 24 DE FB 08 82 FB B7 AF CE 2A 69 16 E3 C3 79 5C C7 CD 44 BA AA 08 A2 51 0B 43 31 69 A1 12 D1 AE 48 15 AE 76 E9 AB BB D2 E0 16 03 EB 2D 47 A4 61 24 65 5E CC C5 03 B3 96 3E 7A 39 90 3D DB 63 56 2B 23 85 CE 5F 9E 04 20 45 31 79 7B BF 78 33 77 34 C1 8E 83 B3 50 88 2A 01 C0 C4 E4 BF 2D 0D B9 37 32 AB E0 BB 82 36 B1 4E 51 4B F7 07 6A 12 3E 79 EA 93 3D BD 06 4E AE 1C 49 82 17 14 00 09 59 40 A6 A9 01 56 1A 23 86 A8 33 B3 9A 70 7B 3A C1 F9 31 03 FD DB 4B 5C 7B F9 BB 43 94 65 A0 1C DA 2B 85 AA AD 7B 79 42 F2 EB 25 5E F0 DA B7 E7 AD 4B 25 02 36 BB 78 5F 83 7F F7 78 F0 99 D2 B5 A3 0C 4A 7F 0E B0 A6 C4 99 F7 9E 0B C6 4D FC F5 8D 6B 5F 35 27 36 D3 DB D0 46 C7 10 76 7D 96 91 48 EA 1C B2 B7 D7 2F D2 88 A8 4C 87 D6 A9 40 33 4C 76 C5 48 3E 32 4D C1 C3 7F 5C D9 B3 22 00 88 BE 04 82 64 A9 73 AA E1 65 1A EF 49 B4 54 74 53 FF 75 B6 E9 57 1B 89 2D 6F 2A 6A CE 23 BF 41 CB 55 B3 A0 53 87 AD A0 22 EE 6B 3F 4A 97 23 36 BF 7E 08 2D 0A 9E 2E 4B F2 2E 00 59 EC F1 21 34 45 75 DB 6B F2 EC 65 24 30 69 50 CC 45 78 00 AF C8 F6 3D 8E 03 60 CF CA A1 88 14 18 82 6F 56 58 D0 BC E0 48 FD AA 86 63 CA C1 01 63 07 16 4A 79 79 17 9D 1F E2 40 4B B6 77 6E 44 84 DE BE 02 4C 33 7A F5 2F 93 21 3E 17 62 38 81 95 E6 84 8B 7C C8 7B E2 23 FB 12 4F E8 42 5F 1D 48 92 84 B1 45 FF 69 97 3C 30 C9 09 E8 84 E8 07 0E 17 D4 A1 CC 35 D6 FE 7B D2 9A 44 8B 17 BF E7 D6 98 1D 98 D7 30 BE 55 19 A9 F4 D6 0D E8 18 80 35 85 B6 AB B9 20 32 C7 ED C6 AD A7 AE 19 48 B7 17 02 B3 45 C3 A2 B9 C9 B7 58 B5 8B 4C AF 52 AD A1 E1 62 45 AB 58 26 67 20 C7 64 AA DA 7E F3 70 8B C2 92 69 E3 3E 3E 6F 39 6F 2B 35 35 0F 00 FC 52 B5 5C 5B 73 FE F6 F5 10 55 36 7C 9A 84 FC A6 23 29 4A 75 49 7C 13 1C CA 54 A2 A2 FA 2A 63 A5 4C 9A B4 27 E8 5F 9F 23 96 B2 E7 AA E6 8B E0 E2 6A 75 8A B2 F4 E4 7E 09 E8 22 70 2A 42 8B E3 DC AD E8 A8 A2 92 71 6B A2 12 78 E1 DA CC 70 57 67 F5 B4 52 F3 B4 4C 17 AB 05 33 DA 6E 47 52 C5 B2 B7 9A D2 A8 BC 44 64 D3 26 1A 6B C6 C5 36 1C 2B 8F BD B7 27 91 3E C0 C2 FC 03 41 FE 02 D3 4B B1 E5 5F 5B 50 05 29 BD 3A 64 85 E3 8C FB 11 F2 1D 94 DB D7 78 AF AD 77 A3 9C D4 39 5D 8B EA DF 9D 08 CA 92 7C 5F D5 17 49 0E FA A1 21 1C 9F C3 88 1A DC E7 D8 82 80 85 86 32 99 15 E4 89 BA 91 2B 4B FB 87 EC 44 B4 D9 83 CC 79 77 A4 A0 D0 50 E3 4F 00 E7 DA DA 79 38 1E D8 04 86 16 CD 25 BE BA 76 E4 8C F9 86 91 69 6E C7 A0 EF 6B 44 2B C9 C3 DC 8D 2D 65 60 7A F4 37 02 D4 8F 38 D0 D5 20 30 DE A5 F5 A8 75 C7 EE 0B 0F 1B 88 C2 8A CC 6F 70 1D E4 D8 4E DD 04 A5 5B B8 04 B1 29 42 08 92 19 78 E2 26 EB 6B 07 49 DE 8A AF A3 41 72 1D E2 3C 62 0F 7E 7B DE A3 0F 71 8C 5D EC E9 96 96 45 A9 39 33 8A 87 C9 93 CE 3B 6D 75 50 21 1F 4C 03 E9 A7 AD 03 0F 5E A9 EE 60 CC EA 05 4F DF E1 B1 13 A6 7D C7 B9 37 58 53 3B 06 1A AD 98 E5 06 D9 74 2A B1 96 75 DE A6 B7 89 25 53 2A A3 07 B6 70 C6 86 1F 59 EB 53 08 57 6E 86 D7 A1 5C DB 26 D7 86 3E 97 BB FD 6A 0A 4C E1 81 B9 4C C1 A0 49 89 57 29 E0 CD 79 6F 0A 46 C1 C6 62 75 49 C6 9A B9 22 75 EE 10 C7 56 E6 D5 DE 4D EC 89 5A 6F AC 60 0F B3 CC 37 9E F2 BE 49 A7 77 3C 05 AE 92 66 C8 BE 16 E5 35 17 24 18 A5 CE B8 BB AE CD 88 DE 01 53 40 84 E0 06 C6 77 96 09 DF D7 76 3B CA C9 B5 B2 91 95 07 54 6F 51 EB 12 58 16 8A AF C3 E3 B9 4A EC 25 A5 D1 19 59 72 F5 E3 4F 7C 40 B2 D0 4E 9F 50 13 FB 86 C3 6A 88 32 5B 67 EC 4F 0E 0B 31 F8 0C 02 6C CE 8D 50 55 A2 B3 57 73 7C 78 D3 43 1F 48 33 51 E7 0A D0 6D 46 71 4A AD 66 50 F9 96 11 4F A5 5B 3C A0 3E 46 D2 CB 3B A1 03 84 9C 8E 4E 2D 83 69 2E 17 9B F8 36 63 F1 93 CA F9 32 57 2B AB 4E 14 A3 5A F1 39 B0 3F 0F 99 CC 9B FB 7E BC 0A AA C9 65 3C C8 B4 B0 1F
+        val flag2 = readByte().toInt()
+        PacketLogger.verbose("包类型(flag2) = $flag2. (可能是 ${if (flag2 == 2) "OicqRequest" else "Uni"})")
 
-            val flag3 = readByte().toInt()
-            check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
+        val flag3 = readByte().toInt()
+        check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
 
-            readString(readInt() - 4)// uinAccount
+        readString(readInt() - 4)// uinAccount
 
-            //debugPrint("remaining")
+        //debugPrint("remaining")
 
-            ByteArrayPool.useInstance { data ->
-                val size = this.readAvailable(data)
+        ByteArrayPool.useInstance { data ->
+            val size = this.readAvailable(data)
 
-                kotlin.runCatching {
-                    // 快速解密
-                    if (flag2 == 2) {
-                        PacketLogger.verbose("SSO, 尝试使用 16 zero 解密.")
-                        data.decryptBy(DECRYPTER_16_ZERO, size).also { PacketLogger.verbose("成功使用 16 zero 解密") }
-                    } else {
-                        PacketLogger.verbose("Uni, 尝试使用 d2Key 解密.")
-                        data.decryptBy(bot.client.wLoginSigInfo.d2Key, size).also { PacketLogger.verbose("成功使用 d2Key 解密") }
-                    }
-                }.getOrElse {
-                    // 慢速解密
-                    PacketLogger.verbose("失败, 尝试其他各种key")
-                    bot.client.tryDecryptOrNull(data, size) { it }
-                }?.toReadPacket()?.let { decryptedData ->
-                    // 解析外层包装
-                    when (flag1) {
-                        0x0A -> parseSsoFrame(bot, decryptedData)
-                        0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
-                        else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
-                    }
-                }?.let {
-                    // 处理内层真实的包
-                    if (it.packetFactory == null) {
-                        PacketLogger.warning("找不到 PacketFactory")
-                        PacketLogger.verbose("传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}")
-                        return
-                    }
-
-                    when (flag2) {
-                        1 ->//it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
-                        {
-                            consumer(
-                                it.packetFactory as PacketFactory<T>,
-                                it.packetFactory.run { decode(bot, it.data) },
-                                it.packetFactory.commandName,
-                                it.sequenceId
-                            )
-                        }
-                        2 -> it.data.parseOicqResponse(bot, it.packetFactory as PacketFactory<T>, it.sequenceId, consumer)
-                        else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
-                    }
-                } ?: inline {
-                    // 无法解析
-                    PacketLogger.error("任何key都无法解密: ${data.take(size).toUHexString()}")
+            kotlin.runCatching {
+                // 快速解密
+                if (flag2 == 2) {
+                    PacketLogger.verbose("SSO, 尝试使用 16 zero 解密.")
+                    data.decryptBy(DECRYPTER_16_ZERO, size).also { PacketLogger.verbose("成功使用 16 zero 解密") }
+                } else {
+                    PacketLogger.verbose("Uni, 尝试使用 d2Key 解密.")
+                    data.decryptBy(bot.client.wLoginSigInfo.d2Key, size).also { PacketLogger.verbose("成功使用 d2Key 解密") }
+                }
+            }.getOrElse {
+                // 慢速解密
+                PacketLogger.verbose("失败, 尝试其他各种key")
+                bot.client.tryDecryptOrNull(data, size) { it }
+            }?.toReadPacket()?.let { decryptedData ->
+                // 解析外层包装
+                when (flag1) {
+                    0x0A -> parseSsoFrame(bot, decryptedData)
+                    0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                    else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
+                }
+            }?.let {
+                // 处理内层真实的包
+                if (it.packetFactory == null) {
+                    PacketLogger.warning("找不到 PacketFactory")
+                    PacketLogger.verbose("传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}")
                     return
                 }
+
+                when (flag2) {
+                    1 ->//it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
+                    {
+                        consumer(
+                            it.packetFactory as PacketFactory<T>,
+                            it.packetFactory.run { decode(bot, it.data) },
+                            it.packetFactory.commandName,
+                            it.sequenceId
+                        )
+                    }
+                    2 -> it.data.parseOicqResponse(bot, it.packetFactory as PacketFactory<T>, it.sequenceId, consumer)
+                    else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
+                }
+            } ?: inline {
+                // 无法解析
+                PacketLogger.error("任何key都无法解密: ${data.take(size).toUHexString()}")
+                return
             }
         }
     }

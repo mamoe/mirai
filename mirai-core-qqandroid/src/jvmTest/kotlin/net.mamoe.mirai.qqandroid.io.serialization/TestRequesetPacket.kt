@@ -1,6 +1,6 @@
 package net.mamoe.mirai.qqandroid.io.serialization
 
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.utils.io.hexToBytes
 
 class TestRequesetPacket {
