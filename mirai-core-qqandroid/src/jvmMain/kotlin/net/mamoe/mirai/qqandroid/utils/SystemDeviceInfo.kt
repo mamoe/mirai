@@ -9,7 +9,7 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
     override val device: ByteArray get() = "mirai".toByteArray()
     override val board: ByteArray get() = "mirai".toByteArray()
     override val brand: ByteArray get() = "mamoe".toByteArray()
-    override val model: ByteArray get() = "Android SDK built for x86".toByteArray()
+    override val model: ByteArray get() = "mirai".toByteArray()
     override val bootloader: ByteArray get() = "unknown".toByteArray()
     override val fingerprint: ByteArray get() = "mamoe/mirai/mirai:10/MIRAI.200122.001/5891938:user/release-keys".toByteArray()
     override val bootId: ByteArray get() = "5974cb66-bb69-4e82-a436-836b98ebd88c".toByteArray()
