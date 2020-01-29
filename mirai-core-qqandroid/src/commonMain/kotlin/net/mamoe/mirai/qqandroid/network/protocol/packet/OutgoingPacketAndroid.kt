@@ -222,6 +222,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
     subAppId: Long,
     commandName: String,
     extraData: ByteReadPacket = BRP_STUB,
+    unknownHex: String = "01 00 00 00 00 00 00 00 00 00 01 00",
     sequenceId: Int,
     body: BytePacketBuilder.() -> Unit
 ) {
@@ -229,7 +230,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         writeInt(sequenceId)
         writeInt(subAppId.toInt())
         writeInt(subAppId.toInt())
-        writeHex("01 00 00 00 00 00 00 00 00 00 01 00")
+        writeHex(unknownHex)
         if (extraData === BRP_STUB) {
             writeInt(0x04)
         } else {
