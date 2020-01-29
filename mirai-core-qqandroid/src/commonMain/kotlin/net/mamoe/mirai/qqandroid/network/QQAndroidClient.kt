@@ -8,6 +8,7 @@ import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.RawAccountIdUse
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
 import net.mamoe.mirai.qqandroid.utils.*
@@ -106,6 +107,15 @@ internal open class QQAndroidClient(
      * 协议版本?, 8.2.0 的为 8001
      */
     val protocolVersion: Short = 8001
+
+    class C2cMessageSyncData {
+        var syncCookie = EMPTY_BYTE_ARRAY
+        var pubAccountCookie = EMPTY_BYTE_ARRAY
+        var syncFlag: Int = 2
+        var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
+    }
+
+    val c2cMessageSync = C2cMessageSyncData()
 
     /*
      * 以下登录使用

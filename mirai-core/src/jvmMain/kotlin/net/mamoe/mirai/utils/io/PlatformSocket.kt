@@ -1,10 +1,12 @@
 package net.mamoe.mirai.utils.io
 
+import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.readAvailable
@@ -60,7 +62,7 @@ actual class PlatformSocket : Closeable {
 
     @UseExperimental(KtorExperimentalAPI::class)
     actual suspend fun connect(serverHost: String, serverPort: Int) {
-        socket = aSocket(io.ktor.network.selector.ActorSelectorManager(kotlinx.coroutines.Dispatchers.IO)).tcp().connect(serverHost, serverPort)
+        socket = aSocket(ActorSelectorManager(Dispatchers.IO)).tcp().connect(serverHost, serverPort)
         writeChannel = socket.openWriteChannel(true)
         readChannel = socket.openReadChannel()
     }
