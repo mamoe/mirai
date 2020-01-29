@@ -17,7 +17,10 @@ import kotlin.jvm.JvmSynthetic
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
-    this.checkOffsetAndLength(offset, length)
+    require(offset >= 0) { "offset shouldn't be negative: $offset" }
+    require(length >= 0) { "length shouldn't be negative: $length" }
+    require(offset + length <= this.size) { "offset ($offset) + length ($length) > array.size (${this.size})" }
+
     if (length == 0) {
         return ""
     }
