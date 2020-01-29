@@ -14,6 +14,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.data.RequestPacke
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
 import kotlin.contracts.ExperimentalContracts
@@ -27,7 +28,7 @@ import kotlin.jvm.JvmName
  * @param TPacket 服务器回复包解析结果
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal abstract class PacketFactory<out TPacket : Packet>(
+internal abstract class PacketFactory<TPacket : Packet>(
     /**
      * 命令名. 如 `wtlogin.login`, `ConfigPushSvc.PushDomain`
      */
@@ -41,7 +42,7 @@ internal abstract class PacketFactory<out TPacket : Packet>(
     /**
      * 可选的处理这个包. 可以在这里面发新的包.
      */
-    open suspend fun @UnsafeVariance TPacket.handle(bot: QQAndroidBot) {}
+    open suspend fun QQAndroidBot.handle(packet: TPacket) {}
 }
 
 @JvmName("decode0")
@@ -59,7 +60,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     LoginPacket,
     StatSvc.Register,
     OnlinePush.PbPushGroupMsg,
-    MessageSvc.PushNotify
+    MessageSvc.PushNotify,
+    MessageSvc.PbGetMsg
 ) {
 
     fun findPacketFactory(commandName: String): PacketFactory<*>? = this.firstOrNull { it.commandName == commandName }
@@ -194,7 +196,15 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             val unknown = readBytes(readInt() - 4)
             if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 
-            check(readInt() == 0)
+            readInt().let {
+                if (it != 0) {
+                    DebugLogger.debug("!! 得到一个原本是 0, 现在是 ${it.contentToString()}")
+                    if (it == 1){
+                        PacketLogger.info("无法处理的数据 = ${input.readBytes().toUHexString()}")
+                        return IncomingPacket(null, ssoSequenceId, input)
+                    }
+                }
+            }
         }
 
         // body

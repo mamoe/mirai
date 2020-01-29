@@ -8,8 +8,8 @@ import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.ImageIdQQA
 import net.mamoe.mirai.qqandroid.utils.Context
+import net.mamoe.mirai.qqandroid.utils.ImageIdQQA
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -28,7 +28,7 @@ internal abstract class QQAndroidBotBase constructor(
     configuration: BotConfiguration
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
     val client: QQAndroidClient = QQAndroidClient(context, account, bot = @Suppress("LeakingThis") this as QQAndroidBot)
-
+    override val uin: Long get() = client.uin
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     override fun getQQ(id: Long): QQ {
