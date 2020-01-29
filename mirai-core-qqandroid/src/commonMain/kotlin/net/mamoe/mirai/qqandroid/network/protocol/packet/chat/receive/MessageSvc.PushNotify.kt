@@ -25,6 +25,9 @@ import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.toReadPacket
 
 class MessageSvc {
+    /**
+     * 告知要刷新消息
+     */
     internal object PushNotify : PacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RequestPushNotify {
             discardExact(8)
@@ -42,13 +45,18 @@ class MessageSvc {
         }
     }
 
+
+    /**
+     * 进行刷新消息
+     */
     internal object PbGetMsg : PacketFactory<MultiPacket<FriendMessage>>("MessageSvc.PbGetMsg") {
+        val EXTRA_DATA = "08 00 12 33 6D 6F 64 65 6C 3A 78 69 61 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
         operator fun invoke(
             client: QQAndroidClient,
             from: RequestPushNotify
         ): OutgoingPacket = buildOutgoingUniPacket(
             client,
-            extraData = "08 00 12 33 6D 6F 64 65 6C 3A 78 69 61 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes().toReadPacket()
+            extraData = EXTRA_DATA.toReadPacket()
         ) {
             writeProtoBuf(
                 MsgSvc.PbGetMsgReq.serializer(),

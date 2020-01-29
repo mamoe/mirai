@@ -302,7 +302,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 return
             } catch (e: Throwable) {
                 bot.logger.error("Caught unexpected exceptions", e)
-                continue
+                dispose()
+                bot.tryReinitializeNetworkHandler(e)
+                return
             }
             launch(context = PacketReceiveDispatcher + CoroutineName("Incoming Packet handler"), start = CoroutineStart.ATOMIC) {
                 processPacket(rawInput)
