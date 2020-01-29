@@ -5,6 +5,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.RawAccountIdUse
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
@@ -129,6 +130,7 @@ internal open class QQAndroidClient(
      */
     val uin: Long get() = _uin
 
+    @UseExperimental(RawAccountIdUse::class)
     @Suppress("PropertyName")
     internal var _uin: Long = bot.account.id
 

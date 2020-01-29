@@ -15,7 +15,8 @@ import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.coroutines.CoroutineContext
 
-internal expect class QQAndroidBot(
+@UseExperimental(MiraiInternalAPI::class)
+internal expect class QQAndroidBot constructor(
     context: Context,
     account: BotAccount,
     configuration: BotConfiguration
