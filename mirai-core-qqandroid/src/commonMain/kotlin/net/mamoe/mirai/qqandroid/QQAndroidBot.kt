@@ -33,7 +33,7 @@ internal abstract class QQAndroidBotBase constructor(
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     override fun getQQ(id: Long): QQ {
-        return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this, coroutineContext, id) })
+        return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this as QQAndroidBot, coroutineContext, id) })
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
@@ -43,17 +43,17 @@ internal abstract class QQAndroidBotBase constructor(
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
     override suspend fun getGroup(id: GroupId): Group {
-        return groups.delegate.filteringGetOrAdd({ it.id == id.value }, { GroupImpl(this, coroutineContext, id.value) })
+        return groups.delegate.filteringGetOrAdd({ it.id == id.value }, { GroupImpl(this as QQAndroidBot, coroutineContext, id.value) })
     }
 
     override suspend fun getGroup(internalId: GroupInternalId): Group {
         internalId.toId().value.let { id ->
-            return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this, coroutineContext, id) })
+            return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this as QQAndroidBot, coroutineContext, id) })
         }
     }
 
     override suspend fun getGroup(id: Long): Group {
-        return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this, coroutineContext, id) })
+        return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this as QQAndroidBot, coroutineContext, id) })
     }
 
     override suspend fun Image.getLink(): ImageLink {

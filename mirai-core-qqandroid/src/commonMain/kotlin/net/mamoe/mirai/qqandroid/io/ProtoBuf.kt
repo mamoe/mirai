@@ -6,6 +6,7 @@ import kotlinx.io.core.readBytes
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
+import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
 
 /**
  * 仅有标示作用
@@ -20,19 +21,19 @@ fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStra
  * dump
  */
 fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
-    return kotlinx.serialization.protobuf.ProtoBuf.dump(serializer, this)
+    return ProtoBufWithNullableSupport.dump(serializer, this)
 }
 
 /**
  * load
  */
 fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
-    return kotlinx.serialization.protobuf.ProtoBuf.load(deserializer, this)
+    return ProtoBufWithNullableSupport.load(deserializer, this)
 }
 
 /**
  * load
  */
 fun <T : ProtoBuf> Input.readRemainingAsProtoBuf(serializer: DeserializationStrategy<T>): T {
-    return kotlinx.serialization.protobuf.ProtoBuf.load(serializer, this.readBytes())
+    return ProtoBufWithNullableSupport.load(serializer, this.readBytes())
 }

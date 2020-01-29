@@ -318,10 +318,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(): E {
         val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
         packetListeners.addLast(handler)
+        bot.logger.info("Send: ${this.commandName}")
         channel.send(delegate)
-        return withTimeout(3000) {
+        return withTimeoutOrNull(3000) {
             @Suppress("UNCHECKED_CAST")
             handler.await() as E
+        } ?: net.mamoe.mirai.qqandroid.utils.inline {
+            packetListeners.remove(handler)
+            error("timeout when sending ${this.commandName}")
         }
     }
 

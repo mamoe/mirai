@@ -9,9 +9,9 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.pool.useInstance
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.qqandroid.io.serialization.ProtoBuf
 import net.mamoe.mirai.utils.cryptor.Decrypter
 import net.mamoe.mirai.utils.cryptor.DecrypterType
 import net.mamoe.mirai.utils.cryptor.readProtoMap

@@ -3,7 +3,9 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.data.MultiPacket
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.io.readRemainingAsProtoBuf
@@ -12,18 +14,22 @@ import net.mamoe.mirai.qqandroid.io.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushNotify
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
+import net.mamoe.mirai.qqandroid.utils.toRichText
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.toReadPacket
+import kotlin.random.Random
 
 class MessageSvc {
     /**
-     * 告知要刷新消息
+     * 告知要刷新好友消息
      */
     internal object PushNotify : PacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RequestPushNotify {
@@ -41,7 +47,7 @@ class MessageSvc {
 
 
     /**
-     * 进行刷新消息
+     * 获取好友消息和消息记录
      */
     internal object PbGetMsg : PacketFactory<MultiPacket<FriendMessage>>("MessageSvc.PbGetMsg") {
         val EXTRA_DATA =
@@ -65,9 +71,10 @@ class MessageSvc {
                     onlineSyncFlag = 1,
                     //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
                     syncCookie = client.c2cMessageSync.syncCookie,
-                    syncFlag = client.c2cMessageSync.syncFlag,
-                    msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
-                    pubaccountCookie = client.c2cMessageSync.pubAccountCookie
+                    syncFlag = 1
+                    // syncFlag = client.c2cMessageSync.syncFlag,
+                    //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
+                    //pubaccountCookie = client.c2cMessageSync.pubAccountCookie
                 )
             )
         }
@@ -110,6 +117,40 @@ class MessageSvc {
             discardExact(4)
             val struct = this.decodeUniPacket(RequestPushForceOffline.serializer())
             return ForceOfflineEvent(bot, title = struct.title ?: "", tips = struct.tips ?: "")
+        }
+    }
+
+    internal object PbSendMsg : PacketFactory<MsgSvc.PbSendMsgResp>("MessageSvc.PbSendMsg") {
+        object Response : Packet
+
+        /**
+         * 发送好友消息
+         */
+        fun ToFriend(
+            client: QQAndroidClient,
+            toUin: Long,
+            message: MessageChain
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
+                    routingHead = MsgSvc.RoutingHead(c2c = MsgSvc.C2C(toUin = toUin)),
+                    contentHead = MsgComm.ContentHead(pkgNum = 1),
+                    msgBody = ImMsgBody.MsgBody(
+                        richText = message.toRichText().apply {
+                            elems.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
+                        }
+                    ),
+                    msgSeq = 15741,
+                    msgRand = Random.nextInt(),
+                    syncCookie = client.c2cMessageSync.syncCookie,
+                    msgVia = 1
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MsgSvc.PbSendMsgResp {
+            discardExact(4)
+            return readRemainingAsProtoBuf(MsgSvc.PbSendMsgResp.serializer())
         }
     }
 }

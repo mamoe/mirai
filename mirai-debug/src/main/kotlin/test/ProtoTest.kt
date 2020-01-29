@@ -5,10 +5,10 @@ package test
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
 import kotlinx.serialization.serializer
+import net.mamoe.mirai.qqandroid.io.serialization.ProtoBuf
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.readProtoMap
 import net.mamoe.mirai.utils.io.hexToBytes
