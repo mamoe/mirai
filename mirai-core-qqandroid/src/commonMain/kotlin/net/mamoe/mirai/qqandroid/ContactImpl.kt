@@ -18,7 +18,13 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.network.run {
-            MessageSvc.PbSendMsg.ToFriend(bot.client, id, message).sendAndExpect<MessageSvc.PbSendMsg.Response>()
+            check(
+                MessageSvc.PbSendMsg.ToFriend(
+                    bot.client,
+                    id,
+                    message
+                ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+            ) { "send message failed" }
         }
     }
 
@@ -90,7 +96,15 @@ internal class GroupImpl(bot: QQAndroidBot, override val coroutineContext: Corou
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     override suspend fun sendMessage(message: MessageChain) {
-        TODO("not implemented")
+        bot.network.run {
+            check(
+                MessageSvc.PbSendMsg.ToGroup(
+                    bot.client,
+                    id,
+                    message
+                ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+            ) { "send message failed" }
+        }
     }
 
     override suspend fun uploadImage(image: ExternalImage): ImageId {
