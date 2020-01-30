@@ -90,7 +90,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
+
+        //start updating friend/group list
+        bot.logger.info("Start updating friend/group list")
+        val data = FriendList.GetFriendGroupList(
+            bot.client,
+            0,
+            20,
+            0,
+            10
+        ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+        println(data.contentToString())
     }
+
 
     /**
      * 单线程处理包的接收, 分割和连接.
