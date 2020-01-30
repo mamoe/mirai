@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 
 class JceDecoderTest {
     @Serializable
-    class TestSimpleJceStruct(
+    data class TestSimpleJceStruct(
         @SerialId(0) val string: String = "123",
         @SerialId(1) val byte: Byte = 123,
         @SerialId(2) val short: Short = 123,
@@ -182,8 +182,8 @@ class JceDecoderTest {
     @Test
     fun testNestedStruct() {
         @Serializable
-        class OuterStruct(
-            @SerialId(0) val innerSturctList: List<TestSimpleJceStruct>
+        data class OuterStruct(
+            @SerialId(0) val innerStructList: List<TestSimpleJceStruct>
         ) : JceStruct
 
         assertEquals(
@@ -192,6 +192,15 @@ class JceDecoderTest {
             }.readBytes().toUHexString(),
             OuterStruct(listOf(TestSimpleJceStruct(), TestSimpleJceStruct())).toByteArray(OuterStruct.serializer()).toUHexString()
         )
-        //println(OuterStruct(listOf(TestSimpleJceStruct(), TestSimpleJceStruct())).toByteArray(OuterStruct.serializer()).loadAs(OuterStruct.serializer()))
+
+        assertEquals(
+            OuterStruct(
+                listOf(
+                    TestSimpleJceStruct(),
+                    TestSimpleJceStruct()
+                )
+            ).toByteArray(OuterStruct.serializer()).loadAs(OuterStruct.serializer()).contentToString(),
+            OuterStruct(listOf(TestSimpleJceStruct(), TestSimpleJceStruct())).contentToString()
+        )
     }
 }

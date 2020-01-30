@@ -496,9 +496,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         @PublishedApi
         internal val input: IoBuffer
     ) : Closeable {
-        override fun close() {
-            input.close()
-        }
+        override fun close() = IoBuffer.Pool.recycle(input)
 
         @PublishedApi
         internal fun readHead(): JceHead = input.readHead() ?: error("no enough data to read head")
