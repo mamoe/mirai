@@ -20,7 +20,9 @@ internal class FriendList {
 
     internal object GetFriendGroupList : PacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
-        class Response : Packet
+        class Response : Packet {
+            override fun toString(): String = "FriendList.GetFriendGroupList.Response"
+        }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             println("aaaa")
