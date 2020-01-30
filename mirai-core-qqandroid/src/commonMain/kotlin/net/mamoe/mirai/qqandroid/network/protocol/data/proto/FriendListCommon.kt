@@ -95,3 +95,5 @@ class Mutualmark : ProtoBuf {
         @SerialId(6) val word: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 }
+
+
