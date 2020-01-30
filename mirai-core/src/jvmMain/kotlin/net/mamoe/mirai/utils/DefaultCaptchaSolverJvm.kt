@@ -52,43 +52,33 @@ class DefaultLoginSolver : LoginSolver() {
                 }
             }
             bot.logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
-            return readLine()?.takeUnless { it.isEmpty() || it.length != 4 }
+            return readLine()?.takeUnless { it.isEmpty() || it.length != 4 }.also {
+                bot.logger.info("正在提交[" + it +"]中...")
+            }
         }
     }
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
         bot.logger.info("需要滑动验证码")
         bot.logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
+        bot.logger.info("完成后请输入任意字符 ")
         bot.logger.info(url)
-        return readLine()
-    }
-
-    override suspend fun onGetPhoneNumber(): String {
-        loginSolverLock.withLock {
-            while (true) {
-                MiraiLogger.info("请输入你的手机号码")
-                val var0 = readLine()
-                if (var0 !== null && var0.length > 10) {
-                    return var0;
-                }
-            }
+        return readLine().also {
+            bot.logger.info("正在提交中...")
         }
-        return "";
     }
 
-    override suspend fun onGetSMSVerifyCode(): String {
-        loginSolverLock.withLock {
-            while (true){
-                MiraiLogger.info("请输入你刚刚收到的手机验证码[6位数字]")
-                val var0 = readLine()
-                if(var0!==null && var0.length == 6){
-                    return var0;
-                }
-            }
+    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+        bot.logger.info("需要进行账户安全认证")
+        bot.logger.info("该账户有[设备锁]/[不常用登陆地点]/[不常用设备登陆]的问题")
+        bot.logger.info("完成以下账号认证即可成功登陆|理论本认证在mirai每个账户中最多出现1次")
+        bot.logger.info("请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
+        bot.logger.info("这步操作将在后续的版本中优化")
+        bot.logger.info(url)
+        return readLine().also {
+            bot.logger.info("正在提交中...")
         }
-        return "";
     }
-
 
 }
 

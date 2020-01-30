@@ -13,9 +13,7 @@ abstract class LoginSolver {
 
     abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
 
-    abstract suspend fun onGetPhoneNumber(): String
-
-    abstract suspend fun onGetSMSVerifyCode(): String
+    abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 }
 
 /**

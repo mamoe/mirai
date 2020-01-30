@@ -43,12 +43,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         mainloop@ while (true) {
             when (response) {
                 is UnsafeLogin -> {
-                    bot.logger.info("Login unsuccessful, device auth is needed")
-                    bot.logger.info("登录失败, 原因为非常用设备登录")
-                    bot.logger.info("Open the following URL in QQ browser and complete the verification")
-                    bot.logger.info("将下面这个链接在QQ浏览器中打开并完成认证后尝试再次登录")
-                    bot.logger.info(response.url)
-                    return
+                    bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
+                    response = LoginPacket.SubCommand9(bot.client).sendAndExpect()
                 }
 
                 is Captcha -> when (response) {
@@ -73,7 +69,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                 is Error -> error(response.toString())
 
-                is SMSVerifyCodeNeeded -> {
+                is DeviceLockLogin -> {
                     response = LoginPacket.SubCommand20(
                         bot.client,
                         response.t402,

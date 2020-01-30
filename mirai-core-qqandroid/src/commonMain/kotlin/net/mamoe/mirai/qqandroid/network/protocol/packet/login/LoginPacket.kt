@@ -300,7 +300,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
         class UnsafeLogin(val url: String) : LoginPacketResponse()
 
-        class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse()
+        class DeviceLockLogin(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse()
     }
 
     @InternalAPI
@@ -336,10 +336,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     private fun onSMSVerifyNeeded(
         tlvMap: TlvMap,
         bot: QQAndroidBot
-    ): LoginPacketResponse.SMSVerifyCodeNeeded {
+    ): LoginPacketResponse.DeviceLockLogin {
         bot.client.t104 = tlvMap.getOrFail(0x104)
         println("403： " + tlvMap[0x403]?.toUHexString())
-        return LoginPacketResponse.SMSVerifyCodeNeeded(tlvMap[0x402]!!, tlvMap.getOrFail(0x403))
+        return LoginPacketResponse.DeviceLockLogin(tlvMap[0x402]!!, tlvMap.getOrFail(0x403))
     }
 
     private fun onUnsafeDeviceLogin(tlvMap: TlvMap): LoginPacketResponse.UnsafeLogin {
