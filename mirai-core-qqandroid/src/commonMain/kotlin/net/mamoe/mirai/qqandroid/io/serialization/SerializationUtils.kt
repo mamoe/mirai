@@ -11,7 +11,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.toUHexString
 
 
 fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {
@@ -71,9 +70,7 @@ fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null
 fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray = Jce.byCharSet(c).dump(serializer, this)
 
 fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
-    this.writeFully(v.toByteArray(serializer).also {
-        println("发送 protobuf: ${it.toUHexString()}")
-    })
+    this.writeFully(v.toByteArray(serializer))
 }
 
 /**
