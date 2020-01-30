@@ -41,7 +41,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         channel.connect("113.96.13.208", 8080)
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-        bot.logger.info("Trying login")
+        // bot.logger.info("Trying login")
         var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
@@ -94,7 +94,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
     }
 
-    suspend fun init() {
+    override suspend fun init() {
         //start updating friend/group list
         bot.logger.info("Start updating friend/group list")
         /*
