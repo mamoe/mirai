@@ -150,7 +150,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         serializer.serialize(this, value)
                     } else {
                         this.writeHead(STRUCT_BEGIN, popTag())
-                        serializer.serialize(this, value)
+                        serializer.serialize(JceEncoder(this.output), value)
                         this.writeHead(STRUCT_END, 0)
                     }
                 } else if (value is ProtoBuf) {

@@ -7,6 +7,7 @@ import net.mamoe.mirai.qqandroid.io.JceOutput
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.buildJcePacket
 import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -176,5 +177,21 @@ class JceDecoderTest {
 
         assert(AllNullJce().toByteArray(AllNullJce.serializer()).isEmpty())
         assertEquals(ByteArray(0).loadAs(AllNullJce.serializer()), AllNullJce())
+    }
+
+    @Test
+    fun testNestedStruct() {
+        @Serializable
+        class OuterStruct(
+            @SerialId(0) val innerSturctList: List<TestSimpleJceStruct>
+        ) : JceStruct
+
+        assertEquals(
+            buildJcePacket {
+                writeCollection(listOf(TestSimpleJceStruct(), TestSimpleJceStruct()), 0)
+            }.readBytes().toUHexString(),
+            OuterStruct(listOf(TestSimpleJceStruct(), TestSimpleJceStruct())).toByteArray(OuterStruct.serializer()).toUHexString()
+        )
+        //println(OuterStruct(listOf(TestSimpleJceStruct(), TestSimpleJceStruct())).toByteArray(OuterStruct.serializer()).loadAs(OuterStruct.serializer()))
     }
 }
