@@ -46,6 +46,8 @@ internal object FriendListPacket :
                     sFuncName = "GetFriendListReq",
                     sServantName = "mqq.IMService.FriendListServiceServantObj",
                     iVersion = 3,
+                    cPacketType = 0x003,
+                    iMessageType = 0x00000,
                     sBuffer = RequestDataVersion3(
                         mapOf(
                             "FL" to GetFriendListReq(
