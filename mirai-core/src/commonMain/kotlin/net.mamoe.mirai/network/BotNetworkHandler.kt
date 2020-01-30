@@ -7,6 +7,7 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -40,7 +41,10 @@ abstract class BotNetworkHandler : CoroutineScope {
     /**
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回.
      * 本函数将挂起直到登录成功.
+     *
+     * 不要使用这个 API. 请使用 [Bot.login]
      */
+    @MiraiInternalAPI
     abstract suspend fun login()
 
     /**
