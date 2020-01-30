@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.io.serialization
 
 import kotlinx.io.core.*
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
@@ -91,4 +92,27 @@ fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T
  */
 fun <T : ProtoBuf> Input.readRemainingAsProtoBuf(serializer: DeserializationStrategy<T>): T {
     return ProtoBufWithNullableSupport.load(serializer, this.readBytes())
+}
+
+/**
+ * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]
+ */
+fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: SerializationStrategy<T>, jceStruct: T): ByteArray {
+    return RequestDataVersion3(
+        mapOf(
+            name to JCE_STRUCT_HEAD_OF_TAG_0 + jceStruct.toByteArray(serializer) + JCE_STRUCT_TAIL_OF_TAG_0
+        )
+    ).toByteArray(RequestDataVersion3.serializer())
+}
+
+private val JCE_STRUCT_HEAD_OF_TAG_0 = byteArrayOf(0x0A)
+private val JCE_STRUCT_TAIL_OF_TAG_0 = byteArrayOf(0x0B)
+
+internal inline fun <reified A : Annotation> SerialDescriptor.findAnnotation(elementIndex: Int): A? {
+    val candidates = getElementAnnotations(elementIndex).filterIsInstance<A>()
+    return when (candidates.size) {
+        0 -> null
+        1 -> candidates[0]
+        else -> throw IllegalStateException("There are duplicate annotations of type ${A::class} in the descriptor $this")
+    }
 }
