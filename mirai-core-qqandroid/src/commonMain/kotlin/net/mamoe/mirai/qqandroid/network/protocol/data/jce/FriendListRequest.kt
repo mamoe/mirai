@@ -24,7 +24,7 @@ internal class GetFriendListReq(
     @SerialId(13) val eAppType: Int = 0,
     @SerialId(14) val ifGetDOVId: Byte? = null,
     @SerialId(15) val ifGetBothFlag: Byte? = null,
-    @SerialId(16) val vec0xd50Req: Vec0xd50.ReqBody? = null,
-    @SerialId(17) val vec0xd6bReq: Vec0xd6b.ReqBody? = null,
+    @SerialId(16) val vec0xd50Req: ByteArray? = null,
+    @SerialId(17) val vec0xd6bReq: ByteArray? = null,
     @SerialId(18) val vecSnsTypelist: List<Long>? = null
 ) : JceStruct
