@@ -57,11 +57,7 @@ class MiraiService : Service() {
                         TODO("not implemented")
                     }
 
-                    override suspend fun onGetPhoneNumber(): String {
-                        TODO("not implemented")
-                    }
-
-                    override suspend fun onGetSMSVerifyCode(): String {
+                    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
                         TODO("not implemented")
                     }
 

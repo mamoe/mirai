@@ -15,6 +15,11 @@ expect class PlatformSocket() : Closeable {
     /**
      * @throws SendPacketInternalException
      */
+    suspend inline fun send(packet: ByteArray, offset: Int = 0, length: Int = packet.size - offset)
+
+    /**
+     * @throws SendPacketInternalException
+     */
     suspend inline fun send(packet: ByteReadPacket)
 
     /**

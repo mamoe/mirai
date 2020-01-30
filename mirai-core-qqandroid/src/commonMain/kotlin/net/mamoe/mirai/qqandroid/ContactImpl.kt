@@ -26,6 +26,9 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
         TODO("not implemented")
     }
 
+    override val isOnline: Boolean
+        get() = true
+
     override suspend fun queryProfile(): Profile {
         TODO("not implemented")
     }
@@ -40,37 +43,22 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 
 }
 
-internal class MemberImpl(bot: QQAndroidBot, group: Group, override val coroutineContext: CoroutineContext, override val id: Long) : ContactImpl(), Member {
-    override val group: Group by group.unsafeWeakRef()
+internal class MemberImpl(
+    qq: QQImpl,
+    group: GroupImpl,
+    override val coroutineContext: CoroutineContext
+) : ContactImpl(), Member, QQ by qq {
+    override val group: GroupImpl by group.unsafeWeakRef()
+    val qq: QQImpl by qq.unsafeWeakRef()
+
     override val permission: MemberPermission
         get() = TODO("not implemented")
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     override suspend fun mute(durationSeconds: Int): Boolean {
         TODO("not implemented")
     }
 
     override suspend fun unmute() {
-        TODO("not implemented")
-    }
-
-    override suspend fun queryProfile(): Profile {
-        TODO("not implemented")
-    }
-
-    override suspend fun queryPreviousNameList(): PreviousNameList {
-        TODO("not implemented")
-    }
-
-    override suspend fun queryRemark(): FriendNameRemark {
-        TODO("not implemented")
-    }
-
-    override suspend fun sendMessage(message: MessageChain) {
-        TODO("not implemented")
-    }
-
-    override suspend fun uploadImage(image: ExternalImage): ImageId {
         TODO("not implemented")
     }
 
@@ -89,7 +77,7 @@ internal class GroupImpl(bot: QQAndroidBot, override val coroutineContext: Corou
     override val members: ContactList<Member> = ContactList(LockFreeLinkedList())
 
     override fun getMember(id: Long): Member =
-        members.delegate.filteringGetOrAdd({ it.id == id }, { MemberImpl(bot as QQAndroidBot, this, coroutineContext, id) })
+        members.delegate.filteringGetOrAdd({ it.id == id }, { MemberImpl(bot.getQQ(id) as QQImpl, this, coroutineContext) })
 
     override suspend fun updateGroupInfo(): GroupInfo {
         TODO("not implemented")

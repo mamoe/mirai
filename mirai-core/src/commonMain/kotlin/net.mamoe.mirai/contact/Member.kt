@@ -13,6 +13,7 @@ interface Member : QQ, Contact {
     /**
      * 所在的群
      */
+    @WeakRefProperty
     val group: Group
 
     /**

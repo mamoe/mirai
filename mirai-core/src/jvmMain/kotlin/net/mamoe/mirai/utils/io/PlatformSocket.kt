@@ -34,6 +34,14 @@ actual class PlatformSocket : Closeable {
     @PublishedApi
     internal lateinit var readChannel: ByteReadChannel
 
+    actual suspend inline fun send(packet: ByteArray, offset: Int, length: Int) {
+        try {
+            writeChannel.writeFully(packet, offset, length)
+        } catch (e: Exception) {
+            throw SendPacketInternalException(e)
+        }
+    }
+
     /**
      * @throws SendPacketInternalException
      */

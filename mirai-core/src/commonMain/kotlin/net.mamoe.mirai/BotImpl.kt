@@ -98,7 +98,15 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
         _network = createNetworkHandler(this.coroutineContext)
 
-        _network.login()
+        while (true){
+            try {
+                return _network.login()
+            } catch (e: Exception){
+                e.logStacktrace("Exception when login")
+            }
+            delay(3000)
+            logger.warning("Login failed. Retrying in 3s...")
+        }
     }
 
     protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): N

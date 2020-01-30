@@ -22,9 +22,14 @@ import net.mamoe.mirai.data.Profile
  */
 interface QQ : Contact, CoroutineScope {
     /**
+     * 是否在线. 这个属性的值将会与服务器同步更新.
+     */
+    val isOnline: Boolean
+
+    /**
      * 请求头像下载链接
      */
-   // @MiraiExperimentalAPI
+    // @MiraiExperimentalAPI
     //suspend fun queryAvatar(): AvatarLink
 
     /**
