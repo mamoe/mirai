@@ -98,9 +98,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         val data = FriendList.GetFriendGroupList(
             bot.client,
             0,
-            20,
+            10,
             0,
-            10
+            0
         ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
         println(data.contentToString())
     }
