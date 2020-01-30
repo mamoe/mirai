@@ -14,10 +14,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
-import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
-import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
+import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
@@ -53,7 +50,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                 is Captcha -> when (response) {
                     is Captcha.Picture -> {
-                        var result = bot.configuration.loginSolver.onSolvePicCaptcha(bot, response.data)
+                        var result = response.data.withUse {
+                            bot.configuration.loginSolver.onSolvePicCaptcha(bot, this)
+                        }
                         if (result == null || result.length != 4) {
                             //refresh captcha
                             result = "ABCD"
