@@ -9,9 +9,9 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
-import net.mamoe.mirai.qqandroid.io.readRemainingAsProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
-import net.mamoe.mirai.qqandroid.io.writeProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.readRemainingAsProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushNotify

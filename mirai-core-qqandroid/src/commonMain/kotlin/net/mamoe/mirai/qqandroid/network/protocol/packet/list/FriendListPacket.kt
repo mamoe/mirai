@@ -5,7 +5,6 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
-import net.mamoe.mirai.qqandroid.io.toByteArray
 import net.mamoe.mirai.qqandroid.io.writeJcePacket
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq

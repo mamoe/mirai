@@ -8,56 +8,17 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
-import net.mamoe.mirai.utils.firstValue
-import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readIoBuffer
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toIoBuffer
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 @PublishedApi
 internal val CharsetGBK = Charset.forName("GBK")
 @PublishedApi
 internal val CharsetUTF8 = Charset.forName("UTF8")
-
-fun <T> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {
-    return Jce.byCharSet(c).load(deserializer, this)
-}
-
-fun <T> BytePacketBuilder.writeJceStruct(serializer: SerializationStrategy<T>, struct: T, charset: JceCharset = JceCharset.GBK) {
-    this.writePacket(Jce.byCharSet(charset).dumpAsPacket(serializer, struct))
-}
-
-fun <T> ByteReadPacket.readRemainingAsJceStruct(serializer: DeserializationStrategy<T>, charset: JceCharset = JceCharset.UTF8): T {
-    return Jce.byCharSet(charset).load(serializer, this)
-}
-
-/**
- * 先解析为 [RequestPacket], 即 `UniRequest`, 再按版本解析 map, 再找出指定数据并反序列化
- */
-fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
-    val request = this.readRemainingAsJceStruct(RequestPacket.serializer())
-
-    fun ByteArray.doReadInner(): T = read {
-        discardExact(1)
-        this.readRemainingAsJceStruct(deserializer)
-    }
-
-    return if (name == null) when (request.iVersion.toInt()) {
-        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue().doReadInner()
-        3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.firstValue().doReadInner()
-        else -> error("unsupported version ${request.iVersion}")
-    } else when (request.iVersion.toInt()) {
-        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.getOrElse(name) { error("cannot find $name") }.firstValue().doReadInner()
-        3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.getOrElse(name) { error("cannot find $name") }.doReadInner()
-        else -> error("unsupported version ${request.iVersion}")
-    }
-}
-
-fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray = Jce.byCharSet(c).dump(serializer, this)
 
 enum class JceCharset(val kotlinCharset: Charset) {
     GBK(Charset.forName("GBK")),
@@ -410,11 +371,6 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
                 is MapLikeDescriptor -> {
                     val tag = currentTagOrNull
-
-                    if (tag != null && input.skipToTagOrNull(tag) { popTag() } == null && desc.isNullable) {
-                        return NullReader(this.input)
-                    }
-
                     if (tag != null) {
                         popTag()
                     }
@@ -461,7 +417,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
-            //println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
+            println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
             if (deserializer is NullReader) {
                 return null
             }
@@ -487,20 +443,40 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         return if (isTagOptional(tag)) input.readByteArrayOrNull(tag)?.toMutableList() as? T
                         else input.readByteArray(tag).toMutableList() as T
                     }
-                    return super.decodeSerializableValue(deserializer)
+                    val tag = popTag()
+                    println(tag)
+                    @Suppress("SENSELESS_COMPARISON") // false positive
+                    if (input.skipToTagOrNull(tag) {
+                            return deserializer.deserialize(JceListReader(input.readInt(0), input))
+                        } == null) {
+                        if (isTagOptional(tag)) {
+                            return null
+                        } else error("property is notnull but cannot find tag $tag")
+                    }
+                    error("UNREACHABLE CODE")
                 }
                 is MapLikeDescriptor -> {
-                    // 将 mapOf(k1 to v1, k2 to v2, ...) 转换为 listOf(k1, v1, k2, v2, ...) 以便于写入.
-                    val serializer = (deserializer as MapLikeSerializer<Any?, Any?, T, *>)
-                    val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
-                    val setOfEntries = HashSetSerializer(mapEntrySerial).deserialize(this)
-                    return setOfEntries.associateBy({ it.key }, { it.value }) as T
+                    val tag = popTag()
+                    @Suppress("SENSELESS_COMPARISON")
+                    if (input.skipToTagOrNull(tag) {
+                            // 将 mapOf(k1 to v1, k2 to v2, ...) 转换为 listOf(k1, v1, k2, v2, ...) 以便于写入.
+                            val serializer = (deserializer as MapLikeSerializer<Any?, Any?, T, *>)
+                            val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
+                            val setOfEntries = HashSetSerializer(mapEntrySerial).deserialize(JceMapReader(input.readInt(0), input))
+                            return setOfEntries.associateBy({ it.key }, { it.value }) as T
+                        } == null) {
+                        if (isTagOptional(tag)) {
+                            return null
+                        } else error("property is notnull but cannot find tag $tag")
+                    }
+                    error("UNREACHABLE CODE")
                 }
             }
             val tag = currentTagOrNull ?: return deserializer.deserialize(this)
             return if (this.decodeTaggedNotNullMark(tag)) {
                 deserializer.deserialize(this)
             } else {
+                // popTag()
                 null
             }
         }
@@ -514,7 +490,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
 
     @UseExperimental(ExperimentalUnsignedTypes::class)
-    private inner class JceInput(
+    internal inner class JceInput(
         @PublishedApi
         internal val input: IoBuffer
     ) : Closeable {
@@ -732,24 +708,6 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             else -> error("invalid type: $type")
         }
 
-        internal inline fun <R> skipToTagOrNull(tag: Int, block: (JceHead) -> R): R? {
-            while (true) {
-                if (this.input.endOfInput) {
-                    return null
-                }
-
-                val head = peakHead()
-                if (head.tag > tag) {
-                    return null
-                }
-                readHead()
-                if (head.tag == tag) {
-                    return block(head)
-                }
-                this.skipField(head.type)
-            }
-        }
-
     }
 
     companion object {
@@ -806,6 +764,28 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             val decoder = JceDecoder(JceInput(this))
             decoder.decode(deserializer)
         }
+    }
+}
+
+@UseExperimental(ExperimentalContracts::class)
+internal inline fun <R> Jce.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) -> R): R? {
+    contract {
+        callsInPlace(block, kotlin.contracts.InvocationKind.UNKNOWN)
+    }
+    while (true) {
+        if (this.input.endOfInput) {
+            return null
+        }
+
+        val head = peakHead()
+        if (head.tag > tag) {
+            return null
+        }
+        readHead()
+        if (head.tag == tag) {
+            return block(head)
+        }
+        this.skipField(head.type)
     }
 }
 
