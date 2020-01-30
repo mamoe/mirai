@@ -329,7 +329,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
         packetListeners.addLast(handler)
-        bot.logger.info("Send: ${this.commandName}")
         var lastException: Exception? = null
         repeat(retry + 1) {
             try {
@@ -338,17 +337,18 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 lastException = e
             }
         }
+        packetListeners.remove(handler)
         throw lastException!!
     }
 
     private suspend inline fun <E : Packet> OutgoingPacket.doSendAndReceive(timeoutMillis: Long = 3000, handler: PacketListener): E {
         channel.send(delegate)
+        bot.logger.info("Send: ${this.commandName}")
         return withTimeoutOrNull(timeoutMillis) {
             @Suppress("UNCHECKED_CAST")
             handler.await() as E
             // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
         } ?: net.mamoe.mirai.qqandroid.utils.inline {
-            packetListeners.remove(handler)
             error("timeout when receiving response of $commandName")
         }
     }
