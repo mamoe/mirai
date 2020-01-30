@@ -50,8 +50,7 @@ fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationS
     }
 }
 
-
-private fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
+fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
     val request = this.readRemainingAsJceStruct(RequestPacket.serializer())
 
     return block(if (name == null) when (request.iVersion.toInt()) {
