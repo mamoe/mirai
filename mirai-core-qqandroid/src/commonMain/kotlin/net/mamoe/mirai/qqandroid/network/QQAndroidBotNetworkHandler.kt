@@ -15,10 +15,12 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 
@@ -96,9 +98,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         val data = FriendList.GetFriendGroupList(
             bot.client,
             0,
-            20,
+            10,
             0,
-            10
+            0
         ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
         println(data.contentToString())
     }

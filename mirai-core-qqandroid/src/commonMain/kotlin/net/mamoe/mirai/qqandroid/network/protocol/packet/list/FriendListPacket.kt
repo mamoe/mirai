@@ -32,7 +32,9 @@ internal class FriendList {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
 
             println(this
-                .apply { discardExact(4) }
+                .apply {
+                    this.discardExact(4)
+                }
                 .decodeUniPacket(GetFriendListResp.serializer())
                 .contentToString()
             )
