@@ -3,8 +3,6 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd6b
 
 @Serializable
 internal class GetFriendListReq(

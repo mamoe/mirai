@@ -31,6 +31,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
 
+    override val coroutineContext: CoroutineContext = bot.coroutineContext + CoroutineExceptionHandler { _, throwable ->
+        throwable.logStacktrace("Exception in NetworkHandler")
+    }
+
     private lateinit var channel: PlatformSocket
 
     override suspend fun login() {
@@ -316,7 +320,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         packetListeners.addLast(handler)
         bot.logger.info("Send: ${this.commandName}")
         channel.send(delegate)
-        return withTimeoutOrNull(3000) {
+        return withTimeout(3000) {
             @Suppress("UNCHECKED_CAST")
             handler.await() as E
         } ?: net.mamoe.mirai.qqandroid.utils.inline {
@@ -337,6 +341,4 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override suspend fun awaitDisconnection() = supervisor.join()
-
-    override val coroutineContext: CoroutineContext = bot.coroutineContext
 }
