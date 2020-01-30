@@ -33,6 +33,7 @@ fun main() {
 }
 
 fun ByteReadPacket.decodeMultiServerToClientPackets() {
+    PacketLogger.enable()
     println("=======================处理服务器到客户端客户端=======================")
     var count = 0
     while (remaining != 0L) {
