@@ -92,7 +92,7 @@ abstract class Bot : CoroutineScope {
     abstract val network: BotNetworkHandler
 
     /**
-     * 登录.
+     * 登录, 或重新登录.
      *
      * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.login]
      *

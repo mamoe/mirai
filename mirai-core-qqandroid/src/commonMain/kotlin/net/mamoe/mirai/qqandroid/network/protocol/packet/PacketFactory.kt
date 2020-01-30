@@ -9,6 +9,7 @@ import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.DefaultLogger
@@ -17,6 +18,7 @@ import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unzip
+import net.mamoe.mirai.utils.withSwitch
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.jvm.JvmName
@@ -53,7 +55,7 @@ internal val DECRYPTER_16_ZERO = ByteArray(16)
 internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>, packet: T, commandName: String, ssoSequenceId: Int) -> Unit
 
 @PublishedApi
-internal val PacketLogger: MiraiLogger = DefaultLogger("Packet")
+internal val PacketLogger: MiraiLogger = DefaultLogger("Packet").withSwitch(false)
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
@@ -63,7 +65,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     MessageSvc.PushNotify,
     MessageSvc.PbGetMsg,
     MessageSvc.PushForceOffline,
-    MessageSvc.PbSendMsg
+    MessageSvc.PbSendMsg,
+    FriendList.GetFriendGroupList
 ) {
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机
@@ -193,8 +196,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             PacketLogger.verbose("sso(inner)extraData = ${extraData.toUHexString()}")
 
             commandName = readString(readInt() - 4)
-            val unknown = readBytes(readInt() - 4)
-            if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
+            bot.client.outgoingPacketUnknownValue = readBytes(readInt() - 4)
 
             dataCompressed = readInt()
         }
@@ -213,7 +215,7 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
         // body
         val packetFactory = findPacketFactory(commandName)
 
-        bot.logger.info("Received: $commandName")
+        bot.logger.debug("Received commandName: $commandName")
         return IncomingPacket(packetFactory, ssoSequenceId, packet)
     }
 

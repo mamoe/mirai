@@ -25,9 +25,11 @@ enum class JceCharset(val kotlinCharset: Charset) {
     UTF8(Charset.forName("UTF8"))
 }
 
-
 internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<SerialId>(index)?.id
 
+/**
+ * Jce 数据结构序列化和反序列化工具, 能将 kotlinx.serialization 通用的注解标记格式的 `class` 序列化为 [ByteArray]
+ */
 class Jce private constructor(private val charset: JceCharset, context: SerialModule = EmptyModule) : AbstractSerialFormat(context), BinaryFormat {
 
     private inner class ListWriter(
@@ -152,7 +154,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         this.writeHead(STRUCT_END, 0)
                     }
                 } else if (value is ProtoBuf) {
-                    this.encodeTaggedByteArray(popTag(), net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport.dump(value))
+                    this.encodeTaggedByteArray(popTag(), ProtoBufWithNullableSupport.dump(value))
                 } else {
                     serializer.serialize(this, value)
                 }
@@ -417,7 +419,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
-            println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
+            // println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
             if (deserializer is NullReader) {
                 return null
             }
@@ -444,7 +446,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         else input.readByteArray(tag).toMutableList() as T
                     }
                     val tag = popTag()
-                    println(tag)
+//                    println(tag)
                     @Suppress("SENSELESS_COMPARISON") // false positive
                     if (input.skipToTagOrNull(tag) {
                             return deserializer.deserialize(JceListReader(input.readInt(0), input))

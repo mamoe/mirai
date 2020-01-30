@@ -18,7 +18,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
-import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendListPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
@@ -31,6 +30,10 @@ import kotlin.coroutines.CoroutineContext
 internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
+
+    override val coroutineContext: CoroutineContext = bot.coroutineContext + CoroutineExceptionHandler { _, throwable ->
+        throwable.logStacktrace("Exception in NetworkHandler")
+    }
 
     private lateinit var channel: PlatformSocket
 
@@ -88,19 +91,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        FriendListPacket(
-            bot.client,
-            0,
-            20,
-            0,
-            0
-        ).sendAndExpect<FriendListPacket.GetFriendListResponse>()
-
     }
 
     /**
@@ -168,18 +158,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     private suspend inline fun <P : Packet> generifiedParsePacket(input: Input) {
-        try {
-            KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
-                handlePacket(packetFactory, packet, commandName, sequenceId)
-                if (packet is MultiPacket<*>) {
-                    packet.forEach {
-                        handlePacket(null, it, commandName, sequenceId)
-                    }
+        KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
+            handlePacket(packetFactory, packet, commandName, sequenceId)
+            if (packet is MultiPacket<*>) {
+                packet.forEach {
+                    handlePacket(null, it, commandName, sequenceId)
                 }
             }
-        } finally {
-            println()
-            println() // separate for debugging
         }
     }
 
@@ -211,7 +196,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (packet is Cancellable && packet.cancelled) return
         }
 
-        bot.logger.info(packet)
+        bot.logger.info("Received packet: $packet")
 
         packetFactory?.run {
             bot.handle(packet)
@@ -325,17 +310,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timoutMillis: Long = 3000): E {
         val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
         packetListeners.addLast(handler)
         bot.logger.info("Send: ${this.commandName}")
         channel.send(delegate)
-        return withTimeoutOrNull(3000) {
+        return withTimeoutOrNull(timoutMillis) {
             @Suppress("UNCHECKED_CAST")
             handler.await() as E
+
+            // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
         } ?: net.mamoe.mirai.qqandroid.utils.inline {
             packetListeners.remove(handler)
-            error("timeout when sending ${this.commandName}")
+            error("timeout when sending ${commandName}")
         }
     }
 
@@ -351,6 +338,4 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override suspend fun awaitDisconnection() = supervisor.join()
-
-    override val coroutineContext: CoroutineContext = bot.coroutineContext
 }

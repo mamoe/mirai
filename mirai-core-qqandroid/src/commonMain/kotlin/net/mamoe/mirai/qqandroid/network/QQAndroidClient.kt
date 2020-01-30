@@ -124,6 +124,7 @@ internal open class QQAndroidClient(
     @PublishedApi
     internal val apkId: ByteArray = "com.tencent.mobileqq".toByteArray()
 
+    var outgoingPacketUnknownValue: ByteArray = 0x02B05B8B.toByteArray()
     var loginState = 0
 
     var t150: Tlv? = null
