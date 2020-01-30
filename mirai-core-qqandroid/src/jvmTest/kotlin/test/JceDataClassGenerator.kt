@@ -3,19 +3,23 @@ package test;
 import java.io.File
 
 fun main(){
-    val var9 = toJCEInfo(
-        File(
-            """
-        E:\Projects\QQAndroidFF\app\src\main\java\PushNotifyPack\RequestPushForceOffline.java
-    """.trimIndent()
-        ).readText()
-    )
     println(
         "import kotlinx.serialization.SerialId\n" +
                 "import kotlinx.serialization.Serializable\n" +
                 "import net.mamoe.mirai.qqandroid.io.JceStruct\n"
     )
-    println(var9.toString())
+    File(
+        """
+        E:\Projects\QQAndroidFF\app\src\main\java\friendlist\
+    """.trimIndent()
+    ).listFiles()!!.forEach {
+        try {
+            println(toJCEInfo(it.readText()).toString())
+        } catch (e: Exception) {
+            println("when processing ${it.path}")
+            throw e
+        }
+    }
 }
 
 
@@ -91,7 +95,7 @@ class Property(
     }
 
     fun toStringWithSpacing(maxIDLength:Int): String {
-        val space = " ".repeat(maxIDLength - (jceID.toString().length))
+        val space = " ".repeat((maxIDLength - (jceID.toString().length)).coerceAtLeast(0))
         var base = "    @SerialId(" + jceID + ") " + space + "val " + name + ":" + type + ""
         if(!isRequired){
             if(defaultValue == null) {
@@ -114,7 +118,7 @@ fun toJCEInfo(source:String):JCEInfo{
     val info = JCEInfo()
     val allProperties = mutableMapOf<String,Property>()
     var inputStreamVariableRegix:String? = null
-    println(source)
+    // println(source)
     source.split("\n").forEach{
         when{
             it.contains("class") -> {
