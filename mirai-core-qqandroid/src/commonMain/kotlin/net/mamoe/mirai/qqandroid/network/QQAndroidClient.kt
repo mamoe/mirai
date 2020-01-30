@@ -111,7 +111,7 @@ internal open class QQAndroidClient(
     val protocolVersion: Short = 8001
 
     class C2cMessageSyncData {
-        var syncCookie = EMPTY_BYTE_ARRAY
+        var syncCookie: ByteArray? = null
         var pubAccountCookie = EMPTY_BYTE_ARRAY
         var syncFlag: Int = 0
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY

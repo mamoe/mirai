@@ -10,6 +10,7 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readRemainingAsProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
@@ -17,6 +18,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushNotify
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
@@ -41,7 +43,7 @@ internal class MessageSvc {
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify) {
             network.run {
-                PbGetMsg(client, packet).sendAndExpect<MultiPacket<FriendMessage>>()
+                PbGetMsg(client, packet.stMsgInfo?.uMsgTime ?: 0).sendAndExpect<MultiPacket<FriendMessage>>()
             }
         }
     }
@@ -56,7 +58,7 @@ internal class MessageSvc {
 
         operator fun invoke(
             client: QQAndroidClient,
-            from: RequestPushNotify
+            msgTime: Long //PbPushMsg.msg.msgHead.msgTime
         ): OutgoingPacket = buildOutgoingUniPacket(
             client,
             extraData = EXTRA_DATA.toReadPacket()
@@ -64,14 +66,16 @@ internal class MessageSvc {
             writeProtoBuf(
                 MsgSvc.PbGetMsgReq.serializer(),
                 MsgSvc.PbGetMsgReq(
-                    msgReqType = from.ctype.toInt(),
+                    msgReqType = 1, // from.ctype.toInt()
                     contextFlag = 1,
                     rambleFlag = 0,
                     latestRambleNumber = 20,
                     otherRambleNumber = 3,
                     onlineSyncFlag = 1,
+                    whisperSessionId = 0,
                     //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
-                    syncCookie = client.c2cMessageSync.syncCookie,
+                    syncCookie = client.c2cMessageSync.syncCookie
+                        ?: SyncCookie(msgTime).toByteArray(SyncCookie.serializer()).also { client.c2cMessageSync.syncCookie = it },
                     syncFlag = 1
                     // syncFlag = client.c2cMessageSync.syncFlag,
                     //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,

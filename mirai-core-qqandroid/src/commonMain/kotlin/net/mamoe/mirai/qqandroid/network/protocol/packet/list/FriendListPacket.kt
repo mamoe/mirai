@@ -3,7 +3,10 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.list
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.*
+import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
+import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
+import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
+import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListResp
@@ -15,7 +18,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.readRemainingBytes
 import net.mamoe.mirai.utils.io.toUHexString
@@ -24,7 +26,7 @@ import net.mamoe.mirai.utils.io.toUHexString
 internal class FriendList {
 
     internal object GetTroopList : PacketFactory<GetTroopList.Response>("friendlist.GetTroopListReqV2") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopList.Response {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             println("获取到了GetTroopList的回信")
             println(this.readRemainingBytes().toUHexString())
             return Response()
