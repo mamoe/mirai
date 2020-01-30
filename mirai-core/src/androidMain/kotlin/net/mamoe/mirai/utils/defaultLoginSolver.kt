@@ -15,12 +15,7 @@ actual var defaultLoginSolver: LoginSolver = object : LoginSolver() {
         error("should be implemented manually by you")
     }
 
-    override suspend fun onGetPhoneNumber(): String {
+    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
         error("should be implemented manually by you")
     }
-
-    override suspend fun onGetSMSVerifyCode(): String {
-        error("should be implemented manually by you")
-    }
-
 }

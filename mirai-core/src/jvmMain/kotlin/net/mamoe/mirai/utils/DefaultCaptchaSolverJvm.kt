@@ -53,7 +53,7 @@ class DefaultLoginSolver : LoginSolver() {
             }
             bot.logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
             return readLine()?.takeUnless { it.isEmpty() || it.length != 4 }.also {
-                bot.logger.info("正在提交[" + it +"]中...")
+                bot.logger.info("正在提交[$it]中...")
             }
         }
     }
