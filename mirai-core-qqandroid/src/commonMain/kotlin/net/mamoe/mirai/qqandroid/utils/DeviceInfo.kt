@@ -2,7 +2,7 @@ package net.mamoe.mirai.qqandroid.utils
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -62,7 +62,7 @@ abstract class DeviceInfo(
             @SerialId(9) val innerVersion: ByteArray
         )
 
-        return ProtoBuf.dump(
+        return ProtoBufWithNullableSupport.dump(
             DevInfo.serializer(), DevInfo(
                 bootloader,
                 procVersion,

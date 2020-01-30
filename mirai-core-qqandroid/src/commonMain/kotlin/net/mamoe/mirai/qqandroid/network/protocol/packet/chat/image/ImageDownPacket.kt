@@ -2,7 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeFully
-import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -19,7 +19,7 @@ internal object ImageDownPacket : PacketFactory<ImageDownPacket.ImageDownPacketR
         // TODO: 2020/1/24 测试: bodyType, subAppId
         return buildLoginOutgoingPacket(client, key = client.wLoginSigInfo.d2Key, bodyType = 1) {
             writeSsoPacket(client, subAppId = 0, commandName = commandName, sequenceId = it) {
-                val data = ProtoBuf.dump(
+                val data = ProtoBufWithNullableSupport.dump(
                     Cmd0x352Packet.serializer(),
                     Cmd0x352Packet.createByImageRequest(req)
                 )

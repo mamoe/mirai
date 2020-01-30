@@ -1,7 +1,7 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
@@ -103,7 +103,7 @@ class StatSvc {
                                         var44.strVendorName = ROMUtil.getRomName();
                                         var44.strVendorOSName = ROMUtil.getRomVersion(20);
                                         */
-                                        bytes_0x769_reqbody = ProtoBuf.dump(
+                                        bytes_0x769_reqbody = ProtoBufWithNullableSupport.dump(
                                             Oidb0x769.RequestBody.serializer(), Oidb0x769.RequestBody(
                                                 rpt_config_list = listOf(
                                                     Oidb0x769.ConfigSeq(

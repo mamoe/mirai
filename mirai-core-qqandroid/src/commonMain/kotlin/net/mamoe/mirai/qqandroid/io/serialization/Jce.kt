@@ -191,7 +191,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         this.writeHead(STRUCT_END, 0)
                     }
                 } else if (value is ProtoBuf) {
-                    this.encodeTaggedByteArray(popTag(), kotlinx.serialization.protobuf.ProtoBuf.dump(value))
+                    this.encodeTaggedByteArray(popTag(), net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport.dump(value))
                 } else {
                     serializer.serialize(this, value)
                 }

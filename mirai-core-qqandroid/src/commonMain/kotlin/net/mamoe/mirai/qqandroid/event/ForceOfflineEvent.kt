@@ -7,7 +7,7 @@ import net.mamoe.mirai.event.events.BotEvent
 /**
  * 被挤下线
  */
-class ForceOfflineEvent(
+data class ForceOfflineEvent(
     override val bot: Bot,
     val title: String,
     val tips: String

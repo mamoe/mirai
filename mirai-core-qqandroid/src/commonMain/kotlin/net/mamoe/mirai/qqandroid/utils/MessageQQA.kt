@@ -3,16 +3,15 @@ package net.mamoe.mirai.qqandroid.utils
 import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 
 
-internal fun MessageChain.constructPbSendMsgReq(): MsgSvc.PbSendMsgReq {
-    val request = MsgSvc.PbSendMsgReq()
+internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
+    val elems = mutableListOf<ImMsgBody.Elem>()
 
     this.forEach {
         when (it) {
             is PlainText -> {
-                request.msgBody.richText.elems.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
+                elems.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
             }
             is At -> {
 
@@ -20,8 +19,7 @@ internal fun MessageChain.constructPbSendMsgReq(): MsgSvc.PbSendMsgReq {
         }
     }
 
-
-    return request
+    return elems
 }
 
 

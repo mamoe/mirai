@@ -7,7 +7,6 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.network.BotNetworkHandler
-
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.encryptAndWrite
 import net.mamoe.mirai.utils.io.hexToBytes

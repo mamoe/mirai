@@ -469,7 +469,7 @@ class ImMsgBody : ProtoBuf {
         @SerialId(16) val bubbleSubId: Int = 0,
         @SerialId(17) val pendantId: Long = 0L,
         @SerialId(18) val rpIndex: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(19) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @SerialId(19) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY // 78 00 F8 01 00 C8 02 00
     ) : ProtoBuf
 
     @Serializable
@@ -609,7 +609,7 @@ class ImMsgBody : ProtoBuf {
         @SerialId(8) val reserved: Int = 0,
         @SerialId(9) val subcmd: Int = 0,
         @SerialId(10) val microCloud: Int = 0,
-        @SerialId(11) val bytesFileUrls: List<ByteArray>? = null,
+        @SerialId(11) val bytesFileUrls: List<ByteArray>? = listOf(),
         @SerialId(12) val downloadFlag: Int = 0,
         @SerialId(50) val dangerEvel: Int = 0,
         @SerialId(51) val lifeTime: Int = 0,
@@ -705,7 +705,7 @@ class ImMsgBody : ProtoBuf {
         @SerialId(20) val downPara: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(29) val format: Int = 0,
         @SerialId(30) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(31) val bytesPttUrls: List<ByteArray>? = null,
+        @SerialId(31) val bytesPttUrls: List<ByteArray>? = listOf(),
         @SerialId(32) val downloadFlag: Int = 0
     ) : ProtoBuf
 
@@ -813,8 +813,8 @@ class ImMsgBody : ProtoBuf {
     class RichText(
         @SerialId(1) val attr: Attr? = null,
         @SerialId(2) val elems: MutableList<Elem> = mutableListOf(),
-        @SerialId(3) val notOnlineFile: NotOnlineFile? = null,
-        @SerialId(4) val ptt: Ptt? = null,
+        @SerialId(3) val notOnlineFile: NotOnlineFile? =null,
+        @SerialId(4) val ptt: Ptt? =null,
         @SerialId(5) val tmpPtt: TmpPtt? = null,
         @SerialId(6) val trans211TmpMsg: Trans211TmpMsg? = null
     ) : ProtoBuf
@@ -1045,9 +1045,9 @@ class ImMsgHead : ProtoBuf {
 
     @Serializable
     class InstCtrl(
-        @SerialId(1) val msgSendToInst: List<InstInfo>? = null,
-        @SerialId(2) val msgExcludeInst: List<InstInfo>? = null,
-        @SerialId(3) val msgFromInst: InstInfo? = null
+        @SerialId(1) val msgSendToInst: List<InstInfo>? = listOf(),
+        @SerialId(2) val msgExcludeInst: List<InstInfo>? = listOf(),
+        @SerialId(3) val msgFromInst: InstInfo? = InstInfo()
     ) : ProtoBuf
 
     @Serializable
@@ -1107,7 +1107,7 @@ class ImReceipt : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReceiptInfo(
+    data class ReceiptInfo(
         @SerialId(1) val readTime: Long = 0L
     ) : ProtoBuf
 
@@ -1118,7 +1118,7 @@ class ImReceipt : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReceiptResp(
+    data class ReceiptResp(
         @SerialId(1) val command: Int /* enum */ = 1,
         @SerialId(2) val receiptInfo: ReceiptInfo? = null
     ) : ProtoBuf

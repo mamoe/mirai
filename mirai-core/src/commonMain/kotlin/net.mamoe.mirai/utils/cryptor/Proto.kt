@@ -200,9 +200,9 @@ fun Any?.contentToString(prefix: String = ""): String = when (this) {
     }
 
     is ProtoMap -> "ProtoMap(size=$size){\n" + this.toStringPrefixed("$prefix${ProtoMap.indent}${ProtoMap.indent}") + "\n$prefix${ProtoMap.indent}}"
-    is Iterable<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
-    is Iterator<*> -> this.asSequence().joinToString(prefix = "[", postfix = "]") { it.contentToString() }
-    is Sequence<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString() }
+    is Iterable<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString(prefix) }
+    is Iterator<*> -> this.asSequence().joinToString(prefix = "[", postfix = "]") { it.contentToString(prefix) }
+    is Sequence<*> -> this.joinToString(prefix = "[", postfix = "]") { it.contentToString(prefix) }
     is Map<*, *> -> this.entries.joinToString(prefix = "{", postfix = "}") { it.key.contentToString(prefix) + "=" + it.value.contentToString(prefix) }
     else -> {
         if (this == null) "null"

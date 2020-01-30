@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
@@ -102,7 +103,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgSendInfo(
+    data class MsgSendInfo(
         @SerialId(1) val receiver: Int = 0
     ) : ProtoBuf
 
@@ -440,7 +441,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbSendMsgResp(
+    data class PbSendMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val sendTime: Int = 0,
@@ -450,7 +451,7 @@ class MsgSvc : ProtoBuf {
         @SerialId(7) val transSvrInfo: TransSvrInfo? = null,
         @SerialId(8) val receiptResp: ImReceipt.ReceiptResp? = null,
         @SerialId(9) val textAnalysisResult: Int = 0
-    ) : ProtoBuf
+    ) : ProtoBuf, Packet
 
     @Serializable
     class PbBindUinUnReadMsgNumResp(
