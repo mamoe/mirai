@@ -754,8 +754,8 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         return dumpAsPacket(serializer, obj).readBytes()
     }
 
-    fun <T> load(deserializer: DeserializationStrategy<T>, packet: ByteReadPacket): T {
-        packet.readIoBuffer().withUse {
+    fun <T> load(deserializer: DeserializationStrategy<T>, packet: ByteReadPacket, length: Int = packet.remaining.toInt()): T {
+        packet.readIoBuffer(n = length).withUse {
             val decoder = JceDecoder(JceInput(this))
             return decoder.decode(deserializer)
         }

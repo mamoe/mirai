@@ -22,8 +22,12 @@ fun <T : JceStruct> BytePacketBuilder.writeJceStruct(serializer: SerializationSt
     this.writePacket(Jce.byCharSet(charset).dumpAsPacket(serializer, struct))
 }
 
-fun <T : JceStruct> ByteReadPacket.readRemainingAsJceStruct(serializer: DeserializationStrategy<T>, charset: JceCharset = JceCharset.UTF8): T {
-    return Jce.byCharSet(charset).load(serializer, this)
+fun <T : JceStruct> ByteReadPacket.readRemainingAsJceStruct(
+    serializer: DeserializationStrategy<T>,
+    charset: JceCharset = JceCharset.UTF8,
+    length: Int = this.remaining.toInt()
+): T {
+    return Jce.byCharSet(charset).load(serializer, this, length)
 }
 
 /**
@@ -33,7 +37,7 @@ fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: Deserialization
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
-            this.readRemainingAsJceStruct(deserializer)
+            this.readRemainingAsJceStruct(deserializer, length = (this.remaining - 1).toInt())
         }
     }
 }
@@ -45,7 +49,7 @@ fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationS
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
-            this.readRemainingAsProtoBuf(deserializer)
+            this.readRemainingAsProtoBuf(deserializer, (this.remaining - 1).toInt())
         }
     }
 }
@@ -89,8 +93,8 @@ fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T
 /**
  * load
  */
-fun <T : ProtoBuf> Input.readRemainingAsProtoBuf(serializer: DeserializationStrategy<T>): T {
-    return ProtoBufWithNullableSupport.load(serializer, this.readBytes())
+fun <T : ProtoBuf> ByteReadPacket.readRemainingAsProtoBuf(serializer: DeserializationStrategy<T>, length: Int = this.remaining.toInt()): T {
+    return ProtoBufWithNullableSupport.load(serializer, this.readBytes(length))
 }
 
 /**
