@@ -37,7 +37,7 @@ internal class GetFriendListResp(
     @SerialId(4) val getfriendCount: Short,
     @SerialId(5) val totoalFriendCount: Short,
     @SerialId(6) val friendCount: Short,
-    @SerialId(7) val vecFriendInfo: List<FriendInfo>,
+    @SerialId(7) val vecFriendInfo: List<FriendInfo>? = null,
     @SerialId(8) val groupid: Byte? = null,
     @SerialId(9) val ifGetGroupInfo: Byte,
     @SerialId(10) val groupstartIndex: Byte? = null,
@@ -67,7 +67,7 @@ internal class FriendListSubSrvRspCode(
 
 @Serializable
 internal class FriendInfo(
-    @SerialId(0) val friendUin: Long,
+    @SerialId(0) val friendUin: Long? = 0,
     @SerialId(1) val groupId: Byte,
     @SerialId(2) val faceId: Short,
     @SerialId(3) val remark: String = "",

@@ -308,7 +308,10 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         input: JceInput
     ) : JceDecoder(input) {
         override fun endStructure(desc: SerialDescriptor) {
-            input.readHeadOrNull() // STRUCT_END
+            while (input.peakHead().type != STRUCT_END) {
+                input.readHead()
+            }
+            input.readHead()
         }
     }
 
@@ -320,7 +323,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         internal val input: JceInput
     ) : TaggedDecoder<Int>() {
         override fun SerialDescriptor.getTag(index: Int): Int {
-            return getSerialId(this, index) ?: error("cannot find tag")
+            return getSerialId(this, index) ?: error("cannot find tag with index $index")
         }
 
         override fun decodeTaggedByte(tag: Int): Byte = input.readByte(tag)
@@ -387,21 +390,6 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 }
             }
 
-            if (desc.kind == StructureKind.CLASS || desc.kind == UnionKind.OBJECT) {
-                val tag = currentTagOrNull
-                if (tag != null) {
-                    @Suppress("SENSELESS_COMPARISON") // 推断 bug
-                    if (input.skipToTagOrNull(tag) {
-                            popTag()
-                            return JceStructReader(input)
-                        } == null && desc.isNullable) {
-                        return NullReader(this.input)
-                    }
-                }
-
-                return this // top-level
-            }
-
             return super.beginStructure(desc, *typeParams)
         }
 
@@ -419,7 +407,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
-            // println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
+            println("decodeNullableSerializableValue: ${deserializer::class.qualifiedName}")
             if (deserializer is NullReader) {
                 return null
             }
@@ -445,7 +433,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         return if (isTagOptional(tag)) input.readByteArrayOrNull(tag)?.toMutableList() as? T
                         else input.readByteArray(tag).toMutableList() as T
                     }
-                    val tag = popTag()
+                    val tag = currentTag
 //                    println(tag)
                     @Suppress("SENSELESS_COMPARISON") // false positive
                     if (input.skipToTagOrNull(tag) {
@@ -461,6 +449,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     val tag = popTag()
                     @Suppress("SENSELESS_COMPARISON")
                     if (input.skipToTagOrNull(tag) {
+                            check(it.type == MAP) { "type mismatch: ${it.type}" }
                             // 将 mapOf(k1 to v1, k2 to v2, ...) 转换为 listOf(k1, v1, k2, v2, ...) 以便于写入.
                             val serializer = (deserializer as MapLikeSerializer<Any?, Any?, T, *>)
                             val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
@@ -474,7 +463,24 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     error("UNREACHABLE CODE")
                 }
             }
-            val tag = currentTagOrNull ?: return deserializer.deserialize(this)
+
+            if (deserializer.descriptor.kind == StructureKind.CLASS || deserializer.descriptor.kind == UnionKind.OBJECT) {
+                val tag = currentTagOrNull
+                if (tag != null) {
+                    @Suppress("SENSELESS_COMPARISON") // 推断 bug
+                    if (input.skipToTagOrNull(tag) {
+                            check(it.type == STRUCT_BEGIN) { "type mismatch: ${it.type}" }
+                            //popTag()
+                            return deserializer.deserialize(JceStructReader(input))
+                        } == null && isTagOptional(tag)) {
+                        return null
+                    } else error("cannot find tag $tag")
+                }
+
+                return deserializer.deserialize(JceDecoder(this.input))
+            }
+
+            val tag = currentTagOrNull ?: return deserializer.deserialize(JceDecoder(this.input))
             return if (this.decodeTaggedNotNullMark(tag)) {
                 deserializer.deserialize(this)
             } else {
@@ -486,7 +492,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         @Suppress("UNCHECKED_CAST")
         override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
             return decodeNullableSerializableValue(deserializer as DeserializationStrategy<Any?>) as? T
-                ?: error("value with tag $currentTagOrNull is not optional but cannot find")
+                ?: error("value with tag $currentTagOrNull(by ${deserializer.getClassName()}) is not optional but cannot find")
         }
     }
 
@@ -738,7 +744,8 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         internal const val STRUCT_END: Byte = 11
         internal const val ZERO_TYPE: Byte = 12
 
-        private fun Any?.getClassName(): String = (if (this == null) Unit::class else this::class).simpleName ?: "<unnamed class>"
+        private fun Any?.getClassName(): String =
+            (if (this == null) Unit::class else this::class).qualifiedName?.split(".")?.takeLast(2)?.joinToString(".") ?: "<unnamed class>"
     }
 
     fun <T> dumpAsPacket(serializer: SerializationStrategy<T>, obj: T): ByteReadPacket {
