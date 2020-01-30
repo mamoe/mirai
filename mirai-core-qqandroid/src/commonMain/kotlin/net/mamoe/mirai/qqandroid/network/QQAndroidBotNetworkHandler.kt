@@ -349,7 +349,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
         } ?: net.mamoe.mirai.qqandroid.utils.inline {
             packetListeners.remove(handler)
-            error("timeout when sending $commandName")
+            error("timeout when receiving response of $commandName")
         }
     }
 
