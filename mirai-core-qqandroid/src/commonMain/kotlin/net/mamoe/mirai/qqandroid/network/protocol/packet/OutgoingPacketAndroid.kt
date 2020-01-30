@@ -48,6 +48,7 @@ internal val EMPTY_BYTE_ARRAY = ByteArray(0)
  *
  * byte[]   body encrypted by 16 zero
  */
+@Deprecated("危险", level = DeprecationLevel.ERROR)
 @UseExperimental(MiraiInternalAPI::class)
 internal inline fun PacketFactory<*>.buildOutgoingPacket(
     client: QQAndroidClient,
@@ -102,7 +103,7 @@ internal inline fun PacketFactory<*>.buildOutgoingUniPacket(
                 writeStringUtf8(it)
             }
             encryptAndWrite(key) {
-                writeUniPacket(commandName, extraData) {
+                writeUniPacket(commandName, client.outgoingPacketUnknownValue, extraData) {
                     body(sequenceId)
                 }
             }
@@ -113,6 +114,7 @@ internal inline fun PacketFactory<*>.buildOutgoingUniPacket(
 @UseExperimental(MiraiInternalAPI::class)
 internal inline fun BytePacketBuilder.writeUniPacket(
     commandName: String,
+    unknownData: ByteArray,
     extraData: ByteReadPacket = BRP_STUB,
     body: BytePacketBuilder.() -> Unit
 ) {
@@ -123,7 +125,7 @@ internal inline fun BytePacketBuilder.writeUniPacket(
         }
 
         writeInt(4 + 4)
-        writeInt(45112203) //  02 B0 5B 8B
+        writeFully(unknownData) //  02 B0 5B 8B
 
         if (extraData === BRP_STUB) {
             writeInt(0x04)
@@ -243,7 +245,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         }
 
         writeInt(4 + 4)
-        writeInt(45112203) //  02 B0 5B 8B
+        writeFully(client.outgoingPacketUnknownValue) //  02 B0 5B 8B
 
         client.device.imei.let {
             writeInt(it.length + 4)
