@@ -102,6 +102,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             try {
                 return _network.login()
             } catch (e: Exception){
+                e.logStacktrace()
                 _network.dispose(e)
             }
             logger.warning("Login failed. Retrying in 3s...")
