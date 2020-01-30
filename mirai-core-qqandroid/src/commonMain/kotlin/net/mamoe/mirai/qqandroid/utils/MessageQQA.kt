@@ -16,6 +16,15 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             is At -> {
 
             }
+            is Image -> {
+                elems.add(
+                    ImMsgBody.Elem(
+                        notOnlineImage = ImMsgBody.NotOnlineImage(
+                            filePath = it.id.value
+                        )
+                    )
+                )
+            }
         }
     }
 
@@ -23,23 +32,27 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
 }
 
 
-internal fun ImMsgBody.RichText.toMessageChain() : MessageChain{
+internal fun ImMsgBody.RichText.toMessageChain(): MessageChain {
     val message = MessageChain(initialCapacity = elems.size)
 
     elems.forEach {
         when {
-            it.notOnlineImage != null -> message.add(Image(
-                ImageIdQQA(
-                    it.notOnlineImage.resId,
-                    it.notOnlineImage.origUrl
+            it.notOnlineImage != null -> message.add(
+                Image(
+                    ImageIdQQA(
+                        it.notOnlineImage.resId,
+                        it.notOnlineImage.origUrl
+                    )
                 )
-            ))
-            it.customFace != null -> message.add(Image(
-                ImageIdQQA(
-                    it.customFace.filePath,
-                    it.customFace.origUrl
+            )
+            it.customFace != null -> message.add(
+                Image(
+                    ImageIdQQA(
+                        it.customFace.filePath,
+                        it.customFace.origUrl
+                    )
                 )
-            ))
+            )
             it.text != null -> message.add(it.text.str.toMessage())
         }
     }
