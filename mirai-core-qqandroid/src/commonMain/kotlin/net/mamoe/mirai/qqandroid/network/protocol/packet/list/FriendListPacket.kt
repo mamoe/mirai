@@ -18,6 +18,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImageDownPacket
+import net.mamoe.mirai.utils.io.debugPrint
+import net.mamoe.mirai.utils.io.debugPrintln
 
 
 internal object FriendListPacket :
@@ -89,6 +91,7 @@ internal object FriendListPacket :
                     ).toByteArray(RequestDataVersion3.serializer())
                 )
             )
+            this.build().debugPrint()
         }
     }
 
