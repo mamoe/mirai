@@ -26,3 +26,5 @@ internal class GetFriendListReq(
     @SerialId(17) val vec0xd6bReq: ByteArray? = null,
     @SerialId(18) val vecSnsTypelist: List<Long>? = null
 ) : JceStruct
+
+

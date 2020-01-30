@@ -131,13 +131,13 @@ fun toJCEInfo(source:String):JCEInfo{
                 info.className = var0
             }
 
-            (it.contains("public") && it.contains(";")) -> {
-                val var1 = it.trim().split(" ")
+            (it.contains("public") && it.contains(";") && (!it.contains("static"))) -> {
+                val var1 = it.replace(", ",",").trim().split(" ")
                 if(var1.size == 5){
                     allProperties.put(var1[2],
                         Property(
                             var1[2],
-                            var1[1],
+                            var1[1].replace(",", ", "),
                             var1[4].replace(";","")
                         )
                     )
@@ -146,7 +146,7 @@ fun toJCEInfo(source:String):JCEInfo{
                         var1[2].replace(";",""),
                         Property(
                             var1[2].replace(";",""),
-                            var1[1]
+                            var1[1].replace(",", ", ")
                         )
                     )
                 }

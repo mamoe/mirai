@@ -14,14 +14,17 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq
 import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 
@@ -91,7 +94,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
+
+        //start updating friend/group list
+        bot.logger.info("Start updating friend/group list")
+        val data = FriendList.GetFriendGroupList(
+            bot.client,
+            0,
+            20,
+            0,
+            10
+        ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+        println(data.contentToString())
     }
+
 
     /**
      * 单线程处理包的接收, 分割和连接.
