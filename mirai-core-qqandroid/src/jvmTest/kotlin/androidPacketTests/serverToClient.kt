@@ -219,7 +219,7 @@ private fun parseSsoFrame(input: ByteReadPacket): KnownPacketFactories.IncomingP
         commandName = readString(readInt() - 4)
         DebugLogger.warning("commandName=$commandName")
         val unknown = readBytes(readInt() - 4)
-        if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
+        //if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 
         check(readInt() == 0)
     }
@@ -261,7 +261,7 @@ private fun parseUniFrame(input: ByteReadPacket): KnownPacketFactories.IncomingP
         commandName = readString(readInt() - 4)
         DebugLogger.warning("commandName=$commandName")
         val unknown = readBytes(readInt() - 4)
-        if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
+        //if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 
         check(readInt() == 0)
     }

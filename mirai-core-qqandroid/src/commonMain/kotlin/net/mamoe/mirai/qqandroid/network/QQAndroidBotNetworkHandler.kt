@@ -158,18 +158,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     private suspend inline fun <P : Packet> generifiedParsePacket(input: Input) {
-        try {
-            KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
-                handlePacket(packetFactory, packet, commandName, sequenceId)
-                if (packet is MultiPacket<*>) {
-                    packet.forEach {
-                        handlePacket(null, it, commandName, sequenceId)
-                    }
+        KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
+            handlePacket(packetFactory, packet, commandName, sequenceId)
+            if (packet is MultiPacket<*>) {
+                packet.forEach {
+                    handlePacket(null, it, commandName, sequenceId)
                 }
             }
-        } finally {
-            println()
-            println() // separate for debugging
         }
     }
 
@@ -201,7 +196,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (packet is Cancellable && packet.cancelled) return
         }
 
-        bot.logger.info(packet)
+        bot.logger.info("Received packet: $packet")
 
         packetFactory?.run {
             bot.handle(packet)
@@ -315,17 +310,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timoutMillis: Long = 3000): E {
         val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
         packetListeners.addLast(handler)
         bot.logger.info("Send: ${this.commandName}")
         channel.send(delegate)
-        return withTimeout(3000) {
+        return withTimeoutOrNull(timoutMillis) {
             @Suppress("UNCHECKED_CAST")
             handler.await() as E
+
+            // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
         } ?: net.mamoe.mirai.qqandroid.utils.inline {
             packetListeners.remove(handler)
-            error("timeout when sending ${this.commandName}")
+            error("timeout when sending ${commandName}")
         }
     }
 
