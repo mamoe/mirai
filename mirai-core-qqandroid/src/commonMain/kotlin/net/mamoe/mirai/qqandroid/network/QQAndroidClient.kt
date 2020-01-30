@@ -96,6 +96,8 @@ internal open class QQAndroidClient(
 
     val apkVersionName: ByteArray = "8.2.0".toByteArray()
 
+    private val messageSequenceId: AtomicInt = atomic(0)
+    internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndIncrement()
 
     val appClientVersion: Int = 0
 

@@ -6,9 +6,9 @@ import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
-class MsgOnlinePush {
+internal class MsgOnlinePush {
     @Serializable
-    class PbPushMsg(
+    internal class PbPushMsg(
         @SerialId(1) val msg: MsgComm.Msg,
         @SerialId(2) val svrip: Int = 0,
         @SerialId(3) val pushToken: ByteArray = EMPTY_BYTE_ARRAY,

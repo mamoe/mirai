@@ -25,8 +25,10 @@ import net.mamoe.mirai.qqandroid.utils.toRichTextElems
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.toReadPacket
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
-class MessageSvc {
+internal class MessageSvc {
     /**
      * 告知要刷新好友消息
      */
@@ -119,8 +121,16 @@ class MessageSvc {
         }
     }
 
-    internal object PbSendMsg : PacketFactory<MsgSvc.PbSendMsgResp>("MessageSvc.PbSendMsg") {
-        object Response : Packet
+    internal object PbSendMsg : PacketFactory<PbSendMsg.Response>("MessageSvc.PbSendMsg") {
+        sealed class Response : Packet {
+            object SUCCESS : Response() {
+                override fun toString(): String = "MessageSvc.PbSendMsg.Response.SUCCESS"
+            }
+
+            data class Failed(val errorCode: Int, val errorMessage: String) : Response() {
+                override fun toString(): String = "MessageSvc.PbSendMsg.Response.FAILED(errorCode=$errorCode, errorMessage=$errorMessage"
+            }
+        }
 
         /**
          * 发送好友消息
@@ -142,18 +152,53 @@ class MessageSvc {
                         richText = ImMsgBody.RichText(
                             elems = message.toRichTextElems()
                         )
-                    )
-                    //  msgSeq = 17041,
-                    //  msgRand = Random.nextInt().absoluteValue,
-                    //  syncCookie = client.c2cMessageSync.syncCookie.takeIf { it.isNotEmpty() } ?: "08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00".hexToBytes(),
-                    //  msgVia = 1
+                    ),
+                    msgSeq = client.atomicNextMessageSequenceId(),
+                    msgRand = Random.nextInt().absoluteValue
+                    // syncCookie = client.c2cMessageSync.syncCookie.takeIf { it.isNotEmpty() } ?: "08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00".hexToBytes(),
+                    // msgVia = 1
                 )
             )
         }
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MsgSvc.PbSendMsgResp {
+        /**
+         * 发送群消息
+         */
+        fun ToGroup(
+            client: QQAndroidClient,
+            groupId: Long,
+            message: MessageChain
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+
+            ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
+
+            ///return@buildOutgoingUniPacket
+            writeProtoBuf(
+                MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
+                    routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupId)), // TODO: 2020/1/30 确认这里是 id 还是 internalId
+                    contentHead = MsgComm.ContentHead(pkgNum = 1),
+                    msgBody = ImMsgBody.MsgBody(
+                        richText = ImMsgBody.RichText(
+                            elems = message.toRichTextElems()
+                        )
+                    ),
+                    msgSeq = client.atomicNextMessageSequenceId(),
+                    msgRand = Random.nextInt().absoluteValue
+                    // syncCookie = client.c2cMessageSync.syncCookie.takeIf { it.isNotEmpty() } ?: "08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00".hexToBytes(),
+                    // msgVia = 1
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             discardExact(4)
-            return readRemainingAsProtoBuf(MsgSvc.PbSendMsgResp.serializer())
+
+            val response = readRemainingAsProtoBuf(MsgSvc.PbSendMsgResp.serializer())
+            return if (response.result == 0) {
+                Response.SUCCESS
+            } else {
+                Response.Failed(response.errtype, response.errmsg)
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 private val EMPTY_MAP = mapOf<String, String>()
 
 @Serializable
-class RequestPacket(
+internal class RequestPacket(
     @SerialId(1) val iVersion: Short = 3,
     @SerialId(2) val cPacketType: Byte = 0,
     @SerialId(3) val iMessageType: Int = 0,
@@ -22,16 +22,16 @@ class RequestPacket(
 ) : JceStruct
 
 @Serializable
-class RequestDataVersion3(
+internal class RequestDataVersion3(
     @SerialId(0) val map: Map<String, ByteArray> // 注意: ByteArray 不能直接放序列化的 JceStruct!! 要放类似 RequestDataStructSvcReqRegister 的
 ) : JceStruct
 
 @Serializable
-class RequestDataVersion2(
+internal class RequestDataVersion2(
     @SerialId(0) val map: Map<String, Map<String, ByteArray>>
 ) : JceStruct
 
 @Serializable
-class RequestDataStructSvcReqRegister(
+internal class RequestDataStructSvcReqRegister(
     @SerialId(0) val struct: SvcReqRegister
 ) : JceStruct

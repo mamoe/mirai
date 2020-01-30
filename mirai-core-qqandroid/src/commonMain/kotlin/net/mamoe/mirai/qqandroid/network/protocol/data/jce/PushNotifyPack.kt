@@ -25,8 +25,9 @@ internal data class RequestPushNotify(
     @SerialId(13) val svrip: Int?
 ) : JceStruct, Packet
 
+@Suppress("ArrayInDataClass")
 @Serializable
-internal class MsgInfo(
+internal data class MsgInfo(
     @SerialId(0) val lFromUin: Long = 0L,
     @SerialId(1) val uMsgTime: Long = 0L,
     @SerialId(2) val shMsgType: Short,
@@ -51,7 +52,7 @@ internal class MsgInfo(
 
 
 @Serializable
-class ShareData(
+internal class ShareData(
     @SerialId(0) val pkgname: String = "",
     @SerialId(1) val msgtail: String = "",
     @SerialId(2) val picurl: String = "",
@@ -59,13 +60,13 @@ class ShareData(
 ) : JceStruct
 
 @Serializable
-class TempMsgHead(
+internal class TempMsgHead(
     @SerialId(0) val c2c_type: Int? = 0,
     @SerialId(1) val serviceType: Int? = 0
 ) : JceStruct
 
 @Serializable
-class CPicInfo(
+internal class CPicInfo(
     @SerialId(0) val vPath: ByteArray = EMPTY_BYTE_ARRAY,
     @SerialId(1) val vHost: ByteArray? = EMPTY_BYTE_ARRAY
 ) : JceStruct

@@ -308,10 +308,10 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         input: JceInput
     ) : JceDecoder(input) {
         override fun endStructure(desc: SerialDescriptor) {
-            while (input.peakHead().type != STRUCT_END) {
-                input.readHead()
+            while (input.input.canRead() && input.peakHeadOrNull()?.type != STRUCT_END) {
+                input.readHeadOrNull() ?: return
             }
-            input.readHead()
+            input.readHeadOrNull()
         }
     }
 
@@ -512,6 +512,9 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @PublishedApi
         internal fun peakHead(): JceHead = input.makeView().readHead() ?: error("no enough data to read head")
+
+        @PublishedApi
+        internal fun peakHeadOrNull(): JceHead? = input.makeView().readHead()
 
         @Suppress("NOTHING_TO_INLINE") // 避免 stacktrace 出现两个 readHead
         private inline fun IoBuffer.readHead(): JceHead? {
