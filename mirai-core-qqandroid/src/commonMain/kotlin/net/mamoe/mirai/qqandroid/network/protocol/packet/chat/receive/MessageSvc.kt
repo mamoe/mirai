@@ -89,6 +89,10 @@ internal class MessageSvc {
             discardExact(4)
             val resp = readRemainingAsProtoBuf(MsgSvc.PbGetMsgResp.serializer())
 
+            if (resp.result != 0) {
+                return MultiPacket(emptyList())
+            }
+
             bot.client.c2cMessageSync.syncCookie = resp.syncCookie
             bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
             bot.client.c2cMessageSync.syncFlag = resp.syncFlag

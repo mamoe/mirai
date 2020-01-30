@@ -37,6 +37,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
 
     override suspend fun login() {
+        if (::channel.isInitialized) {
+            channel.close()
+        }
         channel = PlatformSocket()
         channel.connect("113.96.13.208", 8080)
         launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
@@ -91,7 +94,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000)
     }
 
     override suspend fun init() {
@@ -369,6 +372,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         val sequenceId: Int
     ) : CompletableDeferred<Packet> by CompletableDeferred(supervisor) {
         fun filter(commandName: String, sequenceId: Int) = this.commandName == commandName && this.sequenceId == sequenceId
+    }
+
+    override fun dispose(cause: Throwable?) {
+        channel.close()
+        super.dispose(cause)
     }
 
     override suspend fun awaitDisconnection() = supervisor.join()
