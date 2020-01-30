@@ -37,84 +37,79 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
 
     override suspend fun login() {
-        suspend fun doLogin() {
-            channel = PlatformSocket()
-            channel.connect("113.96.13.208", 8080)
-            launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
+        channel = PlatformSocket()
+        channel.connect("113.96.13.208", 8080)
+        launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-            bot.logger.info("Trying login")
-            var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
-            mainloop@ while (true) {
-                when (response) {
-                    is LoginPacket.LoginPacketResponse.UnsafeLogin -> {
-                        bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
-                        response = LoginPacket.SubCommand9(bot.client).sendAndExpect()
-                    }
+        bot.logger.info("Trying login")
+        var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+        mainloop@ while (true) {
+            when (response) {
+                is LoginPacket.LoginPacketResponse.UnsafeLogin -> {
+                    bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
+                    response = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+                }
 
-                    is LoginPacket.LoginPacketResponse.Captcha -> when (response) {
-                        is LoginPacket.LoginPacketResponse.Captcha.Picture -> {
-                            var result = response.data.withUse {
-                                bot.configuration.loginSolver.onSolvePicCaptcha(bot, this)
-                            }
-                            if (result == null || result.length != 4) {
-                                //refresh captcha
-                                result = "ABCD"
-                            }
-                            response = LoginPacket.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
-                            continue@mainloop
+                is LoginPacket.LoginPacketResponse.Captcha -> when (response) {
+                    is LoginPacket.LoginPacketResponse.Captcha.Picture -> {
+                        var result = response.data.withUse {
+                            bot.configuration.loginSolver.onSolvePicCaptcha(bot, this)
                         }
-                        is LoginPacket.LoginPacketResponse.Captcha.Slider -> {
-                            var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
-                            if (ticket == null) {
-                                ticket = ""
-                            }
-                            response = LoginPacket.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
-                            continue@mainloop
+                        if (result == null || result.length != 4) {
+                            //refresh captcha
+                            result = "ABCD"
                         }
-                    }
-
-                    is LoginPacket.LoginPacketResponse.Error -> error(response.toString())
-
-                    is LoginPacket.LoginPacketResponse.DeviceLockLogin -> {
-                        response = LoginPacket.SubCommand20(
-                            bot.client,
-                            response.t402,
-                            response.t403
-                        ).sendAndExpect()
+                        response = LoginPacket.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
                         continue@mainloop
                     }
-
-                    is LoginPacket.LoginPacketResponse.Success -> {
-                        bot.logger.info("Login successful")
-                        break@mainloop
+                    is LoginPacket.LoginPacketResponse.Captcha.Slider -> {
+                        var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
+                        if (ticket == null) {
+                            ticket = ""
+                        }
+                        response = LoginPacket.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
+                        continue@mainloop
                     }
                 }
+
+                is LoginPacket.LoginPacketResponse.Error -> error(response.toString())
+
+                is LoginPacket.LoginPacketResponse.DeviceLockLogin -> {
+                    response = LoginPacket.SubCommand20(
+                        bot.client,
+                        response.t402,
+                        response.t403
+                    ).sendAndExpect()
+                    continue@mainloop
+                }
+
+                is LoginPacket.LoginPacketResponse.Success -> {
+                    bot.logger.info("Login successful")
+                    break@mainloop
+                }
             }
-
-            println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-            StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
         }
 
-        suspend fun doInit() {
-            //start updating friend/group list
-            bot.logger.info("Start updating friend/group list")
-            /*
-            val data = FriendList.GetFriendGroupList(
-                bot.client,
-                0,
-                1,
-                0,
-                2
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
-             */
-            val data = FriendList.GetTroopList(
-                bot.client
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
-            println(data.contentToString())
-        }
+        println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
+    }
 
-        doLogin()
-        doInit()
+    suspend fun init() {
+        //start updating friend/group list
+        bot.logger.info("Start updating friend/group list")
+        /*
+        val data = FriendList.GetFriendGroupList(
+            bot.client,
+            0,
+            1,
+            0,
+            2
+        ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+         */
+        val data = FriendList.GetTroopList(
+            bot.client
+        ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+        println(data.contentToString())
     }
 
 

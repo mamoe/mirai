@@ -27,7 +27,8 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Suppress("CanBePrimaryConstructorProperty") // for logger
     final override val account: BotAccount = account
     @UseExperimental(RawAccountIdUse::class)
-    override val uin: Long get() = account.id
+    override val uin: Long
+        get() = account.id
     final override val logger: MiraiLogger by lazy { configuration.logger ?: DefaultLogger("Bot($uin)").also { configuration.logger = it } }
 
     init {
@@ -98,14 +99,26 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
         _network = createNetworkHandler(this.coroutineContext)
 
-        while (true){
+        loginLoop@ while (true) {
             try {
-                return _network.login()
-            } catch (e: Exception){
+                _network.login()
+                break@loginLoop
+            } catch (e: Exception) {
                 e.logStacktrace()
                 _network.dispose(e)
             }
             logger.warning("Login failed. Retrying in 3s...")
+            delay(3000)
+        }
+
+        while (true) {
+            try {
+                return _network.init()
+            } catch (e: Exception) {
+                e.logStacktrace()
+                _network.dispose(e)
+            }
+            logger.warning("Init failed. Retrying in 3s...")
             delay(3000)
         }
     }
