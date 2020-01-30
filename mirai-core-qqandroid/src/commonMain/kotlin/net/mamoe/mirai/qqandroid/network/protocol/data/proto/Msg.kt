@@ -1161,3 +1161,116 @@ class ObjMsg : ProtoBuf {
         @SerialId(8) val reportIdShow: Int = 0
     ) : ProtoBuf
 }
+
+@Serializable
+class Submsgtype0xc7 : ProtoBuf {
+    @Serializable
+    class RelationalChainChange(
+        @SerialId(1) val appid: Long = 0L,
+        @SerialId(2) val srcUin: Long = 0L,
+        @SerialId(3) val dstUin: Long = 0L,
+        @SerialId(4) val changeType: Int /* enum */ = 1,
+        @SerialId(5) val msgRelationalChainInfoOld: Submsgtype0xc7.RelationalChainInfo? = null,
+        @SerialId(6) val msgRelationalChainInfoNew: Submsgtype0xc7.RelationalChainInfo? = null,
+        @SerialId(7) val msgToDegradeInfo: Submsgtype0xc7.ToDegradeInfo? = null,
+        @SerialId(20) val relationalChainInfos: List<Submsgtype0xc7.RelationalChainInfos>? = null,
+        @SerialId(100) val uint32FeatureId: List<Int>? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class FriendShipFlagNotify(
+        @SerialId(1) val dstUin: Long = 0L,
+        @SerialId(2) val level1: Int = 0,
+        @SerialId(3) val level2: Int = 0,
+        @SerialId(4) val continuityDays: Int = 0,
+        @SerialId(5) val chatFlag: Int = 0,
+        @SerialId(6) val lastChatTime: Long = 0L,
+        @SerialId(7) val notifyTime: Long = 0L,
+        @SerialId(8) val seq: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    class ToDegradeItem(
+        @SerialId(1) val type: Int /* enum */ = 1,
+        @SerialId(2) val oldLevel: Int = 0,
+        @SerialId(3) val newLevel: Int = 0,
+        @SerialId(11) val continuityDays: Int = 0,
+        @SerialId(12) val lastActionTime: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    class RelationalChainInfo(
+        @SerialId(1) val type: Int /* enum */ = 1,
+        @SerialId(2) val attr: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(1002) val intimateInfo: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(91001) val musicSwitch: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(101001) val mutualmarkAlienation: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    class ForwardBody(
+        @SerialId(1) val notifyType: Int = 0,
+        @SerialId(2) val opType: Int = 0,
+        @SerialId(3000) val msgHotFriendNotify: Submsgtype0xc7.HotFriendNotify? = null,
+        @SerialId(4000) val msgRelationalChainChange: Submsgtype0xc7.RelationalChainChange? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class HotFriendNotify(
+        @SerialId(1) val dstUin: Long = 0L,
+        @SerialId(2) val praiseHotLevel: Int = 0,
+        @SerialId(3) val chatHotLevel: Int = 0,
+        @SerialId(4) val praiseHotDays: Int = 0,
+        @SerialId(5) val chatHotDays: Int = 0,
+        @SerialId(6) val closeLevel: Int = 0,
+        @SerialId(7) val closeDays: Int = 0,
+        @SerialId(8) val praiseFlag: Int = 0,
+        @SerialId(9) val chatFlag: Int = 0,
+        @SerialId(10) val closeFlag: Int = 0,
+        @SerialId(11) val notifyTime: Long = 0L,
+        @SerialId(12) val lastPraiseTime: Long = 0L,
+        @SerialId(13) val lastChatTime: Long = 0L,
+        @SerialId(14) val qzoneHotLevel: Int = 0,
+        @SerialId(15) val qzoneHotDays: Int = 0,
+        @SerialId(16) val qzoneFlag: Int = 0,
+        @SerialId(17) val lastQzoneTime: Long = 0L,
+        @SerialId(51) val showRecheckEntry: Int = 0,
+        @SerialId(52) val wildcardWording: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(100) val loverFlag: Int = 0,
+        @SerialId(200) val keyHotLevel: Int = 0,
+        @SerialId(201) val keyHotDays: Int = 0,
+        @SerialId(202) val keyFlag: Int = 0,
+        @SerialId(203) val lastKeyTime: Long = 0L,
+        @SerialId(204) val keyWording: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(205) val keyTransFlag: Int = 0,
+        @SerialId(206) val loverKeyBusinessType: Int = 0,
+        @SerialId(207) val loverKeySubBusinessType: Int = 0,
+        @SerialId(208) val loverKeyMainWording: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(209) val loverKeyLinkWording: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(300) val boatLevel: Int = 0,
+        @SerialId(301) val boatDays: Int = 0,
+        @SerialId(302) val boatFlag: Int = 0,
+        @SerialId(303) val lastBoatTime: Int = 0,
+        @SerialId(304) val boatWording: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(400) val notifyType: Int = 0,
+        @SerialId(401) val msgFriendshipFlagNotify: Submsgtype0xc7.FriendShipFlagNotify? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class RelationalChainInfos(
+        @SerialId(1) val msgRelationalChainInfoOld: Submsgtype0xc7.RelationalChainInfo? = null,
+        @SerialId(2) val msgRelationalChainInfoNew: Submsgtype0xc7.RelationalChainInfo? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class ToDegradeInfo(
+        @SerialId(1) val toDegradeItem: List<Submsgtype0xc7.ToDegradeItem>? = null,
+        @SerialId(2) val nick: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(3) val notifyTime: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    class MsgBody(
+        @SerialId(1) val msgModInfos: List<Submsgtype0xc7.ForwardBody>? = null
+    ) : ProtoBuf
+}

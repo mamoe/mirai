@@ -6,7 +6,7 @@ import java.io.File
 
 fun main() {
     println(
-        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/s2c/msgtype0x210/submsgtype0x1a/""")
+        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/s2c/msgtype0x210/submsgtype0xc7/bussinfo/mutualmark""")
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
     )
 }
@@ -350,11 +350,17 @@ fun String.adjustClassName(): String {
     when (this.trim()) {
         "ByteStringMicro" -> return "ByteArray"
     }
+    if(this.isEmpty()){
+        return ""
+    }
     return String(this.adjustName().toCharArray().apply { this[0] = this[0].toUpperCase() })
 }
 
 fun String.adjustName(): String {
     val result = this.toCharArray()
+    if(result.size == 0){
+        return ""
+    }
     result[0] = result[0].toLowerCase()
     for (index in result.indices) {
         if (result[index] == '_') {
