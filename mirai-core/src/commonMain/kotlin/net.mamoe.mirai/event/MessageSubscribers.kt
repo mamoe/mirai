@@ -157,7 +157,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
             ListeningFilter { !filter.invoke(this, it) || !another.filter.invoke(this, it) }
 
         /**
-         * 启动时间监听.
+         * 启动事件监听.
          */
         // do not inline due to kotlin (1.3.61) bug: java.lang.IllegalAccessError
         operator fun invoke(onEvent: MessageListener<T>): Listener<T> {

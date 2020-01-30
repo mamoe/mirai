@@ -130,7 +130,7 @@ fun Bot.messageDSL() {
 
 
         // 当消息中包含 "复读" 时
-        contains("复读") {
+        val listener = (contains("复读1") or contains("复读2")) {
             reply(message)
         }
 
