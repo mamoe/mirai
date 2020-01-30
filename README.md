@@ -18,11 +18,11 @@
 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录（准确更新发布的版本）
 
 ## Modules
-#### mirai-core 
+### mirai-core
 通用 API 模块，一套 API 适配两套协议。  
 **请参考此模块的 API**  
   
-#### mirai-core-timpc 
+### mirai-core-timpc
 TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅新增少量 API. 详见 [README.md](mirai-core-timpc/)   
 支持的功能： 
 - 消息收发：图片文字复合消息，图片消息
@@ -30,7 +30,7 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅
 
 （目前不再更新此协议，请关注下文的安卓协议）
 
-#### mirai-core-qqandroid 
+### mirai-core-qqandroid
 QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前还未完成。   
 - 高兼容性：协议仅含极少部分为硬编码，其余全部随官方方式动态生成
 - 高安全性：密匙随机，ECDH 动态计算
