@@ -13,7 +13,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
@@ -55,7 +55,7 @@ internal val DECRYPTER_16_ZERO = ByteArray(16)
 internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>, packet: T, commandName: String, ssoSequenceId: Int) -> Unit
 
 @PublishedApi
-internal val PacketLogger: MiraiLogger = DefaultLogger("Packet").withSwitch(false)
+internal val PacketLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet").withSwitch(false)
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
