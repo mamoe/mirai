@@ -432,7 +432,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
-            println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
+            // println("decodeNullableSerializableValue: ${deserializer.getClassName()}")
             if (deserializer is NullReader) {
                 return null
             }
@@ -459,7 +459,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         else input.readByteArray(tag).toMutableList() as T
                     }
                     val tag = popTag()
-                    println(tag)
+//                    println(tag)
                     @Suppress("SENSELESS_COMPARISON") // false positive
                     if (input.skipToTagOrNull(tag) {
                             return deserializer.deserialize(JceListReader(input.readInt(0), input))
