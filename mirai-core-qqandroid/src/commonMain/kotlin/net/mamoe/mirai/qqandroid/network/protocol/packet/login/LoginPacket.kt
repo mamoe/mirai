@@ -300,8 +300,6 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
             }
         }
 
-        class UnsafeLogin(val url: String) : LoginPacketResponse()
-
         class DeviceLockLogin(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse()
     }
 
