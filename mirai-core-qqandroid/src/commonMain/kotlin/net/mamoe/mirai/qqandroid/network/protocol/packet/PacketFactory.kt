@@ -9,6 +9,7 @@ import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.DefaultLogger
@@ -63,7 +64,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     MessageSvc.PushNotify,
     MessageSvc.PbGetMsg,
     MessageSvc.PushForceOffline,
-    MessageSvc.PbSendMsg
+    MessageSvc.PbSendMsg,
+    FriendList.GetFriendGroupList
 ) {
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机

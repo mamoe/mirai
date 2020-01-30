@@ -18,7 +18,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
-import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendListPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket.LoginPacketResponse.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
@@ -88,19 +87,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        println("登陆完成 开始尝试获取friendList")
-        FriendListPacket(
-            bot.client,
-            0,
-            20,
-            0,
-            0
-        ).sendAndExpect<FriendListPacket.GetFriendListResponse>()
-
     }
 
     /**

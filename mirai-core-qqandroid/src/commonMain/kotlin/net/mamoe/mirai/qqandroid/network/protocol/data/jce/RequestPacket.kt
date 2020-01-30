@@ -23,7 +23,7 @@ class RequestPacket(
 
 @Serializable
 class RequestDataVersion3(
-    @SerialId(0) val map: Map<String, ByteArray>
+    @SerialId(0) val map: Map<String, ByteArray> // 注意: ByteArray 不能直接放序列化的 JceStruct!! 要放类似 RequestDataStructSvcReqRegister 的
 ) : JceStruct
 
 @Serializable

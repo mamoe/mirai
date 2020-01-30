@@ -8,6 +8,8 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
 import net.mamoe.mirai.utils.io.readIoBuffer
 import net.mamoe.mirai.utils.io.readString
@@ -25,6 +27,19 @@ enum class JceCharset(val kotlinCharset: Charset) {
     UTF8(Charset.forName("UTF8"))
 }
 
+private val JCE_STRUCT_HEAD_OF_TAG_0 = byteArrayOf(0x0A)
+private val JCE_STRUCT_TAIL_OF_TAG_0 = byteArrayOf(0x0B)
+
+/**
+ * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]
+ */
+fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: SerializationStrategy<T>, jceStruct: T): ByteArray {
+    return RequestDataVersion3(
+        mapOf(
+            name to JCE_STRUCT_HEAD_OF_TAG_0 + jceStruct.toByteArray(serializer) + JCE_STRUCT_TAIL_OF_TAG_0
+        )
+    ).toByteArray(RequestDataVersion3.serializer())
+}
 
 internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<SerialId>(index)?.id
 
@@ -152,7 +167,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         this.writeHead(STRUCT_END, 0)
                     }
                 } else if (value is ProtoBuf) {
-                    this.encodeTaggedByteArray(popTag(), net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport.dump(value))
+                    this.encodeTaggedByteArray(popTag(), ProtoBufWithNullableSupport.dump(value))
                 } else {
                     serializer.serialize(this, value)
                 }

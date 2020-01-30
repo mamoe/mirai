@@ -3,54 +3,51 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.list
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
-import net.mamoe.mirai.qqandroid.io.writeJcePacket
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataStructSvcReqRegister
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.GetImgUrlReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd6b
-import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImageDownPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 
 
-internal object FriendListPacket :
-    PacketFactory<FriendListPacket.GetFriendListResponse>("friendlist.getFriendGroupList") {
+internal class FriendList {
 
-    class GetFriendListResponse() : Packet
+    internal object GetFriendGroupList : PacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
+        class Response : Packet
 
-    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetFriendListResponse {
-        println("aaaa")
-        return GetFriendListResponse()
-    }
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            println("aaaa")
+            return Response()
+        }
 
-    operator fun invoke(
-        client: QQAndroidClient,
-        friendListStartIndex: Int,
-        friendListCount: Int,
-        groupListStartIndex: Int,
-        groupListCount: Int
-    ): OutgoingPacket {
-        return buildOutgoingUniPacket(client, key = client.wLoginSigInfo.d2Key) {
-            writeJceStruct(
-                RequestPacket.serializer(),
-                RequestPacket(
-                    sFuncName = "GetFriendListReq",
-                    sServantName = "mqq.IMService.FriendListServiceServantObj",
-                    iVersion = 3,
-                    cPacketType = 0x003,
-                    iMessageType = 0x00000,
-                    iRequestId = 1921334514,
-                    sBuffer = RequestDataVersion3(
-                        mapOf(
-                            "FL" to GetFriendListReq(
+        operator fun invoke(
+            client: QQAndroidClient,
+            friendListStartIndex: Int,
+            friendListCount: Int,
+            groupListStartIndex: Int,
+            groupListCount: Int
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        sFuncName = "GetFriendListReq",
+                        sServantName = "mqq.IMService.FriendListServiceServantObj",
+                        iVersion = 3,
+                        cPacketType = 0x003,
+                        iMessageType = 0x00000,
+                        iRequestId = 1921334514,
+                        sBuffer = jceRequestSBuffer(
+                            "FL",
+                            GetFriendListReq.serializer(),
+                            GetFriendListReq(
                                 reqtype = 3,
                                 ifReflush = if (friendListStartIndex <= 0) {
                                     0
@@ -84,13 +81,11 @@ internal object FriendListPacket :
                                     reqMutualmarkAlienation = 1
                                 ).toByteArray(Vec0xd50.ReqBody.serializer()),
                                 vecSnsTypelist = listOf(13580L, 13581L, 13582L)
-                            ).toByteArray(GetFriendListReq.serializer())
+                            )
                         )
-                    ).toByteArray(RequestDataVersion3.serializer())
+                    )
                 )
-            )
+            }
         }
     }
-
 }
-
