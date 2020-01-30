@@ -95,12 +95,17 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         //start updating friend/group list
         bot.logger.info("Start updating friend/group list")
+        /*
         val data = FriendList.GetFriendGroupList(
             bot.client,
             0,
-            10,
+            1,
             0,
-            0
+            2
+        ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+         */
+        val data = FriendList.GetTroopList(
+            bot.client
         ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
         println(data.contentToString())
     }

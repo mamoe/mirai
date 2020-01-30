@@ -3,13 +3,11 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.list
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
-import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
-import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
+import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListResp
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetTroopListReqV2Simplify
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
@@ -19,9 +17,54 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.discardExact
+import net.mamoe.mirai.utils.io.readRemainingBytes
+import net.mamoe.mirai.utils.io.toUHexString
 
 
 internal class FriendList {
+
+    internal object GetTroopList : PacketFactory<GetTroopList.Response>("friendlist.GetTroopListReqV2") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopList.Response {
+            println("获取到了GetTroopList的回信")
+            println(this.readRemainingBytes().toUHexString())
+            return Response()
+        }
+
+        class Response : Packet {
+            override fun toString(): String = "FriendList.GetFriendGroupList.Response"
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        sFuncName = "GetTroopListReqV2Simplify",
+                        sServantName = "mqq.IMService.FriendListServiceServantObj",
+                        iVersion = 3,
+                        cPacketType = 0x00,
+                        iMessageType = 0x00000,
+                        iRequestId = 1921334513,
+                        sBuffer = jceRequestSBuffer(
+                            "GetTroopListReqV2Simplify",
+                            GetTroopListReqV2Simplify.serializer(),
+                            GetTroopListReqV2Simplify(
+                                uin = client.uin,
+                                getMSFMsgFlag = 0,
+                                groupFlagExt = 1,
+                                shVersion = 7,
+                                dwCompanyId = 0,
+                                versionNum = 1,
+                                getLongGroupName = 1
+                            )
+                        )
+                    )
+                )
+            }
+        }
+    }
 
     internal object GetFriendGroupList : PacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
@@ -30,15 +73,9 @@ internal class FriendList {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-
-            println(this
-                .apply {
-                    this.discardExact(4)
-                }
-                .decodeUniPacket(GetFriendListResp.serializer())
-                .contentToString()
-            )
-
+            this.discardExact(4)
+            val res = this.decodeUniPacket(GetFriendListResp.serializer())
+            println(res.contentToString())
             return Response()
         }
 
@@ -73,7 +110,7 @@ internal class FriendList {
                                 startIndex = friendListStartIndex.toShort(),
                                 getfriendCount = friendListCount.toShort(),
                                 groupid = 0,
-                                ifGetGroupInfo = if (friendListStartIndex <= 0) {
+                                ifGetGroupInfo = if (groupListCount <= 0) {
                                     0
                                 } else {
                                     1

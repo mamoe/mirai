@@ -66,7 +66,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     MessageSvc.PbGetMsg,
     MessageSvc.PushForceOffline,
     MessageSvc.PbSendMsg,
-    FriendList.GetFriendGroupList
+    FriendList.GetFriendGroupList,
+    FriendList.GetTroopList
 ) {
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机
