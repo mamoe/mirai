@@ -139,6 +139,9 @@ internal class QQImpl @PublishedApi internal constructor(bot: TIMPCBot, override
         }
     }
 
+    override val isOnline: Boolean
+        get() = true
+
     override suspend fun queryProfile(): Profile = withTIMPCBot {
         RequestProfileDetailsPacket(bot.uin, id, sessionKey).sendAndExpect<RequestProfileDetailsResponse>().profile
     }

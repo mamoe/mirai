@@ -310,19 +310,33 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timoutMillis: Long = 3000): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 1): E {
+        require(timeoutMillis > 0) { "timeoutMillis must > 0" }
+        require(retry >= 0) { "retry must >= 0" }
+
         val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
         packetListeners.addLast(handler)
         bot.logger.info("Send: ${this.commandName}")
+        var lastException: Exception? = null
+        repeat(retry + 1) {
+            try {
+                return doSendAndReceive(timeoutMillis, handler)
+            } catch (e: Exception) {
+                lastException = e
+            }
+        }
+        throw lastException!!
+    }
+
+    private suspend inline fun <E : Packet> OutgoingPacket.doSendAndReceive(timeoutMillis: Long = 3000, handler: PacketListener): E {
         channel.send(delegate)
-        return withTimeoutOrNull(timoutMillis) {
+        return withTimeoutOrNull(timeoutMillis) {
             @Suppress("UNCHECKED_CAST")
             handler.await() as E
-
             // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
         } ?: net.mamoe.mirai.qqandroid.utils.inline {
             packetListeners.remove(handler)
-            error("timeout when sending ${commandName}")
+            error("timeout when sending $commandName")
         }
     }
 
