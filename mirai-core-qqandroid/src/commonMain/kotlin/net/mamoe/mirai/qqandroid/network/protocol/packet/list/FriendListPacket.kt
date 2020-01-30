@@ -9,13 +9,16 @@ import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListResp
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.debugPrint
+import net.mamoe.mirai.utils.io.discardExact
 
 
 internal class FriendList {
@@ -27,8 +30,13 @@ internal class FriendList {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            //this.decodeUniPacket(GetfriendListRep)
-            this.debugPrint()
+
+            println(this
+                .apply { discardExact(4) }
+                .decodeUniPacket(GetFriendListResp.serializer())
+                .contentToString()
+            )
+
             return Response()
         }
 
