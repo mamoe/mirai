@@ -1,12 +1,11 @@
 package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
 
 @Serializable
-class SvcReqRegister(
+internal class SvcReqRegister(
     @SerialId(0) val lUin: Long = 0L,
     @SerialId(1) val lBid: Long = 0L,
     @SerialId(2) val cConnType: Byte = 0,

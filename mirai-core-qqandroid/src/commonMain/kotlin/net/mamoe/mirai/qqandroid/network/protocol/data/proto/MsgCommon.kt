@@ -9,16 +9,16 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
  * msf.msgcomm.msg_comm
  */
 @Serializable
-class MsgComm : ProtoBuf {
+internal class MsgComm : ProtoBuf {
     @Serializable
-    class AppShareInfo(
+    internal class AppShareInfo(
         @SerialId(1) val appshareId: Int = 0,
         @SerialId(2) val appshareCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val appshareResource: PluginInfo? = null
     ) : ProtoBuf
 
     @Serializable
-    class C2CTmpMsgHead(
+    internal class C2CTmpMsgHead(
         @SerialId(1) val c2cType: Int = 0,
         @SerialId(2) val serviceType: Int = 0,
         @SerialId(3) val groupUin: Long = 0L,
@@ -33,7 +33,7 @@ class MsgComm : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ContentHead(
+    internal class ContentHead(
         @SerialId(1) val pkgNum: Int = 0,
         @SerialId(2) val pkgIndex: Int = 0,
         @SerialId(3) val divSeq: Int = 0,
@@ -41,7 +41,7 @@ class MsgComm : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class DiscussInfo(
+    internal class DiscussInfo(
         @SerialId(1) val discussUin: Long = 0L,
         @SerialId(2) val discussType: Int = 0,
         @SerialId(3) val discussInfoSeq: Long = 0L,
@@ -50,13 +50,13 @@ class MsgComm : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ExtGroupKeyInfo(
+    internal class ExtGroupKeyInfo(
         @SerialId(1) val curMaxSeq: Int = 0,
         @SerialId(2) val curTime: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class GroupInfo(
+    internal class GroupInfo(
         @SerialId(1) val groupCode: Long = 0L,
         @SerialId(2) val groupType: Int = 0,
         @SerialId(3) val groupInfoSeq: Long = 0L,
@@ -68,7 +68,7 @@ class MsgComm : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class Msg(
+    internal class Msg(
         @SerialId(1) val msgHead: MsgHead,
         @SerialId(2) val contentHead: ContentHead? = null,
         @SerialId(3) val msgBody: ImMsgBody.MsgBody,
@@ -76,7 +76,7 @@ class MsgComm : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgHead(
+    internal class MsgHead(
         @SerialId(1) val fromUin: Long = 0L,
         @SerialId(2) val toUin: Long = 0L,
         @SerialId(3) val msgType: Int = 0,
@@ -108,19 +108,19 @@ class MsgComm : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgType0x210(
+    internal class MsgType0x210(
         @SerialId(1) val subMsgType: Int = 0,
         @SerialId(2) val msgContent: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class MutilTransHead(
+    internal class MutilTransHead(
         @SerialId(1) val status: Int = 0,
         @SerialId(2) val msgId: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class PluginInfo(
+    internal class PluginInfo(
         @SerialId(1) val resId: Int = 0,
         @SerialId(2) val pkgName: String = "",
         @SerialId(3) val newVer: Int = 0,
@@ -135,13 +135,13 @@ class MsgComm : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class Uin2Nick(
+    internal class Uin2Nick(
         @SerialId(1) val uin: Long = 0L,
         @SerialId(2) val nick: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class UinPairMsg(
+    internal class UinPairMsg(
         @SerialId(1) val lastReadTime: Int = 0,
         @SerialId(2) val peerUin: Long = 0L,
         @SerialId(3) val msgCompleted: Int = 0,

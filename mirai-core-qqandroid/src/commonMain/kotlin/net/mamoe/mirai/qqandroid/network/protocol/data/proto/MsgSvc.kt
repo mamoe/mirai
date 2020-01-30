@@ -7,14 +7,14 @@ import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
-class MsgSvc : ProtoBuf {
+internal class MsgSvc : ProtoBuf {
     @Serializable
-    class Grp(
+    internal class Grp(
         @SerialId(1) val groupCode: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class PbGetMsgResp(
+    internal class PbGetMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
@@ -28,7 +28,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbGroupMsgWithDrawReq(
+    internal class PbGroupMsgWithDrawReq(
         @SerialId(1) val subCmd: Int = 0,
         @SerialId(2) val groupType: Int = 0,
         @SerialId(3) val groupCode: Long = 0L,
@@ -36,7 +36,7 @@ class MsgSvc : ProtoBuf {
         @SerialId(5) val userdef: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf {
         @Serializable
-        class MessageInfo(
+        internal class MessageInfo(
             @SerialId(1) val msgSeq: Int = 0,
             @SerialId(2) val msgRandom: Int = 0,
             @SerialId(3) val msgType: Int = 0
@@ -44,25 +44,25 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class PbGroupReadedReportReq(
+    internal class PbGroupReadedReportReq(
         @SerialId(1) val groupCode: Long = 0L,
         @SerialId(2) val lastReadSeq: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class BusinessWPATmp(
+    internal class BusinessWPATmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val sigt: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class C2C(
+    internal class C2C(
         @SerialId(1) val toUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class PbGetGroupMsgReq(
+    internal class PbGetGroupMsgReq(
         @SerialId(1) val groupCode: Long = 0L,
         @SerialId(2) val beginSeq: Long = 0L,
         @SerialId(3) val endSeq: Long = 0L,
@@ -74,20 +74,20 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbBindUinMsgReadedConfirmReq(
+    internal class PbBindUinMsgReadedConfirmReq(
         @SerialId(1) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val bindUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class AccostTmp(
+    internal class AccostTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val reply: Boolean = false
     ) : ProtoBuf
 
     @Serializable
-    class PbDiscussReadedReportResp(
+    internal class PbDiscussReadedReportResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val confUin: Long = 0L,
@@ -96,26 +96,26 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NearByAssistantTmp(
+    internal class NearByAssistantTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val reply: Boolean = false
     ) : ProtoBuf
 
     @Serializable
-    data class MsgSendInfo(
+    internal data class MsgSendInfo(
         @SerialId(1) val receiver: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class PubGroupTmp(
+    internal class PubGroupTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val groupUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class AddressListTmp(
+    internal class AddressListTmp(
         @SerialId(1) val fromPhone: String = "",
         @SerialId(2) val toPhone: String = "",
         @SerialId(3) val toUin: Long = 0L,
@@ -124,31 +124,31 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class DisTmp(
+    internal class DisTmp(
         @SerialId(1) val disUin: Long = 0L,
         @SerialId(2) val toUin: Long = 0L
     )
 
     @Serializable
-    class PbMsgWithDrawResp(
+    internal class PbMsgWithDrawResp(
         @SerialId(1) val c2cWithDraw: List<PbC2CMsgWithDrawResp>? = null,
         @SerialId(2) val groupWithDraw: List<PbGroupMsgWithDrawResp>? = null
     ) : ProtoBuf
 
     @Serializable
-    class AuthTmp(
+    internal class AuthTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbMsgWithDrawReq(
+    internal class PbMsgWithDrawReq(
         @SerialId(1) val c2cWithDraw: List<PbC2CMsgWithDrawReq>? = null,
         @SerialId(2) val groupWithDraw: List<PbGroupMsgWithDrawReq>? = null
     ) : ProtoBuf
 
     @Serializable
-    class PbGetMsgReq(
+    internal class PbGetMsgReq(
         @SerialId(1) val syncFlag: Int /* enum */ = 0,
         @SerialId(2) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val rambleFlag: Int = 1,
@@ -164,7 +164,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbGetOneDayRoamMsgReq(
+    internal class PbGetOneDayRoamMsgReq(
         @SerialId(1) val peerUin: Long = 0L,
         @SerialId(2) val lastMsgtime: Long = 0L,
         @SerialId(3) val random: Long = 0L,
@@ -172,13 +172,13 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GrpTmp(
+    internal class GrpTmp(
         @SerialId(1) val groupUin: Long = 0L,
         @SerialId(2) val toUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class PbGetDiscussMsgResp(
+    internal class PbGetDiscussMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val discussUin: Long = 0L,
@@ -190,7 +190,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class CommTmp(
+    internal class CommTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val c2cType: Int = 0,
         @SerialId(3) val svrType: Int = 0,
@@ -199,7 +199,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbGroupMsgWithDrawResp(
+    internal class PbGroupMsgWithDrawResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val subCmd: Int = 0,
@@ -209,7 +209,7 @@ class MsgSvc : ProtoBuf {
         @SerialId(7) val userdef: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf {
         @Serializable
-        class MessageResult(
+        internal class MessageResult(
             @SerialId(1) val result: Int = 0,
             @SerialId(2) val msgSeq: Int = 0,
             @SerialId(3) val msgTime: Int = 0,
@@ -220,24 +220,24 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class PbC2CReadedReportResp(
+    internal class PbC2CReadedReportResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbC2CUnReadMsgNumReq : ProtoBuf
+    internal class PbC2CUnReadMsgNumReq : ProtoBuf
 
     @Serializable
-    class PbC2CMsgWithDrawReq(
+    internal class PbC2CMsgWithDrawReq(
         @SerialId(1) val msgInfo: List<MsgInfo>? = null,
         @SerialId(2) val longMessageFlag: Int = 0,
         @SerialId(3) val reserved: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val subCmd: Int = 0
     ) : ProtoBuf {
         @Serializable
-        class MsgInfo(
+        internal class MsgInfo(
             @SerialId(1) val fromUin: Long = 0L,
             @SerialId(2) val toUin: Long = 0L,
             @SerialId(3) val msgSeq: Int = 0,
@@ -253,18 +253,18 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class PbDelRoamMsgResp(
+    internal class PbDelRoamMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class Dis(
+    internal class Dis(
         @SerialId(1) val disUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class TransSvrInfo(
+    internal class TransSvrInfo(
         @SerialId(1) val subType: Int = 0,
         @SerialId(2) val int32RetCode: Int = 0,
         @SerialId(3) val errMsg: ByteArray = EMPTY_BYTE_ARRAY,
@@ -272,13 +272,13 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbPullGroupMsgSeqResp(
+    internal class PbPullGroupMsgSeqResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val groupInfoResp: List<GroupInfoResp>? = null
     ) : ProtoBuf {
         @Serializable
-        class GroupInfoResp(
+        internal class GroupInfoResp(
             @SerialId(1) val groupCode: Long = 0L,
             @SerialId(2) val memberSeq: Long = 0L,
             @SerialId(3) val groupSeq: Long = 0L
@@ -286,7 +286,7 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class PbSendMsgReq(
+    internal class PbSendMsgReq(
         @SerialId(1) val routingHead: RoutingHead? = null,
         @SerialId(2) val contentHead: MsgComm.ContentHead? = null,
         @SerialId(3) val msgBody: ImMsgBody.MsgBody = ImMsgBody.MsgBody(),
@@ -304,25 +304,25 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TransMsg(
+    internal class TransMsg(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val c2cCmd: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class PbDeleteMsgResp(
+    internal class PbDeleteMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class PbSearchRoamMsgInCloudResp(
+    internal class PbSearchRoamMsgInCloudResp(
         @SerialId(1) val msg: List<MsgComm.Msg>? = null,
         @SerialId(2) val serializeRspbody: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbInputNotifyInfo(
+    internal class PbInputNotifyInfo(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val ime: Int = 0,
         @SerialId(3) val notifyFlag: Int = 0,
@@ -331,7 +331,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbUnReadMsgSeqResp(
+    internal class PbUnReadMsgSeqResp(
         @SerialId(1) val c2cUnreadInfo: PbC2CUnReadMsgNumResp? = null,
         @SerialId(2) val binduinUnreadInfo: List<PbBindUinUnReadMsgNumResp>? = null,
         @SerialId(3) val groupUnreadInfo: PbPullGroupMsgSeqResp? = null,
@@ -340,11 +340,11 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbDeleteMsgReq(
+    internal class PbDeleteMsgReq(
         @SerialId(1) val msgItems: List<MsgItem>? = null
     ) : ProtoBuf {
         @Serializable
-        class MsgItem(
+        internal class MsgItem(
             @SerialId(1) val fromUin: Long = 0L,
             @SerialId(2) val toUin: Long = 0L,
             @SerialId(3) val msgType: Int = 0,
@@ -355,7 +355,7 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class MultiMsgAssist(
+    internal class MultiMsgAssist(
         @SerialId(1) val repeatedRouting: List<RoutingHead>? = null,
         @SerialId(2) val msgUse: Int /* enum */ = 1,
         @SerialId(3) val tempId: Long = 0L,
@@ -367,7 +367,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbMsgReadedReportReq(
+    internal class PbMsgReadedReportReq(
         @SerialId(1) val grpReadReport: List<PbGroupReadedReportReq>? = null,
         @SerialId(2) val disReadReport: List<PbDiscussReadedReportReq>? = null,
         @SerialId(3) val c2cReadReport: PbC2CReadedReportReq? = null,
@@ -375,7 +375,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbGetOneDayRoamMsgResp(
+    internal class PbGetOneDayRoamMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val peerUin: Long = 0L,
@@ -386,7 +386,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbBindUinGetMsgReq(
+    internal class PbBindUinGetMsgReq(
         @SerialId(1) val bindUin: Long = 0L,
         @SerialId(2) val bindUinSig: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val syncFlag: Int /* enum */ = 0,
@@ -394,20 +394,20 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NearByDatingTmp(
+    internal class NearByDatingTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val reply: Boolean = false
     ) : ProtoBuf
 
     @Serializable
-    class BsnsTmp(
+    internal class BsnsTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class RoutingHead(
+    internal class RoutingHead(
         @SerialId(1) val c2c: C2C? = null,
         @SerialId(2) val grp: Grp? = null,
         @SerialId(3) val grpTmp: GrpTmp? = null,
@@ -433,7 +433,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TransResp(
+    internal class TransResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val respTag: Int = 0,
@@ -441,7 +441,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    data class PbSendMsgResp(
+    internal data class PbSendMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val sendTime: Int = 0,
@@ -454,7 +454,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf, Packet
 
     @Serializable
-    class PbBindUinUnReadMsgNumResp(
+    internal class PbBindUinUnReadMsgNumResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val bindUin: Long = 0L,
@@ -462,7 +462,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbGetDiscussMsgReq(
+    internal class PbGetDiscussMsgReq(
         @SerialId(1) val discussUin: Long = 0L,
         @SerialId(2) val endSeq: Long = 0L,
         @SerialId(3) val beginSeq: Long = 0L,
@@ -473,27 +473,27 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbC2CMsgWithDrawResp(
+    internal class PbC2CMsgWithDrawResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val msgStatus: List<MsgStatus>? = null,
         @SerialId(4) val subCmd: Int = 0
     ) : ProtoBuf {
         @Serializable
-        class MsgStatus(
+        internal class MsgStatus(
             @SerialId(1) val msgInfo: PbC2CMsgWithDrawReq.MsgInfo? = null,
             @SerialId(2) val status: Int = 0
         ) : ProtoBuf
     }
 
     @Serializable
-    class SecretFileHead(
+    internal class SecretFileHead(
         @SerialId(1) val secretFileMsg: SubMsgType0xc1.MsgBody? = null,
         @SerialId(2) val secretFileStatus: SubMsgType0x1a.MsgBody? = null
     )
 
     @Serializable
-    class PbGetRoamMsgReq(
+    internal class PbGetRoamMsgReq(
         @SerialId(1) val peerUin: Long = 0L,
         @SerialId(2) val lastMsgtime: Long = 0L,
         @SerialId(3) val random: Long = 0L,
@@ -507,13 +507,13 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TransCmd(
+    internal class TransCmd(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val msgType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class PbMsgReadedReportResp(
+    internal class PbMsgReadedReportResp(
         @SerialId(1) val grpReadReport: List<PbGroupReadedReportResp>? = null,
         @SerialId(2) val disReadReport: List<PbDiscussReadedReportResp>? = null,
         @SerialId(3) val c2cReadReport: PbC2CReadedReportResp? = null,
@@ -521,14 +521,14 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbThirdQQUnReadMsgNumResp(
+    internal class PbThirdQQUnReadMsgNumResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val thirdqqRespInfo: List<ThirdQQRespInfo>? = null,
         @SerialId(4) val interval: Int = 0
     ) : ProtoBuf {
         @Serializable
-        class ThirdQQRespInfo(
+        internal class ThirdQQRespInfo(
             @SerialId(1) val thirdUin: Long = 0L,
             @SerialId(2) val thirdUinCookie: ByteArray = EMPTY_BYTE_ARRAY,
             @SerialId(3) val msgNum: Int = 0,
@@ -540,31 +540,31 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class RichStatusTmp(
+    internal class RichStatusTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class QQQueryBusinessTmp(
+    internal class QQQueryBusinessTmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbDelRoamMsgReq(
+    internal class PbDelRoamMsgReq(
         @SerialId(1) val c2cMsg: C2CMsg? = null,
         @SerialId(2) val grpMsg: GrpMsg? = null,
         @SerialId(3) val disMsg: DisMsg? = null
     ) : ProtoBuf {
         @Serializable
-        class GrpMsg(
+        internal class GrpMsg(
             @SerialId(1) val groupCode: Long = 0L,
             @SerialId(2) val msgSeq: Long = 0L
         ) : ProtoBuf
 
         @Serializable
-        class C2CMsg(
+        internal class C2CMsg(
             @SerialId(1) val fromUin: Long = 0L,
             @SerialId(2) val peerUin: Long = 0L,
             @SerialId(3) val msgTime: Int = 0,
@@ -573,14 +573,14 @@ class MsgSvc : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class DisMsg(
+        internal class DisMsg(
             @SerialId(1) val discussUin: Long = 0L,
             @SerialId(2) val msgSeq: Long = 0L
         ) : ProtoBuf
     }
 
     @Serializable
-    class PbUnReadMsgSeqReq(
+    internal class PbUnReadMsgSeqReq(
         @SerialId(1) val c2cUnreadInfo: PbC2CUnReadMsgNumReq? = null,
         @SerialId(2) val binduinUnreadInfo: List<PbBindUinUnReadMsgNumReq>? = null,
         @SerialId(3) val groupUnreadInfo: PbPullGroupMsgSeqReq? = null,
@@ -589,13 +589,13 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbPullDiscussMsgSeqResp(
+    internal class PbPullDiscussMsgSeqResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val discussInfoResp: List<DiscussInfoResp>? = null
     ) : ProtoBuf {
         @Serializable
-        class DiscussInfoResp(
+        internal class DiscussInfoResp(
             @SerialId(1) val confUin: Long = 0L,
             @SerialId(2) val memberSeq: Long = 0L,
             @SerialId(3) val confSeq: Long = 0L
@@ -603,30 +603,30 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class PbPullDiscussMsgSeqReq(
+    internal class PbPullDiscussMsgSeqReq(
         @SerialId(1) val discussInfoReq: List<DiscussInfoReq>? = null
     ) : ProtoBuf {
         @Serializable
-        class DiscussInfoReq(
+        internal class DiscussInfoReq(
             @SerialId(1) val confUin: Long = 0L,
             @SerialId(2) val lastSeq: Long = 0L
         ) : ProtoBuf
     }
 
     @Serializable
-    class WPATmp(
+    internal class WPATmp(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PublicPlat(
+    internal class PublicPlat(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbBindUinMsgReadedConfirmResp(
+    internal class PbBindUinMsgReadedConfirmResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
@@ -634,7 +634,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbGetRoamMsgResp(
+    internal class PbGetRoamMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val peerUin: Long = 0L,
@@ -645,18 +645,18 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbDiscussReadedReportReq(
+    internal class PbDiscussReadedReportReq(
         @SerialId(1) val confUin: Long = 0L,
         @SerialId(2) val lastReadSeq: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class PbC2CReadedReportReq(
+    internal class PbC2CReadedReportReq(
         @SerialId(1) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val pairInfo: List<UinPairReadInfo>? = null
     ) : ProtoBuf {
         @Serializable
-        class UinPairReadInfo(
+        internal class UinPairReadInfo(
             @SerialId(1) val peerUin: Long = 0L,
             @SerialId(2) val lastReadTime: Int = 0,
             @SerialId(3) val crmSig: ByteArray = EMPTY_BYTE_ARRAY
@@ -664,7 +664,7 @@ class MsgSvc : ProtoBuf {
     }
 
     @Serializable
-    class Trans0x211(
+    internal class Trans0x211(
         @SerialId(1) val toUin: Long = 0L,
         @SerialId(2) val ccCmd: Int = 0,
         @SerialId(3) val instCtrl: ImMsgHead.InstCtrl? = null,
@@ -674,43 +674,43 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbSearchRoamMsgInCloudReq(
+    internal class PbSearchRoamMsgInCloudReq(
         @SerialId(1) val serializeReqbody: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbBindUinUnReadMsgNumReq(
+    internal class PbBindUinUnReadMsgNumReq(
         @SerialId(1) val bindUin: Long = 0L,
         @SerialId(2) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbC2CUnReadMsgNumResp(
+    internal class PbC2CUnReadMsgNumResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val msgNum: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class PbPullGroupMsgSeqReq(
+    internal class PbPullGroupMsgSeqReq(
         @SerialId(1) val groupInfoReq: List<GroupInfoReq>? = null
     ) : ProtoBuf {
         @Serializable
-        class GroupInfoReq(
+        internal class GroupInfoReq(
             @SerialId(1) val groupCode: Long = 0L,
             @SerialId(2) val lastSeq: Long = 0L
         ) : ProtoBuf
     }
 
     @Serializable
-    class TransReq(
+    internal class TransReq(
         @SerialId(1) val command: Int = 0,
         @SerialId(2) val reqTag: Int = 0,
         @SerialId(3) val reqBuff: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbGroupReadedReportResp(
+    internal class PbGroupReadedReportResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val groupCode: Long = 0L,
@@ -719,7 +719,7 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbGetGroupMsgResp(
+    internal class PbGetGroupMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val groupCode: Long = 0L,
@@ -729,12 +729,12 @@ class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PbThirdQQUnReadMsgNumReq(
+    internal class PbThirdQQUnReadMsgNumReq(
         @SerialId(1) val thirdqqReqInfo: List<ThirdQQReqInfo>? = null,
         @SerialId(2) val source: Int = 0
     ) : ProtoBuf {
         @Serializable
-        class ThirdQQReqInfo(
+        internal class ThirdQQReqInfo(
             @SerialId(1) val thirdUin: Long = 0L,
             @SerialId(2) val thirdUinSig: ByteArray = EMPTY_BYTE_ARRAY,
             @SerialId(3) val thirdUinCookie: ByteArray = EMPTY_BYTE_ARRAY
@@ -743,15 +743,15 @@ class MsgSvc : ProtoBuf {
 }
 
 @Serializable
-class MsgCtrl {
+internal class MsgCtrl {
     @Serializable
-    class MsgCtrl(
+    internal class MsgCtrl(
         @SerialId(1) val msgFlag: Int = 0,
         @SerialId(2) val resvResvInfo: ResvResvInfo? = null
     ) : ProtoBuf
 
     @Serializable
-    class ResvResvInfo(
+    internal class ResvResvInfo(
         @SerialId(1) val flag: Int = 0,
         @SerialId(2) val reserv1: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val reserv2: Long = 0L,
@@ -764,9 +764,9 @@ class MsgCtrl {
 }
 
 @Serializable
-class SubMsgType0xc1 {
+internal class SubMsgType0xc1 {
     @Serializable
-    class NotOnlineImage(
+    internal class NotOnlineImage(
         @SerialId(1) val filePath: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val fileLen: Int = 0,
         @SerialId(3) val downloadPath: ByteArray = EMPTY_BYTE_ARRAY,
@@ -783,7 +783,7 @@ class SubMsgType0xc1 {
     ) : ProtoBuf
 
     @Serializable
-    class MsgBody(
+    internal class MsgBody(
         @SerialId(1) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val fromUin: Long = 0L,
         @SerialId(3) val toUin: Long = 0L,
@@ -800,9 +800,9 @@ class SubMsgType0xc1 {
 }
 
 @Serializable
-class SubMsgType0x1a {
+internal class SubMsgType0x1a {
     @Serializable
-    class MsgBody(
+    internal class MsgBody(
         @SerialId(1) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val fromUin_int32: Int = 0,
         @SerialId(3) val toUin_int32: Int = 0,

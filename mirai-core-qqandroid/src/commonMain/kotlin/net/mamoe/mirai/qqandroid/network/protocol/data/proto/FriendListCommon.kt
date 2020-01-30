@@ -6,9 +6,9 @@ import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
-class Vec0xd50 : ProtoBuf {
+internal class Vec0xd50 : ProtoBuf {
     @Serializable
-    class ExtSnsFrdData(
+    internal class ExtSnsFrdData(
         @SerialId(1) val frdUin: Long = 0L,
         @SerialId(91001) val musicSwitch: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(101001) val mutualmarkAlienation: ByteArray = EMPTY_BYTE_ARRAY,
@@ -18,7 +18,7 @@ class Vec0xd50 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @SerialId(1) val msgUpdateData: List<Vec0xd50.ExtSnsFrdData>? = null,
         @SerialId(11) val over: Int = 0,
         @SerialId(12) val nextStart: Int = 0,
@@ -26,7 +26,7 @@ class Vec0xd50 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @SerialId(1) val appid: Long = 0L,
         @SerialId(2) val maxPkgSize: Int = 0,
         @SerialId(3) val startTime: Int = 0,
@@ -41,28 +41,28 @@ class Vec0xd50 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class KSingRelationInfo(
+    internal class KSingRelationInfo(
         @SerialId(1) val flag: Int = 0
     ) : ProtoBuf
 }
 
 @Serializable
-class Vec0xd6b : ProtoBuf {
+internal class Vec0xd6b : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @SerialId(1) val maxPkgSize: Int = 0,
         @SerialId(2) val startTime: Int = 0,
         @SerialId(11) val uinList: List<Long>? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @SerialId(11) val msgMutualmarkData: List<Vec0xd6b.MutualMarkData>? = null,
         @SerialId(12) val uint64UnfinishedUins: List<Long>? = null
     ) : ProtoBuf
 
     @Serializable
-    class MutualMarkData(
+    internal class MutualMarkData(
         @SerialId(1) val frdUin: Long = 0L,
         @SerialId(2) val result: Int = 0
         // @SerialId(11) val mutualmarkInfo: List<Mutualmark.MutualMark>? = null
@@ -70,9 +70,9 @@ class Vec0xd6b : ProtoBuf {
 }
 
 @Serializable
-class Mutualmark : ProtoBuf {
+internal class Mutualmark : ProtoBuf {
     @Serializable
-    class MutualmarkInfo(
+    internal class MutualmarkInfo(
         @SerialId(1) val lastActionTime: Long = 0L,
         @SerialId(2) val level: Int = 0,
         @SerialId(3) val lastChangeTime: Long = 0L,
@@ -86,7 +86,7 @@ class Mutualmark : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ResourceInfo17(
+    internal class ResourceInfo17(
         @SerialId(1) val dynamicUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val staticUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val cartoonUrl: ByteArray = EMPTY_BYTE_ARRAY,
