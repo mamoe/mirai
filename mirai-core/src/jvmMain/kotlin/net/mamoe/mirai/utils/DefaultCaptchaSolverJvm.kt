@@ -29,36 +29,34 @@ actual var defaultLoginSolver: LoginSolver = DefaultLoginSolver()
 
 
 class DefaultLoginSolver : LoginSolver() {
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
-        loginSolverLock.withLock {
-            val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
-            withContext(Dispatchers.IO) {
-                tempFile.createNewFile()
-                bot.logger.info("需要图片验证码登录, 验证码为 4 字母")
-                try {
-                    tempFile.writeChannel().use { writeFully(data) }
-                    bot.logger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
-                } catch (e: Exception) {
-                    bot.logger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
-                }
+    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? = loginSolverLock.withLock {
+        val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
+        withContext(Dispatchers.IO) {
+            tempFile.createNewFile()
+            bot.logger.info("需要图片验证码登录, 验证码为 4 字母")
+            try {
+                tempFile.writeChannel().use { writeFully(data) }
+                bot.logger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
+            } catch (e: Exception) {
+                bot.logger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+            }
 
-                tempFile.inputStream().use {
-                    val img = ImageIO.read(it)
-                    if (img == null) {
-                        bot.logger.info("无法创建字符图片. 请查看文件")
-                    } else {
-                        bot.logger.info(img.createCharImg())
-                    }
+            tempFile.inputStream().use {
+                val img = ImageIO.read(it)
+                if (img == null) {
+                    bot.logger.info("无法创建字符图片. 请查看文件")
+                } else {
+                    bot.logger.info(img.createCharImg())
                 }
             }
-            bot.logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
-            return readLine()?.takeUnless { it.isEmpty() || it.length != 4 }.also {
-                bot.logger.info("正在提交[$it]中...")
-            }
+        }
+        bot.logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
+        return readLine()?.takeUnless { it.isEmpty() || it.length != 4 }.also {
+            bot.logger.info("正在提交[$it]中...")
         }
     }
 
-    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? = loginSolverLock.withLock {
         bot.logger.info("需要滑动验证码")
         bot.logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
         bot.logger.info("完成后请输入任意字符 ")
@@ -68,7 +66,7 @@ class DefaultLoginSolver : LoginSolver() {
         }
     }
 
-    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? = loginSolverLock.withLock {
         bot.logger.info("需要进行账户安全认证")
         bot.logger.info("该账户有[设备锁]/[不常用登陆地点]/[不常用设备登陆]的问题")
         bot.logger.info("完成以下账号认证即可成功登陆|理论本认证在mirai每个账户中最多出现1次")
