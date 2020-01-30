@@ -96,9 +96,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         FriendListPacket(
             bot.client,
             0,
-            10,
+            20,
             0,
-            5
+            0
         ).sendAndExpect<FriendListPacket.GetFriendListResponse>()
 
     }

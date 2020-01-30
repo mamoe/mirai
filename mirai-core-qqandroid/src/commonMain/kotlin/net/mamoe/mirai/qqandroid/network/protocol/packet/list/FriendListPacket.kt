@@ -48,6 +48,7 @@ internal object FriendListPacket :
                     iVersion = 3,
                     cPacketType = 0x003,
                     iMessageType = 0x00000,
+                    iRequestId = 1921334514,
                     sBuffer = RequestDataVersion3(
                         mapOf(
                             "FL" to GetFriendListReq(
@@ -69,13 +70,13 @@ internal object FriendListPacket :
                                 groupstartIndex = groupListStartIndex.toByte(),
                                 getgroupCount = groupListCount.toByte(),
                                 ifGetMSFGroup = 0,
-                                ifShowTermType = 0,
+                                ifShowTermType = 1,
                                 version = 27L,
                                 uinList = null,
                                 eAppType = 0,
                                 ifGetBothFlag = 0,
                                 ifGetDOVId = 0,
-                                vec0xd6bReq = Vec0xd6b.ReqBody().toByteArray(Vec0xd6b.ReqBody.serializer()),
+                                vec0xd6bReq = EMPTY_BYTE_ARRAY,
                                 vec0xd50Req = Vec0xd50.ReqBody(
                                     appid = 10002L,
                                     reqKsingSwitch = 1,
