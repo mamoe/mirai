@@ -55,7 +55,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         override fun endEncode(desc: SerialDescriptor) {
             parentEncoder.writeHead(MAP, this.tag)
             parentEncoder.encodeTaggedInt(Int.STUB_FOR_PRIMITIVE_NUMBERS_GBK, count)
-            println(this.output.toByteArray().toUHexString())
+            // println(this.output.toByteArray().toUHexString())
             parentEncoder.output.write(this.output.toByteArray())
         }*/
 
@@ -340,7 +340,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
          * 在 [KSerializer.serialize] 前
          */
         override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-            //println("beginStructure: desc=${desc.getClassName()}, typeParams: ${typeParams.contentToString()}")
+            //// println("beginStructure: desc=${desc.getClassName()}, typeParams: ${typeParams.contentToString()}")
             when (desc) {
                 // 由于 Byte 的数组有两种方式写入, 需特定读取器
                 ByteArraySerializer.descriptor -> {
@@ -403,7 +403,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
-            // println("decodeNullableSerializableValue: ${deserializer::class.qualifiedName}")
+            // // println("decodeNullableSerializableValue: ${deserializer::class.qualifiedName}")
             if (deserializer is NullReader) {
                 return null
             }
@@ -430,7 +430,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         else input.readByteArray(tag).toMutableList() as T
                     }
                     val tag = currentTag
-//                    println(tag)
+//                    // println(tag)
                     @Suppress("SENSELESS_COMPARISON") // false positive
                     if (input.skipToTagOrNull(tag) {
                             return deserializer.deserialize(JceListReader(input.readInt(0), input))
@@ -502,17 +502,18 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         internal val leastRemaining = input.remaining - maxReadSize
         internal val isEndOfInput: Boolean get() = input.remaining <= leastRemaining
 
-        internal var currentJceHead: JceHead? = input.doReadHead().also { println("first jce head = $it") }
+        internal var currentJceHead: JceHead? = input.doReadHead().also {
+            // println("first jce head = $it") }
 
-        override fun close() = input.close()
+            override fun close() = input.close()
 
-        internal fun peakHeadOrNull(): JceHead? = currentJceHead ?: readHeadOrNull()
-        internal fun peakHead(): JceHead = peakHeadOrNull() ?: error("no enough data to read head")
+            internal fun peakHeadOrNull(): JceHead? = currentJceHead ?: readHeadOrNull()
+            internal fun peakHead(): JceHead = peakHeadOrNull() ?: error("no enough data to read head")
 
-        @PublishedApi
-        internal fun readHead(): JceHead = readHeadOrNull() ?: error("no enough data to read head")
+            @PublishedApi
+            internal fun readHead(): JceHead = readHeadOrNull() ?: error("no enough data to read head")
 
-        @PublishedApi
+            @PublishedApi
         internal fun readHeadOrNull(): JceHead? = input.doReadHead()
 
         /**
@@ -521,7 +522,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         private fun ByteReadPacket.doReadHead(): JceHead? {
             if (isEndOfInput) {
                 currentJceHead = null
-                println("doReadHead: endOfInput")
+                // println("doReadHead: endOfInput")
                 return null
             }
             val var2 = readUByte()
@@ -530,13 +531,13 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             if (tag == 15u) {
                 if (isEndOfInput) {
                     currentJceHead = null
-                    println("doReadHead: endOfInput2")
+                    // println("doReadHead: endOfInput2")
                     return null
                 }
                 tag = readUByte().toUInt()
             }
             currentJceHead = JceHead(tag = tag.toInt(), type = type.toByte())
-            println("doReadHead: $currentJceHead")
+            // println("doReadHead: $currentJceHead")
             return currentJceHead
         }
 
@@ -596,9 +597,10 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     val head = readHead()
                     readHead()
                     check(head.type.toInt() == 0) { "type mismatch" }
-                    input.readBytes(readInt(0).also { println("list size=$it") })
-                }
-                else -> error("type mismatch")
+                    input.readBytes(readInt(0).also {
+                        // println("list size=$it") })
+                    }
+                        else -> error("type mismatch")
             }
         }
 
@@ -790,11 +792,11 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 }
 
 internal inline fun <R> Jce.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) -> R): R? {
-    println("skipping to $tag start")
+    // println("skipping to $tag start")
     while (true) {
         if (isEndOfInput) { // 读不了了
             currentJceHead = null
-            println("skipping to $tag: endOfInput")
+            // println("skipping to $tag: endOfInput")
             return null
         }
 
@@ -804,19 +806,19 @@ internal inline fun <R> Jce.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) 
         }
 
         if (head.tag > tag) {
-            println("skipping to $tag: head.tag > tag")
+            // println("skipping to $tag: head.tag > tag")
             return null
         }
         // readHead()
         if (head.tag == tag) {
             // readHeadOrNull()
             currentJceHead = null
-            println("skipping to $tag: run block")
+            // println("skipping to $tag: run block")
             return block(head)
         } else {
-            println("skipping to $tag: tag not matching")
+            // println("skipping to $tag: tag not matching")
         }
-        println("skipping to $tag: skipField")
+        // println("skipping to $tag: skipField")
         this.skipField(head.type)
         currentJceHead = readHeadOrNull()
     }
