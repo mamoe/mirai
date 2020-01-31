@@ -12,6 +12,7 @@ import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.unzip
 
 /*
  */
@@ -67,7 +68,6 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
         PacketLogger.verbose("包类型(flag2) = $flag2. (可能是 ${if (flag2 == 2) "sso" else "uni"})")
 
         val flag3 = readByte().toInt()
-        check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
 
         val uinAccount = readString(readInt() - 4)//uin
 
@@ -88,9 +88,9 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
             this.readBytes().tryDecryptOrNull()?.toReadPacket()
         }?.debugPrint("sso/uni body=")?.let {
             if (flag1 == 0x0A) {
-                parseSsoFrame(it)
+                parseSsoFrame(flag3, it)
             } else {
-                parseSsoFrame(it)
+                parseSsoFrame(flag3, it)
             }
         }?.let {
             val bytes = it.data.readBytes()
@@ -205,7 +205,7 @@ private fun ByteReadPacket.parseOicqResponse(body: ByteReadPacket.() -> Unit) {
  * 解析 SSO 层包装
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-private fun parseSsoFrame(input: ByteReadPacket): KnownPacketFactories.IncomingPacket {
+private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactories.IncomingPacket {
     val commandName: String
     val ssoSequenceId: Int
 
@@ -232,7 +232,14 @@ private fun parseSsoFrame(input: ByteReadPacket): KnownPacketFactories.IncomingP
         println("找不到包 PacketFactory")
         PacketLogger.verbose("传递给 PacketFactory 的数据 = ${input.readBytes().toUHexString()}")
     }
-    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, input)
+
+    var data = input.readBytes()
+    if (flag3 == 1) {
+        data = data.unzip(offset = 4)
+    } else {
+
+    }
+    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, data.toReadPacket())
 }
 
 

@@ -111,6 +111,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             2
         ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
          */
+        delay(2000)
+
         val data = FriendList.GetTroopList(
             bot.client
         ).sendAndExpect<FriendList.GetTroopList.Response>()
