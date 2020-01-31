@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
@@ -624,7 +625,7 @@ internal class ImMsgBody : ProtoBuf {
     internal class NotOnlineImage(
         @SerialId(1) val filePath: String = "",
         @SerialId(2) val fileLen: Int = 0,
-        @SerialId(3) val downloadPath: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(3) val downloadPath: String = "",
         @SerialId(4) val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(5) val imgType: Int = 0,
         @SerialId(6) val previewsImage: ByteArray = EMPTY_BYTE_ARRAY,
@@ -652,6 +653,20 @@ internal class ImMsgBody : ProtoBuf {
         @SerialId(28) val _400Height: Int = 0,
         @SerialId(29) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
+
+    @Serializable // 非官方.
+    internal data class PbReserve(
+        @SerialId(1) val unknown1: Int = 1,
+        @SerialId(2) val unknown2: Int = 0,
+        @SerialId(6) val unknown3: Int = 0,
+        @SerialId(8) val hint: String = "[动画表情]",
+        @SerialId(10) val unknown5: Int = 0,
+        @SerialId(15) val unknwon6: Int = 5
+    ) : ProtoBuf {
+        companion object {
+            val DEFAULT: ByteArray = PbReserve().toByteArray(serializer())
+        }
+    }
 
     @Serializable
     internal class OnlineImage(

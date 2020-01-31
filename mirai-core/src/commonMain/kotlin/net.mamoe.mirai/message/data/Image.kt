@@ -14,7 +14,7 @@ fun Image(id: String) = Image(ImageId(id))
  * 由接收消息时构建, 可直接发送
  *
  * @param id 这个图片的 [ImageId]
- */
+ */ // TODO: 2020/1/31 去掉 Image.  将 Image 改为 interface/class
 inline class Image(inline val id: ImageId) : Message {
     override fun toString(): String = "[${id.value}]"
 

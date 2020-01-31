@@ -1,11 +1,12 @@
 package net.mamoe.mirai.qqandroid.network
 
-import io.ktor.client.HttpClient
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import kotlinx.io.core.*
-import kotlinx.io.pool.ObjectPool
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.use
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.BroadcastControllable
@@ -38,88 +39,82 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
 
     override suspend fun login() {
-        suspend fun doLogin() {
-            channel = PlatformSocket()
-            channel.connect("113.96.13.208", 8080)
-            launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
+        if (::channel.isInitialized) {
+            channel.close()
+        }
+        channel = PlatformSocket()
+        channel.connect("113.96.13.208", 8080)
+        launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-            bot.logger.info("Trying login")
-            var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
-            mainloop@ while (true) {
-                when (response) {
-                    is LoginPacket.LoginPacketResponse.UnsafeLogin -> {
-                        bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
-                        response = LoginPacket.SubCommand9(bot.client).sendAndExpect()
-                    }
+        // bot.logger.info("Trying login")
+        var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+        mainloop@ while (true) {
+            when (response) {
+                is LoginPacket.LoginPacketResponse.UnsafeLogin -> {
+                    bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
+                    response = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+                }
 
-                    is LoginPacket.LoginPacketResponse.Captcha -> when (response) {
-                        is LoginPacket.LoginPacketResponse.Captcha.Picture -> {
-                            var result = response.data.withUse {
-                                bot.configuration.loginSolver.onSolvePicCaptcha(bot, this)
-                            }
-                            if (result == null || result.length != 4) {
-                                //refresh captcha
-                                result = "ABCD"
-                            }
-                            response = LoginPacket.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
-                            continue@mainloop
+                is LoginPacket.LoginPacketResponse.Captcha -> when (response) {
+                    is LoginPacket.LoginPacketResponse.Captcha.Picture -> {
+                        var result = response.data.withUse {
+                            bot.configuration.loginSolver.onSolvePicCaptcha(bot, this)
                         }
-                        is LoginPacket.LoginPacketResponse.Captcha.Slider -> {
-                            var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
-                            if (ticket == null) {
-                                ticket = ""
-                            }
-                            response = LoginPacket.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
-                            continue@mainloop
+                        if (result == null || result.length != 4) {
+                            //refresh captcha
+                            result = "ABCD"
                         }
-                    }
-
-                    is LoginPacket.LoginPacketResponse.Error -> error(response.toString())
-
-                    is LoginPacket.LoginPacketResponse.DeviceLockLogin -> {
-                        response = LoginPacket.SubCommand20(
-                            bot.client,
-                            response.t402,
-                            response.t403
-                        ).sendAndExpect()
+                        response = LoginPacket.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
                         continue@mainloop
                     }
-
-                    is LoginPacket.LoginPacketResponse.Success -> {
-                        bot.logger.info("Login successful")
-                        break@mainloop
+                    is LoginPacket.LoginPacketResponse.Captcha.Slider -> {
+                        var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
+                        if (ticket == null) {
+                            ticket = ""
+                        }
+                        response = LoginPacket.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
+                        continue@mainloop
                     }
                 }
+
+                is LoginPacket.LoginPacketResponse.Error -> error(response.toString())
+
+                is LoginPacket.LoginPacketResponse.DeviceLockLogin -> {
+                    response = LoginPacket.SubCommand20(
+                        bot.client,
+                        response.t402,
+                        response.t403
+                    ).sendAndExpect()
+                    continue@mainloop
+                }
+
+                is LoginPacket.LoginPacketResponse.Success -> {
+                    bot.logger.info("Login successful")
+                    break@mainloop
+                }
             }
-
-            println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-            StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
         }
 
-        suspend fun doInit() {
-            //start updating friend/group list
-            bot.logger.info("Start updating friend/group list")
+        println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000)
+    }
 
-            /*
-            val data = FriendList.GetFriendGroupList(
-                bot.client,
-                0,
-                1,
-                0,
-                2
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
-            */
-
-            val data = FriendList.GetTroopListSimplify(
-                bot.client
-            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(100000)
-            println(data.contentToString())
-
-
-        }
-
-        doLogin()
-        doInit()
+    override suspend fun init() {
+        //start updating friend/group list
+        bot.logger.info("Start updating friend/group list")
+        /*
+        val data = FriendList.GetFriendGroupList(
+            bot.client,
+            0,
+            1,
+            0,
+            2
+        ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+         */
+        val data = FriendList.GetTroopList(
+            bot.client
+        ).sendAndExpect<FriendList.GetTroopList.Response>()
+        println(data.contentToString())
     }
 
 
@@ -150,28 +145,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     /**
      * 在 [PacketProcessDispatcher] 调度器中解析包内容.
-     * [input] 将会被 [ObjectPool.recycle].
-     *
-     * @param input 一个完整的包的内容, 去掉开头的 int 包长度
-     */
-    fun parsePacketAsync(input: IoBuffer, pool: ObjectPool<IoBuffer> = IoBuffer.Pool): Job =
-        this.launch(PacketProcessDispatcher) {
-            try {
-                parsePacket(input)
-            } finally {
-                input.discard()
-                input.release(pool)
-            }
-        }
-
-    /**
-     * 在 [PacketProcessDispatcher] 调度器中解析包内容.
-     * [input] 将会被 [Input.close], 因此 [input] 不能为 [IoBuffer]
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
     fun parsePacketAsync(input: Input): Job {
-        require(input !is IoBuffer) { "input cannot be IoBuffer" }
         return this.launch(PacketProcessDispatcher) {
             input.use { parsePacket(it) }
         }
@@ -187,6 +164,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         generifiedParsePacket<Packet>(input)
     }
 
+    // with generic type, less mistakes
     private suspend inline fun <P : Packet> generifiedParsePacket(input: Input) {
         KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
             handlePacket(packetFactory, packet, commandName, sequenceId)
@@ -237,7 +215,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 处理从服务器接收过来的包. 这些包可能是粘在一起的, 也可能是不完整的. 将会自动处理.
      * 处理后的包会调用 [parsePacketAsync]
      */
-    @UseExperimental(ExperimentalCoroutinesApi::class)
     internal fun processPacket(rawInput: ByteReadPacket) {
         if (rawInput.remaining == 0L) {
             return
@@ -255,7 +232,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
             // 循环所有完整的包
             while (rawInput.remaining > length) {
-                parsePacketAsync(rawInput.readIoBuffer(length))
+                parsePacketAsync(rawInput.readPacket(length))
 
                 length = rawInput.readInt() - 4
             }
@@ -379,6 +356,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         val sequenceId: Int
     ) : CompletableDeferred<Packet> by CompletableDeferred(supervisor) {
         fun filter(commandName: String, sequenceId: Int) = this.commandName == commandName && this.sequenceId == sequenceId
+    }
+
+    override fun dispose(cause: Throwable?) {
+        channel.close()
+        super.dispose(cause)
     }
 
     override suspend fun awaitDisconnection() = supervisor.join()

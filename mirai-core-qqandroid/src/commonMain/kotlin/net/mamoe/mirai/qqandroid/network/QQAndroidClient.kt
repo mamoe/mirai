@@ -11,15 +11,15 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
-import net.mamoe.mirai.qqandroid.utils.*
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.qqandroid.utils.Context
+import net.mamoe.mirai.qqandroid.utils.DeviceInfo
+import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.qqandroid.utils.SystemDeviceInfo
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
-import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.unsafeWeakRef
 
 /*
  APP ID:
@@ -111,7 +111,7 @@ internal open class QQAndroidClient(
     val protocolVersion: Short = 8001
 
     class C2cMessageSyncData {
-        var syncCookie = EMPTY_BYTE_ARRAY
+        var syncCookie: ByteArray? = null
         var pubAccountCookie = EMPTY_BYTE_ARRAY
         var syncFlag: Int = 0
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
@@ -174,7 +174,11 @@ internal open class QQAndroidClient(
     lateinit var t104: ByteArray
 }
 
-class ReserveUinInfo(
+internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
+    md5(getRandomByteArray(16) + guid)
+
+
+internal class ReserveUinInfo(
     val imgType: ByteArray,
     val imgFormat: ByteArray,
     val imgUrl: ByteArray
@@ -184,7 +188,7 @@ class ReserveUinInfo(
     }
 }
 
-class WFastLoginInfo(
+internal class WFastLoginInfo(
     val outA1: ByteReadPacket,
     var adUrl: String = "",
     var iconUrl: String = "",
@@ -196,7 +200,7 @@ class WFastLoginInfo(
     }
 }
 
-class WLoginSimpleInfo(
+internal class WLoginSimpleInfo(
     val uin: Long, // uin
     val face: Int, // ubyte actually
     val age: Int, // ubyte
@@ -212,7 +216,7 @@ class WLoginSimpleInfo(
     }
 }
 
-class LoginExtraData(
+internal class LoginExtraData(
     val uin: Long,
     val ip: ByteArray,
     val time: Int,
@@ -223,7 +227,7 @@ class LoginExtraData(
     }
 }
 
-class WLoginSigInfo(
+internal class WLoginSigInfo(
     val uin: Long,
     val encryptA1: ByteArray?, // sigInfo[0]
     val noPicSig: ByteArray?, // sigInfo[1]
@@ -275,24 +279,24 @@ class WLoginSigInfo(
     }
 }
 
-class UserStSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-class LSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-class UserStWebSig(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-class UserA8(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-class UserA5(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-class SKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-class UserSig64(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-class OpenKey(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-class VKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-class AccessToken(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-class D2(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-class Sid(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-class AqSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+internal class UserStSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+internal class LSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class UserStWebSig(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class UserA8(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class UserA5(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+internal class SKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class UserSig64(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+internal class OpenKey(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+internal class VKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class AccessToken(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+internal class D2(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class Sid(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class AqSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 
-class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
 
-typealias PSKeyMap = MutableMap<String, PSKey>
-typealias Pt4TokenMap = MutableMap<String, Pt4Token>
+internal typealias PSKeyMap = MutableMap<String, PSKey>
+internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
 
 internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, expireTime: Long, outPSKeyMap: PSKeyMap, outPt4TokenMap: Pt4TokenMap) =
     data.read {
@@ -308,17 +312,17 @@ internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, ex
         }
     }
 
-class PSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class PSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
 
-class WtSessionTicket(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
+internal class WtSessionTicket(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 
-open class KeyWithExpiry(
+internal open class KeyWithExpiry(
     data: ByteArray,
     creationTime: Long,
     val expireTime: Long
 ) : KeyWithCreationTime(data, creationTime)
 
-open class KeyWithCreationTime(
+internal open class KeyWithCreationTime(
     val data: ByteArray,
     val creationTime: Long
 )

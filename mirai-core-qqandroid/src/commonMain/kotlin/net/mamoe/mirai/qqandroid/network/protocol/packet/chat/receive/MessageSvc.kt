@@ -9,7 +9,8 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
-import net.mamoe.mirai.qqandroid.io.serialization.readRemainingAsProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
@@ -17,6 +18,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushNotify
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
@@ -41,7 +43,7 @@ internal class MessageSvc {
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify) {
             network.run {
-                PbGetMsg(client, packet).sendAndExpect<MultiPacket<FriendMessage>>()
+                PbGetMsg(client, packet.stMsgInfo?.uMsgTime ?: 0).sendAndExpect<MultiPacket<FriendMessage>>()
             }
         }
     }
@@ -56,7 +58,7 @@ internal class MessageSvc {
 
         operator fun invoke(
             client: QQAndroidClient,
-            from: RequestPushNotify
+            msgTime: Long //PbPushMsg.msg.msgHead.msgTime
         ): OutgoingPacket = buildOutgoingUniPacket(
             client,
             extraData = EXTRA_DATA.toReadPacket()
@@ -64,14 +66,16 @@ internal class MessageSvc {
             writeProtoBuf(
                 MsgSvc.PbGetMsgReq.serializer(),
                 MsgSvc.PbGetMsgReq(
-                    msgReqType = from.ctype.toInt(),
+                    msgReqType = 1, // from.ctype.toInt()
                     contextFlag = 1,
                     rambleFlag = 0,
                     latestRambleNumber = 20,
                     otherRambleNumber = 3,
                     onlineSyncFlag = 1,
+                    whisperSessionId = 0,
                     //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
-                    syncCookie = client.c2cMessageSync.syncCookie,
+                    syncCookie = client.c2cMessageSync.syncCookie
+                        ?: SyncCookie(msgTime).toByteArray(SyncCookie.serializer()).also { client.c2cMessageSync.syncCookie = it },
                     syncFlag = 1
                     // syncFlag = client.c2cMessageSync.syncFlag,
                     //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
@@ -83,7 +87,11 @@ internal class MessageSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MultiPacket<FriendMessage> {
             // 00 00 01 0F 08 00 12 00 1A 34 08 FF C1 C4 F1 05 10 FF C1 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 8A CA 91 D1 0C 48 9B A5 BD 9B 0A 58 DE 9D 99 F8 08 60 1D 68 FF C1 C4 F1 05 70 00 20 02 2A 9D 01 08 F3 C1 C4 F1 05 10 A2 FF 8C F0 03 18 01 22 8A 01 0A 2A 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 18 A6 01 20 0B 28 AE F9 01 30 F4 C1 C4 F1 05 38 A7 E3 D8 D4 84 80 80 80 01 B8 01 CD B5 01 12 08 08 01 10 00 18 00 20 00 1A 52 0A 50 0A 27 08 00 10 F4 C1 C4 F1 05 18 A7 E3 D8 D4 04 20 00 28 0C 30 00 38 86 01 40 22 4A 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 12 08 0A 06 0A 04 4E 4D 53 4C 12 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 12 04 4A 02 08 00 30 01 2A 15 08 97 A2 C1 F1 05 10 95 A6 F5 E5 0C 18 01 30 01 40 01 48 81 01 2A 10 08 D3 F7 B5 F1 05 10 DD F1 92 B7 07 18 01 30 01 38 00 42 00 48 00
             discardExact(4)
-            val resp = readRemainingAsProtoBuf(MsgSvc.PbGetMsgResp.serializer())
+            val resp = readProtoBuf(MsgSvc.PbGetMsgResp.serializer())
+
+            if (resp.result != 0) {
+                return MultiPacket(emptyList())
+            }
 
             bot.client.c2cMessageSync.syncCookie = resp.syncCookie
             bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
@@ -193,7 +201,7 @@ internal class MessageSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             discardExact(4)
 
-            val response = readRemainingAsProtoBuf(MsgSvc.PbSendMsgResp.serializer())
+            val response = readProtoBuf(MsgSvc.PbSendMsgResp.serializer())
             return if (response.result == 0) {
                 Response.SUCCESS
             } else {

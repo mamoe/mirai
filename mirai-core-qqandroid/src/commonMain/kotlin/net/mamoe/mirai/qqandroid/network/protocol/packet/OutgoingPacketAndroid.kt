@@ -192,7 +192,7 @@ internal inline fun PacketFactory<*>.buildLoginOutgoingPacket(
     })
 }
 
-private val BRP_STUB = ByteReadPacket(EMPTY_BYTE_ARRAY)
+private inline val BRP_STUB get() = ByteReadPacket.Empty
 
 /**
  * The second outermost packet for login
@@ -233,7 +233,8 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         writeInt(subAppId.toInt())
         writeInt(subAppId.toInt())
         writeHex(unknownHex)
-        if (extraData === BRP_STUB) {
+        if (extraData === BRP_STUB || extraData.remaining == 0L) {
+            // fast-path
             writeInt(0x04)
         } else {
             writeInt((extraData.remaining + 4).toInt())

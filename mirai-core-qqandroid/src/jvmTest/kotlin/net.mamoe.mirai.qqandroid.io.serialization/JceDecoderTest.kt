@@ -20,7 +20,9 @@ class JceDecoderTest {
         @SerialId(3) val int: Int = 123,
         @SerialId(4) val long: Long = 123,
         @SerialId(5) val float: Float = 123f,
-        @SerialId(6) val double: Double = 123.0
+        @SerialId(6) val double: Double = 123.0,
+        @SerialId(7) val byteArray: ByteArray = byteArrayOf(1, 2, 3),
+        @SerialId(8) val byteArray2: ByteArray = byteArrayOf(1, 2, 3)
     ) : JceStruct {
         override fun writeTo(output: JceOutput) = output.run {
             writeString(string, 0)
@@ -30,7 +32,78 @@ class JceDecoderTest {
             writeLong(long, 4)
             writeFloat(float, 5)
             writeDouble(double, 6)
+            writeFully(byteArray, 7)
+            writeFully(byteArray2, 8)
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as TestSimpleJceStruct
+
+            if (string != other.string) return false
+            if (byte != other.byte) return false
+            if (short != other.short) return false
+            if (int != other.int) return false
+            if (long != other.long) return false
+            if (float != other.float) return false
+            if (double != other.double) return false
+            if (!byteArray.contentEquals(other.byteArray)) return false
+            if (!byteArray2.contentEquals(other.byteArray2)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = string.hashCode()
+            result = 31 * result + byte
+            result = 31 * result + short
+            result = 31 * result + int
+            result = 31 * result + long.hashCode()
+            result = 31 * result + float.hashCode()
+            result = 31 * result + double.hashCode()
+            result = 31 * result + byteArray.contentHashCode()
+            result = 31 * result + byteArray2.contentHashCode()
+            return result
+        }
+    }
+
+
+    @Test
+    fun testByteArray() {
+
+        @Serializable
+        data class TestByteArray(
+            @SerialId(0) val byteArray: ByteArray = byteArrayOf(1, 2, 3)
+        ) : JceStruct {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as TestByteArray
+
+                if (!byteArray.contentEquals(other.byteArray)) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                return byteArray.contentHashCode()
+            }
+        }
+        assertEquals(
+            TestByteArray(),
+            TestByteArray().toByteArray(TestByteArray.serializer()).loadAs(TestByteArray.serializer())
+        )
+    }
+
+    @Test
+    fun testSimpleStruct() {
+        assertEquals(
+            TestSimpleJceStruct(),
+            TestSimpleJceStruct().toByteArray(TestSimpleJceStruct.serializer()).loadAs(TestSimpleJceStruct.serializer())
+        )
     }
 
 
@@ -77,7 +150,7 @@ class JceDecoderTest {
     @Test
     fun testNestedList() {
         @Serializable
-        class TestNestedList(
+        data class TestNestedList(
             @SerialId(7) val array: List<List<Int>> = listOf(listOf(1, 2, 3), listOf(1, 2, 3), listOf(1, 2, 3))
         ) : JceStruct
 
@@ -133,6 +206,28 @@ class JceDecoderTest {
         }.readBytes().loadAs(TestNestedMap.serializer()).map.entries.first().value.contentToString(), "{01=[0x0002(2)]}")
     }
 
+    @Test
+    fun testMap3() {
+        @Serializable
+        class TestNestedMap(
+            @SerialId(7) val map: Map<Byte, ShortArray> = mapOf(1.toByte() to shortArrayOf(2))
+        ) : JceStruct
+        assertEquals("{0x01(1)=[0x0002(2)]}", buildJcePacket {
+            writeMap(mapOf(1.toByte() to shortArrayOf(2)), 7)
+        }.readBytes().loadAs(TestNestedMap.serializer()).map.contentToString())
+    }
+
+    @Test
+    fun testNestedMap2() {
+        @Serializable
+        class TestNestedMap(
+            @SerialId(7) val map: Map<Int, Map<Byte, ShortArray>> = mapOf(1 to mapOf(1.toByte() to shortArrayOf(2)))
+        ) : JceStruct
+        assertEquals(buildJcePacket {
+            writeMap(mapOf(1 to mapOf(1.toByte() to shortArrayOf(2))), 7)
+        }.readBytes().loadAs(TestNestedMap.serializer()).map.entries.first().value.contentToString(), "{0x01(1)=[0x0002(2)]}")
+    }
+
 
     @Test
     fun testNullableEncode() {
@@ -186,6 +281,9 @@ class JceDecoderTest {
             @SerialId(0) val innerStructList: List<TestSimpleJceStruct>
         ) : JceStruct
 
+        println(buildJcePacket {
+            writeCollection(listOf(TestSimpleJceStruct(), TestSimpleJceStruct()), 0)
+        }.readBytes().loadAs(OuterStruct.serializer()).innerStructList.toString())
         assertEquals(
             buildJcePacket {
                 writeCollection(listOf(TestSimpleJceStruct(), TestSimpleJceStruct()), 0)

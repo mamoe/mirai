@@ -48,6 +48,13 @@ abstract class BotNetworkHandler : CoroutineScope {
     abstract suspend fun login()
 
     /**
+     * 初始化获取好友列表等值.
+     */
+    @MiraiInternalAPI
+    open suspend fun init() {
+    }
+
+    /**
      * 等待直到与服务器断开连接. 若未连接则立即返回
      */
     abstract suspend fun awaitDisconnection()

@@ -55,6 +55,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
 
     private var heartbeatJob: Job? = null
 
+    @MiraiInternalAPI
     override suspend fun login() {
 
         TIMProtocol.SERVER_IP.shuffled().forEach { ip ->
