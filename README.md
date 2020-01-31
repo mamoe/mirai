@@ -5,7 +5,7 @@
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **[English](README-eng.md)**  
 
-跨平台 **TIM PC 和 QQ Android** 协议支持库.   
+多平台 **TIM PC 和 QQ Android** 协议支持库.   
 纯 Kotlin 实现协议和支持框架，模块全部开源。  
 目前可运行在 JVM 或 Android。
 
