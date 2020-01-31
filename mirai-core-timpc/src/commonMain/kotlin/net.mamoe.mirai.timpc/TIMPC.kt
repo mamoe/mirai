@@ -23,5 +23,5 @@ object TIMPC : BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    fun Bot(qq: Long, password: String, configuration: BotConfiguration): Bot = TIMPCBot(BotAccount(qq, password), configuration)
+    fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot = TIMPCBot(BotAccount(qq, password), configuration)
 }
