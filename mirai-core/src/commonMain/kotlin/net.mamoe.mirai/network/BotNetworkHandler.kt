@@ -49,6 +49,8 @@ abstract class BotNetworkHandler : CoroutineScope {
 
     /**
      * 初始化获取好友列表等值.
+     *
+     * 不要使用这个 API. 它会在登录完成后被自动调用.
      */
     @MiraiInternalAPI
     open suspend fun init() {

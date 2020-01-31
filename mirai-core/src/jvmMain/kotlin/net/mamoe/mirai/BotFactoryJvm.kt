@@ -20,7 +20,14 @@ internal val factory: BotFactory = run {
     No BotFactory found. Please ensure that you've added dependency of protocol modules.
     Available modules:
     - net.mamoe:mirai-core-timpc
+    - net.mamoe:mirai-core-qqandroid (recommended)
     You should have at lease one protocol module installed.
+    -------------------------------------------------------
+    找不到 BotFactory. 请确保你依赖了至少一个协议模块.
+    可用的协议模块: 
+    - net.mamoe:mirai-core-timpc
+    - net.mamoe:mirai-core-qqandroid (推荐)
+    请添加上述任一模块的依赖(与 mirai-core 版本相同)
     """.trimIndent()
 )
 
