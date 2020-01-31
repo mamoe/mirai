@@ -8,12 +8,8 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
-import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
-import net.mamoe.mirai.utils.io.readIoBuffer
 import net.mamoe.mirai.utils.io.readString
-import net.mamoe.mirai.utils.io.toIoBuffer
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
+import net.mamoe.mirai.utils.io.toReadPacket
 
 @PublishedApi
 internal val CharsetGBK = Charset.forName("GBK")
@@ -383,11 +379,10 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 }
             }
 
-            if (!input.input.endOfInput) {
-                val tag = currentTagOrNull
-                if (tag != null && input.peakHead().tag > tag) {
-                    return NullReader(this.input)
-                }
+            val tag = currentTagOrNull
+            val jceHead = input.peakHeadOrNull()
+            if (tag != null && (jceHead == null || jceHead.tag > tag)) {
+                return NullReader(this.input)
             }
 
             return super.beginStructure(desc, *typeParams)
@@ -402,7 +397,8 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         }
 
         fun isTagOptional(tag: Int): Boolean {
-            return input.input.endOfInput || input.peakHead().tag > tag
+            val head = input.peakHeadOrNull()
+            return input.isEndOfInput || head == null || head.tag > tag
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -492,7 +488,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         @Suppress("UNCHECKED_CAST")
         override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
             return decodeNullableSerializableValue(deserializer as DeserializationStrategy<Any?>) as? T
-                ?: error("value with tag $currentTagOrNull(by ${deserializer.getClassName()}) is not optional but cannot find")
+                ?: error("value with tag $currentTagOrNull(by ${deserializer.getClassName()}) is not optional but cannot find. currentJceHead = ${input.currentJceHead}")
         }
     }
 
@@ -500,33 +496,48 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
     @UseExperimental(ExperimentalUnsignedTypes::class)
     internal inner class JceInput(
         @PublishedApi
-        internal val input: IoBuffer
+        internal val input: ByteReadPacket,
+        maxReadSize: Long = input.remaining
     ) : Closeable {
-        override fun close() = IoBuffer.Pool.recycle(input)
+        internal val leastRemaining = input.remaining - maxReadSize
+        internal val isEndOfInput: Boolean get() = input.remaining <= leastRemaining
+
+        internal var currentJceHead: JceHead? = input.doReadHead().also { println("first jce head = $it") }
+
+        override fun close() = input.close()
+
+        internal fun peakHeadOrNull(): JceHead? = currentJceHead ?: readHeadOrNull()
+        internal fun peakHead(): JceHead = peakHeadOrNull() ?: error("no enough data to read head")
 
         @PublishedApi
-        internal fun readHead(): JceHead = input.readHead() ?: error("no enough data to read head")
+        internal fun readHead(): JceHead = readHeadOrNull() ?: error("no enough data to read head")
 
         @PublishedApi
-        internal fun readHeadOrNull(): JceHead? = input.readHead()
+        internal fun readHeadOrNull(): JceHead? = input.doReadHead()
 
-        @PublishedApi
-        internal fun peakHead(): JceHead = input.makeView().readHead() ?: error("no enough data to read head")
-
-        @PublishedApi
-        internal fun peakHeadOrNull(): JceHead? = input.makeView().readHead()
-
-        @Suppress("NOTHING_TO_INLINE") // 避免 stacktrace 出现两个 readHead
-        private inline fun IoBuffer.readHead(): JceHead? {
-            if (endOfInput) return null
+        /**
+         * 读取下一个 head 存储到 [currentJceHead]
+         */
+        private fun ByteReadPacket.doReadHead(): JceHead? {
+            if (isEndOfInput) {
+                currentJceHead = null
+                println("doReadHead: endOfInput")
+                return null
+            }
             val var2 = readUByte()
             val type = var2 and 15u
             var tag = var2.toUInt() shr 4
             if (tag == 15u) {
-                if (endOfInput) return null
+                if (isEndOfInput) {
+                    currentJceHead = null
+                    println("doReadHead: endOfInput2")
+                    return null
+                }
                 tag = readUByte().toUInt()
             }
-            return JceHead(tag = tag.toInt(), type = type.toByte())
+            currentJceHead = JceHead(tag = tag.toInt(), type = type.toByte())
+            println("doReadHead: $currentJceHead")
+            return currentJceHead
         }
 
         fun readBoolean(tag: Int): Boolean = readBooleanOrNull(tag) ?: error("cannot find tag $tag")
@@ -583,8 +594,9 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 LIST -> ByteArray(readInt(0)) { readByte(0) }
                 SIMPLE_LIST -> {
                     val head = readHead()
+                    readHead()
                     check(head.type.toInt() == 0) { "type mismatch" }
-                    input.readBytes(readInt(0))
+                    input.readBytes(readInt(0).also { println("list size=$it") })
                 }
                 else -> error("type mismatch")
             }
@@ -610,7 +622,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     input.readUInt().toInt().also { require(it in 1 until 104857600) { "bad string length: $it" } },
                     charset = charset.kotlinCharset
                 )
-                else -> error("type mismatch: ${head.type}")
+                else -> error("type mismatch: ${head.type}, expecting 6 or 7 (for string)")
             }
         }
 
@@ -762,40 +774,51 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         return dumpAsPacket(serializer, obj).readBytes()
     }
 
+    /**
+     * 注意 close [packet]!!
+     */
     fun <T> load(deserializer: DeserializationStrategy<T>, packet: ByteReadPacket, length: Int = packet.remaining.toInt()): T {
-        packet.readIoBuffer(n = length).withUse {
-            val decoder = JceDecoder(JceInput(this))
-            return decoder.decode(deserializer)
-        }
+        return JceDecoder(JceInput(packet, length.toLong())).decode(deserializer)
     }
 
     override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
-        return bytes.toIoBuffer().withUse {
-            val decoder = JceDecoder(JceInput(this))
+        return bytes.toReadPacket().use {
+            val decoder = JceDecoder(JceInput(it))
             decoder.decode(deserializer)
         }
     }
 }
 
-@UseExperimental(ExperimentalContracts::class)
 internal inline fun <R> Jce.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) -> R): R? {
-    contract {
-        callsInPlace(block, kotlin.contracts.InvocationKind.UNKNOWN)
-    }
+    println("skipping to $tag start")
     while (true) {
-        if (this.input.endOfInput) {
+        if (isEndOfInput) { // 读不了了
+            currentJceHead = null
+            println("skipping to $tag: endOfInput")
             return null
         }
 
-        val head = peakHead()
+        var head = currentJceHead
+        if (head == null) { // 没有新的 head 了
+            head = readHeadOrNull() ?: return null
+        }
+
         if (head.tag > tag) {
+            println("skipping to $tag: head.tag > tag")
             return null
         }
-        readHead()
+        // readHead()
         if (head.tag == tag) {
+            // readHeadOrNull()
+            currentJceHead = null
+            println("skipping to $tag: run block")
             return block(head)
+        } else {
+            println("skipping to $tag: tag not matching")
         }
+        println("skipping to $tag: skipField")
         this.skipField(head.type)
+        currentJceHead = readHeadOrNull()
     }
 }
 
