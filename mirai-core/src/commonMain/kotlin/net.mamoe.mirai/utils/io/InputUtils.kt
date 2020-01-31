@@ -54,6 +54,10 @@ fun ByteReadPacket.readIoBuffer(
     n: Int = remaining.toInt()//not that safe but adequate
 ): IoBuffer = IoBuffer.Pool.borrow().also { this.readFully(it, n) }
 
+fun ByteReadPacket.readPacket(
+    n: Int = remaining.toInt()//not that safe but adequate
+): ByteReadPacket = this.readBytes(n).toReadPacket()
+
 fun ByteReadPacket.readIoBuffer(n: Short) = this.readIoBuffer(n.toInt())
 
 fun Input.readIP(): String = buildString(4 + 3) {
