@@ -276,6 +276,9 @@ fun ByteReadPacket.decodeUni() {
     //return
     readBytes(readInt() - 4).debugPrint("head").toReadPacket().apply {
         val commandName = readString(readInt() - 4).also { PacketLogger.warning("commandName=$it") }
+        if(commandName.contains("GetTroopList")){
+            println("!\n".repeat(100))
+        }
         println(commandName)
         println("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
         // 00 00 00 1A 43 6F 6E 66 69 67 50 75 73 68 53 76 63 2E 50 75 73 68 52 65 73 70

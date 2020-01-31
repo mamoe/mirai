@@ -15,7 +15,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.readRemainingBytes
 import net.mamoe.mirai.utils.io.toUHexString
@@ -23,8 +22,9 @@ import net.mamoe.mirai.utils.io.toUHexString
 
 internal class FriendList {
 
-    internal object GetTroopList : PacketFactory<GetTroopList.Response>("friendlist.GetTroopListReqV2") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopList.Response {
+    internal object GetTroopListSimplify :
+        PacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopListSimplify.Response {
             println("获取到了GetTroopList的回信")
             println(this.readRemainingBytes().toUHexString())
             return Response()
@@ -65,7 +65,6 @@ internal class FriendList {
             }
         }
     }
-
     internal object GetFriendGroupList : PacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
         class Response : Packet {

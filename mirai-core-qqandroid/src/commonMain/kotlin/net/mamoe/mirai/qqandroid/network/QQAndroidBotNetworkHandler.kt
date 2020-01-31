@@ -1,5 +1,6 @@
 package net.mamoe.mirai.qqandroid.network
 
+import io.ktor.client.HttpClient
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
@@ -98,6 +99,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         suspend fun doInit() {
             //start updating friend/group list
             bot.logger.info("Start updating friend/group list")
+
             /*
             val data = FriendList.GetFriendGroupList(
                 bot.client,
@@ -106,11 +108,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 0,
                 2
             ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
-             */
-            val data = FriendList.GetTroopList(
+            */
+
+            val data = FriendList.GetTroopListSimplify(
                 bot.client
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(100000)
             println(data.contentToString())
+
+
         }
 
         doLogin()
