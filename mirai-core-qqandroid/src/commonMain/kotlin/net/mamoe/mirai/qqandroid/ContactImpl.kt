@@ -49,6 +49,7 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 
 }
 
+
 internal class MemberImpl(
     qq: QQImpl,
     group: GroupImpl,

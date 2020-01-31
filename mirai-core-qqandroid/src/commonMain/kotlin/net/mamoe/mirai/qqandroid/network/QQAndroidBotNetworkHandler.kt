@@ -7,6 +7,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.BroadcastControllable
@@ -15,6 +17,7 @@ import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.QQImpl
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
@@ -24,6 +27,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(MiraiInternalAPI::class)
@@ -116,11 +120,41 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         println(data.contentToString())
         */
 
+        /*
+        * 开始加载Contact表
+        * */
+        var currentFriendCount = 0
+        var totalFriendCount: Short = 0
+        while (true) {
+            val data = FriendList.GetFriendGroupList(
+                bot.client,
+                currentFriendCount,
+                10,
+                0,
+                0
+            ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+            totalFriendCount = data.totalFriendCount
+            bot.qqs.delegate.addAll(
+                data.friendList.map {
+                    QQImpl(this@QQAndroidBotNetworkHandler.bot, EmptyCoroutineContext, it.friendUin!!).also {
+                        currentFriendCount++
+                    }
+                }
+            )
+            bot.logger.info("正在加载好友信息 ${currentFriendCount}/${totalFriendCount}")
+            if (currentFriendCount >= totalFriendCount) {
+                break
+            }
+        }
+        bot.logger.info("好友信息加载完成, 共 ${currentFriendCount}个")
+        //发送事件
+
+        /**
         val data = FriendList.GetTroopList(
-            bot.client
+        bot.client
         ).sendAndExpect<FriendList.GetTroopList.Response>(100000)
         println(data.contentToString())
-
+         */
 
     }
 
