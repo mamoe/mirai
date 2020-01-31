@@ -1,6 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
 
-package net.mamoe.mirai.message.internal
+package net.mamoe.mirai.timpc.message.internal
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.message.MessageType
