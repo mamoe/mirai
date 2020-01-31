@@ -8,7 +8,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Subscribable
@@ -23,32 +22,18 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.buildXMLMessage
 import net.mamoe.mirai.message.data.getValue
 import net.mamoe.mirai.message.sendAsImageTo
+import net.mamoe.mirai.utils.ContextImpl
 import java.io.File
 import java.util.*
 import javax.swing.filechooser.FileSystemView
 import kotlin.random.Random
 
-private fun readTestAccount(): BotAccount? {
-    val file = File("testAccount.txt")
-    if (!file.exists() || !file.canRead()) {
-        return null
-    }
-
-    val lines = file.readLines()
-    return try {
-        BotAccount(lines[0].toLong(), lines[1])
-    } catch (e: Throwable) {
-        null
-    }
-}
-
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
     val bot = Bot(
-        readTestAccount() ?: BotAccount(
-            id = 913366033,
-            passwordPlainText = "a18260132383"
-        )
+        ContextImpl(),
+        913366033,
+        "a18260132383"
     ) {
         // override config here.
     }.alsoLogin()

@@ -4,6 +4,7 @@ package net.mamoe.mirai
 
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
+import net.mamoe.mirai.utils.ContextImpl
 
 // Do not use ServiceLoader. Probably not working on MPP
 @PublishedApi
@@ -42,3 +43,16 @@ fun Bot(context: Context, qq: Long, password: String, configuration: BotConfigur
  */
 inline fun Bot(context: Context, qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(context, qq, password, configuration)
+
+
+/**
+ * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
+ */
+fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
+    factory.Bot(ContextImpl(), qq, password, configuration)
+
+/**
+ * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
+ */
+inline fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
+    factory.Bot(ContextImpl(), qq, password, configuration)

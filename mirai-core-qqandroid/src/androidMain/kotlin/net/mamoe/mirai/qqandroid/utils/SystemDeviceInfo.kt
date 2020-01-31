@@ -5,6 +5,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.localIpAddress
 import net.mamoe.mirai.utils.md5
 import java.io.File

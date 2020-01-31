@@ -27,7 +27,6 @@ import net.mamoe.mirai.qqandroid.utils.toRichTextElems
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.hexToBytes
-import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -61,8 +60,8 @@ internal class MessageSvc {
             client: QQAndroidClient,
             msgTime: Long //PbPushMsg.msg.msgHead.msgTime
         ): OutgoingPacket = buildOutgoingUniPacket(
-            client,
-            extraData = EXTRA_DATA.toReadPacket()
+            client//,
+            //  extraData = EXTRA_DATA.toReadPacket()
         ) {
             writeProtoBuf(
                 MsgSvc.PbGetMsgReq.serializer(),

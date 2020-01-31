@@ -14,6 +14,7 @@ import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.subscribeMessages
+import net.mamoe.mirai.timpc.Bot
 import net.mamoe.mirai.timpc.TIMPC
 import net.mamoe.mirai.utils.LoginFailedException
 import net.mamoe.mirai.utils.LoginSolver
