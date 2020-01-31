@@ -502,18 +502,17 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         internal val leastRemaining = input.remaining - maxReadSize
         internal val isEndOfInput: Boolean get() = input.remaining <= leastRemaining
 
-        internal var currentJceHead: JceHead? = input.doReadHead().also {
-            // println("first jce head = $it") }
+        internal var currentJceHead: JceHead? = input.doReadHead()
 
-            override fun close() = input.close()
+        override fun close() = input.close()
 
-            internal fun peakHeadOrNull(): JceHead? = currentJceHead ?: readHeadOrNull()
-            internal fun peakHead(): JceHead = peakHeadOrNull() ?: error("no enough data to read head")
+        internal fun peakHeadOrNull(): JceHead? = currentJceHead ?: readHeadOrNull()
+        internal fun peakHead(): JceHead = peakHeadOrNull() ?: error("no enough data to read head")
 
-            @PublishedApi
-            internal fun readHead(): JceHead = readHeadOrNull() ?: error("no enough data to read head")
+        @PublishedApi
+        internal fun readHead(): JceHead = readHeadOrNull() ?: error("no enough data to read head")
 
-            @PublishedApi
+        @PublishedApi
         internal fun readHeadOrNull(): JceHead? = input.doReadHead()
 
         /**
@@ -597,10 +596,9 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     val head = readHead()
                     readHead()
                     check(head.type.toInt() == 0) { "type mismatch" }
-                    input.readBytes(readInt(0).also {
-                        // println("list size=$it") })
-                    }
-                        else -> error("type mismatch")
+                    input.readBytes(readInt(0))
+                }
+                else -> error("type mismatch")
             }
         }
 
