@@ -518,7 +518,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * [replier] 的 `it` 将会是去掉用来判断的后缀并删除前后空格后的字符串.
      * 如当消息为 "  123456 test" 时
      * ```kotlin
-     * "test" endswithReply {
+     * "test" endsWithReply {
      *     println(it) // it 为 "123456"
      * }
      * ```
@@ -526,7 +526,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    inline infix fun String.endswithReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> {
+    inline infix fun String.endsWithReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> {
         val toCheck = this.trimEnd()
         return content({ it.trim().endsWith(toCheck) }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")

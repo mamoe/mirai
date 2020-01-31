@@ -1,3 +1,3 @@
-package net.mamoe.mirai.qqandroid.utils
+package net.mamoe.mirai.utils
 
 actual typealias Context = android.content.Context

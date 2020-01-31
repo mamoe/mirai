@@ -11,7 +11,6 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
-import net.mamoe.mirai.qqandroid.utils.Context
 import net.mamoe.mirai.qqandroid.utils.DeviceInfo
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.qqandroid.utils.SystemDeviceInfo
