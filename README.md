@@ -14,8 +14,8 @@
 加入 Gitter, 或加入 QQ 群: 655057127
 
 ## CHANGELOG
-在 [Project](https://github.com/mamoe/mirai/projects/1) 查看已支持功能和计划（更新不及时）   
-在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录（准确更新发布的版本）
+在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
+在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
 
 ## Modules
 ### mirai-core

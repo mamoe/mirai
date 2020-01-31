@@ -71,12 +71,13 @@ internal class FriendList {
                             GetTroopListReqV2Simplify.serializer(),
                             GetTroopListReqV2Simplify(
                                 uin = client.uin,
-                                getMSFMsgFlag = 0,
-                                groupFlagExt = 1,
-                                shVersion = 7,
+                                getMSFMsgFlag = 0, // const
+                                groupFlagExt = 1,// const
+                                shVersion = 7, // const
                                 dwCompanyId = 0,
-                                versionNum = 1,
-                                getLongGroupName = 1
+                                versionNum = 1, // const
+                                vecGroupInfo = listOf(),
+                                getLongGroupName = 1// const
                             )
                         )
                     )

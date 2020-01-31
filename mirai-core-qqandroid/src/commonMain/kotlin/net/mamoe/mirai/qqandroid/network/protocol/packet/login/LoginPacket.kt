@@ -294,13 +294,15 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
         data class UnsafeLogin(val url: String) : LoginPacketResponse()
 
-        class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse(){
+        class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse() {
             override fun toString(): String {
                 return "LoginPacketResponse.SMSVerifyCodeNeeded"
             }
         }
 
-        class DeviceLockLogin(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse()
+        class DeviceLockLogin(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse() {
+            override fun toString(): String = "LoginPacket.LoginPacketResponse.DeviceLockLogin"
+        }
     }
 
     @InternalAPI

@@ -231,6 +231,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         if (cache == null) {
             // 没有缓存
             var length: Int = rawInput.readInt() - 4
+            if (length < 0) {
+                // 丢包了. 后半部分包提前到达
+                return
+            }
             if (rawInput.remaining == length.toLong()) {
                 // 捷径: 当包长度正好, 直接传递剩余数据.
                 cachedPacketTimeoutJob?.cancel()

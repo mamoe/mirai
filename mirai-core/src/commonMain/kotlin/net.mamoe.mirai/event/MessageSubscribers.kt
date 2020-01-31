@@ -21,12 +21,17 @@ import kotlin.contracts.contract
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
 inline fun CoroutineScope.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> Unit) {
+    // contract 可帮助 IDE 进行类型推断. 无实际代码作用.
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
+
+    MessageSubscribersBuilder { messageListener: MessageListener<MessagePacket<*, *>> ->
+        // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [listener]
+        // listener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
         subscribeAlways {
-            listener(it, this.message.toString())
+            messageListener.invoke(this, this.message.toString())
+            // this.message.toString() 即为 messageListener 中 it 接收到的值
         }
     }.apply { listeners() }
 }
@@ -112,6 +117,13 @@ inline fun Bot.subscribeFriendMessages(crossinline listeners: MessageSubscribers
 }
 
 
+/**
+ * 消息事件的处理器.
+ *
+ * 注:
+ * 接受者 T 为 [MessagePacket]
+ * 参数 String 为 转为字符串了的消息 ([Message.toString])
+ */
 typealias MessageListener<T> = @MessageDsl suspend T.(String) -> Unit
 
 /**
@@ -124,6 +136,9 @@ typealias MessageListener<T> = @MessageDsl suspend T.(String) -> Unit
 @Suppress("unused")
 @MessageDsl
 class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
+    /**
+     * invoke 这个 lambda 时, 它将会把 [消息事件的处理器][MessageListener] 注册给事件, 并返回注册完成返回的监听器.
+     */
     val subscriber: (MessageListener<T>) -> Listener<T>
 ) {
     /**
