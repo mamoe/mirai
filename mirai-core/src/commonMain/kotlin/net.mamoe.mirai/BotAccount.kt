@@ -3,9 +3,11 @@
 package net.mamoe.mirai
 
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.md5
 import kotlin.annotation.AnnotationTarget.*
 
+@MiraiInternalAPI
 data class BotAccount(
     /**
      * **注意**: 在 Android 协议, 总是使用 `QQAndroidClient.uin` 或 [Bot.uin], 而不要使用 [BotAccount.id]. 将来 [BotAccount.id] 可能会变为 [String]
@@ -23,4 +25,4 @@ data class BotAccount(
 @Retention(AnnotationRetention.SOURCE)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @Experimental(level = Experimental.Level.WARNING)
-annotation class RawAccountIdUse
+internal annotation class RawAccountIdUse

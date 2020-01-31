@@ -1,4 +1,4 @@
-package net.mamoe.mirai.qqandroid.utils
+package net.mamoe.mirai.utils
 
 /**
  * On Android, typealias to `android.content.Context`

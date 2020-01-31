@@ -370,7 +370,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override fun dispose(cause: Throwable?) {
-        channel.close()
+        if (::channel.isInitialized) {
+            channel.close()
+        }
         super.dispose(cause)
     }
 

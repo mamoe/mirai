@@ -1,6 +1,7 @@
 package net.mamoe.mirai.qqandroid.utils
 
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.localIpAddress
 
 actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(context) {
@@ -40,7 +41,3 @@ actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(
         override val sdk: Int get() = 29
     }
 }
-
-actual abstract class Context
-
-open class ContextImpl : Context()
