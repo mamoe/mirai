@@ -21,7 +21,7 @@ fun <T : JceStruct> BytePacketBuilder.writeJceStruct(serializer: SerializationSt
     this.writePacket(Jce.byCharSet(charset).dumpAsPacket(serializer, struct))
 }
 
-fun <T : JceStruct> ByteReadPacket.readRemainingAsJceStruct(
+fun <T : JceStruct> ByteReadPacket.readJceStruct(
     serializer: DeserializationStrategy<T>,
     charset: JceCharset = JceCharset.UTF8,
     length: Int = this.remaining.toInt()
@@ -36,7 +36,7 @@ fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: Deserialization
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
-            this.readRemainingAsJceStruct(deserializer, length = (this.remaining - 1).toInt())
+            this.readJceStruct(deserializer, length = (this.remaining - 1).toInt())
         }
     }
 }
@@ -48,13 +48,13 @@ fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationS
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
-            this.readRemainingAsProtoBuf(deserializer, (this.remaining - 1).toInt())
+            this.readProtoBuf(deserializer, (this.remaining - 1).toInt())
         }
     }
 }
 
 fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
-    val request = this.readRemainingAsJceStruct(RequestPacket.serializer())
+    val request = this.readJceStruct(RequestPacket.serializer())
 
     return block(if (name == null) when (request.iVersion.toInt()) {
         2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue()
@@ -90,7 +90,7 @@ fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T
 /**
  * load
  */
-fun <T : ProtoBuf> ByteReadPacket.readRemainingAsProtoBuf(serializer: DeserializationStrategy<T>, length: Int = this.remaining.toInt()): T {
+fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(serializer: DeserializationStrategy<T>, length: Int = this.remaining.toInt()): T {
     return ProtoBufWithNullableSupport.load(serializer, this.readBytes(length))
 }
 

@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.io.toReadPacket
 import net.mamoe.mirai.utils.localIpAddress
 
 @Suppress("EnumEntryName")
-enum class RegPushReason {
+internal enum class RegPushReason {
     appRegister,
     createDefaultRegInfo,
     fillRegProxy,
@@ -32,7 +32,7 @@ enum class RegPushReason {
     unknown
 }
 
-class StatSvc {
+internal class StatSvc {
     internal object Register : PacketFactory<Register.Response>("StatSvc.register") {
 
         internal object Response : Packet {

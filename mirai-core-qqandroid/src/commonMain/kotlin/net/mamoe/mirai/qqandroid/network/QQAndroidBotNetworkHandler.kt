@@ -3,8 +3,10 @@ package net.mamoe.mirai.qqandroid.network
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import kotlinx.io.core.*
-import kotlinx.io.pool.ObjectPool
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.use
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.BroadcastControllable
@@ -143,28 +145,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     /**
      * 在 [PacketProcessDispatcher] 调度器中解析包内容.
-     * [input] 将会被 [ObjectPool.recycle].
-     *
-     * @param input 一个完整的包的内容, 去掉开头的 int 包长度
-     */
-    fun parsePacketAsync(input: IoBuffer, pool: ObjectPool<IoBuffer> = IoBuffer.Pool): Job =
-        this.launch(PacketProcessDispatcher) {
-            try {
-                parsePacket(input)
-            } finally {
-                input.discard()
-                input.release(pool)
-            }
-        }
-
-    /**
-     * 在 [PacketProcessDispatcher] 调度器中解析包内容.
-     * [input] 将会被 [Input.close], 因此 [input] 不能为 [IoBuffer]
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
     fun parsePacketAsync(input: Input): Job {
-        require(input !is IoBuffer) { "input cannot be IoBuffer" }
         return this.launch(PacketProcessDispatcher) {
             input.use { parsePacket(it) }
         }
@@ -180,6 +164,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         generifiedParsePacket<Packet>(input)
     }
 
+    // with generic type, less mistakes
     private suspend inline fun <P : Packet> generifiedParsePacket(input: Input) {
         KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
             handlePacket(packetFactory, packet, commandName, sequenceId)
@@ -230,7 +215,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 处理从服务器接收过来的包. 这些包可能是粘在一起的, 也可能是不完整的. 将会自动处理.
      * 处理后的包会调用 [parsePacketAsync]
      */
-    @UseExperimental(ExperimentalCoroutinesApi::class)
     internal fun processPacket(rawInput: ByteReadPacket) {
         if (rawInput.remaining == 0L) {
             return
@@ -248,7 +232,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
             // 循环所有完整的包
             while (rawInput.remaining > length) {
-                parsePacketAsync(rawInput.readIoBuffer(length))
+                parsePacketAsync(rawInput.readPacket(length))
 
                 length = rawInput.readInt() - 4
             }
