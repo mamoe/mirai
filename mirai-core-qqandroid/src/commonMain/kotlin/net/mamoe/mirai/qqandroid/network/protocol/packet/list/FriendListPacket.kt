@@ -8,16 +8,20 @@ import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListResp
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetTroopListReqV2Simplify
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GroupInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList.GetFriendGroupList.decode
 import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.io.debugPrint
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.readRemainingBytes
 import net.mamoe.mirai.utils.io.toUHexString
@@ -25,15 +29,28 @@ import net.mamoe.mirai.utils.io.toUHexString
 
 internal class FriendList {
 
-    internal object GetTroopListSimplify :
-        PacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopListSimplify.Response {
-            println("获取到了GetTroopList的回信")
-            println(this.readRemainingBytes().toUHexString())
-            return Response()
+    /**
+     * Get Troop List不一定会得到服务器的回应 据推测与群数量有关
+     * 因此 应对timeout方法做出处理
+     * timeout时间应不小于 8s？
+     *
+     */
+    internal object GetTroopList :
+        PacketFactory<GetTroopList.Response>("friendlist.GetTroopListReqV2") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopList.Response {
+            debugPrint()
+            this.discardExact(4)
+            val res = this.decodeUniPacket(GetTroopListRespV2.serializer())
+            println(res.contentToString())
+            return Response(
+
+            )
+
         }
 
-        class Response : Packet {
+        class Response(
+
+        ) : Packet {
             override fun toString(): String = "FriendList.GetFriendGroupList.Response"
         }
 
@@ -49,7 +66,6 @@ internal class FriendList {
                         iVersion = 3,
                         cPacketType = 0x00,
                         iMessageType = 0x00000,
-                        iRequestId = 1921334513,
                         sBuffer = jceRequestSBuffer(
                             "GetTroopListReqV2Simplify",
                             GetTroopListReqV2Simplify.serializer(),
@@ -69,16 +85,20 @@ internal class FriendList {
         }
     }
     internal object GetFriendGroupList : PacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
-
-        class Response : Packet {
+        class Response(
+            val totalFriendCount: Short,
+            val friendList: List<FriendInfo>
+        ) : Packet {
             override fun toString(): String = "FriendList.GetFriendGroupList.Response"
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             this.discardExact(4)
             val res = this.decodeUniPacket(GetFriendListResp.serializer())
-            println(res.contentToString())
-            return Response()
+            return Response(
+                res.totoalFriendCount,
+                res.vecFriendInfo.orEmpty()
+            )
         }
 
         operator fun invoke(
