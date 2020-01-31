@@ -92,7 +92,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
     }
 
     override fun dispose(cause: Throwable?) {
-        super.dispose(cause)
+        super.close(cause)
 
         this.heartbeatJob?.cancel(CancellationException("handler closed"))
         this.heartbeatJob = null

@@ -67,7 +67,7 @@ internal class FriendListSubSrvRspCode(
 
 @Serializable
 internal class FriendInfo(
-    @SerialId(0) val friendUin: Long? = 0,
+    @SerialId(0) val friendUin: Long,
     @SerialId(1) val groupId: Byte,
     @SerialId(2) val faceId: Short,
     @SerialId(3) val remark: String = "",

@@ -24,7 +24,7 @@ import net.mamoe.mirai.utils.io.PlatformDatagramChannel
  * - Key 刷新
  * - 所有数据包处理和发送
  *
- * [BotNetworkHandler.dispose] 时将会 [取消][Job.cancel] 所有此作用域下的协程
+ * [BotNetworkHandler.close] 时将会 [取消][Job.cancel] 所有此作用域下的协程
  */
 @Suppress("PropertyName")
 abstract class BotNetworkHandler : CoroutineScope {
@@ -64,12 +64,12 @@ abstract class BotNetworkHandler : CoroutineScope {
     /**
      * 关闭网络接口, 停止所有有关协程和任务
      */
-    open fun dispose(cause: Throwable? = null) {
+    open fun close(cause: Throwable? = null) {
         if (supervisor.isActive) {
             if (cause != null) {
-                supervisor.cancel(CancellationException("handler closed", cause))
+                supervisor.cancel(CancellationException("NetworkHandler closed", cause))
             } else {
-                supervisor.cancel()
+                supervisor.cancel(CancellationException("NetworkHandler closed"))
             }
         }
     }

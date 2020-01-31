@@ -12,7 +12,6 @@ import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
@@ -317,13 +316,13 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
 
 
         val subCommand = readUShort().toInt()
-        println("subCommand=$subCommand")
+        // println("subCommand=$subCommand")
         val type = readUByte()
-        println("type=$type")
+        // println("type=$type")
 
         discardExact(2)
         val tlvMap: TlvMap = this.readTLVMap()
-        tlvMap.printTLVMap()
+        // tlvMap.printTLVMap()
         return when (type.toInt()) {
             0 -> onLoginSuccess(tlvMap, bot)
             1, 15 -> onErrorMessage(tlvMap)
@@ -340,7 +339,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
         bot: QQAndroidBot
     ): LoginPacketResponse.DeviceLockLogin {
         bot.client.t104 = tlvMap.getOrFail(0x104)
-        println("403： " + tlvMap[0x403]?.toUHexString())
+        // println("403： " + tlvMap[0x403]?.toUHexString())
         return LoginPacketResponse.DeviceLockLogin(tlvMap[0x402]!!, tlvMap.getOrFail(0x403))
     }
 
@@ -392,10 +391,10 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
     @UseExperimental(MiraiDebugAPI::class)
     private fun onLoginSuccess(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Success {
         val client = bot.client
-        println("TLV KEYS: " + tlvMap.keys.joinToString { it.contentToString() })
+        //println("TLV KEYS: " + tlvMap.keys.joinToString { it.contentToString() })
 
         tlvMap[0x150]?.let { client.analysisTlv150(it) }
-        tlvMap[0x305]?.let { println("TLV 0x305=${it.toUHexString()}") }
+        //  tlvMap[0x305]?.let { println("TLV 0x305=${it.toUHexString()}") }
         tlvMap[0x161]?.let { client.analysisTlv161(it) }
         tlvMap[0x119]?.let { t119Data ->
             t119Data.decryptBy(client.tgtgtKey).toReadPacket().debugPrint("0x119data").apply {
