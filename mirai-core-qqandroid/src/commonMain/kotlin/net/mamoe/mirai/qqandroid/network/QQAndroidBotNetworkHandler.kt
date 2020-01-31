@@ -312,19 +312,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             val rawInput = try {
                 channel.read()
             } catch (e: ClosedChannelException) {
-                close()
                 bot.tryReinitializeNetworkHandler(e)
                 return
             } catch (e: ReadPacketInternalException) {
                 bot.logger.error("Socket channel read failed: ${e.message}")
-                close()
                 bot.tryReinitializeNetworkHandler(e)
                 return
             } catch (e: CancellationException) {
                 return
             } catch (e: Throwable) {
                 bot.logger.error("Caught unexpected exceptions", e)
-                close()
                 bot.tryReinitializeNetworkHandler(e)
                 return
             }

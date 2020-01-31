@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.closeAndJoin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
@@ -92,7 +93,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         try {
             if (::_network.isInitialized) {
                 BotOfflineEvent(this).broadcast()
-                _network.close(cause)
+                _network.closeAndJoin(cause)
             }
         } catch (e: Exception) {
             logger.error("Cannot close network handler", e)
@@ -105,22 +106,26 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                 break@loginLoop
             } catch (e: Exception) {
                 e.logStacktrace()
-                _network.close(e)
+                _network.closeAndJoin(e)
             }
             logger.warning("Login failed. Retrying in 3s...")
             delay(3000)
         }
 
-        while (true) {
-            try {
-                return _network.init()
-            } catch (e: Exception) {
-                e.logStacktrace()
-                _network.close(e)
+        repeat(1) block@{
+            repeat(2) {
+                try {
+                    _network.init()
+                    return@block
+                } catch (e: Exception) {
+                    e.logStacktrace()
+                }
+                logger.warning("Init failed. Retrying in 3s...")
+                delay(3000)
             }
-            logger.warning("Init failed. Retrying in 3s...")
-            delay(3000)
+            logger.error("cannot init. some features may be affected")
         }
+
     }
 
     protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): N

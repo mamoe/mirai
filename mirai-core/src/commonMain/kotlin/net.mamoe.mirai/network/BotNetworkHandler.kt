@@ -74,3 +74,8 @@ abstract class BotNetworkHandler : CoroutineScope {
         }
     }
 }
+
+suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null){
+    this.close(cause)
+    this.supervisor.join()
+}

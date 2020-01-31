@@ -25,6 +25,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.qqandroid.utils.toRichTextElems
 import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.math.absoluteValue
@@ -162,8 +163,9 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
-                    msgRand = Random.nextInt().absoluteValue
-                    // syncCookie = client.c2cMessageSync.syncCookie.takeIf { it.isNotEmpty() } ?: "08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00".hexToBytes(),
+                    msgRand = Random.nextInt().absoluteValue,
+                    syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() }
+                        ?: SyncCookie(currentTimeSeconds).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
