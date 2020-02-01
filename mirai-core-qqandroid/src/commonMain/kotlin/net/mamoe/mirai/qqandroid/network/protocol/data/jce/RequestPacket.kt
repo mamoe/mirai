@@ -25,8 +25,8 @@ internal class RequestPacket(
 
 }
 
-private val requestPacketRequestId: AtomicInt = atomic(10000000)
-internal fun nextRequestPacketRequestId(): Int = requestPacketRequestId.getAndAdd(1)
+private val requestPacketRequestId: AtomicInt = atomic(1921334513)
+internal fun nextRequestPacketRequestId(): Int = requestPacketRequestId.getAndAdd(2)
 
 
 @Serializable
