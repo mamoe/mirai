@@ -67,7 +67,6 @@ internal class FriendList {
     internal object GetTroopListSimplify :
         PacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopListSimplify.Response {
-            this.discardExact(4)
             val res = this.decodeUniPacket(GetTroopListRespV2.serializer())
             return Response(res.vecTroopList.orEmpty())
         }
