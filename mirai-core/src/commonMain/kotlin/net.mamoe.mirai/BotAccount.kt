@@ -25,4 +25,4 @@ data class BotAccount(
 @Retention(AnnotationRetention.SOURCE)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @Experimental(level = Experimental.Level.WARNING)
-internal annotation class RawAccountIdUse
+annotation class RawAccountIdUse

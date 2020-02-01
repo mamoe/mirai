@@ -106,23 +106,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     override suspend fun init() {
         //start updating friend/group list
         bot.logger.info("Start updating friend/group list")
-
-        /*
-        val data = FriendList.GetFriendGroupList(
-            bot.client,
-            0,
-            20,
-            0,
-            0
-        ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
-
-
-        println(data.contentToString())
-        */
-
-        /*
-        * 开始加载Contact表
-        * */
         var currentFriendCount = 0
         var totalFriendCount: Short = 0
         while (true) {
