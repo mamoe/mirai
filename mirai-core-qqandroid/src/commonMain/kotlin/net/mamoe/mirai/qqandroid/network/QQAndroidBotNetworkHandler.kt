@@ -116,15 +116,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         //println(msg.contentToString())
 
         try {
-            bot.logger.info("开始加载组信息")
-            val troopData = FriendList.GetTroopListSimplify(
-                bot.client
-            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(10000)
-            println(troopData.contentToString())
-        } catch (e: Exception) {
-            bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
-        }
-        try {
             bot.logger.info("开始加载好友信息")
             var currentFriendCount = 0
             var totalFriendCount: Short
@@ -157,7 +148,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         } catch (e: Exception) {
             bot.logger.info("加载好友信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
         }
-        //发送事件
+
+        try {
+            bot.logger.info("开始加载组信息")
+            val troopData = FriendList.GetTroopListSimplify(
+                bot.client
+            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(10000)
+            println(troopData.contentToString())
+        } catch (e: Exception) {
+            bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+        }
 
     }
 
