@@ -118,16 +118,15 @@ internal class FriendList {
                         iVersion = 3,
                         cPacketType = 0x003,
                         iMessageType = 0x00000,
-                        iRequestId = 1921334514,
                         sBuffer = jceRequestSBuffer(
                             "FL",
                             GetFriendListReq.serializer(),
                             GetFriendListReq(
                                 reqtype = 3,
-                                ifReflush = if (friendListStartIndex <= 0) {
-                                    0
-                                } else {
+                                ifReflush = if (friendListStartIndex == 0) {
                                     1
+                                } else {
+                                    0
                                 },
                                 uin = client.uin,
                                 startIndex = friendListStartIndex.toShort(),

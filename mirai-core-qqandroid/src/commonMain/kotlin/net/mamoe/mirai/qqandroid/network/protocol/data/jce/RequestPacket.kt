@@ -1,5 +1,7 @@
 package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 
+import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.atomic
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
@@ -12,14 +14,20 @@ internal class RequestPacket(
     @SerialId(1) val iVersion: Short = 3,
     @SerialId(2) val cPacketType: Byte = 0,
     @SerialId(3) val iMessageType: Int = 0,
-    @SerialId(4) val iRequestId: Int = 0,
+    @SerialId(4) val iRequestId: Int = nextRequestPacketRequestId(),
     @SerialId(5) val sServantName: String = "",
     @SerialId(6) val sFuncName: String = "",
     @SerialId(7) val sBuffer: ByteArray = EMPTY_BYTE_ARRAY,
     @SerialId(8) val iTimeout: Int = 0,
     @SerialId(9) val context: Map<String, String> = EMPTY_MAP,
     @SerialId(10) val status: Map<String, String> = EMPTY_MAP
-) : JceStruct
+) : JceStruct {
+
+}
+
+private val requestPacketRequestId: AtomicInt = atomic(10000000)
+internal fun nextRequestPacketRequestId(): Int = requestPacketRequestId.getAndAdd(1)
+
 
 @Serializable
 internal class RequestDataVersion3(

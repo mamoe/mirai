@@ -103,6 +103,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override suspend fun init() {
+        delay(5000)
         bot.logger.info("开始加载好友信息")
 
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
