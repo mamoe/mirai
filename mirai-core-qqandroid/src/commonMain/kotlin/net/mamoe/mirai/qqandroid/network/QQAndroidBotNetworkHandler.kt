@@ -17,16 +17,15 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.QQImpl
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -111,6 +110,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 close()
             }
         }
+
+        val msg = MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<MessageSvc.PbGetMsg.Response>()
+        println(msg.contentToString())
 
         try {
             bot.logger.info("开始加载组信息")
@@ -363,19 +365,17 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     channel.send(delegate)
                 }
                 bot.logger.info("Send: ${this.commandName}")
-                try {
-                    return withTimeoutOrNull(timeoutMillis) {
-                        @Suppress("UNCHECKED_CAST")
-                        handler.await() as E
-                        // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
-                    } ?: net.mamoe.mirai.qqandroid.utils.inline {
-                        error("timeout when receiving response of $commandName")
-                    }
-                } finally {
-                    packetListeners.remove(handler)
+                return withTimeoutOrNull(timeoutMillis) {
+                    @Suppress("UNCHECKED_CAST")
+                    handler.await() as E
+                    // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
+                } ?: net.mamoe.mirai.qqandroid.utils.inline {
+                    error("timeout when receiving response of $commandName")
                 }
             } catch (e: Exception) {
                 lastException = e
+            } finally {
+                packetListeners.remove(handler)
             }
         }
         throw lastException!!

@@ -219,9 +219,6 @@ private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactori
 
         commandName = readString(readInt() - 4)
         DebugLogger.warning("commandName=$commandName")
-        if(commandName.contains("GetTroopList")){
-            println("!\n".repeat(100))
-        }
         val unknown = readBytes(readInt() - 4)
         //if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 

@@ -59,6 +59,7 @@ internal class StatSvc {
                     RequestPacket(
                         sServantName = "PushService",
                         sFuncName = "SvcReqRegister",
+                        iRequestId = 0,
                         sBuffer = jceRequestSBuffer(
                             "SvcReqRegister",
                             SvcReqRegister.serializer(),

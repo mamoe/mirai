@@ -212,7 +212,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         }
 
         override fun encodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor, ordinal: Int) {
-            TODO()
+            encodeTaggedInt(tag, ordinal)
         }
 
         override fun encodeTaggedNull(tag: Int) {
@@ -332,9 +332,9 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         override fun decodeTaggedString(tag: Int): String = input.readString(tag)
         override fun decodeTaggedBoolean(tag: Int): Boolean = input.readBoolean(tag)
 
-
-        override fun decodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor): Int =
-            TODO()
+        override fun decodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor): Int {
+            return input.readInt(tag)
+        }
 
         /**
          * 在 [KSerializer.serialize] 前

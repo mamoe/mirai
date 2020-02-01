@@ -11,21 +11,12 @@ import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.*
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListReq
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetFriendListResp
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetTroopListReqV2Simplify
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList.GetFriendGroupList.decode
-import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.discardExact
-import net.mamoe.mirai.utils.io.readRemainingBytes
-import net.mamoe.mirai.utils.io.toUHexString
 
 
 internal class FriendList {
@@ -48,6 +39,7 @@ internal class FriendList {
                         sFuncName = "GetTroopMemberListReq",
                         sServantName = "mqq.IMService.FriendListServiceServantObj",
                         iVersion = 3,
+                        iRequestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "GTML",
                             GetTroopMemberListReq.serializer(),

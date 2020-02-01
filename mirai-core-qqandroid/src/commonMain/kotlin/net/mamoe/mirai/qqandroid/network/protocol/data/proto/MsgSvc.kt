@@ -18,7 +18,7 @@ internal class MsgSvc : ProtoBuf {
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
         @SerialId(3) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(4) val syncFlag: Int /* enum */ = 0,
+        @SerialId(4) val syncFlag: SyncFlag,
         @SerialId(5) val uinPairMsgs: List<MsgComm.UinPairMsg>? = null,
         @SerialId(6) val bindUin: Long = 0L,
         @SerialId(7) val msgRspType: Int = 0,
@@ -147,9 +147,15 @@ internal class MsgSvc : ProtoBuf {
         @SerialId(2) val groupWithDraw: List<PbGroupMsgWithDrawReq>? = null
     ) : ProtoBuf
 
+    internal enum class SyncFlag {
+        START,
+        CONTINUE,
+        STOP
+    }
+
     @Serializable
     internal class PbGetMsgReq(
-        @SerialId(1) val syncFlag: Int /* enum */ = 0,
+        @SerialId(1) val syncFlag: SyncFlag,
         @SerialId(2) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val rambleFlag: Int = 1,
         @SerialId(4) val latestRambleNumber: Int = 20,

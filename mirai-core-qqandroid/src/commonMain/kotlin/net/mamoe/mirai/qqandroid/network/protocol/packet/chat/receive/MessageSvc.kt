@@ -24,9 +24,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.qqandroid.utils.toRichTextElems
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.hexToBytes
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -43,7 +45,7 @@ internal class MessageSvc {
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify) {
             network.run {
-                PbGetMsg(client, packet.stMsgInfo?.uMsgTime ?: 0).sendAndExpect<MultiPacket<FriendMessage>>()
+                PbGetMsg(client, MsgSvc.SyncFlag.START, packet.stMsgInfo?.uMsgTime ?: 0).sendAndExpect<MultiPacket<FriendMessage>>()
             }
         }
 
@@ -53,17 +55,20 @@ internal class MessageSvc {
     /**
      * 获取好友消息和消息记录
      */
-    internal object PbGetMsg : PacketFactory<MultiPacket<FriendMessage>>("MessageSvc.PbGetMsg") {
+    @UseExperimental(MiraiInternalAPI::class)
+    internal object PbGetMsg : PacketFactory<PbGetMsg.Response>("MessageSvc.PbGetMsg") {
         val EXTRA_DATA =
             "08 00 12 33 6D 6F 64 65 6C 3A 78 69 61 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
 
         operator fun invoke(
             client: QQAndroidClient,
+            syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
             msgTime: Long //PbPushMsg.msg.msgHead.msgTime
         ): OutgoingPacket = buildOutgoingUniPacket(
             client//,
             //  extraData = EXTRA_DATA.toReadPacket()
         ) {
+            println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
             writeProtoBuf(
                 MsgSvc.PbGetMsgReq.serializer(),
                 MsgSvc.PbGetMsgReq(
@@ -74,10 +79,10 @@ internal class MessageSvc {
                     otherRambleNumber = 3,
                     onlineSyncFlag = 1,
                     whisperSessionId = 0,
+                    syncFlag = syncFlag,
                     //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
                     syncCookie = client.c2cMessageSync.syncCookie
-                        ?: SyncCookie(msgTime).toByteArray(SyncCookie.serializer()).also { client.c2cMessageSync.syncCookie = it },
-                    syncFlag = 1
+                        ?: SyncCookie(time = msgTime).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
                     // syncFlag = client.c2cMessageSync.syncFlag,
                     //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
                     //pubaccountCookie = client.c2cMessageSync.pubAccountCookie
@@ -85,25 +90,40 @@ internal class MessageSvc {
             )
         }
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MultiPacket<FriendMessage> {
+
+        @UseExperimental(MiraiInternalAPI::class)
+        internal class GetMsgSuccess(delegate: MutableList<FriendMessage>) : Response(MsgSvc.SyncFlag.STOP, delegate)
+
+        /**
+         * 不要直接 expect 这个 class. 它可能
+         */
+        @MiraiInternalAPI
+        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: MutableList<FriendMessage>) : MultiPacket<FriendMessage>(delegate) {
+            override fun toString(): String {
+                return "MessageSvc.PbGetMsg.Response($syncFlagFromServer=$syncFlagFromServer, messages=List(size=${this.size}))"
+            }
+        }
+
+        @UseExperimental(MiraiInternalAPI::class)
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             // 00 00 01 0F 08 00 12 00 1A 34 08 FF C1 C4 F1 05 10 FF C1 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 8A CA 91 D1 0C 48 9B A5 BD 9B 0A 58 DE 9D 99 F8 08 60 1D 68 FF C1 C4 F1 05 70 00 20 02 2A 9D 01 08 F3 C1 C4 F1 05 10 A2 FF 8C F0 03 18 01 22 8A 01 0A 2A 08 A2 FF 8C F0 03 10 DD F1 92 B7 07 18 A6 01 20 0B 28 AE F9 01 30 F4 C1 C4 F1 05 38 A7 E3 D8 D4 84 80 80 80 01 B8 01 CD B5 01 12 08 08 01 10 00 18 00 20 00 1A 52 0A 50 0A 27 08 00 10 F4 C1 C4 F1 05 18 A7 E3 D8 D4 04 20 00 28 0C 30 00 38 86 01 40 22 4A 0C E5 BE AE E8 BD AF E9 9B 85 E9 BB 91 12 08 0A 06 0A 04 4E 4D 53 4C 12 15 AA 02 12 9A 01 0F 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 12 04 4A 02 08 00 30 01 2A 15 08 97 A2 C1 F1 05 10 95 A6 F5 E5 0C 18 01 30 01 40 01 48 81 01 2A 10 08 D3 F7 B5 F1 05 10 DD F1 92 B7 07 18 01 30 01 38 00 42 00 48 00
             discardExact(4)
             val resp = readProtoBuf(MsgSvc.PbGetMsgResp.serializer())
 
             if (resp.result != 0) {
-                return MultiPacket(emptyList())
+                println("!!! Result=${resp.result} !!!: " + resp.contentToString())
+                return GetMsgSuccess(mutableListOf())
             }
 
             bot.client.c2cMessageSync.syncCookie = resp.syncCookie
             bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
-            bot.client.c2cMessageSync.syncFlag = resp.syncFlag
             bot.client.c2cMessageSync.msgCtrlBuf = resp.msgCtrlBuf
-            println(resp.contentToString())
 
             if (resp.uinPairMsgs == null) {
-                return MultiPacket(emptyList())
+                return GetMsgSuccess(mutableListOf())
             }
-            return MultiPacket(resp.uinPairMsgs.asSequence().flatMap { it.msg.asSequence() }.mapNotNull {
+
+            val messages = resp.uinPairMsgs.asSequence().flatMap { it.msg.asSequence() }.mapNotNull {
                 when (it.msgHead.msgType) {
                     166 -> {
                         FriendMessage(
@@ -115,9 +135,28 @@ internal class MessageSvc {
                     }
                     else -> null
                 }
-            }.toList())
+            }.toMutableList()
+            if (resp.syncFlag == MsgSvc.SyncFlag.STOP) {
+                return GetMsgSuccess(messages)
+            }
+            return Response(resp.syncFlag, messages)
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: Response) {
+            when (packet.syncFlagFromServer) {
+                MsgSvc.SyncFlag.STOP,
+                MsgSvc.SyncFlag.START -> return
+
+                MsgSvc.SyncFlag.CONTINUE -> {
+                    network.run {
+                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds)
+                    }
+                    return
+                }
+            }
         }
     }
+
 
     /**
      * 被挤下线
@@ -165,7 +204,7 @@ internal class MessageSvc {
                     msgSeq = client.atomicNextMessageSequenceId(),
                     msgRand = Random.nextInt().absoluteValue,
                     syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() }
-                        ?: SyncCookie(currentTimeSeconds).toByteArray(SyncCookie.serializer())
+                        ?: SyncCookie(time = currentTimeSeconds).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
@@ -192,9 +231,10 @@ internal class MessageSvc {
                             elems = message.toRichTextElems()
                         )
                     ),
-                    msgSeq = client.atomicNextMessageSequenceId(),
-                    msgRand = 123,
-                    syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() } ?: byteArrayOf()
+                    msgSeq = client.atomicNextMessageSequenceId()
+                    // msgRand = 123
+                    //syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() } ?:
+                    //SyncCookie(currentTimeSeconds, Random.nextLong().absoluteValue, Random.nextLong().absoluteValue).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
