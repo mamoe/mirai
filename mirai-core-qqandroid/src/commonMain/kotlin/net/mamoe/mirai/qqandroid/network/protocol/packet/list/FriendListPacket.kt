@@ -15,6 +15,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetTroopListReqV2Simp
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GroupInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd6b
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
@@ -132,10 +133,10 @@ internal class FriendList {
                                 startIndex = friendListStartIndex.toShort(),
                                 getfriendCount = friendListCount.toShort(),
                                 groupid = 0,
-                                ifGetGroupInfo = if (groupListCount <= 0) {
-                                    0
-                                } else {
+                                ifGetGroupInfo = if (friendListStartIndex == 0) {
                                     1
+                                } else {
+                                    0
                                 },
                                 groupstartIndex = groupListStartIndex.toByte(),
                                 getgroupCount = groupListCount.toByte(),
@@ -146,7 +147,7 @@ internal class FriendList {
                                 eAppType = 0,
                                 ifGetBothFlag = 0,
                                 ifGetDOVId = 0,
-                                vec0xd6bReq = EMPTY_BYTE_ARRAY,
+                                vec0xd6bReq = Vec0xd6b.ReqBody().toByteArray(Vec0xd6b.ReqBody.serializer()),
                                 vec0xd50Req = Vec0xd50.ReqBody(
                                     appid = 10002L,
                                     reqKsingSwitch = 1,
