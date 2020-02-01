@@ -318,6 +318,20 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     }
 
     /**
+     * 如果是这个人发的消息. 消息目前只会是群消息
+     */
+    @MessageDsl
+    fun sentBy(name: String): ListeningFilter =
+        content { this is GroupMessage && this.senderName == name }
+
+    /**
+     * 如果是这个人发的消息. 消息目前只会是群消息
+     */
+    @MessageDsl
+    inline fun sentBy(name: String, crossinline onEvent: MessageListener<T>): Listener<T> =
+        content({ this is GroupMessage && this.senderName == name }, onEvent)
+
+    /**
      * 如果是这个人发的消息. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
