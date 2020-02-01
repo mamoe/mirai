@@ -23,6 +23,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -104,51 +105,57 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     override suspend fun init() {
         delay(5000)
-        bot.logger.info("开始加载好友信息")
 
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
                 close()
             }
         }
-        /*
-        * 开始加载Contact表
-        * */
-        var currentFriendCount = 0
-        var totalFriendCount: Short
-        while (true) {
-            val data = FriendList.GetFriendGroupList(
-                bot.client,
-                currentFriendCount,
-                20,
-                0,
-                0
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(
-                timeoutMillis = 8000,
-                retry = 5
-            )
-            totalFriendCount = data.totalFriendCount
-            data.friendList.forEach {
-                // atomic add
-                bot.qqs.delegate.addLast(QQImpl(bot, EmptyCoroutineContext, it.friendUin).also {
-                    currentFriendCount++
-                })
-            }
-            bot.logger.verbose("正在加载好友信息 ${currentFriendCount}/${totalFriendCount}")
-            if (currentFriendCount >= totalFriendCount) {
-                break
-            }
-            delay(200)
+
+        try {
+            bot.logger.info("开始加载组信息")
+            val troopData = FriendList.GetTroopListSimplify(
+                bot.client
+            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(10000)
+            println(troopData.contentToString())
+        } catch (e: Exception) {
+            bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
         }
-        bot.logger.info("好友信息加载完成, 共 ${currentFriendCount}个")
+        try {
+            bot.logger.info("开始加载好友信息")
+            var currentFriendCount = 0
+            var totalFriendCount: Short
+            while (true) {
+                val data = FriendList.GetFriendGroupList(
+                    bot.client,
+                    currentFriendCount,
+                    20,
+                    0,
+                    0
+                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(
+                    timeoutMillis = 8000,
+                    retry = 5
+                )
+
+                totalFriendCount = data.totalFriendCount
+                data.friendList.forEach {
+                    // atomic add
+                    bot.qqs.delegate.addLast(QQImpl(bot, EmptyCoroutineContext, it.friendUin).also {
+                        currentFriendCount++
+                    })
+                }
+                bot.logger.verbose("正在加载好友信息 ${currentFriendCount}/${totalFriendCount}")
+                if (currentFriendCount >= totalFriendCount) {
+                    break
+                }
+                delay(200)
+            }
+            bot.logger.info("好友信息加载完成, 共 ${currentFriendCount}个")
+        } catch (e: Exception) {
+            bot.logger.info("加载好友信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
+        }
         //发送事件
 
-        /**
-        val data = FriendList.GetTroopList(
-        bot.client
-        ).sendAndExpect<FriendList.GetTroopList.Response>(100000)
-        println(data.contentToString())
-         */
     }
 
     /**

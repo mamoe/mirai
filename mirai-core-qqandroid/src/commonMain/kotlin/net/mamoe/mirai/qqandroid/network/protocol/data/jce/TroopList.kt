@@ -105,3 +105,15 @@ internal class stLevelRankPair(
     @SerialId(0) val dwLevel: Long? = null,
     @SerialId(1) val rank: String? = ""
 ) : JceStruct
+
+@Serializable
+internal class GetTroopMemberListReq(
+    @SerialId(0) val uin: Long,
+    @SerialId(1) val groupCode: Long,
+    @SerialId(2) val nextUin: Long,
+    @SerialId(3) val groupUin: Long,
+    @SerialId(4) val version: Long? = null,
+    @SerialId(5) val reqType: Long? = null,
+    @SerialId(6) val getListAppointTime: Long? = null,
+    @SerialId(7) val richCardNameVer: Byte? = null
+) : JceStruct
