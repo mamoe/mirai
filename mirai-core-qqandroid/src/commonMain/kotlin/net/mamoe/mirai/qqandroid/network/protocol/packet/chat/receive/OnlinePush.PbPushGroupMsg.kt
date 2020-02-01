@@ -2,12 +2,10 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.delay
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
@@ -52,13 +50,7 @@ internal class OnlinePush {
         }
 
         override suspend fun QQAndroidBot.handle(packet: GroupMessage) {
-            if (packet.senderName == "Him188moe") {
-                packet.group.sendMessage("hello from mirai")
-                delay(100)
-                packet.group.sendMessage(packet.message)
-                delay(100)
-                this.getQQ(1040400290).sendMessage("FROM MIRAI")
-            }
+
         }
     }
 }
