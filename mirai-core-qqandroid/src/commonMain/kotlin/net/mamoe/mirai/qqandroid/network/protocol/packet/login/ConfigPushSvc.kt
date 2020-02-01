@@ -27,7 +27,7 @@ internal class ConfigPushSvc {
             network.run {
                 buildOutgoingUniPacket(
                     client,
-                    sequenceId = client.configPushSvcPushReqSequenceId.also { println("configPushSvcPushReqSequenceId=${client.configPushSvcPushReqSequenceId}") },
+                    sequenceId = client.configPushSvcPushReqSequenceId,
                     commandName = "ConfigPushSvc.PushResp",
                     name = "ConfigPushSvc.PushResp"
                 ) {
