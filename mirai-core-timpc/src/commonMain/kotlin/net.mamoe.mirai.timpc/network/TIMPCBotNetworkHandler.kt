@@ -91,8 +91,8 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
         heartbeatJob?.join()
     }
 
-    override fun dispose(cause: Throwable?) {
-        super.dispose(cause)
+    override fun close(cause: Throwable?) {
+        super.close(cause)
 
         this.heartbeatJob?.cancel(CancellationException("handler closed"))
         this.heartbeatJob = null
@@ -312,6 +312,7 @@ internal class TIMPCBotNetworkHandler internal constructor(coroutineContext: Cor
                 else -> error("No decrypter is found")
             } as? D ?: error("Internal error: could not cast decrypter which is found for factory to class Decrypter")
 
+        @UseExperimental(MiraiInternalAPI::class)
         suspend fun onPacketReceived(packet: Any) {//complex function, but it doesn't matter
             when (packet) {
                 is TouchPacket.TouchResponse.OK -> {

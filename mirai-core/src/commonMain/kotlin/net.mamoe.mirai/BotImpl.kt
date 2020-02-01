@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.closeAndJoin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
@@ -92,35 +93,39 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         try {
             if (::_network.isInitialized) {
                 BotOfflineEvent(this).broadcast()
-                _network.dispose(cause)
+                _network.closeAndJoin(cause)
             }
         } catch (e: Exception) {
             logger.error("Cannot close network handler", e)
         }
-        _network = createNetworkHandler(this.coroutineContext)
 
         loginLoop@ while (true) {
+            _network = createNetworkHandler(this.coroutineContext)
             try {
                 _network.login()
                 break@loginLoop
             } catch (e: Exception) {
                 e.logStacktrace()
-                _network.dispose(e)
+                _network.closeAndJoin(e)
             }
             logger.warning("Login failed. Retrying in 3s...")
             delay(3000)
         }
 
-        while (true) {
-            try {
-                return _network.init()
-            } catch (e: Exception) {
-                e.logStacktrace()
-                _network.dispose(e)
+        repeat(1) block@{
+            repeat(2) {
+                try {
+                    _network.init()
+                    return@block
+                } catch (e: Exception) {
+                    e.logStacktrace()
+                }
+                logger.warning("Init failed. Retrying in 3s...")
+                delay(3000)
             }
-            logger.warning("Init failed. Retrying in 3s...")
-            delay(3000)
+            logger.error("cannot init. some features may be affected")
         }
+
     }
 
     protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): N
@@ -130,12 +135,12 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @UseExperimental(MiraiInternalAPI::class)
     override fun dispose(throwable: Throwable?) {
         if (throwable == null) {
-            network.dispose()
+            network.close()
             this.botJob.complete()
             groups.delegate.clear()
             qqs.delegate.clear()
         } else {
-            network.dispose(throwable)
+            network.close(throwable)
             this.botJob.completeExceptionally(throwable)
             groups.delegate.clear()
             qqs.delegate.clear()

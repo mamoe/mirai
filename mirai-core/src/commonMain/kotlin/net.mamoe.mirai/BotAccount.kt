@@ -22,6 +22,7 @@ data class BotAccount(
 /**
  * 标记直接访问 [BotAccount.id], 而不是访问 [Bot.uin]. 这可能会不兼容未来的 API 修改.
  */
+@MiraiInternalAPI
 @Retention(AnnotationRetention.SOURCE)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @Experimental(level = Experimental.Level.WARNING)

@@ -17,6 +17,7 @@ import net.mamoe.mirai.message.data.ImageId
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.firstOrNull
 import net.mamoe.mirai.message.sendAsImageTo
+import net.mamoe.mirai.timpc.Bot
 import net.mamoe.mirai.timpc.TIMPC
 import net.mamoe.mirai.utils.suspendToExternalImage
 import java.io.File
@@ -39,10 +40,8 @@ private fun readTestAccount(): BotAccount? {
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
     val bot = TIMPC.Bot( // JVM 下也可以不写 `TIMPC.` 引用顶层函数
-        readTestAccount() ?: BotAccount(//填写你的账号
-            id = 1994701121,
-            passwordPlainText = "123456"
-        )
+        1994701121,
+        "123456"
     ) {
         // 覆盖默认的配置
         randomDeviceName = false
@@ -134,6 +133,7 @@ fun Bot.messageDSL() {
             reply(message)
         }
 
+        listener.complete() // 停止监听
 
         // 自定义的 filter, filter 中 it 为转为 String 的消息.
         // 也可以用任何能在处理时使用的变量, 如 subject, sender, message

@@ -16,7 +16,6 @@ import net.mamoe.mirai.utils.io.writeQQ
  * 待发送给服务器的数据包. 它代表着一个 [ByteReadPacket].
  * 只有最终的包才会被包装为 [OutgoingPacket].
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
 internal class OutgoingPacket constructor(
     name: String?,
     val commandName: String,
