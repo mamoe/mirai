@@ -50,7 +50,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     suspend inline fun reply(message: MessageChain) = subject.sendMessage(message)
 
     suspend inline fun reply(message: Message) = subject.sendMessage(message.toChain())
-    suspend inline fun reply(plain: String) = subject.sendMessage(plain.toMessage())
+    suspend inline fun reply(plain: String) = subject.sendMessage(plain.singleChain())
 
     @JvmName("reply1")
     suspend inline fun String.reply() = reply(this)
