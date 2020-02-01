@@ -11,8 +11,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.PushResp
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.io.debugPrintThis
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.PushReq as PushReqJceStruct
 
 
@@ -21,7 +19,7 @@ internal class ConfigPushSvc {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): PushReqJceStruct {
             discardExact(4)
             val pushReq = decodeUniPacket(PushReqJceStruct.serializer())
-            println(pushReq.contentToString())
+            //println(pushReq.contentToString())
             return pushReq
         }
 
@@ -52,7 +50,7 @@ internal class ConfigPushSvc {
                         ),
                         charset = JceCharset.UTF8
                     )
-                    writePacket(this.build().debugPrintThis())
+                    // writePacket(this.build().debugPrintThis())
                 }.sendWithoutExpect()
             }
         }
