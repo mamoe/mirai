@@ -342,32 +342,31 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         require(timeoutMillis > 0) { "timeoutMillis must > 0" }
         require(retry >= 0) { "retry must >= 0" }
 
-        val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
-        packetListeners.addLast(handler)
         var lastException: Exception? = null
         repeat(retry + 1) {
+            val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
+            packetListeners.addLast(handler)
             try {
-                return doSendAndReceive(timeoutMillis, handler)
+                withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
+                    channel.send(delegate)
+                }
+                bot.logger.info("Send: ${this.commandName}")
+                try {
+                    return withTimeoutOrNull(timeoutMillis) {
+                        @Suppress("UNCHECKED_CAST")
+                        handler.await() as E
+                        // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
+                    } ?: net.mamoe.mirai.qqandroid.utils.inline {
+                        error("timeout when receiving response of $commandName")
+                    }
+                } finally {
+                    packetListeners.remove(handler)
+                }
             } catch (e: Exception) {
                 lastException = e
             }
         }
-        packetListeners.remove(handler)
         throw lastException!!
-    }
-
-    private suspend inline fun <E : Packet> OutgoingPacket.doSendAndReceive(timeoutMillis: Long = 3000, handler: PacketListener): E {
-        withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
-            channel.send(delegate)
-        }
-        bot.logger.info("Send: ${this.commandName}")
-        return withTimeoutOrNull(timeoutMillis) {
-            @Suppress("UNCHECKED_CAST")
-            handler.await() as E
-            // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
-        } ?: net.mamoe.mirai.qqandroid.utils.inline {
-            error("timeout when receiving response of $commandName")
-        }
     }
 
     @PublishedApi
