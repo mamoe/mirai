@@ -46,6 +46,7 @@ internal class MessageSvc {
                 PbGetMsg(client, packet.stMsgInfo?.uMsgTime ?: 0).sendAndExpect<MultiPacket<FriendMessage>>()
             }
         }
+
     }
 
 
