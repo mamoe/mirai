@@ -58,15 +58,14 @@ internal class MessageSvc {
     @UseExperimental(MiraiInternalAPI::class)
     internal object PbGetMsg : PacketFactory<PbGetMsg.Response>("MessageSvc.PbGetMsg") {
         val EXTRA_DATA =
-            "08 00 12 33 6D 6F 64 65 6C 3A 78 69 61 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
+            "08 00 12 33 6D 6F 64 65 6C 3A 78 69 67 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
 
         operator fun invoke(
             client: QQAndroidClient,
             syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
             msgTime: Long //PbPushMsg.msg.msgHead.msgTime
         ): OutgoingPacket = buildOutgoingUniPacket(
-            client//,
-            //  extraData = EXTRA_DATA.toReadPacket()
+            client
         ) {
             println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
             writeProtoBuf(
@@ -82,7 +81,7 @@ internal class MessageSvc {
                     syncFlag = syncFlag,
                     //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
                     syncCookie = client.c2cMessageSync.syncCookie
-                        ?: SyncCookie(time = msgTime).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
+                        ?: SyncCookie(time = Random.nextLong()).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
                     // syncFlag = client.c2cMessageSync.syncFlag,
                     //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
                     //pubaccountCookie = client.c2cMessageSync.pubAccountCookie

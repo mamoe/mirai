@@ -3,8 +3,8 @@
 package net.mamoe.mirai.timpc.network.packet.login
 
 import kotlinx.io.core.*
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.timpc.network.TIMProtocol
 import net.mamoe.mirai.timpc.network.packet.OutgoingPacket
 import net.mamoe.mirai.timpc.network.packet.PacketFactory
@@ -142,7 +142,7 @@ internal object CaptchaPacket : PacketFactory<CaptchaPacket.CaptchaResponse, Cap
             }
             0x13u -> {
                 CaptchaResponse.Transmission().apply {
-                    with(debugPrint("验证码包")) {
+                    with(debugPrintThis("验证码包")) {
                         /*
                          * 00 05 01 00 00 01 23
                          * 00 40 A0 E9 2F 12 1D 2E B1 15 26 89 EB C3 F0 9A 0C 03 00 03 A0 F2 74 57 58 57 E9 7A 2B C7 52 5D BC D8 7B D5 A4 7C AD 33 85 85 39 88 D2 CE AD 68 36 2E F0 AE 19 E8 25 3A F7 3A AD BE 19 A9 E7 C4 B5 4C

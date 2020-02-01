@@ -126,7 +126,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
     } else {
         //if (flag2 == 1) {
         val loginExtraData = readBytes(readInt() - 4)
-        loginExtraData.debugPrint("loginExtraData")
+        loginExtraData.debugPrintThis("loginExtraData")
         // } else {
         //     this.debugPrint()
         //     error("未知 flag2")
@@ -137,7 +137,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
     println("uin=" + readString(readInt() - 4))
 
     println("// 解密 body")
-    readRemainingBytes().tryDecrypt().toReadPacket().debugPrint("outer body decrypted").apply {
+    readRemainingBytes().tryDecrypt().toReadPacket().debugPrintThis("outer body decrypted").apply {
         when (flag1) {
             0x0A -> decodeSso()
             0x0B -> decodeUni()
@@ -148,7 +148,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
 
             2 -> {
 
-                this.debugPrint("Oicq Request").apply {
+                this.debugPrintThis("Oicq Request").apply {
                     /*
                    byte     2 // head flag
                    short    27 + 2 + remaining.length
@@ -259,7 +259,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                 }
             }
             else -> {
-                this.debugPrint("uni packet")
+                this.debugPrintThis("uni packet")
             }
         }
     }
@@ -274,7 +274,7 @@ fun ByteReadPacket.decodeUni() {
     println("// 尝试解 Uni")
     println("// head")
     //return
-    readBytes(readInt() - 4).debugPrint("head").toReadPacket().apply {
+    readBytes(readInt() - 4).debugPrintThis("head").toReadPacket().apply {
         val commandName = readString(readInt() - 4).also { PacketLogger.warning("commandName=$it") }
         println(commandName)
         println("  unknown4Bytes=" + readBytes(readInt() - 4).toUHexString())
@@ -283,7 +283,7 @@ fun ByteReadPacket.decodeUni() {
         // 00 00 00 04
         println("  extraData=" + readBytes(readInt() - 4).toUHexString())
     }
-    readBytes(readInt() - 4).debugPrint("Real body").read {
+    readBytes(readInt() - 4).debugPrintThis("Real body").read {
         // real body
         //10 03 2C 3C 4C 56 23 51 51 53 65 72 76 69 63 65 2E 43 6F 6E 66 69 67 50 75 73 68 53 76 63 2E 4D 61 69 6E 53 65 72 76 61 6E 74 66 08 50 75 73 68 52 65 73 70 7D 00 00 1A 08 00 01 06 08 50 75 73 68 52 65 73 70 1D 00 00 09 0A 10 01 22 14 DA 6E B1 0B 8C 98 0C A8 0C
 

@@ -86,6 +86,8 @@ internal open class QQAndroidClient(
     var mainSigMap: Int = 16724722
     var subSigMap: Int = 0x10400 //=66,560
 
+    var configPushSvcPushReqSequenceId: Int = 0
+
     private val _ssoSequenceId: AtomicInt = atomic(85600)
 
     @MiraiInternalAPI("Do not use directly. Get from the lambda param of buildSsoPacket")

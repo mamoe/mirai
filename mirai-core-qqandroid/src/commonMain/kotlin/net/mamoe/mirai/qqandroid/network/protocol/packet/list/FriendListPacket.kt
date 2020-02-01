@@ -90,7 +90,7 @@ internal class FriendList {
                         iVersion = 3,
                         cPacketType = 0x00,
                         iMessageType = 0x00000,
-                        iRequestId = 1921334513,
+                        iRequestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "GetTroopListReqV2Simplify",
                             GetTroopListReqV2Simplify.serializer(),
@@ -101,6 +101,7 @@ internal class FriendList {
                                 shVersion = 7,
                                 dwCompanyId = 0,
                                 versionNum = 1,
+                                vecGroupInfo = listOf(),
                                 getLongGroupName = 1
                             )
                         )

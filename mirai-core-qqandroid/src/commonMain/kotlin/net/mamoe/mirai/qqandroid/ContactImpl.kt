@@ -98,13 +98,14 @@ internal class GroupImpl(bot: QQAndroidBot, override val coroutineContext: Corou
 
     override suspend fun sendMessage(message: MessageChain) {
         bot.network.run {
+            val response = MessageSvc.PbSendMsg.ToGroup(
+                bot.client,
+                id,
+                message
+            ).sendAndExpect<MessageSvc.PbSendMsg.Response>()
             check(
-                MessageSvc.PbSendMsg.ToGroup(
-                    bot.client,
-                    id,
-                    message
-                ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
-            ) { "send message failed" }
+                response is MessageSvc.PbSendMsg.Response.SUCCESS
+            ) { "send message failed: $response" }
         }
     }
 
