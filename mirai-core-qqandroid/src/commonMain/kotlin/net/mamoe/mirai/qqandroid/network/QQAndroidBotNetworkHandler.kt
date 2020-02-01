@@ -119,10 +119,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             val data = FriendList.GetFriendGroupList(
                 bot.client,
                 currentFriendCount,
-                10,
+                20,
                 0,
                 0
-            ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(
+                timeoutMillis = 8000,
+                retry = 5
+            )
             totalFriendCount = data.totalFriendCount
             data.friendList.forEach {
                 // atomic add
@@ -134,6 +137,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (currentFriendCount >= totalFriendCount) {
                 break
             }
+            delay(200)
         }
         bot.logger.info("好友信息加载完成, 共 ${currentFriendCount}个")
         //发送事件
