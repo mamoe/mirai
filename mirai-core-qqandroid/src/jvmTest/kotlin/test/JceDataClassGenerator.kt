@@ -10,7 +10,7 @@ fun main(){
     )
     File(
         """
-        E:\Projects\QQAndroidFF\app\src\main\java\friendlist\
+       E:\Projects\QQAndroidFF\app\src\main\java\ConfigPush
     """.trimIndent()
     ).listFiles()!!.forEach {
         try {

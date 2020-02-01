@@ -87,9 +87,9 @@ internal inline fun PacketFactory<*>.buildOutgoingUniPacket(
     commandName: String = this.commandName,
     key: ByteArray = client.wLoginSigInfo.d2Key,
     extraData: ByteReadPacket = BRP_STUB,
+    sequenceId: Int = client.nextSsoSequenceId(),
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
-    val sequenceId: Int = client.nextSsoSequenceId()
 
     return OutgoingPacket(name, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {

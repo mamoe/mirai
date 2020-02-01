@@ -16,7 +16,7 @@ import net.mamoe.mirai.utils.cryptor.Decrypter
 import net.mamoe.mirai.utils.cryptor.DecrypterType
 import net.mamoe.mirai.utils.cryptor.readProtoMap
 import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.debugPrint
+import net.mamoe.mirai.utils.io.debugPrintThis
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toUHexString
 
@@ -50,7 +50,7 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
         val headLength = readInt()
         val protoLength = readInt()
         if (debuggingTag != null) {
-            readBytes(headLength).debugPrint("$debuggingTag head")
+            readBytes(headLength).debugPrintThis("$debuggingTag head")
         } else {
             discardExact(headLength)
         }
@@ -58,7 +58,7 @@ abstract class PacketFactory<out TPacket : Packet, TDecrypter : Decrypter>(val d
         // println(ByteReadPacket(bytes).readProtoMap())
 
         if (debuggingTag != null) {
-            bytes.read { readProtoMap() }.toString().debugPrint("$debuggingTag proto")
+            bytes.read { readProtoMap() }.toString().debugPrintThis("$debuggingTag proto")
         }
 
         return ProtoBuf.load(deserializer, bytes)

@@ -15,7 +15,7 @@ import kotlinx.io.core.readAvailable
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.contact.GroupId
 import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.debugPrint
+import net.mamoe.mirai.utils.io.debugPrintThis
 
 
 @Suppress("SpellCheckingInspection")
@@ -46,7 +46,7 @@ internal suspend inline fun HttpClient.postImage(
 
             userAgent("QQClient")
 
-            buildString().debugPrint("URL")
+            buildString().debugPrintThis("URL")
         }
 
         body = object : OutgoingContent.WriteChannelContent() {

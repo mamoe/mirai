@@ -19,19 +19,19 @@ fun Throwable.logStacktrace(message: String? = null) = DebugLogger.error(message
 fun debugPrintln(any: Any?) = DebugLogger.debug(any)
 
 @MiraiDebugAPI("Low efficiency.")
-fun String.debugPrint(name: String): String {
+fun String.debugPrintThis(name: String): String {
     DebugLogger.debug("$name=$this")
     return this
 }
 
 @MiraiDebugAPI("Low efficiency.")
-fun ByteArray.debugPrint(name: String): ByteArray {
+fun ByteArray.debugPrintThis(name: String): ByteArray {
     DebugLogger.debug(name + "=" + this.toUHexString())
     return this
 }
 
 @MiraiDebugAPI("Low efficiency.")
-fun IoBuffer.debugPrint(name: String): IoBuffer {
+fun IoBuffer.debugPrintThis(name: String): IoBuffer {
     ByteArrayPool.useInstance {
         val count = this.readAvailable(it)
         DebugLogger.debug(name + "=" + it.toUHexString(offset = 0, length = count))
@@ -54,7 +54,7 @@ fun Input.debugDiscardExact(n: Number, name: String = "") {
 }
 
 @MiraiDebugAPI("Low efficiency.")
-fun ByteReadPacket.debugPrint(name: String = ""): ByteReadPacket {
+fun ByteReadPacket.debugPrintThis(name: String = ""): ByteReadPacket {
     ByteArrayPool.useInstance {
         val count = this.readAvailable(it)
         DebugLogger.debug("ByteReadPacket $name=" + it.toUHexString(offset = 0, length = count))

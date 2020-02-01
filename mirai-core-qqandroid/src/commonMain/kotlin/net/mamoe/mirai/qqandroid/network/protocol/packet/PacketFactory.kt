@@ -10,6 +10,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.DefaultLogger
@@ -67,7 +68,8 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
     MessageSvc.PushForceOffline,
     MessageSvc.PbSendMsg,
     FriendList.GetFriendGroupList,
-    FriendList.GetTroopListSimplify
+    FriendList.GetTroopListSimplify,
+    ConfigPushSvc.PushReq
 ) {
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机
@@ -194,11 +196,14 @@ internal object KnownPacketFactories : List<PacketFactory<*>> by mutableListOf(
             PacketLogger.verbose("sequenceId = $ssoSequenceId")
             check(readInt() == 0)
             val extraData = readBytes(readInt() - 4)
-            PacketLogger.verbose("sso(inner)extraData = ${extraData.toUHexString()}")
+            PacketLogger.verbose("(sso/inner)extraData = ${extraData.toUHexString()}")
 
             commandName = readString(readInt() - 4)
             bot.client.outgoingPacketUnknownValue = readBytes(readInt() - 4)
 
+            if (commandName == "ConfigPushSvc.PushReq") {
+                bot.client.configPushSvcPushReqSequenceId = ssoSequenceId
+            }
             dataCompressed = readInt()
         }
 

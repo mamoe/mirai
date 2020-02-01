@@ -86,6 +86,8 @@ internal open class QQAndroidClient(
     var mainSigMap: Int = 16724722
     var subSigMap: Int = 0x10400 //=66,560
 
+    var configPushSvcPushReqSequenceId: Int = 0
+
     private val _ssoSequenceId: AtomicInt = atomic(85600)
 
     @MiraiInternalAPI("Do not use directly. Get from the lambda param of buildSsoPacket")
@@ -96,7 +98,10 @@ internal open class QQAndroidClient(
     val apkVersionName: ByteArray = "8.2.0".toByteArray()
 
     private val messageSequenceId: AtomicInt = atomic(0)
-    internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndIncrement()
+    internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
+
+    private val requestPacketRequestId: AtomicInt = atomic(1921334513)
+    internal fun nextRequestPacketRequestId(): Int = requestPacketRequestId.getAndAdd(2)
 
     val appClientVersion: Int = 0
 
@@ -112,7 +117,6 @@ internal open class QQAndroidClient(
     class C2cMessageSyncData {
         var syncCookie: ByteArray? = null
         var pubAccountCookie = EMPTY_BYTE_ARRAY
-        var syncFlag: Int = 0
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
     }
 

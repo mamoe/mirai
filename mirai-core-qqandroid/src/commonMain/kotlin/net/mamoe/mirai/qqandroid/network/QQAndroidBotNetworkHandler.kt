@@ -112,6 +112,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
 
+        //val msg = MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<MessageSvc.PbGetMsg.Response>()
+        //println(msg.contentToString())
+
         try {
             bot.logger.info("开始加载好友信息")
             var currentFriendCount = 0
@@ -348,6 +351,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     private val packetReceiveLock: Mutex = Mutex()
 
     /**
+     * 发送一个包, 但不期待任何返回.
+     */
+    suspend fun OutgoingPacket.sendWithoutExpect() {
+        bot.logger.info("Send: ${this.commandName}")
+        withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
+            channel.send(delegate)
+        }
+    }
+
+    /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
      */
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 1): E {
@@ -363,19 +376,17 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     channel.send(delegate)
                 }
                 bot.logger.info("Send: ${this.commandName}")
-                try {
-                    return withTimeoutOrNull(timeoutMillis) {
-                        @Suppress("UNCHECKED_CAST")
-                        handler.await() as E
-                        // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
-                    } ?: net.mamoe.mirai.qqandroid.utils.inline {
-                        error("timeout when receiving response of $commandName")
-                    }
-                } finally {
-                    packetListeners.remove(handler)
+                return withTimeoutOrNull(timeoutMillis) {
+                    @Suppress("UNCHECKED_CAST")
+                    handler.await() as E
+                    // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
+                } ?: net.mamoe.mirai.qqandroid.utils.inline {
+                    error("timeout when receiving response of $commandName")
                 }
             } catch (e: Exception) {
                 lastException = e
+            } finally {
+                packetListeners.remove(handler)
             }
         }
         throw lastException!!
