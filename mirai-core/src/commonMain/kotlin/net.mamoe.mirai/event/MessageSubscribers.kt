@@ -335,15 +335,15 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是这个人发的消息. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
-    fun sentBy(qqId: Long): ListeningFilter =
-        content { sender.id == qqId }
+    fun sentBy(qq: Long): ListeningFilter =
+        content { sender.id == qq }
 
     /**
      * 如果是这个人发的消息. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
-    inline fun sentBy(qqId: Long, crossinline onEvent: MessageListener<T>): Listener<T> =
-        content({ this.sender.id == qqId }, onEvent)
+    inline fun sentBy(qq: Long, crossinline onEvent: MessageListener<T>): Listener<T> =
+        content({ this.sender.id == qq }, onEvent)
 
     /**
      * 如果是管理员或群主发的消息
