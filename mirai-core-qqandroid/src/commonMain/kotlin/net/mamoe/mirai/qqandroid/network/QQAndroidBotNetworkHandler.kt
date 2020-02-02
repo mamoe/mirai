@@ -180,7 +180,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 try {
                     getTroopMemberList(it.key, it.value)
                 } catch (e: Exception) {
-                    bot.logger.info("群${it.key.id}的列表拉取失败, 将采用动态加入")
+                    bot.logger.info("群${it.key.groupCode}的列表拉取失败, 将采用动态加入")
                 }
                 delay(200)
             }
@@ -192,7 +192,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>): ContactList<Member> {
-        bot.logger.info("开始获取群[${group.id}]成员列表")
+        bot.logger.info("开始获取群[${group.groupCode}]成员列表")
         var size = 0
         var nextUin = 0L
         while (true) {
@@ -216,9 +216,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (nextUin == 0L) {
                 break
             }
-            println("已获取群[${group.id}]成员列表前" + size + "个成员")
+            println("已获取群[${group.groupCode}]成员列表前" + size + "个成员")
         }
-        println("群[${group.id}]成员全部获取完成, 共${list.size}个成员")
+        println("群[${group.groupCode}]成员全部获取完成, 共${list.size}个成员")
         return list
     }
 
