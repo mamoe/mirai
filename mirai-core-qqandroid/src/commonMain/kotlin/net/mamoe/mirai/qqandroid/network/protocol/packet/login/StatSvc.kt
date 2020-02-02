@@ -10,7 +10,7 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.SvcReqRegister
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769.Oidb0x769
 import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
@@ -33,7 +33,7 @@ internal enum class RegPushReason {
 }
 
 internal class StatSvc {
-    internal object Register : PacketFactory<Register.Response>("StatSvc.register") {
+    internal object Register : OutgoingPacketFactory<Register.Response>("StatSvc.register") {
 
         internal object Response : Packet {
             override fun toString(): String = "Response(StatSvc.register)"

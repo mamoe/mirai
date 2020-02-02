@@ -9,27 +9,27 @@ import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.PushResp
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.io.debugPrintThis
+import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.PushReq as PushReqJceStruct
 
 
 internal class ConfigPushSvc {
-    object PushReq : PacketFactory<PushReqJceStruct>("ConfigPushSvc.PushReq") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): PushReqJceStruct {
+    object PushReq : IncomingPacketFactory<PushReqJceStruct>(
+        receivingCommandName = "ConfigPushSvc.PushReq",
+        responseCommandName = "ConfigPushSvc.PushResp"
+    ) {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqJceStruct {
             discardExact(4)
-            val pushReq = decodeUniPacket(PushReqJceStruct.serializer())
-            println(pushReq.contentToString())
-            return pushReq
+            return decodeUniPacket(PushReqJceStruct.serializer())
         }
 
-        override suspend fun QQAndroidBot.handle(packet: PushReqJceStruct) {
-            network.run {
-                buildOutgoingUniPacket(
+        override suspend fun QQAndroidBot.handle(packet: PushReqJceStruct, sequenceId: Int): OutgoingPacket? {
+            return network.run {
+                buildResponseUniPacket(
                     client,
-                    sequenceId = client.configPushSvcPushReqSequenceId.also { println("configPushSvcPushReqSequenceId=${client.configPushSvcPushReqSequenceId}") },
+                    sequenceId = client.configPushSvcPushReqSequenceId,
                     commandName = "ConfigPushSvc.PushResp",
                     name = "ConfigPushSvc.PushResp"
                 ) {
@@ -52,8 +52,8 @@ internal class ConfigPushSvc {
                         ),
                         charset = JceCharset.UTF8
                     )
-                    writePacket(this.build().debugPrintThis())
-                }.sendWithoutExpect()
+                    // writePacket(this.build().debugPrintThis())
+                }
             }
         }
     }

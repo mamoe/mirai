@@ -19,9 +19,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
-import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.qqandroid.utils.toRichTextElems
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -36,19 +34,18 @@ internal class MessageSvc {
     /**
      * 告知要刷新好友消息
      */
-    internal object PushNotify : PacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RequestPushNotify {
+    internal object PushNotify : IncomingPacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): RequestPushNotify {
             discardExact(8)
 
             return decodeUniPacket(RequestPushNotify.serializer())
         }
 
-        override suspend fun QQAndroidBot.handle(packet: RequestPushNotify) {
+        override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
             network.run {
-                PbGetMsg(client, MsgSvc.SyncFlag.START, packet.stMsgInfo?.uMsgTime ?: 0).sendAndExpect<MultiPacket<FriendMessage>>()
+                return PbGetMsg(client, MsgSvc.SyncFlag.START, packet.stMsgInfo?.uMsgTime ?: 0)
             }
         }
-
     }
 
 
@@ -56,7 +53,7 @@ internal class MessageSvc {
      * 获取好友消息和消息记录
      */
     @UseExperimental(MiraiInternalAPI::class)
-    internal object PbGetMsg : PacketFactory<PbGetMsg.Response>("MessageSvc.PbGetMsg") {
+    internal object PbGetMsg : OutgoingPacketFactory<PbGetMsg.Response>("MessageSvc.PbGetMsg") {
         val EXTRA_DATA =
             "08 00 12 33 6D 6F 64 65 6C 3A 78 69 67 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
 
@@ -81,7 +78,7 @@ internal class MessageSvc {
                     syncFlag = syncFlag,
                     //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
                     syncCookie = client.c2cMessageSync.syncCookie
-                        ?: SyncCookie(time = Random.nextLong()).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
+                        ?: SyncCookie(time = msgTime + client.timeDifference).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
                     // syncFlag = client.c2cMessageSync.syncFlag,
                     //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
                     //pubaccountCookie = client.c2cMessageSync.pubAccountCookie
@@ -160,7 +157,7 @@ internal class MessageSvc {
     /**
      * 被挤下线
      */
-    internal object PushForceOffline : PacketFactory<ForceOfflineEvent>("MessageSvc.PushForceOffline") {
+    internal object PushForceOffline : OutgoingPacketFactory<ForceOfflineEvent>("MessageSvc.PushForceOffline") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ForceOfflineEvent {
             discardExact(4)
             val struct = this.decodeUniPacket(RequestPushForceOffline.serializer())
@@ -168,7 +165,7 @@ internal class MessageSvc {
         }
     }
 
-    internal object PbSendMsg : PacketFactory<PbSendMsg.Response>("MessageSvc.PbSendMsg") {
+    internal object PbSendMsg : OutgoingPacketFactory<PbSendMsg.Response>("MessageSvc.PbSendMsg") {
         sealed class Response : Packet {
             object SUCCESS : Response() {
                 override fun toString(): String = "MessageSvc.PbSendMsg.Response.SUCCESS"
@@ -230,9 +227,9 @@ internal class MessageSvc {
                             elems = message.toRichTextElems()
                         )
                     ),
-                    msgSeq = client.atomicNextMessageSequenceId()
-                    // msgRand = 123
-                    //syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() } ?:
+                    msgSeq = client.atomicNextMessageSequenceId(),
+                    //msgRand = Random.nextInt() and 0x7FFF,
+                    syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() } ?: EMPTY_BYTE_ARRAY
                     //SyncCookie(currentTimeSeconds, Random.nextLong().absoluteValue, Random.nextLong().absoluteValue).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )

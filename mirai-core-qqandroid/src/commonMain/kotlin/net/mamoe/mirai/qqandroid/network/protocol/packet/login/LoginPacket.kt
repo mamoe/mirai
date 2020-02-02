@@ -11,16 +11,19 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiDebugAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.decryptBy
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.io.discardExact
+import net.mamoe.mirai.utils.md5
 
 /**
  * OicqRequest
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login") {
+internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login") {
 
     /**
      * 提交验证码
@@ -686,7 +689,7 @@ internal object LoginPacket : PacketFactory<LoginPacket.LoginPacketResponse>("wt
      */
     private fun QQAndroidClient.analysisTlv130(t130: ByteArray) = t130.read {
         discardExact(2)
-        timeDifference = readUInt().toLong() - currentTimeMillis
+        timeDifference = readUInt().toLong() - currentTimeSeconds
         ipFromT149 = readBytes(4)
     }
 
