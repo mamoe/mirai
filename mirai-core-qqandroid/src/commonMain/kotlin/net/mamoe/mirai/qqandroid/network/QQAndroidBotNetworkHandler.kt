@@ -163,6 +163,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     }
 
+    suspend fun getTroopMemberList(groupUni: Long) {
+        bot.logger.info("开始群[$groupUni]成员")
+        val data = FriendList.GetTroopMemberList(
+            bot.client,
+            groupUni,
+            0
+        ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 1000)
+        println(data.contentToString())
+    }
+
     /**
      * 缓存超时处理的 [Job]. 超时后将清空缓存, 以免阻碍后续包的处理
      */

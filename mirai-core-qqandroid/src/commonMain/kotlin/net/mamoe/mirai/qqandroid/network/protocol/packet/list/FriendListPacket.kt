@@ -16,6 +16,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList.GetFriendGroupList.decode
+import net.mamoe.mirai.utils.io.debugIfFail
+import net.mamoe.mirai.utils.io.debugPrintThis
+import net.mamoe.mirai.utils.io.debugPrintln
+import net.mamoe.mirai.utils.io.discardExact
 
 
 internal class FriendList {
@@ -23,7 +28,10 @@ internal class FriendList {
     internal object GetTroopMemberList :
         OutgoingPacketFactory<GetTroopMemberList.Response>("friendlist.GetTroopMemberListReq") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopMemberList.Response {
-            TODO()
+            val res = this.debugIfFail { this.decodeUniPacket(GetTroopMemberListResp.serializer()) }
+            return Response(
+                res.vecTroopMember
+            )
         }
 
         operator fun invoke(
@@ -46,7 +54,7 @@ internal class FriendList {
                                 uin = client.uin,
                                 groupCode = GroupId(targetGroupId).toInternalId().value,
                                 groupUin = targetGroupId,
-                                nextUin = 0,
+                                nextUin = nextUin,
                                 reqType = 0
                             )
                         )
@@ -56,15 +64,16 @@ internal class FriendList {
         }
 
         class Response(
-
+            val members: List<stTroopMemberInfo>
         ) : Packet {
-            override fun toString(): String = "FriendList.GetFriendGroupList.Response"
+            override fun toString(): String = "Friendlist.GetTroopMemberList.Response"
         }
 
     }
 
     internal object GetTroopListSimplify :
         OutgoingPacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
+
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.decodeUniPacket(GetTroopListRespV2.serializer())
             return Response(res.vecTroopList.orEmpty())
