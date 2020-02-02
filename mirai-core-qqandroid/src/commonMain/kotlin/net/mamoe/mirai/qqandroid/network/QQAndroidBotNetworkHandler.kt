@@ -13,6 +13,7 @@ import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.QQImpl
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
@@ -148,11 +149,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         try {
-            bot.logger.info("开始加载组列表")
+            bot.logger.info("开始加载群组列表")
             val troopData = FriendList.GetTroopListSimplify(
                 bot.client
             ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 1000)
-            println(troopData.contentToString())
+            troopData.groups.forEach {
+                bot.groups.delegate.addLast(GroupImpl(bot, EmptyCoroutineContext, it.groupUin))
+            }
+            bot.logger.info("群组列表加载完成, 共 ${troopData.groups.size}个")
         } catch (e: Exception) {
             bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
         }
