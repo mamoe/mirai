@@ -3,8 +3,6 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.data.GroupInfo
-import net.mamoe.mirai.utils.coerceAtLeastOrFail
 
 
 /**
@@ -47,16 +45,19 @@ interface Group : Contact, CoroutineScope {
 
 
     /**
-     * 获取群成员. 若此 ID 的成员不存在, 则会抛出 [kotlin.NoSuchElementException]
+     * 获取群成员实例. 若此 ID 的成员不存在, 则会抛出 [kotlin.NoSuchElementException]
      */
-    fun getMember(id: Long): Member
+    operator fun get(id: Long): Member
 
     /**
-     * 更新群资料. 群资料会与服务器事件同步事件更新, 一般情况下不需要手动更新.
-     *
-     * @return 这一时刻的群资料
+     * 获取群成员实例, 不存在则 null
      */
-    suspend fun updateGroupInfo(): GroupInfo
+    fun getOrNull(id: Long): Member?
+
+    /**
+     * 检查此 id 的群成员是否存在
+     */
+    operator fun contains(id: Long): Boolean
 
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败

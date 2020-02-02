@@ -135,6 +135,9 @@ internal class MessageSvc {
                 }
             }.toMutableList()
             if (resp.syncFlag == MsgSvc.SyncFlag.STOP) {
+                messages.ifEmpty {
+                    return GetMsgSuccess(messages)
+                }
                 return GetMsgSuccess(mutableListOf(messages.last()))
             }
             return Response(resp.syncFlag, messages)

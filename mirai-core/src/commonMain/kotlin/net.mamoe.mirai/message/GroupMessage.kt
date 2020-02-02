@@ -30,8 +30,8 @@ class GroupMessage(
      */
     override val subject: Group get() = group
 
-    inline fun At.member(): Member = group.getMember(this.target)
-    inline fun Long.member(): Member = group.getMember(this)
+    inline fun At.member(): Member = group[this.target]
+    inline fun Long.member(): Member = group[this]
     override fun toString(): String =
         "GroupMessage(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
 

@@ -144,7 +144,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     /**
      * 监听的条件
      */
-    inner class ListeningFilter(
+    open inner class ListeningFilter(
         val filter: T.(String) -> Boolean
     ) {
         /**
@@ -346,6 +346,21 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         content({ this.sender.id == qq }, onEvent)
 
     /**
+     * 如果是好友发来的消息
+     */
+    @MessageDsl
+    inline fun sentByFriend(crossinline onEvent: MessageListener<FriendMessage>): Listener<T> =
+        content({ this is FriendMessage }){
+            onEvent(this as FriendMessage, it)
+        }
+
+    /**
+     * 如果是好友发来的消息
+     */
+    @MessageDsl
+    fun sentByFriend(): ListeningFilter = ListeningFilter { this is FriendMessage }
+
+    /**
      * 如果是管理员或群主发的消息
      */
     @MessageDsl
@@ -399,7 +414,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      */
     @MessageDsl
     inline fun sentFrom(groupId: Long, crossinline onEvent: MessageListener<GroupMessage>): Listener<T> =
-        content({ this is GroupMessage && this.group.id == groupId }){
+        content({ this is GroupMessage && this.group.id == groupId }) {
             onEvent(this as GroupMessage, it)
         }
 

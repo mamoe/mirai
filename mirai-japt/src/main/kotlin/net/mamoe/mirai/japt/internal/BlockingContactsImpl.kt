@@ -8,7 +8,6 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.FriendNameRemark
-import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.japt.BlockingBot
@@ -41,16 +40,14 @@ internal class BlockingGroupImpl(private val delegate: Group) : BlockingGroup {
     override fun getOwner(): BlockingMember = delegate.owner.blocking()
     override fun getName(): String = delegate.name
     override fun getId(): Long = delegate.id
-    override fun updateGroupInfo(): GroupInfo = runBlocking { delegate.updateGroupInfo() }
     override fun toFullString(): String = delegate.toFullString()
-    override fun getMember(id: Long): BlockingMember = delegate.getMember(id).blocking()
+    override fun getMember(id: Long): BlockingMember = delegate[id].blocking()
     override fun getBot(): BlockingBot = delegate.bot.blocking()
     override fun getAnnouncement(): String = delegate.announcement
     @UseExperimental(MiraiInternalAPI::class)
     override fun getMembers(): Map<Long, BlockingMember> =
         delegate.members.delegate.toList().associateBy { it.id }.mapValues { it.value.blocking() }
 
-    override fun getInternalId(): Long = delegate.internalId.value
     override fun quit(): Boolean = runBlocking { delegate.quit() }
 }
 

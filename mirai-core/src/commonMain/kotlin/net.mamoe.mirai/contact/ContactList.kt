@@ -45,7 +45,7 @@ fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: Long): C? {
     return null
 }
 
-inline fun <C : Contact> LockFreeLinkedList<C>.filterGetOrNull(filter: (C) -> Boolean): C? {
+inline fun <C : Contact> LockFreeLinkedList<C>.filteringGetOrNull(filter: (C) -> Boolean): C? {
     forEach { if (filter(it)) return it }
     return null
 }

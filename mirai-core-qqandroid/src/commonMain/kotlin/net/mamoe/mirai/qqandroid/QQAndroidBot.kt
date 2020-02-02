@@ -12,7 +12,6 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.getRandomByteArray
 import kotlin.coroutines.CoroutineContext
 
 @UseExperimental(MiraiInternalAPI::class)
@@ -32,8 +31,18 @@ internal abstract class QQAndroidBotBase constructor(
     override val uin: Long get() = client.uin
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
+    val selfQQ: QQ by lazy { QQ(uin) }
+
     override fun getQQ(id: Long): QQ {
         return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this as QQAndroidBot, coroutineContext, id) })
+    }
+
+    fun getQQOrAdd(id: Long): QQ {
+        return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this as QQAndroidBot, coroutineContext, id) })
+    }
+
+    override fun QQ(id: Long): QQ {
+        return QQImpl(this as QQAndroidBot, coroutineContext, id)
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
@@ -47,7 +56,7 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override fun getGroupByGroupCode(groupCode: Long): Group {
-        return groups.delegate.filterGetOrNull { it.groupCode == groupCode }
+        return groups.delegate.filteringGetOrNull { it.groupCode == groupCode }
             ?: throw NoSuchElementException("Can not found group with GroupCode=${groupCode}")
     }
 

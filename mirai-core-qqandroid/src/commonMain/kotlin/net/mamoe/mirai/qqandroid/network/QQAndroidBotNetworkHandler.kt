@@ -10,7 +10,6 @@ import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacket
@@ -30,7 +29,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -139,7 +137,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 totalFriendCount = data.totalFriendCount
                 data.friendList.forEach {
                     // atomic add
-                    bot.qqs.delegate.addLast(QQImpl(bot, EmptyCoroutineContext, it.friendUin).also {
+                    bot.qqs.delegate.addLast(bot.getQQ(it.friendUin).also {
                         currentFriendCount++
                     })
                 }
@@ -168,18 +166,18 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 val group =
                     GroupImpl(
                         bot,
-                        EmptyCoroutineContext,
+                        this.coroutineContext,
                         it.groupUin,
                         it.groupCode,
-                        it.groupName!!,
-                        it.groupMemo!!,
+                        it.groupName,
+                        it.groupMemo,
                         contactList
                     )
                 group.owner =
                     MemberImpl(
-                        QQImpl(bot, EmptyCoroutineContext, it.dwGroupOwnerUin!!),
+                        bot.QQ(it.dwGroupOwnerUin) as QQImpl,
                         group,
-                        EmptyCoroutineContext,
+                        group.coroutineContext,
                         MemberPermission.OWNER
                     )
                 toGet[group] = contactList
@@ -240,7 +238,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 if (it.memberUin != bot.uin) {
                     list.delegate.addLast(
                         MemberImpl(
-                            QQImpl(bot, EmptyCoroutineContext, it.memberUin),
+                            bot.QQ(it.memberUin) as QQImpl,
                             group,
                             EmptyCoroutineContext,
                             when {

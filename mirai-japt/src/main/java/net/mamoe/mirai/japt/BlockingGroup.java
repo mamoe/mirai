@@ -1,7 +1,6 @@
 package net.mamoe.mirai.japt;
 
 import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.data.GroupInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -10,27 +9,19 @@ import java.util.NoSuchElementException;
 @SuppressWarnings("unused")
 public interface BlockingGroup extends BlockingContact {
     /**
-     * 内部 ID
-     */
-    long getInternalId();
-
-    /**
      * 群主 (同步事件更新)
-     * 进行 {@link #updateGroupInfo} 时将会更新这个值.
      */
     @NotNull
     BlockingMember getOwner();
 
     /**
      * 群名称 (同步事件更新)
-     * 进行 {@link #updateGroupInfo} 时将会更新这个值.
      */
     @NotNull
     String getName();
 
     /**
      * 入群公告, 没有时为空字符串. (同步事件更新)
-     * 进行 {@link #updateGroupInfo} 时将会更新这个值.
      */
     @NotNull
     String getAnnouncement();
@@ -48,14 +39,6 @@ public interface BlockingGroup extends BlockingContact {
      */
     @NotNull
     BlockingMember getMember(long id);
-
-    /**
-     * 更新群资料. 群资料会与服务器事件同步事件更新, 一般情况下不需要手动更新.
-     *
-     * @return 这一时刻的群资料
-     */
-    @NotNull
-    GroupInfo updateGroupInfo();
 
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败

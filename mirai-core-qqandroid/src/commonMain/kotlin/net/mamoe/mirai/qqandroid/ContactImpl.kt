@@ -7,9 +7,11 @@ import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 internal abstract class ContactImpl : Contact
 
@@ -82,19 +84,20 @@ internal class GroupImpl(
 ) : ContactImpl(), Group {
     override lateinit var owner: Member
 
-    override fun getMember(id: Long): Member =
-        members.delegate.filterGetOrNull { it.id == id } ?: error("Failed to find Member${id} in group ${groupCode}")
-
-    override suspend fun updateGroupInfo(): net.mamoe.mirai.data.GroupInfo {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override suspend fun quit(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    operator fun get(key: Long): Member? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override operator fun get(id: Long): Member {
+        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("for group id $id")
+    }
+
+    override fun contains(id: Long): Boolean {
+        return members.delegate.filteringGetOrNull { it.id == id } != null
+    }
+
+    override fun getOrNull(id: Long): Member? {
+        return members.delegate.filteringGetOrNull { it.id == id }
     }
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()

@@ -3,17 +3,21 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.io.OutputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.use
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.ContactList
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.GroupNotFoundException
 import net.mamoe.mirai.utils.LoginFailedException
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.WeakRef
 import net.mamoe.mirai.utils.io.transferTo
 
 /**
@@ -49,32 +53,39 @@ abstract class Bot : CoroutineScope {
     // region contacts
 
     /**
-     * 与这个机器人相关的 QQ 列表. 机器人与 QQ 不一定是好友
+     * 机器人的好友列表.
      */
     abstract val qqs: ContactList<QQ>
 
     /**
-     * 获取缓存的 QQ 对象. 若没有对应的缓存, 则会线程安全地创建一个.
+     * 获取一个好友对象. 若没有这个好友, 则会抛出异常[NoSuchElementException]
      */
     abstract fun getQQ(id: Long): QQ
 
     /**
-     * 与这个机器人相关的群列表. 机器人不一定是群成员.
+     * 构造一个 [QQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
+     *
+     * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
+     * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
+     */
+    abstract fun QQ(id: Long): QQ
+
+    /**
+     * 机器人加入的群列表.
      */
     abstract val groups: ContactList<Group>
 
     /**
-     * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
-     * 若 [id] 无效, 将会抛出 [GroupNotFoundException]
+     * 获取一个机器人加入的群. 若没有这个群, 则会抛出异常 [NoSuchElementException]
      */
     abstract fun getGroupByID(id: Long): Group
 
     /**
-     * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
-     * 若 [internalId] 无效, 将会抛出 [GroupNotFoundException]
+     * 获取一个机器人加入的群. 若没有这个群, 则会抛出异常 [NoSuchElementException]
      */
     abstract fun getGroupByGroupCode(groupCode: Long): Group
 
+    // 目前还不能构造群对象. 这将在以后支持
 
     // endregion
 
@@ -87,6 +98,7 @@ abstract class Bot : CoroutineScope {
 
     /**
      * 登录, 或重新登录.
+     * 不建议调用这个函数.
      *
      * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.login]
      *
