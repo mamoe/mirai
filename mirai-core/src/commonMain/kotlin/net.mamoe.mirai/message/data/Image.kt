@@ -2,76 +2,44 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.utils.ExternalImage
+sealed class Image : Message {
+    abstract val resourceId: String
 
+    abstract override fun toString(): String
 
-fun Image(id: String) = Image(ImageId(id))
+    final companion object Key : Message.Key<Image>
 
-/**
- * 图片消息. 在发送时将会区分群图片和好友图片发送.
- * 由接收消息时构建, 可直接发送
- *
- * @param id 这个图片的 [ImageId]
- */ // TODO: 2020/1/31 去掉 Image.  将 Image 改为 interface/class
-inline class Image(inline val id: ImageId) : Message {
-    override fun toString(): String = "[${id.value}]"
+    abstract override fun eq(other: Message): Boolean
+}
 
-    companion object Key : Message.Key<Image>
+abstract class NotOnlineImage : Image() {
+    abstract override val resourceId: String
+    abstract val md5: ByteArray
+    abstract val filepath: String
+    abstract val fileLength: Int
+    abstract val height: Int
+    abstract val width: Int
+    open val bizType: Int get() = 0
+    open val imageType: Int get() = 1000
+    open val downloadPath: String get() = resourceId
+
+    override fun toString(): String {
+        return "[$resourceId]"
+    }
 
     override fun eq(other: Message): Boolean {
-        return other is Image && other.id == this.id
+        return other.toString() == this.toString()
     }
 }
 
-inline val Image.idValue: String get() = id.value
-
-inline class ImageId0x06(override inline val value: String) : ImageId {
-    override fun toString(): String = "ImageId($value)"
-}
-
-/**
- * 一般是群的图片的 id.
- */
-class ImageId0x03 constructor(override inline val value: String, inline val uniqueId: UInt, inline val height: Int, inline val width: Int) :
-    ImageId {
-    override fun toString(): String = "ImageId(value=$value, uniqueId=${uniqueId}, height=$height, width=$width)"
-
-    val md5: ByteArray
-        get() = this.value
-            .substringAfter("{").substringBefore("}")
-            .replace("-", "")
-            .chunked(2)
-            .map { (it[0] + it[1].toString()).toUByte(16).toByte() }
-            .toByteArray().also { check(it.size == 16) }
-}
-
-@Suppress("FunctionName", "NOTHING_TO_INLINE")
-inline fun ImageId(value: String): ImageId = ImageId0x06(value)
-
-@Suppress("FunctionName", "NOTHING_TO_INLINE")
-inline fun ImageId(value: String, uniqueId: UInt, height: Int, width: Int): ImageId =
-    ImageId0x03(value, uniqueId, height, width)
-
-
-/**
- * 图片的标识符. 由图片的数据产生.
- * 对于群, [value] 类似于 `{F61593B5-5B98-1798-3F47-2A91D32ED2FC}.jpg`, 由图片文件 MD5 直接产生.
- * 对于好友, [value] 类似于 `/01ee6426-5ff1-4cf0-8278-e8634d2909ef`, 由服务器返回.
- *
- * @see ExternalImage.groupImageId 群图片的 [ImageId] 获取
- * @see FriendImagePacket 好友图片的 [ImageId] 获取
- */
-interface ImageId {
-    val value: String
-}
-
-fun ImageId.checkLength() = check(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
-fun ImageId.requireLength() = require(value.length == 37 || value.length == 42) { "Illegal ImageId length" }
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun ImageId.image(): Image =
-    Image(this)
-
-suspend inline fun ImageId.sendTo(contact: Contact) = contact.sendMessage(this.image())
+open class NotOnlineImageFromFile(
+    override val resourceId: String,
+    override val md5: ByteArray,
+    override val filepath: String,
+    override val fileLength: Int,
+    override val height: Int,
+    override val width: Int,
+    override val bizType: Int = 0,
+    override val imageType: Int = 1000,
+    override val downloadPath: String = resourceId
+) : NotOnlineImage()
