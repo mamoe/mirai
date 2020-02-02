@@ -105,12 +105,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
 
-        println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+       // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000)
     }
 
     override suspend fun init() {
-        //  delay(5000)
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
 
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
@@ -122,6 +121,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         //val msg = MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<MessageSvc.PbGetMsg.Response>()
         //println(msg.contentToString())
 
+
+        val startTime = currentTimeMillis
         try {
             bot.logger.info("开始加载好友信息")
             var currentFriendCount = 0
@@ -146,13 +147,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 if (currentFriendCount >= totalFriendCount) {
                     break
                 }
-                delay(200)
+                // delay(200)
             }
             bot.logger.info("好友列表加载完成, 共 ${currentFriendCount}个")
         } catch (e: Exception) {
             bot.logger.info("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
         }
 
+        val friendLoadFinish = currentTimeMillis
+        val groupInfo = mutableMapOf<Long, Int>()
         try {
             bot.logger.info("开始加载群组列表与群成员列表")
             val troopData = FriendList.GetTroopListSimplify(
@@ -185,16 +188,41 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             toGet.forEach {
                 try {
                     getTroopMemberList(it.key, it.value, it.key.owner.id)
+                    groupInfo[it.key.groupCode] = it.value.size
                 } catch (e: Exception) {
+                    groupInfo[it.key.groupCode] = -1
                     bot.logger.info("群${it.key.groupCode}的列表拉取失败, 将采用动态加入")
                 }
-                delay(200)
+                //delay(200)
             }
             bot.logger.info("群组列表与群成员加载完成, 共 ${troopData.groups.size}个")
         } catch (e: Exception) {
             bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
         }
 
+        //===log===//
+        fun fillUntil9(long: Number): String {
+            val x = long.toString()
+            return " ".repeat(
+                if (9 - x.length > 0) {
+                    9 - x.length
+                } else {
+                    0
+                }
+            ) + x
+        }
+
+        bot.logger.info("====================Mirai Bot List初始化完毕====================")
+        bot.logger.info("好友数量: ${fillUntil9(bot.qqs.size)}\t\t\t 加载时间: ${friendLoadFinish - startTime}ms")
+        bot.logger.info("加入群组: ${fillUntil9(bot.groups.size)}\t\t\t 加载时间: ${currentTimeMillis - friendLoadFinish}ms")
+        groupInfo.forEach {
+            if (it.value == -1) {
+                bot.logger.error("群组号码: ${fillUntil9(it.key)}\t\t\t 成员数量加载失败")
+            } else {
+                bot.logger.info("群组号码: ${fillUntil9(it.key)}\t\t\t 成员数量: ${it.value}")
+            }
+        }
+        bot.logger.info("====================Mirai Bot List初始化完毕====================")
     }
 
     suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long): ContactList<Member> {
