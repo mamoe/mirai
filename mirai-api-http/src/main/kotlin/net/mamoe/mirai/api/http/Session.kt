@@ -1,9 +1,11 @@
 package net.mamoe.mirai.api.http
 
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import java.lang.StringBuilder
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.api.http.queue.MessageQueue
+import net.mamoe.mirai.event.Listener
+import net.mamoe.mirai.event.subscribeMessages
+import net.mamoe.mirai.message.MessagePacket
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -44,6 +46,10 @@ object SessionManager {
         }
     }
 
+    operator fun get(sessionKey: String) = allSession[sessionKey]
+
+    fun containSession(sessionKey: String): Boolean = allSession.containsKey(sessionKey)
+
     fun closeSession(sessionKey: String) = allSession.remove(sessionKey)?.also {it.close() }
 
     fun closeSession(session: Session) = closeSession(session.key)
@@ -69,7 +75,7 @@ abstract class Session internal constructor(
     val key:String = generateSessionKey()
 
 
-    internal fun close(){
+    internal open fun close(){
         supervisorJob.complete()
     }
 }
@@ -89,11 +95,20 @@ class TempSession internal constructor(coroutineContext: CoroutineContext) : Ses
  * 任何[TempSession]认证后转化为一个[AuthedSession]
  * 在这一步[AuthedSession]应该已经有assigned的bot
  */
-class AuthedSession internal constructor(val botNumber:Int, coroutineContext: CoroutineContext):Session(coroutineContext){
+class AuthedSession internal constructor(val bot: Bot, coroutineContext: CoroutineContext):Session(coroutineContext){
 
+    val messageQueue = MessageQueue()
+    private val _listener : Listener<MessagePacket<*, *>>
 
+    init {
+        bot.subscribeMessages {
+            _listener = always { this.run(messageQueue::add) }
+        }
+    }
+
+    override fun close() {
+        _listener.complete()
+        super.close()
+    }
 }
-
-
-
 
