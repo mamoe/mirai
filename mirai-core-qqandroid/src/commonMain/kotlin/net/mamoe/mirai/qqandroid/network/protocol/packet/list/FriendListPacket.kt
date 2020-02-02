@@ -14,7 +14,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.io.discardExact
 
@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.io.discardExact
 internal class FriendList {
 
     internal object GetTroopMemberList :
-        PacketFactory<GetTroopMemberList.Response>("friendlist.GetTroopMemberListReq") {
+        OutgoingPacketFactory<GetTroopMemberList.Response>("friendlist.GetTroopMemberListReq") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopMemberList.Response {
             TODO()
         }
@@ -65,7 +65,7 @@ internal class FriendList {
     }
 
     internal object GetTroopListSimplify :
-        PacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
+        OutgoingPacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopListSimplify.Response {
             val res = this.decodeUniPacket(GetTroopListRespV2.serializer())
             return Response(res.vecTroopList.orEmpty())
@@ -109,7 +109,8 @@ internal class FriendList {
             }
         }
     }
-    internal object GetFriendGroupList : PacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
+
+    internal object GetFriendGroupList : OutgoingPacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
         class Response(
             val totalFriendCount: Short,

@@ -2,18 +2,18 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.writeFully
-import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352Packet
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.GetImgUrlReq
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
 
-internal object ImageDownPacket : PacketFactory<ImageDownPacket.ImageDownPacketResponse>("LongConn.OffPicDown") {
+internal object ImageDownPacket : OutgoingPacketFactory<ImageDownPacket.ImageDownPacketResponse>("LongConn.OffPicDown") {
 
     operator fun invoke(client: QQAndroidClient, req: GetImgUrlReq): OutgoingPacket {
         // TODO: 2020/1/24 测试: bodyType, subAppId

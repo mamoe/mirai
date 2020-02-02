@@ -4,10 +4,7 @@ package androidPacketTests
 
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.qqandroid.network.protocol.packet.DECRYPTER_16_ZERO
-import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories
-import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
-import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
+import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
@@ -99,7 +96,7 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
                 try {
                     bytes.toReadPacket().parseOicqResponse {
                         debugIfFail {
-                            if (it.packetFactory.commandName == "wtlogin.login") {
+                            if ((it.packetFactory as? OutgoingPacketFactory<*>)?.commandName == "wtlogin.login") {
                                 DebugLogger.info("服务器发来了 wtlogin.login. 正在解析 key")
                                 try {
                                     val subCommand = readUShort().toInt()

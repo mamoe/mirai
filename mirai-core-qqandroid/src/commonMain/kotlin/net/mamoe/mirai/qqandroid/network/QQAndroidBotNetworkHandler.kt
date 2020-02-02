@@ -104,7 +104,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override suspend fun init() {
-        delay(5000)
+        //  delay(5000)
 
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
@@ -126,7 +126,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     20,
                     0,
                     0
-                ).sendAndExpect<FriendList.GetFriendGroupList.Response>()
+                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 1000)
 
                 totalFriendCount = data.totalFriendCount
                 data.friendList.forEach {
@@ -150,7 +150,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             bot.logger.info("开始加载组信息")
             val troopData = FriendList.GetTroopListSimplify(
                 bot.client
-            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>()
+            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 1000)
             println(troopData.contentToString())
         } catch (e: Exception) {
             bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
@@ -235,7 +235,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         bot.logger.info("Received packet: $packet")
 
         packetFactory?.run {
-            bot.handle(packet)
+            when (this) {
+                is OutgoingPacketFactory<P> -> bot.handle(packet)
+                is IncomingPacketFactory<P> -> bot.handle(packet, sequenceId)?.sendWithoutExpect()
+            }
         }
     }
 
