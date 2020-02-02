@@ -132,7 +132,10 @@ open class LockFreeLinkedList<E> {
             if (toRemove.isRemoved()) {
                 continue
             }
-            toRemove.removed.value = true // logically remove: all the operations will recognize this node invalid
+            if (!toRemove.removed.compareAndSet(false, true)) {
+                // logically remove: all the operations will recognize this node invalid
+                continue
+            }
 
 
             // physically remove: try to fix the link
