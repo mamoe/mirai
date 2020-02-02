@@ -12,6 +12,7 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
@@ -172,13 +173,18 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         contactList
                     )
                 group.owner =
-                    MemberImpl(QQImpl(bot, EmptyCoroutineContext, it.dwGroupOwnerUin!!), group, EmptyCoroutineContext)
+                    MemberImpl(
+                        QQImpl(bot, EmptyCoroutineContext, it.dwGroupOwnerUin!!),
+                        group,
+                        EmptyCoroutineContext,
+                        MemberPermission.OWNER
+                    )
                 toGet[group] = contactList
                 bot.groups.delegate.addLast(group)
             }
             toGet.forEach {
                 try {
-                    getTroopMemberList(it.key, it.value)
+                    getTroopMemberList(it.key, it.value, it.key.owner.id)
                 } catch (e: Exception) {
                     bot.logger.info("群${it.key.groupCode}的列表拉取失败, 将采用动态加入")
                 }
@@ -191,7 +197,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     }
 
-    suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>): ContactList<Member> {
+    suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long): ContactList<Member> {
         bot.logger.info("开始获取群[${group.groupCode}]成员列表")
         var size = 0
         var nextUin = 0L
@@ -203,13 +209,26 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 nextUin
             ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
             data.members.forEach {
-                list.delegate.addLast(
-                    MemberImpl(
-                        QQImpl(bot, EmptyCoroutineContext, it.memberUin),
-                        group,
-                        EmptyCoroutineContext
+                if (it.memberUin != bot.uin) {
+                    list.delegate.addLast(
+                        MemberImpl(
+                            QQImpl(bot, EmptyCoroutineContext, it.memberUin),
+                            group,
+                            EmptyCoroutineContext,
+                            when {
+                                it.memberUin == owner -> {
+                                    MemberPermission.OWNER
+                                }
+                                it.dwFlag == 1L -> {
+                                    MemberPermission.ADMINISTRATOR
+                                }
+                                else -> {
+                                    MemberPermission.MEMBER
+                                }
+                            }
+                        )
                     )
-                )
+                }
             }
             size += data.members.size
             nextUin = data.nextUin
