@@ -259,13 +259,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         if (cache == null) {
             // 没有缓存
             var length: Int = rawInput.readInt() - 4
-            if (length and 0xFFFF != length) {
-                cachedPacket.value = rawInput
-                expectingRemainingLength = length.toLong() and 0xFFFF
-                // 丢包了. 后半部分包提前到达
-                PacketLogger.error { "丢包了." }
-                return
-            }
             if (rawInput.remaining == length.toLong()) {
                 // 捷径: 当包长度正好, 直接传递剩余数据.
                 cachedPacketTimeoutJob?.cancel()
@@ -296,13 +289,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         } else {
             // 有缓存
             val expectingLength = expectingRemainingLength
-            if (expectingLength and 0xFFFF != expectingLength) {
-                processPacket(buildPacket {
-                    writePacket(rawInput)
-                    writeInt(expectingLength.toInt())
-                    writePacket(cache)
-                })
-            }
             if (rawInput.remaining >= expectingLength) {
                 // 剩余长度够, 连接上去, 处理这个包.
                 parsePacketAsync(buildPacket {

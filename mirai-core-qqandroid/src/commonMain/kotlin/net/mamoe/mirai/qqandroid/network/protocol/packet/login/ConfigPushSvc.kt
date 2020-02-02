@@ -1,7 +1,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.JceCharset
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
@@ -21,7 +20,6 @@ internal class ConfigPushSvc {
         responseCommandName = "ConfigPushSvc.PushResp"
     ) {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqJceStruct {
-            discardExact(4)
             return decodeUniPacket(PushReqJceStruct.serializer())
         }
 

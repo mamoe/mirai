@@ -18,7 +18,7 @@ internal object ImageUpPacket : OutgoingPacketFactory<ImageUpPacket.ImageUpPacke
     operator fun invoke(client: QQAndroidClient, req: UploadImgReq): OutgoingPacket {
         // TODO: 2020/1/24 测试: bodyType, subAppId
         return buildLoginOutgoingPacket(client, key = client.wLoginSigInfo.d2Key, bodyType = 1) {
-            writeSsoPacket(client, subAppId = 0, commandName = ImageDownPacket.commandName, sequenceId = it) {
+            writeSsoPacket(client, subAppId = 0, commandName = commandName, sequenceId = it) {
                 val data = ProtoBufWithNullableSupport.dump(
                     Cmd0x352Packet.serializer(),
                     Cmd0x352Packet.createByImageRequest(req)

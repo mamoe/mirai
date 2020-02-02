@@ -195,26 +195,28 @@ internal object KnownPacketFactories {
                     return
                 }
 
-                when (flag2) {
-                    1 ->//it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
-                        when (it.packetFactory) {
-                            is OutgoingPacketFactory<*> -> consumer(
-                                it.packetFactory as OutgoingPacketFactory<T>,
-                                it.packetFactory.run { decode(bot, it.data) },
-                                it.packetFactory.commandName,
-                                it.sequenceId
-                            )
-                            is IncomingPacketFactory<*> -> consumer(
-                                it.packetFactory as IncomingPacketFactory<T>,
-                                it.packetFactory.run { decode(bot, it.data, it.sequenceId) },
-                                it.packetFactory.receivingCommandName,
-                                it.sequenceId
-                            )
-                        }
+                it.data.withUse {
+                    when (flag2) {
+                        1 ->//it.data.parseUniResponse(bot, it.packetFactory, it.sequenceId, consumer)
+                            when (it.packetFactory) {
+                                is OutgoingPacketFactory<*> -> consumer(
+                                    it.packetFactory as OutgoingPacketFactory<T>,
+                                    it.packetFactory.run { decode(bot, it.data) },
+                                    it.packetFactory.commandName,
+                                    it.sequenceId
+                                )
+                                is IncomingPacketFactory<*> -> consumer(
+                                    it.packetFactory as IncomingPacketFactory<T>,
+                                    it.packetFactory.run { decode(bot, it.data, it.sequenceId) },
+                                    it.packetFactory.receivingCommandName,
+                                    it.sequenceId
+                                )
+                            }
 
-                    // for oicq response, factory is always OutgoingPacketFactory
-                    2 -> it.data.parseOicqResponse(bot, it.packetFactory as OutgoingPacketFactory<T>, it.sequenceId, consumer)
-                    else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
+                        // for oicq response, factory is always OutgoingPacketFactory
+                        2 -> it.data.parseOicqResponse(bot, it.packetFactory as OutgoingPacketFactory<T>, it.sequenceId, consumer)
+                        else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
+                    }
                 }
             } ?: inline {
                 // 无法解析
@@ -261,12 +263,29 @@ internal object KnownPacketFactories {
         }
 
         val packet = when (dataCompressed) {
-            0 -> input
+            0 -> {
+                val size = input.readInt().toLong() and 0xffffffff
+                if (size == input.remaining || size == input.remaining + 4) {
+                    input
+                } else {
+                    buildPacket {
+                        writeInt(size.toInt())
+                        writePacket(input)
+                    }
+                }
+            }
             1 -> {
                 input.discardExact(4)
                 input.useBytes { data, length ->
-                    data.unzip(length = length)
-                }.toReadPacket()
+                    data.unzip(length = length).let {
+                        val size = it.toInt()
+                        if (size == it.size || size == it.size + 4) {
+                            it.toReadPacket(offset = 4)
+                        } else {
+                            it.toReadPacket()
+                        }
+                    }
+                }
             }
             else -> error("unknown dataCompressed flag: $dataCompressed")
         }
@@ -284,49 +303,47 @@ internal object KnownPacketFactories {
         ssoSequenceId: Int,
         consumer: PacketConsumer<T>
     ) {
-        readPacket(readInt() - 4).withUse {
-            check(readByte().toInt() == 2)
-            this.discardExact(2) // 27 + 2 + body.size
-            this.discardExact(2) // const, =8001
-            this.readUShort() // commandId
-            this.readShort() // const, =0x0001
-            this.readUInt().toLong() // qq
-            val encryptionMethod = this.readUShort().toInt()
+        check(readByte().toInt() == 2)
+        this.discardExact(2) // 27 + 2 + body.size
+        this.discardExact(2) // const, =8001
+        this.readUShort() // commandId
+        this.readShort() // const, =0x0001
+        this.readUInt().toLong() // qq
+        val encryptionMethod = this.readUShort().toInt()
 
-            this.discardExact(1) // const = 0
-            val packet = when (encryptionMethod) {
-                4 -> { // peer public key, ECDH
-                    var data = this.decryptBy(bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
+        this.discardExact(1) // const = 0
+        val packet = when (encryptionMethod) {
+            4 -> { // peer public key, ECDH
+                var data = this.decryptBy(bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
 
-                    val peerShareKey = bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
-                    data = data.decryptBy(peerShareKey)
+                val peerShareKey = bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
+                data = data.decryptBy(peerShareKey)
 
-                    packetFactory.decode(bot, data)
-                }
-                0 -> {
-                    val data = if (bot.client.loginState == 0) {
-                        ByteArrayPool.useInstance { byteArrayBuffer ->
-                            val size = (this.remaining - 1).toInt()
-                            this.readFully(byteArrayBuffer, 0, size)
-
-                            runCatching {
-                                byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.initialShareKey, size)
-                            }.getOrElse {
-                                byteArrayBuffer.decryptBy(bot.client.randomKey, size)
-                            }.toReadPacket() // 这里实际上应该用 privateKey(另一个random出来的key)
-                        }
-                    } else {
-                        this.decryptBy(bot.client.randomKey, 0, (this.remaining - 1).toInt())
-                    }
-
-                    packetFactory.decode(bot, data)
-
-                }
-                else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
+                packetFactory.decode(bot, data)
             }
+            0 -> {
+                val data = if (bot.client.loginState == 0) {
+                    ByteArrayPool.useInstance { byteArrayBuffer ->
+                        val size = (this.remaining - 1).toInt()
+                        this.readFully(byteArrayBuffer, 0, size)
 
-            consumer(packetFactory, packet, packetFactory.commandName, ssoSequenceId)
+                        runCatching {
+                            byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.initialShareKey, size)
+                        }.getOrElse {
+                            byteArrayBuffer.decryptBy(bot.client.randomKey, size)
+                        }.toReadPacket() // 这里实际上应该用 privateKey(另一个random出来的key)
+                    }
+                } else {
+                    this.decryptBy(bot.client.randomKey, 0, (this.remaining - 1).toInt())
+                }
+
+                packetFactory.decode(bot, data)
+
+            }
+            else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
         }
+
+        consumer(packetFactory, packet, packetFactory.commandName, ssoSequenceId)
     }
 
 }

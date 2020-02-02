@@ -10,6 +10,7 @@ import kotlinx.io.streams.writePacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
+import java.io.IOException
 import java.net.Socket
 
 /**
@@ -41,8 +42,12 @@ actual class PlatformSocket : Closeable {
      */
     actual suspend inline fun send(packet: ByteReadPacket) {
         withContext(Dispatchers.IO) {
-            writeChannel.writePacket(packet)
-            writeChannel.flush()
+            try {
+                writeChannel.writePacket(packet)
+                writeChannel.flush()
+            } catch (e: IOException) {
+                throw SendPacketInternalException(e)
+            }
         }
     }
 
@@ -51,7 +56,11 @@ actual class PlatformSocket : Closeable {
      */
     actual suspend inline fun read(): ByteReadPacket {
         return withContext(Dispatchers.IO) {
-            readChannel.readPacketAtMost(Long.MAX_VALUE)
+            try {
+                readChannel.readPacketAtMost(Long.MAX_VALUE)
+            } catch (e: IOException) {
+                throw ReadPacketInternalException(e)
+            }
         }
     }
 
