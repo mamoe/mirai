@@ -1,44 +1,38 @@
 package net.mamoe.mirai.utils.io
 
-import io.ktor.network.selector.ActorSelectorManager
-import io.ktor.network.sockets.Socket
-import io.ktor.network.sockets.aSocket
-import io.ktor.network.sockets.openReadChannel
-import io.ktor.network.sockets.openWriteChannel
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.coroutines.io.ByteWriteChannel
-import kotlinx.coroutines.io.readAvailable
+import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
-import kotlinx.io.pool.useInstance
+import kotlinx.io.core.ExperimentalIoApi
+import kotlinx.io.streams.readPacketAtMost
+import kotlinx.io.streams.writePacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.net.Socket
 
 /**
  * 多平台适配的 TCP Socket.
  */
 @MiraiInternalAPI
 actual class PlatformSocket : Closeable {
-    @UseExperimental(KtorExperimentalAPI::class)
-    lateinit var socket: Socket
+    private lateinit var socket: Socket
 
-    @UseExperimental(KtorExperimentalAPI::class)
     actual val isOpen: Boolean
-        get() = socket.socketContext.isActive
+        get() = socket.isConnected
 
-    override fun close() = socket.dispose()
+    override fun close() = socket.close()
 
     @PublishedApi
-    internal lateinit var writeChannel: ByteWriteChannel
+    internal lateinit var writeChannel: BufferedOutputStream
     @PublishedApi
-    internal lateinit var readChannel: ByteReadChannel
+    internal lateinit var readChannel: BufferedInputStream
 
     actual suspend inline fun send(packet: ByteArray, offset: Int, length: Int) {
-        try {
-            writeChannel.writeFully(packet, offset, length)
-        } catch (e: Exception) {
-            throw SendPacketInternalException(e)
+        withContext(Dispatchers.IO) {
+            writeChannel.write(packet, offset, length)
+            writeChannel.flush()
         }
     }
 
@@ -46,10 +40,9 @@ actual class PlatformSocket : Closeable {
      * @throws SendPacketInternalException
      */
     actual suspend inline fun send(packet: ByteReadPacket) {
-        try {
+        withContext(Dispatchers.IO) {
             writeChannel.writePacket(packet)
-        } catch (e: Exception) {
-            throw SendPacketInternalException(e)
+            writeChannel.flush()
         }
     }
 
@@ -57,21 +50,17 @@ actual class PlatformSocket : Closeable {
      * @throws ReadPacketInternalException
      */
     actual suspend inline fun read(): ByteReadPacket {
-        // do not use readChannel.readRemaining() !!! this function never returns
-        ByteArrayPool.useInstance { buffer ->
-            val count = try {
-                readChannel.readAvailable(buffer)
-            } catch (e: Exception) {
-                throw ReadPacketInternalException(e)
-            }
-            return buffer.toReadPacket(0, count)
+        return withContext(Dispatchers.IO) {
+            readChannel.readPacketAtMost(Long.MAX_VALUE)
         }
     }
 
-    @UseExperimental(KtorExperimentalAPI::class)
+    @UseExperimental(ExperimentalIoApi::class)
     actual suspend fun connect(serverHost: String, serverPort: Int) {
-        socket = aSocket(ActorSelectorManager(Dispatchers.IO)).tcp().connect(serverHost, serverPort)
-        writeChannel = socket.openWriteChannel(true)
-        readChannel = socket.openReadChannel()
+        withContext(Dispatchers.IO) {
+            socket = Socket(serverHost, serverPort)
+            readChannel = socket.getInputStream().buffered()
+            writeChannel = socket.getOutputStream().buffered()
+        }
     }
 }
