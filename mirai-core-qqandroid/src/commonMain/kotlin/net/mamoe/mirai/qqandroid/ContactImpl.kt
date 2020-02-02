@@ -53,13 +53,12 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 internal class MemberImpl(
     qq: QQImpl,
     group: GroupImpl,
-    override val coroutineContext: CoroutineContext
+    override val coroutineContext: CoroutineContext,
+    override val permission: MemberPermission
 ) : ContactImpl(), Member, QQ by qq {
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
-    override val permission: MemberPermission
-        get() = TODO("not implemented")
 
     override suspend fun mute(durationSeconds: Int): Boolean {
         TODO("not implemented")
@@ -84,9 +83,7 @@ internal class GroupImpl(
     override lateinit var owner: Member
 
     override fun getMember(id: Long): Member =
-        members.delegate.filteringGetOrAdd(
-            { it.id == id },
-            { MemberImpl(bot.getQQ(id) as QQImpl, this, coroutineContext) })
+        members.delegate.filterGetOrNull { it.id == id } ?: error("Failed to find Member${id} in group ${groupCode}")
 
     override suspend fun updateGroupInfo(): net.mamoe.mirai.data.GroupInfo {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
