@@ -19,7 +19,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
-import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.qqandroid.utils.toRichTextElems
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -229,7 +232,7 @@ internal class MessageSvc {
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
                     //msgRand = Random.nextInt() and 0x7FFF,
-                    syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() } ?: EMPTY_BYTE_ARRAY
+                    syncCookie = SyncCookie(time = currentTimeSeconds).toByteArray(SyncCookie.serializer())
                     //SyncCookie(currentTimeSeconds, Random.nextLong().absoluteValue, Random.nextLong().absoluteValue).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )

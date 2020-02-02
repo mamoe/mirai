@@ -29,6 +29,7 @@ import net.mamoe.mirai.utils.io.*
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.Volatile
 
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(MiraiInternalAPI::class)
@@ -123,7 +124,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 val data = FriendList.GetFriendGroupList(
                     bot.client,
                     currentFriendCount,
-                    20,
+                    150,
                     0,
                     0
                 ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 1000)
@@ -161,6 +162,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 缓存超时处理的 [Job]. 超时后将清空缓存, 以免阻碍后续包的处理
      */
+    @Volatile
     private var cachedPacketTimeoutJob: Job? = null
     /**
      * 缓存的包
@@ -169,6 +171,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 缓存的包还差多少长度
      */
+    @Volatile
     private var expectingRemainingLength: Long = 0
 
     /**
@@ -256,8 +259,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         if (cache == null) {
             // 没有缓存
             var length: Int = rawInput.readInt() - 4
-            if (length < 0) {
+            if (length and 0xFFFF != length) {
+                cachedPacket.value = rawInput
+                expectingRemainingLength = length.toLong() and 0xFFFF
                 // 丢包了. 后半部分包提前到达
+                PacketLogger.error { "丢包了." }
                 return
             }
             if (rawInput.remaining == length.toLong()) {
@@ -267,7 +273,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 return
             }
             // 循环所有完整的包
-            while (rawInput.remaining > length) {
+            while (rawInput.remaining >= length) {
                 parsePacketAsync(rawInput.readPacket(length))
 
                 length = rawInput.readInt() - 4
@@ -284,20 +290,27 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         } else {
             // 有缓存
-
-            if (rawInput.remaining >= expectingRemainingLength) {
+            val expectingLength = expectingRemainingLength
+            if (expectingLength and 0xFFFF != expectingLength) {
+                processPacket(buildPacket {
+                    writePacket(rawInput)
+                    writeInt(expectingLength.toInt())
+                    writePacket(cache)
+                })
+            }
+            if (rawInput.remaining >= expectingLength) {
                 // 剩余长度够, 连接上去, 处理这个包.
                 parsePacketAsync(buildPacket {
                     writePacket(cache)
-                    writePacket(rawInput, expectingRemainingLength)
+                    writePacket(rawInput, expectingLength)
                 })
                 cachedPacket.value = null // 缺少的长度已经给上了.
+                cachedPacketTimeoutJob?.cancel()
 
                 if (rawInput.remaining != 0L) {
                     return processPacket(rawInput) // 继续处理剩下内容
                 } else {
                     // 处理好了.
-                    cachedPacketTimeoutJob?.cancel()
                     return
                 }
             } else {

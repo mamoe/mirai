@@ -147,6 +147,7 @@ internal object KnownPacketFactories {
         // login
         val flag1 = readInt()
 
+        PacketLogger.verbose("开始处理一个包")
         PacketLogger.verbose("flag1(0A/0B) = ${flag1.toUByte().toUHexString()}")
         // 00 00 05 30
         // 00 00 00 0A // flag 1
@@ -240,10 +241,13 @@ internal object KnownPacketFactories {
         val ssoSequenceId: Int
         val dataCompressed: Int
         // head
-        input.readIoBuffer(input.readInt() - 4).withUse {
+        input.readPacket(input.readInt() - 4).withUse {
             ssoSequenceId = readInt()
             PacketLogger.verbose("sequenceId = $ssoSequenceId")
-            check(readInt() == 0)
+            val returnCode = readInt()
+            if (returnCode != 0) {
+                error("returnCode = $returnCode")
+            }
             val extraData = readBytes(readInt() - 4)
             PacketLogger.verbose("(sso/inner)extraData = ${extraData.toUHexString()}")
 
@@ -280,7 +284,7 @@ internal object KnownPacketFactories {
         ssoSequenceId: Int,
         consumer: PacketConsumer<T>
     ) {
-        readIoBuffer(readInt() - 4).withUse {
+        readPacket(readInt() - 4).withUse {
             check(readByte().toInt() == 2)
             this.discardExact(2) // 27 + 2 + body.size
             this.discardExact(2) // const, =8001
@@ -292,30 +296,30 @@ internal object KnownPacketFactories {
             this.discardExact(1) // const = 0
             val packet = when (encryptionMethod) {
                 4 -> { // peer public key, ECDH
-                    var data = this.decryptBy(bot.client.ecdh.keyPair.initialShareKey, this.readRemaining - 1)
+                    var data = this.decryptBy(bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
 
                     val peerShareKey = bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
                     data = data.decryptBy(peerShareKey)
 
-                    packetFactory.decode(bot, data.toReadPacket())
+                    packetFactory.decode(bot, data)
                 }
                 0 -> {
                     val data = if (bot.client.loginState == 0) {
                         ByteArrayPool.useInstance { byteArrayBuffer ->
-                            val size = this.readRemaining - 1
+                            val size = (this.remaining - 1).toInt()
                             this.readFully(byteArrayBuffer, 0, size)
 
                             runCatching {
                                 byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.initialShareKey, size)
                             }.getOrElse {
                                 byteArrayBuffer.decryptBy(bot.client.randomKey, size)
-                            } // 这里实际上应该用 privateKey(另一个random出来的key)
+                            }.toReadPacket() // 这里实际上应该用 privateKey(另一个random出来的key)
                         }
                     } else {
-                        this.decryptBy(bot.client.randomKey, 0, this.readRemaining - 1)
+                        this.decryptBy(bot.client.randomKey, 0, (this.remaining - 1).toInt())
                     }
 
-                    packetFactory.decode(bot, data.toReadPacket())
+                    packetFactory.decode(bot, data)
 
                 }
                 else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
@@ -336,5 +340,17 @@ internal inline fun <I : IoBuffer, R> I.withUse(block: I.() -> R): R {
         block(this)
     } finally {
         this.release(IoBuffer.Pool)
+    }
+}
+
+@UseExperimental(ExperimentalContracts::class)
+internal inline fun <I : ByteReadPacket, R> I.withUse(block: I.() -> R): R {
+    contract {
+        callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+    }
+    return try {
+        block(this)
+    } finally {
+        this.close()
     }
 }
