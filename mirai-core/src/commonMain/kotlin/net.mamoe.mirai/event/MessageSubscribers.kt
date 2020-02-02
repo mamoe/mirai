@@ -398,8 +398,10 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是来自这个群的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    inline fun sentFrom(groupId: Long, crossinline onEvent: MessageListener<T>): Listener<T> =
-        content({ this is GroupMessage && this.group.id == groupId }, onEvent)
+    inline fun sentFrom(groupId: Long, crossinline onEvent: MessageListener<GroupMessage>): Listener<T> =
+        content({ this is GroupMessage && this.group.id == groupId }){
+            onEvent(this as GroupMessage, it)
+        }
 
     /**
      * 如果消息内容包含 [M] 类型的 [Message]
