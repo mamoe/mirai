@@ -9,6 +9,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 internal abstract class ContactImpl : Contact
 
@@ -73,18 +74,14 @@ internal class MemberImpl(
 
 @UseExperimental(MiraiInternalAPI::class)
 internal class GroupImpl(
-    bot: QQAndroidBot, override val coroutineContext: CoroutineContext, override val id: Long
+    bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
+    override val id: Long,
+    override val groupCode: Long,
+    override var name: String,
+    override var announcement: String,
+    override var members: ContactList<Member>
 ) : ContactImpl(), Group {
     override lateinit var owner: Member
-    override lateinit var name: String
-    override lateinit var announcement: String
-    override lateinit var members: ContactList<Member>
-
-    init {
-        members = ContactList(LockFreeLinkedList())
-    }
-
-    override val internalId: GroupInternalId = GroupId(id).toInternalId()
 
     override fun getMember(id: Long): Member =
         members.delegate.filteringGetOrAdd(

@@ -116,7 +116,8 @@ internal object KnownPacketFactories {
         MessageSvc.PushForceOffline,
         MessageSvc.PbSendMsg,
         FriendList.GetFriendGroupList,
-        FriendList.GetTroopListSimplify
+        FriendList.GetTroopListSimplify,
+        FriendList.GetTroopMemberList
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(
