@@ -36,7 +36,7 @@ interface Contact : CoroutineScope {
      */
     suspend fun sendMessage(message: MessageChain)
 
-    suspend fun uploadImage(image: ExternalImage): ImageId
+    suspend fun uploadImage(image: ExternalImage): Image
 }
 
 suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())

@@ -6,7 +6,6 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.EventPacket
-import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -65,17 +64,14 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
 
     suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
     suspend inline fun Image.send() = this.sendTo(subject)
-    suspend inline fun ImageId.send() = this.sendTo(subject)
     suspend inline fun Message.send() = this.sendTo(subject)
     suspend inline fun String.send() = this.toMessage().sendTo(subject)
 
     // endregion
 
     // region Image download
-    suspend inline fun Image.getLink(): ImageLink = with(bot) { getLink() }
-
-    suspend inline fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
-    suspend inline fun Image.download(): ByteReadPacket = getLink().download()
+    suspend inline fun Image.downloadAsByteArray(): ByteArray = bot.run { downloadAsByteArray() }
+    suspend inline fun Image.download(): ByteReadPacket = bot.run { download() }
     // endregion
 
     fun At.qq(): QQ = bot.getQQ(this.target)

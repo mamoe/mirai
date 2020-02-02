@@ -18,16 +18,15 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.QQImpl
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.Volatile
@@ -107,6 +106,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     override suspend fun init() {
         //  delay(5000)
+        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
 
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {

@@ -145,7 +145,7 @@ internal class MsgComm : ProtoBuf {
         @SerialId(1) val lastReadTime: Int = 0,
         @SerialId(2) val peerUin: Long = 0L,
         @SerialId(3) val msgCompleted: Int = 0,
-        @SerialId(4) val msg: List<Msg>,
+        @SerialId(4) val msg: List<Msg>? = null,
         @SerialId(5) val unreadMsgNum: Int = 0,
         @SerialId(8) val c2cType: Int = 0,
         @SerialId(9) val serviceType: Int = 0,
