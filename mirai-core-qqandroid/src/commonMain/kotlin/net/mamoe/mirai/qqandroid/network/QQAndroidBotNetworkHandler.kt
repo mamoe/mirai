@@ -176,8 +176,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
+    @UseExperimental(ExperimentalCoroutinesApi::class)
     fun parsePacketAsync(input: Input): Job {
-        return this.launch {
+        return this.launch(start = CoroutineStart.ATOMIC) {
             input.use { parsePacket(it) }
         }
     }
@@ -340,10 +341,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 bot.tryReinitializeNetworkHandler(e)
                 return
             }
-            launch(CoroutineName("Incoming Packet handler"), start = CoroutineStart.ATOMIC) {
-                packetReceiveLock.withLock {
-                    processPacket(rawInput)
-                }
+            packetReceiveLock.withLock {
+                processPacket(rawInput)
             }
         }
     }
