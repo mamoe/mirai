@@ -1,8 +1,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.list
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.contact.GroupId
-import net.mamoe.mirai.contact.toInternalId
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
