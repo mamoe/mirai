@@ -24,8 +24,8 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 dependencies {
     api(project(":mirai-core"))
-    api(project(":mirai-core-timpc"))
-    runtimeOnly(files("../mirai-core-timpc/build/classes/kotlin/jvm/main"))
+    api(project(":mirai-core-qqandroid"))
+    runtimeOnly(files("../mirai-core-qqandroid/build/classes/kotlin/jvm/main"))
     runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main"))
     api(kotlin("serialization"))
     // classpath is not set correctly by IDE

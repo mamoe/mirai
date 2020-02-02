@@ -4,6 +4,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -29,7 +30,6 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.hexToBytes
-import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -39,14 +39,14 @@ internal class MessageSvc {
      */
     internal object PushNotify : IncomingPacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): RequestPushNotify {
-            discardExact(4)
+            discardExact(4) // don't remove
 
             return decodeUniPacket(RequestPushNotify.serializer())
         }
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
             network.run {
-                return PbGetMsg(client, MsgSvc.SyncFlag.START, packet.stMsgInfo?.uMsgTime ?: 0)
+                return PbGetMsg(client, MsgSvc.SyncFlag.START, packet.stMsgInfo?.uMsgTime ?: currentTimeSeconds)
             }
         }
     }
@@ -57,9 +57,6 @@ internal class MessageSvc {
      */
     @UseExperimental(MiraiInternalAPI::class)
     internal object PbGetMsg : OutgoingPacketFactory<PbGetMsg.Response>("MessageSvc.PbGetMsg") {
-        val EXTRA_DATA =
-            "08 00 12 33 6D 6F 64 65 6C 3A 78 69 67 6F 6D 69 20 36 3B 6F 73 3A 32 32 3B 76 65 72 73 69 6F 6E 3A 76 32 6D 61 6E 3A 78 69 61 6F 6D 69 73 79 73 3A 4C 4D 59 34 38 5A 18 E4 E1 A4 FF FE 2D 20 E9 E1 A4 FF FE 2D 28 A8 E1 A4 FF FE 2D 30 99 E1 A4 FF FE 2D".hexToBytes()
-
         operator fun invoke(
             client: QQAndroidClient,
             syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
@@ -67,7 +64,7 @@ internal class MessageSvc {
         ): OutgoingPacket = buildOutgoingUniPacket(
             client
         ) {
-            println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
+            //println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
             writeProtoBuf(
                 MsgSvc.PbGetMsgReq.serializer(),
                 MsgSvc.PbGetMsgReq(
@@ -96,7 +93,11 @@ internal class MessageSvc {
          * 不要直接 expect 这个 class. 它可能
          */
         @MiraiInternalAPI
-        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: MutableList<FriendMessage>) : MultiPacket<FriendMessage>(delegate) {
+        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: MutableList<FriendMessage>) : MultiPacket<FriendMessage>(delegate),
+            BroadcastControllable {
+            override val shouldBroadcast: Boolean
+                get() = syncFlagFromServer == MsgSvc.SyncFlag.STOP
+
             override fun toString(): String {
                 return "MessageSvc.PbGetMsg.Response($syncFlagFromServer=$syncFlagFromServer, messages=List(size=${this.size}))"
             }
@@ -120,7 +121,7 @@ internal class MessageSvc {
                 return GetMsgSuccess(mutableListOf())
             }
 
-            val messages = resp.uinPairMsgs.asSequence().flatMap { it.msg.asSequence() }.mapNotNull {
+            val messages = resp.uinPairMsgs.asSequence().filterNot { it.msg == null }.flatMap { it.msg!!.asSequence() }.mapNotNull {
                 when (it.msgHead.msgType) {
                     166 -> {
                         FriendMessage(
@@ -134,7 +135,7 @@ internal class MessageSvc {
                 }
             }.toMutableList()
             if (resp.syncFlag == MsgSvc.SyncFlag.STOP) {
-                return GetMsgSuccess(messages)
+                return GetMsgSuccess(mutableListOf(messages.last()))
             }
             return Response(resp.syncFlag, messages)
         }
@@ -146,7 +147,7 @@ internal class MessageSvc {
 
                 MsgSvc.SyncFlag.CONTINUE -> {
                     network.run {
-                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds)
+                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendWithoutExpect()
                     }
                     return
                 }
@@ -199,8 +200,7 @@ internal class MessageSvc {
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
                     msgRand = Random.nextInt().absoluteValue,
-                    syncCookie = client.c2cMessageSync.syncCookie?.takeIf { it.isNotEmpty() }
-                        ?: SyncCookie(time = currentTimeSeconds).toByteArray(SyncCookie.serializer())
+                    syncCookie = SyncCookie(time = currentTimeSeconds).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
@@ -217,21 +217,22 @@ internal class MessageSvc {
 
             ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
+            val seq = client.atomicNextMessageSequenceId()
             ///return@buildOutgoingUniPacket
             writeProtoBuf(
                 MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
                     routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupId)), // TODO: 2020/1/30 确认这里是 id 还是 internalId
-                    contentHead = MsgComm.ContentHead(pkgNum = 1),
+                    contentHead = MsgComm.ContentHead(pkgNum = 1, divSeq = seq),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(
                             elems = message.toRichTextElems()
                         )
                     ),
-                    msgSeq = client.atomicNextMessageSequenceId(),
-                    //msgRand = Random.nextInt() and 0x7FFF,
-                    syncCookie = SyncCookie(time = currentTimeSeconds).toByteArray(SyncCookie.serializer())
-                    //SyncCookie(currentTimeSeconds, Random.nextLong().absoluteValue, Random.nextLong().absoluteValue).toByteArray(SyncCookie.serializer())
-                    // msgVia = 1
+                    msgSeq = seq,
+                    msgRand = Random.nextInt().absoluteValue,
+                    syncCookie = "08 A0 C2 C4 F1 05 10 A0 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 E4 C2 B1 95 03 48 A1 9F E0 C7 08 58 D3 C2 8F A0 09 60 1D 68 A0 C2 C4 F1 05 70 00".hexToBytes()
+                        ?: SyncCookie(time = currentTimeSeconds + client.timeDifference).toByteArray(SyncCookie.serializer()),
+                    msgVia = 0
                 )
             )
         }

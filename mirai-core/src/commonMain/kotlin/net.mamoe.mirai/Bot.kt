@@ -8,7 +8,6 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
-import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.utils.GroupNotFoundException
@@ -104,11 +103,9 @@ abstract class Bot : CoroutineScope {
 
     // region actions
 
-    abstract suspend fun Image.getLink(): ImageLink
+    abstract suspend fun Image.downloadAsByteArray(): ByteArray
 
-    suspend fun Image.downloadAsByteArray(): ByteArray = getLink().downloadAsByteArray()
-
-    suspend fun Image.download(): ByteReadPacket = getLink().download()
+    abstract suspend fun Image.download(): ByteReadPacket
 
     /**
      * 添加一个好友

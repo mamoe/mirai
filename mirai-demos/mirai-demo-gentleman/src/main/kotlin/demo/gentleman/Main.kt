@@ -134,7 +134,7 @@ suspend fun main() {
 
                 try {
                     image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
-                    reply(image.id.value + " downloaded")
+                    reply(image.resourceId + " downloaded")
                 } catch (e: Exception) {
                     e.printStackTrace()
                     reply(e.message ?: e::class.java.simpleName)

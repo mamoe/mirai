@@ -3,7 +3,6 @@ package net.mamoe.mirai.japt;
 import kotlinx.io.core.ByteReadPacket;
 import net.mamoe.mirai.BotAccount;
 import net.mamoe.mirai.data.AddFriendResult;
-import net.mamoe.mirai.data.ImageLink;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.network.BotNetworkHandler;
 import net.mamoe.mirai.utils.GroupNotFoundException;
@@ -91,9 +90,6 @@ public interface BlockingBot {
     // endregion
 
     // region actions
-
-    @NotNull
-    ImageLink getLink(@NotNull Image image);
 
     byte[] downloadAsByteArray(@NotNull Image image);
 

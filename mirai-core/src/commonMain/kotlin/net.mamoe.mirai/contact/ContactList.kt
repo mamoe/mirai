@@ -37,7 +37,7 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
 
 operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
     forEach { if (it.id == id) return it }
-    throw NoSuchElementException()
+    throw NoSuchElementException("No such contact with id $id")
 }
 
 fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: Long): C? {

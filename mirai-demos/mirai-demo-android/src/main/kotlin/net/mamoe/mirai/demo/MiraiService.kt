@@ -3,6 +3,7 @@
 package net.mamoe.mirai.demo
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Binder
@@ -14,8 +15,7 @@ import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.timpc.Bot
-import net.mamoe.mirai.timpc.TIMPC
+import net.mamoe.mirai.qqandroid.QQAndroid
 import net.mamoe.mirai.utils.LoginFailedException
 import net.mamoe.mirai.utils.LoginSolver
 import java.lang.ref.WeakReference
@@ -42,9 +42,9 @@ class MiraiService : Service() {
 
     }
 
-    private fun login(qq: Long, pwd: String) {
+    private fun login(context: Context, qq: Long, pwd: String) {
         GlobalScope.launch {
-            mBot = TIMPC.Bot(qq, pwd) {
+            mBot = QQAndroid.Bot(context, qq, pwd) {
                 loginSolver = object : LoginSolver() {
                     override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
                         val bytes = data.readBytes()
@@ -94,7 +94,7 @@ class MiraiService : Service() {
     inner class MiraiBinder : Binder() {
 
         fun startLogin(qq: Long, pwd: String) {
-            login(qq, pwd)
+            login(applicationContext, qq, pwd)
         }
 
         fun setCaptcha(captcha: String) {

@@ -2,10 +2,9 @@ package net.mamoe.mirai.qqandroid
 
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendNameRemark
-import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
-import net.mamoe.mirai.message.data.ImageId
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.utils.*
@@ -29,7 +28,7 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
         }
     }
 
-    override suspend fun uploadImage(image: ExternalImage): ImageId {
+    override suspend fun uploadImage(image: ExternalImage): Image {
         TODO("not implemented")
     }
 
@@ -115,7 +114,7 @@ internal class GroupImpl(
         }
     }
 
-    override suspend fun uploadImage(image: ExternalImage): ImageId {
+    override suspend fun uploadImage(image: ExternalImage): Image {
         TODO("not implemented")
     }
 

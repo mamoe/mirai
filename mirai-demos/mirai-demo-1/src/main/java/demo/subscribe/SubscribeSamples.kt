@@ -2,8 +2,6 @@
 
 package demo.subscribe
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.alsoLogin
@@ -13,13 +11,11 @@ import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.ImageId
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.firstOrNull
 import net.mamoe.mirai.message.sendAsImageTo
-import net.mamoe.mirai.timpc.Bot
-import net.mamoe.mirai.timpc.TIMPC
-import net.mamoe.mirai.utils.suspendToExternalImage
+import net.mamoe.mirai.qqandroid.Bot
+import net.mamoe.mirai.qqandroid.QQAndroid
 import java.io.File
 
 private fun readTestAccount(): BotAccount? {
@@ -39,7 +35,7 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = TIMPC.Bot( // JVM 下也可以不写 `TIMPC.` 引用顶层函数
+    val bot = QQAndroid.Bot( // JVM 下也可以不写 `TIMPC.` 引用顶层函数
         1994701121,
         "123456"
     ) {
@@ -99,7 +95,7 @@ fun Bot.messageDSL() {
                 // 等同于 reply("你在一个群里")
             }
 
-            reply("图片, ID= ${message[Image].id}")//获取第一个 Image 类型的消息
+            reply("图片, ID= ${message[Image]}")//获取第一个 Image 类型的消息
             reply(message)
         }
 
@@ -222,29 +218,6 @@ suspend fun directlySubscribe(bot: Bot) {
             "复读" in message -> sender.sendMessage(message)
 
             "发群消息" in message -> 580266363.group().sendMessage(message.toString().substringAfter("发群消息"))
-
-            "上传群图片" in message -> withTimeoutOrNull(5000) {
-                val filename = message.toString().substringAfter("上传群图片")
-                val image = File(
-                    "C:\\Users\\Him18\\Desktop\\$filename"
-                ).suspendToExternalImage()
-                920503456.group().uploadImage(image)
-                reply(image.groupImageId.value)
-                delay(100)
-                920503456.group().sendMessage(Image(image.groupImageId))
-            }
-
-            "发群图片" in message -> {
-                920503456.group().sendMessage(Image(ImageId(message.toString().substringAfter("发群图片"))))
-            }
-
-            "发好友图片" in message -> {
-                reply(Image(ImageId(message.toString().substringAfter("发好友图片"))))
-            }
-
-            message eq "发图片群2" -> 580266363.group().sendMessage(Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
-
-            message eq "发图片2" -> reply(PlainText("test") + Image(ImageId("{7AA4B3AA-8C3C-0F45-2D9B-7F302A0ACEAA}.jpg")))
         }
     }
 }
