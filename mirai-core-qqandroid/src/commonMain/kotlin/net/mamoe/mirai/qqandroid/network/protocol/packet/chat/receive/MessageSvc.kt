@@ -214,7 +214,7 @@ internal class MessageSvc {
          */
         fun ToGroup(
             client: QQAndroidClient,
-            groupId: Long,
+            groupCode: Long,
             message: MessageChain
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
 
@@ -224,7 +224,7 @@ internal class MessageSvc {
             ///return@buildOutgoingUniPacket
             writeProtoBuf(
                 MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
-                    routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupId)), // TODO: 2020/1/30 确认这里是 id 还是 internalId
+                    routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupCode)), // TODO: 2020/1/30 确认这里是 id 还是 internalId
                     contentHead = MsgComm.ContentHead(pkgNum = 1, divSeq = seq),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(

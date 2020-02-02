@@ -25,7 +25,7 @@ interface Contact : CoroutineScope {
     val bot: Bot // weak ref
 
     /**
-     * 可以是 QQ 号码或者群号码 [GroupId].
+     * 可以是 QQ 号码或者群号码.
      */
     val id: Long
 

@@ -77,7 +77,7 @@ internal class MemberImpl(
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
-    override val groupCode: Long,
+    val uin: Long,
     override var name: String,
     override var announcement: String,
     override var members: ContactList<Member>

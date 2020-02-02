@@ -14,11 +14,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList.GetFriendGroupList.decode
 import net.mamoe.mirai.utils.io.debugIfFail
-import net.mamoe.mirai.utils.io.debugPrintThis
-import net.mamoe.mirai.utils.io.debugPrintln
-import net.mamoe.mirai.utils.io.discardExact
 
 
 internal class FriendList {
@@ -35,7 +31,7 @@ internal class FriendList {
 
         operator fun invoke(
             client: QQAndroidClient,
-            targetGroupId: Long,
+            targetGroupUin: Long,
             targetGroupCode: Long,
             nextUin: Long = 0
         ): OutgoingPacket {
@@ -53,7 +49,7 @@ internal class FriendList {
                             GetTroopMemberListReq(
                                 uin = client.uin,
                                 groupCode = targetGroupCode,
-                                groupUin = targetGroupId,
+                                groupUin = targetGroupUin,
                                 nextUin = nextUin,
                                 reqType = 0,
                                 version = 2

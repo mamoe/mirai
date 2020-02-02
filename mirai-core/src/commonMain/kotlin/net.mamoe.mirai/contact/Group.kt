@@ -7,32 +7,25 @@ import kotlinx.coroutines.CoroutineScope
 
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
- *
- * Group UIN 与 Group Code 并不是同一个值.
- * Group Code是在客户端显示的code
- * Group Uin是QQ内部的群ID[在Mirai中则为 id]
- * 但是有的时候 两个是相同的value
- * 在网络调用层 Code与Uin会被混用
- * 但在开发层 你应该只关注Group Code
  */
 interface Group : Contact, CoroutineScope {
+    /**
+     * 同为 groupCode, 用户看到的群号码.
+     */
+    override val id: Long
 
-    val groupCode: Long
     /**
      * 群主 (同步事件更新)
-     * 进行 [updateGroupInfo] 时将会更新这个值.
      */
     val owner: Member
 
     /**
      * 群名称 (同步事件更新)
-     * 进行 [updateGroupInfo] 时将会更新这个值.
      */
     val name: String
 
     /**
      * 入群公告, 没有时为空字符串. (同步事件更新)
-     * 进行 [updateGroupInfo] 时将会更新这个值.
      */
     val announcement: String
 
@@ -45,7 +38,7 @@ interface Group : Contact, CoroutineScope {
 
 
     /**
-     * 获取群成员实例. 若此 ID 的成员不存在, 则会抛出 [kotlin.NoSuchElementException]
+     * 获取群成员实例. 若此 id 的成员不存在, 则会抛出 [kotlin.NoSuchElementException]
      */
     operator fun get(id: Long): Member
 

@@ -63,6 +63,8 @@ abstract class BotNetworkHandler : CoroutineScope {
 
     /**
      * 关闭网络接口, 停止所有有关协程和任务
+     *
+     * @param cause 关闭的原因. null 时视为正常关闭, 非 null 时视为异常关闭.
      */
     open fun close(cause: Throwable? = null) {
         if (supervisor.isActive) {
@@ -75,7 +77,7 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 }
 
-suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null){
+suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null) {
     this.close(cause)
     this.supervisor.join()
 }

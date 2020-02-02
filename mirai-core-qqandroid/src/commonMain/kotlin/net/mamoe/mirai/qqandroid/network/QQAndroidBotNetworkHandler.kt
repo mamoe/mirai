@@ -31,7 +31,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.Volatile
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -103,13 +102,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
 
-       // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000)
+        // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000) // it's slow
     }
 
     override suspend fun init() {
-        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
-
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
                 close()
@@ -159,26 +156,26 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             val troopData = FriendList.GetTroopListSimplify(
                 bot.client
             ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 1000)
-            println("获取到群数量" + troopData.groups.size)
+            // println("获取到群数量" + troopData.groups.size)
             val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
             troopData.groups.forEach {
                 val contactList = ContactList(LockFreeLinkedList<Member>())
                 val group =
                     GroupImpl(
-                        bot,
-                        this.coroutineContext,
-                        it.groupUin,
-                        it.groupCode,
-                        it.groupName,
-                        it.groupMemo,
-                        contactList
+                        bot = bot,
+                        coroutineContext = this.coroutineContext,
+                        id = it.groupCode,
+                        uin = it.groupUin,
+                        name = it.groupName,
+                        announcement = it.groupMemo,
+                        members = contactList
                     )
                 group.owner =
                     MemberImpl(
-                        bot.QQ(it.dwGroupOwnerUin) as QQImpl,
-                        group,
-                        group.coroutineContext,
-                        MemberPermission.OWNER
+                        qq = bot.QQ(it.dwGroupOwnerUin) as QQImpl,
+                        group = group,
+                        coroutineContext = group.coroutineContext,
+                        permission = MemberPermission.OWNER
                     )
                 toGet[group] = contactList
                 bot.groups.delegate.addLast(group)
@@ -186,10 +183,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             toGet.forEach {
                 try {
                     getTroopMemberList(it.key, it.value, it.key.owner.id)
-                    groupInfo[it.key.groupCode] = it.value.size
+                    groupInfo[it.key.uin] = it.value.size
                 } catch (e: Exception) {
-                    groupInfo[it.key.groupCode] = -1
-                    bot.logger.info("群${it.key.groupCode}的列表拉取失败, 将采用动态加入")
+                    groupInfo[it.key.uin] = -1
+                    bot.logger.info("群${it.key.uin}的列表拉取失败, 将采用动态加入")
                 }
                 //delay(200)
             }
@@ -221,36 +218,32 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
+
+        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
     }
 
     suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long): ContactList<Member> {
-        bot.logger.info("开始获取群[${group.groupCode}]成员列表")
+        bot.logger.info("开始获取群[${group.uin}]成员列表")
         var size = 0
         var nextUin = 0L
         while (true) {
             val data = FriendList.GetTroopMemberList(
-                bot.client,
-                group.id,
-                group.groupCode,
-                nextUin
+                client = bot.client,
+                targetGroupUin = group.uin,
+                targetGroupCode = group.id,
+                nextUin = nextUin
             ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
             data.members.forEach {
                 if (it.memberUin != bot.uin) {
                     list.delegate.addLast(
                         MemberImpl(
-                            bot.QQ(it.memberUin) as QQImpl,
-                            group,
-                            EmptyCoroutineContext,
-                            when {
-                                it.memberUin == owner -> {
-                                    MemberPermission.OWNER
-                                }
-                                it.dwFlag == 1L -> {
-                                    MemberPermission.ADMINISTRATOR
-                                }
-                                else -> {
-                                    MemberPermission.MEMBER
-                                }
+                            qq = bot.QQ(it.memberUin) as QQImpl,
+                            group = group,
+                            coroutineContext = group.coroutineContext,
+                            permission = when {
+                                it.memberUin == owner -> MemberPermission.OWNER
+                                it.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+                                else -> MemberPermission.MEMBER
                             }
                         )
                     )
@@ -261,9 +254,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (nextUin == 0L) {
                 break
             }
-            println("已获取群[${group.groupCode}]成员列表前" + size + "个成员")
+            //println("已获取群[${group.uin}]成员列表前" + size + "个成员")
         }
-        println("群[${group.groupCode}]成员全部获取完成, 共${list.size}个成员")
+        //println("群[${group.uin}]成员全部获取完成, 共${list.size}个成员")
         return list
     }
 

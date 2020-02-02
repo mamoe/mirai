@@ -133,15 +133,15 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     // endregion
 
     @UseExperimental(MiraiInternalAPI::class)
-    override fun dispose(throwable: Throwable?) {
-        if (throwable == null) {
+    override fun close(cause: Throwable?) {
+        if (cause == null) {
             network.close()
             this.botJob.complete()
             groups.delegate.clear()
             qqs.delegate.clear()
         } else {
-            network.close(throwable)
-            this.botJob.completeExceptionally(throwable)
+            network.close(cause)
+            this.botJob.completeExceptionally(cause)
             groups.delegate.clear()
             qqs.delegate.clear()
         }

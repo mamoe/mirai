@@ -217,7 +217,9 @@ suspend fun directlySubscribe(bot: Bot) {
 
             "复读" in message -> sender.sendMessage(message)
 
-            "发群消息" in message -> 580266363.group().sendMessage(message.toString().substringAfter("发群消息"))
+            "发群消息" in message -> {
+                bot.getGroup(580266363).sendMessage(message.toString().substringAfter("发群消息"))
+            }
         }
     }
 }

@@ -4,7 +4,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.japt.BlockingBot
 import net.mamoe.mirai.japt.BlockingGroup
@@ -29,12 +28,11 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     override fun getGroups(): List<BlockingGroup> = bot.groups.delegate.toList().map { it.blocking() }
 
     override fun getGroup(id: Long): BlockingGroup = runBlocking { bot.getGroup(id).blocking() }
-    override fun getGroupByInternalId(internalId: Long): BlockingGroup = runBlocking { bot.getGroup(GroupInternalId(internalId)).blocking() }
     override fun getNetwork(): BotNetworkHandler = bot.network
     override fun login() = runBlocking { bot.login() }
     override fun downloadAsByteArray(image: Image): ByteArray = bot.run { runBlocking { image.downloadAsByteArray() } }
     override fun download(image: Image): ByteReadPacket = bot.run { runBlocking { image.download() } }
     override fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult = runBlocking { bot.addFriend(id, message, remark) }
     override fun approveFriendAddRequest(id: Long, remark: String?) = runBlocking { bot.approveFriendAddRequest(id, remark) }
-    override fun dispose(throwable: Throwable?) = bot.dispose(throwable)
+    override fun dispose(throwable: Throwable?) = bot.close(throwable)
 }

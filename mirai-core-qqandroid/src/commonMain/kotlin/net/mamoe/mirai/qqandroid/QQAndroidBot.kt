@@ -51,13 +51,13 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
-    override fun getGroupByID(id: Long): Group {
-        return groups.delegate.getOrNull(id) ?: throw NoSuchElementException("Can not found group with ID=${id}")
+    fun getGroupByUin(uin: Long): Group {
+        return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin } ?: throw NoSuchElementException("Can not found group with ID=${uin}")
     }
 
-    override fun getGroupByGroupCode(groupCode: Long): Group {
-        return groups.delegate.filteringGetOrNull { it.groupCode == groupCode }
-            ?: throw NoSuchElementException("Can not found group with GroupCode=${groupCode}")
+    override fun getGroup(id: Long): Group {
+        return groups.delegate.getOrNull(id)
+            ?: throw NoSuchElementException("Can not found group with GroupCode=${id}")
     }
 
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {

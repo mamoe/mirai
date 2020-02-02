@@ -50,10 +50,6 @@ suspend fun main() {
 
     // 订阅来自这个 bot 的群消息事件
     bot.subscribeGroupMessages {
-        "群资料" reply {
-            group.updateGroupInfo().toString().reply()
-        }
-
         startsWith("mute") {
             val at: At by message
             at.member().mute(30)

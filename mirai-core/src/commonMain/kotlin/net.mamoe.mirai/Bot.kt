@@ -21,7 +21,7 @@ import net.mamoe.mirai.utils.WeakRef
 import net.mamoe.mirai.utils.io.transferTo
 
 /**
- * Mirai 的机器人. 一个机器人实例登录一个 QQ 账号.
+ * 机器人对象. 一个机器人实例登录一个 QQ 账号.
  * Mirai 为多账号设计, 可同时维护多个机器人.
  *
  * @see Contact
@@ -78,12 +78,7 @@ abstract class Bot : CoroutineScope {
     /**
      * 获取一个机器人加入的群. 若没有这个群, 则会抛出异常 [NoSuchElementException]
      */
-    abstract fun getGroupByID(id: Long): Group
-
-    /**
-     * 获取一个机器人加入的群. 若没有这个群, 则会抛出异常 [NoSuchElementException]
-     */
-    abstract fun getGroupByGroupCode(groupCode: Long): Group
+    abstract fun getGroup(id: Long): Group
 
     // 目前还不能构造群对象. 这将在以后支持
 
@@ -131,8 +126,10 @@ abstract class Bot : CoroutineScope {
 
     /**
      * 关闭这个 [Bot], 停止一切相关活动. 不可重新登录.
+     *
+     * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
      */
-    abstract fun dispose(throwable: Throwable?)
+    abstract fun close(cause: Throwable? = null)
 
     // region extensions
 

@@ -5,7 +5,6 @@ import net.mamoe.mirai.BotAccount;
 import net.mamoe.mirai.data.AddFriendResult;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.network.BotNetworkHandler;
-import net.mamoe.mirai.utils.GroupNotFoundException;
 import net.mamoe.mirai.utils.MiraiInternalAPI;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +14,9 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public interface BlockingBot {
+
+    // TODO: 2020/2/3 需要更新
+
     /**
      * 账号信息
      */
@@ -55,17 +57,11 @@ public interface BlockingBot {
 
     /**
      * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
-     * 若 {@code id} 无效, 将会抛出 {@link GroupNotFoundException}
+     * 若 {@code id} 无效, 将会抛出 {@link java.util.NoSuchElementException}
      */
     @NotNull
     BlockingGroup getGroup(long id);
 
-    /**
-     * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
-     * 若 {@code internalId} 无效, 将会抛出 {@link GroupNotFoundException}
-     */
-    @NotNull
-    BlockingGroup getGroupByInternalId(long internalId);
 
     // endregion
 
