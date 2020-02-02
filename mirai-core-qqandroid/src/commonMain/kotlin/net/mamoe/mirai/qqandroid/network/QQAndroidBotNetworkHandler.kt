@@ -276,6 +276,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             while (rawInput.remaining >= length) {
                 parsePacketAsync(rawInput.readPacket(length))
 
+                if (rawInput.remaining == 0L) {
+                    cachedPacket.value = null // 表示包长度正好
+                    cachedPacketTimeoutJob?.cancel()
+                    return
+                }
                 length = rawInput.readInt() - 4
             }
 
