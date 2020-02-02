@@ -52,7 +52,7 @@ internal class FriendList {
                             GetTroopMemberListReq.serializer(),
                             GetTroopMemberListReq(
                                 uin = client.uin,
-                                groupCode = targetGroupId,
+                                groupCode = targetGroupCode,
                                 groupUin = targetGroupId,
                                 nextUin = nextUin,
                                 reqType = 0,
