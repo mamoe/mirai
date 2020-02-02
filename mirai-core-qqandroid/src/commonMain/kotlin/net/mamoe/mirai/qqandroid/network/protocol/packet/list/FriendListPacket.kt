@@ -27,10 +27,11 @@ internal class FriendList {
 
     internal object GetTroopMemberList :
         OutgoingPacketFactory<GetTroopMemberList.Response>("friendlist.GetTroopMemberListReq") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GetTroopMemberList.Response {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.debugIfFail { this.decodeUniPacket(GetTroopMemberListResp.serializer()) }
             return Response(
-                res.vecTroopMember
+                res.vecTroopMember,
+                res.nextUin
             )
         }
 
@@ -52,10 +53,11 @@ internal class FriendList {
                             GetTroopMemberListReq.serializer(),
                             GetTroopMemberListReq(
                                 uin = client.uin,
-                                groupCode = GroupId(targetGroupId).toInternalId().value,
+                                groupCode = targetGroupId,
                                 groupUin = targetGroupId,
                                 nextUin = nextUin,
-                                reqType = 0
+                                reqType = 0,
+                                version = 2
                             )
                         )
                     )
@@ -64,7 +66,8 @@ internal class FriendList {
         }
 
         class Response(
-            val members: List<stTroopMemberInfo>
+            val members: List<stTroopMemberInfo>,
+            val nextUin: Long
         ) : Packet {
             override fun toString(): String = "Friendlist.GetTroopMemberList.Response"
         }
@@ -73,7 +76,6 @@ internal class FriendList {
 
     internal object GetTroopListSimplify :
         OutgoingPacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
-
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.decodeUniPacket(GetTroopListRespV2.serializer())
             return Response(res.vecTroopList.orEmpty())

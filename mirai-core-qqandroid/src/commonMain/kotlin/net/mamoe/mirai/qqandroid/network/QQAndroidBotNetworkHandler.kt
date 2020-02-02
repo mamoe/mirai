@@ -9,11 +9,15 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
+import net.mamoe.mirai.contact.ContactList
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.GroupImpl
+import net.mamoe.mirai.qqandroid.MemberImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.QQImpl
 import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
@@ -106,8 +110,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override suspend fun init() {
-        //  delay(5000)
-
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
                 close()
@@ -149,28 +151,65 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         try {
-            bot.logger.info("开始加载群组列表")
+            bot.logger.info("开始加载群组列表与群成员列表")
             val troopData = FriendList.GetTroopListSimplify(
                 bot.client
             ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 1000)
+            println("获取到群数量" + troopData.groups.size)
+            val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
             troopData.groups.forEach {
-                bot.groups.delegate.addLast(GroupImpl(bot, EmptyCoroutineContext, it.groupUin))
+                val contactList = ContactList(LockFreeLinkedList<Member>())
+                val group =
+                    GroupImpl(bot, EmptyCoroutineContext, it.groupUin, it.groupName!!, it.groupMemo!!, contactList)
+                group.owner =
+                    MemberImpl(QQImpl(bot, EmptyCoroutineContext, it.dwGroupOwnerUin!!), group, EmptyCoroutineContext)
+                toGet[group] = contactList
+                bot.groups.delegate.addLast(group)
+                println(it.groupUin.toString() + " - " + it.groupCode)
             }
-            bot.logger.info("群组列表加载完成, 共 ${troopData.groups.size}个")
+            toGet.forEach {
+                try {
+                    getTroopMemberList(it.key, it.value)
+                } catch (e: Exception) {
+                    bot.logger.info("群${it.key.id}的列表拉取失败, 将采用动态加入")
+                }
+                delay(200)
+            }
+            bot.logger.info("群组列表与群成员加载完成, 共 ${troopData.groups.size}个")
         } catch (e: Exception) {
             bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
         }
 
     }
 
-    suspend fun getTroopMemberList(groupUni: Long) {
-        bot.logger.info("开始群[$groupUni]成员")
-        val data = FriendList.GetTroopMemberList(
-            bot.client,
-            groupUni,
-            0
-        ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 1000)
-        println(data.contentToString())
+    suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>): ContactList<Member> {
+        bot.logger.info("开始获取群[${group.id}]成员列表")
+        var size = 0
+        var nextUin = 0L
+        while (true) {
+            val data = FriendList.GetTroopMemberList(
+                bot.client,
+                group.id,
+                nextUin
+            ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
+            data.members.forEach {
+                list.delegate.addLast(
+                    MemberImpl(
+                        QQImpl(bot, EmptyCoroutineContext, it.memberUin),
+                        group,
+                        EmptyCoroutineContext
+                    )
+                )
+            }
+            size += data.members.size
+            nextUin = data.nextUin
+            if (nextUin == 0L) {
+                break
+            }
+            println("已获取群[${group.id}]成员列表前" + size + "个成员")
+        }
+        println("群[${group.id}]成员全部获取完成, 共${list.size}个成员")
+        return list
     }
 
     /**

@@ -43,17 +43,17 @@ internal abstract class QQAndroidBotBase constructor(
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
     override suspend fun getGroup(id: GroupId): Group {
-        return groups.delegate.filteringGetOrAdd({ it.id == id.value }, { GroupImpl(this as QQAndroidBot, coroutineContext, id.value) })
+        return groups.delegate.getOrNull(id.value) ?: throw NoSuchElementException("Can not found group ${id.value}")
     }
 
     override suspend fun getGroup(internalId: GroupInternalId): Group {
-        internalId.toId().value.let { id ->
-            return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this as QQAndroidBot, coroutineContext, id) })
+        with(internalId.toId().value) {
+            return groups.delegate.getOrNull(this) ?: throw NoSuchElementException("Can not found group $this")
         }
     }
 
     override suspend fun getGroup(id: Long): Group {
-        return groups.delegate.filteringGetOrAdd({ it.id == id }, { GroupImpl(this as QQAndroidBot, coroutineContext, id) })
+        return groups.delegate.getOrNull(id) ?: throw NoSuchElementException("Can not found group $id")
     }
 
     override suspend fun Image.getLink(): ImageLink {

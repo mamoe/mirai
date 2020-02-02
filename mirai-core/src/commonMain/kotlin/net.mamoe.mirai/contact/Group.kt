@@ -10,10 +10,11 @@ import net.mamoe.mirai.utils.coerceAtLeastOrFail
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
  *
- * Group ID 与 Group Number 并不是同一个值.
- * - Group Number([Group.id]) 是通常使用的群号码.(在 QQ 客户端中可见)
- * - Group ID([Group.internalId]) 是与调用 API 时使用的 id.(在 QQ 客户端中不可见)
- * @author Him188moe
+ * Group UIN 与 Group Code 并不是同一个值.
+ * Group Code是在客户端显示的code
+ * Group Uin是QQ内部的群ID
+ * 在网络调用层 Code与Uin会被混用
+ * 但在开发层 你应该只关注Group Code
  */
 interface Group : Contact, CoroutineScope {
     /**
@@ -76,29 +77,3 @@ interface Group : Contact, CoroutineScope {
  * @see GroupInternalId.toId 由 [GroupInternalId] 转换为 [GroupId]
  * @see GroupId.toInternalId 由 [GroupId] 转换为 [GroupInternalId]
  */
-inline class GroupId(inline val value: Long)
-
-/**
- * 将 [this] 转为 [GroupInternalId].
- */
-fun Long.groupInternalId(): GroupInternalId = GroupInternalId(this)
-
-/**
- * 将无符号整数格式的 [Long] 转为 [GroupId].
- *
- * 注: 在 Java 中常用 [Long] 来表示 [UInt].
- *
- * 注: 在 Kotlin/Java, 有符号的数据类型的二进制最高位为符号标志.
- * 如一个 byte, `1000 0000` 最高位为 1, 则为负数.
- */
-fun Long.groupId(): GroupId = GroupId(this.coerceAtLeastOrFail(0))
-
-/**
- * 一些群 API 使用的 ID. 在使用时会特别注明
- *
- * 注: 在引用群 ID 时, 应使用 [GroupId] 或 [GroupInternalId] 类型, 而不是 [UInt]
- *
- * @see GroupInternalId.toId 由 [GroupInternalId] 转换为 [GroupId]
- * @see GroupId.toInternalId 由 [GroupId] 转换为 [GroupInternalId]
- */
-inline class GroupInternalId(inline val value: Long)
