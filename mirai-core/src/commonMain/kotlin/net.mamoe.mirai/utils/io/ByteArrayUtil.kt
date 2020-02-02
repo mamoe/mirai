@@ -81,7 +81,7 @@ fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: In
 @Suppress("NOTHING_TO_INLINE")
 inline fun ByteArray.encodeToString(): String = String(this)
 
-fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size) = ByteReadPacket(this, offset = offset, length = length)
+fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) = ByteReadPacket(this, offset = offset, length = length)
 
 @UseExperimental(ExperimentalContracts::class)
 inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
