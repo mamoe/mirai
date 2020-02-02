@@ -162,12 +162,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             troopData.groups.forEach {
                 val contactList = ContactList(LockFreeLinkedList<Member>())
                 val group =
-                    GroupImpl(bot, EmptyCoroutineContext, it.groupUin, it.groupName!!, it.groupMemo!!, contactList)
+                    GroupImpl(
+                        bot,
+                        EmptyCoroutineContext,
+                        it.groupUin,
+                        it.groupCode,
+                        it.groupName!!,
+                        it.groupMemo!!,
+                        contactList
+                    )
                 group.owner =
                     MemberImpl(QQImpl(bot, EmptyCoroutineContext, it.dwGroupOwnerUin!!), group, EmptyCoroutineContext)
                 toGet[group] = contactList
                 bot.groups.delegate.addLast(group)
-                println(it.groupUin.toString() + " - " + it.groupCode)
             }
             toGet.forEach {
                 try {
@@ -192,6 +199,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             val data = FriendList.GetTroopMemberList(
                 bot.client,
                 group.id,
+                group.groupCode,
                 nextUin
             ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
             data.members.forEach {

@@ -7,10 +7,6 @@ import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.contact.GroupId
-import net.mamoe.mirai.contact.GroupInternalId
-import net.mamoe.mirai.contact.groupId
-import net.mamoe.mirai.contact.groupInternalId
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.cryptor.contentToString
 import kotlin.jvm.JvmName
@@ -70,8 +66,8 @@ fun Input.readIP(): String = buildString(4 + 3) {
 
 fun Input.readQQ(): Long = this.readUInt().toLong()
 fun Input.readGroup(): Long = this.readUInt().toLong()
-fun Input.readGroupId(): GroupId = this.readUInt().toLong().groupId()
-fun Input.readGroupInternalId(): GroupInternalId = this.readUInt().toLong().groupInternalId()
+fun Input.readGroupId(): Long = this.readUInt().toLong()
+fun Input.readGroupCode(): Long = this.readUInt().toLong()
 
 fun Input.readUVarIntLVString(): String = String(this.readUVarIntByteArray())
 

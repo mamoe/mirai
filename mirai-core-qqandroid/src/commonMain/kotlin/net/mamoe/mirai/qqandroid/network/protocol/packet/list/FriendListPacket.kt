@@ -36,6 +36,7 @@ internal class FriendList {
         operator fun invoke(
             client: QQAndroidClient,
             targetGroupId: Long,
+            targetGroupCode: Long,
             nextUin: Long = 0
         ): OutgoingPacket {
             return buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {

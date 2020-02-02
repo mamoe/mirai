@@ -4,8 +4,6 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.contact.GroupId
-import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.utils.Tested
 import net.mamoe.mirai.utils.coerceAtMostOrFail
 import net.mamoe.mirai.utils.cryptor.encryptBy
@@ -23,8 +21,7 @@ fun BytePacketBuilder.writeZero(count: Int) {
 fun BytePacketBuilder.writeRandom(length: Int) = repeat(length) { this.writeByte(Random.Default.nextInt(255).toByte()) }
 
 fun BytePacketBuilder.writeQQ(qq: Long) = this.writeUInt(qq.toUInt()) // same bit rep.
-fun BytePacketBuilder.writeGroup(groupId: GroupId) = this.writeUInt(groupId.value.toUInt())
-fun BytePacketBuilder.writeGroup(groupInternalId: GroupInternalId) = this.writeUInt(groupInternalId.value.toUInt())
+fun BytePacketBuilder.writeGroup(groupId: Long) = this.writeUInt(groupId.toUInt())
 
 fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLength: Int) {
     if (array.size <= maxLength) {

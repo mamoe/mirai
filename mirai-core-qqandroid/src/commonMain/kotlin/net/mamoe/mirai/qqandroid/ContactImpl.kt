@@ -74,13 +74,14 @@ internal class MemberImpl(
 
 @UseExperimental(MiraiInternalAPI::class)
 internal class GroupImpl(
-    bot: QQAndroidBot, override val coroutineContext: CoroutineContext, override val id: Long,
+    bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
+    override val id: Long,
+    override val groupCode: Long,
     override var name: String,
     override var announcement: String,
     override var members: ContactList<Member>
 ) : ContactImpl(), Group {
     override lateinit var owner: Member
-    override val internalId: GroupInternalId = GroupId(id).toInternalId()
 
     override fun getMember(id: Long): Member =
         members.delegate.filteringGetOrAdd(

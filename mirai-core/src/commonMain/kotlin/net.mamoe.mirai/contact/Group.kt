@@ -12,16 +12,14 @@ import net.mamoe.mirai.utils.coerceAtLeastOrFail
  *
  * Group UIN 与 Group Code 并不是同一个值.
  * Group Code是在客户端显示的code
- * Group Uin是QQ内部的群ID
+ * Group Uin是QQ内部的群ID[在Mirai中则为 id]
+ * 但是有的时候 两个是相同的value
  * 在网络调用层 Code与Uin会被混用
  * 但在开发层 你应该只关注Group Code
  */
 interface Group : Contact, CoroutineScope {
-    /**
-     * 内部 ID. 内部 ID 为 [GroupId] 的映射
-     */
-    val internalId: GroupInternalId
 
+    val groupCode: Long
     /**
      * 群主 (同步事件更新)
      * 进行 [updateGroupInfo] 时将会更新这个值.
@@ -67,13 +65,3 @@ interface Group : Contact, CoroutineScope {
 
     fun toFullString(): String = "Group(id=${this.id}, name=$name, owner=${owner.id}, members=${members.idContentString})"
 }
-
-/**
- * 一般的用户可见的 ID.
- * 在 TIM/QQ 客户端中所看到的的号码均是这个 ID.
- *
- * 注: 在引用群 ID 时, 只应使用 [GroupId] 或 [GroupInternalId] 类型 (内联类无性能损失), 而不能使用 [UInt].
- *
- * @see GroupInternalId.toId 由 [GroupInternalId] 转换为 [GroupId]
- * @see GroupId.toInternalId 由 [GroupId] 转换为 [GroupInternalId]
- */

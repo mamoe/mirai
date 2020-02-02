@@ -12,6 +12,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.io.getRandomByteArray
 import kotlin.coroutines.CoroutineContext
 
 @UseExperimental(MiraiInternalAPI::class)
@@ -41,18 +42,13 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
-    override suspend fun getGroup(id: GroupId): Group {
-        return groups.delegate.getOrNull(id.value) ?: throw NoSuchElementException("Can not found group ${id.value}")
+    override fun getGroupByID(id: Long): Group {
+        return groups.delegate.getOrNull(id) ?: throw NoSuchElementException("Can not found group with ID=${id}")
     }
 
-    override suspend fun getGroup(internalId: GroupInternalId): Group {
-        with(internalId.toId().value) {
-            return groups.delegate.getOrNull(this) ?: throw NoSuchElementException("Can not found group $this")
-        }
-    }
-
-    override suspend fun getGroup(id: Long): Group {
-        return groups.delegate.getOrNull(id) ?: throw NoSuchElementException("Can not found group $id")
+    override fun getGroupByGroupCode(groupCode: Long): Group {
+        return groups.delegate.filterGetOrNull { it.groupCode == groupCode }
+            ?: throw NoSuchElementException("Can not found group with GroupCode=${groupCode}")
     }
 
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {

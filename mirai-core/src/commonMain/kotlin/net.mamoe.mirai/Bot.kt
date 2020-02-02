@@ -67,19 +67,14 @@ abstract class Bot : CoroutineScope {
      * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
      * 若 [id] 无效, 将会抛出 [GroupNotFoundException]
      */
-    abstract suspend fun getGroup(id: GroupId): Group
+    abstract fun getGroupByID(id: Long): Group
 
     /**
      * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
      * 若 [internalId] 无效, 将会抛出 [GroupNotFoundException]
      */
-    abstract suspend fun getGroup(internalId: GroupInternalId): Group
+    abstract fun getGroupByGroupCode(groupCode: Long): Group
 
-    /**
-     * 获取缓存的群对象. 若没有对应的缓存, 则会线程安全地创建一个.
-     * 若 [id] 无效, 将会抛出 [GroupNotFoundException]
-     */
-    abstract suspend fun getGroup(id: Long): Group
 
     // endregion
 
@@ -131,11 +126,6 @@ abstract class Bot : CoroutineScope {
 
     fun Int.qq(): QQ = getQQ(this.toLong())
     fun Long.qq(): QQ = getQQ(this)
-
-    suspend inline fun Int.group(): Group = getGroup(this.toLong())
-    suspend inline fun Long.group(): Group = getGroup(this)
-    suspend inline fun GroupInternalId.group(): Group = getGroup(this)
-    suspend inline fun GroupId.group(): Group = getGroup(this)
 
 
     /**

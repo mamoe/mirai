@@ -79,8 +79,4 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toLong())
     fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
 
-    suspend inline fun Int.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0).toLong())
-    suspend inline fun Long.group(): Group = bot.getGroup(this.coerceAtLeastOrFail(0))
-    suspend inline fun GroupId.group(): Group = bot.getGroup(this)
-    suspend inline fun GroupInternalId.group(): Group = bot.getGroup(this)
 }

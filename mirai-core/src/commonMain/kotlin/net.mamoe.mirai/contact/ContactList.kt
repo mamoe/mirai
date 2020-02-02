@@ -45,4 +45,10 @@ fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: Long): C? {
     return null
 }
 
-fun <C : Contact> LockFreeLinkedList<C>.getOrAdd(id: Long, supplier: () -> C): C = filteringGetOrAdd({ it.id == id }, supplier)
+inline fun <C : Contact> LockFreeLinkedList<C>.filterGetOrNull(filter: (C) -> Boolean): C? {
+    forEach { if (filter(it)) return it }
+    return null
+}
+
+fun <C : Contact> LockFreeLinkedList<C>.getOrAdd(id: Long, supplier: () -> C): C =
+    filteringGetOrAdd({ it.id == id }, supplier)
