@@ -6,7 +6,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.contact.GroupInternalId
 import net.mamoe.mirai.data.AddFriendResult
-import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.japt.BlockingBot
 import net.mamoe.mirai.japt.BlockingGroup
 import net.mamoe.mirai.japt.BlockingQQ
@@ -33,7 +32,6 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     override fun getGroupByInternalId(internalId: Long): BlockingGroup = runBlocking { bot.getGroup(GroupInternalId(internalId)).blocking() }
     override fun getNetwork(): BotNetworkHandler = bot.network
     override fun login() = runBlocking { bot.login() }
-    override fun getLink(image: Image): ImageLink = bot.run { runBlocking { image.getLink() } }
     override fun downloadAsByteArray(image: Image): ByteArray = bot.run { runBlocking { image.downloadAsByteArray() } }
     override fun download(image: Image): ByteReadPacket = bot.run { runBlocking { image.download() } }
     override fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult = runBlocking { bot.addFriend(id, message, remark) }

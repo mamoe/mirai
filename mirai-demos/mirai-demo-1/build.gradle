@@ -4,8 +4,8 @@ apply plugin: "java"
 dependencies {
     implementation files("../../mirai-core/build/classes/kotlin/jvm/main") // IDE bug
 
-    implementation files("../../mirai-core-timpc/build/classes/kotlin/jvm/main") // IDE bug
-    implementation project(":mirai-core-timpc")
+    implementation files("../../mirai-core-qqandroid/build/classes/kotlin/jvm/main") // IDE bug
+    implementation project(":mirai-core-qqandroid")
 
     api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
     api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutinesVersion
