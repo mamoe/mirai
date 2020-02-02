@@ -73,25 +73,30 @@ internal class MemberImpl(
 
 
 @UseExperimental(MiraiInternalAPI::class)
-internal class GroupImpl(bot: QQAndroidBot, override val coroutineContext: CoroutineContext, override val id: Long) : ContactImpl(), Group {
+internal class GroupImpl(
+    bot: QQAndroidBot, override val coroutineContext: CoroutineContext, override val id: Long,
+    override val owner: Member,
+    override val name: String,
+    override val announcement: String,
+    override val members: ContactList<Member>
+) : ContactImpl(), Group {
     override val internalId: GroupInternalId = GroupId(id).toInternalId()
-    override val owner: Member
-        get() = TODO("not implemented")
-    override val name: String
-        get() = TODO("not implemented")
-    override val announcement: String
-        get() = TODO("not implemented")
-    override val members: ContactList<Member> = ContactList(LockFreeLinkedList())
 
     override fun getMember(id: Long): Member =
-        members.delegate.filteringGetOrAdd({ it.id == id }, { MemberImpl(bot.getQQ(id) as QQImpl, this, coroutineContext) })
+        members.delegate.filteringGetOrAdd(
+            { it.id == id },
+            { MemberImpl(bot.getQQ(id) as QQImpl, this, coroutineContext) })
 
-    override suspend fun updateGroupInfo(): GroupInfo {
-        TODO("not implemented")
+    override suspend fun updateGroupInfo(): net.mamoe.mirai.data.GroupInfo {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override suspend fun quit(): Boolean {
-        TODO("not implemented")
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    operator fun get(key: Long): Member? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
@@ -112,4 +117,5 @@ internal class GroupImpl(bot: QQAndroidBot, override val coroutineContext: Corou
     override suspend fun uploadImage(image: ExternalImage): ImageId {
         TODO("not implemented")
     }
+
 }
