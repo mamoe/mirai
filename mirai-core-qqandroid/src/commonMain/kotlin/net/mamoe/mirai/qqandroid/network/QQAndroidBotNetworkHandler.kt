@@ -31,6 +31,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.Volatile
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -130,14 +131,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     150,
                     0,
                     0
-                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 1000)
+                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
 
                 totalFriendCount = data.totalFriendCount
                 data.friendList.forEach {
                     // atomic add
-                    bot.qqs.delegate.addLast(bot.getFriend(it.friendUin).also {
+                    bot.qqs.delegate.addLast(QQImpl(bot, bot.coroutineContext, it.friendUin)).also {
                         currentFriendCount++
-                    })
+                    }
                 }
                 bot.logger.verbose("正在加载好友列表 ${currentFriendCount}/${totalFriendCount}")
                 if (currentFriendCount >= totalFriendCount) {
@@ -147,7 +148,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
             bot.logger.info("好友列表加载完成, 共 ${currentFriendCount}个")
         } catch (e: Exception) {
-            bot.logger.info("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
+            bot.logger.error("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
         }
 
         val friendLoadFinish = currentTimeMillis
@@ -156,7 +157,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             bot.logger.info("开始加载群组列表与群成员列表")
             val troopData = FriendList.GetTroopListSimplify(
                 bot.client
-            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 1000)
+            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 5000)
             // println("获取到群数量" + troopData.groups.size)
             val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
             troopData.groups.forEach {
@@ -197,7 +198,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
             bot.logger.info("群组列表与群成员加载完成, 共 ${troopData.groups.size}个")
         } catch (e: Exception) {
-            bot.logger.info("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+            bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
         }
 
         //===log===//
@@ -223,10 +224,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
-        bot.qqs.forEach {
-            println(it.id)
-        }
-        println(bot.qqs.size)
         return
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
     }
