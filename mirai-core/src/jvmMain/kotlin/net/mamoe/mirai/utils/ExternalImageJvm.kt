@@ -12,6 +12,7 @@ import kotlinx.io.core.copyTo
 import kotlinx.io.errors.IOException
 import kotlinx.io.streams.asInput
 import kotlinx.io.streams.asOutput
+import net.mamoe.mirai.utils.io.getRandomString
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -44,7 +45,7 @@ fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
         })
     }
 
-    return ExternalImage(width, height, digest.digest(), formatName, buffer)
+    return ExternalImage(width, height, digest.digest(), formatName, buffer, getRandomString(10) + "." + formatName)
 }
 
 suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
@@ -66,7 +67,8 @@ fun File.toExternalImage(): ExternalImage {
         md5 = this.inputStream().use { it.md5() },
         imageFormat = image.formatName,
         input = this.inputStream().asInput(IoBuffer.Pool),
-        inputSize = this.length()
+        inputSize = this.length(),
+        filename = this.name
     )
 }
 

@@ -6,7 +6,9 @@ import java.io.File
 
 fun main() {
     println(
-        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/s2c/msgtype0x210/submsgtype0xc7/bussinfo/mutualmark""")
+        File("""
+E:\Projects\QQAndroidFF\app\src\main\java\com\tencent\mobileqq\highway\protocol
+        """.trimIndent())
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
     )
 }

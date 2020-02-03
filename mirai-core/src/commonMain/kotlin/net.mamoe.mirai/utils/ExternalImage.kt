@@ -7,17 +7,9 @@ import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.io.toUHexString
-
-@Suppress("FunctionName")
-fun ExternalImage(
-    width: Int,
-    height: Int,
-    md5: ByteArray,
-    format: String,
-    data: ByteReadPacket
-): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining)
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
@@ -33,19 +25,53 @@ class ExternalImage(
     val md5: ByteArray,
     imageFormat: String,
     val input: Input,
-    val inputSize: Long
+    val inputSize: Long,
+    val filename: String
 ) {
-    private val format: String
-
-    init {
-        if (imageFormat == "JPEG" || imageFormat == "jpeg") {//必须转换
-            this.format = "jpg"
-        } else {
-            this.format = imageFormat
-        }
+    companion object {
+        operator fun invoke(
+            width: Int,
+            height: Int,
+            md5: ByteArray,
+            format: String,
+            data: ByteReadPacket,
+            filename: String
+        ): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining, filename)
     }
 
+    private val format: String = when (val it =imageFormat.toLowerCase()) {
+        "jpeg" -> "jpg" //必须转换
+        else -> it
+    }
+
+    /**
+     *
+     * ImgType:
+     *  JPG:    1000
+     *  PNG:    1001
+     *  WEBP:   1002
+     *  BMP:    1005
+     *  GIG:    2000
+     *  APNG:   2001
+     *  SHARPP: 1004
+     */
+    val imageType: Int
+        get() = when (format){
+            "jpg" -> 1000
+            "png" -> 1001
+            "webp" -> 1002
+            "bmp" -> 1005
+            "gig" -> 2000
+            "apng" -> 2001
+            "sharpp" -> 1004
+            else -> 1000 // unsupported, just make it jpg
+        }
+
     override fun toString(): String = "[ExternalImage(${width}x$height $format)]"
+
+    fun calculateImageResourceId(): String {
+        return "{${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}}.$format"
+    }
 }
 
 /**

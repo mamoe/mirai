@@ -95,13 +95,17 @@ internal open class QQAndroidClient(
 
     var openAppId: Long = 715019303L
 
-    val apkVersionName: ByteArray = "8.2.0".toByteArray()
+    val apkVersionName: ByteArray get() = "8.2.0".toByteArray()
+    val buildVer: String get() = "8.2.0.1296"
 
     private val messageSequenceId: AtomicInt = atomic(0)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
 
     private val requestPacketRequestId: AtomicInt = atomic(1921334513)
     internal fun nextRequestPacketRequestId(): Int = requestPacketRequestId.getAndAdd(2)
+
+    private val highwayDataTransSequenceId: AtomicInt = atomic(87017)
+    internal fun nextHighwayDataTransSequenceId(): Int = highwayDataTransSequenceId.getAndAdd(2)
 
     val appClientVersion: Int = 0
 
