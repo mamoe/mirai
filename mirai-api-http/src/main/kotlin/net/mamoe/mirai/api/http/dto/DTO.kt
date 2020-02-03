@@ -21,7 +21,7 @@ inline fun <reified T : Any> String.jsonParseOrNull(
     serializer: DeserializationStrategy<T>? = null
 ): T? = try {
     if(serializer == null) MiraiJson.json.parse(this) else MiraiJson.json.parse(serializer, this)
-} catch (e: Exception) { throw e }
+} catch (e: Exception) { null }
 
 
 

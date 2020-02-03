@@ -27,15 +27,15 @@ fun Application.authModule() {
                     closeSession(it.sessionKey)
                     allSession[it.sessionKey] = AuthedSession(bot, EmptyCoroutineContext)
                 }
-                call.respondDTO(StateCodeDTO.SUCCESS)
+                call.respondDTO(StateCodeDTO.Success)
             } catch (e: NoSuchElementException) {
-                call.respondDTO(StateCodeDTO.NO_BOT)
+                call.respondDTO(StateCodeDTO.NoBot)
             }
         }
 
         miraiVerify<BindDTO>("/release") {
             SessionManager.closeSession(it.sessionKey)
-            call.respondDTO(StateCodeDTO.SUCCESS)
+            call.respondDTO(StateCodeDTO.Success)
         }
 
     }
