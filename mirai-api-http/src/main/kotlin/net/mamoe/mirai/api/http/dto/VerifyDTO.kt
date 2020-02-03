@@ -22,7 +22,8 @@ sealed class StateCodeDTO(val code: Int, var msg: String) : DTO {
     // object AUTH_WRONG : CodeDTO(1) // AuthKey错误, @see AuthResDTO
     object NoBot : StateCodeDTO(2, "指定Bot不存在")
     object IllegalSession : StateCodeDTO(3, "Session失效或不存在")
-    object NotVerifySession : StateCodeDTO(3, "Session未认证")
+    object NotVerifySession : StateCodeDTO(4, "Session未认证")
+    object NoElement : StateCodeDTO(5, "指定对象不存在")
 
     // KS bug: 主构造器中不能有非字段参数 https://github.com/Kotlin/kotlinx.serialization/issues/575
     @Serializable
