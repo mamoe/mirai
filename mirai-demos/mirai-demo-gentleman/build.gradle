@@ -15,7 +15,10 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.12.1'
 }
 
-mainClassName = "demo.gentleman.MainKt"
+run{
+    standardInput = System.in
+    mainClassName = "demo.gentleman.MainKt"
+}
 compileKotlin {
     kotlinOptions {
         freeCompilerArgs = ["-XXLanguage:+InlineClasses"]
