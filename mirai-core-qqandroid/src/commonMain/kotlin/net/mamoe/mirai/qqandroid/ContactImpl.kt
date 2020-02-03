@@ -163,12 +163,11 @@ internal class GroupImpl(
                             Highway.RequestDataTrans(
                                 uin = bot.uin,
                                 command = "PicUp.DataUp",
-                                buildVer = bot.client.buildVer,
+                                sequenceId = bot.client.nextHighwayDataTransSequenceId(),
                                 uKey = response.uKey,
                                 data = image.input,
                                 dataSize = image.inputSize.toInt(),
-                                md5 = image.md5,
-                                sequenceId = bot.client.nextHighwayDataTransSequenceId()
+                                md5 = image.md5
                             )
                         )
                   //  }
@@ -182,6 +181,7 @@ internal class GroupImpl(
                         println(proto.contentToString())
                         println(readBytes(bodyLength).toUHexString())
                     }
+                    socket.close()
                     val resourceId = image.calculateImageResourceId()
                     return NotOnlineImageFromFile(
                         resourceId = resourceId,

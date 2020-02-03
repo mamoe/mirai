@@ -67,13 +67,12 @@ object Highway {
         uin: Long,
         command: String,
         sequenceId: Int,
-        buildVer: String,
         appId: Int = 537062845,
         dataFlag: Int = 4096,
         commandId: Int = 2,
         localId: Int = 2052,
-
         uKey: ByteArray,
+
         data: Input,
         dataSize: Int,
         md5: ByteArray
@@ -87,7 +86,6 @@ object Highway {
             appid = appId,
             dataflag = dataFlag,
             commandId = commandId,
-            buildVer = buildVer,
             localeId = localId
         )
         val segHead = CSDataHighwayHead.SegHead(
@@ -97,6 +95,7 @@ object Highway {
             md5 = md5,
             fileMd5 = md5
         )
+        //println(data.readBytes().toUHexString())
         return Codec.buildC2SData(dataHighwayHead, segHead, EMPTY_BYTE_ARRAY, null, data, dataSize)
     }
 
@@ -121,9 +120,9 @@ object Highway {
                 writeInt(head.size)
                 writeInt(bodySize)
                 writeFully(head)
-                body.copyTo(this)
+                check(body.copyTo(this).toInt() == bodySize) { "bad body size" }
                 writeByte(41)
-            }
+            }.also { println(it.remaining) }
         }
     }
 }
