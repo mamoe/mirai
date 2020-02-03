@@ -11,7 +11,7 @@ import net.mamoe.mirai.data.Profile
 /**
  * QQ 对象.
  * 注意: 一个 [QQ] 实例并不是独立的, 它属于一个 [Bot].
- * 它不能被直接构造. 任何时候都应从 [Bot.getQQ] 或事件中获取.
+ * 它不能被直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
  *
  * 对于同一个 [Bot] 任何一个人的 [QQ] 实例都是单一的.
  *

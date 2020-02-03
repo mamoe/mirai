@@ -34,7 +34,7 @@ fun ByteReadPacket.transferTo(outputStream: OutputStream) {
     }
 }
 
-fun <R> ByteReadPacket.useBytes(
+inline fun <R> ByteReadPacket.useBytes(
     n: Int = remaining.toInt(),//not that safe but adequate
     block: (data: ByteArray, length: Int) -> R
 ): R = ByteArrayPool.useInstance {
