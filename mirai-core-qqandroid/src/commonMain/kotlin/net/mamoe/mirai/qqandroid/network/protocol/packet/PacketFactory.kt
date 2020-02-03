@@ -123,7 +123,10 @@ internal object KnownPacketFactories {
         FriendList.GetTroopMemberList,
         ImgStore.GroupPicUp,
         ImageUpPacket,
-        LongConn.OffPicDown
+        LongConn.OffPicDown,
+        TroopManagement.EditNametag,
+        TroopManagement.Mute,
+        TroopManagement.MuteAll
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(
