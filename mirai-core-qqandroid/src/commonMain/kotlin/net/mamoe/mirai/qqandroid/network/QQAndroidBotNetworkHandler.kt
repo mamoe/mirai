@@ -24,6 +24,7 @@ import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
@@ -264,6 +265,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
         //println("群[${group.uin}]成员全部获取完成, 共${list.size}个成员")
         return list
+    }
+
+    suspend fun mute(member: Member, time: Int) {
+        bot.logger.info("mute..")
+        val data = TroopManagement.Mute(
+            client = bot.client,
+            member = member,
+            timeInSecond = time
+        ).sendAndExpect<TroopManagement.Mute.Response>()
     }
 
     /**
