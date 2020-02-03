@@ -33,7 +33,7 @@ internal abstract class QQAndroidBotBase constructor(
 
     val selfQQ: QQ by lazy { QQ(uin) }
 
-    override fun getQQ(id: Long): QQ {
+    override fun getFriend(id: Long): QQ {
         return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this as QQAndroidBot, coroutineContext, id) })
     }
 

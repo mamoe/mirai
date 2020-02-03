@@ -23,7 +23,7 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     @UseExperimental(MiraiInternalAPI::class)
     override fun getQQs(): List<BlockingQQ> = bot.qqs.delegate.toList().map { it.blocking() }
 
-    override fun getQQ(id: Long): BlockingQQ = bot.getQQ(id).blocking()
+    override fun getQQ(id: Long): BlockingQQ = bot.getFriend(id).blocking()
     @UseExperimental(MiraiInternalAPI::class)
     override fun getGroups(): List<BlockingGroup> = bot.groups.delegate.toList().map { it.blocking() }
 

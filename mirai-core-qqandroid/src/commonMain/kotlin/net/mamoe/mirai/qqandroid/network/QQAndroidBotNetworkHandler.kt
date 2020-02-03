@@ -134,7 +134,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 totalFriendCount = data.totalFriendCount
                 data.friendList.forEach {
                     // atomic add
-                    bot.qqs.delegate.addLast(bot.getQQ(it.friendUin).also {
+                    bot.qqs.delegate.addLast(bot.getFriend(it.friendUin).also {
                         currentFriendCount++
                     })
                 }

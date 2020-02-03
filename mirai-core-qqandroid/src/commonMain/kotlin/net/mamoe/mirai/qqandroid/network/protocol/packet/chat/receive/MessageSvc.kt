@@ -123,14 +123,11 @@ internal class MessageSvc {
 
             val messages = resp.uinPairMsgs.asSequence().filterNot { it.msg == null }.flatMap { it.msg!!.asSequence() }.mapNotNull {
                 when (it.msgHead.msgType) {
-                    166 -> {
-                        FriendMessage(
-                            bot,
-                            false, // TODO: 2020/1/29 PREVIOUS??
-                            bot.getQQ(it.msgHead.fromUin),
-                            it.msgBody.richText.toMessageChain()
-                        )
-                    }
+                    166 -> FriendMessage(
+                        bot,
+                        bot.getFriend(it.msgHead.fromUin),
+                        it.msgBody.richText.toMessageChain()
+                    )
                     else -> null
                 }
             }.toMutableList()
@@ -176,7 +173,7 @@ internal class MessageSvc {
             }
 
             data class Failed(val errorCode: Int, val errorMessage: String) : Response() {
-                override fun toString(): String = "MessageSvc.PbSendMsg.Response.FAILED(errorCode=$errorCode, errorMessage=$errorMessage"
+                override fun toString(): String = "MessageSvc.PbSendMsg.Response.Failed(errorCode=$errorCode, errorMessage=$errorMessage"
             }
         }
 
@@ -224,7 +221,7 @@ internal class MessageSvc {
             ///return@buildOutgoingUniPacket
             writeProtoBuf(
                 MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
-                    routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupCode)), // TODO: 2020/1/30 确认这里是 id 还是 internalId
+                    routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupCode)),
                     contentHead = MsgComm.ContentHead(pkgNum = 1, divSeq = seq),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(

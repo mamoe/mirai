@@ -58,9 +58,15 @@ abstract class Bot : CoroutineScope {
     abstract val qqs: ContactList<QQ>
 
     /**
-     * 获取一个好友对象. 若没有这个好友, 则会抛出异常[NoSuchElementException]
+     * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
      */
-    abstract fun getQQ(id: Long): QQ
+    @Deprecated(message = "这个函数有歧义. 它获取的是好友, 却名为 getQQ", replaceWith = ReplaceWith("getFriend(id)"))
+    fun getQQ(id: Long): QQ = getFriend(id)
+
+    /**
+     * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
+     */
+    abstract fun getFriend(id: Long): QQ
 
     /**
      * 构造一个 [QQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
@@ -133,8 +139,8 @@ abstract class Bot : CoroutineScope {
 
     // region extensions
 
-    fun Int.qq(): QQ = getQQ(this.toLong())
-    fun Long.qq(): QQ = getQQ(this)
+    fun Int.qq(): QQ = getFriend(this.toLong())
+    fun Long.qq(): QQ = getFriend(this)
 
 
     /**
