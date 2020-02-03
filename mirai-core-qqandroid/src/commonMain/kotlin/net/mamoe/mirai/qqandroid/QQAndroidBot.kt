@@ -37,10 +37,6 @@ internal abstract class QQAndroidBotBase constructor(
         return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this as QQAndroidBot, coroutineContext, id) })
     }
 
-    fun getQQOrAdd(id: Long): QQ {
-        return qqs.delegate.filteringGetOrAdd({ it.id == id }, { QQImpl(this as QQAndroidBot, coroutineContext, id) })
-    }
-
     override fun QQ(id: Long): QQ {
         return QQImpl(this as QQAndroidBot, coroutineContext, id)
     }
