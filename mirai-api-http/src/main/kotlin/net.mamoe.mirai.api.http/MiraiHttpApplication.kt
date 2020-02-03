@@ -71,7 +71,7 @@ fun Application.mirai() {
     routing {
         mirai("/sendFriendMessage") {
             // TODO: 2019/11/21 解析图片消息等为 Message
-            Bot.instanceWhose(qq = param("bot")).getQQ(param("qq")).sendMessage(param<String>("message"))
+            Bot.instanceWhose(qq = param("bot")).getFriend(param("qq")).sendMessage(param<String>("message"))
             call.ok()
         }
 

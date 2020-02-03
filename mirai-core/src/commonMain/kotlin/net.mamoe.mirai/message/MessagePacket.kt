@@ -4,7 +4,9 @@ package net.mamoe.mirai.message
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.EventPacket
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.*
@@ -71,12 +73,19 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
 
     // region Image download
     suspend inline fun Image.downloadAsByteArray(): ByteArray = bot.run { downloadAsByteArray() }
+
     suspend inline fun Image.download(): ByteReadPacket = bot.run { download() }
     // endregion
 
-    fun At.qq(): QQ = bot.getQQ(this.target)
+    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getFriend(this.target)"))
+    fun At.qq(): QQ = bot.getFriend(this.target)
 
-    fun Int.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0).toLong())
-    fun Long.qq(): QQ = bot.getQQ(this.coerceAtLeastOrFail(0))
+    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getFriend(this.toLong())"))
+    fun Int.qq(): QQ = bot.getFriend(this.coerceAtLeastOrFail(0).toLong())
 
+    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getFriend(this)"))
+    fun Long.qq(): QQ = bot.getFriend(this.coerceAtLeastOrFail(0))
+
+    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getGroup(this)"))
+    fun Long.group(): Group = bot.getGroup(this)
 }
