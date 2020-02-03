@@ -5,7 +5,9 @@ import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImageUpPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
@@ -119,6 +121,9 @@ internal object KnownPacketFactories {
         FriendList.GetFriendGroupList,
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
+        ImgStore.GroupPicUp,
+        ImageUpPacket,
+        LongConn.OffPicDown,
         TroopManagement.EditNametag,
         TroopManagement.Mute,
         TroopManagement.MuteAll

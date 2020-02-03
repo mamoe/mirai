@@ -31,8 +31,6 @@ interface Group : Contact, CoroutineScope {
 
     /**
      * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新
-     *
-     * **注意**: 获得的列表仅为这一时刻的成员列表的镜像. 它将不会被更新
      */
     val members: ContactList<Member>
 

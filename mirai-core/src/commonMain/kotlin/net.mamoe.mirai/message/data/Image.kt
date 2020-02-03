@@ -5,6 +5,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.Serializable
 
 sealed class Image : Message {
+    abstract val filepath: String
     abstract val md5: ByteArray
 
     abstract override fun toString(): String
@@ -15,7 +16,7 @@ sealed class Image : Message {
 }
 
 abstract class CustomFace : Image() {
-    abstract val filepath: String
+    abstract override val filepath: String
     abstract val fileId: Int
     abstract val serverIp: Int
     abstract val serverPort: Int
@@ -106,7 +107,7 @@ data class CustomFaceFromFile(
 abstract class NotOnlineImage : Image() {
     abstract val resourceId: String
     abstract override val md5: ByteArray
-    abstract val filepath: String
+    abstract override val filepath: String
     abstract val fileLength: Int
     abstract val height: Int
     abstract val width: Int

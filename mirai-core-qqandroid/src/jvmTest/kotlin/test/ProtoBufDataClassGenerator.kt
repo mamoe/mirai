@@ -6,7 +6,7 @@ import java.io.File
 
 fun main() {
     println(
-        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/group/group_label/""")
+        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/s2c/msgtype0x210/submsgtype0xc7/bussinfo/mutualmark""")
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
     )
 }
