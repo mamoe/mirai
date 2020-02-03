@@ -105,11 +105,11 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
     try {
        blk(this)
     } catch (e: IllegalSessionException) {
-        call.respondDTO(StateCodeDTO.ILLEGAL_SESSION)
+        call.respondDTO(StateCodeDTO.IllegalSession)
     } catch (e: NotVerifiedSessionException) {
-        call.respondDTO(StateCodeDTO.NOT_VERIFIED_SESSION)
+        call.respondDTO(StateCodeDTO.NotVerifySession)
     } catch (e: IllegalAccessException) {
-        call.respondDTO(StateCodeDTO.ILLEGAL_ACCESS(e.message), HttpStatusCode.BadRequest)
+        call.respondDTO(StateCodeDTO.IllegalAccess(e.message), HttpStatusCode.BadRequest)
     }
 }
 
@@ -122,7 +122,7 @@ internal suspend inline fun <reified T : DTO> ApplicationCall.respondDTO(dto: T,
 internal suspend fun ApplicationCall.respondJson(json: String, status: HttpStatusCode = HttpStatusCode.OK) =
     respondText(json, defaultTextContentType(ContentType("application", "json")), status)
 
-internal suspend inline fun <reified T : DTO> ApplicationCall.receiveDTO(): T? = receive<String>().apply(::println).jsonParseOrNull()
+internal suspend inline fun <reified T : DTO> ApplicationCall.receiveDTO(): T? = receive<String>().jsonParseOrNull()
 
 
 

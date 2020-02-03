@@ -3,8 +3,6 @@ package net.mamoe.mirai.api.http.route
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
-import net.mamoe.mirai.api.http.AuthedSession
-import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.dto.*
 
 fun Application.messageModule() {
@@ -20,12 +18,12 @@ fun Application.messageModule() {
 
         miraiVerify<SendDTO>("/sendFriendMessage") {
             it.session.bot.getQQ(it.target).sendMessage(it.messageChain.toMessageChain())
-            call.respondDTO(StateCodeDTO.SUCCESS)
+            call.respondDTO(StateCodeDTO.Success)
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
             it.session.bot.getGroup(it.target).sendMessage(it.messageChain.toMessageChain())
-            call.respondDTO(StateCodeDTO.SUCCESS)
+            call.respondDTO(StateCodeDTO.Success)
         }
 
         miraiVerify<VerifyDTO>("/event/message") {
