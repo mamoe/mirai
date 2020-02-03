@@ -180,15 +180,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 toGet[group] = contactList
                 bot.groups.delegate.addLast(group)
             }
-            toGet.forEach {
-                try {
-                    getTroopMemberList(it.key, it.value, it.key.owner.id)
-                    groupInfo[it.key.uin] = it.value.size
-                } catch (e: Exception) {
-                    groupInfo[it.key.uin] = -1
-                    bot.logger.info("群${it.key.uin}的列表拉取失败, 将采用动态加入")
+            coroutineScope {
+                toGet.forEach {
+                    launch {
+                        try {
+                            getTroopMemberList(it.key, it.value, it.key.owner.id)
+                            groupInfo[it.key.uin] = it.value.size
+                        } catch (e: Exception) {
+                            groupInfo[it.key.uin] = -1
+                            bot.logger.info("群${it.key.uin}的列表拉取失败, 将采用动态加入")
+                        }
+                    }
+                    //delay(200)
                 }
-                //delay(200)
             }
             bot.logger.info("群组列表与群成员加载完成, 共 ${troopData.groups.size}个")
         } catch (e: Exception) {
@@ -218,6 +222,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
+        return
 
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
     }
