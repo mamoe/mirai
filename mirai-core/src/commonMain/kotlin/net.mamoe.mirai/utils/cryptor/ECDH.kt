@@ -1,7 +1,6 @@
 package net.mamoe.mirai.utils.cryptor
 
 import net.mamoe.mirai.utils.io.chunkedHexToBytes
-import net.mamoe.mirai.utils.io.toUHexString
 
 expect interface ECDHPrivateKey {
     fun getEncoded(): ByteArray
@@ -65,8 +64,11 @@ private val commonHeadForNot02 = "3046301006072A8648CE3D020106052B8104001F033200
 private const val constantHead = "3046301006072A8648CE3D020106052B8104001F03320004"
 private val byteArray_04 = byteArrayOf(0x04)
 
-fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
-    val head = if(this.size<30) "302E301006072A8648CE3D020106052B8104001F031A00" else "3046301006072A8648CE3D020106052B8104001F03320004"
 
-    return ECDH.constructPublicKey((head + this.toUHexString("")).chunkedHexToBytes())
+private val head1 = "302E301006072A8648CE3D020106052B8104001F031A00".chunkedHexToBytes()
+private val head2 = "3046301006072A8648CE3D020106052B8104001F03320004".chunkedHexToBytes()
+fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
+    val head = if (this.size < 30) head1 else head2
+
+    return ECDH.constructPublicKey(head + this)
 }

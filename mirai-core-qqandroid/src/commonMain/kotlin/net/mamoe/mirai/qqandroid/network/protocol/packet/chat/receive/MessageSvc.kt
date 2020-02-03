@@ -29,7 +29,6 @@ import net.mamoe.mirai.qqandroid.utils.toRichTextElems
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.io.hexToBytes
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -228,11 +227,15 @@ internal class MessageSvc {
                             elems = message.toRichTextElems()
                         )
                     ),
+
+                    //.apply { add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(
+                    //                                pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
+                    //                            ))) }
                     msgSeq = seq,
-                    msgRand = Random.nextInt().absoluteValue,
-                    syncCookie = "08 A0 C2 C4 F1 05 10 A0 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 E4 C2 B1 95 03 48 A1 9F E0 C7 08 58 D3 C2 8F A0 09 60 1D 68 A0 C2 C4 F1 05 70 00".hexToBytes()
-                        ?: SyncCookie(time = currentTimeSeconds + client.timeDifference).toByteArray(SyncCookie.serializer()),
-                    msgVia = 0
+                    msgRand = Random.nextInt().absoluteValue//,
+                    //      syncCookie = ByteArray(0)
+                    //  ?: SyncCookie(time = currentTimeSeconds + client.timeDifference).toByteArray(SyncCookie.serializer()),
+                    // msgVia = 1
                 )
             )
         }
