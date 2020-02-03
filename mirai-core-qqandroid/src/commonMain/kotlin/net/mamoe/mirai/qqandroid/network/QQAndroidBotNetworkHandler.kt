@@ -222,8 +222,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
+        bot.qqs.forEach {
+            println(it.id)
+        }
+        println(bot.qqs.size)
         return
-
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
     }
 
