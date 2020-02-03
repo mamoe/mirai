@@ -17,7 +17,7 @@ fun Application.messageModule() {
         }
 
         miraiVerify<SendDTO>("/sendFriendMessage") {
-            it.session.bot.getQQ(it.target).sendMessage(it.messageChain.toMessageChain())
+            it.session.bot.getFriend(it.target).sendMessage(it.messageChain.toMessageChain())
             call.respondDTO(StateCodeDTO.Success)
         }
 

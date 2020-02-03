@@ -102,7 +102,7 @@ class AuthedSession internal constructor(val bot: Bot, coroutineContext: Corouti
 
     init {
         bot.subscribeMessages {
-            _listener = always { this.run(messageQueue::add) }
+            _listener = always { this.run(messageQueue::add) } // this aka messagePacket
         }
     }
 

@@ -108,6 +108,8 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
         call.respondDTO(StateCodeDTO.IllegalSession)
     } catch (e: NotVerifiedSessionException) {
         call.respondDTO(StateCodeDTO.NotVerifySession)
+    } catch (e: NoSuchElementException) {
+        call.respondDTO(StateCodeDTO.NoElement)
     } catch (e: IllegalAccessException) {
         call.respondDTO(StateCodeDTO.IllegalAccess(e.message), HttpStatusCode.BadRequest)
     }
