@@ -179,7 +179,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         permission = MemberPermission.OWNER
                     )
                 if (it.dwGroupOwnerUin == bot.uin) {
-                    group.botPermission == MemberPermission.OWNER
+                    group.botPermission = MemberPermission.OWNER
                 }
                 toGet[group] = contactList
                 bot.groups.delegate.addLast(group)
@@ -189,9 +189,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     launch {
                         try {
                             getTroopMemberList(it.key, it.value, it.key.owner.id)
-                            groupInfo[it.key.uin] = it.value.size
+                            groupInfo[it.key.id] = it.value.size
                         } catch (e: Exception) {
-                            groupInfo[it.key.uin] = -1
+                            groupInfo[it.key.id] = -1
                             bot.logger.info("群${it.key.uin}的列表拉取失败, 将采用动态加入")
                         }
                     }
@@ -201,28 +201,35 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             bot.logger.info("群组列表与群成员加载完成, 共 ${troopData.groups.size}个")
         } catch (e: Exception) {
             bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+            println(e.message)
+            println(e.logStacktrace())
         }
 
         //===log===//
-        fun fillUntil9(long: Number): String {
+        fun fillUntil(long: Number, size: Int): String {
             val x = long.toString()
-            return " ".repeat(
-                if (9 - x.length > 0) {
-                    9 - x.length
+            return x + " ".repeat(
+                if (size - x.length > 0) {
+                    size - x.length
                 } else {
                     0
                 }
-            ) + x
+            )
         }
 
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
-        bot.logger.info("好友数量: ${fillUntil9(bot.qqs.size)}\t\t\t 加载时间: ${friendLoadFinish - startTime}ms")
-        bot.logger.info("加入群组: ${fillUntil9(bot.groups.size)}\t\t\t 加载时间: ${currentTimeMillis - friendLoadFinish}ms")
+        bot.logger.info("好友数量: ${fillUntil(bot.qqs.size, 9)}\t\t\t 加载时间: ${friendLoadFinish - startTime}ms")
+        bot.logger.info("加入群组: ${fillUntil(bot.groups.size, 9)}\t\t\t 加载时间: ${currentTimeMillis - friendLoadFinish}ms")
         groupInfo.forEach {
             if (it.value == -1) {
-                bot.logger.error("群组号码: ${fillUntil9(it.key)}\t 成员数量加载失败\t BOT权限: " + bot.groups[it.key].botPermission.toString())
+                bot.logger.error("群组号码: ${fillUntil(it.key, 9)}\t 成员数量加载失败")
             } else {
-                bot.logger.info("群组号码: ${fillUntil9(it.key)}\t 成员数量: ${it.value}\t")
+                bot.logger.info(
+                    "群组号码: ${fillUntil(it.key, 9)}\t 成员数量: ${fillUntil(
+                        it.value,
+                        4
+                    )}\t BOT权限: " + bot.groups[it.key].botPermission.toString() + ""
+                )
             }
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
@@ -250,15 +257,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             coroutineContext = group.coroutineContext,
                             permission = when {
                                 it.memberUin == owner -> MemberPermission.OWNER
-                                it.dwFlag == 1L -> MemberPermission.ADMINISTRATOR.apply {
-                                    if (it.memberUin == bot.uin) {
-                                        group.botPermission = MemberPermission.ADMINISTRATOR
-                                    }
-                                }
+                                it.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
                                 else -> MemberPermission.MEMBER
                             }
                         )
                     )
+                } else if (it.dwFlag == 1L) {
+                    group.botPermission = MemberPermission.ADMINISTRATOR
                 }
             }
             size += data.members.size

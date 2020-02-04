@@ -2,9 +2,7 @@
 
 package net.mamoe.mirai.contact
 
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.joinToString
+import net.mamoe.mirai.utils.*
 
 
 /**
@@ -24,10 +22,12 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
 
     operator fun get(id: Long): C = delegate[id]
     fun getOrNull(id: Long): C? = delegate.getOrNull(id)
-    fun containsId(id: Long): Boolean = delegate.getOrNull(id) != null
+    @Deprecated("Use contains instead", ReplaceWith("contains(id)"))
+    fun containsId(id: Long): Boolean = contains(id)
 
     val size: Int get() = delegate.size
     operator fun contains(element: C): Boolean = delegate.contains(element)
+    operator fun contains(id: Long): Boolean = delegate.getOrNull(id) != null
     fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
     fun isEmpty(): Boolean = delegate.isEmpty()
     inline fun forEach(block: (C) -> Unit) = delegate.forEach(block)
@@ -50,5 +50,35 @@ inline fun <C : Contact> LockFreeLinkedList<C>.filteringGetOrNull(filter: (C) ->
     return null
 }
 
-fun <C : Contact> LockFreeLinkedList<C>.getOrAdd(id: Long, supplier: () -> C): C =
-    filteringGetOrAdd({ it.id == id }, supplier)
+
+/**
+ * Collect all the elements into a [MutableList] then cast it as a [List]
+ */
+fun <E : Contact> ContactList<E>.toList(): List<E> = toMutableList()
+
+/**
+ * Collect all the elements into a [MutableList].
+ */
+@UseExperimental(MiraiInternalAPI::class)
+fun <E : Contact> ContactList<E>.toMutableList(): MutableList<E> = this.delegate.toMutableList()
+
+/**
+ * Collect all the elements into a [MutableSet] then cast it as a [Set]
+ */
+fun <E : Contact> ContactList<E>.toSet(): Set<E> = toMutableSet()
+
+/**
+ * Collect all the elements into a [MutableSet].
+ */
+@UseExperimental(MiraiInternalAPI::class)
+fun <E : Contact> ContactList<E>.toMutableSet(): MutableSet<E> = this.delegate.toMutableSet()
+
+/**
+ * Builds a [Sequence] containing all the elements in [this] in the same order.
+ *
+ * Note that the sequence is dynamic, that is, elements are yielded atomically only when it is required
+ */
+@UseExperimental(MiraiInternalAPI::class)
+fun <E : Contact> ContactList<E>.asSequence(): Sequence<E> {
+    return this.delegate.asSequence()
+}

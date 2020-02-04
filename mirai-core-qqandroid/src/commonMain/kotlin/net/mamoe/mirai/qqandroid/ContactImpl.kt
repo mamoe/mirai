@@ -44,9 +44,6 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
         TODO("not implemented")
     }
 
-    override val isOnline: Boolean
-        get() = true
-
     override suspend fun queryProfile(): Profile {
         TODO("not implemented")
     }
@@ -71,8 +68,7 @@ internal class MemberImpl(
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
-
+    override val bot: QQAndroidBot get() = qq.bot
 
     override suspend fun mute(durationSeconds: Int): Boolean {
         if (bot.uin == this.qq.id) {
