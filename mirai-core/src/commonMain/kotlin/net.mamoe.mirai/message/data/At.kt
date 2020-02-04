@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  */
 class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
     @UseExperimental(MiraiInternalAPI::class)
-    constructor(member: Member) : this(member.id, member.groupCard)
+    constructor(member: Member) : this(member.id, "@${member.groupCard}")
 
     override fun toString(): String = display
 
