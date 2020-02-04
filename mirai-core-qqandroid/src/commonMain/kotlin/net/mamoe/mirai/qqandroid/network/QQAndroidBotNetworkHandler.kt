@@ -201,6 +201,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             bot.logger.info("群组列表与群成员加载完成, 共 ${troopData.groups.size}个")
         } catch (e: Exception) {
             bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+            println(e.message)
+            println(e.logStacktrace())
         }
 
         //===log===//
@@ -220,9 +222,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         bot.logger.info("加入群组: ${fillUntil9(bot.groups.size)}\t\t\t 加载时间: ${currentTimeMillis - friendLoadFinish}ms")
         groupInfo.forEach {
             if (it.value == -1) {
-                bot.logger.error("群组号码: ${fillUntil9(it.key)}\t 成员数量加载失败\t BOT权限: " + bot.groups[it.key].botPermission.toString())
+                bot.logger.error("群组号码: ${fillUntil9(it.key)}\t 成员数量加载失败")
             } else {
-                bot.logger.info("群组号码: ${fillUntil9(it.key)}\t 成员数量: ${it.value}\t")
+                bot.logger.info("群组号码: ${fillUntil9(it.key)}\t 成员数量: ${it.value}\t BOT权限: " + bot.groups[it.key].botPermission.toString() + "")
             }
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
