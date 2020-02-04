@@ -71,8 +71,7 @@ internal class MemberImpl(
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
-
+    override val bot: QQAndroidBot get() = qq.bot
 
     override suspend fun mute(durationSeconds: Int): Boolean {
         if (bot.uin == this.qq.id) {
