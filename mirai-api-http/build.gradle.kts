@@ -42,6 +42,7 @@ kotlin {
             implementation(ktor("server-cio"))
             implementation(kotlinx("io-jvm", kotlinXIoVersion))
             implementation(ktor("http-jvm"))
+            implementation("org.slf4j:slf4j-simple:1.7.26")
         }
     }
 
