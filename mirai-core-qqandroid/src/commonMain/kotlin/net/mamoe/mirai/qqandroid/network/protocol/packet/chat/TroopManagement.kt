@@ -12,6 +12,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
+import net.mamoe.mirai.utils.daysToSeconds
 
 internal object TroopManagement {
 
@@ -27,6 +28,7 @@ internal object TroopManagement {
             memberUin: Long,
             timeInSecond: Int
         ): OutgoingPacket {
+            require(timeInSecond in 0..30.daysToSeconds)
             return buildOutgoingUniPacket(client) {
                 writeProtoBuf(
                     OidbSso.OIDBSSOPkg.serializer(),
