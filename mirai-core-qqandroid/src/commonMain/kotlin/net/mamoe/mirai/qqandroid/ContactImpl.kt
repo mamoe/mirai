@@ -89,18 +89,18 @@ internal class MemberImpl(
         } else if (myPermission == MemberPermission.MEMBER) {
             return false
         }
-        try {
+        return try {
             bot.network.run {
-                val response = TroopManagement.Mute(
+                TroopManagement.Mute(
                     client = bot.client,
                     groupCode = group.id,
                     memberUin = this@MemberImpl.id,
                     timeInSecond = durationSeconds
                 ).sendAndExpect<TroopManagement.Mute.Response>()
             }
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 

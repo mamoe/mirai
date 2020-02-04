@@ -76,7 +76,7 @@ suspend fun main() {
         startsWith("profile", removePrefix = true) {
             val account = it.trim()
             if (account.isNotEmpty()) {
-                account.toLong().qq()
+                bot.getFriend(account.toLong())
             } else {
                 sender
             }.queryProfile().toString().reply()
