@@ -68,7 +68,6 @@ internal class MemberImpl(
     override val coroutineContext: CoroutineContext,
     override val permission: MemberPermission
 ) : ContactImpl(), Member, QQ by qq {
-    override val bot: QQAndroidBot get() = qq.bot
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
@@ -76,26 +75,30 @@ internal class MemberImpl(
 
 
     override suspend fun mute(durationSeconds: Int): Boolean {
-        if(bot.uin==this@MemberImpl.qq.id)//不能自己禁言自己
-        {
+        if (bot.uin == this.qq.id) {
             return false
         }
         //判断有无禁言权限
-        var myPermission = group.get(bot.uin).permission
-        if (myPermission == MemberPermission.ADMINISTRATOR || myPermission == MemberPermission.OWNER) {
-            if (myPermission == MemberPermission.OWNER || (myPermission == MemberPermission.ADMINISTRATOR && permission == MemberPermission.MEMBER)) {
-                bot.network.run {
-                    val response = TroopManagement.Mute(
-                        client = bot.client,
-                        member = this@MemberImpl,
-                        timeInSecond = durationSeconds
-                    ).sendAndExpect<TroopManagement.Mute.Response>()
-                }
-                return true
-            }else{
+        val myPermission = group[bot.uin].permission
+        val targetPermission = this.permission
+        if (myPermission != MemberPermission.OWNER) {
+            if (targetPermission == MemberPermission.OWNER || targetPermission == MemberPermission.ADMINISTRATOR) {
                 return false
             }
-        } else {
+        } else if (myPermission == MemberPermission.MEMBER) {
+            return false
+        }
+        try {
+            bot.network.run {
+                val response = TroopManagement.Mute(
+                    client = bot.client,
+                    groupCode = group.id,
+                    memberUin = this@MemberImpl.id,
+                    timeInSecond = durationSeconds
+                ).sendAndExpect<TroopManagement.Mute.Response>()
+            }
+            return true
+        } catch (e: Exception) {
             return false
         }
     }
