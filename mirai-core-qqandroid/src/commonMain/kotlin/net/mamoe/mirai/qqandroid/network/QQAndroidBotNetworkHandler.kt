@@ -173,6 +173,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         initConfessTalk = false,
                         initMuteAll = false,
                         initAutoApprove = false,
+                        initAnonymousChat = false,
                         members = contactList
                     )
                 group.owner =
