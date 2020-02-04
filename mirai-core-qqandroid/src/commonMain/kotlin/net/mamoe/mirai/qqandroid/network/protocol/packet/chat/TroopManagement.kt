@@ -18,7 +18,7 @@ internal object TroopManagement {
 
     internal object Mute : OutgoingPacketFactory<Mute.Response>("OidbSvc.0x570_8") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            // this.debugPrintThis()
+            //屁用没有
             return Response
         }
 
@@ -47,15 +47,8 @@ internal object TroopManagement {
                 )
             }
         }
-
         object Response : Packet
     }
-
-    fun Unmute(
-        client: QQAndroidClient,
-        groupCode: Long,
-        memberUin: Long
-    ): OutgoingPacket = Mute.invoke(client, groupCode, memberUin, 0)
 
 
     internal object MuteAll : OutgoingPacketFactory<LoginPacket.LoginPacketResponse>("OidbSvc.0x89a_0") {

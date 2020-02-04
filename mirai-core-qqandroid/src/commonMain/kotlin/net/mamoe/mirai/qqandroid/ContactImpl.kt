@@ -79,7 +79,7 @@ internal class MemberImpl(
             return false
         }
         //判断有无禁言权限
-        val myPermission = group[bot.uin].permission
+        val myPermission = group.botPermission
         val targetPermission = this.permission
         if (myPermission != MemberPermission.OWNER) {
             if (targetPermission == MemberPermission.OWNER || targetPermission == MemberPermission.ADMINISTRATOR) {
@@ -103,8 +103,8 @@ internal class MemberImpl(
         }
     }
 
-    override suspend fun unmute() {
-        TODO("not implemented")
+    override suspend fun unmute(): Boolean {
+        return mute(0)
     }
 
 }
@@ -120,6 +120,7 @@ internal class GroupImpl(
     override var members: ContactList<Member>
 ) : ContactImpl(), Group {
     override lateinit var owner: Member
+    override var botPermission: MemberPermission = MemberPermission.MEMBER
 
     override suspend fun quit(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
