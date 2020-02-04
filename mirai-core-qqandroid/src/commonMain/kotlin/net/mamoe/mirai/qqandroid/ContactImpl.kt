@@ -67,6 +67,7 @@ internal class MemberImpl(
     override val coroutineContext: CoroutineContext,
     override val permission: MemberPermission
 ) : ContactImpl(), Member, QQ by qq {
+    override val bot: QQAndroidBot get() = qq.bot
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
