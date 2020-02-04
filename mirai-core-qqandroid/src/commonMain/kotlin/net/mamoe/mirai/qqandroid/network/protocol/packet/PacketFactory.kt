@@ -169,7 +169,7 @@ internal object KnownPacketFactories {
         PacketLogger.verbose("包类型(flag2) = $flag2. (可能是 ${if (flag2 == 2) "OicqRequest" else "Uni"})")
 
         val flag3 = readByte().toInt()
-        check(flag3 == 0) { "Illegal flag3. Expected 0, got $flag3" }
+        check(flag3 == 0) { "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2" }
 
         readString(readInt() - 4)// uinAccount
 
