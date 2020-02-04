@@ -14,7 +14,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.utils.io.debugIfFail
 
 
 internal class FriendList {
@@ -22,7 +21,7 @@ internal class FriendList {
     internal object GetTroopMemberList :
         OutgoingPacketFactory<GetTroopMemberList.Response>("friendlist.GetTroopMemberListReq") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            val res = this.debugIfFail { this.decodeUniPacket(GetTroopMemberListResp.serializer()) }
+            val res = this.decodeUniPacket(GetTroopMemberListResp.serializer())
             return Response(
                 res.vecTroopMember,
                 res.nextUin

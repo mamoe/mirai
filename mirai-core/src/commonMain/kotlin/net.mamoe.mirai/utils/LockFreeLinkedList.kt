@@ -19,17 +19,44 @@ inline fun <E> LockFreeLinkedList<E>.joinToString(
 }.dropLast(separator.length) + postfix
 
 /**
- * Returns a [List] containing all the elements in [this] in the same order
+ * Collect all the elements into a [MutableList] then cast it as a [List]
  */
 fun <E> LockFreeLinkedList<E>.toList(): List<E> = toMutableList()
 
 /**
- * Returns a [MutableList] containing all the elements in [this] in the same order
+ * Collect all the elements into a [MutableList].
  */
 fun <E> LockFreeLinkedList<E>.toMutableList(): MutableList<E> {
     val list = mutableListOf<E>()
     this.forEach { list.add(it) }
     return list
+}
+
+/**
+ * Collect all the elements into a [MutableSet] then cast it as a [Set]
+ */
+fun <E> LockFreeLinkedList<E>.toSet(): Set<E> = toMutableSet()
+
+/**
+ * Collect all the elements into a [MutableSet].
+ */
+fun <E> LockFreeLinkedList<E>.toMutableSet(): MutableSet<E> {
+    val list = mutableSetOf<E>()
+    this.forEach { list.add(it) }
+    return list
+}
+
+/**
+ * Builds a [Sequence] containing all the elements in [this] in the same order.
+ *
+ * Note that the sequence is dynamic, that is, elements are yielded atomically only when it is required
+ */
+fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
+    return sequence {
+        forEach {
+            yield(it)
+        }
+    }
 }
 
 /**
@@ -87,6 +114,9 @@ open class LockFreeLinkedList<E> {
 
     open operator fun plusAssign(element: E) = this.addLast(element)
 
+    /**
+     * 过滤并获取, 获取不到则添加一个元素.
+     */
     inline fun filteringGetOrAdd(filter: (E) -> Boolean, noinline supplier: () -> E): E {
         val node = LazyNode(tail, supplier)
 
@@ -149,6 +179,9 @@ open class LockFreeLinkedList<E> {
         }
     }
 
+    /**
+     * 动态计算的大小
+     */
     val size: Int get() = head.countChildIterate<Node<E>>({ it.nextNode }, { it !is Tail }) - 1 // empty head is always included
 
     open operator fun contains(element: E): Boolean {
