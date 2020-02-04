@@ -44,9 +44,6 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
         TODO("not implemented")
     }
 
-    override val isOnline: Boolean
-        get() = true
-
     override suspend fun queryProfile(): Profile {
         TODO("not implemented")
     }
