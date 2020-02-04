@@ -20,7 +20,7 @@ object MiraiJson {
 inline fun <reified T : Any> String.jsonParseOrNull(
     serializer: DeserializationStrategy<T>? = null
 ): T? = try {
-    if(serializer == null) MiraiJson.json.parse(this) else MiraiJson.json.parse(serializer, this)
+    if(serializer == null) MiraiJson.json.parse(this) else Json.parse(this)
 } catch (e: Exception) { null }
 
 
@@ -29,7 +29,7 @@ inline fun <reified T : Any> String.jsonParseOrNull(
 inline fun <reified T : Any> T.toJson(
     serializer: SerializationStrategy<T>? = null
 ): String = if (serializer == null) MiraiJson.json.stringify(this)
-            else Json.stringify(serializer, this)
+            else MiraiJson.json.stringify(serializer, this)
 
 
 
@@ -39,4 +39,4 @@ inline fun <reified T : Any> T.toJson(
 inline fun <reified T : Any> List<T>.toJson(
     serializer: SerializationStrategy<List<T>>? = null
 ): String = if (serializer == null) MiraiJson.json.stringify(this)
-else Json.stringify(serializer, this)
+else MiraiJson.json.stringify(serializer, this)
