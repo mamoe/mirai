@@ -6,7 +6,6 @@ import io.ktor.util.asStream
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
-import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.copyTo
 import kotlinx.io.errors.IOException
@@ -61,13 +60,14 @@ fun File.toExternalImage(): ExternalImage {
         ?: error("Unable to read file(path=${this.path}), no ImageReader found")
     image.input = input
 
+    val inputStream = this.inputStream()
     return ExternalImage(
         width = image.getWidth(0),
         height = image.getHeight(0),
-        md5 = this.inputStream().use { it.md5() },
+        md5 = this.inputStream().md5(), // dont change
         imageFormat = image.formatName,
-        input = this.inputStream().asInput(IoBuffer.Pool),
-        inputSize = this.length(),
+        input = inputStream.asInput(),
+        inputSize = inputStream.available().toLong(),
         filename = this.name
     )
 }
