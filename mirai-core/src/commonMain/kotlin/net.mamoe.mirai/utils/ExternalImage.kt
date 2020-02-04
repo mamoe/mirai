@@ -39,7 +39,7 @@ class ExternalImage(
         ): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining, filename)
     }
 
-    private val format: String = when (val it =imageFormat.toLowerCase()) {
+    private val format: String = when (val it = imageFormat.toLowerCase()) {
         "jpeg" -> "jpg" //必须转换
         else -> it
     }
@@ -56,7 +56,7 @@ class ExternalImage(
      *  SHARPP: 1004
      */
     val imageType: Int
-        get() = when (format){
+        get() = when (format) {
             "jpg" -> 1000
             "png" -> 1001
             "webp" -> 1002
