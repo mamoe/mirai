@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.events.ReceiveFriendAddRequestEvent
@@ -67,7 +68,7 @@ suspend fun main() {
         always {
         }
 
-        case("at me") { At(sender).reply() }
+        case("at me") { At(sender as Member).reply() }
         // 等同于  "at me" reply { At(sender) }
 
         "你好" reply "你好!"

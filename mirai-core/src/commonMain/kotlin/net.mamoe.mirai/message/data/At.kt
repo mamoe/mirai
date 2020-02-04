@@ -2,16 +2,18 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.utils.MiraiInternalAPI
 
 
 /**
  * At 一个人. 只能发送给一个群.
  */
-inline class At(val target: Long) : Message {
-    constructor(target: QQ) : this(target.id)
+class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
+    @UseExperimental(MiraiInternalAPI::class)
+    constructor(member: Member) : this(member.id, member.groupCard)
 
-    override fun toString(): String = "[@$target]" // TODO: 2019/11/25 使用群名称进行 at. 因为手机端只会显示这个文字
+    override fun toString(): String = display
 
     companion object Key : Message.Key<At>
 
@@ -24,4 +26,4 @@ inline class At(val target: Long) : Message {
  * At 这个成员
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun QQ.at(): At = At(this)
+inline fun Member.at(): At = At(this)

@@ -6,6 +6,7 @@ import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.EventPacket
 import net.mamoe.mirai.event.events.BotEvent
@@ -19,6 +20,7 @@ import kotlin.jvm.JvmName
 @UseExperimental(MiraiInternalAPI::class)
 expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>(bot: Bot) : MessagePacketBase<TSender, TSubject>
 
+@Suppress("NOTHING_TO_INLINE")
 @MiraiInternalAPI
 abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : EventPacket, BotEvent() {
     override val bot: Bot by _bot.unsafeWeakRef()
@@ -68,6 +70,8 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     suspend inline fun Image.send() = this.sendTo(subject)
     suspend inline fun Message.send() = this.sendTo(subject)
     suspend inline fun String.send() = this.toMessage().sendTo(subject)
+
+    inline fun QQ.at(): At = At(this as Member)
 
     // endregion
 

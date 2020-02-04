@@ -4,6 +4,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.message.data.CustomFaceFromFile
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.NotOnlineImageFromFile
@@ -206,14 +207,24 @@ internal class GroupImpl(
                     }
                     socket.close()
                     val resourceId = image.calculateImageResourceId()
-                    return NotOnlineImageFromFile(
-                        resourceId = resourceId,
+
+                    return CustomFaceFromFile(
                         md5 = image.md5,
                         filepath = resourceId,
-                        fileLength = image.inputSize.toInt(),
+                        fileId = response.fileId.toInt(),
+                        fileType = 66, // ?
                         height = image.height,
                         width = image.width,
-                        imageType = image.imageType
+                        imageType = image.imageType,
+                        bizType = 0,
+                        serverIp = response.uploadIpList.first(),
+                        serverPort = response.uploadPortList.first(),
+                        signature = image.md5,
+                        size = image.inputSize.toInt(),
+                        useful = 1,
+                        source = 200,
+                        origin = 1,
+                        pbReserve = byteArrayOf(0x78, 0x02)
                     )
                 }
             }
