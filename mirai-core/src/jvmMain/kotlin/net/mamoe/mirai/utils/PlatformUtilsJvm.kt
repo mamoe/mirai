@@ -6,10 +6,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.io.core.copyTo
 import kotlinx.io.pool.useInstance
-import kotlinx.io.streams.asInput
-import kotlinx.io.streams.asOutput
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import java.io.*
 import java.net.InetAddress
@@ -24,16 +21,15 @@ actual fun crc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.t
 
 actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
-fun InputStream.md5(): ByteArray {
+fun InputStream.md5(): ByteArray = this.use {
+
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
-    this.asInput().copyTo(object : OutputStream() {
+    this.transferTo(object : OutputStream() {
         override fun write(b: Int) {
-            b.toByte().let {
-                digest.update(it)
-            }
+            digest.update(b.toByte())
         }
-    }.asOutput())
+    })
     return digest.digest()
 }
 
