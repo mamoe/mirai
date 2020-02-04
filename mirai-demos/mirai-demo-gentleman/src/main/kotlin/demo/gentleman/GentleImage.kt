@@ -12,31 +12,41 @@ class GentleImage {
 
     // `Deferred<Image?>`  causes a runtime ClassCastException
 
-    val image: Deferred<Image> by lazy {
-        GlobalScope.async {
-            //delay((Math.random() * 5000L).toLong())
-            class Result {
-                var id: String = ""
-            }
+    val image: Deferred<Image> by lazy { getImage(0) }
 
+    val seImage: Deferred<Image> by lazy { getImage(1) }
+
+    fun getImage(r18: Int): Deferred<Image> {
+        return GlobalScope.async {
             withTimeoutOrNull(5 * 1000) {
                 withContext(Dispatchers.IO) {
-                    val result = JSON.parseObject(
-                        Jsoup.connect("http://dev.itxtech.org:10322/v2/randomImg.uue").ignoreContentType(true).timeout(10_0000).get().body().text(),
-                        Result::class.java
-                    )
+                    val result =
+                        JSON.parseObject(
+                            Jsoup.connect("https://api.lolicon.app/setu/?r18=$r18").ignoreContentType(true).timeout(
+                                10_0000
+                            ).get().body().text()
+                        )
 
-                    Jsoup.connect("http://dev.itxtech.org:10322/img.uue?size=large&id=${result.id}")
-                        .userAgent(UserAgent.randomUserAgent)
-                        .timeout(10_0000)
+                    val url: String
+                    val pid: String
+                    with(result.getJSONArray("data").getJSONObject(0)) {
+                        url = this.getString("url")
+                        pid = this.getString("pid")
+                    }
+
+                    Jsoup
+                        .connect(url)
+                        .followRedirects(true)
+                        .timeout(180_000)
                         .ignoreContentType(true)
-                        .maxBodySize(Int.MAX_VALUE)
-                        .execute()
-                        .bodyStream()
+                        .userAgent("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; ja-jp) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27")
+                        .referrer("https://www.pixiv.net/member_illust.php?mode=medium&illust_id=$pid")
+                        .ignoreHttpErrors(true)
+                        .maxBodySize(10000000)
+                        .execute().also { check(it.statusCode() == 200) { "Failed to download image" } }
                 }
-            }?.uploadAsImage(contact) ?: error("Unable to download image")
+            }?.bodyStream()?.uploadAsImage(contact) ?: error("Unable to download image")
         }
     }
-
 }
 

@@ -151,11 +151,20 @@ suspend fun main() {
             file.sendAsImageTo(subject)
         }
 
-        startsWith("随机图片", removePrefix = true) {
+        startsWith("色图", removePrefix = true) {
             repeat(it.toIntOrNull() ?: 1) {
                 GlobalScope.launch {
                     delay(Random.Default.nextLong(100, 1000))
                     Gentlemen.provide(subject).receive().image.await().send()
+                }
+            }
+        }
+
+        startsWith("不够色", removePrefix = true) {
+            repeat(it.toIntOrNull() ?: 1) {
+                GlobalScope.launch {
+                    delay(Random.Default.nextLong(100, 1000))
+                    Gentlemen.provide(subject).receive().seImage.await().send()
                 }
             }
         }
