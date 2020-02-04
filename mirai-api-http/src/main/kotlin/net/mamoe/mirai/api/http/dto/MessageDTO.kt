@@ -6,11 +6,13 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /*
-    DTO data class
- */
+*   DTO data class
+* */
 
+// MessagePacket
 @Serializable
 @SerialName("FriendMessage")
 data class FriendMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
@@ -19,68 +21,71 @@ data class FriendMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
 @SerialName("GroupMessage")
 data class GroupMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
 
+// Message
 @Serializable
-data class MessageDTO(val type: MessageType, val data: String) : DTO
+@SerialName("At")
+data class AtDTO(val target: Long, val display: String) : MessageDTO()
+@Serializable
+@SerialName("Face")
+data class FaceDTO(val faceID: Int) : MessageDTO()
+@Serializable
+@SerialName("Plain")
+data class PlainDTO(val text: String) : MessageDTO()
+@Serializable
+@SerialName("Image")
+data class ImageDTO(val path: String) : MessageDTO()
+@Serializable
+@SerialName("Xml")
+data class XmlDTO(val xml: String) : MessageDTO()
+@Serializable
+@SerialName("Unknown")
+data class UnknownMessageDTO(val text: String) : MessageDTO()
+
+/*
+*   Abstract Class
+* */
+@Serializable
+sealed class MessagePacketDTO : DTO {
+    lateinit var messageChain : MessageChainDTO
+}
 
 typealias MessageChainDTO = Array<MessageDTO>
 
 @Serializable
-abstract class MessagePacketDTO : DTO {
-    lateinit var messageChain : MessageChainDTO
-
-    companion object {
-        val EMPTY = @SerialName("UnknownMessage") object : MessagePacketDTO() {}
-    }
-}
+sealed class MessageDTO : DTO
 
 
 /*
     Extend function
  */
-suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
+suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO? = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender, senderName))
-    else -> MessagePacketDTO.EMPTY
-}.apply { messageChain = Array(message.size){ message[it].toDTO() }}
+    else -> null
+}?.apply { messageChain = Array(message.size){ message[it].toDTO() }}
 
 fun MessageChainDTO.toMessageChain() =
     MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage()) } }
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {
-    is At -> MessageDTO(MessageType.AT, target.toString())
-    is Face -> MessageDTO(MessageType.FACE, id.value.toString())
-    is PlainText -> MessageDTO(MessageType.PLAIN, stringValue)
-//    is Image -> MessageDTO(MessageType.IMAGE, ???)
-    is Image -> MessageDTO(MessageType.IMAGE, "NOT SUPPORT IMAGE NOW")
-    is XMLMessage -> MessageDTO(MessageType.XML, stringValue)
-    else -> MessageDTO(MessageType.UNKNOWN, "not support type")
+    is At -> AtDTO(target, display)
+    is Face -> FaceDTO(id.value.toInt())
+    is PlainText -> PlainDTO(stringValue)
+    is Image -> ImageDTO(this.toString())
+    is XMLMessage -> XmlDTO(stringValue)
+    else -> UnknownMessageDTO("未知消息类型")
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class)
-fun MessageDTO.toMessage() = when (type) {
-    MessageType.AT -> At(data.toLong())
-    MessageType.FACE -> Face(FaceId(data.toUByte()))
-    MessageType.PLAIN -> PlainText(data)
-//    MessageType.IMAGE -> Image(???)
-    MessageType.IMAGE -> PlainText(data)
-    MessageType.XML -> XMLMessage(data)
-    MessageType.UNKNOWN -> PlainText(data)
+@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+fun MessageDTO.toMessage() = when (this) {
+    is AtDTO -> At(target, display)
+    is FaceDTO -> Face(FaceId(faceID.toUByte()))
+    is PlainDTO -> PlainText(text)
+    is ImageDTO -> PlainText("[暂时不支持图片]")
+    is XmlDTO -> XMLMessage(xml)
+    is UnknownMessageDTO -> PlainText("assert cannot reach")
 }
 
-
-/*
-    Enum
- */
-
-// TODO: will be replace by [net.mamoe.mirai.message.MessageType]
-enum class MessageType {
-    AT,
-    FACE,
-    PLAIN,
-    IMAGE,
-    XML,
-    UNKNOWN,
-}
 
 
