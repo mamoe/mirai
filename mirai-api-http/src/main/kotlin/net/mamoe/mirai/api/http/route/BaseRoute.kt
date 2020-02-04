@@ -105,19 +105,22 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
     try {
        blk(this)
     } catch (e: IllegalSessionException) {
-        call.respondDTO(StateCodeDTO.IllegalSession)
+        call.respondStateCode(StateCode.IllegalSession)
     } catch (e: NotVerifiedSessionException) {
-        call.respondDTO(StateCodeDTO.NotVerifySession)
+        call.respondStateCode(StateCode.NotVerifySession)
     } catch (e: NoSuchElementException) {
-        call.respondDTO(StateCodeDTO.NoElement)
+        call.respondStateCode(StateCode.NoElement)
     } catch (e: IllegalAccessException) {
-        call.respondDTO(StateCodeDTO.IllegalAccess(e.message), HttpStatusCode.BadRequest)
+        call.respondStateCode(StateCode(400, e.message), HttpStatusCode.BadRequest)
     }
 }
 
 /*
     extend function
  */
+internal suspend inline fun <reified T : StateCode> ApplicationCall.respondStateCode(code: T, status: HttpStatusCode = HttpStatusCode.OK)
+        = respondJson(code.toJson(StateCode.serializer()), status)
+
 internal suspend inline fun <reified T : DTO> ApplicationCall.respondDTO(dto: T, status: HttpStatusCode = HttpStatusCode.OK)
         = respondJson(dto.toJson(), status)
 

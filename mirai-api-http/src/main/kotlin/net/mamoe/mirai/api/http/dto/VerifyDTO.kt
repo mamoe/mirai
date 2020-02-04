@@ -15,19 +15,17 @@ abstract class VerifyDTO : DTO {
 data class BindDTO(override val sessionKey: String, val qq: Long) : VerifyDTO()
 
 
-// 写成data class并继承DTO接口是为了返回时的形式统一
 @Serializable
-sealed class StateCodeDTO(val code: Int, var msg: String) : DTO {
-    object Success : StateCodeDTO(0, "success") // 成功
-    // object AUTH_WRONG : CodeDTO(1) // AuthKey错误, @see AuthResDTO
-    object NoBot : StateCodeDTO(2, "指定Bot不存在")
-    object IllegalSession : StateCodeDTO(3, "Session失效或不存在")
-    object NotVerifySession : StateCodeDTO(4, "Session未认证")
-    object NoElement : StateCodeDTO(5, "指定对象不存在")
+open class StateCode(val code: Int, var msg: String) {
+    object Success : StateCode(0, "success") // 成功
+    object NoBot : StateCode(2, "指定Bot不存在")
+    object IllegalSession : StateCode(3, "Session失效或不存在")
+    object NotVerifySession : StateCode(4, "Session未认证")
+    object NoElement : StateCode(5, "指定对象不存在")
 
     // KS bug: 主构造器中不能有非字段参数 https://github.com/Kotlin/kotlinx.serialization/issues/575
     @Serializable
-    class IllegalAccess() : StateCodeDTO(400, "") { // 非法访问
+    class IllegalAccess() : StateCode(400, "") { // 非法访问
         constructor(msg: String) : this() {
             this.msg = msg
         }

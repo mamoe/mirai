@@ -18,12 +18,12 @@ fun Application.messageModule() {
 
         miraiVerify<SendDTO>("/sendFriendMessage") {
             it.session.bot.getFriend(it.target).sendMessage(it.messageChain.toMessageChain())
-            call.respondDTO(StateCodeDTO.Success)
+            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
             it.session.bot.getGroup(it.target).sendMessage(it.messageChain.toMessageChain())
-            call.respondDTO(StateCodeDTO.Success)
+            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<VerifyDTO>("/event/message") {
