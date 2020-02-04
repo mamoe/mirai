@@ -1,7 +1,8 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
-import kotlinx.io.core.*
-import net.mamoe.mirai.contact.Member
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
@@ -11,20 +12,19 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
-import net.mamoe.mirai.utils.io.debugPrintThis
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement.Mute as Mute
 
-internal class TroopManagement {
+internal object TroopManagement {
 
     internal object Mute : OutgoingPacketFactory<Mute.Response>("OidbSvc.0x570_8") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Mute.Response {
-            this.debugPrintThis()
-            return Response()
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            // this.debugPrintThis()
+            return Response
         }
 
         operator fun invoke(
             client: QQAndroidClient,
-            member: Member,
+            groupCode: Long,
+            memberUin: Long,
             timeInSecond: Int
         ): OutgoingPacket {
             return buildOutgoingUniPacket(client) {
@@ -35,10 +35,10 @@ internal class TroopManagement {
                         serviceType = 8,
                         result = 0,
                         bodybuffer = buildPacket {
-                            writeInt(member.group.id.toInt())//id or UIN?
+                            writeInt(groupCode.toInt())//id or UIN?
                             writeByte(32)
                             writeShort(1)
-                            writeInt(member.id.toInt())
+                            writeInt(memberUin.toInt())
                             writeInt(timeInSecond)
                         }.readBytes()
                     )
@@ -46,16 +46,14 @@ internal class TroopManagement {
             }
         }
 
-        fun unmute(
-            client: QQAndroidClient,
-            member: Member
-        ): OutgoingPacket {
-            return invoke(client, member, 0)
-        }
-
-
-        internal class Response() : Packet
+        object Response : Packet
     }
+
+    fun Unmute(
+        client: QQAndroidClient,
+        groupCode: Long,
+        memberUin: Long
+    ): OutgoingPacket = Mute.invoke(client, groupCode, memberUin, 0)
 
 
     internal object MuteAll : OutgoingPacketFactory<LoginPacket.LoginPacketResponse>("OidbSvc.0x89a_0") {
