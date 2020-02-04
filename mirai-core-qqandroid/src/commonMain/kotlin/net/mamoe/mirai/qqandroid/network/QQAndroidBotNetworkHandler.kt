@@ -477,7 +477,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     private val packetReceiveLock: Mutex = Mutex()
 
     /**
-     * 发送一个包, 但不期待任何返回.
+     * 发送一个包, 但不期待任何返回.-
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
         bot.logger.info("Send: ${this.commandName}")
