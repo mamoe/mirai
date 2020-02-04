@@ -6,7 +6,7 @@
 **[English](README-eng.md)**  
 
 多平台 **QQ Android 和 TimPC** 协议支持库与高效率的机器人框架.   
-纯 Kotlin 实现协议和支持框架，模块<b>全部开源</b>。  
+纯 Kotlin 实现协议和支持框架，模块<b>全部免费开源</b>。  
 目前可运行在 JVM 或 Android。
 Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Application与插件承载QQ机器人
 
