@@ -174,6 +174,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 group.owner =
                     MemberImpl(
                         qq = bot.QQ(it.dwGroupOwnerUin) as QQImpl,
+                        groupCard = "",//unknown now
                         group = group,
                         coroutineContext = group.coroutineContext,
                         permission = MemberPermission.OWNER
@@ -253,6 +254,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     list.delegate.addLast(
                         MemberImpl(
                             qq = bot.QQ(it.memberUin) as QQImpl,
+                            groupCard = it.sShowName ?: it.sName ?: it.nick,
                             group = group,
                             coroutineContext = group.coroutineContext,
                             permission = when {
@@ -262,8 +264,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             }
                         )
                     )
-                } else if (it.dwFlag == 1L) {
-                    group.botPermission = MemberPermission.ADMINISTRATOR
+                } else {
+                    group.owner.groupCard = it.sShowName ?: it.sName ?: it.nick
+                    if (it.dwFlag == 1L) {
+                        group.botPermission = MemberPermission.ADMINISTRATOR
+                    }
                 }
             }
             size += data.members.size

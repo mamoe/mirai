@@ -2,7 +2,6 @@ package demo.gentleman
 
 import com.alibaba.fastjson.JSON
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.JsonObject
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.uploadAsImage
@@ -18,21 +17,24 @@ class GentleImage {
     val seImage: Deferred<Image> by lazy { getImage(1) }
 
     fun getImage(r18: Int): Deferred<Image> {
-        GlobalScope.async {
+        return GlobalScope.async {
             withTimeoutOrNull(5 * 1000) {
                 withContext(Dispatchers.IO) {
-                    val result = JSON.parseObject(
-                        Jsoup.connect("https://api.lolicon.app/setu/?r18=$r18").ignoreContentType(true).timeout(10_0000).get().body().text(),
+                    val result =
+                        JSON.parseObject(
+                            Jsoup.connect("https://api.lolicon.app/setu/?r18=$r18").ignoreContentType(true).timeout(
+                                10_0000
+                            ).get().body().text()
                         )
 
-                    var url = "";
-                    var pid = "";
+                    val url: String
+                    val pid: String
                     with(result.getJSONArray("data").getJSONObject(0)) {
                         url = this.getString("url")
                         pid = this.getString("pid")
                     }
 
-                    val image = Jsoup
+                    Jsoup
                         .connect(url)
                         .followRedirects(true)
                         .timeout(180_000)
@@ -41,12 +43,9 @@ class GentleImage {
                         .referrer("https://www.pixiv.net/member_illust.php?mode=medium&illust_id=$pid")
                         .ignoreHttpErrors(true)
                         .maxBodySize(10000000)
-                        .execute()
-
-                    if (image.statusCode() != 200) error("Failed to download image")
+                        .execute().also { check(it.statusCode() == 200) { "Failed to download image" } }
                 }
-                image.bodyStream().uploadAsImage(contact) ?: error("Unable to upload image")
-            }
+            }?.bodyStream()?.uploadAsImage(contact) ?: error("Unable to download image")
         }
     }
 }
