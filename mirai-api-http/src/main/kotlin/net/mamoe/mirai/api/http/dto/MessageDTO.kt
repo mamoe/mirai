@@ -21,6 +21,10 @@ data class FriendMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
 @SerialName("GroupMessage")
 data class GroupMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
 
+@Serializable
+@SerialName("UnKnownMessage")
+data class UnKnownMessagePacketDTO(val msg: String) : MessagePacketDTO()
+
 // Message
 @Serializable
 @SerialName("At")
@@ -58,11 +62,11 @@ sealed class MessageDTO : DTO
 /*
     Extend function
  */
-suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO? = when (this) {
+suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender, senderName))
-    else -> null
-}?.apply { messageChain = Array(message.size){ message[it].toDTO() }}
+    else -> UnKnownMessagePacketDTO("UnKnown Message Packet")
+}.apply { messageChain = Array(message.size){ message[it].toDTO() }}
 
 fun MessageChainDTO.toMessageChain() =
     MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage()) } }

@@ -2,17 +2,17 @@ package net.mamoe.mirai.api.http.dto
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
 
 interface DTO
 
 object MiraiJson {
-    val json = Json(context = SerializersModule {
-        polymorphic(MessagePacketDTO.serializer()) {
-            GroupMessagePacketDTO::class with GroupMessagePacketDTO.serializer()
-            FriendMessagePacketDTO::class with FriendMessagePacketDTO.serializer()
-        }
-    })
+//    val json = Json(context = SerializersModule {
+//        polymorphic(MessagePacketDTO.serializer()) {
+//            GroupMessagePacketDTO::class with GroupMessagePacketDTO.serializer()
+//            FriendMessagePacketDTO::class with FriendMessagePacketDTO.serializer()
+//        }
+//    })
+    val json = Json
 }
 
 // 解析失败时直接返回null，由路由判断响应400状态
