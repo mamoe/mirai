@@ -146,8 +146,7 @@ fun BytePacketBuilder.t116(
 fun BytePacketBuilder.t100(
     appId: Long = 16,
     subAppId: Long = 537062845,
-    appClientVersion: Int,
-    sigMap: Int
+    appClientVersion: Int
 ) {
     writeShort(0x100)
     writeShortLVPacket {
@@ -156,7 +155,7 @@ fun BytePacketBuilder.t100(
         writeInt(appId.toInt())
         writeInt(subAppId.toInt())
         writeInt(appClientVersion)
-        writeInt(34869472) // 34869472?
+        writeInt(34869472) // sigMap, 34869472?
     } shouldEqualsTo 22
 }
 

@@ -360,7 +360,7 @@ internal object KnownPacketFactories {
 }
 
 @UseExperimental(ExperimentalContracts::class)
-internal inline fun <I : IoBuffer, R> I.withUse(block: I.() -> R): R {
+internal inline fun <R> IoBuffer.withUse(block: IoBuffer.() -> R): R {
     contract {
         callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
     }
@@ -372,7 +372,7 @@ internal inline fun <I : IoBuffer, R> I.withUse(block: I.() -> R): R {
 }
 
 @UseExperimental(ExperimentalContracts::class)
-internal inline fun <I : ByteReadPacket, R> I.withUse(block: I.() -> R): R {
+internal inline fun <R> ByteReadPacket.withUse(block: ByteReadPacket.() -> R): R {
     contract {
         callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
     }
