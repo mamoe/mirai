@@ -45,7 +45,7 @@ class GentleImage {
 
                     if (image.statusCode() != 200) error("Failed to download image")
                 }
-                image.bodyStream().uploadAsImage(contact) ?: error("Unable to download image")
+                image.bodyStream().uploadAsImage(contact) ?: error("Unable to upload image")
             }
         }
     }
