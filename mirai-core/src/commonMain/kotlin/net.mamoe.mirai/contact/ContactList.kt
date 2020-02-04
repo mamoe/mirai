@@ -24,10 +24,12 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
 
     operator fun get(id: Long): C = delegate[id]
     fun getOrNull(id: Long): C? = delegate.getOrNull(id)
-    fun containsId(id: Long): Boolean = delegate.getOrNull(id) != null
+    @Deprecated("Use contains instead", ReplaceWith("contains(id)"))
+    fun containsId(id: Long): Boolean = contains(id)
 
     val size: Int get() = delegate.size
     operator fun contains(element: C): Boolean = delegate.contains(element)
+    operator fun contains(id: Long): Boolean = delegate.getOrNull(id) != null
     fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
     fun isEmpty(): Boolean = delegate.isEmpty()
     inline fun forEach(block: (C) -> Unit) = delegate.forEach(block)
@@ -50,5 +52,3 @@ inline fun <C : Contact> LockFreeLinkedList<C>.filteringGetOrNull(filter: (C) ->
     return null
 }
 
-fun <C : Contact> LockFreeLinkedList<C>.getOrAdd(id: Long, supplier: () -> C): C =
-    filteringGetOrAdd({ it.id == id }, supplier)
