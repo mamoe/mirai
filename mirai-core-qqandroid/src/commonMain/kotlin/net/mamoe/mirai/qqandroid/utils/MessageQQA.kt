@@ -3,6 +3,7 @@ package net.mamoe.mirai.qqandroid.utils
 import net.mamoe.mirai.data.ImageLink
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.utils.io.hexToBytes
 
 internal fun NotOnlineImageFromFile.toJceData(): ImMsgBody.NotOnlineImage {
     return ImMsgBody.NotOnlineImage(
@@ -121,7 +122,13 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             is CustomFaceFromFile -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
-            is NotOnlineImageFromFile -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is NotOnlineImageFromFile -> elements.add(
+                ImMsgBody.Elem(
+                    notOnlineImage = it.toJceData(), generalFlags = ImMsgBody.GeneralFlags(
+                        pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
+                    )
+                )
+            )
         }
     }
 

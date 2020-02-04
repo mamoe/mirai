@@ -22,14 +22,17 @@ actual fun crc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.t
 actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
 fun InputStream.md5(): ByteArray = this.use {
-
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
-    this.transferTo(object : OutputStream() {
-        override fun write(b: Int) {
-            digest.update(b.toByte())
+    this.use { input ->
+        object : OutputStream() {
+            override fun write(b: Int) {
+                digest.update(b.toByte())
+            }
+        }.use { output ->
+            input.copyTo(output)
         }
-    })
+    }
     return digest.digest()
 }
 

@@ -228,14 +228,14 @@ internal class MessageSvc {
                         )
                     ),
 
-                    //.apply { add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(
-                    //                                pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
-                    //                            ))) }
+                    //
+                    //
+                    //
                     msgSeq = seq,
                     msgRand = Random.nextInt().absoluteValue//,
                     //      syncCookie = ByteArray(0)
                     //  ?: SyncCookie(time = currentTimeSeconds + client.timeDifference).toByteArray(SyncCookie.serializer()),
-                    // msgVia = 1
+                    , msgVia = 1
                 )
             )
         }
