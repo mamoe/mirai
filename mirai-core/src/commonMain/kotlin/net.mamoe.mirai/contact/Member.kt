@@ -36,7 +36,7 @@ interface Member : QQ, Contact {
     /**
      * 解除禁言
      */
-    suspend fun unmute()
+    suspend fun unmute(): Boolean
 }
 
 @ExperimentalTime
