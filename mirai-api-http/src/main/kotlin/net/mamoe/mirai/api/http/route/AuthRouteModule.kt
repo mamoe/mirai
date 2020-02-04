@@ -14,9 +14,9 @@ fun Application.authModule() {
     routing {
         miraiAuth("/auth") {
             if (it.authKey != SessionManager.authKey) {
-                call.respondDTO(AuthResDTO(1, ""))
+                call.respondStateCode(StateCode(1, "Auth Key错误"))
             } else {
-                call.respondDTO(AuthResDTO(0, SessionManager.createTempSession().key))
+                call.respondStateCode(StateCode(0, SessionManager.createTempSession().key))
             }
         }
 

@@ -4,6 +4,3 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AuthDTO(val authKey: String) : DTO
-
-@Serializable
-data class AuthResDTO(val code: Int, val session: String) : DTO
