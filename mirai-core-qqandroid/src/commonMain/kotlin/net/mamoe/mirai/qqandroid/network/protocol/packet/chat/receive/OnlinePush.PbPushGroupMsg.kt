@@ -14,11 +14,17 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
+import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.utils.io.useBytes
 
 internal inline class GroupMessageOrNull(val delegate: GroupMessage?) : Packet {
     override fun toString(): String {
         return delegate?.toString() ?: "<Receipt>"
     }
+}
+
+internal class ReqPushPacket():Packet{
+
 }
 
 internal class OnlinePush {
@@ -61,10 +67,45 @@ internal class OnlinePush {
             )
         }
 
+
         override suspend fun QQAndroidBot.handle(packet: GroupMessageOrNull, sequenceId: Int): OutgoingPacket? {
             if (packet.delegate != null) {
                 packet.delegate.broadcast()
             }
+            return null
+        }
+    }
+    /**
+     * 接受群消息
+     */
+    internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush") {
+        @UseExperimental(ExperimentalStdlibApi::class)
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
+            // 10 02 2C 3C 42 DA 83 80 AB 56 0A //len=11
+            // 4F 6E 6C 69 6E 65 50 75 73 68 //OnlinePush//len=10
+            // 66 0D
+            // 53 76 63 52 65 71 50 75 73 68 4D 73 67 //SvcReqPushMsg
+            // 7D 00 01 00 D9 08 00 01 06 03 72 65 71 18 00 01 06 1C //len=18
+            // 4F 6E 6C 69 6E 65 50 75 73 68 50 61 63 6B 2E 53 76 63 52 65 71 50 75 73 68 4D 73 67 //OnlinePushPack.SvcReqPushMsg
+            // 1D 00 01 00 AB 0A 03 00 00 00 00 B8 B1 AE F7 12 5E 39 36 59 29 00 01 0A 02
+            // 2B 85 2D 9D //群号
+            // 1C 21 02 DC 31 AC 9B 46 00 52 5E 39 36 59 6D 00 00 18 //len=18
+            // 2B 85 2D 9D //群号
+            // 0C 01
+            // 92 35 67 D9 //禁言者的QQ号
+            // 5E 39 36 5A 00 01
+            // A8 32 51 A1 //被禁言的QQ号
+            // 00 00 02 58 //禁言时间
+            // 7C 8D 00 00 13 08 DC 05 10 DC 85 E0 80 80 80 80 80 02 18 01 20 E2 86 03 9D 00 0C A3 02 00 00 00 00 18 02 DC B0 01 C9 0C DA 06 00 16 00 26 00 36 00 0B EC FD 0F 00 0C F6 10 00 F6 11 00 F9 12 0C 0B 32 5E 25 65 0A 4D 00 0C 59 0C 68 0C 7C 8D 00 0C 9A 0C 1C 2C 3C 4C 0B AA 0C 1C 2C 3C 4C 0B BA 06 00 16 00 26 00 0B CC 0B 8C 98 0C A8 0C//len=109
+            bot.logger.error(this.useBytes { data, length -> data.toUHexString(length = length)})
+            val reqPushMsg = readProtoBuf(MsgOnlinePush.ReqPush.serializer())
+            bot.logger.error("time=${reqPushMsg.mutetime},gin=${reqPushMsg.groupid1},uin=${reqPushMsg.uin},muteuin=${reqPushMsg.muteuin}")
+            TODO("not implemented")
+            return ReqPushPacket()
+        }
+
+
+        override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
             return null
         }
     }

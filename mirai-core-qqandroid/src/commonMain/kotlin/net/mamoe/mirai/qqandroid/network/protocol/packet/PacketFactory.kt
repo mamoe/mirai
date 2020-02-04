@@ -134,8 +134,10 @@ internal object KnownPacketFactories {
         OnlinePush.PbPushGroupMsg,
         MessageSvc.PushNotify,
         ConfigPushSvc.PushReq
+        //OnlinePush.ReqPush
     )
-    // SvcReqMSFLoginNotify 自己的其他设备上限
+    // OnlinePush.ReqPush 禁言?
+    // SvcReqMSFLoginNotify 自己的其他设备上线
     // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机
     // OnlinePush.PbC2CMsgSync 电脑发消息给别人, 同步给手机
 
