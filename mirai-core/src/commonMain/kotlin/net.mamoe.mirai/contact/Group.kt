@@ -53,7 +53,6 @@ interface Group : Contact, CoroutineScope {
      * ====以上字段在更新值的时候会自动异步上报服务器更改群信息====
      */
 
-
     /**
      * 同为 groupCode, 用户看到的群号码.
      */
