@@ -89,8 +89,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 is LoginPacket.LoginPacketResponse.DeviceLockLogin -> {
                     response = LoginPacket.SubCommand20(
                         bot.client,
-                        response.t402,
-                        response.t403
+                        response.t402
                     ).sendAndExpect()
                     continue@mainloop
                 }
