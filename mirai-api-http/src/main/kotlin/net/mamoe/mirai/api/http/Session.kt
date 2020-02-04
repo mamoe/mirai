@@ -87,9 +87,7 @@ abstract class Session internal constructor(
  *
  * TempSession在建立180s内没有转变为[AuthedSession]应被清除
  */
-class TempSession internal constructor(coroutineContext: CoroutineContext) : Session(coroutineContext) {
-
-}
+class TempSession internal constructor(coroutineContext: CoroutineContext) : Session(coroutineContext)
 
 /**
  * 任何[TempSession]认证后转化为一个[AuthedSession]
