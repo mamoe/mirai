@@ -24,6 +24,7 @@ import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
@@ -167,8 +168,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         coroutineContext = this.coroutineContext,
                         id = it.groupCode,
                         uin = it.groupUin,
-                        name = it.groupName,
-                        announcement = it.groupMemo,
+                        initName = it.groupName,
+                        initAnnouncement = it.groupMemo,
+                        initAllowMemberInvite = false,
+                        initConfessTalk = false,
+                        initMuteAll = false,
+                        initAutoApprove = false,
                         members = contactList
                     )
                 group.owner =
@@ -236,6 +241,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
         return
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
+    }
+
+    suspend fun getGroupInfo(uin: Long) {
+        val data = TroopManagement.getGroupInfo(
+            client = bot.client,
+            groupCode = uin
+        ).sendAndExpect<TroopManagement.getGroupInfo.Response>(timeoutMillis = 3000)
     }
 
     suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long): ContactList<Member> {

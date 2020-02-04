@@ -1,5 +1,7 @@
 package net.mamoe.mirai.qqandroid
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
@@ -23,6 +25,7 @@ import net.mamoe.mirai.utils.io.PlatformSocket
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
+import kotlin.properties.Delegates
 
 internal abstract class ContactImpl : Contact
 
@@ -108,21 +111,113 @@ internal class MemberImpl(
 }
 
 
+/**
+ * 对GroupImpl
+ * 中name/announcement的更改会直接向服务器异步汇报
+ */
 @UseExperimental(MiraiInternalAPI::class)
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
     val uin: Long,
-    override var name: String,
-    override var announcement: String,
+    initName: String,
+    initAnnouncement: String,
+    initAllowMemberInvite: Boolean,
+    initConfessTalk: Boolean,
+    initMuteAll: Boolean,
+    initAutoApprove: Boolean,
+    initAnonymousChat: Boolean,
     override var members: ContactList<Member>
 ) : ContactImpl(), Group {
+
+    override var name by Delegates.observable(initName) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.name(
+                        client = bot.client,
+                        groupCode = id,
+                        newName = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+    override var announcement: String by Delegates.observable(initAnnouncement) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.memo(
+                        client = bot.client,
+                        groupCode = id,
+                        newMemo = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+
+    override var allowMemberInvite: Boolean by Delegates.observable(initAllowMemberInvite) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.allowMemberInvite(
+                        client = bot.client,
+                        groupCode = id,
+                        switch = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+    override var autoApprove: Boolean by Delegates.observable(initAutoApprove) { _, oldValue, newValue ->
+        //暂时也不能改
+    }
+
+    override val anonymousChat: Boolean by Delegates.observable(initAnonymousChat) { _, oldValue, newValue ->
+        //暂时不能改
+    }
+
+    override var confessTalk: Boolean by Delegates.observable(initConfessTalk) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.confessTalk(
+                        client = bot.client,
+                        groupCode = id,
+                        switch = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+
+    override var muteAll: Boolean by Delegates.observable(initMuteAll) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.muteAll(
+                        client = bot.client,
+                        groupCode = id,
+                        switch = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+
     override lateinit var owner: Member
     override var botPermission: MemberPermission = MemberPermission.MEMBER
 
     override suspend fun quit(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
 
     override operator fun get(id: Long): Member {
         return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("for group id $id")
