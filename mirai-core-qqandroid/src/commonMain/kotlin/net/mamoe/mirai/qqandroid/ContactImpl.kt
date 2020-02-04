@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.data.NotOnlineImageFromFile
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.network.highway.Highway
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
@@ -71,9 +72,32 @@ internal class MemberImpl(
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
+    override val bot: QQAndroidBot by bot.unsafeWeakRef()
+
 
     override suspend fun mute(durationSeconds: Int): Boolean {
-        TODO("not implemented")
+        if(bot.uin==this@MemberImpl.qq.id)//不能自己禁言自己
+        {
+            return false
+        }
+        //判断有无禁言权限
+        var myPermission = group.get(bot.uin).permission
+        if (myPermission == MemberPermission.ADMINISTRATOR || myPermission == MemberPermission.OWNER) {
+            if (myPermission == MemberPermission.OWNER || (myPermission == MemberPermission.ADMINISTRATOR && permission == MemberPermission.MEMBER)) {
+                bot.network.run {
+                    val response = TroopManagement.Mute(
+                        client = bot.client,
+                        member = this@MemberImpl,
+                        timeInSecond = durationSeconds
+                    ).sendAndExpect<TroopManagement.Mute.Response>()
+                }
+                return true
+            }else{
+                return false
+            }
+        } else {
+            return false
+        }
     }
 
     override suspend fun unmute() {
