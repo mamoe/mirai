@@ -18,7 +18,8 @@ data class QQDTO(
     val remark: String
 ) : ContactDTO()
 
-suspend fun QQDTO(qq: QQ): QQDTO = QQDTO(qq.id, qq.queryProfile().nickname, qq.queryRemark().value)
+// TODO: queryProfile.nickname & queryRemark.value not support now
+suspend fun QQDTO(qq: QQ): QQDTO = QQDTO(qq.id, "", "")
 
 @Serializable
 data class MemberDTO(
