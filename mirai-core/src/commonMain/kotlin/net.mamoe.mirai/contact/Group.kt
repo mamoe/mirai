@@ -19,6 +19,9 @@ interface Group : Contact, CoroutineScope {
      */
     val owner: Member
 
+
+    val botPermission: MemberPermission
+
     /**
      * 群名称 (同步事件更新)
      */

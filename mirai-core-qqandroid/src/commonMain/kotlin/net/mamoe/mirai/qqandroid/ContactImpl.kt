@@ -68,38 +68,43 @@ internal class MemberImpl(
     override val coroutineContext: CoroutineContext,
     override val permission: MemberPermission
 ) : ContactImpl(), Member, QQ by qq {
-    override val bot: QQAndroidBot get() = qq.bot
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
+    override val bot: QQAndroidBot by bot.unsafeWeakRef()
+
+
     override suspend fun mute(durationSeconds: Int): Boolean {
-        if (bot.uin == this@MemberImpl.qq.id)//不能自己禁言自己
-        {
+        if (bot.uin == this.qq.id) {
             return false
         }
         //判断有无禁言权限
-        val myPermission = group.get(bot.uin).permission
-        if (myPermission == MemberPermission.ADMINISTRATOR || myPermission == MemberPermission.OWNER) {
-            return if (myPermission == MemberPermission.OWNER || (myPermission == MemberPermission.ADMINISTRATOR && permission == MemberPermission.MEMBER)) {
-                bot.network.run {
-                    val response = TroopManagement.Mute(
-                        client = bot.client,
-                        memberUin = id,
-                        groupCode = group.id,
-                        timeInSecond = durationSeconds
-                    ).sendAndExpect<TroopManagement.Mute.Response>()
-                }
-                true
-            } else {
-                false
+        val myPermission = group.botPermission
+        val targetPermission = this.permission
+        if (myPermission != MemberPermission.OWNER) {
+            if (targetPermission == MemberPermission.OWNER || targetPermission == MemberPermission.ADMINISTRATOR) {
+                return false
             }
-        } else {
+        } else if (myPermission == MemberPermission.MEMBER) {
+            return false
+        }
+        try {
+            bot.network.run {
+                val response = TroopManagement.Mute(
+                    client = bot.client,
+                    groupCode = group.id,
+                    memberUin = this@MemberImpl.id,
+                    timeInSecond = durationSeconds
+                ).sendAndExpect<TroopManagement.Mute.Response>()
+            }
+            return true
+        } catch (e: Exception) {
             return false
         }
     }
 
-    override suspend fun unmute() {
-        TODO("not implemented")
+    override suspend fun unmute(): Boolean {
+        return mute(0)
     }
 
 }
@@ -115,6 +120,7 @@ internal class GroupImpl(
     override var members: ContactList<Member>
 ) : ContactImpl(), Group {
     override lateinit var owner: Member
+    override var botPermission: MemberPermission = MemberPermission.MEMBER
 
     override suspend fun quit(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
