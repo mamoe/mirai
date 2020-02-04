@@ -254,7 +254,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     list.delegate.addLast(
                         MemberImpl(
                             qq = bot.QQ(it.memberUin) as QQImpl,
-                            groupCard = it.sShowName ?: it.sName ?: it.nick,
+                            groupCard = it.autoRemark ?: it.nick,
                             group = group,
                             coroutineContext = group.coroutineContext,
                             permission = when {
@@ -265,7 +265,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         )
                     )
                 } else {
-                    group.owner.groupCard = it.sShowName ?: it.sName ?: it.nick
+                    group.owner.groupCard = it.autoRemark ?: it.nick
                     if (it.dwFlag == 1L) {
                         group.botPermission = MemberPermission.ADMINISTRATOR
                     }
