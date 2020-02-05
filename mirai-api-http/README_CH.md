@@ -31,9 +31,9 @@ fun main() {
 }
 ```
 
-|  名字    | 类型 | 可选 | 举例 | 说明 |
-| --- | --- | --- | --- | --- |
-| authKey |  String |false|"U9HSaDXl39ksd918273hU"|创建Mirai-Http-Server时生成的key，可在启动时指定或随机生成|
+| 名字    | 类型   | 可选  | 举例                    | 说明                                                       |
+| ------- | ------ | ----- | ----------------------- | ---------------------------------------------------------- |
+| authKey | String | false | "U9HSaDXl39ksd918273hU" | 创建Mirai-Http-Server时生成的key，可在启动时指定或随机生成 |
 
 #### 响应: 返回(成功):
 
@@ -44,27 +44,27 @@ fun main() {
 }
 ```
 
-|  名字    | 类型 | 举例 | 说明|
-| --- | --- | ---  | --- |
-| code |Int |0|返回状态码|
-| session |String |"UnVerifiedSession"|你的session key|
+| 名字    | 类型   | 举例                | 说明            |
+| ------- | ------ | ------------------- | --------------- |
+| code    | Int    | 0                   | 返回状态码      |
+| session | String | "UnVerifiedSession" | 你的session key |
 
 #### 状态码:
 
-|  代码    | 原因|
-| --- | --- |
-| 0 | 正常 |
-| 1 | 错误的MIRAI API HTTP auth key|
+| 代码 | 原因                          |
+| ---- | ----------------------------- |
+| 0    | 正常                          |
+| 1    | 错误的MIRAI API HTTP auth key |
 
- session key 是使用以下方法必须携带的</br>
+ session key 是使用以下方法必须携带的
  session key 使用前必须进行校验和绑定指定的Bot，**每个Session只能绑定一个Bot，但一个Bot可有多个Session**
-
+ session Key 在未进行校验的情况下，一定时间后将会被自动释放
 
 
 ### 校验Session
 
 ```
-[post] /verify
+[POST] /verify
 ```
 
 使用此方法校验并激活你的Session，同时将Session与一个**已登录**的Bot绑定
@@ -96,13 +96,48 @@ fun main() {
 | ------ | ---------------------------------- |
 | 0      | 正常                               |
 | 1      | 错误的auth key                     |
-| 2      | 绑定的Bot不存在                    |
+| 2      | 指定的Bot不存在                    |
 | 3      | Session失效或不存在                |
 | 4      | Session未认证(未激活)              |
 | 5      | 发送消息目标不存在(指定对象不存在) |
 | 400    | 错误的访问，如参数错误等           |
 
- 
+
+
+### 释放Session
+
+```
+[POST] /release
+```
+
+使用此方式释放session及其相关资源（Bot不会被释放）
+**不使用的Session应当被释放，否则Session持续保存Bot收到的消息，将会导致内存泄露**
+
+#### 请求:
+
+```json5
+{
+    "sessionKey": "YourSessionKey",
+    "qq": 123456789
+}
+```
+
+| 名字       | 类型   | 可选  | 举例             | 说明                       |
+| ---------- | ------ | ----- | -----------------| -------------------------- |
+| sessionKey | String | false | "YourSessionKey" | 你的session key            |
+| qq         | Long   | false | 123456789        | 与该Session绑定Bot的QQ号码 |
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+> SessionKey与Bot 对应错误时将会返回状态码5：指定对象不存在
+
+
 
 ### 发送好友消息
 
