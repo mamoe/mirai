@@ -70,6 +70,7 @@ fun ByteReadPacket.debugPrintThis(name: String = ""): ByteReadPacket {
 @MiraiDebugAPI("Low efficiency")
 @UseExperimental(ExperimentalContracts::class)
 inline fun <R> Input.debugIfFail(name: String = "", onFail: (ByteArray) -> ByteReadPacket = { it.toReadPacket() }, block: ByteReadPacket.() -> R): R {
+
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         callsInPlace(onFail, InvocationKind.UNKNOWN)

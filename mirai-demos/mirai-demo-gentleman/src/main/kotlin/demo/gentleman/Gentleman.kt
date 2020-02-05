@@ -18,22 +18,20 @@ private const val IMAGE_BUFFER_CAPACITY: Int = 5
 @ExperimentalUnsignedTypes
 @ExperimentalCoroutinesApi
 object Gentlemen : MutableMap<Long, Gentleman> by mutableMapOf() {
-    fun provide(key: Contact): Gentleman = this.getOrPut(key.id) { Gentleman(key) }
+    fun provide(key: Contact, keyword: String = ""): Gentleman = this.getOrPut(key.id) { Gentleman(key, keyword) }
 }
 
 /**
  * 工作是缓存图片
  */
 @ExperimentalCoroutinesApi
-class Gentleman(private val contact: Contact) : Channel<GentleImage> by Channel(IMAGE_BUFFER_CAPACITY) {
+class Gentleman(private val contact: Contact, private val keyword: String) : Channel<GentleImage> by Channel(IMAGE_BUFFER_CAPACITY) {
     init {
 
         GlobalScope.launch {
             while (!isClosedForSend) {
-                send(GentleImage().apply {
-                    contact = this@Gentleman.contact
-
-                    image// start downloading
+                send(GentleImage(contact, keyword).apply {
+                    seImage// start downloading
                 })
             }
         }

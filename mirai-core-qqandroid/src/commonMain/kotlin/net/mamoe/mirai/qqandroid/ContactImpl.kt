@@ -59,6 +59,9 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
         TODO("not implemented")
     }
 
+    override fun equals(other: Any?): Boolean {
+        return other is QQ && other.id == this.id
+    }
 }
 
 
@@ -107,6 +110,9 @@ internal class MemberImpl(
         return mute(0)
     }
 
+    override fun equals(other: Any?): Boolean {
+        return other is Member && other.id == this.id
+    }
 }
 
 
@@ -323,5 +329,9 @@ internal class GroupImpl(
                 }
             }
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is Group && other.id == this.id
     }
 }

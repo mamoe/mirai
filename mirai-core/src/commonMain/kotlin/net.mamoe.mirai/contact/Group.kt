@@ -9,38 +9,38 @@ import kotlinx.coroutines.CoroutineScope
  * 群. 在 QQ Android 中叫做 "Troop"
  */
 interface Group : Contact, CoroutineScope {
-
     /**
-     * ====以下字段在更新值的时候会自动异步上报服务器更改群信息====
-     */
-    /**
-     * 群名称
-     * [可查可改已完成]
+     * 群名称.
+     *
+     * 在修改时将会异步上传至服务器.
+     *
+     * 注: 频繁修改可能会被服务器拒绝
      */
     var name: String
     /**
-     * 入群公告, 没有时为空字符串
-     * [可查可改已完成]
+     * 入群公告, 没有时为空字符串.
+     *
+     * 在修改时将会异步上传至服务器.
      */
     var announcement: String
     /**
-     * 全体禁言状态
-     * [可改已完成]
-     */
+     * 全体禁言状态. `true` 为开启.
+     *
+     * 当前仅能修改状态.
+     */// TODO: 2020/2/5 实现 muteAll 的查询
     var muteAll: Boolean
     /**
-     * 坦白说状态
-     * [可查可改已完成]
+     * 坦白说状态. `true` 为允许.
+     *
+     * 在修改时将会异步上传至服务器.
      */
     var confessTalk: Boolean
     /**
-     * 允许群员拉人状态
-     * [可查可改已完成]
+     * 允许群员邀请好友入群的状态. `true` 为允许
      */
     var allowMemberInvite: Boolean
     /**
-     * QQ中的自动加群审批
-     * [可查已完成]
+     * 自动加群审批
      */
     val autoApprove: Boolean
     /**

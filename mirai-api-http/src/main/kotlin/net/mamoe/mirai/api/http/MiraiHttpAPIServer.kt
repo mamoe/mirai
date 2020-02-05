@@ -18,16 +18,11 @@ object MiraiHttpAPIServer {
     @UseExperimental(KtorExperimentalAPI::class)
     fun start(
         port: Int = 8080,
-        authKey: String? = null,
+        authKey: String,
         callback: (() -> Unit)? = null
     ) {
-        authKey?.apply {
-            if (authKey.length in 8..128) {
-                SessionManager.authKey = authKey
-            } else {
-                logger.error("Expected authKey length is between 8 to 128")
-            }
-        }
+        require(authKey.length in 8..128) { "Expected authKey length is between 8 to 128" }
+        SessionManager.authKey = authKey
 
         // TODO: start是无阻塞的，理应获取启动状态后再执行后续代码
         try {

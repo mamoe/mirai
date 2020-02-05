@@ -19,24 +19,40 @@ import kotlin.contracts.contract
  */
 interface Contact : CoroutineScope {
     /**
-     * 这个联系人所属 [Bot]
+     * 这个联系人所属 [Bot].
      */
     @WeakRefProperty
     val bot: Bot // weak ref
 
     /**
      * 可以是 QQ 号码或者群号码.
+     *
+     * 对于 QQ, `uin` 与 `id` 是相同的意思.
+     * 对于 Group, `groupCode` 与 `id` 是相同的意思.
      */
     val id: Long
 
     /**
      * 向这个对象发送消息.
-     *
-     * 速度太快会被服务器屏蔽(无响应). 在测试中不延迟地发送 6 条消息就会被屏蔽之后的数据包 1 秒左右.
      */
     suspend fun sendMessage(message: MessageChain)
 
+    /**
+     * 上传一个图片以备发送.
+     * TODO: 群图片与好友图片之间是否通用还不确定.
+     * TODO: 好友之间图片是否通用还不确定.
+     */
     suspend fun uploadImage(image: ExternalImage): Image
+
+    /**
+     * 判断 `this` 和 [other] 是否是相同的类型, 并且 [id] 相同.
+     *
+     * 注:
+     * [id] 相同的 [Member] 和 [QQ], 他们并不 [equals].
+     * 因为, [Member] 含义为群员, 必属于一个群.
+     * 而 [QQ] 含义为一个独立的人, 可以是好友, 也可以是陌生人.
+     */
+    override fun equals(other: Any?): Boolean
 }
 
 suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
