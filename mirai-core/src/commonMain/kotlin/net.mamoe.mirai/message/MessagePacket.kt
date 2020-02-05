@@ -3,6 +3,7 @@
 package net.mamoe.mirai.message
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -15,35 +16,47 @@ import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
 
 /**
- * 平台相关扩展
+ * 一条从服务器接收到的消息事件.
+ * 请查看各平台的 `actual` 实现的说明.
  */
 @UseExperimental(MiraiInternalAPI::class)
 expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>(bot: Bot) : MessagePacketBase<TSender, TSubject>
 
+/**
+ * 仅内部使用, 请使用 [MessagePacket]
+ */ // Tips: 在 IntelliJ 中 (左侧边栏) 打开 `Structure`, 可查看类结构
 @Suppress("NOTHING_TO_INLINE")
 @MiraiInternalAPI
 abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : EventPacket, BotEvent() {
+    /**
+     * 接受到这条消息的
+     */
     override val bot: Bot by _bot.unsafeWeakRef()
 
     /**
      * 消息事件主体.
      *
-     * 对于好友消息, 这个属性为 [QQ] 的实例;
-     * 对于群消息, 这个属性为 [Group] 的实例
+     * 对于好友消息, 这个属性为 [QQ] 的实例, 与 [sender] 引用相同;
+     * 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessage.group] 引用相同
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
     abstract val subject: TSubject
 
     /**
-     * 发送人
+     * 发送人.
+     *
+     * 在好友消息时为 [QQ] 的实例, 在群消息时为 [Member] 的实例
      */
     abstract val sender: TSender
 
+    /**
+     * 消息内容
+     */
     abstract val message: MessageChain
 
 
-    // region Send to subject
+    // region 发送 Message
 
     /**
      * 给这个消息事件的主体发送消息
@@ -64,20 +77,41 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     @JvmName("reply1")
     suspend inline fun MessageChain.reply() = reply(this)
 
+    // endregion
+
+    // region 上传图片
+    suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
+    // endregion
+
+    // region 发送图片
     suspend inline fun ExternalImage.send() = this.sendTo(subject)
 
-    suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
     suspend inline fun Image.send() = this.sendTo(subject)
     suspend inline fun Message.send() = this.sendTo(subject)
     suspend inline fun String.send() = this.toMessage().sendTo(subject)
+    // endregion
 
-    inline fun QQ.at(): At = At(this as Member)
+    /**
+     * 创建 @ 这个账号的消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
+     */
+    inline fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
 
     // endregion
 
     // region Image download
+    /**
+     * 将图片下载到内存.
+     *
+     * 非常不推荐这样做.
+     */
+    @Deprecated("内存使用效率十分低下", ReplaceWith("this.download()"), DeprecationLevel.WARNING)
     suspend inline fun Image.downloadAsByteArray(): ByteArray = bot.run { downloadAsByteArray() }
 
+    // TODO: 2020/2/5 为下载图片添加文件系统的存储方式
+
+    /**
+     * 将图片下载到内存缓存中 (使用 [IoBuffer.Pool])
+     */
     suspend inline fun Image.download(): ByteReadPacket = bot.run { download() }
     // endregion
 

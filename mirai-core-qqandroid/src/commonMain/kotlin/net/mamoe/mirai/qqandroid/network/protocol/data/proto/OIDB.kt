@@ -16,7 +16,7 @@ class Oidb0x88d : ProtoBuf {
     @Serializable
     class ReqGroupInfo(
         @SerialId(1) val groupCode: Long = 0L,
-        @SerialId(2) val stgroupinfo: Oidb0x88d.GroupInfo? = null,
+        @SerialId(2) val stgroupinfo: GroupInfo? = null,
         @SerialId(3) val lastGetGroupNameTime: Int = 0
     ) : ProtoBuf
 
@@ -24,7 +24,7 @@ class Oidb0x88d : ProtoBuf {
     class RspGroupInfo(
         @SerialId(1) val groupCode: Long = 0L,
         @SerialId(2) val result: Int = 0,
-        @SerialId(3) val stgroupinfo: Oidb0x88d.GroupInfo? = null
+        @SerialId(3) val stgroupinfo: GroupInfo? = null
     ) : ProtoBuf
 
     @Serializable
@@ -165,24 +165,24 @@ class Oidb0x88d : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val stzrspgroupinfo: List<Oidb0x88d.RspGroupInfo>? = null,
+        @SerialId(1) val stzrspgroupinfo: List<RspGroupInfo>? = null,
         @SerialId(2) val errorinfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     class ReqBody(
         @SerialId(1) val appid: Int = 0,
-        @SerialId(2) val stzreqgroupinfo: List<Oidb0x88d.ReqGroupInfo>? = null,
+        @SerialId(2) val stzreqgroupinfo: List<ReqGroupInfo>? = null,
         @SerialId(3) val pcClientVersion: Int = 0
     ) : ProtoBuf
 
     @Serializable
     class GroupHeadPortrait(
         @SerialId(1) val picCnt: Int = 0,
-        @SerialId(2) val msgInfo: List<Oidb0x88d.GroupHeadPortraitInfo>? = null,
+        @SerialId(2) val msgInfo: List<GroupHeadPortraitInfo>? = null,
         @SerialId(3) val defaultId: Int = 0,
         @SerialId(4) val verifyingPicCnt: Int = 0,
-        @SerialId(5) val msgVerifyingpicInfo: List<Oidb0x88d.GroupHeadPortraitInfo>? = null
+        @SerialId(5) val msgVerifyingpicInfo: List<GroupHeadPortraitInfo>? = null
     ) : ProtoBuf
 }
 
@@ -209,18 +209,18 @@ class Oidb0x89a : ProtoBuf {
         @SerialId(11) val certificationType: Int? = null,
         @SerialId(12) val ingCertificationText: ByteArray? = null,
         @SerialId(13) val ingGroupRichFingerMemo: ByteArray? = null,
-        @SerialId(14) val stGroupNewguidelines: Oidb0x89a.GroupNewGuidelinesInfo? = null,
+        @SerialId(14) val stGroupNewguidelines: GroupNewGuidelinesInfo? = null,
         @SerialId(15) val groupFace: Int? = null,
         @SerialId(16) val addOption: Int? = null,
         @SerialId(17) val shutupTime: Int? = null,
         @SerialId(18) val groupTypeFlag: Int? = null,
         @SerialId(19) val stringGroupTag: List<ByteArray>? = null,
-        @SerialId(20) val msgGroupGeoInfo: Oidb0x89a.GroupGeoInfo? = null,
+        @SerialId(20) val msgGroupGeoInfo: GroupGeoInfo? = null,
         @SerialId(21) val groupClassExt: Int? = null,
         @SerialId(22) val ingGroupClassText: ByteArray? = null,
         @SerialId(23) val appPrivilegeFlag: Int? = null,
         @SerialId(24) val appPrivilegeMask: Int? = null,
-        @SerialId(25) val stGroupExInfo: Oidb0x89a.GroupExInfoOnly? = null,
+        @SerialId(25) val stGroupExInfo: GroupExInfoOnly? = null,
         @SerialId(26) val groupSecLevel: Int? = null,
         @SerialId(27) val groupSecLevelInfo: Int? = null,
         @SerialId(28) val subscriptionUin: Long? = null,
@@ -260,7 +260,7 @@ class Oidb0x89a : ProtoBuf {
     @Serializable
     class ReqBody(
         @SerialId(1) val groupCode: Long = 0L,
-        @SerialId(2) val stGroupInfo: Oidb0x89a.Groupinfo? = null,
+        @SerialId(2) val stGroupInfo: Groupinfo? = null,
         @SerialId(3) val originalOperatorUin: Long = 0L,
         @SerialId(4) val reqGroupOpenAppid: Int = 0
     ) : ProtoBuf
@@ -278,13 +278,13 @@ class Cmd0x7cb : ProtoBuf {
     class RspBody(
         @SerialId(1) val timeStamp: Int = 0,
         @SerialId(2) val timeGap: Int = 0,
-        @SerialId(3) val commentConfigs: List<Cmd0x7cb.CommentConfig>? = null,
+        @SerialId(3) val commentConfigs: List<CommentConfig>? = null,
         @SerialId(4) val attendTipsToA: String = "",
         @SerialId(5) val firstMsgTips: String = "",
-        @SerialId(6) val cancleConfig: List<Cmd0x7cb.ConfigItem>? = null,
-        @SerialId(7) val msgDateRequest: Cmd0x7cb.DateRequest? = null,
+        @SerialId(6) val cancleConfig: List<ConfigItem>? = null,
+        @SerialId(7) val msgDateRequest: DateRequest? = null,
         @SerialId(8) val msgHotLocale: List<ByteArray>? = null,//List<AppointDefine.LocaleInfo>
-        @SerialId(9) val msgTopicList: List<Cmd0x7cb.TopicConfig>? = null,
+        @SerialId(9) val msgTopicList: List<TopicConfig>? = null,
         @SerialId(10) val travelMsgTips: String = "",
         @SerialId(11) val travelProfileTips: String = "",
         @SerialId(12) val travelAttenTips: String = "",
@@ -294,7 +294,7 @@ class Cmd0x7cb : ProtoBuf {
     @Serializable
     class CommentConfig(
         @SerialId(1) val appointSubject: Int = 0,
-        @SerialId(2) val msgConfigs: List<Cmd0x7cb.ConfigItem>? = null
+        @SerialId(2) val msgConfigs: List<ConfigItem>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -346,16 +346,16 @@ class GroupAppPb : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val fullList: GroupAppPb.AppList? = null,
-        @SerialId(2) val groupGrayList: GroupAppPb.AppList? = null,
-        @SerialId(3) val redPointList: GroupAppPb.AppList? = null,
+        @SerialId(1) val fullList: AppList? = null,
+        @SerialId(2) val groupGrayList: AppList? = null,
+        @SerialId(3) val redPointList: AppList? = null,
         @SerialId(4) val cacheInterval: Int = 0
     ) : ProtoBuf
 
     @Serializable
     class AppList(
         @SerialId(1) val hash: String = "",
-        @SerialId(2) val infos: List<GroupAppPb.AppInfo>? = null
+        @SerialId(2) val infos: List<AppInfo>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -371,7 +371,7 @@ class GroupAppPb : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val client: GroupAppPb.ClientInfo? = null,
+        @SerialId(1) val client: ClientInfo? = null,
         @SerialId(2) val groupId: Long = 0L,
         @SerialId(3) val groupType: Int = 0,
         @SerialId(4) val fullListHash: String = "",
@@ -427,20 +427,20 @@ class Oidb0xbcb : ProtoBuf {
 
     @Serializable
     class CheckUrlRsp(
-        @SerialId(1) val results: List<Oidb0xbcb.UrlCheckResult>? = null,
+        @SerialId(1) val results: List<UrlCheckResult>? = null,
         @SerialId(2) val nextReqDuration: Int = 0
     ) : ProtoBuf
 
     @Serializable
     class ReqBody(
         @SerialId(9) val notUseCache: Int = 0,
-        @SerialId(10) val checkUrlReq: Oidb0xbcb.CheckUrlReq? = null
+        @SerialId(10) val checkUrlReq: CheckUrlReq? = null
     ) : ProtoBuf
 
     @Serializable
     class RspBody(
         @SerialId(1) val wording: String = "",
-        @SerialId(10) val checkUrlRsp: Oidb0xbcb.CheckUrlRsp? = null
+        @SerialId(10) val checkUrlRsp: CheckUrlRsp? = null
     ) : ProtoBuf
 
     @Serializable
@@ -510,7 +510,7 @@ class Oidb0xbe8 : ProtoBuf {
         @SerialId(3) val reqOfPopupFlag: Int = 0,
         @SerialId(4) val rstOfPopupFlag: Int = 0,
         @SerialId(5) val mqq808WelcomepageFlag: Int = 0,
-        @SerialId(6) val msgPopupResult: List<Oidb0xbe8.PopupResult>? = null
+        @SerialId(6) val msgPopupResult: List<PopupResult>? = null
     ) : ProtoBuf
 }
 
@@ -525,8 +525,8 @@ class Cmd0x7de : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val msgHead: Cmd0x7de.BusiRespHead? = null,
-        @SerialId(2) val msgUserList: List<Cmd0x7de.UserProfile>? = null,
+        @SerialId(1) val msgHead: BusiRespHead? = null,
+        @SerialId(2) val msgUserList: List<UserProfile>? = null,
         @SerialId(3) val ended: Int = 0,
         @SerialId(4) val cookie: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -541,7 +541,7 @@ class Cmd0x7de : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val msgHead: Cmd0x7de.BusiReqHead? = null,
+        @SerialId(1) val msgHead: BusiReqHead? = null,
         @SerialId(2) val msgLbsInfo: AppointDefine.LBSInfo? = null,
         @SerialId(3) val time: Int = 0,
         @SerialId(4) val subject: Int = 0,
@@ -626,7 +626,7 @@ class Oidb0xc35 : ProtoBuf {
     @Serializable
     class ReqBody(
         @SerialId(1) val uin: Long = 0L,
-        @SerialId(2) val msgExposeInfo: List<Oidb0xc35.ExposeItem>? = null
+        @SerialId(2) val msgExposeInfo: List<ExposeItem>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -700,8 +700,8 @@ class Cmd0xccb : ProtoBuf {
         @SerialId(1) val type: Int = 0,
         @SerialId(2) val destUin: Long = 0L,
         @SerialId(3) val groupCode: Long = 0L,
-        @SerialId(4) val c2cMsg: List<Cmd0xccb.C2cMsgInfo>? = null,
-        @SerialId(5) val groupMsg: List<Cmd0xccb.GroupMsgInfo>? = null
+        @SerialId(4) val c2cMsg: List<C2cMsgInfo>? = null,
+        @SerialId(5) val groupMsg: List<GroupMsgInfo>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -709,8 +709,8 @@ class Cmd0xccb : ProtoBuf {
         @SerialId(1) val type: Int = 0,
         @SerialId(2) val destUin: Long = 0L,
         @SerialId(3) val groupCode: Long = 0L,
-        @SerialId(4) val c2cMsg: List<Cmd0xccb.C2cMsgInfo>? = null,
-        @SerialId(5) val groupMsg: List<Cmd0xccb.GroupMsgInfo>? = null,
+        @SerialId(4) val c2cMsg: List<C2cMsgInfo>? = null,
+        @SerialId(5) val groupMsg: List<GroupMsgInfo>? = null,
         @SerialId(6) val resId: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -786,7 +786,7 @@ class Oidb0x5e1 : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(11) val msgUinData: List<Oidb0x5e1.UdcUinData>? = null,
+        @SerialId(11) val msgUinData: List<UdcUinData>? = null,
         @SerialId(12) val uint64UnfinishedUins: List<Long>? = null
     ) : ProtoBuf
 
@@ -850,18 +850,18 @@ class Oidb0xc90 : ProtoBuf {
 
     @Serializable
     class CommunityWebInfo(
-        @SerialId(1) val communityInfoItem: List<Oidb0xc90.CommunityConfigInfo>? = null,
+        @SerialId(1) val communityInfoItem: List<CommunityConfigInfo>? = null,
         @SerialId(2) val page: Int = 0,
         @SerialId(3) val end: Int = 0
     ) : ProtoBuf
 
     @Serializable
     class RspBody(
-        @SerialId(1) val communityInfoItem: List<Oidb0xc90.CommunityConfigInfo>? = null,
+        @SerialId(1) val communityInfoItem: List<CommunityConfigInfo>? = null,
         @SerialId(2) val jumpConcernCommunityUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val communityTitleWording: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val moreUrlWording: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(5) val webCommunityInfo: Oidb0xc90.CommunityWebInfo? = null,
+        @SerialId(5) val webCommunityInfo: CommunityWebInfo? = null,
         @SerialId(6) val jumpCommunityChannelUrl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -889,7 +889,7 @@ class Cmd0xd8a : ProtoBuf {
         @SerialId(1) val uin: Long = 0L,
         @SerialId(2) val cmd: Int = 0,
         @SerialId(3) val body: String = "",
-        @SerialId(4) val clientInfo: Cmd0xd8a.ClientInfo? = null
+        @SerialId(4) val clientInfo: ClientInfo? = null
     ) : ProtoBuf
 
     @Serializable
@@ -903,7 +903,7 @@ class Cmd0xd8a : ProtoBuf {
 class Oidb0xb6f : ProtoBuf {
     @Serializable
     class ReportFreqRspBody(
-        @SerialId(1) val identity: Oidb0xb6f.Identity? = null,
+        @SerialId(1) val identity: Identity? = null,
         @SerialId(4) val remainTimes: Long = 0L,
         @SerialId(5) val expireTime: Int = 0
     ) : ProtoBuf
@@ -928,18 +928,18 @@ class Oidb0xb6f : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val reportFreqRsp: Oidb0xb6f.ReportFreqRspBody? = null
+        @SerialId(1) val reportFreqRsp: ReportFreqRspBody? = null
     ) : ProtoBuf
 
     @Serializable
     class ReportFreqReqBody(
-        @SerialId(1) val identity: Oidb0xb6f.Identity? = null,
+        @SerialId(1) val identity: Identity? = null,
         @SerialId(2) val invokeTimes: Long = 1L
     ) : ProtoBuf
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val reportFreqReq: Oidb0xb6f.ReportFreqReqBody? = null
+        @SerialId(1) val reportFreqReq: ReportFreqReqBody? = null
     ) : ProtoBuf
 }
 
@@ -974,7 +974,7 @@ class Cmd0x7cd : ProtoBuf {
         @SerialId(1) val stamp: Int = 0,
         @SerialId(2) val over: Int = 0,
         @SerialId(3) val next: Int = 0,
-        @SerialId(4) val msgAppointsInfo: List<Cmd0x7cd.AppointBrife>? = null
+        @SerialId(4) val msgAppointsInfo: List<AppointBrife>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1015,7 +1015,7 @@ class Oidb0xc0c : ProtoBuf {
         @SerialId(2) val taskType: Int = 0,
         @SerialId(3) val rowkey: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val feedsId: Long = 0L,
-        @SerialId(5) val msgVideoFromType: Oidb0xc0c.VideoSrcType? = null
+        @SerialId(5) val msgVideoFromType: VideoSrcType? = null
     ) : ProtoBuf
 }
 
@@ -1035,7 +1035,7 @@ class Cmd0x5fb : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val msgHead: Cmd0x5fb.BusiReqHead? = null,
+        @SerialId(1) val msgHead: BusiReqHead? = null,
         @SerialId(2) val msgLbsInfo: AppointDefine.LBSInfo? = null,
         @SerialId(3) val reqInfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -1069,7 +1069,7 @@ class Cmd0x5fb : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val msgHead: Cmd0x5fb.BusiRespHead? = null,
+        @SerialId(1) val msgHead: BusiRespHead? = null,
         @SerialId(2) val msgUserList: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 }
@@ -1097,14 +1097,14 @@ class Oidb0xb61 : ProtoBuf {
     class RspBody(
         @SerialId(1) val wording: String = "",
         @SerialId(2) val nextReqDuration: Int = 0,
-        @SerialId(10) val getAppinfoRsp: Oidb0xb61.GetAppinfoRsp? = null,
-        @SerialId(11) val getMqqappUrlRsp: Oidb0xb61.GetPkgUrlRsp? = null
+        @SerialId(10) val getAppinfoRsp: GetAppinfoRsp? = null,
+        @SerialId(11) val getMqqappUrlRsp: GetPkgUrlRsp? = null
     ) : ProtoBuf
 
     @Serializable
     class ReqBody(
-        @SerialId(10) val getAppinfoReq: Oidb0xb61.GetAppinfoReq? = null,
-        @SerialId(11) val getMqqappUrlReq: Oidb0xb61.GetPkgUrlReq? = null
+        @SerialId(10) val getAppinfoReq: GetAppinfoReq? = null,
+        @SerialId(11) val getMqqappUrlReq: GetPkgUrlReq? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1147,8 +1147,8 @@ class Oidb0xb60 : ProtoBuf {
     @Serializable
     class RspBody(
         @SerialId(1) val wording: String = "",
-        @SerialId(10) val getPrivilegeRsp: Oidb0xb60.GetPrivilegeRsp? = null,
-        @SerialId(11) val checkUrlRsp: Oidb0xb60.CheckUrlRsp? = null
+        @SerialId(10) val getPrivilegeRsp: GetPrivilegeRsp? = null,
+        @SerialId(11) val checkUrlRsp: CheckUrlRsp? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1159,9 +1159,9 @@ class Oidb0xb60 : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val clientInfo: Oidb0xb60.ClientInfo? = null,
-        @SerialId(10) val getPrivilegeReq: Oidb0xb60.GetPrivilegeReq? = null,
-        @SerialId(11) val checkUrlReq: Oidb0xb60.CheckUrlReq? = null
+        @SerialId(1) val clientInfo: ClientInfo? = null,
+        @SerialId(10) val getPrivilegeReq: GetPrivilegeReq? = null,
+        @SerialId(11) val checkUrlReq: CheckUrlReq? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1220,10 +1220,10 @@ class Oidb0xc0b : ProtoBuf {
         @SerialId(2) val canGetCoinCount: Int = 0,
         @SerialId(3) val coinIconUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(5) val lastCompletedTaskStamp: Long = 0L,
-        @SerialId(6) val cmsWording: List<Oidb0xc0b.KanDianCMSActivityInfo>? = null,
+        @SerialId(6) val cmsWording: List<KanDianCMSActivityInfo>? = null,
         @SerialId(7) val lastCmsActivityStamp: Long = 0L,
-        @SerialId(8) val msgKandianCoinRemind: Oidb0xc0b.KanDianCoinRemind? = null,
-        @SerialId(9) val msgKandianTaskRemind: Oidb0xc0b.KanDianTaskRemind? = null
+        @SerialId(8) val msgKandianCoinRemind: KanDianCoinRemind? = null,
+        @SerialId(9) val msgKandianTaskRemind: KanDianTaskRemind? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1274,7 +1274,7 @@ class Cmd0xc85 : ProtoBuf {
     class RspBody(
         @SerialId(101) val result: Int = 0,
         @SerialId(102) val recentInteractionTime: Int = 0,
-        @SerialId(103) val interactionDetailInfo: Cmd0xc85.InteractionDetailInfo? = null
+        @SerialId(103) val interactionDetailInfo: InteractionDetailInfo? = null
     ) : ProtoBuf
 }
 
@@ -1306,7 +1306,7 @@ class Cmd0x7ce : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val msgAppointsInfo: List<Cmd0x7ce.AppintDetail>? = null,
+        @SerialId(1) val msgAppointsInfo: List<AppintDetail>? = null,
         @SerialId(2) val secureFlag: Int = 0,
         @SerialId(3) val secureTips: String = ""
     ) : ProtoBuf
@@ -1349,7 +1349,7 @@ class Oidb0xc6c : ProtoBuf {
     @Serializable
     class ReqBody(
         @SerialId(1) val uin: Long = 0L,
-        @SerialId(2) val msgGroupInfo: List<Oidb0xc6c.GroupInfo>? = null
+        @SerialId(2) val msgGroupInfo: List<GroupInfo>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1373,8 +1373,8 @@ class Oidb0xc05 : ProtoBuf {
     @Serializable
     class RspBody(
         @SerialId(1) val wording: String = "",
-        @SerialId(10) val getCreateAppListRsp: Oidb0xc05.GetCreateAppListRsp? = null,
-        @SerialId(11) val getAuthAppListRsp: Oidb0xc05.GetAuthAppListRsp? = null
+        @SerialId(10) val getCreateAppListRsp: GetCreateAppListRsp? = null,
+        @SerialId(11) val getAuthAppListRsp: GetAuthAppListRsp? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1392,8 +1392,8 @@ class Oidb0xc05 : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(10) val getCreateAppListReq: Oidb0xc05.GetCreateAppListReq? = null,
-        @SerialId(11) val getAuthAppListReq: Oidb0xc05.GetAuthAppListReq? = null
+        @SerialId(10) val getCreateAppListReq: GetCreateAppListReq? = null,
+        @SerialId(11) val getAuthAppListReq: GetAuthAppListReq? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1425,8 +1425,8 @@ class Cmd0x7da : ProtoBuf {
 class Qqconnect : ProtoBuf {
     @Serializable
     class MobileAppInfo(
-        @SerialId(11) val androidAppInfo: List<Qqconnect.AndroidAppInfo>? = null,
-        @SerialId(12) val iosAppInfo: List<Qqconnect.IOSAppInfo>? = null
+        @SerialId(11) val androidAppInfo: List<AndroidAppInfo>? = null,
+        @SerialId(12) val iosAppInfo: List<IOSAppInfo>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1450,7 +1450,7 @@ class Qqconnect : ProtoBuf {
         @SerialId(10) val sourceUrl: String = "",
         @SerialId(11) val iconSmallUrl: String = "",
         @SerialId(12) val iconMiddleUrl: String = "",
-        @SerialId(13) val tencentDocsAppinfo: Qqconnect.TencentDocsAppinfo? = null,
+        @SerialId(13) val tencentDocsAppinfo: TencentDocsAppinfo? = null,
         @SerialId(21) val developerUin: Long = 0L,
         @SerialId(22) val appClass: Int = 0,
         @SerialId(23) val appSubclass: Int = 0,
@@ -1462,10 +1462,10 @@ class Qqconnect : ProtoBuf {
         @SerialId(29) val qqconnectFeature: Int = 0,
         @SerialId(30) val isHatchery: Int = 0,
         @SerialId(31) val testUinList: List<Long>? = null,
-        @SerialId(100) val templateMsgConfig: Qqconnect.TemplateMsgConfig? = null,
-        @SerialId(101) val miniAppInfo: Qqconnect.MiniAppInfo? = null,
-        @SerialId(102) val webAppInfo: Qqconnect.WebAppInfo? = null,
-        @SerialId(103) val mobileAppInfo: Qqconnect.MobileAppInfo? = null
+        @SerialId(100) val templateMsgConfig: TemplateMsgConfig? = null,
+        @SerialId(101) val miniAppInfo: MiniAppInfo? = null,
+        @SerialId(102) val webAppInfo: WebAppInfo? = null,
+        @SerialId(103) val mobileAppInfo: MobileAppInfo? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1561,8 +1561,8 @@ class Oidb0xc26 : ProtoBuf {
     class RgoupLabel(
         @SerialId(1) val name: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(2) val enumType: Int /* enum */ = 1,
-        @SerialId(3) val textColor: Oidb0xc26.RgroupColor? = null,
-        @SerialId(4) val edgingColor: Oidb0xc26.RgroupColor? = null,
+        @SerialId(3) val textColor: RgroupColor? = null,
+        @SerialId(4) val edgingColor: RgroupColor? = null,
         @SerialId(5) val labelAttr: Int = 0,
         @SerialId(6) val labelType: Int = 0
     ) : ProtoBuf
@@ -1576,8 +1576,8 @@ class Oidb0xc26 : ProtoBuf {
     @Serializable
     class Label(
         @SerialId(1) val name: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(2) val textColor: Oidb0xc26.Color? = null,
-        @SerialId(3) val edgingColor: Oidb0xc26.Color? = null,
+        @SerialId(2) val textColor: Color? = null,
+        @SerialId(3) val edgingColor: Color? = null,
         @SerialId(4) val labelType: Int = 0
     ) : ProtoBuf
 
@@ -1589,19 +1589,19 @@ class Oidb0xc26 : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val msgPersons: List<Oidb0xc26.MayKnowPerson>? = null,
+        @SerialId(1) val msgPersons: List<MayKnowPerson>? = null,
         @SerialId(2) val entryInuse: List<Int> = listOf(),
         @SerialId(3) val entryClose: List<Int> = listOf(),
         @SerialId(4) val nextGap: Int = 0,
         @SerialId(5) val timestamp: Int = 0,
         @SerialId(6) val msgUp: Int = 0,
-        @SerialId(7) val entryDelays: List<Oidb0xc26.EntryDelay>? = null,
+        @SerialId(7) val entryDelays: List<EntryDelay>? = null,
         @SerialId(8) val listSwitch: Int = 0,
         @SerialId(9) val addPageListSwitch: Int = 0,
         @SerialId(10) val emRspDataType: Int /* enum */ = 1,
-        @SerialId(11) val msgRgroupItems: List<Oidb0xc26.RecommendInfo>? = null,
+        @SerialId(11) val msgRgroupItems: List<RecommendInfo>? = null,
         @SerialId(12) val boolIsNewuser: Boolean = false,
-        @SerialId(13) val msgTables: List<Oidb0xc26.TabInfo>? = null,
+        @SerialId(13) val msgTables: List<TabInfo>? = null,
         @SerialId(14) val cookies: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -1612,15 +1612,15 @@ class Oidb0xc26 : ProtoBuf {
         @SerialId(3) val tableName: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val iconUrlSelect: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(5) val iconUrlUnselect: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(6) val backgroundColorSelect: Oidb0xc26.Color? = null,
-        @SerialId(7) val backgroundColorUnselect: Oidb0xc26.Color? = null
+        @SerialId(6) val backgroundColorSelect: Color? = null,
+        @SerialId(7) val backgroundColorUnselect: Color? = null
     ) : ProtoBuf
 
     @Serializable
     class MayKnowPerson(
         @SerialId(1) val uin: Long = 0L,
-        @SerialId(2) val msgIosSource: Oidb0xc26.AddFriendSource? = null,
-        @SerialId(3) val msgAndroidSource: Oidb0xc26.AddFriendSource? = null,
+        @SerialId(2) val msgIosSource: AddFriendSource? = null,
+        @SerialId(3) val msgAndroidSource: AddFriendSource? = null,
         @SerialId(4) val reason: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(5) val additive: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(6) val nick: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1637,14 +1637,14 @@ class Oidb0xc26 : ProtoBuf {
         @SerialId(17) val mobileName: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(18) val token: String = "",
         @SerialId(19) val onlineState: Int = 0,
-        @SerialId(20) val msgLabels: List<Oidb0xc26.Label>? = null,
+        @SerialId(20) val msgLabels: List<Label>? = null,
         @SerialId(21) val sourceid: Int = 0
     ) : ProtoBuf
 
     @Serializable
     class RecommendInfo(
         @SerialId(1) val woring: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(2) val msgGroups: List<Oidb0xc26.RgroupInfo>? = null
+        @SerialId(2) val msgGroups: List<RgroupInfo>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1654,11 +1654,11 @@ class Oidb0xc26 : ProtoBuf {
         @SerialId(3) val groupName: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val groupMemo: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(5) val memberNum: Int = 0,
-        @SerialId(6) val groupLabel: List<Oidb0xc26.RgoupLabel>? = null,
+        @SerialId(6) val groupLabel: List<RgoupLabel>? = null,
         @SerialId(7) val groupFlagExt: Int = 0,
         @SerialId(8) val groupFlag: Int = 0,
         @SerialId(9) val source: Int /* enum */ = 1,
-        @SerialId(10) val tagWording: Oidb0xc26.RgoupLabel? = null,
+        @SerialId(10) val tagWording: RgoupLabel? = null,
         @SerialId(11) val algorithm: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(12) val joinGroupAuth: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(13) val activity: Int = 0,
@@ -1697,7 +1697,7 @@ class Oidb0xc26 : ProtoBuf {
 class Cmd0xac6 : ProtoBuf {
     @Serializable
     class RspBody(
-        @SerialId(1) val results: List<Cmd0xac6.OperateResult>? = null,
+        @SerialId(1) val results: List<OperateResult>? = null,
         @SerialId(4) val metalCount: Int = 0,
         @SerialId(5) val metalTotal: Int = 0,
         @SerialId(9) val int32NewCount: Int = 0,
@@ -1707,7 +1707,7 @@ class Cmd0xac6 : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val medals: List<Cmd0xac6.MedalReport>? = null,
+        @SerialId(1) val medals: List<MedalReport>? = null,
         @SerialId(2) val clean: Int = 0
     ) : ProtoBuf
 
@@ -1788,12 +1788,12 @@ class Cmd0xac7 : ProtoBuf {
         @SerialId(1) val cmd: Int = 0,
         @SerialId(2) val din: Long = 0L,
         @SerialId(3) val extd: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(4) val msgBinderSig: Cmd0xac7.BinderSig? = null
+        @SerialId(4) val msgBinderSig: BinderSig? = null
     ) : ProtoBuf
 
     @Serializable
     class ReceiveMessageDevices(
-        @SerialId(1) val devices: List<Cmd0xac7.DeviceInfo>? = null
+        @SerialId(1) val devices: List<DeviceInfo>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1836,22 +1836,22 @@ class FavoriteCKVData : ProtoBuf {
         @SerialId(7) val height: Int = 0,
         @SerialId(8) val size: Int = 0,
         @SerialId(9) val type: Int = 0,
-        @SerialId(10) val msgOwner: FavoriteCKVData.Author? = null,
+        @SerialId(10) val msgOwner: Author? = null,
         @SerialId(11) val picId: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     class KandianFavoriteItem(
-        @SerialId(1) val msgFavoriteExtInfo: FavoriteCKVData.KandianFavoriteBizData? = null,
+        @SerialId(1) val msgFavoriteExtInfo: KandianFavoriteBizData? = null,
         @SerialId(2) val bytesCid: List<ByteArray>? = null,
         @SerialId(3) val type: Int = 0,
         @SerialId(4) val status: Int = 0,
-        @SerialId(5) val msgAuthor: FavoriteCKVData.Author? = null,
+        @SerialId(5) val msgAuthor: Author? = null,
         @SerialId(6) val createTime: Long = 0L,
         @SerialId(7) val favoriteTime: Long = 0L,
         @SerialId(8) val modifyTime: Long = 0L,
         @SerialId(9) val dataSyncTime: Long = 0L,
-        @SerialId(10) val msgFavoriteSummary: FavoriteCKVData.FavoriteSummary? = null
+        @SerialId(10) val msgFavoriteSummary: FavoriteSummary? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1860,7 +1860,7 @@ class FavoriteCKVData : ProtoBuf {
         @SerialId(2) val title: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val publisher: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(4) val brief: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(5) val msgPicInfo: List<FavoriteCKVData.PicInfo>? = null,
+        @SerialId(5) val msgPicInfo: List<PicInfo>? = null,
         @SerialId(6) val type: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(7) val resourceUri: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -1869,18 +1869,18 @@ class FavoriteCKVData : ProtoBuf {
     class UserFavoriteList(
         @SerialId(1) val uin: Long = 0L,
         @SerialId(2) val modifyTs: Long = 0L,
-        @SerialId(100) val msgFavoriteItems: List<FavoriteCKVData.FavoriteItem>? = null
+        @SerialId(100) val msgFavoriteItems: List<FavoriteItem>? = null
     ) : ProtoBuf
 
     @Serializable
     class FavoriteSummary(
-        @SerialId(2) val msgLinkSummary: FavoriteCKVData.LinkSummary? = null
+        @SerialId(2) val msgLinkSummary: LinkSummary? = null
     ) : ProtoBuf
 
     @Serializable
     class FavoriteItem(
         @SerialId(1) val favoriteSource: Int = 0,
-        @SerialId(100) val msgKandianFavoriteItem: FavoriteCKVData.KandianFavoriteItem? = null
+        @SerialId(100) val msgKandianFavoriteItem: KandianFavoriteItem? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1939,7 +1939,7 @@ class Oidb0xccd : ProtoBuf {
     @Serializable
     class RspBody(
         @SerialId(1) val errcode: Int = 0,
-        @SerialId(2) val results: List<Oidb0xccd.Result>? = null
+        @SerialId(2) val results: List<Result>? = null
     ) : ProtoBuf
 }
 
@@ -1979,7 +1979,7 @@ class Oidb0x87c : ProtoBuf {
 class Cmd0xbf2 : ProtoBuf {
     @Serializable
     class RspBody(
-        @SerialId(1) val phoneAddrBook: List<Cmd0xbf2.PhoneAddrBook>? = null,
+        @SerialId(1) val phoneAddrBook: List<PhoneAddrBook>? = null,
         @SerialId(2) val end: Int = 0,
         @SerialId(3) val nextIndex: Long = 0
     ) : ProtoBuf
@@ -2014,10 +2014,10 @@ class Cmd0x6cd : ProtoBuf {
         @SerialId(8) val lastRecvTime: Int = 0,
         @SerialId(9) val fromId: Long = 0L,
         @SerialId(10) val enumRedpointType: Int /* enum */ = 1,
-        @SerialId(11) val msgRedpointExtraInfo: Cmd0x6cd.RepointExtraInfo? = null,
+        @SerialId(11) val msgRedpointExtraInfo: RepointExtraInfo? = null,
         @SerialId(12) val configVersion: String = "",
         @SerialId(13) val doActivity: Int = 0,
-        @SerialId(14) val msgUnreadMsg: List<Cmd0x6cd.MessageRec>? = null
+        @SerialId(14) val msgUnreadMsg: List<MessageRec>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -2028,15 +2028,15 @@ class Cmd0x6cd : ProtoBuf {
 
     @Serializable
     class RspBody(
-        @SerialId(1) val msgRedpoint: List<Cmd0x6cd.RedpointInfo>? = null,
-        @SerialId(2) val unfinishedRedpoint: List<Cmd0x6cd.PullRedpointReq>? = null
+        @SerialId(1) val msgRedpoint: List<RedpointInfo>? = null,
+        @SerialId(2) val unfinishedRedpoint: List<PullRedpointReq>? = null
     ) : ProtoBuf
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val lastPullRedpoint: List<Cmd0x6cd.PullRedpointReq>? = null,
-        @SerialId(2) val unfinishedRedpoint: List<Cmd0x6cd.PullRedpointReq>? = null,
-        @SerialId(3) val msgPullSingleTask: Cmd0x6cd.PullRedpointReq? = null,
+        @SerialId(1) val lastPullRedpoint: List<PullRedpointReq>? = null,
+        @SerialId(2) val unfinishedRedpoint: List<PullRedpointReq>? = null,
+        @SerialId(3) val msgPullSingleTask: PullRedpointReq? = null,
         @SerialId(4) val retMsgRec: Int = 0
     ) : ProtoBuf
 
@@ -2072,9 +2072,9 @@ class Oidb0xd55 : ProtoBuf {
         @SerialId(2) val appType: Int = 0,
         @SerialId(3) val srcId: Int = 0,
         @SerialId(4) val rawUrl: String = "",
-        @SerialId(11) val checkAppSignReq: Oidb0xd55.CheckAppSignReq? = null,
-        @SerialId(12) val checkUserReq: Oidb0xd55.CheckUserReq? = null,
-        @SerialId(13) val checkMiniAppReq: Oidb0xd55.CheckMiniAppReq? = null
+        @SerialId(11) val checkAppSignReq: CheckAppSignReq? = null,
+        @SerialId(12) val checkUserReq: CheckUserReq? = null,
+        @SerialId(13) val checkMiniAppReq: CheckMiniAppReq? = null
     ) : ProtoBuf
 
     @Serializable
@@ -2085,9 +2085,9 @@ class Oidb0xd55 : ProtoBuf {
     @Serializable
     class RspBody(
         @SerialId(1) val wording: String = "",
-        @SerialId(11) val checkAppSignRsp: Oidb0xd55.CheckAppSignRsp? = null,
-        @SerialId(12) val checkUserRsp: Oidb0xd55.CheckUserRsp? = null,
-        @SerialId(13) val checkMiniAppRsp: Oidb0xd55.CheckMiniAppRsp? = null
+        @SerialId(11) val checkAppSignRsp: CheckAppSignRsp? = null,
+        @SerialId(12) val checkUserRsp: CheckUserRsp? = null,
+        @SerialId(13) val checkMiniAppRsp: CheckMiniAppRsp? = null
     ) : ProtoBuf
 
     @Serializable
@@ -2148,7 +2148,7 @@ class Cmd0x8b4 : ProtoBuf {
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val flag: Int = 0,
         @SerialId(21) val tag: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(22) val groupInfo: List<Cmd0x8b4.GroupInfo>? = null,
+        @SerialId(22) val groupInfo: List<GroupInfo>? = null,
         @SerialId(23) val textLabel: List<ByteArray>? = null
     ) : ProtoBuf
 }
@@ -2157,7 +2157,7 @@ class Cmd0x8b4 : ProtoBuf {
 class Cmd0x682 : ProtoBuf {
     @Serializable
     class RspBody(
-        @SerialId(1) val msgChatinfo: List<Cmd0x682.ChatInfo>? = null
+        @SerialId(1) val msgChatinfo: List<ChatInfo>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -2200,7 +2200,7 @@ class Cmd0x6f5 : ProtoBuf {
     @Serializable
     class RspBody(
         @SerialId(1) val configVersion: String = "",
-        @SerialId(2) val taskInfo: List<Cmd0x6f5.TaskInfo>? = null
+        @SerialId(2) val taskInfo: List<TaskInfo>? = null
     ) : ProtoBuf
 }
 
@@ -2208,7 +2208,7 @@ class Cmd0x6f5 : ProtoBuf {
 class Oidb0xb7e : ProtoBuf {
     @Serializable
     class RspBody(
-        @SerialId(1) val topItem: List<Oidb0xb7e.DiandianTopConfig>? = null
+        @SerialId(1) val topItem: List<DiandianTopConfig>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -2230,7 +2230,7 @@ class Oidb0xb7e : ProtoBuf {
 class Oidb0xc2f : ProtoBuf {
     @Serializable
     class RspBody(
-        @SerialId(1) val msgGetFollowUserRecommendListRsp: Oidb0xc2f.GetFollowUserRecommendListRsp? = null
+        @SerialId(1) val msgGetFollowUserRecommendListRsp: GetFollowUserRecommendListRsp? = null
     ) : ProtoBuf
 
     @Serializable
@@ -2251,13 +2251,13 @@ class Oidb0xc2f : ProtoBuf {
 
     @Serializable
     class GetFollowUserRecommendListRsp(
-        @SerialId(1) val msgRecommendList: List<Oidb0xc2f.RecommendAccountInfo>? = null,
+        @SerialId(1) val msgRecommendList: List<RecommendAccountInfo>? = null,
         @SerialId(2) val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val msgGetFollowUserRecommendListReq: Oidb0xc2f.GetFollowUserRecommendListReq? = null
+        @SerialId(1) val msgGetFollowUserRecommendListReq: GetFollowUserRecommendListReq? = null
     ) : ProtoBuf
 }
 
@@ -2288,7 +2288,7 @@ class Cmd0xd40 : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val dev: Cmd0xd40.DeviceInfo? = null,
+        @SerialId(1) val dev: DeviceInfo? = null,
         @SerialId(2) val src: Int = 0,
         @SerialId(3) val event: Int = 0,
         @SerialId(4) val redtype: Int = 0
@@ -2312,7 +2312,7 @@ class Cmd0x6ce : ProtoBuf {
 
     @Serializable
     class ReqBody(
-        @SerialId(1) val msgReadReq: List<Cmd0x6ce.ReadRedpointReq>? = null
+        @SerialId(1) val msgReadReq: List<ReadRedpointReq>? = null
     ) : ProtoBuf
 }
 

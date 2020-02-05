@@ -11,18 +11,18 @@ import kotlin.time.ExperimentalTime
  */
 interface Member : QQ, Contact {
     /**
-     * 所在的群
+     * 所在的群.
      */
     @WeakRefProperty
     val group: Group
 
     /**
-     * 权限
+     * 成员的权限, 动态更新.
      */
     val permission: MemberPermission
 
     /**
-     *
+     * 群名片 (如果有) 或个人昵称. 动态更新.
      */
     var groupCard: String
 
@@ -30,7 +30,7 @@ interface Member : QQ, Contact {
      * 禁言
      *
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
-     * @return 若机器人无权限禁言这个群成员, 返回 `false`
+     * @return 仅当机器人无权限禁言这个群成员时返回 `false`
      *
      * @see Int.minutesToSeconds
      * @see Int.hoursToSeconds
@@ -39,10 +39,14 @@ interface Member : QQ, Contact {
     suspend fun mute(durationSeconds: Int): Boolean
 
     /**
-     * 解除禁言
+     * 解除禁言. 在没有权限时会返回 `false`. 否则均返回 `true`.
      */
     suspend fun unmute(): Boolean
 
+    /**
+     * 当且仅当 `[other] is [Member] && [other].id == this.id && [other].group == this.group` 时为 true
+     */
+    override fun equals(other: Any?): Boolean
 }
 
 @ExperimentalTime

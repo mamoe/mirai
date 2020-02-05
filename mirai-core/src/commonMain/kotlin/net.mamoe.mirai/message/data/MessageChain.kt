@@ -17,6 +17,8 @@ import kotlin.reflect.KProperty
  * - 若两个 [MessageChain] 连接, 后一个将会被合并到第一个内.
  * - 若一个 [MessageChain] 与一个其他 [Message] 连接, [Message] 将会被添加入 [MessageChain].
  * - 若一个 [Message] 与一个 [MessageChain] 连接, [Message] 将会被添加入 [MessageChain].
+ *
+ * 要获取更多信息, 请查看 [Message]
  */
 interface MessageChain : Message, MutableList<Message> {
     // region Message override

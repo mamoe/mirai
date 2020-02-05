@@ -22,37 +22,52 @@ import java.net.URL
 import javax.imageio.ImageIO
 
 /**
+ * 一条从服务器接收到的消息事件.
  * JVM 平台相关扩展
  */
 @UseExperimental(MiraiInternalAPI::class)
 actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor(bot: Bot) : MessagePacketBase<TSender, TSubject>(bot) {
+    // region 上传图片
     suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+
     suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
     suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)
     suspend inline fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
     suspend inline fun uploadImage(image: File): Image = subject.uploadImage(image)
+    // endregion
 
+    // region 发送图片
     suspend inline fun sendImage(image: BufferedImage) = subject.sendImage(image)
+
     suspend inline fun sendImage(image: URL) = subject.sendImage(image)
     suspend inline fun sendImage(image: Input) = subject.sendImage(image)
     suspend inline fun sendImage(image: InputStream) = subject.sendImage(image)
     suspend inline fun sendImage(image: File) = subject.sendImage(image)
+    // endregion
 
+    // region 上传图片 (扩展)
     suspend inline fun BufferedImage.upload(): Image = upload(subject)
+
     suspend inline fun URL.uploadAsImage(): Image = uploadAsImage(subject)
     suspend inline fun Input.uploadAsImage(): Image = uploadAsImage(subject)
     suspend inline fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
     suspend inline fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    // endregion 上传图片 (扩展)
 
+    // region 发送图片 (扩展)
     suspend inline fun BufferedImage.send() = sendTo(subject)
+
     suspend inline fun URL.sendAsImage() = sendAsImageTo(subject)
     suspend inline fun Input.sendAsImage() = sendAsImageTo(subject)
     suspend inline fun InputStream.sendAsImage() = sendAsImageTo(subject)
     suspend inline fun File.sendAsImage() = sendAsImageTo(subject)
+    // endregion 发送图片 (扩展)
 
+    // region 下载图片 (扩展)
     suspend inline fun Image.downloadTo(file: File): Long = file.outputStream().use { downloadTo(it) }
+
     /**
-     * 这个函数结束后不会关闭 [output]
+     * 这个函数结束后不会关闭 [output]. 请务必解决好 [OutputStream.close]
      */
     suspend inline fun Image.downloadTo(output: OutputStream): Long =
         download().inputStream().use { input -> withContext(Dispatchers.IO) { input.copyTo(output) } }
@@ -60,4 +75,5 @@ actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual con
     suspend inline fun Image.downloadAsStream(): InputStream = download().inputStream()
     suspend inline fun Image.downloadAsExternalImage(): ExternalImage = withContext(Dispatchers.IO) { download().toExternalImage() }
     suspend inline fun Image.downloadAsBufferedImage(): BufferedImage = withContext(Dispatchers.IO) { ImageIO.read(downloadAsStream()) }
+    // endregion
 }
