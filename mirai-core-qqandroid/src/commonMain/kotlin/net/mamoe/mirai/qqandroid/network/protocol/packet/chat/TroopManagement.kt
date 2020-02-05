@@ -55,7 +55,11 @@ internal object TroopManagement {
             }
         }
 
-        object Response : Packet
+        object Response : Packet {
+            override fun toString(): String {
+                return "Response(Mute)"
+            }
+        }
     }
 
 
@@ -65,7 +69,11 @@ internal object TroopManagement {
             val allowMemberInvite: Boolean,
             val autoApprove: Boolean,
             val confessTalk: Boolean
-        ) : Packet
+        ) : Packet {
+            override fun toString(): String {
+                return "Response(GroupInfo)"
+            }
+        }
 
         operator fun invoke(
             client: QQAndroidClient,
