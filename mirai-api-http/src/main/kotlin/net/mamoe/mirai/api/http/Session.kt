@@ -9,7 +9,7 @@ import net.mamoe.mirai.message.MessagePacket
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-tailrec fun generateSessionKey():String{
+tailrec fun generateSessionKey(): String {
     fun generateRandomSessionKey(): String {
         val all = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890qwertyuiopasdfghjklzxcvbnm"
         return buildString(capacity = 8) {
@@ -20,27 +20,27 @@ tailrec fun generateSessionKey():String{
     }
 
     val key = generateRandomSessionKey()
-    if(!SessionManager.allSession.containsKey(key)){
+    if (!SessionManager.allSession.containsKey(key)) {
         return key
     }
 
     return generateSessionKey()
 }
 
-object SessionManager {
+internal object SessionManager {
 
-    val allSession:MutableMap<String,Session> = mutableMapOf()
+    val allSession: MutableMap<String, Session> = mutableMapOf()
 
-    lateinit var authKey:String
+    lateinit var authKey: String
 
 
-    fun createTempSession():TempSession = TempSession(EmptyCoroutineContext).also {newTempSession ->
+    fun createTempSession(): TempSession = TempSession(EmptyCoroutineContext).also { newTempSession ->
         allSession[newTempSession.key] = newTempSession
         //设置180000ms后检测并回收
-        newTempSession.launch{
+        newTempSession.launch {
             delay(180000)
             allSession[newTempSession.key]?.run {
-                if(this is TempSession)
+                if (this is TempSession)
                     closeSession(newTempSession.key)
             }
         }
@@ -50,13 +50,11 @@ object SessionManager {
 
     fun containSession(sessionKey: String): Boolean = allSession.containsKey(sessionKey)
 
-    fun closeSession(sessionKey: String) = allSession.remove(sessionKey)?.also {it.close() }
+    fun closeSession(sessionKey: String) = allSession.remove(sessionKey)?.also { it.close() }
 
     fun closeSession(session: Session) = closeSession(session.key)
 
 }
-
-
 
 
 /**
@@ -68,18 +66,17 @@ object SessionManager {
  */
 abstract class Session internal constructor(
     coroutineContext: CoroutineContext
-): CoroutineScope {
+) : CoroutineScope {
     val supervisorJob = SupervisorJob(coroutineContext[Job])
     final override val coroutineContext: CoroutineContext = supervisorJob + coroutineContext
 
-    val key:String = generateSessionKey()
+    val key: String = generateSessionKey()
 
 
-    internal open fun close(){
+    internal open fun close() {
         supervisorJob.complete()
     }
 }
-
 
 
 /**
@@ -93,10 +90,10 @@ class TempSession internal constructor(coroutineContext: CoroutineContext) : Ses
  * 任何[TempSession]认证后转化为一个[AuthedSession]
  * 在这一步[AuthedSession]应该已经有assigned的bot
  */
-class AuthedSession internal constructor(val bot: Bot, coroutineContext: CoroutineContext):Session(coroutineContext){
+class AuthedSession internal constructor(val bot: Bot, coroutineContext: CoroutineContext) : Session(coroutineContext) {
 
     val messageQueue = MessageQueue()
-    private val _listener : Listener<MessagePacket<*, *>>
+    private val _listener: Listener<MessagePacket<*, *>>
 
     init {
         bot.subscribeMessages {
