@@ -14,6 +14,28 @@ abstract class VerifyDTO : DTO {
 @Serializable
 data class BindDTO(override val sessionKey: String, val qq: Long) : VerifyDTO()
 
+@Serializable
+data class SendDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val messageChain: MessageChainDTO
+) : VerifyDTO()
+
+typealias GroupTargetDTO = FriendTargetDTO
+
+@Serializable
+data class FriendTargetDTO(
+    override val sessionKey: String,
+    val target: Long
+) : VerifyDTO()
+
+@Serializable
+data class MuteDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val member: Long = 0,
+    val time: Int = 0
+) : VerifyDTO()
 
 @Serializable
 open class StateCode(val code: Int, var msg: String) {
@@ -22,6 +44,7 @@ open class StateCode(val code: Int, var msg: String) {
     object IllegalSession : StateCode(3, "Session失效或不存在")
     object NotVerifySession : StateCode(4, "Session未认证")
     object NoElement : StateCode(5, "指定对象不存在")
+    object PermissionDenied : StateCode(10, "无操作权限")
 
     // KS bug: 主构造器中不能有非字段参数 https://github.com/Kotlin/kotlinx.serialization/issues/575
     @Serializable
@@ -32,9 +55,3 @@ open class StateCode(val code: Int, var msg: String) {
     }
 }
 
-@Serializable
-data class SendDTO(
-    override val sessionKey: String,
-    val target: Long,
-    val messageChain: MessageChainDTO
-) : VerifyDTO()

@@ -28,6 +28,7 @@ fun Application.mirai() {
     authModule()
     messageModule()
     infoModule()
+    groupManageModule()
 }
 
 /**
@@ -111,8 +112,10 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
         call.respondStateCode(StateCode.NotVerifySession)
     } catch (e: NoSuchBotException) {
         call.respondStateCode(StateCode.NoBot)
-    }catch (e: NoSuchElementException) {
+    } catch (e: NoSuchElementException) {
         call.respondStateCode(StateCode.NoElement)
+    } catch (e: PermissionDeniedException) {
+        call.respondStateCode(StateCode.PermissionDenied)
     } catch (e: IllegalAccessException) {
         call.respondStateCode(StateCode(400, e.message), HttpStatusCode.BadRequest)
     }
@@ -196,6 +199,11 @@ object NotVerifiedSessionException : IllegalAccessException("Session未激活")
  * 指定Bot不存在
  */
 object NoSuchBotException: IllegalAccessException("指定Bot不存在")
+
+/**
+ * 指定Bot不存在
+ */
+object PermissionDeniedException: IllegalAccessException("无操作限权")
 
 /**
  * 错误参数
