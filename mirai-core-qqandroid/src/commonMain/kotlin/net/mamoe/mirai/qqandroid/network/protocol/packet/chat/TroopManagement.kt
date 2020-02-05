@@ -6,6 +6,7 @@ import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -18,7 +19,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.utils.daysToSeconds
-import net.mamoe.mirai.utils.io.debugPrintThis
 
 internal object TroopManagement {
 
@@ -58,9 +58,13 @@ internal object TroopManagement {
     }
 
 
-    internal object getGroupInfo : OutgoingPacketFactory<getGroupInfo.Response>("OidbSvc.0x88d_7") {
-
-        class Response() : Packet
+    internal object GetGroupOperationInfo : OutgoingPacketFactory<GetGroupOperationInfo.Response>("OidbSvc.0x88d_7") {
+        class Response(
+            val allowAnonymousChat: Boolean,
+            val allowMemberInvite: Boolean,
+            val autoApprove: Boolean,
+            val confessTalk: Boolean
+        ) : Packet
 
         operator fun invoke(
             client: QQAndroidClient,
@@ -104,12 +108,18 @@ internal object TroopManagement {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            debugPrintThis()
-            return Response()
+            with(this.readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x88d.RspBody.serializer()).stzrspgroupinfo!![0].stgroupinfo!!) {
+                return Response(
+                    allowMemberInvite = (this.groupFlagExt?.and(0x000000c0) != 0),
+                    allowAnonymousChat = (this.groupFlagExt?.and(0x40000000) == 0),
+                    autoApprove = (this.groupFlagext3?.and(0x00100000) == 0),
+                    confessTalk = (this.groupFlagext3?.and(0x00002000) == 0)
+                )
+            }
         }
     }
 
-    internal object updateGroupInfo : OutgoingPacketFactory<updateGroupInfo.Response>("OidbSvc.0x89a_0") {
+    internal object GroupOperation : OutgoingPacketFactory<GroupOperation.Response>("OidbSvc.0x89a_0") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             return Response
         }

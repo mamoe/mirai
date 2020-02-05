@@ -161,6 +161,20 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
             troopData.groups.forEach {
                 val contactList = ContactList(LockFreeLinkedList<Member>())
+                val groupInfoResponse = try {
+                    TroopManagement.GetGroupOperationInfo(
+                        client = bot.client,
+                        groupCode = it.groupCode
+                    ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>()
+                } catch (e: Exception) {
+                    bot.logger.info("获取" + it.groupCode + "的群设置失败")
+                    TroopManagement.GetGroupOperationInfo.Response(
+                        allowAnonymousChat = false,
+                        allowMemberInvite = false,
+                        autoApprove = false,
+                        confessTalk = false
+                    )
+                }
                 val group =
                     GroupImpl(
                         bot = bot,
@@ -169,11 +183,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         uin = it.groupUin,
                         initName = it.groupName,
                         initAnnouncement = it.groupMemo,
-                        initAllowMemberInvite = false,
-                        initConfessTalk = false,
-                        initMuteAll = false,
-                        initAutoApprove = false,
-                        initAnonymousChat = false,
+                        initAllowMemberInvite = groupInfoResponse.allowMemberInvite,
+                        initConfessTalk = groupInfoResponse.confessTalk,
+                        initMuteAll = false,//todo
+                        initAutoApprove = groupInfoResponse.autoApprove,
+                        initAnonymousChat = groupInfoResponse.allowAnonymousChat,
                         members = contactList
                     )
                 group.owner =
@@ -244,10 +258,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     suspend fun getGroupInfo(uin: Long) {
-        val data = TroopManagement.getGroupInfo(
+        val data = TroopManagement.GetGroupOperationInfo(
             client = bot.client,
             groupCode = uin
-        ).sendAndExpect<TroopManagement.getGroupInfo.Response>(timeoutMillis = 3000)
+        ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>(timeoutMillis = 3000)
     }
 
     suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long): ContactList<Member> {

@@ -1,6 +1,5 @@
 package net.mamoe.mirai.qqandroid
 
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendNameRemark
@@ -134,7 +133,7 @@ internal class GroupImpl(
         if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
             this.bot.launch {
                 bot.network.run {
-                    TroopManagement.updateGroupInfo.name(
+                    TroopManagement.GroupOperation.name(
                         client = bot.client,
                         groupCode = id,
                         newName = newValue
@@ -148,7 +147,7 @@ internal class GroupImpl(
         if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
             this.bot.launch {
                 bot.network.run {
-                    TroopManagement.updateGroupInfo.memo(
+                    TroopManagement.GroupOperation.memo(
                         client = bot.client,
                         groupCode = id,
                         newMemo = newValue
@@ -163,7 +162,7 @@ internal class GroupImpl(
         if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
             this.bot.launch {
                 bot.network.run {
-                    TroopManagement.updateGroupInfo.allowMemberInvite(
+                    TroopManagement.GroupOperation.allowMemberInvite(
                         client = bot.client,
                         groupCode = id,
                         switch = newValue
@@ -185,7 +184,7 @@ internal class GroupImpl(
         if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
             this.bot.launch {
                 bot.network.run {
-                    TroopManagement.updateGroupInfo.confessTalk(
+                    TroopManagement.GroupOperation.confessTalk(
                         client = bot.client,
                         groupCode = id,
                         switch = newValue
@@ -200,7 +199,7 @@ internal class GroupImpl(
         if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
             this.bot.launch {
                 bot.network.run {
-                    TroopManagement.updateGroupInfo.muteAll(
+                    TroopManagement.GroupOperation.muteAll(
                         client = bot.client,
                         groupCode = id,
                         switch = newValue

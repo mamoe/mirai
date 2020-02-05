@@ -127,8 +127,8 @@ internal object KnownPacketFactories {
         LongConn.OffPicDown,
         TroopManagement.EditNametag,
         TroopManagement.Mute,
-        TroopManagement.updateGroupInfo,
-        TroopManagement.getGroupInfo
+        TroopManagement.GroupOperation,
+        TroopManagement.GetGroupOperationInfo
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(
