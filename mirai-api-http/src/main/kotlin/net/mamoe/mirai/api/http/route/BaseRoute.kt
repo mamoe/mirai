@@ -27,6 +27,7 @@ fun Application.mirai() {
 
     authModule()
     messageModule()
+    infoModule()
 }
 
 /**
