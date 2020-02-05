@@ -2,7 +2,7 @@
 
 <b>Mirai-API-http 提供HTTP API供所有语言使用mirai</b>
 
-### 快速开始
+## 快速开始
 
 ```kotlin
 fun main() {
@@ -15,6 +15,8 @@ fun main() {
     bot.network.awaitDisconnection()
 }
 ```
+
+## 认证相关
 
 ### 开始会话-认证(Authorize)
 
@@ -92,15 +94,16 @@ fun main() {
 }
 ```
 
-| 状态码 | 原因                               |
-| ------ | ---------------------------------- |
-| 0      | 正常                               |
-| 1      | 错误的auth key                     |
-| 2      | 指定的Bot不存在                    |
-| 3      | Session失效或不存在                |
-| 4      | Session未认证(未激活)              |
-| 5      | 发送消息目标不存在(指定对象不存在) |
-| 400    | 错误的访问，如参数错误等           |
+| 状态码 | 原因                                |
+| ------ | ----------------------------------- |
+| 0      | 正常                                |
+| 1      | 错误的auth key                      |
+| 2      | 指定的Bot不存在                     |
+| 3      | Session失效或不存在                 |
+| 4      | Session未认证(未激活)               |
+| 5      | 发送消息目标不存在(指定对象不存在)  |
+| 10     | 无操作权限，指Bot没有对应操作的限权 |
+| 400    | 错误的访问，如参数错误等            |
 
 
 
@@ -137,6 +140,8 @@ fun main() {
 ```
 > SessionKey与Bot 对应错误时将会返回状态码5：指定对象不存在
 
+
+## 消息相关
 
 
 ### 发送好友消息
@@ -340,3 +345,215 @@ fun main() {
 | 名字 | 类型   | 说明    |
 | ---- | ------ | ------- |
 | xml  | String | XML文本 |
+
+
+
+## 管理相关
+
+### 获取好友列表
+
+使用此方法获取bot的好友列表
+
+```
+[GET] /friendList?sessionKey=YourSessionKey
+```
+
+#### 请求:
+
+| 名字       | 可选  | 举例           | 说明            |
+| ---------- | ----- | -------------- | --------------- |
+| sessionKey | false | YourSessionKey | 你的session key |
+
+#### 响应: 返回JSON对象
+
+```json5
+[{
+    "id":123456789,
+    "nickName":"",
+    "remark":""
+  },{
+    "id":987654321,
+    "nickName":"",
+    "remark":""
+}]
+```
+
+
+### 获取群列表
+
+使用此方法获取bot的群列表
+
+```
+[GET] /groupList?sessionKey=YourSessionKey
+```
+
+#### 请求:
+
+| 名字       | 可选  | 举例           | 说明            |
+| ---------- | ----- | -------------- | --------------- |
+| sessionKey | false | YourSessionKey | 你的session key |
+
+#### 响应: 返回JSON对象
+
+```json5
+[{
+    "id":123456789,
+    "name":"群名1"
+  },{
+    "id":987654321,
+    "name":"群名2"
+}]
+```
+
+
+
+### 获取群成员列表
+
+使用此方法获取bot指定群种的成员列表
+
+```
+[GET] /memberList?sessionKey=YourSessionKey
+```
+
+#### 请求:
+
+| 名字       | 可选  | 举例           | 说明            |
+| ---------- | ----- | -------------- | --------------- |
+| sessionKey | false | YourSessionKey | 你的session key |
+| target     | false | 123456789      | 指定群的群号    |
+
+#### 响应: 返回JSON对象
+
+```json5
+[{
+    "id":1234567890,
+    "memberName":"",
+    "group":{
+        "id":12345,
+        "name":"群名1"
+    },
+    "permission":"MEMBER"
+  },{
+    "id":9876543210,
+    "memberName":"",
+    "group":{
+        "id":54321,
+        "name":"群名2"
+    },
+    "permission":"OWNER"
+}]
+```
+
+
+
+### 群全体禁言
+
+使用此方法令指定群进行全体禁言
+
+```
+[POST] /muteAll
+```
+
+#### 请求:
+
+```json5
+{
+  "sessionKey": "YourSessionKey",
+  "target": 123456789,
+}
+```
+
+| 名字       | 可选  | 类型   | 举例             | 说明            |
+| ---------- | ----- | ------ | ---------------- | --------------- |
+| sessionKey | false | String | "YourSessionKey" | 你的session key |
+| target     | false | Long   | 123456789        | 指定群的群号    |
+
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+
+
+
+### 群解除全体禁言
+
+使用此方法令指定群解除全体禁言
+
+```
+[POST] /unmuteAll
+```
+
+#### 请求:
+
+同全体禁言
+
+#### 响应
+
+同全体禁言
+
+
+
+### 群禁言群成员
+
+使用此方法指定群禁言指定群员
+
+```
+[POST] /mute
+```
+
+#### 请求:
+
+```json5
+{
+  "sessionKey": "YourSessionKey",
+  "target": 123456789,
+  "member": 987654321,
+  "time": 1800
+}
+```
+
+| 名字       | 可选  | 类型   | 举例             | 说明                                  |
+| ---------- | ----- | ------ | ---------------- | ------------------------------------- |
+| sessionKey | false | String | "YourSessionKey" | 你的session key                       |
+| target     | false | Long   | 123456789        | 指定群的群号                          |
+| member     | false | Long   | 987654321        | 指定群员QQ号                          |
+| time       | true  | Int    | 1800             | 禁言时长，单位为秒，最多30天，默认为0 |
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+
+
+
+### 群解除群成员禁言
+
+使用此方法令指定群解除全体禁言
+
+```
+[POST] /unmute
+```
+
+#### 请求:
+
+```josn5
+{
+  "sessionKey": "YourSessionKey",
+  "target": 123456789,
+  "member": 987654321
+}
+```
+
+#### 响应
+
+同群禁言群成员
+
