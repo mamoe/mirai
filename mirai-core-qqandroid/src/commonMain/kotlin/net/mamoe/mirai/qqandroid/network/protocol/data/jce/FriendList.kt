@@ -5,6 +5,25 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
 
 @Serializable
+internal class ModifyGroupCardReq(
+    @SerialId(0) val dwZero: Long,
+    @SerialId(1) val dwGroupCode: Long,
+    @SerialId(2) val dwNewSeq: Long,
+    @SerialId(3) val vecUinInfo: List<stUinInfo>
+) : JceStruct
+
+@Serializable
+internal class stUinInfo(
+    @SerialId(0) val dwuin: Long,
+    @SerialId(1) val dwFlag: Long,
+    @SerialId(2) val sName: String = "",
+    @SerialId(3) val gender: Byte,
+    @SerialId(4) val sPhone: String = "",
+    @SerialId(5) val sEmail: String = "",
+    @SerialId(6) val sRemark: String = ""
+) : JceStruct
+
+@Serializable
 internal class GetFriendListReq(
     @SerialId(0) val reqtype: Int? = null,
     @SerialId(1) val ifReflush: Byte? = null,

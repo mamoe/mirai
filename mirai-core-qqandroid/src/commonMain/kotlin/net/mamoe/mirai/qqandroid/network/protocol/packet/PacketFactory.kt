@@ -128,7 +128,8 @@ internal object KnownPacketFactories {
         TroopManagement.EditSpecialTitle,
         TroopManagement.Mute,
         TroopManagement.GroupOperation,
-        TroopManagement.GetGroupOperationInfo
+        TroopManagement.GetGroupOperationInfo,
+        TroopManagement.EditGroupNametag
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

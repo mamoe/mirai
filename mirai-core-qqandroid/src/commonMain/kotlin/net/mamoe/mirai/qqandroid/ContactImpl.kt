@@ -82,9 +82,14 @@ internal class MemberImpl(
             "Permission Denied when trying to edit group card for $this"
         }
         if (group.botPermission != MemberPermission.MEMBER && new != old) {
+
             launch {
                 bot.network.run {
-
+                    TroopManagement.EditGroupNametag(
+                        bot.client,
+                        this@MemberImpl,
+                        new
+                    ).sendWithoutExpect()
                 }
             }
         }

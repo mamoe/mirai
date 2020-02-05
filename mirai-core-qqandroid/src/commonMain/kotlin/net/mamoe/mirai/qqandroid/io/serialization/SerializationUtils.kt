@@ -90,7 +90,10 @@ fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T
 /**
  * load
  */
-fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(serializer: DeserializationStrategy<T>, length: Int = this.remaining.toInt()): T {
+fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
+    serializer: DeserializationStrategy<T>,
+    length: Int = this.remaining.toInt()
+): T {
     return ProtoBufWithNullableSupport.load(serializer, this.readBytes(length))
 }
 
@@ -98,11 +101,20 @@ fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(serializer: DeserializationStrate
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]
  */
 fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: SerializationStrategy<T>, jceStruct: T): ByteArray {
+    return jceRequestSBuffer(name, serializer, jceStruct, JceCharset.GBK)
+}
+
+fun <T : JceStruct> jceRequestSBuffer(
+    name: String,
+    serializer: SerializationStrategy<T>,
+    jceStruct: T,
+    charset: JceCharset
+): ByteArray {
     return RequestDataVersion3(
         mapOf(
             name to JCE_STRUCT_HEAD_OF_TAG_0 + jceStruct.toByteArray(serializer) + JCE_STRUCT_TAIL_OF_TAG_0
         )
-    ).toByteArray(RequestDataVersion3.serializer())
+    ).toByteArray(RequestDataVersion3.serializer(), charset)
 }
 
 private val JCE_STRUCT_HEAD_OF_TAG_0 = byteArrayOf(0x0A)

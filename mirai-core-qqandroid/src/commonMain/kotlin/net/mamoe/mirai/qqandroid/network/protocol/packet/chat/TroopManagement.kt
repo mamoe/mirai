@@ -1,16 +1,18 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.toByteArray
+import kotlinx.io.charsets.Charset
+import kotlinx.io.charsets.encode
+import kotlinx.io.core.*
+import kotlinx.serialization.toUtf8Bytes
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.loadAs
-import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetTroopListReqV2Simplify
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.stUinInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x88d
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x89a
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x8fc
@@ -20,6 +22,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.daysToSeconds
+import net.mamoe.mirai.utils.io.encodeToGBKString
+import net.mamoe.mirai.utils.io.encodeToString
 
 internal object TroopManagement {
 
@@ -314,6 +318,57 @@ internal object TroopManagement {
                 )
             }
         }
+    }
+
+    internal object EditGroupNametag :
+        OutgoingPacketFactory<EditGroupNametag.Response>("friendlist.ModifyGroupCardReq") {
+        object Response : Packet
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): EditGroupNametag.Response {
+            return Response
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            member: Member,
+            newName: String
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        sFuncName = "ModifyGroupCardReq",
+                        sServantName = "mqq.IMService.FriendListServiceServantObj",
+                        iVersion = 3,
+                        cPacketType = 0x00,
+                        iMessageType = 0x00000,
+                        iRequestId = client.nextRequestPacketRequestId(),
+                        sBuffer = jceRequestSBuffer(
+                            "MGCREQ",
+                            ModifyGroupCardReq.serializer(),
+                            ModifyGroupCardReq(
+                                dwZero = 0L,
+                                dwGroupCode = member.group.id,
+                                dwNewSeq = 0L,
+                                vecUinInfo = listOf(
+                                    stUinInfo(
+                                        gender = 0,
+                                        dwuin = member.id,
+                                        dwFlag = 31,
+                                        sName = newName.toUtf8Bytes().encodeToGBKString(),
+                                        sPhone = "",
+                                        sEmail = "",
+                                        sRemark = ""
+                                    )
+                                )
+                            ),
+                            JceCharset.GBK
+                        )
+                    )
+                )
+            }
+        }
+
     }
 
     /*
