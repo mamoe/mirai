@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.utils.io
 
+import kotlinx.io.charsets.Charset
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
@@ -81,7 +82,11 @@ fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: In
 @Suppress("NOTHING_TO_INLINE")
 inline fun ByteArray.encodeToString(): String = String(this)
 
-fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) = ByteReadPacket(this, offset = offset, length = length)
+fun ByteArray.encodeToGBKString(): String = String(this, 0, this.size, Charset.forName("GBK"))
+
+
+fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) =
+    ByteReadPacket(this, offset = offset, length = length)
 
 @UseExperimental(ExperimentalContracts::class)
 inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {

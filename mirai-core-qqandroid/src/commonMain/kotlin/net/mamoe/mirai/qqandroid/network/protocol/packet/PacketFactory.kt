@@ -125,10 +125,11 @@ internal object KnownPacketFactories {
         ImgStore.GroupPicUp,
         ImageUpPacket,
         LongConn.OffPicDown,
-        TroopManagement.EditNametag,
+        TroopManagement.EditSpecialTitle,
         TroopManagement.Mute,
-        TroopManagement.updateGroupInfo,
-        TroopManagement.getGroupInfo
+        TroopManagement.GroupOperation,
+        TroopManagement.GetGroupOperationInfo,
+        TroopManagement.EditGroupNametag
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

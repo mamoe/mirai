@@ -6,7 +6,7 @@ import java.io.File
 
 fun main() {
     println(
-        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/oidb/cmd0x88d/""")
+        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/oidb/cmd0x8fc/""")
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
     )
 }

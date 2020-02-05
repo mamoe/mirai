@@ -22,9 +22,22 @@ interface Member : QQ, Contact {
     val permission: MemberPermission
 
     /**
-     * 群名片 (如果有) 或个人昵称. 动态更新.
+     * ====以下字段会在更新后异步更新到服务器====
+     */
+
+    /**
+     * 群名片
      */
     var groupCard: String
+
+    /**
+     * 群头衔
+     */
+    var specialTitle: String
+
+    /**
+     * ====以上字段会在更新后异步更新到服务器====
+     */
 
     /**
      * 禁言
