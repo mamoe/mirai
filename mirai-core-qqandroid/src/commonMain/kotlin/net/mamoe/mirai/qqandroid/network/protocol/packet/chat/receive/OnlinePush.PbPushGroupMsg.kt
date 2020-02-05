@@ -76,9 +76,7 @@ internal class OnlinePush {
             return null
         }
     }
-    /**
-     * 接受群消息
-     */
+    
     internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush") {
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
@@ -98,7 +96,7 @@ internal class OnlinePush {
             // A8 32 51 A1 //被禁言的QQ号
             // 00 00 02 58 //禁言时间
             // 7C 8D 00 00 13 08 DC 05 10 DC 85 E0 80 80 80 80 80 02 18 01 20 E2 86 03 9D 00 0C A3 02 00 00 00 00 18 02 DC B0 01 C9 0C DA 06 00 16 00 26 00 36 00 0B EC FD 0F 00 0C F6 10 00 F6 11 00 F9 12 0C 0B 32 5E 25 65 0A 4D 00 0C 59 0C 68 0C 7C 8D 00 0C 9A 0C 1C 2C 3C 4C 0B AA 0C 1C 2C 3C 4C 0B BA 06 00 16 00 26 00 0B CC 0B 8C 98 0C A8 0C//len=109
-            bot.logger.error(this.useBytes { data, length -> data.toUHexString(length = length)})
+            // bot.logger.error(this.useBytes { data, length -> data.toUHexString(length = length)})
             val reqPushMsg = readProtoBuf(MsgOnlinePush.ReqPush.serializer())
             bot.logger.error("time=${reqPushMsg.mutetime},gin=${reqPushMsg.groupid1},uin=${reqPushMsg.uin},muteuin=${reqPushMsg.muteuin}")
             TODO("not implemented")
