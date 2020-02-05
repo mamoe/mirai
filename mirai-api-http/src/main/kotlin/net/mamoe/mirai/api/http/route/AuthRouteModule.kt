@@ -21,22 +21,30 @@ fun Application.authModule() {
         }
 
         miraiVerify<BindDTO>("/verify", verifiedSessionKey = false) {
-            try {
-                val bot = Bot.instanceWhose(it.qq)
-                with(SessionManager) {
-                    closeSession(it.sessionKey)
-                    allSession[it.sessionKey] = AuthedSession(bot, EmptyCoroutineContext)
-                }
-                call.respondStateCode(StateCode.Success)
-            } catch (e: NoSuchElementException) {
-                call.respondStateCode(StateCode.NoBot)
+            val bot = getBotOrThrow(it.qq)
+            with(SessionManager) {
+                closeSession(it.sessionKey)
+                allSession[it.sessionKey] = AuthedSession(bot, EmptyCoroutineContext)
             }
-        }
-
-        miraiVerify<BindDTO>("/release") {
-            SessionManager.closeSession(it.sessionKey)
             call.respondStateCode(StateCode.Success)
         }
 
+        miraiVerify<BindDTO>("/release") {
+            val bot = getBotOrThrow(it.qq)
+            val session = SessionManager[it.sessionKey] as AuthedSession
+            if (bot.uin == session.bot.uin) {
+                SessionManager.closeSession(it.sessionKey)
+                call.respondStateCode(StateCode.Success)
+            } else {
+                throw NoSuchElementException()
+            }
+        }
+
     }
+}
+
+private fun getBotOrThrow(qq: Long) = try {
+    Bot.instanceWhose(qq)
+} catch (e: NoSuchElementException) {
+    throw NoSuchBotException
 }

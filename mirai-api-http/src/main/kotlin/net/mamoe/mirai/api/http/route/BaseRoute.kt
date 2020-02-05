@@ -108,7 +108,9 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
         call.respondStateCode(StateCode.IllegalSession)
     } catch (e: NotVerifiedSessionException) {
         call.respondStateCode(StateCode.NotVerifySession)
-    } catch (e: NoSuchElementException) {
+    } catch (e: NoSuchBotException) {
+        call.respondStateCode(StateCode.NoBot)
+    }catch (e: NoSuchElementException) {
         call.respondStateCode(StateCode.NoElement)
     } catch (e: IllegalAccessException) {
         call.respondStateCode(StateCode(400, e.message), HttpStatusCode.BadRequest)
@@ -188,6 +190,11 @@ object IllegalSessionException : IllegalAccessException("Session失效或不存�
  * Session未激活
  */
 object NotVerifiedSessionException : IllegalAccessException("Session未激活")
+
+/**
+ * 指定Bot不存在
+ */
+object NoSuchBotException: IllegalAccessException("指定Bot不存在")
 
 /**
  * 错误参数
