@@ -4,6 +4,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
@@ -12,12 +13,12 @@ import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x88d
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x89a
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.utils.daysToSeconds
 
 internal object TroopManagement {
@@ -272,9 +273,38 @@ internal object TroopManagement {
     }
 
 
-    internal object EditNametag : OutgoingPacketFactory<LoginPacket.LoginPacketResponse>("OidbSvc.0x8fc_2") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacket.LoginPacketResponse {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    internal object EditSpecialTitle : OutgoingPacketFactory<EditSpecialTitle.Response>("OidbSvc.0x8fc_2") {
+        object Response : Packet
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            return Response
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            member: Member,
+            newName: String
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client) {
+                writeProtoBuf(
+                    OidbSso.OIDBSSOPkg.serializer(),
+                    OidbSso.OIDBSSOPkg(
+                        command = 2300,
+                        serviceType = 2,
+                        bodybuffer = Oidb0x8fc.ReqBody(
+                            groupCode = member.group.id,
+                            memLevelInfo = listOf(
+                                Oidb0x8fc.MemberInfo(
+                                    uin = member.id,
+                                    uinName = newName.toByteArray(),
+                                    specialTitle = newName.toByteArray(),
+                                    specialTitleExpireTime = -1
+                                )
+                            )
+                        ).toByteArray(Oidb0x8fc.ReqBody.serializer())
+                    )
+                )
+            }
         }
     }
 

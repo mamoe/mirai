@@ -67,13 +67,45 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 
 internal class MemberImpl(
     qq: QQImpl,
-    override var groupCard: String,
+    initGroupCard: String,
+    initSpecialTitle: String,
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     override val permission: MemberPermission
 ) : ContactImpl(), Member, QQ by qq {
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
+
+
+    override var groupCard: String by Delegates.observable(initGroupCard) { _, old, new ->
+        check(group.botPermission != MemberPermission.MEMBER) {
+            "Permission Denied when trying to edit group card for $this"
+        }
+        if (group.botPermission != MemberPermission.MEMBER && new != old) {
+            launch {
+                bot.network.run {
+
+                }
+            }
+        }
+    }
+
+    override var specialTitle: String by Delegates.observable(initSpecialTitle) { _, old, new ->
+        check(group.botPermission == MemberPermission.OWNER) {
+            "Permission Denied when trying to edit special title for $this, need to be OWNER"
+        }
+        if (new != old) {
+            launch {
+                bot.network.run {
+                    TroopManagement.EditSpecialTitle(
+                        bot.client,
+                        this@MemberImpl,
+                        new
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
 
     override val bot: QQAndroidBot get() = qq.bot
 

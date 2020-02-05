@@ -125,7 +125,7 @@ internal object KnownPacketFactories {
         ImgStore.GroupPicUp,
         ImageUpPacket,
         LongConn.OffPicDown,
-        TroopManagement.EditNametag,
+        TroopManagement.EditSpecialTitle,
         TroopManagement.Mute,
         TroopManagement.GroupOperation,
         TroopManagement.GetGroupOperationInfo
