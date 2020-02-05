@@ -72,8 +72,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
-            t402: ByteArray,
-            t403: ByteArray
+            t402: ByteArray
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
             writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
@@ -96,10 +95,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
         private const val subAppId = 537062845L
         @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
-            client: QQAndroidClient,
-            t174: ByteArray,
-            t402: ByteArray,
-            phoneNumber: String
+            client: QQAndroidClient
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
             writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId, unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00") {
                 writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
@@ -163,7 +159,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
                     if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
                     */
                     t116(client.miscBitMap, client.subSigMap)
-                    t100(appId, subAppId, client.appClientVersion, client.mainSigMap or 0xC0)
+                    t100(appId, subAppId, client.appClientVersion)
                     t107(0)
 
                     // t108(byteArrayOf())
@@ -310,7 +306,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
     @UseExperimental(MiraiDebugAPI::class)
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
-        val subCommand = readUShort().toInt()
+        discardExact(2) // subCommand
         // println("subCommand=$subCommand")
         val type = readUByte()
         // println("type=$type")
@@ -703,7 +699,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
     private fun QQAndroidClient.analysisTlv149(t149: ByteArray): LoginPacketResponse.Error {
 
         return t149.read {
-            val type: Short = readShort()
+            discardExact(2) //type
             val title: String = readUShortLVString()
             val content: String = readUShortLVString()
             val otherInfo: String = readUShortLVString()

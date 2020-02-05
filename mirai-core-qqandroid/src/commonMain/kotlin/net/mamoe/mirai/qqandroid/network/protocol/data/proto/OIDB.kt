@@ -5,6 +5,266 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
+@Serializable
+class Oidb0x88d : ProtoBuf {
+    @Serializable
+    class GroupExInfoOnly(
+        @SerialId(1) val tribeId: Int = 0,
+        @SerialId(2) val moneyForAddGroup: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    class ReqGroupInfo(
+        @SerialId(1) val groupCode: Long = 0L,
+        @SerialId(2) val stgroupinfo: Oidb0x88d.GroupInfo? = null,
+        @SerialId(3) val lastGetGroupNameTime: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    class RspGroupInfo(
+        @SerialId(1) val groupCode: Long = 0L,
+        @SerialId(2) val result: Int = 0,
+        @SerialId(3) val stgroupinfo: Oidb0x88d.GroupInfo? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class GroupGeoInfo(
+        @SerialId(1) val owneruin: Long = 0L,
+        @SerialId(2) val settime: Int = 0,
+        @SerialId(3) val cityid: Int = 0,
+        @SerialId(4) val int64Longitude: Long = 0L,
+        @SerialId(5) val int64Latitude: Long = 0L,
+        @SerialId(6) val geocontent: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(7) val poiId: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    class TagRecord(
+        @SerialId(1) val fromUin: Long = 0L,
+        @SerialId(2) val groupCode: Long = 0L,
+        @SerialId(3) val tagId: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(4) val setTime: Long = 0L,
+        @SerialId(5) val goodNum: Int = 0,
+        @SerialId(6) val badNum: Int = 0,
+        @SerialId(7) val tagLen: Int = 0,
+        @SerialId(8) val tagValue: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    class GroupInfo(
+        @SerialId(1) val groupOwner: Long? = null,
+        @SerialId(2) val groupCreateTime: Int? = null,
+        @SerialId(3) val groupFlag: Int? = null,
+        @SerialId(4) val groupFlagExt: Int? = null,
+        @SerialId(5) val groupMemberMaxNum: Int? = null,
+        @SerialId(6) val groupMemberNum: Int? = null,
+        @SerialId(7) val groupOption: Int? = null,
+        @SerialId(8) val groupClassExt: Int? = null,
+        @SerialId(9) val groupSpecialClass: Int? = null,
+        @SerialId(10) val groupLevel: Int? = null,
+        @SerialId(11) val groupFace: Int? = null,
+        @SerialId(12) val groupDefaultPage: Int? = null,
+        @SerialId(13) val groupInfoSeq: Int? = null,
+        @SerialId(14) val groupRoamingTime: Int? = null,
+        @SerialId(15) val ingGroupName: ByteArray? = null,
+        @SerialId(16) val ingGroupMemo: ByteArray? = null,
+        @SerialId(17) val ingGroupFingerMemo: ByteArray? = null,
+        @SerialId(18) val ingGroupClassText: ByteArray? = null,
+        @SerialId(19) val groupAllianceCode: List<Int>? = null,
+        @SerialId(20) val groupExtraAdmNum: Int? = null,
+        @SerialId(21) val groupUin: Long? = null,
+        @SerialId(22) val groupCurMsgSeq: Int? = null,
+        @SerialId(23) val groupLastMsgTime: Int? = null,
+        @SerialId(24) val ingGroupQuestion: ByteArray? = null,
+        @SerialId(25) val ingGroupAnswer: ByteArray? = null,
+        @SerialId(26) val groupVisitorMaxNum: Int? = null,
+        @SerialId(27) val groupVisitorCurNum: Int? = null,
+        @SerialId(28) val levelNameSeq: Int? = null,
+        @SerialId(29) val groupAdminMaxNum: Int? = null,
+        @SerialId(30) val groupAioSkinTimestamp: Int? = null,
+        @SerialId(31) val groupBoardSkinTimestamp: Int? = null,
+        @SerialId(32) val ingGroupAioSkinUrl: ByteArray? = null,
+        @SerialId(33) val ingGroupBoardSkinUrl: ByteArray? = null,
+        @SerialId(34) val groupCoverSkinTimestamp: Int? = null,
+        @SerialId(35) val ingGroupCoverSkinUrl: ByteArray? = null,
+        @SerialId(36) val groupGrade: Int? = null,
+        @SerialId(37) val activeMemberNum: Int? = null,
+        @SerialId(38) val certificationType: Int? = null,
+        @SerialId(39) val ingCertificationText: ByteArray? = null,
+        @SerialId(40) val ingGroupRichFingerMemo: ByteArray? = null,
+        @SerialId(41) val tagRecord: List<TagRecord>? = null,
+        @SerialId(42) val groupGeoInfo: GroupGeoInfo? = null,
+        @SerialId(43) val headPortraitSeq: Int? = null,
+        @SerialId(44) val msgHeadPortrait: GroupHeadPortrait? = null,
+        @SerialId(45) val shutupTimestamp: Int? = null,
+        @SerialId(46) val shutupTimestampMe: Int? = null,
+        @SerialId(47) val createSourceFlag: Int? = null,
+        @SerialId(48) val cmduinMsgSeq: Int? = null,
+        @SerialId(49) val cmduinJoinTime: Int? = null,
+        @SerialId(50) val cmduinUinFlag: Int? = null,
+        @SerialId(51) val cmduinFlagEx: Int? = null,
+        @SerialId(52) val cmduinNewMobileFlag: Int? = null,
+        @SerialId(53) val cmduinReadMsgSeq: Int? = null,
+        @SerialId(54) val cmduinLastMsgTime: Int? = null,
+        @SerialId(55) val groupTypeFlag: Int? = null,
+        @SerialId(56) val appPrivilegeFlag: Int? = null,
+        @SerialId(57) val stGroupExInfo: GroupExInfoOnly? = null,
+        @SerialId(58) val groupSecLevel: Int? = null,
+        @SerialId(59) val groupSecLevelInfo: Int? = null,
+        @SerialId(60) val cmduinPrivilege: Int? = null,
+        @SerialId(61) val ingPoidInfo: ByteArray? = null,
+        @SerialId(62) val cmduinFlagEx2: Int? = null,
+        @SerialId(63) val confUin: Long? = null,
+        @SerialId(64) val confMaxMsgSeq: Int? = null,
+        @SerialId(65) val confToGroupTime: Int? = null,
+        @SerialId(66) val passwordRedbagTime: Int? = null,
+        @SerialId(67) val subscriptionUin: Long? = null,
+        @SerialId(68) val memberListChangeSeq: Int? = null,
+        @SerialId(69) val membercardSeq: Int? = null,
+        @SerialId(70) val rootId: Long? = null,
+        @SerialId(71) val parentId: Long? = null,
+        @SerialId(72) val teamSeq: Int? = null,
+        @SerialId(73) val historyMsgBeginTime: Long? = null,
+        @SerialId(74) val inviteNoAuthNumLimit: Long? = null,
+        @SerialId(75) val cmduinHistoryMsgSeq: Int? = null,
+        @SerialId(76) val cmduinJoinMsgSeq: Int? = null,
+        @SerialId(77) val groupFlagext3: Int? = null,
+        @SerialId(78) val groupOpenAppid: Int? = null,
+        @SerialId(79) val isConfGroup: Int? = null,
+        @SerialId(80) val isModifyConfGroupFace: Int? = null,
+        @SerialId(81) val isModifyConfGroupName: Int? = null,
+        @SerialId(82) val noFingerOpenFlag: Int? = null,
+        @SerialId(83) val noCodeFingerOpenFlag: Int? = null,
+        @SerialId(84) val autoAgreeJoinGroupUserNumForNormalGroup: Int? = null,
+        @SerialId(85) val autoAgreeJoinGroupUserNumForConfGroup: Int? = null,
+        @SerialId(86) val isAllowConfGroupMemberNick: Int? = null,
+        @SerialId(87) val isAllowConfGroupMemberAtAll: Int? = null,
+        @SerialId(88) val isAllowConfGroupMemberModifyGroupName: Int? = null,
+        @SerialId(89) val ingLongGroupName: ByteArray? = null,
+        @SerialId(90) val cmduinJoinRealMsgSeq: Int? = null,
+        @SerialId(91) val isGroupFreeze: Int? = null,
+        @SerialId(92) val msgLimitFrequency: Int? = null,
+        @SerialId(93) val joinGroupAuth: ByteArray? = null,
+        @SerialId(94) val hlGuildAppid: Int? = null,
+        @SerialId(95) val hlGuildSubType: Int? = null,
+        @SerialId(96) val hlGuildOrgid: Int? = null,
+        @SerialId(97) val isAllowHlGuildBinary: Int? = null,
+        @SerialId(98) val cmduinRingtoneId: Int? = null,
+        @SerialId(99) val groupFlagext4: Int? = null,
+        @SerialId(100) val groupFreezeReason: Int? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class GroupHeadPortraitInfo(
+        @SerialId(1) val uint32PicId: Int = 0,
+        @SerialId(2) val leftX: Int = 0,
+        @SerialId(3) val leftY: Int = 0,
+        @SerialId(4) val rightX: Int = 0,
+        @SerialId(5) val rightY: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    class RspBody(
+        @SerialId(1) val stzrspgroupinfo: List<Oidb0x88d.RspGroupInfo>? = null,
+        @SerialId(2) val errorinfo: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    class ReqBody(
+        @SerialId(1) val appid: Int = 0,
+        @SerialId(2) val stzreqgroupinfo: List<Oidb0x88d.ReqGroupInfo>? = null,
+        @SerialId(3) val pcClientVersion: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    class GroupHeadPortrait(
+        @SerialId(1) val picCnt: Int = 0,
+        @SerialId(2) val msgInfo: List<Oidb0x88d.GroupHeadPortraitInfo>? = null,
+        @SerialId(3) val defaultId: Int = 0,
+        @SerialId(4) val verifyingPicCnt: Int = 0,
+        @SerialId(5) val msgVerifyingpicInfo: List<Oidb0x88d.GroupHeadPortraitInfo>? = null
+    ) : ProtoBuf
+}
+
+@Serializable
+class Oidb0x89a : ProtoBuf {
+    @Serializable
+    class GroupNewGuidelinesInfo(
+        @SerialId(1) val boolEnabled: Boolean = false,
+        @SerialId(2) val ingContent: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    class Groupinfo(
+        @SerialId(1) val groupExtAdmNum: Int? = null,
+        @SerialId(2) val flag: Int? = null,
+        @SerialId(3) val ingGroupName: ByteArray? = null,
+        @SerialId(4) val ingGroupMemo: ByteArray? = null,
+        @SerialId(5) val ingGroupFingerMemo: ByteArray? = null,
+        @SerialId(6) val ingGroupAioSkinUrl: ByteArray? = null,
+        @SerialId(7) val ingGroupBoardSkinUrl: ByteArray? = null,
+        @SerialId(8) val ingGroupCoverSkinUrl: ByteArray? = null,
+        @SerialId(9) val groupGrade: Int? = null,
+        @SerialId(10) val activeMemberNum: Int? = null,
+        @SerialId(11) val certificationType: Int? = null,
+        @SerialId(12) val ingCertificationText: ByteArray? = null,
+        @SerialId(13) val ingGroupRichFingerMemo: ByteArray? = null,
+        @SerialId(14) val stGroupNewguidelines: Oidb0x89a.GroupNewGuidelinesInfo? = null,
+        @SerialId(15) val groupFace: Int? = null,
+        @SerialId(16) val addOption: Int? = null,
+        @SerialId(17) val shutupTime: Int? = null,
+        @SerialId(18) val groupTypeFlag: Int? = null,
+        @SerialId(19) val stringGroupTag: List<ByteArray>? = null,
+        @SerialId(20) val msgGroupGeoInfo: Oidb0x89a.GroupGeoInfo? = null,
+        @SerialId(21) val groupClassExt: Int? = null,
+        @SerialId(22) val ingGroupClassText: ByteArray? = null,
+        @SerialId(23) val appPrivilegeFlag: Int? = null,
+        @SerialId(24) val appPrivilegeMask: Int? = null,
+        @SerialId(25) val stGroupExInfo: Oidb0x89a.GroupExInfoOnly? = null,
+        @SerialId(26) val groupSecLevel: Int? = null,
+        @SerialId(27) val groupSecLevelInfo: Int? = null,
+        @SerialId(28) val subscriptionUin: Long? = null,
+        @SerialId(29) val allowMemberInvite: Int? = null,
+        @SerialId(30) val ingGroupQuestion: ByteArray? = null,
+        @SerialId(31) val ingGroupAnswer: ByteArray? = null,
+        @SerialId(32) val groupFlagext3: Int? = null,
+        @SerialId(33) val groupFlagext3Mask: Int? = null,
+        @SerialId(34) val groupOpenAppid: Int? = null,
+        @SerialId(35) val noFingerOpenFlag: Int? = null,
+        @SerialId(36) val noCodeFingerOpenFlag: Int? = null,
+        @SerialId(37) val rootId: Long? = null,
+        @SerialId(38) val msgLimitFrequency: Int? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class RspBody(
+        @SerialId(1) val groupCode: Long = 0L,
+        @SerialId(2) val errorinfo: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    class GroupExInfoOnly(
+        @SerialId(1) val tribeId: Int = 0,
+        @SerialId(2) val moneyForAddGroup: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    class GroupGeoInfo(
+        @SerialId(1) val cityId: Int = 0,
+        @SerialId(2) val longtitude: Long = 0L,
+        @SerialId(3) val latitude: Long = 0L,
+        @SerialId(4) val ingGeoContent: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(5) val poiId: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    class ReqBody(
+        @SerialId(1) val groupCode: Long = 0L,
+        @SerialId(2) val stGroupInfo: Oidb0x89a.Groupinfo? = null,
+        @SerialId(3) val originalOperatorUin: Long = 0L,
+        @SerialId(4) val reqGroupOpenAppid: Int = 0
+    ) : ProtoBuf
+}
 
 @Serializable
 class Cmd0x7cb : ProtoBuf {

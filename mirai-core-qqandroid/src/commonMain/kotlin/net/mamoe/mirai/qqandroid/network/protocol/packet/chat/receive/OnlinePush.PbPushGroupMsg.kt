@@ -46,6 +46,7 @@ internal class OnlinePush {
 
             val group = bot.getGroup(pbPushMsg.msg.msgHead.groupInfo!!.groupCode)
 
+            // println(pbPushMsg.msg.msgBody.richText.contentToString())
             val flags = extraInfo?.flags ?: 0
             return GroupMessageOrNull(
                 GroupMessage(

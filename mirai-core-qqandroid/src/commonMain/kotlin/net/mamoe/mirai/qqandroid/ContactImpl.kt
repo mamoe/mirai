@@ -1,9 +1,12 @@
 package net.mamoe.mirai.qqandroid
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.message.data.CustomFaceFromFile
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.NotOnlineImageFromFile
@@ -22,6 +25,7 @@ import net.mamoe.mirai.utils.io.PlatformSocket
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
+import kotlin.properties.Delegates
 
 internal abstract class ContactImpl : Contact
 
@@ -61,6 +65,7 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 
 internal class MemberImpl(
     qq: QQImpl,
+    override var groupCard: String,
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     override val permission: MemberPermission
@@ -84,18 +89,18 @@ internal class MemberImpl(
         } else if (myPermission == MemberPermission.MEMBER) {
             return false
         }
-        try {
+        return try {
             bot.network.run {
-                val response = TroopManagement.Mute(
+                TroopManagement.Mute(
                     client = bot.client,
                     groupCode = group.id,
                     memberUin = this@MemberImpl.id,
                     timeInSecond = durationSeconds
                 ).sendAndExpect<TroopManagement.Mute.Response>()
             }
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
@@ -106,21 +111,113 @@ internal class MemberImpl(
 }
 
 
+/**
+ * 对GroupImpl
+ * 中name/announcement的更改会直接向服务器异步汇报
+ */
 @UseExperimental(MiraiInternalAPI::class)
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
     val uin: Long,
-    override var name: String,
-    override var announcement: String,
+    initName: String,
+    initAnnouncement: String,
+    initAllowMemberInvite: Boolean,
+    initConfessTalk: Boolean,
+    initMuteAll: Boolean,
+    initAutoApprove: Boolean,
+    initAnonymousChat: Boolean,
     override var members: ContactList<Member>
 ) : ContactImpl(), Group {
+
+    override var name by Delegates.observable(initName) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.name(
+                        client = bot.client,
+                        groupCode = id,
+                        newName = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+    override var announcement: String by Delegates.observable(initAnnouncement) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.memo(
+                        client = bot.client,
+                        groupCode = id,
+                        newMemo = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+
+    override var allowMemberInvite: Boolean by Delegates.observable(initAllowMemberInvite) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.allowMemberInvite(
+                        client = bot.client,
+                        groupCode = id,
+                        switch = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+    override var autoApprove: Boolean by Delegates.observable(initAutoApprove) { _, oldValue, newValue ->
+        //暂时也不能改
+    }
+
+    override val anonymousChat: Boolean by Delegates.observable(initAnonymousChat) { _, oldValue, newValue ->
+        //暂时不能改
+    }
+
+    override var confessTalk: Boolean by Delegates.observable(initConfessTalk) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.confessTalk(
+                        client = bot.client,
+                        groupCode = id,
+                        switch = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+
+    override var muteAll: Boolean by Delegates.observable(initMuteAll) { _, oldValue, newValue ->
+        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
+            this.bot.launch {
+                bot.network.run {
+                    TroopManagement.updateGroupInfo.muteAll(
+                        client = bot.client,
+                        groupCode = id,
+                        switch = newValue
+                    ).sendWithoutExpect()
+                }
+            }
+        }
+    }
+
+
     override lateinit var owner: Member
     override var botPermission: MemberPermission = MemberPermission.MEMBER
 
     override suspend fun quit(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
 
     override operator fun get(id: Long): Member {
         return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("for group id $id")
@@ -205,14 +302,24 @@ internal class GroupImpl(
                     }
                     socket.close()
                     val resourceId = image.calculateImageResourceId()
-                    return NotOnlineImageFromFile(
-                        resourceId = resourceId,
+
+                    return CustomFaceFromFile(
                         md5 = image.md5,
                         filepath = resourceId,
-                        fileLength = image.inputSize.toInt(),
+                        fileId = response.fileId.toInt(),
+                        fileType = 66, // ?
                         height = image.height,
                         width = image.width,
-                        imageType = image.imageType
+                        imageType = image.imageType,
+                        bizType = 0,
+                        serverIp = response.uploadIpList.first(),
+                        serverPort = response.uploadPortList.first(),
+                        signature = image.md5,
+                        size = image.inputSize.toInt(),
+                        useful = 1,
+                        source = 200,
+                        origin = 1,
+                        pbReserve = byteArrayOf(0x78, 0x02)
                     )
                 }
             }

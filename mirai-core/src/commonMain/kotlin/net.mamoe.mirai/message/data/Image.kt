@@ -31,6 +31,7 @@ abstract class CustomFace : Image() {
     abstract val source: Int
     abstract val size:Int
     abstract val pbReserve: ByteArray
+    abstract val origin: Int
 
     override fun toString(): String {
         return "[CustomFace]"
@@ -57,6 +58,7 @@ data class CustomFaceFromFile(
     override val height: Int,
     override val source: Int,
     override val size: Int,
+    override val origin: Int,
     override val pbReserve: ByteArray
 ) : CustomFace() {
     override fun equals(other: Any?): Boolean {
@@ -79,6 +81,7 @@ data class CustomFaceFromFile(
         if (height != other.height) return false
         if (source != other.source) return false
         if (size != other.size) return false
+        if (origin != this.origin) return false
         if (!pbReserve.contentEquals(other.pbReserve)) return false
 
         return true
@@ -114,6 +117,9 @@ abstract class NotOnlineImage : Image() {
     open val bizType: Int get() = 0
     open val imageType: Int get() = 1000
     open val downloadPath: String get() = resourceId
+    open val origin: Int get()= 1
+    open val signature: ByteArray get() = md5
+    open val fileType: Int get()= 66
 
     override fun toString(): String {
         return "[NotOnlineImage $resourceId]"

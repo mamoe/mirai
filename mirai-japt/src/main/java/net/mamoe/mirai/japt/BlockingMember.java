@@ -28,5 +28,5 @@ public interface BlockingMember {
     /**
      * 解除禁言
      */
-    void unmute();
+    boolean unmute();
 }

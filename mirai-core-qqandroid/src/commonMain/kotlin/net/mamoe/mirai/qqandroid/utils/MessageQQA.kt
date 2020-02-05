@@ -1,9 +1,23 @@
 package net.mamoe.mirai.qqandroid.utils
 
-import net.mamoe.mirai.data.ImageLink
+import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.hexToBytes
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.toByteArray
+
+private val AT_BUF_1 = byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x00, 0x0A, 0x00)
+private val AT_BUF_2 = ByteArray(2)
+
+internal fun At.toJceData(): ImMsgBody.Text {
+    return ImMsgBody.Text(
+        str = this.toString(),
+        attr6Buf = AT_BUF_1 + this.target.toInt().toByteArray() + AT_BUF_2
+    )
+}
 
 internal fun NotOnlineImageFromFile.toJceData(): ImMsgBody.NotOnlineImage {
     return ImMsgBody.NotOnlineImage(
@@ -36,6 +50,7 @@ internal fun CustomFaceFromFile.toJceData(): ImMsgBody.CustomFace {
         height = this.height,
         source = this.source,
         size = this.size,
+        origin = this.origin,
         pbReserve = this.pbReserve
     )
 }
@@ -116,9 +131,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
     this.forEach {
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
-            is At -> {
-
-            }
+            is At -> elements.add(ImMsgBody.Elem(text = it.toJceData()))
             is CustomFaceFromFile -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
@@ -152,33 +165,25 @@ internal class CustomFaceFromServer(
     override val height: Int get() = delegate.height
     override val source: Int get() = delegate.source
     override val size: Int get() = delegate.size
+    override val origin: Int get() = delegate.origin
     override val pbReserve: ByteArray get() = delegate.pbReserve
 }
 
 internal class NotOnlineImageFromServer(
     internal val delegate: ImMsgBody.NotOnlineImage
 ) : NotOnlineImage() {
-    override val resourceId: String
-        get() = delegate.resId
-    override val md5: ByteArray
-        get() = delegate.picMd5
-    override val filepath: String
-        get() = delegate.filePath
-    override val fileLength: Int
-        get() = delegate.fileLen
-    override val height: Int
-        get() = delegate.picHeight
-    override val width: Int
-        get() = delegate.picWidth
-    override val bizType: Int
-        get() = delegate.bizType
-    override val imageType: Int
-        get() = delegate.imgType
-    override val downloadPath: String
-        get() = delegate.downloadPath
-
+    override val resourceId: String get() = delegate.resId
+    override val md5: ByteArray get() = delegate.picMd5
+    override val filepath: String get() = delegate.filePath
+    override val fileLength: Int get() = delegate.fileLen
+    override val height: Int get() = delegate.picHeight
+    override val width: Int get() = delegate.picWidth
+    override val bizType: Int get() = delegate.bizType
+    override val imageType: Int get() = delegate.imgType
+    override val downloadPath: String get() = delegate.downloadPath
 }
 
+@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun ImMsgBody.RichText.toMessageChain(): MessageChain {
     val message = MessageChain(initialCapacity = elems.size)
 
@@ -186,12 +191,17 @@ internal fun ImMsgBody.RichText.toMessageChain(): MessageChain {
         when {
             it.notOnlineImage != null -> message.add(NotOnlineImageFromServer(it.notOnlineImage))
             it.customFace != null -> message.add(CustomFaceFromServer(it.customFace))
-            it.text != null -> message.add(it.text.str.toMessage())
+            it.text != null -> {
+                if (it.text.attr6Buf.isEmpty()) {
+                    message.add(it.text.str.toMessage())
+                } else {
+                    //00 01 00 00 00 0A 00 3E 03 3F A2 00 00
+                    val id = it.text.attr6Buf.read { discardExact(7); readUInt().toLong() }
+                    message.add(At(id, it.text.str))
+                }
+            }
         }
     }
 
     return message
 }
-
-
-internal inline class ImageLinkQQA(override val original: String) : ImageLink

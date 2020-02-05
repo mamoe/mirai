@@ -5,9 +5,10 @@
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **[English](README-eng.md)**  
 
-多平台 **TIM PC 和 QQ Android** 协议支持库.   
-纯 Kotlin 实现协议和支持框架，模块全部开源。  
+多平台 **QQ Android 和 TimPC** 协议支持库与高效率的机器人框架.   
+纯 Kotlin 实现协议和支持框架，模块<b>全部免费开源</b>。  
 目前可运行在 JVM 或 Android。
+Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Application与插件承载QQ机器人
 
 **一切开发旨在学习，请勿用于非法用途**  
 
@@ -22,18 +23,18 @@
 通用 API 模块，一套 API 适配两套协议。  
 **请参考此模块的 API**  
   
+### mirai-core-qqandroid
+  QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前完成大部分。   
+  - 高兼容性：协议仅含极少部分为硬编码，其余全部随官方方式动态生成
+  - 高安全性：密匙随机，ECDH 动态计算
+  - 已支持大部分使用场景, 详情请在[Project](https://github.com/mamoe/mirai/projects/3)查看
+
 ### mirai-core-timpc
 TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅新增少量 API. 详见 [README.md](mirai-core-timpc/)   
 支持的功能： 
 - 消息收发：图片文字复合消息，图片消息
 - 群管功能：群员列表，禁言
-
-（目前不再更新此协议，请关注下文的安卓协议）
-
-### mirai-core-qqandroid
-QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前还未完成。   
-- 高兼容性：协议仅含极少部分为硬编码，其余全部随官方方式动态生成
-- 高安全性：密匙随机，ECDH 动态计算
+（目前不再更新此协议，请关注上文的安卓协议）
 
 ## Use directly
 **直接使用 Mirai(终端环境/网页面板（将来））.**  
@@ -80,7 +81,7 @@ JVM 上需 120M-150M 内存
 
 ## Contribution
 
-我们 (Mamoe, NaturalHG & Him188) 将会一直维护这个项目，除非遇到不可抗力因素。
+我们 (Mamoe Technologies) 将会一直维护这个项目，除非遇到不可抗力因素。
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 Mirai 的开发。  

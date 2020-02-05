@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.event.events.ReceiveFriendAddRequestEvent
@@ -67,7 +68,7 @@ suspend fun main() {
         always {
         }
 
-        case("at me") { At(sender).reply() }
+        case("at me") { At(sender as Member).reply() }
         // 等同于  "at me" reply { At(sender) }
 
         "你好" reply "你好!"
@@ -75,7 +76,7 @@ suspend fun main() {
         startsWith("profile", removePrefix = true) {
             val account = it.trim()
             if (account.isNotEmpty()) {
-                account.toLong().qq()
+                bot.getFriend(account.toLong())
             } else {
                 sender
             }.queryProfile().toString().reply()
@@ -151,11 +152,20 @@ suspend fun main() {
             file.sendAsImageTo(subject)
         }
 
-        startsWith("随机图片", removePrefix = true) {
+        startsWith("色图", removePrefix = true) {
             repeat(it.toIntOrNull() ?: 1) {
                 GlobalScope.launch {
                     delay(Random.Default.nextLong(100, 1000))
                     Gentlemen.provide(subject).receive().image.await().send()
+                }
+            }
+        }
+
+        startsWith("不够色", removePrefix = true) {
+            repeat(it.toIntOrNull() ?: 1) {
+                GlobalScope.launch {
+                    delay(Random.Default.nextLong(100, 1000))
+                    Gentlemen.provide(subject).receive().seImage.await().send()
                 }
             }
         }

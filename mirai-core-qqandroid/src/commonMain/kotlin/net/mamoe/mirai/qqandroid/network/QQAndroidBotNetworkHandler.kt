@@ -24,6 +24,7 @@ import net.mamoe.mirai.qqandroid.event.ForceOfflineEvent
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
@@ -89,8 +90,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 is LoginPacket.LoginPacketResponse.DeviceLockLogin -> {
                     response = LoginPacket.SubCommand20(
                         bot.client,
-                        response.t402,
-                        response.t403
+                        response.t402
                     ).sendAndExpect()
                     continue@mainloop
                 }
@@ -167,13 +167,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         coroutineContext = this.coroutineContext,
                         id = it.groupCode,
                         uin = it.groupUin,
-                        name = it.groupName,
-                        announcement = it.groupMemo,
+                        initName = it.groupName,
+                        initAnnouncement = it.groupMemo,
+                        initAllowMemberInvite = false,
+                        initConfessTalk = false,
+                        initMuteAll = false,
+                        initAutoApprove = false,
+                        initAnonymousChat = false,
                         members = contactList
                     )
                 group.owner =
                     MemberImpl(
                         qq = bot.QQ(it.dwGroupOwnerUin) as QQImpl,
+                        groupCard = "",//unknown now
                         group = group,
                         coroutineContext = group.coroutineContext,
                         permission = MemberPermission.OWNER
@@ -237,6 +243,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
     }
 
+    suspend fun getGroupInfo(uin: Long) {
+        val data = TroopManagement.getGroupInfo(
+            client = bot.client,
+            groupCode = uin
+        ).sendAndExpect<TroopManagement.getGroupInfo.Response>(timeoutMillis = 3000)
+    }
+
     suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long): ContactList<Member> {
         bot.logger.info("开始获取群[${group.uin}]成员列表")
         var size = 0
@@ -253,6 +266,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     list.delegate.addLast(
                         MemberImpl(
                             qq = bot.QQ(it.memberUin) as QQImpl,
+                            groupCard = it.autoRemark ?: it.nick,
                             group = group,
                             coroutineContext = group.coroutineContext,
                             permission = when {
@@ -262,8 +276,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             }
                         )
                     )
-                } else if (it.dwFlag == 1L) {
-                    group.botPermission = MemberPermission.ADMINISTRATOR
+                } else {
+                    group.owner.groupCard = it.autoRemark ?: it.nick
+                    if (it.dwFlag == 1L) {
+                        group.botPermission = MemberPermission.ADMINISTRATOR
+                    }
                 }
             }
             size += data.members.size
@@ -472,7 +489,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     private val packetReceiveLock: Mutex = Mutex()
 
     /**
-     * 发送一个包, 但不期待任何返回.
+     * 发送一个包, 但不期待任何返回.-
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
         bot.logger.info("Send: ${this.commandName}")

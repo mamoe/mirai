@@ -175,7 +175,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
                         readShort().toInt().takeIf { it != 8001 }?.let {
                             println("这个包不是 oicqRequest")
                             return@debugIfFail this
-                            println("  got new protocolVersion=$it")
+                            //println("  got new protocolVersion=$it")
                         }
                         val commandId = readUShort().toInt()
                         println("  commandId=0x${commandId.toShort().toUHexString()}")

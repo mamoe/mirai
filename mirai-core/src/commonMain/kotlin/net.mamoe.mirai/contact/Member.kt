@@ -22,6 +22,11 @@ interface Member : QQ, Contact {
     val permission: MemberPermission
 
     /**
+     *
+     */
+    var groupCard: String
+
+    /**
      * 禁言
      *
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
@@ -37,6 +42,7 @@ interface Member : QQ, Contact {
      * 解除禁言
      */
     suspend fun unmute(): Boolean
+
 }
 
 @ExperimentalTime

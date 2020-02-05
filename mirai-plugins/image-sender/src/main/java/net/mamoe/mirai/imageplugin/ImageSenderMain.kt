@@ -5,7 +5,6 @@ import kotlinx.coroutines.GlobalScope
 import net.mamoe.mirai.event.events.BotLoginSucceedEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.plugin.PluginBase
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
@@ -19,7 +18,7 @@ class ImageSenderMain : PluginBase() {
             this.bot.subscribeMessages {
 
                 case("at me") {
-                    (At(sender) + " ? ").reply()
+                    reply(sender.at() + " ? ")
                 }
 
                 (contains("image") or contains("图")) {
