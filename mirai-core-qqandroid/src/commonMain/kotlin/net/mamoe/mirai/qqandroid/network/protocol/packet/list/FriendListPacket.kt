@@ -60,7 +60,7 @@ internal class FriendList {
         }
 
         class Response(
-            val members: List<stTroopMemberInfo>,
+            val members: List<StTroopMemberInfo>,
             val nextUin: Long
         ) : Packet {
             override fun toString(): String = "Friendlist.GetTroopMemberList.Response"
@@ -76,7 +76,7 @@ internal class FriendList {
         }
 
         class Response(
-            val groups: List<stTroopNum>
+            val groups: List<StTroopNum>
         ) : Packet {
             override fun toString(): String = "FriendList.GetFriendGroupList.Response"
         }

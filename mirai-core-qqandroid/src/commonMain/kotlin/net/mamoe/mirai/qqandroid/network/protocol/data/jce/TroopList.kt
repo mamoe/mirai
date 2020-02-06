@@ -9,7 +9,7 @@ internal class GetTroopListReqV2Simplify(
     @SerialId(0) val uin: Long,
     @SerialId(1) val getMSFMsgFlag: Byte? = null,
     @SerialId(2) val vecCookies: ByteArray? = null,
-    @SerialId(3) val vecGroupInfo: List<stTroopNumSimplify>? = null,
+    @SerialId(3) val vecGroupInfo: List<StTroopNumSimplify>? = null,
     @SerialId(4) val groupFlagExt: Byte? = null,
     @SerialId(5) val shVersion: Int? = null,
     @SerialId(6) val dwCompanyId: Long? = null,
@@ -18,7 +18,7 @@ internal class GetTroopListReqV2Simplify(
 ) : JceStruct
 
 @Serializable
-internal class stTroopNumSimplify(
+internal class StTroopNumSimplify(
     @SerialId(0) val groupCode: Long,
     @SerialId(1) val dwGroupInfoSeq: Long? = null,
     @SerialId(2) val dwGroupFlagExt: Long? = null,
@@ -29,20 +29,20 @@ internal class stTroopNumSimplify(
 @Serializable
 internal class GetTroopListRespV2(
     @SerialId(0) val uin: Long,
-    @SerialId(1) val troopcount: Short,
+    @SerialId(1) val troopCount: Short,
     @SerialId(2) val result: Int,
     @SerialId(3) val errorCode: Short? = null,
     @SerialId(4) val vecCookies: ByteArray? = null,
-    @SerialId(5) val vecTroopList: List<stTroopNum>? = null,
-    @SerialId(6) val vecTroopListDel: List<stTroopNum>? = null,
-    @SerialId(7) val vecTroopRank: List<stGroupRankInfo>? = null,
-    @SerialId(8) val vecFavGroup: List<stFavoriteGroup>? = null,
-    @SerialId(9) val vecTroopListExt: List<stTroopNum>? = null
+    @SerialId(5) val vecTroopList: List<StTroopNum>? = null,
+    @SerialId(6) val vecTroopListDel: List<StTroopNum>? = null,
+    @SerialId(7) val vecTroopRank: List<StGroupRankInfo>? = null,
+    @SerialId(8) val vecFavGroup: List<StFavoriteGroup>? = null,
+    @SerialId(9) val vecTroopListExt: List<StTroopNum>? = null
 ) : JceStruct
 
 
 @Serializable
-internal class stTroopNum(
+internal class StTroopNum(
     @SerialId(0) val groupUin: Long,
     @SerialId(1) val groupCode: Long,
     @SerialId(2) val flag: Byte? = null,
@@ -52,8 +52,8 @@ internal class stTroopNum(
     @SerialId(6) val dwGroupFlagExt: Long? = null,
     @SerialId(7) val dwGroupRankSeq: Long? = null,
     @SerialId(8) val dwCertificationType: Long? = null,
-    @SerialId(9) val dwShutupTimestamp: Long? = null,
-    @SerialId(10) val dwMyShutupTimestamp: Long? = null,
+    @SerialId(9) val dwShutUpTimestamp: Long? = null,
+    @SerialId(10) val dwMyShutUpTimestamp: Long? = null,
     @SerialId(11) val dwCmdUinUinFlag: Long? = null,
     @SerialId(12) val dwAdditionalFlag: Long? = null,
     @SerialId(13) val dwGroupTypeFlag: Long? = null,
@@ -81,11 +81,11 @@ internal class stTroopNum(
 ) : JceStruct
 
 @Serializable
-internal class stGroupRankInfo(
+internal class StGroupRankInfo(
     @SerialId(0) val dwGroupCode: Long,
     @SerialId(1) val groupRankSysFlag: Byte? = null,
     @SerialId(2) val groupRankUserFlag: Byte? = null,
-    @SerialId(3) val vecRankMap: List<stLevelRankPair>? = null,
+    @SerialId(3) val vecRankMap: List<StLevelRankPair>? = null,
     @SerialId(4) val dwGroupRankSeq: Long? = null,
     @SerialId(5) val ownerName: String? = "",
     @SerialId(6) val adminName: String? = "",
@@ -93,7 +93,7 @@ internal class stGroupRankInfo(
 ) : JceStruct
 
 @Serializable
-internal class stFavoriteGroup(
+internal class StFavoriteGroup(
     @SerialId(0) val dwGroupCode: Long,
     @SerialId(1) val dwTimestamp: Long? = null,
     @SerialId(2) val dwSnsFlag: Long? = 1L,
@@ -101,7 +101,7 @@ internal class stFavoriteGroup(
 ) : JceStruct
 
 @Serializable
-internal class stLevelRankPair(
+internal class StLevelRankPair(
     @SerialId(0) val dwLevel: Long? = null,
     @SerialId(1) val rank: String? = ""
 ) : JceStruct
@@ -124,7 +124,7 @@ internal class GetTroopMemberListResp(
     @SerialId(0) val uin: Long,
     @SerialId(1) val groupCode: Long,
     @SerialId(2) val groupUin: Long,
-    @SerialId(3) val vecTroopMember: List<stTroopMemberInfo>,
+    @SerialId(3) val vecTroopMember: List<StTroopMemberInfo>,
     @SerialId(4) val nextUin: Long,
     @SerialId(5) val result: Int,
     @SerialId(6) val errorCode: Short? = null,
@@ -133,7 +133,7 @@ internal class GetTroopMemberListResp(
 ) : JceStruct
 
 @Serializable
-internal class stTroopMemberInfo(
+internal class StTroopMemberInfo(
     @SerialId(0) val memberUin: Long,
     @SerialId(1) val faceId: Short,
     @SerialId(2) val age: Byte,

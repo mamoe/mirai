@@ -10,7 +10,7 @@ object NoPakcet : Packet
 /**
  * PacketFactory 可以一次解析多个包出来. 它们将会被分别广播.
  */
-open class MultiPacket<P : Packet>(internal val delegate: MutableList<P>) : List<P> by delegate, Packet {
+open class MultiPacket<P : Packet>(internal val delegate: List<P>) : List<P> by delegate, Packet {
     override fun toString(): String {
         return "MultiPacket<${this.firstOrNull()?.let { it::class.simpleName } ?: "?"}>"
     }

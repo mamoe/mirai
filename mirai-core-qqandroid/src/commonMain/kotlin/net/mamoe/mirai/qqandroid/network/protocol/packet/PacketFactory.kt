@@ -15,13 +15,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.unzip
-import net.mamoe.mirai.utils.withSwitch
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.jvm.JvmName
@@ -155,6 +152,7 @@ internal object KnownPacketFactories {
      * full packet without length
      */
     // do not inline. Exceptions thrown will not be reported correctly
+    @UseExperimental(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
     suspend fun <T : Packet> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) = with(rawInput) {
         // login
@@ -250,7 +248,7 @@ internal object KnownPacketFactories {
     /**
      * 解析 SSO 层包装
      */
-    @UseExperimental(ExperimentalUnsignedTypes::class)
+    @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket {
         val commandName: String
         val ssoSequenceId: Int
