@@ -162,15 +162,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     .sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 5000, retry = 2)
                 // println("获取到群数量" + troopData.groups.size)
                 val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
-                troopListData.groups.forEach {
+                troopListData.groups.forEach { troopNum ->
                     val contactList = ContactList(LockFreeLinkedList<Member>())
                     val groupInfoResponse = try {
                         TroopManagement.GetGroupOperationInfo(
                             client = bot.client,
-                            groupCode = it.groupCode
+                            groupCode = troopNum.groupCode
                         ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>()
                     } catch (e: Exception) {
-                        bot.logger.info("获取" + it.groupCode + "的群设置失败")
+                        bot.logger.info("获取" + troopNum.groupCode + "的群设置失败")
                         TroopManagement.GetGroupOperationInfo.Response(
                             allowAnonymousChat = false,
                             allowMemberInvite = false,
@@ -182,10 +182,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         GroupImpl(
                             bot = bot,
                             coroutineContext = this.coroutineContext,
-                            id = it.groupCode,
-                            uin = it.groupUin,
-                            initName = it.groupName,
-                            initAnnouncement = it.groupMemo,
+                            id = troopNum.groupCode,
+                            uin = troopNum.groupUin,
+                            initName = troopNum.groupName,
+                            initAnnouncement = troopNum.groupMemo,
                             initAllowMemberInvite = groupInfoResponse.allowMemberInvite,
                             initConfessTalk = groupInfoResponse.confessTalk,
                             initMuteAll = false,//todo
@@ -197,11 +197,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     bot.groups.delegate.addLast(group)
                     launch {
                         try {
-                            getTroopMemberList(group, contactList, it.dwGroupOwnerUin)
-                            groupInfo[it.groupCode] = contactList.size
+                            getTroopMemberList(group, contactList, troopNum.dwGroupOwnerUin)
+                            groupInfo[troopNum.groupCode] = contactList.size
                         } catch (e: Exception) {
-                            groupInfo[it.groupCode] = -1
-                            bot.logger.info("群${it.groupCode}的列表拉取失败, 将采用动态加入")
+                            groupInfo[troopNum.groupCode] = -1
+                            bot.logger.info("群${troopNum.groupCode}的列表拉取失败, 将采用动态加入")
                             bot.logger.error(e)
                         }
                     }
