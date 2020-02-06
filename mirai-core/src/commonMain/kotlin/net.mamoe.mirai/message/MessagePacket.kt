@@ -98,7 +98,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
 
     // endregion
 
-    // region Image download
+    // region 下载图片
     /**
      * 将图片下载到内存.
      *

@@ -17,16 +17,26 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.PlatformSocket
 import net.mamoe.mirai.utils.io.discardExact
-import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
-internal abstract class ContactImpl : Contact
+internal abstract class ContactImpl : Contact {
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
+    }
+}
 
 internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: CoroutineContext, override val id: Long) : ContactImpl(), QQ {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
@@ -60,8 +70,11 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
     }
 
     override fun equals(other: Any?): Boolean {
+        if (this === other) return true
         return other is QQ && other.id == this.id
     }
+
+    override fun hashCode(): Int = super.hashCode()
 }
 
 
@@ -78,10 +91,8 @@ internal class MemberImpl(
 
 
     override var groupCard: String by Delegates.observable(initGroupCard) { _, old, new ->
-        check(group.botPermission != MemberPermission.MEMBER) {
-            "Permission Denied when trying to edit group card for $this"
-        }
-        if (group.botPermission != MemberPermission.MEMBER && new != old) {
+        group.checkBotPermissionOperator()
+        if (new != old) {
 
             launch {
                 bot.network.run {
@@ -96,9 +107,7 @@ internal class MemberImpl(
     }
 
     override var specialTitle: String by Delegates.observable(initSpecialTitle) { _, old, new ->
-        check(group.botPermission == MemberPermission.OWNER) {
-            "Permission Denied when trying to edit special title for $this, need to be OWNER"
-        }
+        group.checkBotPermissionOperator()
         if (new != old) {
             launch {
                 bot.network.run {
@@ -148,8 +157,11 @@ internal class MemberImpl(
     }
 
     override fun equals(other: Any?): Boolean {
+        if (this === other) return true
         return other is Member && other.id == this.id
     }
+
+    override fun hashCode(): Int = super.hashCode()
 }
 
 
@@ -169,12 +181,13 @@ internal class GroupImpl(
     initMuteAll: Boolean,
     initAutoApprove: Boolean,
     initAnonymousChat: Boolean,
-    override var members: ContactList<Member>
+    override val members: ContactList<Member>
 ) : ContactImpl(), Group {
 
     override var name by Delegates.observable(initName) { _, oldValue, newValue ->
-        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
-            this.bot.launch {
+        this.checkBotPermissionOperator()
+        if (oldValue != newValue) {
+            launch {
                 bot.network.run {
                     TroopManagement.GroupOperation.name(
                         client = bot.client,
@@ -187,8 +200,9 @@ internal class GroupImpl(
     }
 
     override var announcement: String by Delegates.observable(initAnnouncement) { _, oldValue, newValue ->
-        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
-            this.bot.launch {
+        this.checkBotPermissionOperator()
+        if (oldValue != newValue) {
+            launch {
                 bot.network.run {
                     TroopManagement.GroupOperation.memo(
                         client = bot.client,
@@ -202,8 +216,9 @@ internal class GroupImpl(
 
 
     override var allowMemberInvite: Boolean by Delegates.observable(initAllowMemberInvite) { _, oldValue, newValue ->
-        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
-            this.bot.launch {
+        this.checkBotPermissionOperator()
+        if (oldValue != newValue) {
+            launch {
                 bot.network.run {
                     TroopManagement.GroupOperation.allowMemberInvite(
                         client = bot.client,
@@ -216,16 +231,17 @@ internal class GroupImpl(
     }
 
     override var autoApprove: Boolean by Delegates.observable(initAutoApprove) { _, oldValue, newValue ->
-        //暂时也不能改
+        TODO("Group.autoApprove implementation")
     }
 
     override val anonymousChat: Boolean by Delegates.observable(initAnonymousChat) { _, oldValue, newValue ->
-        //暂时不能改
+        TODO("Group.anonymousChat implementation")
     }
 
     override var confessTalk: Boolean by Delegates.observable(initConfessTalk) { _, oldValue, newValue ->
-        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
-            this.bot.launch {
+        this.checkBotPermissionOperator()
+        if (oldValue != newValue) {
+            launch {
                 bot.network.run {
                     TroopManagement.GroupOperation.confessTalk(
                         client = bot.client,
@@ -239,8 +255,9 @@ internal class GroupImpl(
 
 
     override var muteAll: Boolean by Delegates.observable(initMuteAll) { _, oldValue, newValue ->
-        if (this.botPermission != MemberPermission.MEMBER && oldValue != newValue) {
-            this.bot.launch {
+        this.checkBotPermissionOperator()
+        if (oldValue != newValue) {
+            launch {
                 bot.network.run {
                     TroopManagement.GroupOperation.muteAll(
                         client = bot.client,
@@ -254,6 +271,7 @@ internal class GroupImpl(
 
 
     override lateinit var owner: Member
+    @UseExperimental(MiraiExperimentalAPI::class)
     override var botPermission: MemberPermission = MemberPermission.MEMBER
 
     override suspend fun quit(): Boolean {
@@ -369,6 +387,9 @@ internal class GroupImpl(
     }
 
     override fun equals(other: Any?): Boolean {
+        if (this === other) return true
         return other is Group && other.id == this.id
     }
+
+    override fun hashCode(): Int = super.hashCode()
 }

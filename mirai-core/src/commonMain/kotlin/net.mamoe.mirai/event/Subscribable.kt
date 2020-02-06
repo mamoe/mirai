@@ -2,7 +2,10 @@
 
 package net.mamoe.mirai.event
 
+import net.mamoe.mirai.BotImpl
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.broadcastInternal
+import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * 可被监听的.
@@ -47,7 +50,7 @@ abstract class Event : Subscribable {
 }
 
 /**
- * 实现这个接口的事件可以被取消. 在广播中取消不会影响广播过程.
+ * 实现这个接口的事件([Event])可以被取消. 在广播中取消不会影响广播过程.
  */
 interface Cancellable : Subscribable {
     val cancelled: Boolean
@@ -58,9 +61,12 @@ interface Cancellable : Subscribable {
 /**
  * 广播一个事件的唯一途径.
  */
-suspend fun <E : Subscribable> E.broadcast(): E {
+@UseExperimental(MiraiInternalAPI::class)
+suspend fun <E : Subscribable> E.broadcast(): E = apply {
+    if (this is BotEvent && !(this.bot as BotImpl<*>).onEvent(this)) {
+        return@apply
+    }
     this@broadcast.broadcastInternal() // inline, no extra cost
-    return this
 }
 
 /**

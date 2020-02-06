@@ -5,6 +5,7 @@ import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -28,6 +29,7 @@ internal abstract class QQAndroidBotBase constructor(
     configuration: BotConfiguration
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
     val client: QQAndroidClient = QQAndroidClient(context, account, bot = @Suppress("LeakingThis") this as QQAndroidBot)
+    internal var firstLoginSucceed: Boolean = false
     override val uin: Long get() = client.uin
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
@@ -56,6 +58,10 @@ internal abstract class QQAndroidBotBase constructor(
             ?: throw NoSuchElementException("Can not found group with GroupCode=${id}")
     }
 
+    override fun onEvent(event: BotEvent): Boolean {
+        return firstLoginSucceed
+    }
+
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
         TODO("not implemented")
     }
@@ -64,6 +70,7 @@ internal abstract class QQAndroidBotBase constructor(
         TODO("not implemented")
     }
 
+    @Suppress("OverridingDeprecatedMember")
     override suspend fun Image.downloadAsByteArray(): ByteArray {
         TODO("not implemented")
     }

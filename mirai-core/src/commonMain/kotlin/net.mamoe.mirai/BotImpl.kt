@@ -4,6 +4,7 @@ package net.mamoe.mirai
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.closeAndJoin
@@ -55,6 +56,11 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             throw NoSuchElementException()
         }
     }
+
+    /**
+     * 可阻止事件广播
+     */
+    abstract fun onEvent(event: BotEvent): Boolean
 
     // region network
 
