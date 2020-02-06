@@ -25,16 +25,17 @@ suspend fun QQDTO(qq: QQ): QQDTO = QQDTO(qq.id, "", "")
 data class MemberDTO(
     override val id: Long,
     val memberName: String = "",
-    val group: GroupDTO,
-    val permission: MemberPermission
+    val permission: MemberPermission,
+    val group: GroupDTO
 ) : ContactDTO()
 
-fun MemberDTO(member: Member, name: String = ""): MemberDTO = MemberDTO(member.id, name, GroupDTO(member.group), member.permission)
+fun MemberDTO(member: Member, name: String = ""): MemberDTO = MemberDTO(member.id, name, member.permission, GroupDTO(member.group))
 
 @Serializable
 data class GroupDTO(
     override val id: Long,
-    val name: String
+    val name: String,
+    val permission: MemberPermission
 ) : ContactDTO()
 
-fun GroupDTO(group: Group): GroupDTO = GroupDTO(group.id, group.name)
+fun GroupDTO(group: Group): GroupDTO = GroupDTO(group.id, group.name, group.botPermission)
