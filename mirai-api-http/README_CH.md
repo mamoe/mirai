@@ -248,7 +248,8 @@ fun main() {
         "permission": "MEMBER",      // 发送者的群限权：OWNER、ADMINISTRATOR或MEMBER
         "group": {                   // 消息发送群的信息
             "id": 1234567890,        // 发送群的群号
-            "name": "Miral Technology" // 发送群的群名称
+            "name": "Miral Technology", // 发送群的群名称
+            "permission": "MEMBER"      // 发送群中，Bot的群限权
         }
     }
  },
@@ -398,10 +399,12 @@ fun main() {
 ```json5
 [{
     "id":123456789,
-    "name":"群名1"
+    "name":"群名1",
+    "permission": "MEMBER"
   },{
     "id":987654321,
-    "name":"群名2"
+    "name":"群名2",
+    "permission": "MEMBER"
 }]
 ```
 
@@ -428,19 +431,21 @@ fun main() {
 [{
     "id":1234567890,
     "memberName":"",
+    "permission":"MEMBER",
     "group":{
         "id":12345,
-        "name":"群名1"
-    },
-    "permission":"MEMBER"
+        "name":"群名1",
+        "permission": "MEMBER"
+    }
   },{
     "id":9876543210,
     "memberName":"",
+    "permission":"OWNER",
     "group":{
         "id":54321,
-        "name":"群名2"
-    },
-    "permission":"OWNER"
+        "name":"群名2",
+        "permission": "MEMBER"
+    }
 }]
 ```
 
@@ -458,8 +463,8 @@ fun main() {
 
 ```json5
 {
-  "sessionKey": "YourSessionKey",
-  "target": 123456789,
+    "sessionKey": "YourSessionKey",
+    "target": 123456789,
 }
 ```
 
@@ -510,10 +515,10 @@ fun main() {
 
 ```json5
 {
-  "sessionKey": "YourSessionKey",
-  "target": 123456789,
-  "member": 987654321,
-  "time": 1800
+    "sessionKey": "YourSessionKey",
+    "target": 123456789,
+    "member": 987654321,
+    "time": 1800
 }
 ```
 
@@ -545,11 +550,11 @@ fun main() {
 
 #### 请求:
 
-```josn5
+```json5
 {
-  "sessionKey": "YourSessionKey",
-  "target": 123456789,
-  "member": 987654321
+    "sessionKey": "YourSessionKey",
+    "target": 123456789,
+    "member": 987654321
 }
 ```
 
@@ -557,3 +562,79 @@ fun main() {
 
 同群禁言群成员
 
+
+
+### 群设置
+
+使用此方法修改群设置（需要又相关限权）
+
+```
+[POST] /groupConfig
+```
+
+#### 请求:
+
+```json5
+{
+    "sessionKey": "YourSessionKey",
+    "target": 123456789,
+    "config": {
+        "name": "群名称",
+        "announcement": "群公告",
+        "confessTalk": true,
+        "allowMemberInvite": true,
+        "autoApprove": true,
+        "anonymousChat": true
+    }
+}
+```
+
+| 名字              | 可选  | 类型    | 举例             | 说明                 |
+| ----------------- | ----- | ------- | ---------------- | -------------------- |
+| sessionKey        | false | String  | "YourSessionKey" | 你的session key      |
+| target            | false | Long    | 123456789        | 指定群的群号         |
+| config            | false | Object  | {}               | 群设置               |
+| name              | true  | String  | "Name"           | 群名                 |
+| announcement      | true  | Boolean | true             | 群公告               |
+| confessTalk       | true  | Boolean | true             | 是否开启坦白说       |
+| allowMemberInvite | true  | Boolean | true             | 是否运行群员邀请     |
+| autoApprove       | true  | Boolean | true             | 是否开启自动审批入群 |
+| anonymousChat     | true  | Boolean | true             | 是否允许匿名聊天     |
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+
+### 获取群设置
+
+使用此方法获取群设置
+
+```
+[Get] /groupConfig?sessionKey=YourSessionKey&target=123456789
+```
+
+#### 请求:
+
+| 名字              | 可选  | 类型    | 举例             | 说明                 |
+| ----------------- | ----- | ------- | ---------------- | -------------------- |
+| sessionKey        | false | String  | YourSessionKey   | 你的session key      |
+| target            | false | Long    | 123456789        | 指定群的群号         |
+
+
+#### 响应
+
+```json5
+{
+    "name": "群名称",
+    "announcement": "群公告",
+    "confessTalk": true,
+    "allowMemberInvite": true,
+    "autoApprove": true,
+    "anonymousChat": true
+}
+```
