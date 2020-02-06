@@ -22,22 +22,18 @@ interface Member : QQ, Contact {
     val permission: MemberPermission
 
     /**
-     * ====以下字段会在更新后异步更新到服务器====
-     */
-
-    /**
      * 群名片
+     *
+     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
      */
     var groupCard: String
 
     /**
      * 群头衔
+     *
+     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
      */
     var specialTitle: String
-
-    /**
-     * ====以上字段会在更新后异步更新到服务器====
-     */
 
     /**
      * 禁言
@@ -74,58 +70,3 @@ suspend inline fun Member.mute(durationSeconds: UInt): Boolean {
     require(durationSeconds.toInt() <= 30 * 24 * 3600) { "duration must be at most 1 month" }
     return this.mute(durationSeconds.toInt()) // same bin rep.
 }
-
-/**
- * 群成员的权限
- */
-enum class MemberPermission {
-    /**
-     * 群主
-     */
-    OWNER,
-    /**
-     * 管理员
-     */
-    ADMINISTRATOR,
-    /**
-     * 一般群成员
-     */
-    MEMBER;
-}
-
-/**
- * 是群主
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun MemberPermission.isOwner(): Boolean = this == MemberPermission.OWNER
-
-/**
- * 是管理员
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun MemberPermission.isAdministrator(): Boolean = this == MemberPermission.ADMINISTRATOR
-
-/**
- * 是管理员或群主
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun MemberPermission.isOperator(): Boolean = isAdministrator() || isOwner()
-
-
-/**
- * 是群主
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun Member.isOwner(): Boolean = this.permission.isOwner()
-
-/**
- * 是管理员
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun Member.isAdministrator(): Boolean = this.permission.isAdministrator()
-
-/**
- * 时管理员或群主
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun Member.isOperator(): Boolean = this.permission.isOperator()
