@@ -23,7 +23,11 @@ actual class PlatformSocket : Closeable {
     actual val isOpen: Boolean
         get() = socket.isConnected
 
-    override fun close() = socket.close()
+    override fun close() {
+        if (::socket.isInitialized) {
+            socket.close()
+        }
+    }
 
     @PublishedApi
     internal lateinit var writeChannel: BufferedOutputStream

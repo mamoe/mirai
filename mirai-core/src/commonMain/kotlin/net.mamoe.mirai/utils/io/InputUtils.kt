@@ -114,6 +114,8 @@ fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplica
                 duplicating value=${this.readUShortLVByteArray().toUHexString()}
                 """.trimIndent()
                 )
+            } else {
+                this.discardExact(this.readShort().toInt() and 0xffff)
             }
         } else {
             try {
