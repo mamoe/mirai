@@ -155,63 +155,63 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         val friendLoadFinish = currentTimeMillis
         val groupInfo = mutableMapOf<Long, Int>()
-        try {
-            bot.logger.info("开始加载群组列表与群成员列表")
-            val troopListData = FriendList.GetTroopListSimplify(
-                bot.client
-            ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 5000)
-            // println("获取到群数量" + troopData.groups.size)
-            val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
-            troopListData.groups.forEach {
-                val contactList = ContactList(LockFreeLinkedList<Member>())
-                val groupInfoResponse = try {
-                    TroopManagement.GetGroupOperationInfo(
-                        client = bot.client,
-                        groupCode = it.groupCode
-                    ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>()
-                } catch (e: Exception) {
-                    bot.logger.info("获取" + it.groupCode + "的群设置失败")
-                    TroopManagement.GetGroupOperationInfo.Response(
-                        allowAnonymousChat = false,
-                        allowMemberInvite = false,
-                        autoApprove = false,
-                        confessTalk = false
-                    )
-                }
-                val group =
-                    GroupImpl(
-                        bot = bot,
-                        coroutineContext = this.coroutineContext,
-                        id = it.groupCode,
-                        uin = it.groupUin,
-                        initName = it.groupName,
-                        initAnnouncement = it.groupMemo,
-                        initAllowMemberInvite = groupInfoResponse.allowMemberInvite,
-                        initConfessTalk = groupInfoResponse.confessTalk,
-                        initMuteAll = false,//todo
-                        initAutoApprove = groupInfoResponse.autoApprove,
-                        initAnonymousChat = groupInfoResponse.allowAnonymousChat,
-                        members = contactList
-                    )
-                toGet[group] = contactList
-                bot.groups.delegate.addLast(group)
-                launch {
-                    try {
-                        getTroopMemberList(group, contactList, it.dwGroupOwnerUin)
-                        groupInfo[it.groupCode] = contactList.size
+        coroutineScope {
+            try {
+                bot.logger.info("开始加载群组列表与群成员列表")
+                val troopListData = FriendList.GetTroopListSimplify(bot.client)
+                    .sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 5000, retry = 2)
+                // println("获取到群数量" + troopData.groups.size)
+                val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
+                troopListData.groups.forEach {
+                    val contactList = ContactList(LockFreeLinkedList<Member>())
+                    val groupInfoResponse = try {
+                        TroopManagement.GetGroupOperationInfo(
+                            client = bot.client,
+                            groupCode = it.groupCode
+                        ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>()
                     } catch (e: Exception) {
-                        groupInfo[it.groupCode] = -1
-                        bot.logger.info("群${it.groupCode}的列表拉取失败, 将采用动态加入")
-                        bot.logger.error(e)
+                        bot.logger.info("获取" + it.groupCode + "的群设置失败")
+                        TroopManagement.GetGroupOperationInfo.Response(
+                            allowAnonymousChat = false,
+                            allowMemberInvite = false,
+                            autoApprove = false,
+                            confessTalk = false
+                        )
+                    }
+                    val group =
+                        GroupImpl(
+                            bot = bot,
+                            coroutineContext = this.coroutineContext,
+                            id = it.groupCode,
+                            uin = it.groupUin,
+                            initName = it.groupName,
+                            initAnnouncement = it.groupMemo,
+                            initAllowMemberInvite = groupInfoResponse.allowMemberInvite,
+                            initConfessTalk = groupInfoResponse.confessTalk,
+                            initMuteAll = false,//todo
+                            initAutoApprove = groupInfoResponse.autoApprove,
+                            initAnonymousChat = groupInfoResponse.allowAnonymousChat,
+                            members = contactList
+                        )
+                    toGet[group] = contactList
+                    bot.groups.delegate.addLast(group)
+                    launch {
+                        try {
+                            getTroopMemberList(group, contactList, it.dwGroupOwnerUin)
+                            groupInfo[it.groupCode] = contactList.size
+                        } catch (e: Exception) {
+                            groupInfo[it.groupCode] = -1
+                            bot.logger.info("群${it.groupCode}的列表拉取失败, 将采用动态加入")
+                            bot.logger.error(e)
+                        }
                     }
                 }
+                bot.logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
+            } catch (e: Exception) {
+                bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+                bot.logger.error(e)
             }
-            bot.logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
-        } catch (e: Exception) {
-            bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
-            bot.logger.error(e)
         }
-
         //===log===//
         fun fillUntil(long: Number, size: Int): String {
             val x = long.toString()
