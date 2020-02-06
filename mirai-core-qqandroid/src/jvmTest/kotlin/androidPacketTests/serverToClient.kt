@@ -198,6 +198,10 @@ private fun ByteReadPacket.parseOicqResponse(body: ByteReadPacket.() -> Unit) {
     }
 }
 
+fun ByteReadPacket.readIoBuffer(
+    n: Int = remaining.toInt()//not that safe but adequate
+): IoBuffer = IoBuffer.Pool.borrow().also { this.readFully(it, n) }
+
 /**
  * 解析 SSO 层包装
  */

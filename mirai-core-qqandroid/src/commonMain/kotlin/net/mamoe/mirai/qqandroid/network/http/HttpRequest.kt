@@ -1,20 +1,17 @@
 package net.mamoe.mirai.qqandroid.network.http
 
 import io.ktor.client.HttpClient
-import io.ktor.client.request.*
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.request.post
 import io.ktor.client.response.HttpResponse
-import io.ktor.http.ContentType
 import io.ktor.http.URLProtocol
 import io.ktor.http.setCookie
 import io.ktor.http.userAgent
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.io.readRemaining
-import kotlinx.coroutines.withContext
-import net.mamoe.mirai.qqandroid.QQAndroidBot
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.io.readRemainingBytes
 import net.mamoe.mirai.utils.io.toUHexString
 
 /**
@@ -49,7 +46,7 @@ internal suspend fun HttpClient.getPTLoginCookies(
 
     println(res.status)
     println(res.setCookie())
-    println(res.content.readRemaining().readRemainingBytes().toUHexString())
+    println(res.content.readRemaining().readBytes().toUHexString())
     return "done";
 }
 

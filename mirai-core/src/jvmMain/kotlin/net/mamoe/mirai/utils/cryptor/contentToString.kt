@@ -1,11 +1,13 @@
 package net.mamoe.mirai.utils.cryptor
 
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import java.lang.reflect.Field
 import kotlin.reflect.full.allSuperclasses
 
 
 val FIELD_TRY_SET_ACCESSIBLE = Field::class.java.declaredMethods.firstOrNull { it.name == "trySetAccessible" }
 
+@MiraiDebugAPI
 actual fun Any.contentToStringReflectively(prefix: String, filter: ((name: String, value: Any?) -> Boolean)?): String {
     val newPrefix = prefix + ProtoMap.indent
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +

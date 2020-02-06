@@ -77,10 +77,7 @@ public interface BlockingBot {
      * 登录.
      * <p>
      * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.login]
-     *
-     * @throws net.mamoe.mirai.utils.LoginFailedException
      */
-    @SuppressWarnings("JavaDoc")
     void login();
 
     // endregion

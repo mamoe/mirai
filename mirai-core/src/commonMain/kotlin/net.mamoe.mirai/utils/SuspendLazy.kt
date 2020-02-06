@@ -1,4 +1,4 @@
-@file:Suppress("unused", "FunctionName")
+@file:Suppress("unused", "FunctionName", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.utils
 
@@ -16,7 +16,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * val image: Deferred<Image> by suspendLazy{  /* intializer */  }
  * ```
  */
-fun <R> CoroutineScope.suspendLazy(context: CoroutineContext = EmptyCoroutineContext, initializer: suspend () -> R): Lazy<Deferred<R>> =
+inline fun <R> CoroutineScope.suspendLazy(context: CoroutineContext = EmptyCoroutineContext, noinline initializer: suspend () -> R): Lazy<Deferred<R>> =
     SuspendLazy(this, context, initializer)
 
 /**

@@ -16,8 +16,8 @@ import kotlin.jvm.JvmSynthetic
  *
  * Source project: [Nukkit](http://github.com/nukkit/nukkit)
  *
- * @author MagicDroidX of Nukkit Project
- * @author lmlstarqaq of Nukkit Project
+ * @author MagicDroidX from Nukkit Project
+ * @author lmlstarqaq from Nukkit Project
  */
 
 internal fun encodeZigZag32(signedInt: Int): Long {
@@ -41,10 +41,6 @@ internal fun decodeZigZag64(signedLong: Long): Long {
     return signedLong.ushr(1) xor -(signedLong and 1)
 }
 
-
-fun Input.readVarInt(): Int {
-    return decodeZigZag32(this.readUVarInt())
-}
 
 inline class UVarInt(
     val data: UInt

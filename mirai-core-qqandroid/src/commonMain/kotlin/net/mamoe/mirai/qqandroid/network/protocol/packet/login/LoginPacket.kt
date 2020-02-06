@@ -22,15 +22,15 @@ import net.mamoe.mirai.utils.md5
 /**
  * OicqRequest
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@Suppress("FunctionName")
+@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login") {
+    private const val subAppId = 537062845L
+
     /**
      * 提交验证码
      */
     object SubCommand2 {
-        private const val appId = 16L
-        private const val subAppId = 537062845L
-
         fun SubmitSliderCaptcha(
             client: QQAndroidClient,
             ticket: String
@@ -66,10 +66,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
     }
 
     object SubCommand20 {
-        private const val appId = 16L
-        private const val subAppId = 537062845L
 
-        @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
             t402: ByteArray
@@ -91,9 +88,6 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
      * 提交 SMS
      */
     object SubCommand7 {
-        private const val appId = 16L
-        private const val subAppId = 537062845L
-        @UseExperimental(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient
         ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
@@ -297,7 +291,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
             }
         }
 
-        class DeviceLockLogin(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse() {
+        class DeviceLockLogin(val t402: ByteArray) : LoginPacketResponse() {
             override fun toString(): String = "LoginPacket.LoginPacketResponse.DeviceLockLogin"
         }
     }
@@ -320,7 +314,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
             2 -> onSolveLoginCaptcha(tlvMap, bot)
             160 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
             204 /*-52*/ -> onSMSVerifyNeeded(tlvMap, bot)
-            else -> tlvMap[0x149]?.let { bot.client.analysisTlv149(it) } ?: error("unknown login result type: $type")
+            else -> tlvMap[0x149]?.let { analysisTlv149(it) } ?: error("unknown login result type: $type")
         }
     }
 
@@ -331,11 +325,11 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
     ): LoginPacketResponse.DeviceLockLogin {
         bot.client.t104 = tlvMap.getOrFail(0x104)
         // println("403： " + tlvMap[0x403]?.toUHexString())
-        return LoginPacketResponse.DeviceLockLogin(tlvMap[0x402]!!, tlvMap.getOrFail(0x403))
+        return LoginPacketResponse.DeviceLockLogin(tlvMap.getOrFail(0x402))
     }
 
     private fun onUnsafeDeviceLogin(tlvMap: TlvMap): LoginPacketResponse.UnsafeLogin {
-        return LoginPacketResponse.UnsafeLogin(tlvMap.getOrFail(0x204).toReadPacket().readRemainingBytes().encodeToString())
+        return LoginPacketResponse.UnsafeLogin(tlvMap.getOrFail(0x204).toReadPacket().readBytes().encodeToString())
     }
 
     private fun onErrorMessage(tlvMap: TlvMap): LoginPacketResponse.Error {
@@ -369,7 +363,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
                 imageData.discardExact(2)//image Length
                 val sign = imageData.readBytes(signInfoLength.toInt())
                 return LoginPacketResponse.Captcha.Picture(
-                    data = imageData.readRemainingBytes().toIoBuffer(),
+                    data = imageData.readBytes().toIoBuffer(),
                     sign = sign
                 )
             } else error("UNKNOWN CAPTCHA QUESTION: $question")
@@ -653,11 +647,6 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
     }
 
     /**
-     */
-    private fun QQAndroidClient.analysisTlv528(t528: ByteArray) = t528.read {
-    }
-
-    /**
      * 设置 [QQAndroidClient.uin]
      */
     private fun QQAndroidClient.analysisTlv113(t113: ByteArray) = t113.read {
@@ -696,7 +685,7 @@ internal object LoginPacket : OutgoingPacketFactory<LoginPacket.LoginPacketRespo
     /**
      * 错误消息
      */
-    private fun QQAndroidClient.analysisTlv149(t149: ByteArray): LoginPacketResponse.Error {
+    private fun analysisTlv149(t149: ByteArray): LoginPacketResponse.Error {
 
         return t149.read {
             discardExact(2) //type

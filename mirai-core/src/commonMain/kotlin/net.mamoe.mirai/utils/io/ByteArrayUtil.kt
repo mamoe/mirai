@@ -1,8 +1,11 @@
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "NOTHING_TO_INLINE")
+@file:JvmMultifileClass
+@file:JvmName("Utils")
 
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.charsets.Charset
+import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
@@ -10,6 +13,8 @@ import net.mamoe.mirai.utils.checkOffsetAndLength
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
@@ -80,12 +85,9 @@ fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: In
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun ByteArray.encodeToString(): String = String(this)
+inline fun ByteArray.encodeToString(charset: Charset = Charsets.UTF_8): String = String(this, charset = charset)
 
-fun ByteArray.encodeToGBKString(): String = String(this, 0, this.size, Charset.forName("GBK"))
-
-
-fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) =
+inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) =
     ByteReadPacket(this, offset = offset, length = length)
 
 @UseExperimental(ExperimentalContracts::class)
@@ -95,5 +97,3 @@ inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     }
     return this.toReadPacket().use(t)
 }
-
-fun ByteArray.cutTail(length: Int): ByteArray = this.copyOfRange(0, this.size - length)

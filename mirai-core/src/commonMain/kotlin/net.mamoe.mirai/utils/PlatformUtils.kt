@@ -1,10 +1,11 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.io.core.toByteArray
 
 /**
  * 时间戳
@@ -36,6 +37,8 @@ expect fun ByteArray.unzip(offset: Int = 0, length: Int = this.size - offset): B
  */
 expect fun md5(byteArray: ByteArray): ByteArray
 
+inline fun md5(str: String): ByteArray = md5(str.toByteArray())
+
 /**
  * hostname 解析 ipv4
  */
@@ -53,7 +56,7 @@ expect val Http: HttpClient
 
 expect fun newCoroutineDispatcher(threadCount: Int): CoroutineDispatcher
 
-internal fun ByteArray.checkOffsetAndLength(offset: Int, length: Int){
+internal fun ByteArray.checkOffsetAndLength(offset: Int, length: Int) {
     require(offset >= 0) { "offset shouldn't be negative: $offset" }
     require(length >= 0) { "length shouldn't be negative: $length" }
     require(offset + length <= this.size) { "offset ($offset) + length ($length) > array.size (${this.size})" }

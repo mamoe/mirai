@@ -114,6 +114,16 @@ fun ByteReadPacket.decodeMultiClientToServerPackets() {
     println()
 }
 
+fun Map<Int, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 2) =
+    debugPrintln("TLVMap $name= " + this.mapValues { (_, value) -> value.toUHexString() }.mapKeys {
+        when (keyLength) {
+            1 -> it.key.toUByte().contentToString()
+            2 -> it.key.toUShort().contentToString()
+            4 -> it.key.toUInt().contentToString()
+            else -> error("Expecting 1, 2 or 4 for keyLength")
+        }
+    }.entries.joinToString(prefix = "{", postfix = "}", separator = "\n"))
+
 fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed", { buildPacket { writeInt(it.size + 4); writeFully(it) } }) {
     val flag1 = readInt()
     println("flag1=" + flag1.contentToString())
@@ -139,7 +149,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
     println("uin=" + readString(readInt() - 4))
 
     println("// 解密 body")
-    val encrypted = readRemainingBytes()
+    val encrypted = readBytes()
 
     val decrypted = encrypted.tryDecryptOrNull()
     if (decrypted == null) {

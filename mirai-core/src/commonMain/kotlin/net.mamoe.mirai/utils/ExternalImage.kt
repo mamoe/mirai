@@ -80,7 +80,7 @@ class ExternalImage(
 suspend fun ExternalImage.sendTo(contact: Contact) = when (contact) {
     is Group -> contact.uploadImage(this).sendTo(contact)
     is QQ -> contact.uploadImage(this).sendTo(contact)
-    else -> assertUnreachable()
+    else -> error("unreachable")
 }
 
 /**
@@ -92,7 +92,7 @@ suspend fun ExternalImage.sendTo(contact: Contact) = when (contact) {
 suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
     is Group -> contact.uploadImage(this)
     is QQ -> contact.uploadImage(this)
-    else -> assertUnreachable()
+    else -> error("unreachable")
 }
 
 /**

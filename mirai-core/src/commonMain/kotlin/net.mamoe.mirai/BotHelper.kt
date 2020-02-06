@@ -4,7 +4,6 @@
 
 package net.mamoe.mirai
 
-import net.mamoe.mirai.utils.LoginFailedException
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -15,8 +14,6 @@ import kotlin.jvm.JvmName
 //Contacts
 /**
  * 登录, 返回 [this]
- *
- * @throws LoginFailedException
  */
 suspend inline fun <B: Bot> B.alsoLogin(): B = also { login() }
 

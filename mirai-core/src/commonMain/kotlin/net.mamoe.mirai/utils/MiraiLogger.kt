@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
@@ -139,7 +141,7 @@ interface MiraiLogger {
 /**
  * 当前平台的默认的日志记录器.
  * 在 _JVM 控制台_ 端的实现为 [println]
- * 在 _Android_ 端的实现为 [android.util.Log]
+ * 在 _Android_ 端的实现为 `android.util.Log`
  *
  * 不应该直接构造这个类的实例. 请使用 [DefaultLogger], 或使用默认的顶层日志记录 [MiraiLogger.Companion]
  */

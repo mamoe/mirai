@@ -1,15 +1,15 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
-import kotlinx.io.charsets.Charset
-import kotlinx.io.charsets.encode
-import kotlinx.io.core.*
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.readBytes
+import kotlinx.io.core.toByteArray
 import kotlinx.serialization.toUtf8Bytes
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.GetTroopListReqV2Simplify
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.stUinInfo
@@ -22,7 +22,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.daysToSeconds
-import net.mamoe.mirai.utils.io.encodeToGBKString
 import net.mamoe.mirai.utils.io.encodeToString
 
 internal object TroopManagement {
@@ -355,7 +354,7 @@ internal object TroopManagement {
                                         gender = 0,
                                         dwuin = member.id,
                                         dwFlag = 31,
-                                        sName = newName.toUtf8Bytes().encodeToGBKString(),
+                                        sName = newName.toUtf8Bytes().encodeToString(charset = CharsetGBK),
                                         sPhone = "",
                                         sEmail = "",
                                         sRemark = ""

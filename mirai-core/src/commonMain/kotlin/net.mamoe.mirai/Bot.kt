@@ -134,8 +134,6 @@ abstract class Bot : CoroutineScope {
      * 不建议调用这个函数.
      *
      * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.login]
-     *
-     * @throws LoginFailedException
      */
     abstract suspend fun login()
     // endregion

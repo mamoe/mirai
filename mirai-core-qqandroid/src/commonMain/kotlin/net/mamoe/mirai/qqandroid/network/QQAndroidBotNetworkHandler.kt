@@ -41,7 +41,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
 
     override val coroutineContext: CoroutineContext = bot.coroutineContext + CoroutineExceptionHandler { _, throwable ->
-        throwable.logStacktrace("Exception in NetworkHandler")
+        bot.logger.error("Exception in NetworkHandler", throwable)
     }
 
     private lateinit var channel: PlatformSocket
@@ -106,12 +106,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000) // it's slow
     }
 
+    @UseExperimental(MiraiExperimentalAPI::class)
     override suspend fun init() {
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
                 close()
             }
         }
+
+        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
 
         //val msg = MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<MessageSvc.PbGetMsg.Response>()
         //println(msg.contentToString())
@@ -199,16 +202,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     } catch (e: Exception) {
                         groupInfo[it.groupCode] = -1
                         bot.logger.info("群${it.groupCode}的列表拉取失败, 将采用动态加入")
-                        println(e.message)
-                        println(e.logStacktrace())
+                        bot.logger.error(e)
                     }
                 }
             }
             bot.logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
         } catch (e: Exception) {
             bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
-            println(e.message)
-            println(e.logStacktrace())
+            bot.logger.error(e)
         }
 
         //===log===//
@@ -239,8 +240,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
-        return
-        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
+
+        bot.firstLoginSucceed = true
     }
 
 
@@ -483,7 +484,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     private val packetReceiveLock: Mutex = Mutex()
 
     /**
-     * 发送一个包, 但不期待任何返回.-
+     * 发送一个包, 但不期待任何返回.
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
         bot.logger.info("Send: ${this.commandName}")
@@ -494,6 +495,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
+     *
+     * @param retry 当不为 0 时将使用 [ByteArrayPool] 缓存. 因此若非必要, 请不要允许 retry
      */
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 0): E {
         require(timeoutMillis > 0) { "timeoutMillis must > 0" }

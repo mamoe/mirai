@@ -23,7 +23,7 @@ fun BytePacketBuilder.t1(uin: Long, ip: ByteArray) {
         writeShort(1) // _ip_ver
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
-        writeTime()
+        writeInt(currentTimeMillis.toInt())
         writeFully(ip)
         writeShort(0)
     } shouldEqualsTo 20
@@ -100,7 +100,7 @@ fun BytePacketBuilder.t106(
                 writeLong(uin)
             }
 
-            writeTime()
+            writeInt(currentTimeMillis.toInt())
             writeFully(ByteArray(4)) // ip // no need to write actual ip
             writeByte(n5_always_1.toByte())
             writeFully(passwordMd5)

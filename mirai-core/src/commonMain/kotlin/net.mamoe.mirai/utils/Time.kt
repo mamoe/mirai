@@ -1,5 +1,10 @@
+@file:JvmMultifileClass
+@file:JvmName("Utils")
+
 package net.mamoe.mirai.utils
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.time.seconds
 
 // 临时使用, 待 Kotlin Duration 稳定后使用 Duration.

@@ -1,17 +1,18 @@
 package net.mamoe.mirai.utils.cryptor
 
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import java.lang.reflect.Field
 import kotlin.reflect.full.allSuperclasses
 
 
+@MiraiDebugAPI
 actual fun Any.contentToStringReflectively(prefix: String, filter: ((name: String, value: Any?) -> Boolean)?): String {
-    val newPrefix = prefix
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +
             this.allFieldsFromSuperClassesMatching { it.name.startsWith("net.mamoe.mirai") }
                 .distinctBy { it.name }
                 .filterNot { it.name.contains("$") || it.name == "Companion" || it.isSynthetic || it.name == "serialVersionUID" }
                 .joinToStringPrefixed(
-                    prefix = newPrefix
+                    prefix = prefix
                 ) {
                     it.isAccessible = true
                     if (filter != null) {
@@ -22,7 +23,7 @@ actual fun Any.contentToStringReflectively(prefix: String, filter: ((name: Strin
                     it.name + "=" + kotlin.runCatching {
                         val value = it.get(this)
                         if (value == this) "<this>"
-                        else value.contentToString(newPrefix)
+                        else value.contentToString(prefix)
                     }.getOrElse { "<!>" }
                 } + "\n$prefix}"
 }

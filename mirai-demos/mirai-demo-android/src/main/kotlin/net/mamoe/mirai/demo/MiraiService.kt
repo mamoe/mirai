@@ -16,7 +16,6 @@ import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.qqandroid.QQAndroid
-import net.mamoe.mirai.utils.LoginFailedException
 import net.mamoe.mirai.utils.LoginSolver
 import java.lang.ref.WeakReference
 
@@ -67,7 +66,7 @@ class MiraiService : Service() {
                 try {
                     login()
                     mCallback?.get()?.onSuccess()
-                } catch (e: LoginFailedException) {
+                } catch (e: Exception) {
                     mCallback?.get()?.onFailed()
                 }
             }

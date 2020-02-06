@@ -6,6 +6,9 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import kotlinx.io.core.readULong
+import net.mamoe.mirai.utils.MiraiDebugAPI
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.*
 import kotlin.jvm.JvmStatic
 
@@ -24,12 +27,14 @@ import kotlin.jvm.JvmStatic
  *
  * https://www.jianshu.com/p/f888907adaeb
  */
+@MiraiDebugAPI
 fun ProtoFieldId(serializedId: UInt): ProtoFieldId =
     ProtoFieldId(
         protoFieldNumber(serializedId),
         protoType(serializedId)
     )
 
+@MiraiDebugAPI
 data class ProtoFieldId(
     val fieldNumber: Int,
     val type: ProtoType
@@ -38,6 +43,7 @@ data class ProtoFieldId(
 }
 
 @Suppress("SpellCheckingInspection")
+@MiraiDebugAPI
 enum class ProtoType(val value: Byte, private val typeName: String) {
     /**
      * int32, int64, uint32, uint64, sint32, sint64, bool, enum
@@ -82,6 +88,7 @@ enum class ProtoType(val value: Byte, private val typeName: String) {
  *
  * serializedId = (fieldNumber << 3) | wireType
  */
+@MiraiDebugAPI
 fun protoType(number: UInt): ProtoType =
     ProtoType.valueOf(number.toInt().shl(29).ushr(29).toByte())
 
@@ -90,9 +97,10 @@ fun protoType(number: UInt): ProtoType =
  *
  * serializedId = (fieldNumber << 3) | wireType
  */
+@MiraiDebugAPI
 fun protoFieldNumber(number: UInt): Int = number.toInt().ushr(3)
 
-
+@MiraiDebugAPI
 class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, Any> by map {
     companion object {
         @JvmStatic
@@ -120,6 +128,7 @@ class ProtoMap(map: MutableMap<ProtoFieldId, Any>) : MutableMap<ProtoFieldId, An
 /**
  * 将所有元素加入转换为多行的字符串表示.
  */
+@MiraiDebugAPI
 fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) -> CharSequence): String {
     return this.joinToString(prefix = "$prefix${ProtoMap.indent}", separator = "\n$prefix${ProtoMap.indent}", transform = transform)
 }
@@ -135,6 +144,7 @@ fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) -> CharS
  * `data class`: 调用其 [toString]
  * 其他类型: 反射获取它和它的所有来自 Mirai 的 super 类型的所有自有属性并递归调用 [contentToString]. 嵌套结构将会以缩进表示
  */
+@MiraiDebugAPI("Extremely slow")
 fun Any?.contentToString(prefix: String = ""): String = when (this) {
     is Unit -> "Unit"
     is UInt -> "0x" + this.toUHexString("") + "($this)"
@@ -222,8 +232,11 @@ fun Any?.contentToString(prefix: String = ""): String = when (this) {
     }
 }
 
+@MiraiExperimentalAPI("Extremely slow")
+@MiraiDebugAPI("Extremely slow")
 expect fun Any.contentToStringReflectively(prefix: String = "", filter: ((String, Any?) -> Boolean)? = null): String
 
+@MiraiDebugAPI
 @Suppress("UNCHECKED_CAST")
 fun ByteReadPacket.readProtoMap(length: Long = this.remaining): ProtoMap {
     val map = ProtoMap(mutableMapOf())

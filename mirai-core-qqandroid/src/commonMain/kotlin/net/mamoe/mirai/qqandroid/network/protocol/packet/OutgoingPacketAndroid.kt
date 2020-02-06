@@ -10,7 +10,6 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeHex
 import net.mamoe.mirai.utils.io.writeIntLVPacket
-import net.mamoe.mirai.utils.io.writeQQ
 
 internal class OutgoingPacket constructor(
     name: String?,
@@ -250,7 +249,7 @@ internal fun BytePacketBuilder.writeOicqRequestPacket(
     writeShort(client.protocolVersion)
     writeShort(commandId.toShort())
     writeShort(1) // const??
-    writeQQ(client.uin)
+    writeInt(client.uin.toInt())
     writeByte(3) // originally const
     writeByte(encryptMethod.id.toByte())
     writeByte(0) // const8_always_0

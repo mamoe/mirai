@@ -7,6 +7,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmStatic
 
 /**
+ * 验证码, 设备锁解决器
  */
 abstract class LoginSolver {
     abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?

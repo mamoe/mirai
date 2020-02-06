@@ -1,3 +1,7 @@
+@file:Suppress("NOTHING_TO_INLINE")
+@file:JvmMultifileClass
+@file:JvmName("Utils")
+
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
@@ -9,29 +13,34 @@ import net.mamoe.mirai.utils.withSwitch
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.js.JsName
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
+@MiraiDebugAPI("Unsatble")
 object DebugLogger : MiraiLogger by DefaultLogger("Packet Debug").withSwitch()
 
-fun Throwable.logStacktrace(message: String? = null) = DebugLogger.error(message, this)
+@MiraiDebugAPI("Unstable")
+inline fun Throwable.logStacktrace(message: String? = null) = DebugLogger.error(message, this)
 
 @MiraiDebugAPI("Low efficiency.")
-fun debugPrintln(any: Any?) = DebugLogger.debug(any)
+inline fun debugPrintln(any: Any?) = DebugLogger.debug(any)
 
 @MiraiDebugAPI("Low efficiency.")
-fun String.debugPrintThis(name: String): String {
+inline fun String.debugPrintThis(name: String): String {
     DebugLogger.debug("$name=$this")
     return this
 }
 
 @MiraiDebugAPI("Low efficiency.")
-fun ByteArray.debugPrintThis(name: String): ByteArray {
+inline fun ByteArray.debugPrintThis(name: String): ByteArray {
     DebugLogger.debug(name + "=" + this.toUHexString())
     return this
 }
 
 @MiraiDebugAPI("Low efficiency.")
-fun IoBuffer.debugPrintThis(name: String): IoBuffer {
+inline fun IoBuffer.debugPrintThis(name: String): IoBuffer {
     ByteArrayPool.useInstance {
         val count = this.readAvailable(it)
         DebugLogger.debug(name + "=" + it.toUHexString(offset = 0, length = count))
@@ -49,12 +58,12 @@ inline fun IoBuffer.debugCopyUse(block: IoBuffer.() -> Unit): IoBuffer {
 }
 
 @MiraiDebugAPI("Low efficiency.")
-fun Input.debugDiscardExact(n: Number, name: String = "") {
+inline fun Input.debugDiscardExact(n: Number, name: String = "") {
     DebugLogger.debug("Discarded($n) $name=" + this.readBytes(n.toInt()).toUHexString())
 }
 
 @MiraiDebugAPI("Low efficiency.")
-fun ByteReadPacket.debugPrintThis(name: String = ""): ByteReadPacket {
+inline fun ByteReadPacket.debugPrintThis(name: String = ""): ByteReadPacket {
     ByteArrayPool.useInstance {
         val count = this.readAvailable(it)
         DebugLogger.debug("ByteReadPacket $name=" + it.toUHexString(offset = 0, length = count))
