@@ -1,8 +1,9 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package demo.gentleman
 
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.Image
@@ -15,7 +16,6 @@ class GentleImage(val contact: Contact, val keyword: String) {
 
     val seImage: Deferred<Image> by lazy { getImage(1) }
 
-    @UseExperimental(UnstableDefault::class)
     fun getImage(r18: Int): Deferred<Image> {
         return GlobalScope.async {
             withTimeoutOrNull(20 * 1000) {
