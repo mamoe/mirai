@@ -703,7 +703,7 @@ internal open class Node<E>(
 }
 
 @PublishedApi
-internal fun <E> Node<E>.isRemoved() = this.removed.value
+internal inline fun <E> Node<E>.isRemoved() = this.removed.value
 
 @PublishedApi
 @Suppress("NOTHING_TO_INLINE")
