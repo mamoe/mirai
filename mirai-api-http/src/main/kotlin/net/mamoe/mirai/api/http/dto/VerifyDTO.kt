@@ -3,6 +3,7 @@ package net.mamoe.mirai.api.http.dto
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.api.http.AuthedSession
+import net.mamoe.mirai.contact.Group
 
 @Serializable
 abstract class VerifyDTO : DTO {
@@ -36,6 +37,28 @@ data class MuteDTO(
     val member: Long = 0,
     val time: Int = 0
 ) : VerifyDTO()
+
+@Serializable
+data class GroupConfigDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val config: GroupInfoDTO
+) : VerifyDTO()
+
+@Serializable
+data class GroupInfoDTO(
+    val name: String? = null,
+    val announcement: String? = null,
+    val confessTalk: Boolean? = null,
+    val allowMemberInvite: Boolean? = null,
+    val autoApprove: Boolean? = null,
+    val anonymousChat: Boolean? = null
+) : DTO {
+    constructor(group: Group) : this(
+        group.name, group.announcement, group.confessTalk, group.allowMemberInvite,
+        group.autoApprove, group.anonymousChat
+    )
+}
 
 @Serializable
 open class StateCode(val code: Int, var msg: String) {
