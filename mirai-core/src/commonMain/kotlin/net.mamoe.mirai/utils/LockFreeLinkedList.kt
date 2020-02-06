@@ -197,9 +197,9 @@ open class LockFreeLinkedList<E> {
     inline fun forEach(block: (E) -> Unit) {
         var node: Node<E> = head
         while (true) {
+            if (node === tail) return
             node.letValueIfValid(block)
             node = node.nextNode
-            if (node === tail) return
         }
     }
 
