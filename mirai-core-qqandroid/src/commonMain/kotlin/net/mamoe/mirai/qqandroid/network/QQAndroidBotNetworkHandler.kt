@@ -154,12 +154,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         val groupInfo = mutableMapOf<Long, Int>()
         try {
             bot.logger.info("开始加载群组列表与群成员列表")
-            val troopData = FriendList.GetTroopListSimplify(
+            val troopListData = FriendList.GetTroopListSimplify(
                 bot.client
             ).sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 5000)
             // println("获取到群数量" + troopData.groups.size)
             val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
-            troopData.groups.forEach {
+            troopListData.groups.forEach {
                 val contactList = ContactList(LockFreeLinkedList<Member>())
                 val groupInfoResponse = try {
                     TroopManagement.GetGroupOperationInfo(
@@ -204,7 +204,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     }
                 }
             }
-            bot.logger.info("群组列表与群成员加载完成, 共 ${troopData.groups.size}个")
+            bot.logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
         } catch (e: Exception) {
             bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
             println(e.message)

@@ -117,7 +117,7 @@ open class LockFreeLinkedList<E> {
     /**
      * 过滤并获取, 获取不到则添加一个元素.
      */
-    inline fun filteringGetOrAdd(filter: (E) -> Boolean, noinline supplier: () -> E): E {
+    fun filteringGetOrAdd(filter: (E) -> Boolean, supplier: () -> E): E {
         val node = LazyNode(tail, supplier)
 
         while (true) {
@@ -152,6 +152,36 @@ open class LockFreeLinkedList<E> {
         }, { it !is Tail })
     }.dropLast(4)
 
+    @Suppress("DuplicatedCode")
+    fun removeIf(filter: (E) -> Boolean) {
+        while (true) {
+            val before = head.iterateBeforeFirst { it.isValidElementNode() && filter(it.nodeValue) }
+            val toRemove = before.nextNode
+            if (toRemove === tail) {
+                return
+            }
+            if (toRemove.isRemoved()) {
+                continue
+            }
+            @Suppress("BooleanLiteralArgument") // false positive
+            if (!toRemove.removed.compareAndSet(false, true)) {
+                // logically remove: all the operations will recognize this node invalid
+                continue
+            }
+
+
+            // physically remove: try to fix the link
+            var next: Node<E> = toRemove.nextNode
+            while (next !== tail && next.isRemoved()) {
+                next = next.nextNode
+            }
+            if (before.nextNodeRef.compareAndSet(toRemove, next)) {
+                return
+            }
+        }
+    }
+
+    @Suppress("DuplicatedCode")
     open fun remove(element: E): Boolean {
         while (true) {
             val before = head.iterateBeforeNodeValue(element)
@@ -162,6 +192,7 @@ open class LockFreeLinkedList<E> {
             if (toRemove.isRemoved()) {
                 continue
             }
+            @Suppress("BooleanLiteralArgument") // false positive
             if (!toRemove.removed.compareAndSet(false, true)) {
                 // logically remove: all the operations will recognize this node invalid
                 continue

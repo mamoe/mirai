@@ -33,28 +33,28 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     final override val logger: MiraiLogger by lazy { configuration.logger ?: DefaultLogger("Bot($uin)").also { configuration.logger = it } }
 
     init {
-        @Suppress("LeakingThis")
-        instances.addLast(this)
+        instances.addLast(this.weakRef())
     }
 
     companion object {
         @PublishedApi
-        internal val instances: LockFreeLinkedList<Bot> = LockFreeLinkedList()
+        internal val instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
 
-        inline fun forEachInstance(block: (Bot) -> Unit) = instances.forEach(block)
+        inline fun forEachInstance(block: (Bot) -> Unit) = instances.forEach {
+            it.get()?.let(block)
+        }
 
         fun instanceWhose(qq: Long): Bot {
             instances.forEach {
-                @Suppress("PropertyName")
-                if (it.uin == qq) {
-                    return it
+                it.get()?.let { bot ->
+                    if (bot.uin == qq) {
+                        return bot
+                    }
                 }
             }
             throw NoSuchElementException()
         }
     }
-
-    final override fun toString(): String = "Bot(${uin})"
 
     // region network
 
@@ -134,16 +134,17 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     @UseExperimental(MiraiInternalAPI::class)
     override fun close(cause: Throwable?) {
-        if (cause == null) {
-            network.close()
-            this.botJob.complete()
-            groups.delegate.clear()
-            qqs.delegate.clear()
-        } else {
-            network.close(cause)
-            this.botJob.completeExceptionally(cause)
-            groups.delegate.clear()
-            qqs.delegate.clear()
+        kotlin.runCatching {
+            if (cause == null) {
+                network.close()
+                this.botJob.complete()
+            } else {
+                network.close(cause)
+                this.botJob.completeExceptionally(cause)
+            }
         }
+        groups.delegate.clear()
+        qqs.delegate.clear()
+        instances.removeIf { it.get()?.uin == this.uin }
     }
 }
