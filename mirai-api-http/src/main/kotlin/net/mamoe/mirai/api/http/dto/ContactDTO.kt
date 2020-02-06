@@ -16,10 +16,11 @@ data class QQDTO(
     override val id: Long,
     val nickName: String,
     val remark: String
-) : ContactDTO()
+) : ContactDTO() {
+    // TODO: queryProfile.nickname & queryRemark.value not support now
+    constructor(qq: QQ) : this(qq.id, "", "")
+}
 
-// TODO: queryProfile.nickname & queryRemark.value not support now
-suspend fun QQDTO(qq: QQ): QQDTO = QQDTO(qq.id, "", "")
 
 @Serializable
 data class MemberDTO(
@@ -27,15 +28,17 @@ data class MemberDTO(
     val memberName: String = "",
     val permission: MemberPermission,
     val group: GroupDTO
-) : ContactDTO()
-
-fun MemberDTO(member: Member, name: String = ""): MemberDTO = MemberDTO(member.id, name, member.permission, GroupDTO(member.group))
+) : ContactDTO() {
+    constructor(member: Member, name: String = "") : this (
+        member.id, name, member.permission, GroupDTO(member.group)
+    )
+}
 
 @Serializable
 data class GroupDTO(
     override val id: Long,
     val name: String,
     val permission: MemberPermission
-) : ContactDTO()
-
-fun GroupDTO(group: Group): GroupDTO = GroupDTO(group.id, group.name, group.botPermission)
+) : ContactDTO() {
+    constructor(group: Group) : this(group.id, group.name, group.botPermission)
+}
