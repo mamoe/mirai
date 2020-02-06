@@ -7,9 +7,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 
 /**
@@ -58,15 +55,3 @@ interface Contact : CoroutineScope {
 suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
 
 suspend inline fun Contact.sendMessage(plain: String) = sendMessage(plain.singleChain())
-
-/**
- * 以 [Bot] 作为接收器 (receiver) 并调用 [block], 返回 [block] 的返回值.
- * 这个方法将能帮助使用在 [Bot] 中定义的一些扩展方法
- */
-@UseExperimental(ExperimentalContracts::class)
-inline fun <R> Contact.withBot(block: Bot.() -> R): R {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
-    return bot.run(block)
-}
