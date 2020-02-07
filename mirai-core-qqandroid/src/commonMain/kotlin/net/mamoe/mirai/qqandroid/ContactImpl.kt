@@ -8,17 +8,15 @@ import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.message.data.CustomFaceFromFile
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
-import net.mamoe.mirai.qqandroid.network.highway.Highway
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
+import net.mamoe.mirai.message.data.NotOnlineImageFromFile
+import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.PlatformSocket
-import net.mamoe.mirai.utils.io.discardExact
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
@@ -53,7 +51,57 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image {
-        TODO("not implemented")
+        bot.network.run {
+            val response = LongConn.OffPicUp(
+                bot.client, Cmd0x352.TryUpImgReq(
+                    srcUin = bot.uin.toInt(),
+                    dstUin = id.toInt(),
+                    fileId = 0,
+                    fileMd5 = image.md5,
+                    fileSize = image.inputSize.toInt(),
+                    fileName = image.filename,
+                    imgOriginal = 1,
+                    imgWidth = image.width,
+                    imgHeight = image.height,
+                    imgType = image.imageType,
+                    buType = 1
+                )
+            ).sendAndExpect<LongConn.OffPicUp.Response>()
+
+            return when (response) {
+                is LongConn.OffPicUp.Response.FileExists -> NotOnlineImageFromFile(
+                    filepath = response.resourceId,
+                    md5 = response.imageInfo.fileMd5,
+                    fileLength = response.imageInfo.fileSize.toInt(),
+                    height = response.imageInfo.fileHeight,
+                    width = response.imageInfo.fileWidth,
+                    resourceId = response.resourceId
+                )
+                is LongConn.OffPicUp.Response.RequireUpload -> {
+                    HighwayHelper.uploadImage(
+                        client = bot.client,
+                        uin = bot.uin,
+                        serverIp = response.serverIp[2].toIpV4AddressString(),
+                        serverPort = response.serverPort[2],
+                        imageInput = image.input,
+                        inputSize = image.inputSize.toInt(),
+                        md5 = image.md5,
+                        uKey = response.uKey,
+                        commandId = 1
+                    )
+
+                    return NotOnlineImageFromFile(
+                        filepath = response.resourceId,
+                        md5 = image.md5,
+                        fileLength = image.inputSize.toInt(),
+                        height = image.height,
+                        width = image.width,
+                        resourceId = response.resourceId
+                    )
+                }
+                is LongConn.OffPicUp.Response.Failed -> error(response.message)
+            }
+        }
     }
 
     override suspend fun queryProfile(): Profile {
@@ -341,31 +389,17 @@ internal class GroupImpl(
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
 
-                    val socket = PlatformSocket()
-                    socket.connect(response.uploadIpList.first().toIpV4AddressString().also { println("serverIp=$it") }, response.uploadPortList.first())
-                    // socket.use {
-                    socket.send(
-                        Highway.RequestDataTrans(
-                            uin = bot.uin,
-                            command = "PicUp.DataUp",
-                            sequenceId = bot.client.nextHighwayDataTransSequenceId(),
-                            uKey = response.uKey,
-                            data = image.input,
-                            dataSize = image.inputSize.toInt(),
-                            md5 = image.md5
-                        )
+                    HighwayHelper.uploadImage(
+                        client = bot.client,
+                        uin = bot.uin,
+                        serverIp = response.uploadIpList.first().toIpV4AddressString(),
+                        serverPort = response.uploadPortList.first(),
+                        imageInput = image.input,
+                        inputSize = image.inputSize.toInt(),
+                        md5 = image.md5,
+                        uKey = response.uKey,
+                        commandId = 2
                     )
-                    //  }
-
-                    //0A 3C 08 01 12 0A 31 39 39 34 37 30 31 30 32 31 1A 0C 50 69 63 55 70 2E 44 61 74 61 55 70 20 E9 A7 05 28 00 30 BD DB 8B 80 02 38 80 20 40 02 4A 0A 38 2E 32 2E 30 2E 31 32 39 36 50 84 10 12 3D 08 00 10 FD 08 18 00 20 FD 08 28 C6 01 38 00 42 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 4A 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 50 89 92 A2 FB 06 58 00 60 00 18 53 20 01 28 00 30 04 3A 00 40 E6 B7 F7 D9 80 2E 48 00 50 00
-                    socket.read().withUse {
-                        discardExact(1)
-                        val headLength = readInt()
-                        discardExact(4)
-                        val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
-                        check(proto.errorCode == 0) { "image upload failed: Transfer errno=${proto.errorCode}" }
-                    }
-                    socket.close()
                     val resourceId = image.calculateImageResourceId()
                     // return NotOnlineImageFromFile(
                     //     resourceId = resourceId,
