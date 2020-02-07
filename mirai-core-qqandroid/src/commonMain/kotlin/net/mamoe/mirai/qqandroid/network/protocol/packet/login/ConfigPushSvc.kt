@@ -27,9 +27,7 @@ internal class ConfigPushSvc {
             return network.run {
                 buildResponseUniPacket(
                     client,
-                    sequenceId = client.configPushSvcPushReqSequenceId,
-                    commandName = "ConfigPushSvc.PushResp",
-                    name = "ConfigPushSvc.PushResp"
+                    sequenceId = sequenceId
                 ) {
                     writeJceStruct(
                         RequestPacket.serializer(),

@@ -64,14 +64,14 @@ internal open class QQAndroidClient(
     internal inline fun <R> tryDecryptOrNull(data: ByteArray, size: Int = data.size, mapper: (ByteArray) -> R): R? {
         keys.forEach { (key, value) ->
             kotlin.runCatching {
-                return mapper(data.decryptBy(value, size).also { PacketLogger.verbose("成功使用 $key 解密") })
+                return mapper(data.decryptBy(value, size).also { PacketLogger.verbose { "成功使用 $key 解密" } })
             }
         }
         return null
     }
 
-    override fun toString(): String { // net.mamoe.mirai.utils.cryptor.ProtoKt.contentToString
-        return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.contentToString()}, randomKey=${randomKey.contentToString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.contentToString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.contentToString()}, protocolVersion=$protocolVersion, apkId=${apkId.contentToString()}, t150=${t150?.contentToString()}, rollbackSig=${rollbackSig?.contentToString()}, ipFromT149=${ipFromT149?.contentToString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.contentToString()}, t528=${t528?.contentToString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.contentToString()}, qrPushSig=${qrPushSig.contentToString()}, mainDisplayName='$mainDisplayName')"
+    override fun toString(): String { // extremely slow
+        return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.toUHexString()}, randomKey=${randomKey.toUHexString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.toUHexString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.toUHexString()}, protocolVersion=$protocolVersion, apkId=${apkId.toUHexString()}, t150=${t150?.value?.toUHexString()}, rollbackSig=${rollbackSig?.toUHexString()}, ipFromT149=${ipFromT149?.toUHexString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.toUHexString()}, t528=${t528?.toUHexString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.toUHexString()}, qrPushSig=${qrPushSig.toUHexString()}, mainDisplayName='$mainDisplayName')"
     }
 
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
@@ -85,8 +85,6 @@ internal open class QQAndroidClient(
     var miscBitMap: Int = 184024956 // 也可能是 150470524 ?
     var mainSigMap: Int = 16724722
     var subSigMap: Int = 0x10400 //=66,560
-
-    var configPushSvcPushReqSequenceId: Int = 0
 
     private val _ssoSequenceId: AtomicInt = atomic(85600)
 
@@ -136,7 +134,7 @@ internal open class QQAndroidClient(
     @PublishedApi
     internal val apkId: ByteArray = "com.tencent.mobileqq".toByteArray()
 
-    var outgoingPacketUnknownValue: ByteArray = 0x02B05B8B.toByteArray()
+    var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
     var loginState = 0
 
     var t150: Tlv? = null
@@ -194,7 +192,7 @@ internal class ReserveUinInfo(
     val imgUrl: ByteArray
 ) {
     override fun toString(): String {
-        return "ReserveUinInfo(imgType=${imgType.contentToString()}, imgFormat=${imgFormat.contentToString()}, imgUrl=${imgUrl.contentToString()})"
+        return "ReserveUinInfo(imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()})"
     }
 }
 
@@ -222,7 +220,7 @@ internal class WLoginSimpleInfo(
     val mainDisplayName: ByteArray
 ) {
     override fun toString(): String {
-        return "WLoginSimpleInfo(uin=$uin, face=$face, age=$age, gender=$gender, nick='$nick', imgType=${imgType.contentToString()}, imgFormat=${imgFormat.contentToString()}, imgUrl=${imgUrl.contentToString()}, mainDisplayName=${mainDisplayName.contentToString()})"
+        return "WLoginSimpleInfo(uin=$uin, face=$face, age=$age, gender=$gender, nick='$nick', imgType=${imgType.toUHexString()}, imgFormat=${imgFormat.toUHexString()}, imgUrl=${imgUrl.toUHexString()}, mainDisplayName=${mainDisplayName.toUHexString()})"
     }
 }
 
@@ -233,7 +231,7 @@ internal class LoginExtraData(
     val version: Int
 ) {
     override fun toString(): String {
-        return "LoginExtraData(uin=$uin, ip=${ip.contentToString()}, time=$time, version=$version)"
+        return "LoginExtraData(uin=$uin, ip=${ip.toUHexString()}, time=$time, version=$version)"
     }
 }
 
@@ -285,7 +283,7 @@ internal class WLoginSigInfo(
     val deviceToken: ByteArray
 ) {
     override fun toString(): String {
-        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1.contentToString()}, noPicSig=${noPicSig.contentToString()}, G=${G.contentToString()}, dpwd=${dpwd.contentToString()}, randSeed=${randSeed.contentToString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.contentToString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.contentToString()}, userStSig=$userStSig, userStKey=${userStKey.contentToString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.contentToString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.contentToString()}, sid=$sid, aqSig=$aqSig, psKey=${psKeyMap.contentToString()}, superKey=${superKey.contentToString()}, payToken=${payToken.contentToString()}, pf=${pf.contentToString()}, pfKey=${pfKey.contentToString()}, da2=${da2.contentToString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.contentToString()}, deviceToken=${deviceToken.contentToString()})"
+        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, G=${G.toUHexString()}, dpwd=${dpwd.toUHexString()}, randSeed=${randSeed.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=${psKeyMap.toString()}, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
     }
 }
 
@@ -330,9 +328,17 @@ internal open class KeyWithExpiry(
     data: ByteArray,
     creationTime: Long,
     val expireTime: Long
-) : KeyWithCreationTime(data, creationTime)
+) : KeyWithCreationTime(data, creationTime) {
+    override fun toString(): String {
+        return "KeyWithExpiry(data=${data.toUHexString()}, creationTime=$creationTime)"
+    }
+}
 
 internal open class KeyWithCreationTime(
     val data: ByteArray,
     val creationTime: Long
-)
+) {
+    override fun toString(): String {
+        return "KeyWithCreationTime(data=${data.toUHexString()}, creationTime=$creationTime)"
+    }
+}
