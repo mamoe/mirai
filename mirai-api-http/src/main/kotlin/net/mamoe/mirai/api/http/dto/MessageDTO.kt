@@ -37,7 +37,7 @@ data class FaceDTO(val faceId: Int) : MessageDTO()
 data class PlainDTO(val text: String) : MessageDTO()
 @Serializable
 @SerialName("Image")
-data class ImageDTO(val path: String) : MessageDTO()
+data class ImageDTO(val imageId: String) : MessageDTO()
 @Serializable
 @SerialName("Xml")
 data class XmlDTO(val xml: String) : MessageDTO()
@@ -76,7 +76,7 @@ fun Message.toDTO() = when (this) {
     is At -> AtDTO(target, display)
     is Face -> FaceDTO(id.value.toInt())
     is PlainText -> PlainDTO(stringValue)
-    is Image -> ImageDTO(this.toString())
+    is Image -> ImageDTO(imageId)
     is XMLMessage -> XmlDTO(stringValue)
     else -> UnknownMessageDTO("未知消息类型")
 }
@@ -86,7 +86,7 @@ fun MessageDTO.toMessage() = when (this) {
     is AtDTO -> At(target, display)
     is FaceDTO -> Face(FaceId(faceId.toUByte()))
     is PlainDTO -> PlainText(text)
-    is ImageDTO -> PlainText("[暂时不支持图片]")
+    is ImageDTO -> Image(imageId)
     is XmlDTO -> XMLMessage(xml)
     is UnknownMessageDTO -> PlainText("assert cannot reach")
 }
