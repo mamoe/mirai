@@ -127,7 +127,6 @@ abstract class NotOnlineImage : Image() {
     override val imageId: String get() = resourceId
 }
 
-@Serializable
 data class NotOnlineImageFromFile(
     override val resourceId: String,
     override val md5: ByteArray,

@@ -232,10 +232,15 @@ internal class GroupImpl(
 ) : ContactImpl(), Group {
 
     override var name by Delegates.observable(initName) { _, oldValue, newValue ->
+        println("发包了-2")
         this.checkBotPermissionOperator()
+        println("发包了-1")
         if (oldValue != newValue) {
+            println("发包了0")
             launch {
+                println("发包了1")
                 bot.network.run {
+                    println("发包了2")
                     TroopManagement.GroupOperation.name(
                         client = bot.client,
                         groupCode = id,
