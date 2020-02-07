@@ -165,7 +165,7 @@ data class NotOnlineImageFromFile(
     override val bizType: Int = 0,
     override val imageType: Int = 1000,
     override val downloadPath: String = resourceId,
-    override val fileId: Int
+    override val fileId: Int = 0
 ) : NotOnlineImage() {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
