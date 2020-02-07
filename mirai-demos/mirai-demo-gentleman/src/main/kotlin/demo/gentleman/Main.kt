@@ -24,7 +24,6 @@ import net.mamoe.mirai.message.data.buildXMLMessage
 import net.mamoe.mirai.message.data.getValue
 import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.utils.ContextImpl
-import net.mamoe.mirai.utils.io.toUHexString
 import java.io.File
 import java.util.*
 import javax.swing.filechooser.FileSystemView
@@ -132,7 +131,7 @@ suspend fun main() {
 
                 try {
                     image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
-                    reply(image.md5.toUHexString() + " downloaded")
+                    reply(image.miraiImageId + " downloaded")
                 } catch (e: Exception) {
                     e.printStackTrace()
                     reply(e.message ?: e::class.java.simpleName)
