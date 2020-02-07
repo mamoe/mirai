@@ -3,6 +3,8 @@ package net.mamoe.mirai.api.http.route
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
+import net.mamoe.mirai.api.http.dto.GroupConfigDTO
+import net.mamoe.mirai.api.http.dto.GroupInfoDTO
 import net.mamoe.mirai.api.http.dto.MuteDTO
 import net.mamoe.mirai.api.http.dto.StateCode
 
@@ -10,6 +12,9 @@ import net.mamoe.mirai.api.http.dto.StateCode
 fun Application.groupManageModule() {
     routing {
 
+        /**
+         * 禁言
+         */
         miraiVerify<MuteDTO>("/muteAll") {
             it.session.bot.getGroup(it.target).muteAll = true
             call.respondStateCode(StateCode.Success)
@@ -21,7 +26,7 @@ fun Application.groupManageModule() {
         }
 
         miraiVerify<MuteDTO>("/mute") {
-            when(it.session.bot.getGroup(it.target).members[it.member].mute(it.time)) {
+            when(it.session.bot.getGroup(it.target)[it.member].mute(it.time)) {
                 true -> call.respondStateCode(StateCode.Success)
                 else -> throw PermissionDeniedException
             }
@@ -32,6 +37,28 @@ fun Application.groupManageModule() {
                 true -> call.respondStateCode(StateCode.Success)
                 else -> throw PermissionDeniedException
             }
+        }
+
+        /**
+         * 群设置（需要相关权限）
+         */
+        miraiGet("/groupConfig") {
+            val group = it.bot.getGroup(paramOrNull("target"))
+            call.respondDTO(GroupInfoDTO(group))
+        }
+
+        miraiVerify<GroupConfigDTO>("/groupConfig") { dto ->
+            val group = dto.session.bot.getGroup(dto.target)
+            with(dto.config) {
+                name?.let { group.name = it }
+                announcement?.let { group.announcement = it }
+                confessTalk?.let { group.confessTalk = it }
+                allowMemberInvite?.let{ group.allowMemberInvite = it }
+                // TODO: 待core接口实现设置可改
+//                autoApprove?.let { group.autoApprove = it }
+//                anonymousChat?.let { group.anonymousChat = it }
+            }
+            call.respondStateCode(StateCode.Success)
         }
 
     }
