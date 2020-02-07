@@ -30,10 +30,51 @@ internal fun NotOnlineImageFromFile.toJceData(): ImMsgBody.NotOnlineImage {
         picWidth = this.width,
         bizType = this.bizType,
         imgType = this.imageType,
-        downloadPath = this.downloadPath
+        downloadPath = this.downloadPath,
+        original = this.original,
+        fileId = this.fileId,
+        pbReserve = byteArrayOf(0x78, 0x02)
     )
 }
 
+/*
+CustomFace#24412994 {
+guid=<Empty ByteArray>
+filePath={01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
+shortcut=
+buffer=<Empty ByteArray>
+flag=00 00 00 00
+oldData=15 36 20 39 32 6B 41 31 00 38 37 32 66 30 36 36 30 33 61 65 31 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 30 31 45 39 34 35 31 42 2D 37 30 45 44 2D 45 41 45 33 2D 42 33 37 43 2D 31 30 31 46 31 45 45 42 46 35 42 35 7D 2E 70 6E 67 41
+fileId=0x872F0660(-2026961312)
+serverIp=0x3AE103B7(987825079)
+serverPort=0x00000050(80)
+fileType=0x00000000(0)
+signature=<Empty ByteArray>
+useful=0x00000001(1)
+md5=01 E9 45 1B 70 ED EA E3 B3 7C 10 1F 1E EB F5 B5
+thumbUrl=/gchatpic_new/1040400290/1041235568-2268005984-01E9451B70EDEAE3B37C101F1EEBF5B5/198?term=2
+bigUrl=
+origUrl=/gchatpic_new/1040400290/1041235568-2268005984-01E9451B70EDEAE3B37C101F1EEBF5B5/0?term=2
+bizType=0x00000000(0)
+repeatIndex=0x00000000(0)
+repeatImage=0x00000000(0)
+imageType=0x00000000(0)
+index=0x00000000(0)
+width=0x0000015F(351)
+height=0x000000EB(235)
+source=0x00000000(0)
+size=0x0000057C(1404)
+origin=0x00000000(0)
+thumbWidth=0x000000C6(198)
+thumbHeight=0x00000084(132)
+showLen=0x00000000(0)
+downloadLen=0x00000000(0)
+_400Url=/gchatpic_new/1040400290/1041235568-2268005984-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2
+_400Width=0x0000015F(351)
+_400Height=0x000000EB(235)
+pbReserve=<Empty ByteArray>
+}
+ */
 internal fun CustomFaceFromFile.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = this.filepath,
@@ -50,10 +91,18 @@ internal fun CustomFaceFromFile.toJceData(): ImMsgBody.CustomFace {
         height = this.height,
         source = this.source,
         size = this.size,
-        origin = this.origin,
-        pbReserve = this.pbReserve
+        origin = this.original,
+        pbReserve = this.pbReserve,
+        flag = ByteArray(4),
+        //_400Height = 235,
+        //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
+        //_400Width = 351,
+        oldData = oldData
     )
 }
+
+private val oldData: ByteArray =
+    "15 36 20 39 32 6B 41 31 00 38 37 32 66 30 36 36 30 33 61 65 31 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 30 31 45 39 34 35 31 42 2D 37 30 45 44 2D 45 41 45 33 2D 42 33 37 43 2D 31 30 31 46 31 45 45 42 46 35 42 35 7D 2E 70 6E 67 41".hexToBytes()
 
 /*
 customFace=CustomFace#2050019814 {
@@ -165,8 +214,9 @@ internal class CustomFaceFromServer(
     override val height: Int get() = delegate.height
     override val source: Int get() = delegate.source
     override val size: Int get() = delegate.size
-    override val origin: Int get() = delegate.origin
+    override val original: Int get() = delegate.origin
     override val pbReserve: ByteArray get() = delegate.pbReserve
+    override val miraiImageId: String get() = delegate.filePath
 }
 
 internal class NotOnlineImageFromServer(
@@ -181,6 +231,8 @@ internal class NotOnlineImageFromServer(
     override val bizType: Int get() = delegate.bizType
     override val imageType: Int get() = delegate.imgType
     override val downloadPath: String get() = delegate.downloadPath
+    override val fileId: Int get() = delegate.fileId
+    override val original: Int get() = delegate.original
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)

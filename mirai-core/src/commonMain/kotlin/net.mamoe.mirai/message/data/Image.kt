@@ -3,11 +3,10 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.utils.io.chunkedHexToBytes
 
 sealed class Image : Message {
-    abstract val filepath: String
-    abstract val md5: ByteArray
-
+    abstract val miraiImageId: String
     abstract override fun toString(): String
 
     companion object Key : Message.Key<Image>
@@ -16,22 +15,22 @@ sealed class Image : Message {
 }
 
 abstract class CustomFace : Image() {
-    abstract override val filepath: String
+    abstract val filepath: String
     abstract val fileId: Int
     abstract val serverIp: Int
     abstract val serverPort: Int
     abstract val fileType: Int
     abstract val signature: ByteArray
     abstract val useful: Int
-    abstract override val md5: ByteArray
+    abstract val md5: ByteArray
     abstract val bizType: Int
     abstract val imageType: Int
     abstract val width: Int
     abstract val height: Int
     abstract val source: Int
-    abstract val size:Int
+    abstract val size: Int
     abstract val pbReserve: ByteArray
-    abstract val origin: Int
+    abstract val original: Int
 
     override fun toString(): String {
         return "[CustomFace]"
@@ -42,25 +41,47 @@ abstract class CustomFace : Image() {
     }
 }
 
+private val EMPTY_BYTE_ARRAY = ByteArray(0)
+
+private fun calculateImageMd5ByMiraiImageId(miraiImageId: String): ByteArray {
+    return if (miraiImageId.startsWith('/')) {
+        miraiImageId
+            .drop(1)
+            .replace('-', ' ')
+            .take(16 * 2)
+            .chunkedHexToBytes()
+    } else {
+        miraiImageId
+            .substringAfter('{')
+            .substringBefore('}')
+            .replace('-', ' ')
+            .chunkedHexToBytes()
+    }
+}
+
 @Serializable
 data class CustomFaceFromFile(
-    override val filepath: String,
-    override val fileId: Int,
-    override val serverIp: Int,
-    override val serverPort: Int,
-    override val fileType: Int,
-    override val signature: ByteArray,
-    override val useful: Int,
-    override val md5: ByteArray,
-    override val bizType: Int,
-    override val imageType: Int,
-    override val width: Int,
-    override val height: Int,
-    override val source: Int,
-    override val size: Int,
-    override val origin: Int,
-    override val pbReserve: ByteArray
+    override val filepath: String, // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
+    override val md5: ByteArray
 ) : CustomFace() {
+    constructor(miraiImageId: String) : this(filepath = miraiImageId, md5 = calculateImageMd5ByMiraiImageId(miraiImageId))
+
+    override val fileId: Int get() = 0
+    override val serverIp: Int get() = 0
+    override val serverPort: Int get() = 0
+    override val fileType: Int get() = 0 // 0
+    override val signature: ByteArray get() = EMPTY_BYTE_ARRAY
+    override val useful: Int get() = 1
+    override val bizType: Int get() = 0
+    override val imageType: Int get() = 0
+    override val width: Int get() = 0
+    override val height: Int get() = 0
+    override val source: Int get() = 200
+    override val size: Int get() = 0
+    override val original: Int get() = 1
+    override val pbReserve: ByteArray get() = EMPTY_BYTE_ARRAY
+    override val miraiImageId: String get() = filepath
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -81,7 +102,7 @@ data class CustomFaceFromFile(
         if (height != other.height) return false
         if (source != other.source) return false
         if (size != other.size) return false
-        if (origin != this.origin) return false
+        if (original != this.original) return false
         if (!pbReserve.contentEquals(other.pbReserve)) return false
 
         return true
@@ -107,19 +128,23 @@ data class CustomFaceFromFile(
     }
 }
 
+/**
+ * 电脑可能看不到这个消息.
+ */
 abstract class NotOnlineImage : Image() {
     abstract val resourceId: String
-    abstract override val md5: ByteArray
-    abstract override val filepath: String
+    abstract val md5: ByteArray
+    abstract val filepath: String
     abstract val fileLength: Int
     abstract val height: Int
     abstract val width: Int
     open val bizType: Int get() = 0
     open val imageType: Int get() = 1000
+    abstract val fileId: Int
     open val downloadPath: String get() = resourceId
-    open val origin: Int get()= 1
-    open val signature: ByteArray get() = md5
-    open val fileType: Int get()= 66
+    open val original: Int get() = 1
+
+    override val miraiImageId: String get() = resourceId
 
     override fun toString(): String {
         return "[NotOnlineImage $resourceId]"
@@ -139,7 +164,8 @@ data class NotOnlineImageFromFile(
     override val width: Int,
     override val bizType: Int = 0,
     override val imageType: Int = 1000,
-    override val downloadPath: String = resourceId
+    override val downloadPath: String = resourceId,
+    override val fileId: Int
 ) : NotOnlineImage() {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

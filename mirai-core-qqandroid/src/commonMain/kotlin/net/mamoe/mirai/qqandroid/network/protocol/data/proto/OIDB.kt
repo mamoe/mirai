@@ -15,19 +15,19 @@ class Oidb0x8fc : ProtoBuf {
 
     @Serializable
     class CommCardNameBuf(
-        @SerialId(1) val richCardName: List<Oidb0x8fc.RichCardNameElem>? = null
+        @SerialId(1) val richCardName: List<RichCardNameElem>? = null
     ) : ProtoBuf
 
     @Serializable
     class ReqBody(
         @SerialId(1) val groupCode: Long = 0L,
         @SerialId(2) val showFlag: Int = 0,
-        @SerialId(3) val memLevelInfo: List<Oidb0x8fc.MemberInfo>? = null,
-        @SerialId(4) val levelName: List<Oidb0x8fc.LevelName>? = null,
+        @SerialId(3) val memLevelInfo: List<MemberInfo>? = null,
+        @SerialId(4) val levelName: List<LevelName>? = null,
         @SerialId(5) val updateTime: Int = 0,
         @SerialId(6) val officeMode: Int = 0,
         @SerialId(7) val groupOpenAppid: Int = 0,
-        @SerialId(8) val msgClientInfo: Oidb0x8fc.ClientInfo? = null,
+        @SerialId(8) val msgClientInfo: ClientInfo? = null,
         @SerialId(9) val authKey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -48,7 +48,7 @@ class Oidb0x8fc : ProtoBuf {
         @SerialId(13) val job: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(14) val tribeLevel: Int = 0,
         @SerialId(15) val tribePoint: Int = 0,
-        @SerialId(16) val richCardName: List<Oidb0x8fc.CardNameElem>? = null,
+        @SerialId(16) val richCardName: List<CardNameElem>? = null,
         @SerialId(17) val commRichCardName: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 

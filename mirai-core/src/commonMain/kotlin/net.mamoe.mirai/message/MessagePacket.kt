@@ -4,6 +4,7 @@ package net.mamoe.mirai.message
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -105,7 +106,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      * 非常不推荐这样做.
      */
     @Deprecated("内存使用效率十分低下", ReplaceWith("this.download()"), DeprecationLevel.WARNING)
-    suspend inline fun Image.downloadAsByteArray(): ByteArray = bot.run { downloadAsByteArray() }
+    suspend inline fun Image.downloadAsByteArray(): ByteArray = bot.run { download().readBytes() }
 
     // TODO: 2020/2/5 为下载图片添加文件系统的存储方式
 

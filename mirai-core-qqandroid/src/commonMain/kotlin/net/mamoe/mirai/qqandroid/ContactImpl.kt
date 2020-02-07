@@ -8,10 +8,10 @@ import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.message.data.CustomFaceFromFile
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.NotOnlineImageFromFile
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.network.highway.Highway
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
@@ -324,14 +324,20 @@ internal class GroupImpl(
                 is ImgStore.GroupPicUp.Response.Failed -> error("upload group image failed with reason ${response.message}")
                 is ImgStore.GroupPicUp.Response.FileExists -> {
                     val resourceId = image.calculateImageResourceId()
-                    return NotOnlineImageFromFile(
-                        resourceId = resourceId,
-                        md5 = response.fileInfo.fileMd5,
-                        filepath = resourceId,
-                        fileLength = response.fileInfo.fileSize.toInt(),
-                        height = response.fileInfo.fileHeight,
-                        width = response.fileInfo.fileWidth,
-                        imageType = response.fileInfo.fileType
+//                    return NotOnlineImageFromFile(
+//                        resourceId = resourceId,
+//                        md5 = response.fileInfo.fileMd5,
+//                        filepath = resourceId,
+//                        fileLength = response.fileInfo.fileSize.toInt(),
+//                        height = response.fileInfo.fileHeight,
+//                        width = response.fileInfo.fileWidth,
+//                        imageType = response.fileInfo.fileType,
+//                        fileId = response.fileId.toInt()
+//                    )
+                    //  println("NMSL")
+                    return CustomFaceFromFile(
+                        md5 = image.md5,
+                        filepath = resourceId
                     )
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
@@ -362,12 +368,21 @@ internal class GroupImpl(
                     }
                     socket.close()
                     val resourceId = image.calculateImageResourceId()
-
+                    // return NotOnlineImageFromFile(
+                    //     resourceId = resourceId,
+                    //     md5 = image.md5,
+                    //     filepath = resourceId,
+                    //     fileLength = image.inputSize.toInt(),
+                    //     height = image.height,
+                    //     width = image.width,
+                    //     imageType = image.imageType,
+                    //     fileId = response.fileId.toInt()
+                    // )
                     return CustomFaceFromFile(
                         md5 = image.md5,
                         filepath = resourceId,
                         fileId = response.fileId.toInt(),
-                        fileType = 66, // ?
+                        fileType = 0, // ?
                         height = image.height,
                         width = image.width,
                         imageType = image.imageType,
@@ -378,8 +393,8 @@ internal class GroupImpl(
                         size = image.inputSize.toInt(),
                         useful = 1,
                         source = 200,
-                        origin = 1,
-                        pbReserve = byteArrayOf(0x78, 0x02)
+                        original = 1,
+                        pbReserve = EMPTY_BYTE_ARRAY
                     )
                 }
             }

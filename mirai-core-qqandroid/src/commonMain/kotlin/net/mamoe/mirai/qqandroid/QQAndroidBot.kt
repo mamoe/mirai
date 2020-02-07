@@ -36,6 +36,7 @@ internal abstract class QQAndroidBotBase constructor(
     val selfQQ: QQ by lazy { QQ(uin) }
 
     override fun getFriend(id: Long): QQ {
+        if (id == uin) return selfQQ
         return qqs.delegate[id]
     }
 
