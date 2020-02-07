@@ -121,12 +121,15 @@ internal class MessageSvc {
             val messages = resp.uinPairMsgs.asSequence().filterNot { it.msg == null }.flatMap { it.msg!!.asSequence() }.mapNotNull {
                 when (it.msgHead.msgType) {
                     166 -> {
-                        if (it.msgHead.fromUin == bot.uin) null
-                        else FriendMessage(
-                            bot,
-                            bot.getFriend(it.msgHead.fromUin),
-                            it.msgBody.richText.toMessageChain()
-                        )
+                        when {
+                            it.msgHead.fromUin == bot.uin -> null
+                            !bot.firstLoginSucceed -> null
+                            else -> FriendMessage(
+                                bot,
+                                bot.getFriend(it.msgHead.fromUin),
+                                it.msgBody.richText.toMessageChain()
+                            )
+                        }
                     }
                     else -> null
                 }
@@ -173,7 +176,7 @@ internal class MessageSvc {
             }
 
             data class Failed(val errorCode: Int, val errorMessage: String) : Response() {
-                override fun toString(): String = "MessageSvc.PbSendMsg.Response.Failed(errorCode=$errorCode, errorMessage=$errorMessage"
+                override fun toString(): String = "MessageSvc.PbSendMsg.Response.Failed(errorCode=$errorCode, errorMessage=$errorMessage)"
             }
         }
 
