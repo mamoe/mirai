@@ -25,7 +25,6 @@ internal data class RequestPushNotify(
     @SerialId(13) val svrip: Int?
 ) : JceStruct, Packet
 
-@Suppress("ArrayInDataClass")
 @Serializable
 internal data class MsgInfo(
     @SerialId(0) val lFromUin: Long? = 0L,

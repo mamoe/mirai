@@ -3,6 +3,8 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.readBytes
+import kotlinx.io.core.readUInt
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.NoPakcet
 import net.mamoe.mirai.data.Packet
@@ -19,6 +21,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.io.discardExact
+import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.readString
+import net.mamoe.mirai.utils.io.toUHexString
 
 internal inline class GroupMessageOrNull(val delegate: GroupMessage?) : Packet {
     override fun toString(): String {
@@ -76,14 +82,84 @@ internal class OnlinePush {
         }
     }
 
+    //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
     internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush") {
+        @ExperimentalUnsignedTypes
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
             println(reqPushMsg.contentToString())
             reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
+                var debug = ""
+                msgInfo.vMsg!!.read {
+                    if (msgInfo.shMsgType.toInt() == 732) {
+                        val groupCode = this.readUInt().toLong()
+                        debug = "群 $groupCode "
+                        when (val internalType = this.readShort().toInt()) {
+                            3073 -> {
+                                val operatorUin = this.readUInt().toLong()
+                                debug += " 管理员 $operatorUin"
+                                val operationTime = this.readUInt().toLong()
+                                debug += " 禁言 "
+                                this.discardExact(2)
+                                val target = this.readUInt().toLong()
+                                val time = this.readUInt().toLong()
+                                if (target == 0L) {
+                                    debug += "全群"
+                                } else {
+                                    debug += target
+                                }
 
+                                if (time == 0L) {
+                                    debug += " 解除 "
+                                } else {
+                                    debug += " " + time + "s"
+                                }
+                            }
+
+                            3585 -> {
+                                val operatorUin = this.readUInt().toLong()
+                                debug += " 管理员 $operatorUin"
+                                debug += " 匿名聊天 "
+                                if (this.readInt() == 0) {
+                                    debug += " 开启 "
+                                } else {
+                                    debug += " 关闭 "
+                                }
+                            }
+
+                            4096 -> {
+                                val dataBytes = this.readBytes(26)
+                                val message = this.readString(this.readByte().toInt())
+                                if (dataBytes[0].toInt() != 59) {
+                                    println("更改群名为$message")
+                                } else {
+                                    println(message + ":" + dataBytes.toUHexString())
+                                    debug += message
+                                    when (message) {
+                                        "管理员已关闭群聊坦白说" -> {
+
+                                        }
+                                        "管理员已开启群聊坦白说" -> {
+
+                                        }
+                                        else -> {
+                                            println("Unknown server messages $message")
+                                        }
+                                    }
+                                }
+                            }
+                            else -> {
+                                println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
+                            }
+                        }
+                    } else {
+                        println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                    }
+                }
+                println(debug)
             }
+
             return NoPakcet
         }
 
