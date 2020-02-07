@@ -469,7 +469,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                                 while (input.input.canRead() && input.peakHeadOrNull()?.type != STRUCT_END) {
                                     input.readHeadOrNull() ?: return@also
                                 }
-                                //input.readHeadOrNull()
+                                input.readHeadOrNull()
                             }
                         } == null && isTagOptional(tag)) {
                         return null
