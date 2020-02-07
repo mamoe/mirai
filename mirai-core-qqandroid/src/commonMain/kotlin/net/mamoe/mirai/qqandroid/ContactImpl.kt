@@ -11,7 +11,6 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.network.highway.Highway
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
-import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
@@ -380,7 +379,9 @@ internal class GroupImpl(
                     // )
                     return CustomFaceFromFile(
                         md5 = image.md5,
-                        filepath = resourceId,
+                        filepath = resourceId
+                    )
+                    /*
                         fileId = response.fileId.toInt(),
                         fileType = 0, // ?
                         height = image.height,
@@ -395,7 +396,7 @@ internal class GroupImpl(
                         source = 200,
                         original = 1,
                         pbReserve = EMPTY_BYTE_ARRAY
-                    )
+                     */
                 }
             }
         }
