@@ -52,6 +52,7 @@ interface Member : QQ, Contact {
      */
     suspend fun unmute(): Boolean
 
+    suspend fun kick(message: String = ""): Boolean
     /**
      * 当且仅当 `[other] is [Member] && [other].id == this.id && [other].group == this.group` 时为 true
      */

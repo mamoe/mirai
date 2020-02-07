@@ -204,6 +204,16 @@ internal class MemberImpl(
         return mute(0)
     }
 
+    override suspend fun kick(message: String): Boolean {
+        bot.network.run {
+            return TroopManagement.Kick(
+                client = bot.client,
+                member = this@MemberImpl,
+                message = message
+            ).sendAndExpect<TroopManagement.Kick.Response>().success
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         return other is Member && other.id == this.id

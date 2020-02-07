@@ -13,14 +13,12 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.stUinInfo
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x88d
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x89a
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x8fc
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OidbSso
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement.GetGroupOperationInfo.decode
 import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.utils.io.encodeToString
 
@@ -129,6 +127,50 @@ internal object TroopManagement {
                 )
             }
         }
+    }
+
+    internal object Kick : OutgoingPacketFactory<Kick.Response>("OidbSvc.0x8a0_0") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            return Response(this.readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x8a0.RspBody.serializer()).msgKickResult!![0].optUint32Result == 1)
+        }
+
+        class Response(
+            val success: Boolean
+        ) : Packet {
+            override fun toString(): String {
+                return "Response(Kick Member)"
+            }
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            member: Member,
+            message: String
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client) {
+                writeProtoBuf(
+                    OidbSso.OIDBSSOPkg.serializer(),
+                    OidbSso.OIDBSSOPkg(
+                        command = 2208,
+                        serviceType = 0,//或者1
+                        result = 0,
+                        bodybuffer = Oidb0x8a0.ReqBody(
+                            optUint64GroupCode = member.group.id,
+                            msgKickList = listOf(
+                                Oidb0x8a0.KickMemberInfo(
+                                    optUint32Operate = 5,
+                                    optUint64MemberUin = member.id,
+                                    optUint32Flag = 1//或者0
+                                )
+                            ),
+                            kickMsg = message.toByteArray()
+                        ).toByteArray(Oidb0x8a0.ReqBody.serializer())
+                    )
+                )
+            }
+        }
+
+
     }
 
     internal object GroupOperation : OutgoingPacketFactory<GroupOperation.Response>("OidbSvc.0x89a_0") {

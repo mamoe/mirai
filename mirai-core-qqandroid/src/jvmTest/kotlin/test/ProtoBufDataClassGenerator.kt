@@ -16,7 +16,7 @@ fun main() {
     println(
         File(
             """
-            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\cs\cmd0x352
+            /Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/oidb/cmd0x8a0/
         """.trimIndent()
         )
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
