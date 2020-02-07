@@ -4,14 +4,17 @@ apply plugin: "application"
 apply plugin: "kotlinx-serialization"
 
 dependencies {
+    runtimeOnly files("../../mirai-core/build/classes/kotlin/jvm/main") // IDE bug
     runtimeOnly files("../../mirai-core-qqandroid/build/classes/kotlin/jvm/main") // IDE bug
-    implementation project(":mirai-core-qqandroid")
+    api project(":mirai-core")
+    api project(":mirai-core-qqandroid")
 
     api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutinesVersion
 
     implementation("org.jetbrains.kotlinx:kotlinx-io:$kotlinXIoVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-io:$coroutinesIoVersion")
     implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.62'
     implementation 'org.jsoup:jsoup:1.12.1'
