@@ -189,7 +189,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             initAnnouncement = troopNum.groupMemo,
                             initAllowMemberInvite = groupInfoResponse.allowMemberInvite,
                             initConfessTalk = groupInfoResponse.confessTalk,
-                            initMuteAll = false,//todo
+                            initMuteAll = troopNum.dwShutUpTimestamp != 0,
                             initAutoApprove = groupInfoResponse.autoApprove,
                             initAnonymousChat = groupInfoResponse.allowAnonymousChat,
                             members = contactList
