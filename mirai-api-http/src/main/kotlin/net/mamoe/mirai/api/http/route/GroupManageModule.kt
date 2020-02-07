@@ -3,17 +3,14 @@ package net.mamoe.mirai.api.http.route
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
-import net.mamoe.mirai.api.http.dto.GroupConfigDTO
-import net.mamoe.mirai.api.http.dto.GroupInfoDTO
-import net.mamoe.mirai.api.http.dto.MuteDTO
-import net.mamoe.mirai.api.http.dto.StateCode
+import net.mamoe.mirai.api.http.dto.*
 
 
 fun Application.groupManageModule() {
     routing {
 
         /**
-         * 禁言
+         * 禁言（需要相关权限）
          */
         miraiVerify<MuteDTO>("/muteAll") {
             it.session.bot.getGroup(it.target).muteAll = true
@@ -57,6 +54,23 @@ fun Application.groupManageModule() {
                 // TODO: 待core接口实现设置可改
 //                autoApprove?.let { group.autoApprove = it }
 //                anonymousChat?.let { group.anonymousChat = it }
+            }
+            call.respondStateCode(StateCode.Success)
+        }
+
+        /**
+         * 群员信息管理（需要相关权限）
+         */
+        miraiGet("/memberInfo") {
+            val member = it.bot.getGroup(paramOrNull("target"))[paramOrNull("memberID")]
+            call.respondDTO(MemberInfoDTO(member))
+        }
+
+        miraiVerify<MemberConfigDTO>("/memberInfo") { dto ->
+            val member = dto.session.bot.getGroup(dto.target)[dto.memberId]
+            with(dto.config) {
+                name?.let { member.groupCard = it }
+                specialTitle?.let { member.specialTitle = it }
             }
             call.respondStateCode(StateCode.Success)
         }
