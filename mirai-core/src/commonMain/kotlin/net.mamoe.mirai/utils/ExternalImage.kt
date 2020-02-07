@@ -43,13 +43,13 @@ class ExternalImage(
         ): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining, filename)
     }
 
-    private val format: String = when (val it = imageFormat.toLowerCase()) {
-        "jpeg" -> "jpg" //必须转换
-        else -> it
-    }
+    val format: String =
+        when (val it = imageFormat.toLowerCase()) {
+            "jpeg" -> "jpg" //必须转换
+            else -> it
+        }
 
     /**
-     *
      * ImgType:
      *  JPG:    1000
      *  PNG:    1001

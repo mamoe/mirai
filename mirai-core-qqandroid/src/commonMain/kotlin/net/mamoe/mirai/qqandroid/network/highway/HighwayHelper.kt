@@ -15,7 +15,6 @@ internal object HighwayHelper {
 
     suspend fun uploadImage(
         client: QQAndroidClient,
-        uin: Long,
         serverIp: String,
         serverPort: Int,
         uKey: ByteArray,
@@ -26,14 +25,18 @@ internal object HighwayHelper {
     ) {
         require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
         require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
+        require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
+
         val socket = PlatformSocket()
         socket.connect(serverIp, serverPort)
         socket.use {
             socket.send(
                 Highway.RequestDataTrans(
-                    uin = uin,
+                    uin = client.uin,
                     command = "PicUp.DataUp",
-                    sequenceId = client.nextHighwayDataTransSequenceId(),
+                    sequenceId =
+                    if (commandId == 2) client.nextHighwayDataTransSequenceIdForGroup()
+                    else client.nextHighwayDataTransSequenceIdForFriend(),
                     uKey = uKey,
                     data = imageInput,
                     dataSize = inputSize,

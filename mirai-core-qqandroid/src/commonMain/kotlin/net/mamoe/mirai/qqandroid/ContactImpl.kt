@@ -51,7 +51,7 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
         }
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image {
+    override suspend fun uploadImage(image: ExternalImage): Image = try {
         bot.network.run {
             val response = LongConn.OffPicUp(
                 bot.client, Cmd0x352.TryUpImgReq(
@@ -60,12 +60,11 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                     fileId = 0,
                     fileMd5 = image.md5,
                     fileSize = image.inputSize.toInt(),
-                    fileName = image.md5.toUHexString("") + ".jpg",
+                    fileName = image.md5.toUHexString("") + "." + image.format,
                     imgOriginal = 1,
                     imgWidth = image.width,
                     imgHeight = image.height,
-                    imgType = image.imageType,
-                    buType = 0
+                    imgType = image.imageType
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
@@ -81,7 +80,6 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     HighwayHelper.uploadImage(
                         client = bot.client,
-                        uin = bot.uin,
                         serverIp = response.serverIp[0].toIpV4AddressString(),
                         serverPort = response.serverPort[0],
                         imageInput = image.input,
@@ -103,6 +101,8 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                 is LongConn.OffPicUp.Response.Failed -> error(response.message)
             }
         }
+    } finally {
+        image.input.close()
     }
 
     override suspend fun queryProfile(): Profile {
@@ -355,7 +355,7 @@ internal class GroupImpl(
         }
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image {
+    override suspend fun uploadImage(image: ExternalImage): Image = try {
         bot.network.run {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                 bot.client,
@@ -393,7 +393,6 @@ internal class GroupImpl(
 
                     HighwayHelper.uploadImage(
                         client = bot.client,
-                        uin = bot.uin,
                         serverIp = response.uploadIpList.first().toIpV4AddressString(),
                         serverPort = response.uploadPortList.first(),
                         imageInput = image.input,
@@ -436,6 +435,8 @@ internal class GroupImpl(
                 }
             }
         }
+    } finally {
+        image.input.close()
     }
 
     override fun equals(other: Any?): Boolean {

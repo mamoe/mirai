@@ -91,7 +91,7 @@ internal class Cmd0x352 : ProtoBuf {
         @SerialId(2) val msgTryupImgReq: List<TryUpImgReq>? = null,// optional
         @SerialId(3) val msgGetimgUrlReq: List<GetImgUrlReq>? = null,// optional
         @SerialId(4) val msgDelImgReq: List<DelImgReq>? = null,
-        @SerialId(10) val netType: Int = 0// 数据网络=5
+        @SerialId(10) val netType: Int = 3// 数据网络=5
     ) : ProtoBuf
 
     @Serializable
@@ -117,11 +117,10 @@ internal class Cmd0x352 : ProtoBuf {
         @SerialId(9) val innerIP: Int = 0,
         @SerialId(10) val addressBook: Int = 0,//chatType == 1006为1 我觉得发0没问题
         @SerialId(11) val retry: Int = 0,//default
-        @SerialId(12) val buType: Int,//1或96 不确定
+        @SerialId(12) val buType: Int = 1,//1或96 不确定
         @SerialId(13) val imgOriginal: Int,//是否为原图
         @SerialId(14) val imgWidth: Int,
         @SerialId(15) val imgHeight: Int,
-        @SerialId(16) val imgType: Int = 1000,
         /**
          * ImgType:
          *  JPG:    1000
@@ -131,7 +130,8 @@ internal class Cmd0x352 : ProtoBuf {
          *  GIG:    2000
          *  APNG:   2001
          *  SHARPP: 1004
-         * */
+         */
+        @SerialId(16) val imgType: Int = 1000,
         @SerialId(17) val buildVer: String = "8.2.0.1296",//版本号
         @SerialId(18) val fileIndex: ByteArray = EMPTY_BYTE_ARRAY,//default
         @SerialId(19) val fileStoreDays: Int = 0,//default

@@ -104,8 +104,11 @@ internal open class QQAndroidClient(
     private val requestPacketRequestId: AtomicInt = atomic(1921334513)
     internal fun nextRequestPacketRequestId(): Int = requestPacketRequestId.getAndAdd(2)
 
-    private val highwayDataTransSequenceId: AtomicInt = atomic(87017)
-    internal fun nextHighwayDataTransSequenceId(): Int = highwayDataTransSequenceId.getAndAdd(2)
+    private val highwayDataTransSequenceIdForGroup: AtomicInt = atomic(87017)
+    internal fun nextHighwayDataTransSequenceIdForGroup(): Int = highwayDataTransSequenceIdForGroup.getAndAdd(2)
+
+    private val highwayDataTransSequenceIdForFriend: AtomicInt = atomic(40717)
+    internal fun nextHighwayDataTransSequenceIdForFriend(): Int = highwayDataTransSequenceIdForFriend.getAndAdd(2)
 
     val appClientVersion: Int = 0
 

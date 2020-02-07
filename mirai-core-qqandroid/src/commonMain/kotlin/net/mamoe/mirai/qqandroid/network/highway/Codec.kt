@@ -78,6 +78,9 @@ object Highway {
         md5: ByteArray
     ): ByteReadPacket {
         require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
+        require(data !is ByteReadPacket || data.remaining.toInt() == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
+        require(data !is IoBuffer || data.readRemaining == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as IoBuffer).readRemaining}" }
+
         val dataHighwayHead = CSDataHighwayHead.DataHighwayHead(
             version = 1,
             uin = uin.toString(),
@@ -91,7 +94,7 @@ object Highway {
         )
         val segHead = CSDataHighwayHead.SegHead(
             datalength = dataSize,
-            filesize = dataSize.toLong() and 0xFFffFFff,
+            filesize = dataSize.toLong(),
             serviceticket = uKey,
             md5 = md5,
             fileMd5 = md5,
