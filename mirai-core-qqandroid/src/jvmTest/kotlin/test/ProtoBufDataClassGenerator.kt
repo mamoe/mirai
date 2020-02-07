@@ -6,7 +6,19 @@ import java.io.File
 
 fun main() {
     println(
-        File("""/Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/tencent/im/oidb/cmd0x8fc/""")
+        """
+            import kotlinx.serialization.SerialId
+            import kotlinx.serialization.Serializable
+            import net.mamoe.mirai.qqandroid.io.ProtoBuf
+            import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+        """.trimIndent()
+    )
+    println(
+        File(
+            """
+            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\cs\cmd0x352
+        """.trimIndent()
+        )
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
     )
 }
