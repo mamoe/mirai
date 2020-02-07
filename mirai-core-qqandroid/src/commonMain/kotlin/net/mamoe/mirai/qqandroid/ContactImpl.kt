@@ -322,6 +322,7 @@ internal class GroupImpl(
     override var botPermission: MemberPermission = MemberPermission.MEMBER
 
     override suspend fun quit(): Boolean {
+        check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
