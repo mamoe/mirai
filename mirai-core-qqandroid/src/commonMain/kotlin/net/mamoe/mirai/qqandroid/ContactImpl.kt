@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.NotOnlineImageFromFile
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
@@ -50,7 +51,6 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
             ) { "send message failed" }
         }
     }
-
     override suspend fun uploadImage(image: ExternalImage): Image = try {
         bot.network.run {
             val response = LongConn.OffPicUp(
@@ -78,16 +78,17 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                     resourceId = response.resourceId
                 )
                 is LongConn.OffPicUp.Response.RequireUpload -> {
-                    HighwayHelper.uploadImage(
-                        client = bot.client,
-                        serverIp = response.serverIp[0].toIpV4AddressString(),
-                        serverPort = response.serverPort[0],
-                        imageInput = image.input,
-                        inputSize = image.inputSize.toInt(),
-                        md5 = image.md5,
-                        uKey = response.uKey,
-                        commandId = 1
-                    )
+                    Http.postImage("0x6ff0070", bot.uin, null, imageInput = image.input, inputSize = image.inputSize, uKeyHex = response.uKey.toUHexString(""))
+//                    HighwayHelper.uploadImage(
+//                        client = bot.client,
+//                        serverIp = response.serverIp[0].toIpV4AddressString(),
+//                        serverPort = response.serverPort[0],
+//                        imageInput = image.input,
+//                        inputSize = image.inputSize.toInt(),
+//                        md5 = image.md5,
+//                        uKey = response.uKey,
+//                        commandId = 1
+//                    )
 
                     return NotOnlineImageFromFile(
                         filepath = response.resourceId,
