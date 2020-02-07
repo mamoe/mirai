@@ -64,7 +64,7 @@ sealed class MessageDTO : DTO
  */
 suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
-    is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender, senderName))
+    is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
     else -> UnKnownMessagePacketDTO("UnKnown Message Packet")
 }.apply { messageChain = Array(message.size){ message[it].toDTO() }}
 
