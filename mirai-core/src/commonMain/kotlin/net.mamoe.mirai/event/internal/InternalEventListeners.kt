@@ -1,15 +1,15 @@
 package net.mamoe.mirai.event.internal
 
-import kotlinx.coroutines.CompletableJob
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.utils.LockFreeLinkedList
+import net.mamoe.mirai.utils.MiraiDebugAPI
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 
@@ -31,6 +31,7 @@ internal fun <E : Subscribable> CoroutineScope.Handler(handler: suspend (E) -> L
     return Handler(coroutineContext[Job], coroutineContext, handler)
 }
 
+private inline fun inline(block: () -> Unit) = block()
 /**
  * 事件处理器.
  */
@@ -39,6 +40,7 @@ internal class Handler<in E : Subscribable>
 @PublishedApi internal constructor(parentJob: Job?, private val subscriberContext: CoroutineContext, @JvmField val handler: suspend (E) -> ListeningStatus) :
     Listener<E>, CompletableJob by Job(parentJob) {
 
+    @UseExperimental(MiraiDebugAPI::class)
     override suspend fun onEvent(event: E): ListeningStatus {
         if (isCompleted || isCancelled) return ListeningStatus.STOPPED
         if (!isActive) return ListeningStatus.LISTENING
@@ -46,8 +48,17 @@ internal class Handler<in E : Subscribable>
             // Inherit context.
             withContext(subscriberContext) { handler.invoke(event) }.also { if (it == ListeningStatus.STOPPED) this.complete() }
         } catch (e: Throwable) {
-            e.logStacktrace()
-            // this.complete() // do not `completeExceptionally`, otherwise parentJob will fail.
+            subscriberContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
+                ?: coroutineContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
+                ?: inline {
+                    @Suppress("DEPRECATION")
+                    MiraiLogger.warning(
+                        """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
+                        either in coroutineContext from Handler job, or in subscriberContext""".trimIndent()
+                    )
+                    e.logStacktrace("Event processing(No CoroutineExceptionHandler found)")
+                }
+            // this.complete() // do not `completeExceptionally`, otherwise parentJob will fai`l.
             // ListeningStatus.STOPPED
 
             // not stopping listening.
