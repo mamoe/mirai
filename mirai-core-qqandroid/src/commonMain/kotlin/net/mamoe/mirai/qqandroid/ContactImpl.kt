@@ -340,7 +340,7 @@ internal class GroupImpl(
 
 
     override operator fun get(id: Long): Member {
-        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("for group id $id")
+        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
