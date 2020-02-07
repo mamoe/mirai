@@ -6,7 +6,7 @@ import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
-class Cmd0x388 : ProtoBuf {
+internal class Cmd0x388 : ProtoBuf {
     @Serializable
     class DelImgReq(
         @SerialId(1) val srcUin: Long = 0L,
@@ -209,7 +209,7 @@ class Cmd0x388 : ProtoBuf {
         @SerialId(18) val dstUin: Long = 0L,
         @SerialId(19) val srvUpload: Int = 0,
         @SerialId(20) val transferUrl: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
+    ) : ImgReq
 
     @Serializable
     class TryUpImgRsp(
