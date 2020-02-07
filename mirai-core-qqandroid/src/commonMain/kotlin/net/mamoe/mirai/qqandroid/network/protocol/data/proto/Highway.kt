@@ -141,7 +141,7 @@ class CSDataHighwayHead : ProtoBuf {
     @Serializable
     class DataHighwayHead(
         @SerialId(1) val version: Int = 0,
-        @SerialId(2) val uin: String = "",
+        @SerialId(2) val uin: String = "", // yes
         @SerialId(3) val command: String = "",
         @SerialId(4) val seq: Int = 0,
         @SerialId(5) val retryTimes: Int = 0,
