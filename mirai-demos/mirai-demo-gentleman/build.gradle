@@ -4,9 +4,10 @@ apply plugin: "application"
 apply plugin: "kotlinx-serialization"
 
 dependencies {
-    runtimeOnly files("../../mirai-core-qqandroid/build/classes/atomicfu/jvm/main") // IDE bug
+    runtimeOnly files("../../mirai-core-qqandroid/build/classes/kotlin/jvm/main") // IDE bug
     implementation project(":mirai-core-qqandroid")
 
+    api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: coroutinesVersion
 
