@@ -6,6 +6,39 @@ import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
+class Oidb0x8a0 : ProtoBuf {
+    @Serializable
+    class RspBody(
+        @SerialId(1) val optUint64GroupCode: Long = 0L,
+        @SerialId(2) val msgKickResult: List<Oidb0x8a0.KickResult>? = null
+    ) : ProtoBuf
+
+    @Serializable
+    class KickResult(
+        @SerialId(1) val optUint32Result: Int = 0,
+        @SerialId(2) val optUint64MemberUin: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    class KickMemberInfo(
+        @SerialId(1) val optUint32Operate: Int = 0,
+        @SerialId(2) val optUint64MemberUin: Long = 0L,
+        @SerialId(3) val optUint32Flag: Int = 0,
+        @SerialId(4) val optBytesMsg: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    class ReqBody(
+        @SerialId(1) val optUint64GroupCode: Long = 0L,
+        @SerialId(2) val msgKickList: List<Oidb0x8a0.KickMemberInfo>? = null,
+        @SerialId(3) val kickList: List<Long>? = null,
+        @SerialId(4) val kickFlag: Int = 0,
+        @SerialId(5) val kickMsg: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+}
+
+
+@Serializable
 class Oidb0x8fc : ProtoBuf {
     @Serializable
     class CardNameElem(
