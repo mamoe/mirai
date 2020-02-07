@@ -235,8 +235,7 @@ internal class GroupImpl(
         this.checkBotPermissionOperator()
         if (oldValue != newValue) {
             launch {
-
-            bot.network.run {
+                bot.network.run {
                     TroopManagement.GroupOperation.name(
                         client = bot.client,
                         groupCode = id,

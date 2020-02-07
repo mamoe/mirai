@@ -181,7 +181,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     val group =
                         GroupImpl(
                             bot = bot,
-                            coroutineContext = this.coroutineContext,
+                            coroutineContext = bot.coroutineContext,
                             id = troopNum.groupCode,
                             uin = troopNum.groupUin,
                             initName = troopNum.groupName,

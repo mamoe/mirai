@@ -280,7 +280,11 @@ internal object TroopManagement {
         }
 
 
-        object Response : Packet
+        object Response : Packet {
+            override fun toString(): String {
+                return "TroopManagement.GroupOperation.Response"
+            }
+        }
     }
 
 
