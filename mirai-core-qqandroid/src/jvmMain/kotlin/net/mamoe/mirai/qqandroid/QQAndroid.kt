@@ -15,7 +15,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 @UseExperimental(MiraiInternalAPI::class)
 actual object QQAndroid : BotFactory {
 
-    override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
+    actual override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
         return QQAndroidBot(context, BotAccount(qq, password), configuration)
     }
 
