@@ -304,10 +304,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         input: JceInput
     ) : JceDecoder(input) {
         override fun endStructure(desc: SerialDescriptor) {
-            while (input.input.canRead() && input.peakHeadOrNull()?.type != STRUCT_END) {
-                input.readHeadOrNull() ?: return
-            }
-            input.readHeadOrNull()
+
         }
     }
 
@@ -403,7 +400,8 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
-            // // println("decodeNullableSerializableValue: ${deserializer::class.qualifiedName}")
+            //
+            //println("decodeNullableSerializableValue: ${deserializer::class.qualifiedName}")
             if (deserializer is NullReader) {
                 return null
             }
@@ -467,7 +465,12 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     if (input.skipToTagOrNull(tag) {
                             check(it.type == STRUCT_BEGIN) { "type mismatch: ${it.type}" }
                             //popTag()
-                            return deserializer.deserialize(JceStructReader(input))
+                            return deserializer.deserialize(JceStructReader(input)).also {
+                                while (input.input.canRead() && input.peakHeadOrNull()?.type != STRUCT_END) {
+                                    input.readHeadOrNull() ?: return@also
+                                }
+                                //input.readHeadOrNull()
+                            }
                         } == null && isTagOptional(tag)) {
                         return null
                     } else error("cannot find tag $tag")
@@ -540,52 +543,52 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             return currentJceHead
         }
 
-        fun readBoolean(tag: Int): Boolean = readBooleanOrNull(tag) ?: error("cannot find tag $tag")
-        fun readByte(tag: Int): Byte = readByteOrNull(tag) ?: error("cannot find tag $tag")
-        fun readShort(tag: Int): Short = readShortOrNull(tag) ?: error("cannot find tag $tag")
-        fun readInt(tag: Int): Int = readIntOrNull(tag) ?: error("cannot find tag $tag")
-        fun readLong(tag: Int): Long = readLongOrNull(tag) ?: error("cannot find tag $tag")
-        fun readFloat(tag: Int): Float = readFloatOrNull(tag) ?: error("cannot find tag $tag")
-        fun readDouble(tag: Int): Double = readDoubleOrNull(tag) ?: error("cannot find tag $tag")
+        fun readBoolean(tag: Int): Boolean = readBooleanOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readByte(tag: Int): Byte = readByteOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readShort(tag: Int): Short = readShortOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readInt(tag: Int): Int = readIntOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readLong(tag: Int): Long = readLongOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readFloat(tag: Int): Float = readFloatOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readDouble(tag: Int): Double = readDoubleOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
 
-        fun readString(tag: Int): String = readStringOrNull(tag) ?: error("cannot find tag $tag")
+        fun readString(tag: Int): String = readStringOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
 
-        fun readByteArray(tag: Int): ByteArray = readByteArrayOrNull(tag) ?: error("cannot find tag $tag")
-        fun readShortArray(tag: Int): ShortArray = readShortArrayOrNull(tag) ?: error("cannot find tag $tag")
-        fun readLongArray(tag: Int): LongArray = readLongArrayOrNull(tag) ?: error("cannot find tag $tag")
-        fun readFloatArray(tag: Int): FloatArray = readFloatArrayOrNull(tag) ?: error("cannot find tag $tag")
-        fun readDoubleArray(tag: Int): DoubleArray = readDoubleArrayOrNull(tag) ?: error("cannot find tag $tag")
-        fun readIntArray(tag: Int): IntArray = readIntArrayOrNull(tag) ?: error("cannot find tag $tag")
-        fun readBooleanArray(tag: Int): BooleanArray = readBooleanArrayOrNull(tag) ?: error("cannot find tag $tag")
+        fun readByteArray(tag: Int): ByteArray = readByteArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readShortArray(tag: Int): ShortArray = readShortArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readLongArray(tag: Int): LongArray = readLongArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readFloatArray(tag: Int): FloatArray = readFloatArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readDoubleArray(tag: Int): DoubleArray = readDoubleArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readIntArray(tag: Int): IntArray = readIntArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readBooleanArray(tag: Int): BooleanArray = readBooleanArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
 
 
         fun readShortArrayOrNull(tag: Int): ShortArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch" }
+            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
             ShortArray(readInt(0)) { readShort(0) }
         }
 
         fun readDoubleArrayOrNull(tag: Int): DoubleArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch" }
+            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
             DoubleArray(readInt(0)) { readDouble(0) }
         }
 
         fun readFloatArrayOrNull(tag: Int): FloatArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch" }
+            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
             FloatArray(readInt(0)) { readFloat(0) }
         }
 
         fun readIntArrayOrNull(tag: Int): IntArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch" }
+            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
             IntArray(readInt(0)) { readInt(0) }
         }
 
         fun readLongArrayOrNull(tag: Int): LongArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch" }
+            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
             LongArray(readInt(0)) { readLong(0) }
         }
 
         fun readBooleanArrayOrNull(tag: Int): BooleanArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch" }
+            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
             BooleanArray(readInt(0)) { readBoolean(0) }
         }
 
@@ -595,10 +598,10 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 SIMPLE_LIST -> {
                     val head = readHead()
                     readHead()
-                    check(head.type.toInt() == 0) { "type mismatch" }
+                    check(head.type.toInt() == 0) { "type mismatch, expected=0(Byte), got=${head.type}" }
                     input.readBytes(readInt(0))
                 }
-                else -> error("type mismatch")
+                else -> error("type mismatch, expected=9(List), got=${it.type}")
             }
         }
 
@@ -612,7 +615,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             is Float -> readFloat(tag)
             is Double -> readDouble(tag)
             is String -> readString(tag)
-            else -> error("unsupported type")
+            else -> error("unsupported type: ${default.getClassName()}")
         } as T
 
         fun readStringOrNull(tag: Int): String? = skipToTagOrNull(tag) { head ->
@@ -830,6 +833,23 @@ inline class JceHead(private val value: Long) {
     val type: Byte get() = value.toUInt().toByte()
 
     override fun toString(): String {
-        return "JceHead(tag=$tag, type=$type)"
+        val typeString = when (type) {
+            Jce.BYTE -> "Byte"
+            Jce.DOUBLE -> "Double"
+            Jce.FLOAT -> "Float"
+            Jce.INT -> "Int"
+            Jce.LIST -> "List"
+            Jce.LONG -> "Long"
+            Jce.MAP -> "Map"
+            Jce.SHORT -> "Short"
+            Jce.SIMPLE_LIST -> "SimpleList"
+            Jce.STRING1 -> "String1"
+            Jce.STRING4 -> "String4"
+            Jce.STRUCT_BEGIN -> "StructBegin"
+            Jce.STRUCT_END -> "StructEnd"
+            Jce.ZERO_TYPE -> "Zero"
+            else -> error("unreachable")
+        }
+        return "JceHead(tag=$tag, type=$type($typeString))"
     }
 }

@@ -9,7 +9,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 @Suppress("ArrayInDataClass")
 @Serializable
 internal data class RequestPushNotify(
-    @SerialId(0) val uin: Long = 0L,
+    @SerialId(0) val uin: Long? = 0L,
     @SerialId(1) val ctype: Byte = 0,
     @SerialId(2) val strService: String?,
     @SerialId(3) val strCmd: String?,
@@ -46,8 +46,8 @@ internal data class MsgInfo(
     @SerialId(15) val vRemarkOfSender: ByteArray?,
     @SerialId(16) val strFromMobile: String?,
     @SerialId(17) val strFromName: String?,
-    @SerialId(18) val vNickName: List<String>?,
-    @SerialId(19) val stC2CTmpMsgHead: TempMsgHead?
+    @SerialId(18) val vNickName: List<String>?//,
+    //@SerialId(19) val stC2CTmpMsgHead: TempMsgHead?
 ) : JceStruct
 
 
