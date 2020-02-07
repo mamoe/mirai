@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 
 @Serializable
 abstract class VerifyDTO : DTO {
@@ -58,6 +59,22 @@ data class GroupInfoDTO(
         group.name, group.announcement, group.confessTalk, group.allowMemberInvite,
         group.autoApprove, group.anonymousChat
     )
+}
+
+@Serializable
+data class MemberConfigDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val memberID: Long,
+    val config: MemberInfoDTO
+) : VerifyDTO()
+
+@Serializable
+data class MemberInfoDTO(
+    val name: String? = null,
+    val specialTitle: String? = null
+) : DTO {
+    constructor(member: Member) : this(member.groupCard, member.specialTitle)
 }
 
 @Serializable
