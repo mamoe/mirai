@@ -25,9 +25,13 @@ class ExternalImage(
     val md5: ByteArray,
     imageFormat: String,
     val input: Input,
-    val inputSize: Long,
+    val inputSize: Long, // dont be greater than Int.MAX
     val filename: String
 ) {
+    init {
+        check(inputSize in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) { "file is too big" }
+    }
+
     companion object {
         operator fun invoke(
             width: Int,
