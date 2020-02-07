@@ -62,9 +62,9 @@ class OnlinePushPack {
         @SerialId(3) val svrip: Int? = 0,
         @SerialId(4) val vSyncCookie: ByteArray? = null,
         @SerialId(5) val vUinPairMsg: List<UinPairMsg>? = null,
-        @SerialId(6) val mPreviews: Map<String, ByteArray>? = null,
-        @SerialId(7) val wUserActive: Int? = null,
-        @SerialId(12) val wGeneralFlag: Int? = null
+        @SerialId(6) val mPreviews: Map<String, ByteArray>? = null
+        // @SerialId(7) val wUserActive: Int? = null,
+        //@SerialId(12) val wGeneralFlag: Int? = null
     ) : JceStruct
 
     @Serializable

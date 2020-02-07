@@ -80,10 +80,10 @@ internal class OnlinePush {
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
+            println(reqPushMsg.contentToString())
             reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
 
             }
-            println(reqPushMsg.contentToString())
             return NoPakcet
         }
 

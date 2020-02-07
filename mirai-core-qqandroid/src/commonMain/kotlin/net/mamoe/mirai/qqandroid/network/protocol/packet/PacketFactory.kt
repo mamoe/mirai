@@ -131,6 +131,7 @@ internal object KnownPacketFactories {
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(
         OnlinePush.PbPushGroupMsg,
+        OnlinePush.ReqPush,
         MessageSvc.PushNotify,
         ConfigPushSvc.PushReq
 
