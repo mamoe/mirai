@@ -33,7 +33,7 @@ class GentleImage(val contact: Contact, val keyword: String) {
                     )
 
                     val result =
-                        Json.plain.parse(
+                        Json.nonstrict.parse(
                             Result.serializer(),
                             Jsoup.connect("https://api.lolicon.app/setu/?r18=$r18" + if (keyword.isNotBlank()) "&keyword=$keyword&num=10" else "")
                                 .ignoreContentType(true)
