@@ -390,10 +390,10 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         }
 
         override fun decodeTaggedNotNullMark(tag: Int): Boolean {
-            return !isTagOptional(tag)
+            return !isTagMissing(tag)
         }
 
-        fun isTagOptional(tag: Int): Boolean {
+        fun isTagMissing(tag: Int): Boolean {
             val head = input.peakHeadOrNull()
             return input.isEndOfInput || head == null || head.tag > tag
         }
@@ -405,10 +405,15 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             if (deserializer is NullReader) {
                 return null
             }
+            currentTagOrNull?.let {
+                if (this.isTagMissing(it)) {
+                    return null
+                }
+            }
             when (deserializer.descriptor) {
                 ByteArraySerializer.descriptor -> {
                     val tag = popTag()
-                    return if (isTagOptional(tag)) input.readByteArrayOrNull(tag) as? T
+                    return if (isTagMissing(tag)) input.readByteArrayOrNull(tag) as? T
                     else input.readByteArray(tag) as T
                 }
                 is ListLikeDescriptor -> {
@@ -417,14 +422,14 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                         && (deserializer as ListLikeSerializer<Any?, T, Any?>).typeParams[0] is ByteSerializer
                     ) {
                         val tag = popTag()
-                        return if (isTagOptional(tag)) input.readByteArrayOrNull(tag)?.toTypedArray() as? T
+                        return if (isTagMissing(tag)) input.readByteArrayOrNull(tag)?.toTypedArray() as? T
                         else input.readByteArray(tag).toTypedArray() as T
                     } else if (deserializer is ArrayListSerializer<*>
                         && (deserializer as ArrayListSerializer<*>).typeParams.isNotEmpty()
                         && (deserializer as ArrayListSerializer<*>).typeParams[0] is ByteSerializer
                     ) {
                         val tag = popTag()
-                        return if (isTagOptional(tag)) input.readByteArrayOrNull(tag)?.toMutableList() as? T
+                        return if (isTagMissing(tag)) input.readByteArrayOrNull(tag)?.toMutableList() as? T
                         else input.readByteArray(tag).toMutableList() as T
                     }
                     val tag = currentTag
@@ -433,7 +438,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     if (input.skipToTagOrNull(tag) {
                             return deserializer.deserialize(JceListReader(input.readInt(0), input))
                         } == null) {
-                        if (isTagOptional(tag)) {
+                        if (isTagMissing(tag)) {
                             return null
                         } else error("property is notnull but cannot find tag $tag")
                     }
@@ -442,15 +447,15 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 is MapLikeDescriptor -> {
                     val tag = popTag()
                     @Suppress("SENSELESS_COMPARISON")
-                    if (input.skipToTagOrNull(tag) {
-                            check(it.type == MAP) { "type mismatch: ${it.type}" }
+                    if (input.skipToTagOrNull(tag) { head ->
+                            check(head.type == MAP) { "type mismatch: ${head.type}" }
                             // 将 mapOf(k1 to v1, k2 to v2, ...) 转换为 listOf(k1, v1, k2, v2, ...) 以便于写入.
                             val serializer = (deserializer as MapLikeSerializer<Any?, Any?, T, *>)
                             val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
                             val setOfEntries = HashSetSerializer(mapEntrySerial).deserialize(JceMapReader(input.readInt(0), input))
                             return setOfEntries.associateBy({ it.key }, { it.value }) as T
                         } == null) {
-                        if (isTagOptional(tag)) {
+                        if (isTagMissing(tag)) {
                             return null
                         } else error("property is notnull but cannot find tag $tag")
                     }
@@ -471,7 +476,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                                 }
                                 input.readHeadOrNull()
                             }
-                        } == null && isTagOptional(tag)) {
+                        } == null && isTagMissing(tag)) {
                         return null
                     } else error("cannot find tag $tag")
                 }
@@ -480,8 +485,13 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
 
             val tag = currentTagOrNull ?: return deserializer.deserialize(JceDecoder(this.input))
-            return if (this.decodeTaggedNotNullMark(tag)) {
-                deserializer.deserialize(this)
+            return if (!this.isTagMissing(tag)) {
+                try {
+                    deserializer.deserialize(this)
+                } catch (e: Exception) {
+                    println("exception when tag=$tag")
+                    throw e
+                }
             } else {
                 // popTag()
                 null
@@ -502,7 +512,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         internal val input: ByteReadPacket,
         maxReadSize: Long = input.remaining
     ) : Closeable {
-        internal val leastRemaining = input.remaining - maxReadSize
+        private val leastRemaining = input.remaining - maxReadSize
         internal val isEndOfInput: Boolean get() = input.remaining <= leastRemaining
 
         internal var currentJceHead: JceHead? = input.doReadHead()
@@ -510,7 +520,6 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         override fun close() = input.close()
 
         internal fun peakHeadOrNull(): JceHead? = currentJceHead ?: readHeadOrNull()
-        internal fun peakHead(): JceHead = peakHeadOrNull() ?: error("no enough data to read head")
 
         @PublishedApi
         internal fun readHead(): JceHead = readHeadOrNull() ?: error("no enough data to read head")
@@ -554,43 +563,6 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         fun readString(tag: Int): String = readStringOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
 
         fun readByteArray(tag: Int): ByteArray = readByteArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readShortArray(tag: Int): ShortArray = readShortArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readLongArray(tag: Int): LongArray = readLongArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readFloatArray(tag: Int): FloatArray = readFloatArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readDoubleArray(tag: Int): DoubleArray = readDoubleArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readIntArray(tag: Int): IntArray = readIntArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readBooleanArray(tag: Int): BooleanArray = readBooleanArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-
-
-        fun readShortArrayOrNull(tag: Int): ShortArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
-            ShortArray(readInt(0)) { readShort(0) }
-        }
-
-        fun readDoubleArrayOrNull(tag: Int): DoubleArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
-            DoubleArray(readInt(0)) { readDouble(0) }
-        }
-
-        fun readFloatArrayOrNull(tag: Int): FloatArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
-            FloatArray(readInt(0)) { readFloat(0) }
-        }
-
-        fun readIntArrayOrNull(tag: Int): IntArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
-            IntArray(readInt(0)) { readInt(0) }
-        }
-
-        fun readLongArrayOrNull(tag: Int): LongArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
-            LongArray(readInt(0)) { readLong(0) }
-        }
-
-        fun readBooleanArrayOrNull(tag: Int): BooleanArray? = skipToTagOrNull(tag) {
-            require(it.type.toInt() == 9) { "type mismatch, expected=9(List), got=${it.type}" }
-            BooleanArray(readInt(0)) { readBoolean(0) }
-        }
 
         fun readByteArrayOrNull(tag: Int): ByteArray? = skipToTagOrNull(tag) {
             when (it.type) {
@@ -605,20 +577,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
-        fun <T> readObject(default: T, tag: Int): T = when (default) {
-            is Byte -> readByte(tag)
-            is Boolean -> readBoolean(tag)
-            is Short -> readShort(tag)
-            is Int -> readInt(tag)
-            is Long -> readLong(tag)
-            is Float -> readFloat(tag)
-            is Double -> readDouble(tag)
-            is String -> readString(tag)
-            else -> error("unsupported type: ${default.getClassName()}")
-        } as T
-
-        fun readStringOrNull(tag: Int): String? = skipToTagOrNull(tag) { head ->
+        private fun readStringOrNull(tag: Int): String? = skipToTagOrNull(tag) { head ->
             return when (head.type) {
                 STRING1 -> input.readString(input.readUByte().toInt(), charset = charset.kotlinCharset)
                 STRING4 -> input.readString(
@@ -629,7 +588,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        fun readLongOrNull(tag: Int): Long? = skipToTagOrNull(tag) {
+        private fun readLongOrNull(tag: Int): Long? = skipToTagOrNull(tag) {
             return when (it.type) {
                 ZERO_TYPE -> 0
                 BYTE -> input.readByte().toLong()
@@ -640,7 +599,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        fun readShortOrNull(tag: Int): Short? = skipToTagOrNull(tag) {
+        private fun readShortOrNull(tag: Int): Short? = skipToTagOrNull(tag) {
             return when (it.type.toInt()) {
                 12 -> 0
                 0 -> input.readByte().toShort()
@@ -649,7 +608,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        fun readIntOrNull(tag: Int): Int? = skipToTagOrNull(tag) {
+        private fun readIntOrNull(tag: Int): Int? = skipToTagOrNull(tag) {
             return when (it.type.toInt()) {
                 12 -> 0
                 0 -> input.readByte().toInt()
@@ -659,7 +618,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        fun readByteOrNull(tag: Int): Byte? = skipToTagOrNull(tag) {
+        private fun readByteOrNull(tag: Int): Byte? = skipToTagOrNull(tag) {
             return when (it.type.toInt()) {
                 12 -> 0
                 0 -> input.readByte()
@@ -667,7 +626,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        fun readFloatOrNull(tag: Int): Float? = skipToTagOrNull(tag) {
+        private fun readFloatOrNull(tag: Int): Float? = skipToTagOrNull(tag) {
             return when (it.type.toInt()) {
                 12 -> 0f
                 4 -> input.readFloat()
@@ -675,7 +634,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        fun readDoubleOrNull(tag: Int): Double? = skipToTagOrNull(tag) {
+        private fun readDoubleOrNull(tag: Int): Double? = skipToTagOrNull(tag) {
             return when (it.type.toInt()) {
                 12 -> 0.0
                 4 -> input.readFloat().toDouble()
@@ -684,7 +643,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             }
         }
 
-        fun readBooleanOrNull(tag: Int): Boolean? = this.readByteOrNull(tag)?.let { it.toInt() != 0 }
+        private fun readBooleanOrNull(tag: Int): Boolean? = this.readByteOrNull(tag)?.let { it.toInt() != 0 }
 
 
         private fun skipField() {
@@ -734,6 +693,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
 
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     companion object {
         val UTF8 = Jce(JceCharset.UTF8)
         val GBK = Jce(JceCharset.GBK)
@@ -816,9 +776,9 @@ internal inline fun <R> Jce.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) 
             currentJceHead = null
             // println("skipping to $tag: run block")
             return block(head)
-        } else {
-            // println("skipping to $tag: tag not matching")
         }
+
+        // println("skipping to $tag: tag not matching")
         // println("skipping to $tag: skipField")
         this.skipField(head.type)
         currentJceHead = readHeadOrNull()

@@ -185,13 +185,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             coroutineContext = bot.coroutineContext,
                             id = troopNum.groupCode,
                             uin = troopNum.groupUin,
-                            initName = troopNum.groupName,
-                            initAnnouncement = troopNum.groupMemo,
-                            initAllowMemberInvite = groupInfoResponse.allowMemberInvite,
-                            initConfessTalk = groupInfoResponse.confessTalk,
-                            initMuteAll = troopNum.dwShutUpTimestamp != 0L,
-                            initAutoApprove = groupInfoResponse.autoApprove,
-                            initAnonymousChat = groupInfoResponse.allowAnonymousChat,
+                            _name = troopNum.groupName,
+                            _announcement = troopNum.groupMemo,
+                            _allowMemberInvite = groupInfoResponse.allowMemberInvite,
+                            _confessTalk = groupInfoResponse.confessTalk,
+                            _muteAll = troopNum.dwShutUpTimestamp != 0L,
+                            _autoApprove = groupInfoResponse.autoApprove,
+                            _anonymousChat = groupInfoResponse.allowAnonymousChat,
                             members = contactList
                         )
                     toGet[group] = contactList
@@ -260,8 +260,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             data.members.forEach {
                 val member = MemberImpl(
                     qq = bot.QQ(it.memberUin) as QQImpl,
-                    initGroupCard = it.autoRemark ?: it.nick,
-                    initSpecialTitle = it.sSpecialTitle ?: "",
+                    _groupCard = it.autoRemark ?: it.nick,
+                    _specialTitle = it.sSpecialTitle ?: "",
                     group = group,
                     coroutineContext = group.coroutineContext,
                     permission = when {

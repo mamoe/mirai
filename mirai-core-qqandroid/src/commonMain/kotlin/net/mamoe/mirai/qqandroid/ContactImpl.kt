@@ -20,7 +20,6 @@ import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.coroutines.CoroutineContext
-import kotlin.properties.Delegates
 
 internal abstract class ContactImpl : Contact {
     override fun hashCode(): Int {
@@ -51,6 +50,7 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
             ) { "send message failed" }
         }
     }
+
     override suspend fun uploadImage(image: ExternalImage): Image = try {
         bot.network.run {
             val response = LongConn.OffPicUp(
@@ -129,8 +129,8 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 
 internal class MemberImpl(
     qq: QQImpl,
-    initGroupCard: String,
-    initSpecialTitle: String,
+    var _groupCard: String,
+    var _specialTitle: String,
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     override val permission: MemberPermission
@@ -138,37 +138,41 @@ internal class MemberImpl(
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
-
-    override var groupCard: String by Delegates.observable(initGroupCard) { _, old, new ->
-        group.checkBotPermissionOperator()
-        if (new != old) {
-
-            launch {
-                bot.network.run {
-                    TroopManagement.EditGroupNametag(
-                        bot.client,
-                        this@MemberImpl,
-                        new
-                    ).sendWithoutExpect()
+    override var groupCard: String
+        get() = _groupCard
+        set(newValue) {
+            group.checkBotPermissionOperator()
+            if (_groupCard != newValue) {
+                _groupCard = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.EditGroupNametag(
+                            bot.client,
+                            this@MemberImpl,
+                            newValue
+                        ).sendWithoutExpect()
+                    }
                 }
             }
         }
-    }
 
-    override var specialTitle: String by Delegates.observable(initSpecialTitle) { _, old, new ->
-        group.checkBotPermissionOperator()
-        if (new != old) {
-            launch {
-                bot.network.run {
-                    TroopManagement.EditSpecialTitle(
-                        bot.client,
-                        this@MemberImpl,
-                        new
-                    ).sendWithoutExpect()
+    override var specialTitle: String
+        get() = _specialTitle
+        set(newValue) {
+            group.checkBotPermissionOperator()
+            if (_specialTitle != newValue) {
+                _specialTitle = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.EditSpecialTitle(
+                            bot.client,
+                            this@MemberImpl,
+                            newValue
+                        ).sendWithoutExpect()
+                    }
                 }
             }
         }
-    }
 
     override val bot: QQAndroidBot get() = qq.bot
 
@@ -233,100 +237,119 @@ internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
     val uin: Long,
-    initName: String,
-    initAnnouncement: String,
-    initAllowMemberInvite: Boolean,
-    initConfessTalk: Boolean,
-    initMuteAll: Boolean,
-    initAutoApprove: Boolean,
-    initAnonymousChat: Boolean,
+    var _name: String,
+    var _announcement: String,
+    var _allowMemberInvite: Boolean,
+    var _confessTalk: Boolean,
+    var _muteAll: Boolean,
+    var _autoApprove: Boolean,
+    var _anonymousChat: Boolean,
     override val members: ContactList<Member>
 ) : ContactImpl(), Group {
 
-    override var name by Delegates.observable(initName) { _, oldValue, newValue ->
-        this.checkBotPermissionOperator()
-        if (oldValue != newValue) {
-            launch {
-                bot.network.run {
-                    TroopManagement.GroupOperation.name(
-                        client = bot.client,
-                        groupCode = id,
-                        newName = newValue
-                    ).sendWithoutExpect()
+    override var name: String
+        get() = _name
+        set(newValue) {
+            this.checkBotPermissionOperator()
+            if (_name != newValue) {
+                _name = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.name(
+                            client = bot.client,
+                            groupCode = id,
+                            newName = newValue
+                        ).sendWithoutExpect()
+                    }
                 }
             }
         }
-    }
 
-    override var announcement: String by Delegates.observable(initAnnouncement) { _, oldValue, newValue ->
-        this.checkBotPermissionOperator()
-        if (oldValue != newValue) {
-            launch {
-                bot.network.run {
-                    TroopManagement.GroupOperation.memo(
-                        client = bot.client,
-                        groupCode = id,
-                        newMemo = newValue
-                    ).sendWithoutExpect()
+    override var announcement: String
+        get() = _announcement
+        set(newValue) {
+            this.checkBotPermissionOperator()
+            if (_announcement != newValue) {
+                _announcement = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.memo(
+                            client = bot.client,
+                            groupCode = id,
+                            newMemo = newValue
+                        ).sendWithoutExpect()
+                    }
                 }
             }
         }
-    }
 
 
-    override var allowMemberInvite: Boolean by Delegates.observable(initAllowMemberInvite) { _, oldValue, newValue ->
-        this.checkBotPermissionOperator()
-        if (oldValue != newValue) {
-            launch {
-                bot.network.run {
-                    TroopManagement.GroupOperation.allowMemberInvite(
-                        client = bot.client,
-                        groupCode = id,
-                        switch = newValue
-                    ).sendWithoutExpect()
+    override var allowMemberInvite: Boolean
+        get() = _allowMemberInvite
+        set(newValue) {
+            this.checkBotPermissionOperator()
+            if (_allowMemberInvite != newValue) {
+                _allowMemberInvite = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.allowMemberInvite(
+                            client = bot.client,
+                            groupCode = id,
+                            switch = newValue
+                        ).sendWithoutExpect()
+                    }
                 }
             }
         }
-    }
 
-    override var autoApprove: Boolean by Delegates.observable(initAutoApprove) { _, oldValue, newValue ->
-        TODO("Group.autoApprove implementation")
-    }
+    override var autoApprove: Boolean
+        get() = _autoApprove
+        set(newValue) {
+            TODO()
+        }
 
-    override val anonymousChat: Boolean by Delegates.observable(initAnonymousChat) { _, oldValue, newValue ->
-        TODO("Group.anonymousChat implementation")
-    }
+    override var anonymousChat: Boolean
+        get() = _anonymousChat
+        set(newValue) {
+            TODO()
+        }
 
-    override var confessTalk: Boolean by Delegates.observable(initConfessTalk) { _, oldValue, newValue ->
-        this.checkBotPermissionOperator()
-        if (oldValue != newValue) {
-            launch {
-                bot.network.run {
-                    TroopManagement.GroupOperation.confessTalk(
-                        client = bot.client,
-                        groupCode = id,
-                        switch = newValue
-                    ).sendWithoutExpect()
+    override var confessTalk: Boolean
+        get() = _confessTalk
+        set(newValue) {
+            this.checkBotPermissionOperator()
+            if (_confessTalk != newValue) {
+                _confessTalk = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.confessTalk(
+                            client = bot.client,
+                            groupCode = id,
+                            switch = newValue
+                        ).sendWithoutExpect()
+                    }
                 }
             }
         }
-    }
 
 
-    override var muteAll: Boolean by Delegates.observable(initMuteAll) { _, oldValue, newValue ->
-        this.checkBotPermissionOperator()
-        if (oldValue != newValue) {
-            launch {
-                bot.network.run {
-                    TroopManagement.GroupOperation.muteAll(
-                        client = bot.client,
-                        groupCode = id,
-                        switch = newValue
-                    ).sendWithoutExpect()
+    override var muteAll: Boolean
+        get() = _muteAll
+        set(newValue) {
+            this.checkBotPermissionOperator()
+            if (_muteAll != newValue) {
+                _muteAll = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.muteAll(
+                            client = bot.client,
+                            groupCode = id,
+                            switch = newValue
+                        ).sendWithoutExpect()
+                    }
                 }
             }
         }
-    }
 
 
     override lateinit var owner: Member
@@ -340,7 +363,7 @@ internal class GroupImpl(
 
 
     override operator fun get(id: Long): Member {
-        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("for group id $id")
+        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
