@@ -27,7 +27,7 @@ internal data class RequestPushNotify(
 
 @Suppress("ArrayInDataClass")
 @Serializable
-internal data class MsgInfo(
+internal class MsgInfo(
     @SerialId(0) val lFromUin: Long? = 0L,
     @SerialId(1) val uMsgTime: Long? = 0L,
     @SerialId(2) val shMsgType: Short,
