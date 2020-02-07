@@ -1,45 +1,58 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.writeFully
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
+import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352Packet
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.GetImgUrlReq
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.UploadImgReq
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.utils.io.debugPrintThis
 
 internal class LongConn {
 
-    internal object OffPicUp : OutgoingPacketFactory<OffPicUp.ImageUpPacketResponse>("LongConn.OffPicUp") {
+    internal object OffPicUp : OutgoingPacketFactory<OffPicUp.Response>("LongConn.OffPicUp") {
 
-        operator fun invoke(client: QQAndroidClient, req: UploadImgReq): OutgoingPacket {
+        operator fun invoke(client: QQAndroidClient, req: Cmd0x352.TryUpImgReq): OutgoingPacket {
             return buildOutgoingUniPacket(client) {
-                //  val data = ProtoBufWithNullableSupport.dump(
-//
-                //  )
-                // writeInt(data.size + 4)
                 writeProtoBuf(
-                    Cmd0x352Packet.serializer(),
-                    Cmd0x352Packet.createByImageRequest(req)
+                    Cmd0x352.ReqBody.serializer(),
+                    Cmd0x352.ReqBody(1, msgTryupImgReq = listOf(req))
                 )
             }
         }
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ImageUpPacketResponse {
-            this.debugPrintThis()
-            TODO()
+
+        //08 01 12 7D 08 00 10 AB E1 9D DF 07 18 00 28 01 32 1C 0A 10 8E C4 9D 72 26 AE 20 C0 5D A2 B6 78 4D 12 B7 3A 10 E9 07 18 86 1F 20 30 28 30 52 25 2F 61 30 30 39 32 64 61 39 2D 64 39 31 38 2D 34 38 31 62 2D 38 34 30 63 2D 33 32 33 64 64 33 39 33 34 35 37 63 5A 25 2F 61 30 30 39 32 64 61 39 2D 64 39 31 38 2D 34 38 31 62 2D 38 34 30 63 2D 33 32 33 64 64 33 39 33 34 35 37 63 60 00 68 80 40 20 01
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp = readProtoBuf(Cmd0x352.RspBody.serializer())
+            if (resp.failMsg?.isNotEmpty() == true) {
+                return Response.Failed(resp.failMsg)
+            }
+            check(resp.subcmd == 1)
+            val imgRsp = resp.msgTryupImgRsp!!.first()
+            if (imgRsp.result != 0) {
+                return Response.Failed(imgRsp.failMsg ?: "")
+            }
+
+            return if (imgRsp.boolFileExit) {
+                Response.FileExists(imgRsp.upResid, imgRsp.msgImgInfo!!)
+            } else {
+                Response.RequireUpload(imgRsp.upResid, imgRsp.uint32UpIp!!, imgRsp.uint32UpPort!!, imgRsp.upUkey)
+            }
         }
 
 
-        sealed class ImageUpPacketResponse : Packet {
-            object Success : ImageUpPacketResponse()
+        sealed class Response : Packet {
+            data class FileExists(val resourceId: String, val imageInfo: Cmd0x352.ImgInfo) : Response()
+            @Suppress("ArrayInDataClass")
+            data class RequireUpload(val resourceId: String, val serverIp: List<Int>, val serverPort: List<Int>, val uKey: ByteArray) : Response()
+
+            data class Failed(val message: String) : Response()
         }
 
     }
@@ -47,12 +60,7 @@ internal class LongConn {
     object OffPicDown : OutgoingPacketFactory<OffPicDown.ImageDownPacketResponse>("LongConn.OffPicDown") {
         operator fun invoke(client: QQAndroidClient, req: GetImgUrlReq): OutgoingPacket {
             return buildOutgoingUniPacket(client) {
-                val data = ProtoBufWithNullableSupport.dump(
-                    Cmd0x352Packet.serializer(),
-                    Cmd0x352Packet.createByImageRequest(req)
-                )
-                writeInt(data.size + 4)
-                writeFully(data)
+                TODO()
             }
         }
 
