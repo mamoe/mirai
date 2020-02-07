@@ -133,6 +133,7 @@ internal object KnownPacketFactories {
         OnlinePush.PbPushGroupMsg,
         MessageSvc.PushNotify,
         ConfigPushSvc.PushReq
+
     )
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机
