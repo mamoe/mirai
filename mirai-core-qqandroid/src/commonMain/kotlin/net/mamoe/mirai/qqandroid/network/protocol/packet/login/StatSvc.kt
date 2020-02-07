@@ -3,12 +3,11 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
-import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
-import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
+import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.SvcReqRegister
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
@@ -33,6 +32,46 @@ internal enum class RegPushReason {
 }
 
 internal class StatSvc {
+    internal object GetOnlineStatus : OutgoingPacketFactory<GetOnlineStatus.Response>("StatSvc.GetOnlineStatus") {
+
+        internal sealed class Response : Packet {
+            override fun toString(): String = "StatSvc.GetOnlineStatus.Response"
+
+            object Success : Response() {
+                override fun toString(): String {
+                    return "StatSvc.GetOnlineStatus.Response.Success"
+                }
+            }
+
+            class Failed(val errno: Int, val message: String) : Response() {
+                override fun toString(): String {
+                    return "StatSvc.GetOnlineStatus.Response.Failed(errno=$errno, message=$message)"
+                }
+            }
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient
+        ): OutgoingPacket = buildLoginOutgoingPacket(client, 1) {
+            writeProtoBuf(
+                StatSvcGetOnline.ReqBody.serializer(), StatSvcGetOnline.ReqBody(
+                    uin = client.uin,
+                    appid = 0
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp = readProtoBuf(StatSvcGetOnline.RspBody.serializer())
+            return if (resp.errorCode != 0) {
+                Response.Failed(resp.errorCode, resp.errorMsg)
+            } else {
+                Response.Success
+            }
+        }
+    }
+
+
     internal object Register : OutgoingPacketFactory<Register.Response>("StatSvc.register") {
 
         internal object Response : Packet {

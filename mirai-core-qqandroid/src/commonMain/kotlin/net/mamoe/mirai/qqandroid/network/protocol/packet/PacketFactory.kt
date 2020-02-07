@@ -112,6 +112,7 @@ internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
         LoginPacket,
         StatSvc.Register,
+        StatSvc.GetOnlineStatus,
         MessageSvc.PbGetMsg,
         MessageSvc.PushForceOffline,
         MessageSvc.PbSendMsg,

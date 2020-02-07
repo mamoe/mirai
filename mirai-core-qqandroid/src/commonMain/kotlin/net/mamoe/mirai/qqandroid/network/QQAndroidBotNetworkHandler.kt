@@ -243,6 +243,28 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
 
         bot.firstLoginSucceed = true
+
+        launch {
+            while (this.isActive) {
+                delay(bot.configuration.heartbeatPeriodMillis)
+                var lastException: Exception?
+                try {
+                    check(
+                        StatSvc.GetOnlineStatus(bot.client)
+                            .sendAndExpect<StatSvc.GetOnlineStatus.Response>(
+                                timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                                retry = 1
+                            ) is StatSvc.GetOnlineStatus.Response.Success
+                    )
+                    continue
+                } catch (e: Exception) {
+                    lastException = e
+                }
+                delay(bot.configuration.firstReconnectDelayMillis)
+                close()
+                bot.tryReinitializeNetworkHandler(lastException)
+            }
+        }
     }
 
 
