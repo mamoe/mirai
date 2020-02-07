@@ -4,12 +4,23 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.io.chunkedHexToBytes
+import kotlin.jvm.JvmName
 
+/**
+ * 自定义表情 (收藏的表情), 图片
+ */
 sealed class Image : Message {
+    companion object Key : Message.Key<Image> {
+        @JvmName("fromId")
+        operator fun invoke(miraiImageId: String): Image = when (miraiImageId.length) {
+            37 -> NotOnlineImageFromFile(miraiImageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
+            42 -> CustomFaceFromFile(miraiImageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
+            else -> throw IllegalArgumentException("Bad miraiImageId, expecting length=37 or 42, got ${miraiImageId.length}")
+        }
+    }
+
     abstract val miraiImageId: String
     abstract override fun toString(): String
-
-    companion object Key : Message.Key<Image>
 
     abstract override fun eq(other: Message): Boolean
 }
@@ -158,15 +169,17 @@ abstract class NotOnlineImage : Image() {
 data class NotOnlineImageFromFile(
     override val resourceId: String,
     override val md5: ByteArray,
-    override val filepath: String,
-    override val fileLength: Int,
-    override val height: Int,
-    override val width: Int,
+    override val filepath: String = resourceId,
+    override val fileLength: Int = 0,
+    override val height: Int = 0,
+    override val width: Int = 0,
     override val bizType: Int = 0,
     override val imageType: Int = 1000,
     override val downloadPath: String = resourceId,
     override val fileId: Int = 0
 ) : NotOnlineImage() {
+    constructor(miraiImageId: String) : this(resourceId = miraiImageId, md5 = calculateImageMd5ByMiraiImageId(miraiImageId))
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
