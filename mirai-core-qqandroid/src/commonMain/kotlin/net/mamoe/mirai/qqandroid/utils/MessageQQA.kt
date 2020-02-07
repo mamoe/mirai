@@ -216,7 +216,15 @@ internal class CustomFaceFromServer(
     override val size: Int get() = delegate.size
     override val original: Int get() = delegate.origin
     override val pbReserve: ByteArray get() = delegate.pbReserve
-    override val miraiImageId: String get() = delegate.filePath
+    override val imageId: String get() = delegate.filePath
+
+    override fun equals(other: Any?): Boolean {
+        return other is CustomFaceFromServer && other.filepath == this.filepath && other.md5.contentEquals(this.md5)
+    }
+
+    override fun hashCode(): Int {
+        return filepath.hashCode() + 31 * md5.hashCode()
+    }
 }
 
 internal class NotOnlineImageFromServer(
@@ -233,6 +241,14 @@ internal class NotOnlineImageFromServer(
     override val downloadPath: String get() = delegate.downloadPath
     override val fileId: Int get() = delegate.fileId
     override val original: Int get() = delegate.original
+
+    override fun equals(other: Any?): Boolean {
+        return other is NotOnlineImageFromServer && other.resourceId == this.resourceId && other.md5.contentEquals(this.md5)
+    }
+
+    override fun hashCode(): Int {
+        return resourceId.hashCode() + 31 * md5.hashCode()
+    }
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)

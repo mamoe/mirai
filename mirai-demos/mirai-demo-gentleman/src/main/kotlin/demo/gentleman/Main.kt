@@ -131,7 +131,7 @@ suspend fun main() {
 
                 try {
                     image.downloadTo(newTestTempFile(suffix = ".png").also { reply("Temp file: ${it.absolutePath}") })
-                    reply(image.miraiImageId + " downloaded")
+                    reply(image.imageId + " downloaded")
                 } catch (e: Exception) {
                     e.printStackTrace()
                     reply(e.message ?: e::class.java.simpleName)

@@ -3,6 +3,7 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.utils.io.chunkedHexToBytes
 import kotlin.jvm.JvmName
 
@@ -12,17 +13,30 @@ import kotlin.jvm.JvmName
 sealed class Image : Message {
     companion object Key : Message.Key<Image> {
         @JvmName("fromId")
-        operator fun invoke(miraiImageId: String): Image = when (miraiImageId.length) {
-            37 -> NotOnlineImageFromFile(miraiImageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
-            42 -> CustomFaceFromFile(miraiImageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-            else -> throw IllegalArgumentException("Bad miraiImageId, expecting length=37 or 42, got ${miraiImageId.length}")
+        operator fun invoke(imageId: String): Image = when (imageId.length) {
+            37 -> NotOnlineImageFromFile(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
+            42 -> CustomFaceFromFile(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
+            else -> throw IllegalArgumentException("Bad imageId, expecting length=37 or 42, got ${imageId.length}")
         }
     }
 
-    abstract val miraiImageId: String
-    abstract override fun toString(): String
+    /**
+     * 图片的 id. 只需要有这个 id 即可发送图片.
+     *
+     * 示例:
+     * 好友图片的 id: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
+     * 群图片的 id: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png`
+     */
+    abstract val imageId: String
 
-    abstract override fun eq(other: Message): Boolean
+    final override fun toString(): String {
+        return "[image::$imageId]"
+    }
+
+    final override fun eq(other: Message): Boolean {
+        return if (other is Image) return other.imageId == this.imageId
+        else this.toString() == other.toString()
+    }
 }
 
 abstract class CustomFace : Image() {
@@ -42,27 +56,19 @@ abstract class CustomFace : Image() {
     abstract val size: Int
     abstract val pbReserve: ByteArray
     abstract val original: Int
-
-    override fun toString(): String {
-        return "[CustomFace]"
-    }
-
-    override fun eq(other: Message): Boolean {
-        return this.toString() == other.toString()
-    }
 }
 
 private val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-private fun calculateImageMd5ByMiraiImageId(miraiImageId: String): ByteArray {
-    return if (miraiImageId.startsWith('/')) {
-        miraiImageId
+private fun calculateImageMd5ByImageId(imageId: String): ByteArray {
+    return if (imageId.startsWith('/')) {
+        imageId
             .drop(1)
             .replace('-', ' ')
             .take(16 * 2)
             .chunkedHexToBytes()
     } else {
-        miraiImageId
+        imageId
             .substringAfter('{')
             .substringBefore('}')
             .replace('-', ' ')
@@ -75,7 +81,7 @@ data class CustomFaceFromFile(
     override val filepath: String, // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
     override val md5: ByteArray
 ) : CustomFace() {
-    constructor(miraiImageId: String) : this(filepath = miraiImageId, md5 = calculateImageMd5ByMiraiImageId(miraiImageId))
+    constructor(imageId: String) : this(filepath = imageId, md5 = calculateImageMd5ByImageId(imageId))
 
     override val fileId: Int get() = 0
     override val serverIp: Int get() = 0
@@ -91,51 +97,14 @@ data class CustomFaceFromFile(
     override val size: Int get() = 0
     override val original: Int get() = 1
     override val pbReserve: ByteArray get() = EMPTY_BYTE_ARRAY
-    override val miraiImageId: String get() = filepath
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as CustomFaceFromFile
-
-        if (filepath != other.filepath) return false
-        if (fileId != other.fileId) return false
-        if (serverIp != other.serverIp) return false
-        if (serverPort != other.serverPort) return false
-        if (fileType != other.fileType) return false
-        if (!signature.contentEquals(other.signature)) return false
-        if (useful != other.useful) return false
-        if (!md5.contentEquals(other.md5)) return false
-        if (bizType != other.bizType) return false
-        if (imageType != other.imageType) return false
-        if (width != other.width) return false
-        if (height != other.height) return false
-        if (source != other.source) return false
-        if (size != other.size) return false
-        if (original != this.original) return false
-        if (!pbReserve.contentEquals(other.pbReserve)) return false
-
-        return true
-    }
+    override val imageId: String get() = filepath
 
     override fun hashCode(): Int {
-        var result = filepath.hashCode()
-        result = 31 * result + fileId
-        result = 31 * result + serverIp
-        result = 31 * result + serverPort
-        result = 31 * result + fileType
-        result = 31 * result + signature.contentHashCode()
-        result = 31 * result + useful
-        result = 31 * result + md5.contentHashCode()
-        result = 31 * result + bizType
-        result = 31 * result + imageType
-        result = 31 * result + width
-        result = 31 * result + height
-        result = 31 * result + source
-        result = 31 * result + size
-        result = 31 * result + pbReserve.contentHashCode()
-        return result
+        return filepath.hashCode() + 31 * md5.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is CustomFaceFromFile && other.md5.contentEquals(this.md5) && other.filepath == this.filepath
     }
 }
 
@@ -155,60 +124,29 @@ abstract class NotOnlineImage : Image() {
     open val downloadPath: String get() = resourceId
     open val original: Int get() = 1
 
-    override val miraiImageId: String get() = resourceId
-
-    override fun toString(): String {
-        return "[NotOnlineImage $resourceId]"
-    }
-
-    override fun eq(other: Message): Boolean {
-        return other.toString() == this.toString()
-    }
+    override val imageId: String get() = resourceId
 }
 
+@Serializable
 data class NotOnlineImageFromFile(
     override val resourceId: String,
     override val md5: ByteArray,
-    override val filepath: String = resourceId,
-    override val fileLength: Int = 0,
-    override val height: Int = 0,
-    override val width: Int = 0,
-    override val bizType: Int = 0,
-    override val imageType: Int = 1000,
-    override val downloadPath: String = resourceId,
-    override val fileId: Int = 0
+    @Transient override val filepath: String = resourceId,
+    @Transient override val fileLength: Int = 0,
+    @Transient override val height: Int = 0,
+    @Transient override val width: Int = 0,
+    @Transient override val bizType: Int = 0,
+    @Transient override val imageType: Int = 1000,
+    @Transient override val downloadPath: String = resourceId,
+    @Transient override val fileId: Int = 0
 ) : NotOnlineImage() {
-    constructor(miraiImageId: String) : this(resourceId = miraiImageId, md5 = calculateImageMd5ByMiraiImageId(miraiImageId))
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as NotOnlineImageFromFile
-
-        if (resourceId != other.resourceId) return false
-        if (!md5.contentEquals(other.md5)) return false
-        if (filepath != other.filepath) return false
-        if (fileLength != other.fileLength) return false
-        if (height != other.height) return false
-        if (width != other.width) return false
-        if (bizType != other.bizType) return false
-        if (imageType != other.imageType) return false
-        if (downloadPath != other.downloadPath) return false
-
-        return true
-    }
+    constructor(imageId: String) : this(resourceId = imageId, md5 = calculateImageMd5ByImageId(imageId))
 
     override fun hashCode(): Int {
-        var result = resourceId.hashCode()
-        result = 31 * result + md5.contentHashCode()
-        result = 31 * result + filepath.hashCode()
-        result = 31 * result + fileLength
-        result = 31 * result + height
-        result = 31 * result + width
-        result = 31 * result + bizType
-        result = 31 * result + imageType
-        result = 31 * result + downloadPath.hashCode()
-        return result
+        return resourceId.hashCode() + 31 * md5.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is NotOnlineImageFromFile && other.md5.contentEquals(this.md5) && other.resourceId == this.resourceId
     }
 }
