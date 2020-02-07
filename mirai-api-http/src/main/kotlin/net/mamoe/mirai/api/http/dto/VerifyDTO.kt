@@ -65,7 +65,7 @@ data class GroupInfoDTO(
 data class MemberConfigDTO(
     override val sessionKey: String,
     val target: Long,
-    val memberID: Long,
+    val memberId: Long,
     val config: MemberInfoDTO
 ) : VerifyDTO()
 

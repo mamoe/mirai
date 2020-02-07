@@ -67,7 +67,7 @@ fun Application.groupManageModule() {
         }
 
         miraiVerify<MemberConfigDTO>("/memberInfo") { dto ->
-            val member = dto.session.bot.getGroup(dto.target)[dto.memberID]
+            val member = dto.session.bot.getGroup(dto.target)[dto.memberId]
             with(dto.config) {
                 name?.let { member.groupCard = it }
                 specialTitle?.let { member.specialTitle = it }
