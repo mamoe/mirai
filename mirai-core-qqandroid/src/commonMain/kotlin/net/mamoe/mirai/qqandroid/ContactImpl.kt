@@ -17,6 +17,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
@@ -59,12 +60,12 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                     fileId = 0,
                     fileMd5 = image.md5,
                     fileSize = image.inputSize.toInt(),
-                    fileName = image.filename,
+                    fileName = image.md5.toUHexString("") + ".jpg",
                     imgOriginal = 1,
                     imgWidth = image.width,
                     imgHeight = image.height,
                     imgType = image.imageType,
-                    buType = 1
+                    buType = 0
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
@@ -81,8 +82,8 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                     HighwayHelper.uploadImage(
                         client = bot.client,
                         uin = bot.uin,
-                        serverIp = response.serverIp[2].toIpV4AddressString(),
-                        serverPort = response.serverPort[2],
+                        serverIp = response.serverIp[0].toIpV4AddressString(),
+                        serverPort = response.serverPort[0],
                         imageInput = image.input,
                         inputSize = image.inputSize.toInt(),
                         md5 = image.md5,

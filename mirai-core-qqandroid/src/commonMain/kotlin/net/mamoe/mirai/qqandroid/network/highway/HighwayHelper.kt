@@ -24,6 +24,8 @@ internal object HighwayHelper {
         md5: ByteArray,
         commandId: Int  // group=2, friend=1
     ) {
+        require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
+        require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
         val socket = PlatformSocket()
         socket.connect(serverIp, serverPort)
         socket.use {

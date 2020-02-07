@@ -69,7 +69,7 @@ object Highway {
         sequenceId: Int,
         appId: Int = 537062845,
         dataFlag: Int = 4096,
-        commandId: Int = 2,
+        commandId: Int,
         localId: Int = 2052,
         uKey: ByteArray,
 

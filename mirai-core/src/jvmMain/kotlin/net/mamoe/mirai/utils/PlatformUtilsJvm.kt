@@ -4,20 +4,12 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import java.io.*
 import java.net.InetAddress
 import java.security.MessageDigest
-import java.util.concurrent.Executors
-import java.util.zip.CRC32
 import java.util.zip.Inflater
-
-actual val deviceName: String = InetAddress.getLocalHost().hostName
-
-actual fun crc32(key: ByteArray): Int = CRC32().let { it.update(key); it.value.toInt() }
 
 actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
 
@@ -51,8 +43,6 @@ fun DataInput.md5(): ByteArray {
     return digest.digest()
 }
 
-actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
-
 actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
 actual val Http: HttpClient get() = HttpClient(CIO)
@@ -74,8 +64,4 @@ actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
         inflater.end()
         return output.toByteArray()
     }
-}
-
-actual fun newCoroutineDispatcher(threadCount: Int): CoroutineDispatcher {
-    return Executors.newFixedThreadPool(threadCount).asCoroutineDispatcher()
 }

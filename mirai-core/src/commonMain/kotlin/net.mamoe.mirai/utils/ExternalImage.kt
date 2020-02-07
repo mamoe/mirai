@@ -29,7 +29,7 @@ class ExternalImage(
     val filename: String
 ) {
     init {
-        check(inputSize in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) { "file is too big" }
+        check(inputSize in 0L..Int.MAX_VALUE.toLong()) { "file is too big" }
     }
 
     companion object {

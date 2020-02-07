@@ -44,7 +44,7 @@ fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
         })
     }
 
-    return ExternalImage(width, height, digest.digest(), formatName, buffer, getRandomString(10) + "." + formatName)
+    return ExternalImage(width, height, digest.digest(), formatName, buffer, getRandomString(16) + "." + formatName)
 }
 
 suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
@@ -102,8 +102,8 @@ suspend inline fun URL.suspendToExternalImage(): ExternalImage = withContext(IO)
 @Throws(IOException::class)
 fun InputStream.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().asOutput().use {
-        this.asInput().copyTo(it)
+    file.outputStream().use {
+        this.copyTo(it)
     }
     this.close()
     return file.toExternalImage()
