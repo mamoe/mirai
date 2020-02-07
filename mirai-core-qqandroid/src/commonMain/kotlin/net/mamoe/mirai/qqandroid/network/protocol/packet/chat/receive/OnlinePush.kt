@@ -4,16 +4,21 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.NoPakcet
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
+import net.mamoe.mirai.utils.cryptor.contentToString
 
 internal inline class GroupMessageOrNull(val delegate: GroupMessage?) : Packet {
     override fun toString(): String {
@@ -67,6 +72,23 @@ internal class OnlinePush {
             if (packet.delegate != null) {
                 packet.delegate.broadcast()
             }
+            return null
+        }
+    }
+
+    internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush") {
+        @UseExperimental(ExperimentalStdlibApi::class)
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
+            val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
+            reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
+
+            }
+            println(reqPushMsg.contentToString())
+            return NoPakcet
+        }
+
+
+        override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
             return null
         }
     }
