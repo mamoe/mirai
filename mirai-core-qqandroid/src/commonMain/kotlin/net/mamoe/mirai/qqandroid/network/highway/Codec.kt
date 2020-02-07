@@ -77,6 +77,7 @@ object Highway {
         dataSize: Int,
         md5: ByteArray
     ): ByteReadPacket {
+        require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
         val dataHighwayHead = CSDataHighwayHead.DataHighwayHead(
             version = 1,
             uin = uin.toString(),
@@ -93,7 +94,9 @@ object Highway {
             filesize = dataSize.toLong() and 0xFFffFFff,
             serviceticket = uKey,
             md5 = md5,
-            fileMd5 = md5
+            fileMd5 = md5,
+            flag = 0,
+            rtcode = 0
         )
         //println(data.readBytes().toUHexString())
         return Codec.buildC2SData(dataHighwayHead, segHead, EMPTY_BYTE_ARRAY, null, data, dataSize)
