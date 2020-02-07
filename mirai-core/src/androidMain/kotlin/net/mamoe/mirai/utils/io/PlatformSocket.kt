@@ -30,7 +30,7 @@ actual class PlatformSocket : Closeable {
     @PublishedApi
     internal lateinit var readChannel: BufferedInputStream
 
-    actual suspend inline fun send(packet: ByteArray, offset: Int, length: Int) {
+    actual suspend fun send(packet: ByteArray, offset: Int, length: Int) {
         withContext(Dispatchers.IO) {
             writeChannel.write(packet, offset, length)
             writeChannel.flush()
@@ -40,7 +40,7 @@ actual class PlatformSocket : Closeable {
     /**
      * @throws SendPacketInternalException
      */
-    actual suspend inline fun send(packet: ByteReadPacket) {
+    actual suspend fun send(packet: ByteReadPacket) {
         withContext(Dispatchers.IO) {
             try {
                 writeChannel.writePacket(packet)
@@ -54,7 +54,7 @@ actual class PlatformSocket : Closeable {
     /**
      * @throws ReadPacketInternalException
      */
-    actual suspend inline fun read(): ByteReadPacket {
+    actual suspend fun read(): ByteReadPacket {
         return withContext(Dispatchers.IO) {
             try {
                 readChannel.readPacketAtMost(Long.MAX_VALUE)

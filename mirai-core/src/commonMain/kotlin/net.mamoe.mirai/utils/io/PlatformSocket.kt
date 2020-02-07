@@ -15,17 +15,17 @@ expect class PlatformSocket() : Closeable {
     /**
      * @throws SendPacketInternalException
      */
-    suspend inline fun send(packet: ByteArray, offset: Int = 0, length: Int = packet.size - offset)
+    suspend fun send(packet: ByteArray, offset: Int = 0, length: Int = packet.size - offset)
 
     /**
      * @throws SendPacketInternalException
      */
-    suspend inline fun send(packet: ByteReadPacket)
+    suspend fun send(packet: ByteReadPacket)
 
     /**
      * @throws ReadPacketInternalException
      */
-    suspend inline fun read(): ByteReadPacket
+    suspend fun read(): ByteReadPacket
 
     val isOpen: Boolean
 }
