@@ -6,7 +6,6 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImageUpPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
@@ -120,7 +119,7 @@ internal object KnownPacketFactories {
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
         ImgStore.GroupPicUp,
-        ImageUpPacket,
+        LongConn.OffPicUp,
         LongConn.OffPicDown,
         TroopManagement.EditSpecialTitle,
         TroopManagement.Mute,
