@@ -2,6 +2,25 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.13.0` *On the way*
+
+### mirai-core
+1. 修改 BotFactory, 添加 `context` 参数.
+
+### mirai-core-qqanroid
+安卓协议发布, 基于最新 QQ, 版本 `8.2.0`
+支持的功能:
+- 登录: 密码登录. 设备锁支持, 不安全状态支持, 图片验证码支持, 滑动验证码支持.
+- 消息: 文字消息, 图片消息(含表情消息), 群员 At.
+- 列表: 群列表, 群员列表, 好友列表均已稳定.
+- 群操作: 查看和修改群名, 查看和修改群属性(含全体禁言, 坦白说, 自动批准加入, 匿名聊天, 允许成员拉人), 设置和解除成员禁言, 查看和修改成员名片, 踢出成员.
+- 事件: 接受群消息和好友消息并解析
+
+### mirai-api-http
+HTTP API 已完成, by [@ryoii](https://github.com/ryoii).  
+详见 [README](https://github.com/mamoe/mirai/tree/master/mirai-api-http)
+
+Mirai 仍处于快速迭代状态. 将来仍可能会有 API 改动.
 ## `0.12.0`  *2020/1/19*
 ### mirai-core
 1. 监听消息时允许使用条件式的表达式, 如:
