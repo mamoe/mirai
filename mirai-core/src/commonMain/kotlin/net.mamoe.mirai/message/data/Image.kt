@@ -64,14 +64,14 @@ private fun calculateImageMd5ByImageId(imageId: String): ByteArray {
     return if (imageId.startsWith('/')) {
         imageId
             .drop(1)
-            .replace('-', ' ')
+            .replace("-", "")
             .take(16 * 2)
             .chunkedHexToBytes()
     } else {
         imageId
             .substringAfter('{')
             .substringBefore('}')
-            .replace('-', ' ')
+            .replace("-", "")
             .chunkedHexToBytes()
     }
 }

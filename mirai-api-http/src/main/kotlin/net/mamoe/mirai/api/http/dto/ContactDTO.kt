@@ -25,12 +25,12 @@ data class QQDTO(
 @Serializable
 data class MemberDTO(
     override val id: Long,
-    val memberName: String = "",
+    val memberName: String,
     val permission: MemberPermission,
     val group: GroupDTO
 ) : ContactDTO() {
-    constructor(member: Member, name: String = "") : this (
-        member.id, name, member.permission, GroupDTO(member.group)
+    constructor(member: Member) : this (
+        member.id, member.groupCard, member.permission, GroupDTO(member.group)
     )
 }
 

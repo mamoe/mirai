@@ -3,8 +3,6 @@ package net.mamoe.mirai.utils
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import java.io.ByteArrayOutputStream
@@ -13,15 +11,8 @@ import java.io.EOFException
 import java.io.InputStream
 import java.net.InetAddress
 import java.security.MessageDigest
-import java.util.concurrent.Executors
-import java.util.zip.CRC32
 import java.util.zip.Inflater
 
-
-/**
- * 设备名
- */
-actual val deviceName: String get() = InetAddress.getLocalHost().hostName
 
 /**
  * Ktor HttpClient. 不同平台使用不同引擎.
@@ -75,16 +66,6 @@ private inline fun InputStream.readInSequence(block: (Int) -> Unit) {
     }
 }
 
-/**
- * CRC32 算法
- */
-actual fun crc32(key: ByteArray): Int = CRC32().apply { update(key) }.value.toInt()
-
-/**
- * hostname 解析 ipv4
- */
-actual fun solveIpAddress(hostname: String): String = InetAddress.getByName(hostname).hostAddress
-
 actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
     this.checkOffsetAndLength(offset, length)
     if (length == 0) return ByteArray(0)
@@ -104,6 +85,3 @@ actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
     }
 }
 
-actual fun newCoroutineDispatcher(threadCount: Int): CoroutineDispatcher {
-    return Executors.newFixedThreadPool(threadCount).asCoroutineDispatcher()
-}

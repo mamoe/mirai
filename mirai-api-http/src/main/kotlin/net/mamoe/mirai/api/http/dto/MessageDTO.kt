@@ -31,13 +31,13 @@ data class UnKnownMessagePacketDTO(val msg: String) : MessagePacketDTO()
 data class AtDTO(val target: Long, val display: String) : MessageDTO()
 @Serializable
 @SerialName("Face")
-data class FaceDTO(val faceID: Int) : MessageDTO()
+data class FaceDTO(val faceId: Int) : MessageDTO()
 @Serializable
 @SerialName("Plain")
 data class PlainDTO(val text: String) : MessageDTO()
 @Serializable
 @SerialName("Image")
-data class ImageDTO(val path: String) : MessageDTO()
+data class ImageDTO(val imageId: String) : MessageDTO()
 @Serializable
 @SerialName("Xml")
 data class XmlDTO(val xml: String) : MessageDTO()
@@ -64,7 +64,7 @@ sealed class MessageDTO : DTO
  */
 suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
-    is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender, senderName))
+    is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
     else -> UnKnownMessagePacketDTO("UnKnown Message Packet")
 }.apply { messageChain = Array(message.size){ message[it].toDTO() }}
 
@@ -76,7 +76,7 @@ fun Message.toDTO() = when (this) {
     is At -> AtDTO(target, display)
     is Face -> FaceDTO(id.value.toInt())
     is PlainText -> PlainDTO(stringValue)
-    is Image -> ImageDTO(this.toString())
+    is Image -> ImageDTO(imageId)
     is XMLMessage -> XmlDTO(stringValue)
     else -> UnknownMessageDTO("未知消息类型")
 }
@@ -84,9 +84,9 @@ fun Message.toDTO() = when (this) {
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 fun MessageDTO.toMessage() = when (this) {
     is AtDTO -> At(target, display)
-    is FaceDTO -> Face(FaceId(faceID.toUByte()))
+    is FaceDTO -> Face(FaceId(faceId.toUByte()))
     is PlainDTO -> PlainText(text)
-    is ImageDTO -> PlainText("[暂时不支持图片]")
+    is ImageDTO -> Image(imageId)
     is XmlDTO -> XMLMessage(xml)
     is UnknownMessageDTO -> PlainText("assert cannot reach")
 }

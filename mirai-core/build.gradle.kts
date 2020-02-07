@@ -85,7 +85,7 @@ kotlin {
                 api(ktor("network", ktorVersion))
                 //implementation("io.ktor:ktor-io:1.3.0-beta-1")
 
-                runtimeOnly(files("build/classes/kotlin/metadata/main")) // classpath is not properly set by IDE
+                //runtimeOnly(files("build/classes/kotlin/metadata/main")) // classpath is not properly set by IDE
             }
         }
         commonTest {
@@ -93,7 +93,7 @@ kotlin {
                 api(kotlin("test-annotations-common"))
                 api(kotlin("test-common"))
 
-                runtimeOnly(files("build/classes/kotlin/metadata/test")) // classpath is not properly set by IDE
+                //runtimeOnly(files("build/classes/kotlin/metadata/test")) // classpath is not properly set by IDE
             }
         }
 
