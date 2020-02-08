@@ -116,7 +116,6 @@ internal class OnlinePush {
                                     debug += " " + time + "s"
                                 }
                             }
-
                             3585 -> {
                                 val operatorUin = this.readUInt().toLong()
                                 debug += " 管理员 $operatorUin"
@@ -127,7 +126,6 @@ internal class OnlinePush {
                                     debug += " 关闭 "
                                 }
                             }
-
                             4096 -> {
                                 val dataBytes = this.readBytes(26)
                                 val message = this.readString(this.readByte().toInt())
@@ -153,6 +151,10 @@ internal class OnlinePush {
                                 println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
                             }
                         }
+                    } else if (msgInfo.shMsgType.toInt() == 528) {
+
+                    } else if (msgInfo.shMsgType.toInt() == 4352) {
+
                     } else {
                         println("unknown shtype ${msgInfo.shMsgType.toInt()}")
                     }
