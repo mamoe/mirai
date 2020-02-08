@@ -36,7 +36,6 @@ internal inline class GroupMessageOrNull(val delegate: GroupMessage?) : Packet {
 }
 
 internal class OnlinePush {
-
     /**
      * 接受群消息
      */
@@ -83,9 +82,10 @@ internal class OnlinePush {
             }
             return null
         }
+
     }
 
-    internal object PbPushTransMsg : IncomingPacketFactory<Packet>("OnlinePush.PbPushTransMsg") {
+    internal object PbPushTransMsg : IncomingPacketFactory<Packet>("OnlinePush.PbPushTransMsg", "OnlinePush.RespPush") {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
@@ -94,16 +94,13 @@ internal class OnlinePush {
         }
 
         override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
-            return buildResponseUniPacket(client, commandName = "OnlinePush.RespPush", sequenceId = sequenceId) {
-
-            }
+            return buildResponseUniPacket(client, sequenceId = sequenceId) {}
         }
-
 
     }
 
     //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
-    internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush") {
+    internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush", "OnlinePush.RespPush") {
         @ExperimentalUnsignedTypes
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
@@ -187,7 +184,7 @@ internal class OnlinePush {
 
 
         override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
-            return buildResponseUniPacket(client, commandName = "OnlinePush.RespPush", sequenceId = sequenceId) {
+            return buildResponseUniPacket(client, sequenceId = sequenceId) {
 
             }
         }
