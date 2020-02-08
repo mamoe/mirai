@@ -67,7 +67,7 @@ fun Application.groupManageModule() {
          * 群员信息管理（需要相关权限）
          */
         miraiGet("/memberInfo") {
-            val member = it.bot.getGroup(paramOrNull("target"))[paramOrNull("memberID")]
+            val member = it.bot.getGroup(paramOrNull("target"))[paramOrNull("memberId")]
             call.respondDTO(MemberDetailDTO(member))
         }
 
