@@ -300,13 +300,13 @@ fun main() {
 ```json5
 {
     "type": "Face",
-    "faceID": 123
+    "faceId": 123
 }
 ```
 
 | 名字   | 类型 | 说明       |
 | ------ | ---- | ---------- |
-| faceID | Int  | QQ表情编号 |
+| faceId | Int  | QQ表情编号 |
 
 #### Plain
 
@@ -453,7 +453,7 @@ fun main() {
 
 ### 群全体禁言
 
-使用此方法令指定群进行全体禁言
+使用此方法令指定群进行全体禁言（需要有相关限权）
 
 ```
 [POST] /muteAll
@@ -487,7 +487,7 @@ fun main() {
 
 ### 群解除全体禁言
 
-使用此方法令指定群解除全体禁言
+使用此方法令指定群解除全体禁言（需要有相关限权）
 
 ```
 [POST] /unmuteAll
@@ -505,7 +505,7 @@ fun main() {
 
 ### 群禁言群成员
 
-使用此方法指定群禁言指定群员
+使用此方法指定群禁言指定群员（需要有相关限权）
 
 ```
 [POST] /mute
@@ -517,7 +517,7 @@ fun main() {
 {
     "sessionKey": "YourSessionKey",
     "target": 123456789,
-    "member": 987654321,
+    "memberId": 987654321,
     "time": 1800
 }
 ```
@@ -526,7 +526,7 @@ fun main() {
 | ---------- | ----- | ------ | ---------------- | ------------------------------------- |
 | sessionKey | false | String | "YourSessionKey" | 你的session key                       |
 | target     | false | Long   | 123456789        | 指定群的群号                          |
-| member     | false | Long   | 987654321        | 指定群员QQ号                          |
+| memberId   | false | Long   | 987654321        | 指定群员QQ号                          |
 | time       | true  | Int    | 1800             | 禁言时长，单位为秒，最多30天，默认为0 |
 
 #### 响应: 返回统一状态码
@@ -542,7 +542,7 @@ fun main() {
 
 ### 群解除群成员禁言
 
-使用此方法令指定群解除全体禁言
+使用此方法令指定群解除全体禁言（需要有相关限权）
 
 ```
 [POST] /unmute
@@ -554,7 +554,7 @@ fun main() {
 {
     "sessionKey": "YourSessionKey",
     "target": 123456789,
-    "member": 987654321
+    "memberId": 987654321
 }
 ```
 
@@ -564,9 +564,48 @@ fun main() {
 
 
 
+### 移除群成员
+
+使用此方法移除指定群成员（需要有相关限权）
+
+```
+[POST] /kick
+```
+
+#### 请求:
+
+```json5
+{
+    "sessionKey": "YourSessionKey",
+    "target": 123456789,
+    "memberId": 987654321,
+    "msg": "您已被移出群聊"
+}
+```
+
+| 名字       | 可选  | 类型   | 举例             | 说明            |
+| ---------- | ----- | ------ | ---------------- | --------------- |
+| sessionKey | false | String | "YourSessionKey" | 你的session key |
+| target     | false | Long   | 123456789        | 指定群的群号    |
+| memberId   | false | Long   | 987654321        | 指定群员QQ号    |
+| msg        | true  | String | ""               | 信息            |
+
+#### 响应
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+
+
+
 ### 群设置
 
-使用此方法修改群设置（需要又相关限权）
+使用此方法修改群设置（需要有相关限权）
 
 ```
 [POST] /groupConfig
@@ -636,5 +675,72 @@ fun main() {
     "allowMemberInvite": true,
     "autoApprove": true,
     "anonymousChat": true
+}
+```
+
+
+### 修改群员资料
+
+使用此方法修改群员资料（需要有相关限权）
+
+```
+[POST] /memberInfo
+```
+
+#### 请求:
+
+```json5
+{
+    "sessionKey": "YourSessionKey",
+    "target": 123456789,
+    "memberId": 987654321,
+    "info": {
+        "name": "群名片",
+        "specialTitle": "群头衔"
+    }
+}
+```
+
+| 名字              | 可选  | 类型    | 举例             | 说明                 |
+| ----------------- | ----- | ------- | ---------------- | -------------------- |
+| sessionKey        | false | String  | "YourSessionKey" | 你的session key      |
+| target            | false | Long    | 123456789        | 指定群的群号         |
+| memberId          | false | Long    | 987654321        | 群员QQ号             |
+| info              | false | Object  | {}               | 群员资料             |
+| name              | true  | String  | "Name"           | 群名片，即群昵称     |
+| specialTitle      | true  | String  | "Title"          | 群头衔               |
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+
+### 获取群员资料
+
+使用此方法获取群员资料
+
+```
+[Get] /groupConfig?sessionKey=YourSessionKey&target=123456789
+```
+
+#### 请求:
+
+| 名字              | 可选  | 类型    | 举例             | 说明                 |
+| ----------------- | ----- | ------- | ---------------- | -------------------- |
+| sessionKey        | false | String  | YourSessionKey   | 你的session key      |
+| target            | false | Long    | 123456789        | 指定群的群号         |
+| memberId          | false | Long    | 987654321        | 群员QQ号             |
+
+
+#### 响应
+
+```json5
+{
+    "name": "群名片",
+    "announcement": "群头衔"
 }
 ```
