@@ -14,6 +14,7 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
@@ -22,7 +23,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.read
@@ -87,9 +87,25 @@ internal class OnlinePush {
 
     internal object PbPushTransMsg : IncomingPacketFactory<Packet>("OnlinePush.PbPushTransMsg", "OnlinePush.RespPush") {
 
+        @ExperimentalUnsignedTypes
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
             println(content.contentToString())
+            content.msgData.read {
+                when (content.msgType) {
+                    44 -> {
+                        this.discardExact(5)
+                        val var4 = readByte().toInt()
+                        var var5 = 0L
+                        var var7 = readUInt().toLong()
+                        if (var4 != 0 && var4 != 1) {
+                            var5 = readUInt().toLong()
+                        }
+                        println(var5)
+                        println(var7)
+                    }
+                }
+            }
             return NoPakcet
         }
 
