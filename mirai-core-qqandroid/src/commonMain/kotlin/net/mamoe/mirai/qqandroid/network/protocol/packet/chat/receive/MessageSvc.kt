@@ -21,8 +21,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
-import net.mamoe.mirai.qqandroid.utils.toMessageChain
-import net.mamoe.mirai.qqandroid.utils.toRichTextElems
+import net.mamoe.mirai.qqandroid.message.toMessageChain
+import net.mamoe.mirai.qqandroid.message.toRichTextElems
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.math.absoluteValue

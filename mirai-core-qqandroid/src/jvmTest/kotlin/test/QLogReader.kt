@@ -16,6 +16,10 @@ object QLogReader {
         return (decompress(file.readBytes()))
     }
 
+    fun readQLog(file: ByteArray): String {
+        return (decompress(file))
+    }
+
 
     fun decompress(array: ByteArray): String {
         return buildString {

@@ -19,7 +19,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.utils.toMessageChain
+import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.read
