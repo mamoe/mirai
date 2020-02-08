@@ -90,19 +90,33 @@ internal class OnlinePush {
         @ExperimentalUnsignedTypes
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
-            println(content.contentToString())
             content.msgData.read {
                 when (content.msgType) {
                     44 -> {
                         this.discardExact(5)
                         val var4 = readByte().toInt()
                         var var5 = 0L
-                        var var7 = readUInt().toLong()
+                        val var7 = readUInt().toLong()
                         if (var4 != 0 && var4 != 1) {
                             var5 = readUInt().toLong()
                         }
-                        println(var5)
-                        println(var7)
+                        if (var5 == 0L && this.remaining == 1L) {//管理员变更
+                            val groupUin = content.fromUin
+                            val target = var7
+                            if (this.readByte().toInt() == 1) {
+                                println("群" + groupUin + "新增管理员" + target)
+                            } else {
+                                println("群" + groupUin + "减少管理员" + target)
+                            }
+                        }
+                    }
+                    34 -> {
+                        var groupUinorCode = readUInt().toLong()
+                        if (readByte().toInt() == 1) {
+                            val target = readUInt().toLong()
+                            val groupUin = content.fromUin
+                            println("群" + groupUin + "t掉了" + target)
+                        }
                     }
                 }
             }
