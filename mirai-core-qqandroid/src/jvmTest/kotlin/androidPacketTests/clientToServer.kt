@@ -126,14 +126,14 @@ fun Map<Int, ByteArray>.printTLVMap(name: String = "", keyLength: Int = 2) =
 
 fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed", { buildPacket { writeInt(it.size + 4); writeFully(it) } }) {
     val flag1 = readInt()
-    println("flag1=" + flag1.contentToString())
+    print("flag1=" + flag1.contentToString() + ", ")
     val flag2 = readByte().toInt()
-    println("flag2=$flag2")
+    print("flag2=$flag2" + ", ")
     if (flag1 == 0x0B) {
         if (flag2 == 1) {
-            println("sequenceId = " + readInt().toUHexString())
+            print("sequenceId = " + readInt().toUHexString() + ", ")
         } else {
-            println("extra data=" + readBytes(readInt() - 4).toUHexString())
+            print("extra data=" + readBytes(readInt() - 4).toUHexString() + ", ")
         }
     } else {
         //if (flag2 == 1) {
@@ -145,15 +145,15 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
         // }
     }
 
-    println("flag3=" + readByte().toUHexString())
-    println("uin=" + readString(readInt() - 4))
+    print("flag3=" + readByte().toUHexString() + ", ")
+    readString(readInt() - 4)
 
-    println("// 解密 body")
+    print("// 解密 body")
     val encrypted = readBytes()
 
     val decrypted = encrypted.tryDecryptOrNull()
     if (decrypted == null) {
-        println("cannot decrypt: ${encrypted.toUHexString()}")
+        println(", cannot decrypt: ${encrypted.toUHexString()}")
         error("cannot decrypt: ${encrypted.toUHexString()}")
     } else {
         decrypted.toReadPacket().debugPrintThis("outer body decrypted").apply {
