@@ -253,7 +253,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
             while (this.isActive) {
                 delay(bot.configuration.heartbeatPeriodMillis)
-                val failException = doHeartBeat()
+                val failException = null//doHeartBeat()
                 if (failException != null) {
                     delay(bot.configuration.firstReconnectDelayMillis)
                     close()
