@@ -3,7 +3,10 @@ package net.mamoe.mirai.api.http.route
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
-import net.mamoe.mirai.api.http.dto.*
+import kotlinx.serialization.Serializable
+import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.common.*
+import net.mamoe.mirai.api.http.util.toJson
 
 fun Application.messageModule() {
     routing {
@@ -26,12 +29,12 @@ fun Application.messageModule() {
             call.respondStateCode(StateCode.Success)
         }
 
-        miraiVerify<VerifyDTO>("/event/message") {
-
-        }
-
-        miraiVerify<VerifyDTO>("/addFriend") {
-
-        }
     }
 }
+
+@Serializable
+private data class SendDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val messageChain: MessageChainDTO
+) : VerifyDTO()

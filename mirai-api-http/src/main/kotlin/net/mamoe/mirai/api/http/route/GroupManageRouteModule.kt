@@ -3,7 +3,12 @@ package net.mamoe.mirai.api.http.route
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
-import net.mamoe.mirai.api.http.dto.*
+import kotlinx.serialization.Serializable
+import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.common.DTO
+import net.mamoe.mirai.api.http.data.common.VerifyDTO
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 
 
 fun Application.groupManageModule() {
@@ -23,14 +28,14 @@ fun Application.groupManageModule() {
         }
 
         miraiVerify<MuteDTO>("/mute") {
-            when(it.session.bot.getGroup(it.target)[it.member].mute(it.time)) {
+            when(it.session.bot.getGroup(it.target)[it.memberId].mute(it.time)) {
                 true -> call.respondStateCode(StateCode.Success)
                 else -> throw PermissionDeniedException
             }
         }
 
         miraiVerify<MuteDTO>("/unmute") {
-            when(it.session.bot.getGroup(it.target).members[it.member].unmute()) {
+            when(it.session.bot.getGroup(it.target).members[it.memberId].unmute()) {
                 true -> call.respondStateCode(StateCode.Success)
                 else -> throw PermissionDeniedException
             }
@@ -41,7 +46,7 @@ fun Application.groupManageModule() {
          */
         miraiGet("/groupConfig") {
             val group = it.bot.getGroup(paramOrNull("target"))
-            call.respondDTO(GroupInfoDTO(group))
+            call.respondDTO(GroupDetailDTO(group))
         }
 
         miraiVerify<GroupConfigDTO>("/groupConfig") { dto ->
@@ -63,12 +68,12 @@ fun Application.groupManageModule() {
          */
         miraiGet("/memberInfo") {
             val member = it.bot.getGroup(paramOrNull("target"))[paramOrNull("memberID")]
-            call.respondDTO(MemberInfoDTO(member))
+            call.respondDTO(MemberDetailDTO(member))
         }
 
-        miraiVerify<MemberConfigDTO>("/memberInfo") { dto ->
+        miraiVerify<MemberInfoDTO>("/memberInfo") { dto ->
             val member = dto.session.bot.getGroup(dto.target)[dto.memberId]
-            with(dto.config) {
+            with(dto.info) {
                 name?.let { member.groupCard = it }
                 specialTitle?.let { member.specialTitle = it }
             }
@@ -76,4 +81,51 @@ fun Application.groupManageModule() {
         }
 
     }
+}
+
+
+@Serializable
+private data class MuteDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val memberId: Long = 0,
+    val time: Int = 0
+) : VerifyDTO()
+
+@Serializable
+private data class GroupConfigDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val config: GroupDetailDTO
+) : VerifyDTO()
+
+@Serializable
+private data class GroupDetailDTO(
+    val name: String? = null,
+    val announcement: String? = null,
+    val confessTalk: Boolean? = null,
+    val allowMemberInvite: Boolean? = null,
+    val autoApprove: Boolean? = null,
+    val anonymousChat: Boolean? = null
+) : DTO {
+    constructor(group: Group) : this(
+        group.name, group.announcement, group.confessTalk, group.allowMemberInvite,
+        group.autoApprove, group.anonymousChat
+    )
+}
+
+@Serializable
+private data class MemberInfoDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val memberId: Long,
+    val info: MemberDetailDTO
+) : VerifyDTO()
+
+@Serializable
+private data class MemberDetailDTO(
+    val name: String? = null,
+    val specialTitle: String? = null
+) : DTO {
+    constructor(member: Member) : this(member.groupCard, member.specialTitle)
 }
