@@ -16,7 +16,7 @@ fun main() {
     println(
         File(
             """
-            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\statsvc\getonline
+            /Users/jiahua.liu/Desktop/QQAndroid-F/app/src/main/java/com/tencent/pb/onlinepush/
         """.trimIndent()
         )
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")

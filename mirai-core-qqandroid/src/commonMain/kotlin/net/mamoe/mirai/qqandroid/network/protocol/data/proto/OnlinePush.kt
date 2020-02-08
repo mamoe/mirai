@@ -16,3 +16,29 @@ internal class MsgOnlinePush {
         @SerialId(9) val generalFlag: Int = 0
     ) : ProtoBuf
 }
+
+@Serializable
+class OnlinePushTrans : ProtoBuf {
+    @Serializable
+    class ExtGroupKeyInfo(
+        @SerialId(1) val curMaxSeq: Int = 0,
+        @SerialId(2) val curTime: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    class PbMsgInfo(
+        @SerialId(1) val fromUin: Long = 0L,
+        @SerialId(2) val toUin: Long = 0L,
+        @SerialId(3) val msgType: Int = 0,
+        @SerialId(4) val msgSubtype: Int = 0,
+        @SerialId(5) val msgSeq: Int = 0,
+        @SerialId(6) val msgUid: Long = 0L,
+        @SerialId(7) val msgTime: Int = 0,
+        @SerialId(8) val realMsgTime: Int = 0,
+        @SerialId(9) val nickName: String = "",
+        @SerialId(10) val msgData: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(11) val svrIp: Int = 0,
+        @SerialId(12) val extGroupKeyInfo: OnlinePushTrans.ExtGroupKeyInfo? = null,
+        @SerialId(17) val generalFlag: Int = 0
+    ) : ProtoBuf
+}

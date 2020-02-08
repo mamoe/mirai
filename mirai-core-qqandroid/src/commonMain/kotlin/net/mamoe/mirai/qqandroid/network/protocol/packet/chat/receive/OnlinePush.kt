@@ -12,13 +12,16 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
+import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.qqandroid.utils.toMessageChain
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.discardExact
@@ -82,13 +85,29 @@ internal class OnlinePush {
         }
     }
 
+    internal object PbPushTransMsg : IncomingPacketFactory<Packet>("OnlinePush.PbPushTransMsg") {
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
+            val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
+            println(content.contentToString())
+            return NoPakcet
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
+            return buildResponseUniPacket(client, commandName = "OnlinePush.RespPush", sequenceId = sequenceId) {
+
+            }
+        }
+
+
+    }
+
     //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
     internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush") {
         @ExperimentalUnsignedTypes
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
-            println(reqPushMsg.contentToString())
             reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
                 var debug = ""
                 msgInfo.vMsg!!.read {
@@ -152,9 +171,10 @@ internal class OnlinePush {
                             }
                         }
                     } else if (msgInfo.shMsgType.toInt() == 528) {
-
+                        val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
+                        println(content.contentToString())
                     } else if (msgInfo.shMsgType.toInt() == 4352) {
-
+                        println("4352")
                     } else {
                         println("unknown shtype ${msgInfo.shMsgType.toInt()}")
                     }
@@ -167,7 +187,9 @@ internal class OnlinePush {
 
 
         override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
-            return null
+            return buildResponseUniPacket(client, commandName = "OnlinePush.RespPush", sequenceId = sequenceId) {
+
+            }
         }
     }
 }
