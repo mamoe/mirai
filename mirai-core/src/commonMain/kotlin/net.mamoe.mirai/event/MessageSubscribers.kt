@@ -305,12 +305,12 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     ): Listener<T> {
         return if (trim) {
             val toCheck = suffix.trim()
-            content({ it.trimStart().startsWith(toCheck) }, {
-                if (removeSuffix) this.onEvent(this.message.toString().substringBeforeLast(toCheck).trim())
+            content({ it.trimEnd().endsWith(toCheck) }, {
+                if (removeSuffix) this.onEvent(this.message.toString().removeSuffix(toCheck).trim())
                 else onEvent(this, this.message.toString().trim())
             })
         } else {
-            content({ it.startsWith(suffix) }, {
+            content({ it.endsWith(suffix) }, {
                 if (removeSuffix) this.onEvent(this.message.toString().removeSuffix(suffix))
                 else onEvent(this, this.message.toString())
             })
