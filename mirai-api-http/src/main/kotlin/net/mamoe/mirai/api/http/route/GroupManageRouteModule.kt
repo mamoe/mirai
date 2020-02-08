@@ -28,14 +28,24 @@ fun Application.groupManageModule() {
         }
 
         miraiVerify<MuteDTO>("/mute") {
-            when(it.session.bot.getGroup(it.target)[it.memberId].mute(it.time)) {
+            when (it.session.bot.getGroup(it.target)[it.memberId].mute(it.time)) {
                 true -> call.respondStateCode(StateCode.Success)
                 else -> throw PermissionDeniedException
             }
         }
 
         miraiVerify<MuteDTO>("/unmute") {
-            when(it.session.bot.getGroup(it.target).members[it.memberId].unmute()) {
+            when (it.session.bot.getGroup(it.target).members[it.memberId].unmute()) {
+                true -> call.respondStateCode(StateCode.Success)
+                else -> throw PermissionDeniedException
+            }
+        }
+
+        /**
+         * 移出群聊（需要相关权限）
+         */
+        miraiVerify<KickDTO>("/kick") {
+            when (it.session.bot.getGroup(it.target)[it.memberId].kick(it.msg)) {
                 true -> call.respondStateCode(StateCode.Success)
                 else -> throw PermissionDeniedException
             }
@@ -55,7 +65,7 @@ fun Application.groupManageModule() {
                 name?.let { group.name = it }
                 announcement?.let { group.announcement = it }
                 confessTalk?.let { group.confessTalk = it }
-                allowMemberInvite?.let{ group.allowMemberInvite = it }
+                allowMemberInvite?.let { group.allowMemberInvite = it }
                 // TODO: 待core接口实现设置可改
 //                autoApprove?.let { group.autoApprove = it }
 //                anonymousChat?.let { group.anonymousChat = it }
@@ -90,6 +100,14 @@ private data class MuteDTO(
     val target: Long,
     val memberId: Long = 0,
     val time: Int = 0
+) : VerifyDTO()
+
+@Serializable
+private data class KickDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val memberId: Long,
+    val msg: String = ""
 ) : VerifyDTO()
 
 @Serializable
