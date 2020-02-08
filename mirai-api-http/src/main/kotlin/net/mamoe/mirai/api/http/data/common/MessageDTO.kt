@@ -1,4 +1,4 @@
-package net.mamoe.mirai.api.http.dto
+package net.mamoe.mirai.api.http.data.common
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

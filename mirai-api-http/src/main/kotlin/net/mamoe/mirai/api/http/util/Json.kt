@@ -1,10 +1,9 @@
-package net.mamoe.mirai.api.http.dto
+package net.mamoe.mirai.api.http.util
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-
-interface DTO
+import net.mamoe.mirai.api.http.data.common.*
 
 // 解析失败时直接返回null，由路由判断响应400状态
 @UseExperimental(ImplicitReflectionSerializer::class)
@@ -20,7 +19,7 @@ inline fun <reified T : Any> String.jsonParseOrNull(
 inline fun <reified T : Any> T.toJson(
     serializer: SerializationStrategy<T>? = null
 ): String = if (serializer == null) MiraiJson.json.stringify(this)
-            else MiraiJson.json.stringify(serializer, this)
+else MiraiJson.json.stringify(serializer, this)
 
 
 // 序列化列表时，stringify需要使用的泛型是T，而非List<T>

@@ -3,10 +3,10 @@ package net.mamoe.mirai.api.http.route
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
-import net.mamoe.mirai.api.http.dto.GroupDTO
-import net.mamoe.mirai.api.http.dto.MemberDTO
-import net.mamoe.mirai.api.http.dto.QQDTO
-import net.mamoe.mirai.api.http.dto.toJson
+import net.mamoe.mirai.api.http.data.common.GroupDTO
+import net.mamoe.mirai.api.http.data.common.MemberDTO
+import net.mamoe.mirai.api.http.data.common.QQDTO
+import net.mamoe.mirai.api.http.util.toJson
 import net.mamoe.mirai.contact.toMutableList
 
 fun Application.infoModule() {

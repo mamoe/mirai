@@ -3,10 +3,12 @@ package net.mamoe.mirai.api.http.route
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
-import net.mamoe.mirai.api.http.dto.*
+import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import kotlin.coroutines.EmptyCoroutineContext
 
 
@@ -42,6 +44,9 @@ fun Application.authModule() {
 
     }
 }
+
+@Serializable
+private data class BindDTO(override val sessionKey: String, val qq: Long) : VerifyDTO()
 
 private fun getBotOrThrow(qq: Long) = try {
     Bot.instanceWhose(qq)

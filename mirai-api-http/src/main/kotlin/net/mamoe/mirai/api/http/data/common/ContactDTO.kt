@@ -1,4 +1,4 @@
-package net.mamoe.mirai.api.http.dto
+package net.mamoe.mirai.api.http.data.common
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.Group
@@ -30,7 +30,8 @@ data class MemberDTO(
     val group: GroupDTO
 ) : ContactDTO() {
     constructor(member: Member) : this (
-        member.id, member.groupCard, member.permission, GroupDTO(member.group)
+        member.id, member.groupCard, member.permission,
+        GroupDTO(member.group)
     )
 }
 

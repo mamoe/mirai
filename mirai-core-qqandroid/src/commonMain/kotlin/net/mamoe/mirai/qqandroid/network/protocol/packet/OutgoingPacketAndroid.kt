@@ -80,7 +80,7 @@ internal inline fun OutgoingPacketFactory<*>.buildOutgoingUniPacket(
                 writeStringUtf8(it)
             }
             encryptAndWrite(key) {
-                writeUniPacket(commandName, client.outgoingPacketUnknownValue, extraData) {
+                writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
                     body(sequenceId)
                 }
             }
@@ -111,7 +111,7 @@ internal inline fun IncomingPacketFactory<*>.buildResponseUniPacket(
                 writeStringUtf8(it)
             }
             encryptAndWrite(key) {
-                writeUniPacket(commandName, client.outgoingPacketUnknownValue, extraData) {
+                writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
                     body(sequenceId)
                 }
             }
@@ -215,7 +215,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         }
 
         writeInt(4 + 4)
-        writeFully(client.outgoingPacketUnknownValue) //  02 B0 5B 8B
+        writeFully(client.outgoingPacketSessionId) //  02 B0 5B 8B
 
         client.device.imei.let {
             writeInt(it.length + 4)

@@ -33,6 +33,8 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 @Suppress("MemberVisibilityCanBePrivate")
 @UseExperimental(MiraiInternalAPI::class)
@@ -106,8 +108,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000) // it's slow
     }
 
-    @UseExperimental(MiraiExperimentalAPI::class)
-    override suspend fun init() {
+    @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
+    override suspend fun init(): Unit = coroutineScope {
         this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
                 this.bot.logger.error("被挤下线")
@@ -117,102 +119,106 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
 
-        //val msg = MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<MessageSvc.PbGetMsg.Response>()
-        //println(msg.contentToString())
         bot.qqs.delegate.clear()
         bot.groups.delegate.clear()
 
-        val startTime = currentTimeMillis
-        try {
-            bot.logger.info("开始加载好友信息")
-            var currentFriendCount = 0
-            var totalFriendCount: Short
-            while (true) {
-                val data = FriendList.GetFriendGroupList(
-                    bot.client,
-                    currentFriendCount,
-                    150,
-                    0,
-                    0
-                ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+        val friendListLoadTime = async {
+            measureTime {
+                try {
+                    bot.logger.info("开始加载好友信息")
+                    var currentFriendCount = 0
+                    var totalFriendCount: Short
+                    while (true) {
+                        val data = FriendList.GetFriendGroupList(
+                            bot.client,
+                            currentFriendCount,
+                            150,
+                            0,
+                            0
+                        ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
 
-                totalFriendCount = data.totalFriendCount
-                data.friendList.forEach {
-                    // atomic add
-                    bot.qqs.delegate.addLast(QQImpl(bot, bot.coroutineContext, it.friendUin)).also {
-                        currentFriendCount++
+                        totalFriendCount = data.totalFriendCount
+                        data.friendList.forEach {
+                            // atomic add
+                            bot.qqs.delegate.addLast(QQImpl(bot, bot.coroutineContext, it.friendUin)).also {
+                                currentFriendCount++
+                            }
+                        }
+                        bot.logger.verbose("正在加载好友列表 ${currentFriendCount}/${totalFriendCount}")
+                        if (currentFriendCount >= totalFriendCount) {
+                            break
+                        }
+                        // delay(200)
                     }
+                    bot.logger.info("好友列表加载完成, 共 ${currentFriendCount}个")
+                } catch (e: Exception) {
+                    bot.logger.error("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
                 }
-                bot.logger.verbose("正在加载好友列表 ${currentFriendCount}/${totalFriendCount}")
-                if (currentFriendCount >= totalFriendCount) {
-                    break
-                }
-                // delay(200)
             }
-            bot.logger.info("好友列表加载完成, 共 ${currentFriendCount}个")
-        } catch (e: Exception) {
-            bot.logger.error("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
         }
 
-        val friendLoadFinish = currentTimeMillis
         val groupInfo = mutableMapOf<Long, Int>()
-        coroutineScope {
-            try {
-                bot.logger.info("开始加载群组列表与群成员列表")
-                val troopListData = FriendList.GetTroopListSimplify(bot.client)
-                    .sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 5000, retry = 2)
-                // println("获取到群数量" + troopData.groups.size)
-                val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
-                troopListData.groups.forEach { troopNum ->
-                    val contactList = ContactList(LockFreeLinkedList<Member>())
-                    val groupInfoResponse = try {
-                        TroopManagement.GetGroupOperationInfo(
-                            client = bot.client,
-                            groupCode = troopNum.groupCode
-                        ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>()
-                    } catch (e: Exception) {
-                        bot.logger.info("获取" + troopNum.groupCode + "的群设置失败")
-                        TroopManagement.GetGroupOperationInfo.Response(
-                            allowAnonymousChat = false,
-                            allowMemberInvite = false,
-                            autoApprove = false,
-                            confessTalk = false
-                        )
-                    }
-                    val group =
-                        GroupImpl(
-                            bot = bot,
-                            coroutineContext = bot.coroutineContext,
-                            id = troopNum.groupCode,
-                            uin = troopNum.groupUin,
-                            _name = troopNum.groupName,
-                            _announcement = troopNum.groupMemo,
-                            _allowMemberInvite = groupInfoResponse.allowMemberInvite,
-                            _confessTalk = groupInfoResponse.confessTalk,
-                            _muteAll = troopNum.dwShutUpTimestamp != 0L,
-                            _autoApprove = groupInfoResponse.autoApprove,
-                            _anonymousChat = groupInfoResponse.allowAnonymousChat,
-                            members = contactList
-                        )
-                    toGet[group] = contactList
-                    bot.groups.delegate.addLast(group)
-                    launch {
-                        try {
-                            getTroopMemberList(group, contactList, troopNum.dwGroupOwnerUin)
-                            groupInfo[troopNum.groupCode] = contactList.size
+
+        val groupTime = async {
+            measureTime {
+                try {
+                    bot.logger.info("开始加载群组列表与群成员列表")
+                    val troopListData = FriendList.GetTroopListSimplify(bot.client)
+                        .sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 5000, retry = 2)
+                    // println("获取到群数量" + troopData.groups.size)
+                    val toGet: MutableMap<GroupImpl, ContactList<Member>> = mutableMapOf()
+                    troopListData.groups.forEach { troopNum ->
+                        val contactList = ContactList(LockFreeLinkedList<Member>())
+                        val groupInfoResponse = try {
+                            TroopManagement.GetGroupOperationInfo(
+                                client = bot.client,
+                                groupCode = troopNum.groupCode
+                            ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>()
                         } catch (e: Exception) {
-                            groupInfo[troopNum.groupCode] = -1
-                            bot.logger.info("群${troopNum.groupCode}的列表拉取失败, 将采用动态加入")
-                            bot.logger.error(e)
+                            bot.logger.info("获取" + troopNum.groupCode + "的群设置失败")
+                            TroopManagement.GetGroupOperationInfo.Response(
+                                allowAnonymousChat = false,
+                                allowMemberInvite = false,
+                                autoApprove = false,
+                                confessTalk = false
+                            )
+                        }
+                        val group =
+                            GroupImpl(
+                                bot = bot,
+                                coroutineContext = bot.coroutineContext,
+                                id = troopNum.groupCode,
+                                uin = troopNum.groupUin,
+                                _name = troopNum.groupName,
+                                _announcement = troopNum.groupMemo,
+                                _allowMemberInvite = groupInfoResponse.allowMemberInvite,
+                                _confessTalk = groupInfoResponse.confessTalk,
+                                _muteAll = troopNum.dwShutUpTimestamp != 0L,
+                                _autoApprove = groupInfoResponse.autoApprove,
+                                _anonymousChat = groupInfoResponse.allowAnonymousChat,
+                                members = contactList
+                            )
+                        toGet[group] = contactList
+                        bot.groups.delegate.addLast(group)
+                        launch {
+                            try {
+                                fillTroopMemberList(group, contactList, troopNum.dwGroupOwnerUin)
+                                groupInfo[troopNum.groupCode] = contactList.size
+                            } catch (e: Exception) {
+                                groupInfo[troopNum.groupCode] = -1
+                                bot.logger.warning("群${troopNum.groupCode}的列表拉取失败, 将采用动态加入")
+                                bot.logger.error(e)
+                            }
                         }
                     }
+                    bot.logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
+                } catch (e: Exception) {
+                    bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+                    bot.logger.error(e)
                 }
-                bot.logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
-            } catch (e: Exception) {
-                bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
-                bot.logger.error(e)
             }
         }
+
         //===log===//
         fun fillUntil(long: Number, size: Int): String {
             val x = long.toString()
@@ -225,9 +231,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             )
         }
 
+        joinAll(friendListLoadTime, groupTime)
+
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
-        bot.logger.info("好友数量: ${fillUntil(bot.qqs.size, 9)}\t\t\t 加载时间: ${friendLoadFinish - startTime}ms")
-        bot.logger.info("加入群组: ${fillUntil(bot.groups.size, 9)}\t\t\t 加载时间: ${currentTimeMillis - friendLoadFinish}ms")
+        bot.logger.info("好友数量: ${fillUntil(bot.qqs.size, 9)}\t\t\t 加载时间: ${friendListLoadTime.await().inMilliseconds}ms")
+        bot.logger.info("加入群组: ${fillUntil(bot.groups.size, 9)}\t\t\t 加载时间: ${groupTime.await().inMilliseconds}ms")
         groupInfo.forEach {
             if (it.value == -1) {
                 bot.logger.error("群组号码: ${fillUntil(it.key, 9)}\t 成员数量加载失败")
@@ -242,34 +250,40 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
         bot.logger.info("====================Mirai Bot List初始化完毕====================")
 
-        bot.firstLoginSucceed = true
-
-        launch {
+        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
             while (this.isActive) {
                 delay(bot.configuration.heartbeatPeriodMillis)
-                var lastException: Exception?
-                try {
-                    check(
-                        StatSvc.GetOnlineStatus(bot.client)
-                            .sendAndExpect<StatSvc.GetOnlineStatus.Response>(
-                                timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
-                                retry = 1
-                            ) is StatSvc.GetOnlineStatus.Response.Success
-                    )
-                    continue
-                } catch (e: Exception) {
-                    lastException = e
+                val failException = null//doHeartBeat()
+                if (failException != null) {
+                    delay(bot.configuration.firstReconnectDelayMillis)
+                    close()
+                    bot.tryReinitializeNetworkHandler(failException)
                 }
-                delay(bot.configuration.firstReconnectDelayMillis)
-                close()
-                bot.tryReinitializeNetworkHandler(lastException)
             }
         }
+
+        bot.firstLoginSucceed = true
     }
 
+    suspend fun doHeartBeat(): Exception? {
+        var lastException: Exception?
+        try {
+            check(
+                StatSvc.GetOnlineStatus(bot.client)
+                    .sendAndExpect<StatSvc.GetOnlineStatus.Response>(
+                        timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                        retry = 1
+                    ) is StatSvc.GetOnlineStatus.Response.Success
+            )
+            return null
+        } catch (e: Exception) {
+            lastException = e
+        }
+        return lastException
+    }
 
-    suspend fun getTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long): ContactList<Member> {
-        bot.logger.info("开始获取群[${group.uin}]成员列表")
+    suspend fun fillTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long) {
+        bot.logger.verbose("开始获取群[${group.uin}]成员列表")
         var size = 0
         var nextUin = 0L
         while (true) {
@@ -306,10 +320,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (nextUin == 0L) {
                 break
             }
-            //println("已获取群[${group.uin}]成员列表前" + size + "个成员")
         }
-        //println("群[${group.uin}]成员全部获取完成, 共${list.size}个成员")
-        return list
     }
 
     /**
@@ -473,7 +484,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         cachedPacketTimeoutJob = launch {
             delay(1000)
             if (cachedPacketTimeoutJob == this.coroutineContext[Job] && cachedPacket.getAndSet(null) != null) {
-                PacketLogger.verbose("等待另一部分包时超时. 将舍弃已接收的半个包")
+                PacketLogger.verbose { "等待另一部分包时超时. 将舍弃已接收的半个包" }
             }
         }
     }

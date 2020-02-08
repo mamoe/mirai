@@ -1,4 +1,4 @@
-package net.mamoe.mirai.qqandroid.utils
+package net.mamoe.mirai.qqandroid.message
 
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*

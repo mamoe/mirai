@@ -19,7 +19,10 @@ import io.ktor.util.pipeline.PipelineContext
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.TempSession
-import net.mamoe.mirai.api.http.dto.*
+import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.common.*
+import net.mamoe.mirai.api.http.util.jsonParseOrNull
+import net.mamoe.mirai.api.http.util.toJson
 
 fun Application.mirai() {
     install(DefaultHeaders)
@@ -136,13 +139,12 @@ internal suspend fun ApplicationCall.respondJson(json: String, status: HttpStatu
 internal suspend inline fun <reified T : DTO> ApplicationCall.receiveDTO(): T? = receive<String>().jsonParseOrNull()
 
 
-
-
 fun PipelineContext<Unit, ApplicationCall>.illegalParam(
     expectingType: String?,
     paramName: String,
     actualValue: String? = call.parameters[paramName]
 ): Nothing = throw IllegalParamException("Illegal param. A $expectingType is required for `$paramName` while `$actualValue` is given")
+
 
 @Suppress("IMPLICIT_CAST_TO_ANY")
 @UseExperimental(ExperimentalUnsignedTypes::class)
@@ -171,42 +173,3 @@ internal inline fun <reified R> PipelineContext<Unit, ApplicationCall>.paramOrNu
 
         else -> error(name::class.simpleName + " is not supported")
     } as R ?: illegalParam(R::class.simpleName, name)
-
-
-/**
- * 错误请求. 抛出这个异常后将会返回错误给一个请求
- */
-@Suppress("unused")
-open class IllegalAccessException : Exception {
-    override val message: String get() = super.message!!
-
-    constructor(message: String) : super(message, null)
-    constructor(cause: Throwable) : super(cause.toString(), cause)
-    constructor(message: String, cause: Throwable?) : super(message, cause)
-}
-
-/**
- * Session失效或不存在
- */
-object IllegalSessionException : IllegalAccessException("Session失效或不存在")
-
-/**
- * Session未激活
- */
-object NotVerifiedSessionException : IllegalAccessException("Session未激活")
-
-/**
- * 指定Bot不存在
- */
-object NoSuchBotException: IllegalAccessException("指定Bot不存在")
-
-/**
- * 指定Bot不存在
- */
-object PermissionDeniedException: IllegalAccessException("无操作限权")
-
-/**
- * 错误参数
- */
-class IllegalParamException(message: String) : IllegalAccessException(message)
-
