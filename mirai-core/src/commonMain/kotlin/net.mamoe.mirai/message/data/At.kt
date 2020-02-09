@@ -30,6 +30,15 @@ class At @MiraiInternalAPI constructor(val target: Long, val display: String) : 
     override fun eq(other: Message): Boolean {
         return other is At && other.target == this.target
     }
+
+    // 自动为消息补充 " "
+
+    override fun followedBy(tail: Message): MessageChain {
+        if(tail is PlainText && !tail.stringValue.startsWith(' ')){
+            return super.followedBy(PlainText(" ")) + tail
+        }
+        return super.followedBy(tail)
+    }
 }
 
 /**

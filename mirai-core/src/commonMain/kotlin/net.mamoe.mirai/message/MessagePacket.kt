@@ -92,7 +92,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     // region
 
     /**
-     * 引用这个消息.
+     * 引用这个消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
      */
     inline fun MessageChain.quote(): MessageChain = this.quote(sender as? Member ?: error("only group message can be quoted"))
 
