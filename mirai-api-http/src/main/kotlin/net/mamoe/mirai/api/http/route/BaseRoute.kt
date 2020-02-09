@@ -9,6 +9,7 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.PartData
 import io.ktor.request.receive
 import io.ktor.response.defaultTextContentType
 import io.ktor.response.respondText
@@ -173,3 +174,20 @@ internal inline fun <reified R> PipelineContext<Unit, ApplicationCall>.paramOrNu
 
         else -> error(name::class.simpleName + " is not supported")
     } as R ?: illegalParam(R::class.simpleName, name)
+
+/**
+ * multi part
+ */
+internal fun List<PartData>.value(name: String) =
+    try {
+        (filter { it.name == name }[0] as PartData.FormItem).value
+    } catch (e: Exception) {
+        throw IllegalParamException("参数格式错误")
+    }
+
+internal fun List<PartData>.file(name: String) =
+    try {
+        filter { it.name == name }[0] as? PartData.FileItem
+    } catch (e: Exception) {
+        throw IllegalParamException("参数格式错误")
+    }
