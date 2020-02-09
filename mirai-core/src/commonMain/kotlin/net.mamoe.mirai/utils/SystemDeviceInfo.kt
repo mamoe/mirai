@@ -7,11 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.utils
+package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.utils.Context
+import net.mamoe.mirai.utils.DeviceInfo
 
 /**
- * System default values
+ * 通过本机信息来获取设备信息.
+ *
+ * Android: 获取手机信息, 与 QQ 官方相同.
+ * JVM: 部分为常量, 部分为随机
  */
-expect class SystemDeviceInfo(context: Context) : DeviceInfo
+open expect class SystemDeviceInfo(context: Context) : DeviceInfo

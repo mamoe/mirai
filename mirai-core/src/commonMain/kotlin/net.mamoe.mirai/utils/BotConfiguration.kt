@@ -39,6 +39,10 @@ class BotConfiguration {
      * 日志记录器
      */
     var logger: MiraiLogger? = null
+    /**
+     * 设备信息覆盖
+     */
+    var deviceInfo: ((Context) -> DeviceInfo)? = null
 
     /**
      * 父 [CoroutineContext]

@@ -7,22 +7,20 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.utils
+package net.mamoe.mirai.utils
 
 import android.annotation.SuppressLint
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import kotlinx.io.core.toByteArray
-import net.mamoe.mirai.utils.Context
-import net.mamoe.mirai.utils.localIpAddress
-import net.mamoe.mirai.utils.md5
 import java.io.File
 
 /**
- * Delegated by [Build]
+ * 部分引用指向 [Build].
+ * 部分需要权限, 若无权限则会使用默认值.
  */
-actual class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(context) {
+actual open class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(context) {
     override val display: ByteArray get() = Build.DISPLAY.toByteArray()
     override val product: ByteArray get() = Build.PRODUCT.toByteArray()
     override val device: ByteArray get() = Build.DEVICE.toByteArray()

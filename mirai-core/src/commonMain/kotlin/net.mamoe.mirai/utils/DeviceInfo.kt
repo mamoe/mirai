@@ -7,17 +7,17 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.utils
+package net.mamoe.mirai.utils
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
-import net.mamoe.mirai.utils.Context
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.utils.cryptor.contentToString
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
 
-abstract class DeviceInfo(
+/**
+ * 设备信息. 可通过继承 [SystemDeviceInfo] 来在默认的基础上修改
+ */
+abstract class DeviceInfo internal constructor(
     context: Context
 ) {
     val context: Context by context.unsafeWeakRef()
@@ -72,7 +72,7 @@ abstract class DeviceInfo(
             @SerialId(9) val innerVersion: ByteArray
         )
 
-        return ProtoBufWithNullableSupport.dump(
+        return ProtoBuf.dump(
             DevInfo.serializer(), DevInfo(
                 bootloader,
                 procVersion,
@@ -87,10 +87,6 @@ abstract class DeviceInfo(
         )
     }
 
-    override fun toString(): String { // net.mamoe.mirai.utils.cryptor.ProtoKt.contentToString
-        return "DeviceInfo(display=${display.contentToString()}, product=${product.contentToString()}, device=${device.contentToString()}, board=${board.contentToString()}, brand=${brand.contentToString()}, model=${model.contentToString()}, bootloader=${bootloader.contentToString()}, fingerprint=${fingerprint.contentToString()}, bootId=${bootId.contentToString()}, procVersion=${procVersion.contentToString()}, baseBand=${baseBand.contentToString()}, version=$version, simInfo=${simInfo.contentToString()}, osType=${osType.contentToString()}, macAddress=${macAddress.contentToString()}, wifiBSSID=${wifiBSSID?.contentToString()}, wifiSSID=${wifiSSID?.contentToString()}, imsiMd5=${imsiMd5.contentToString()}, imei='$imei', ipAddress='$ipAddress', androidId=${androidId.contentToString()}, apn=${apn.contentToString()})"
-    }
-
     interface Version {
         val incremental: ByteArray
         val release: ByteArray
@@ -98,6 +94,11 @@ abstract class DeviceInfo(
         val sdk: Int
     }
 }
+
+/**
+ * Defaults "%4;7t>;28<fc.5*6".toByteArray()
+ */
+fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray = md5(androidId + macAddress)
 
 /*
 fun DeviceInfo.toOidb0x769DeviceInfo() : Oidb0x769.DeviceInfo = Oidb0x769.DeviceInfo(
