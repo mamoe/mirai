@@ -111,9 +111,9 @@ internal class OnlinePush {
                             val groupUin = content.fromUin
                             val target = var7
                             if (this.readByte().toInt() == 1) {
-                                println("群" + groupUin + "新增管理员" + target)
+                                println("群uin" + groupUin + "新增管理员" + target)
                             } else {
-                                println("群" + groupUin + "减少管理员" + target)
+                                println("群uin" + groupUin + "减少管理员" + target)
                             }
                         }
                     }
@@ -122,8 +122,9 @@ internal class OnlinePush {
                         if (readByte().toInt() == 1) {
                             val target = readUInt().toLong()
                             val groupUin = content.fromUin
-                            println("群" + groupUin + "t掉了" + target)
+                            println("群uin" + groupUin + "t掉了" + target)
                         }
+
                     }
                 }
             }
@@ -200,6 +201,10 @@ internal class OnlinePush {
                                     }
                                 }
                             }
+                            4352 -> {
+                                println(msgInfo.contentToString())
+                                println(msgInfo.vMsg.toUHexString())
+                            }
                             else -> {
                                 println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
                             }
@@ -207,8 +212,6 @@ internal class OnlinePush {
                     } else if (msgInfo.shMsgType.toInt() == 528) {
                         val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
                         println(content.contentToString())
-                    } else if (msgInfo.shMsgType.toInt() == 4352) {
-                        println("4352")
                     } else {
                         println("unknown shtype ${msgInfo.shMsgType.toInt()}")
                     }

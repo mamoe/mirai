@@ -220,6 +220,75 @@ fun main() {
 
 
 
+### 发送图片消息（通过URL）
+
+```
+[POST] /sendGroupMessage
+```
+
+使用此方法向指定群发送消息
+
+#### 请求
+
+```json5
+{
+    "sessionKey": "YourSession",
+    "target": 987654321,
+    "qq": 1234567890,
+    "group": 987654321,
+    "urls": [
+        "https://xxx.yyy.zzz/",
+        "https://aaa.bbb.ccc/"
+    ]
+}
+```
+
+| 名字         | 类型   | 可选  | 举例        | 说明                               |
+| ------------ | ------ | ----- | ----------- | ---------------------------------- |
+| sessionKey   | String | false | YourSession | 已经激活的Session                  |
+| target       | Long   | true  | 987654321   | 发送对象的QQ号或群号，可能存在歧义 |
+| qq           | Long   | true  | 123456789   | 发送对象的QQ号                     |
+| group        | Long   | true  | 987654321   | 发送对象的群号                     |
+| urls         | Array  | false | []          | 是一个url字符串构成的数组          |
+
+#### 响应: 图片的imageId数组
+
+```json5
+[
+    "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}.jpg",
+    "{YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY}.jpg"
+]
+```
+
+
+
+### 图片文件上传
+
+```
+[POST] /sendGroupMessage
+```
+
+使用此方法上传图片文件至服务器并返回ImageId
+
+#### 请求
+
+Content-Type：multipart/form-data
+
+| 名字         | 类型   | 可选  | 举例        | 说明                               |
+| ------------ | ------ | ----- | ----------- | ---------------------------------- |
+| sessionKey   | String | false | YourSession | 已经激活的Session                  |
+| type         | String | false | "friend "   | "friend" 或 "group"                |
+| img          | File   | false | -           | 图片文件                           |
+
+
+#### 响应: 图片的imageId（好友图片与群聊图片Id不同）
+
+```
+{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}.jpg
+```
+
+
+
 ### 获取Bot收到的消息
 
 ```

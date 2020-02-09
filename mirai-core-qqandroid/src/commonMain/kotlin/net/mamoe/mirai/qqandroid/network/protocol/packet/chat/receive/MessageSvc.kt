@@ -32,7 +32,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.message.toMessageChain
+import net.mamoe.mirai.qqandroid.message.toRichTextElems
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -44,13 +48,16 @@ internal class MessageSvc {
     internal object PushNotify : IncomingPacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): RequestPushNotify {
             discardExact(4) // don't remove
-
             return decodeUniPacket(RequestPushNotify.serializer())
         }
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
             network.run {
-                return PbGetMsg(client, MsgSvc.SyncFlag.START, packet.stMsgInfo?.uMsgTime ?: currentTimeSeconds)
+                return PbGetMsg(
+                    client,
+                    MsgSvc.SyncFlag.START,
+                    packet.stMsgInfo?.uMsgTime ?: currentTimeSeconds
+                )
             }
         }
     }
@@ -129,6 +136,10 @@ internal class MessageSvc {
 
             val messages = resp.uinPairMsgs.asSequence().filterNot { it.msg == null }.flatMap { it.msg!!.asSequence() }.mapNotNull {
                 when (it.msgHead.msgType) {
+                    33 -> {
+                        println("GroupUin" + it.msgHead.fromUin + "新群员" + it.msgHead.authUin + " 出现了[" + it.msgHead.authNick + "] 添加刷新")
+                        null
+                    }
                     166 -> {
                         when {
                             it.msgHead.fromUin == bot.uin -> null
