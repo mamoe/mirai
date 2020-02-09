@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
@@ -23,7 +32,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.message.toRichTextElems
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -33,15 +44,19 @@ internal class MessageSvc {
      * 告知要刷新好友消息
      */
     internal object PushNotify : IncomingPacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
+        @MiraiDebugAPI
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): RequestPushNotify {
             discardExact(4) // don't remove
-
             return decodeUniPacket(RequestPushNotify.serializer())
         }
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
             network.run {
-                return PbGetMsg(client, MsgSvc.SyncFlag.START, packet.stMsgInfo?.uMsgTime ?: currentTimeSeconds)
+                return PbGetMsg(
+                    client,
+                    MsgSvc.SyncFlag.START,
+                    packet.stMsgInfo?.uMsgTime ?: currentTimeSeconds
+                )
             }
         }
     }
@@ -120,6 +135,10 @@ internal class MessageSvc {
 
             val messages = resp.uinPairMsgs.asSequence().filterNot { it.msg == null }.flatMap { it.msg!!.asSequence() }.mapNotNull {
                 when (it.msgHead.msgType) {
+                    33 -> {
+                        println("GroupUin" + it.msgHead.fromUin + "新群员" + it.msgHead.authUin + " 出现了[" + it.msgHead.authNick + "] 添加刷新")
+                        null
+                    }
                     166 -> {
                         when {
                             it.msgHead.fromUin == bot.uin -> null
@@ -127,7 +146,7 @@ internal class MessageSvc {
                             else -> FriendMessage(
                                 bot,
                                 bot.getFriend(it.msgHead.fromUin),
-                                it.msgBody.richText.toMessageChain()
+                                it.toMessageChain()
                             )
                         }
                     }

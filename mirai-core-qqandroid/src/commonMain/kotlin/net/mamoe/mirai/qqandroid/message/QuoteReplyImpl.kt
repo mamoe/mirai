@@ -7,11 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.utils
+package net.mamoe.mirai.qqandroid.message
 
-import net.mamoe.mirai.utils.Context
+import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.QuoteReply
 
-/**
- * System default values
- */
-expect class SystemDeviceInfo(context: Context) : DeviceInfo
+class QuoteReplyImpl(override val source: MessageSource) : QuoteReply {
+    override fun toString(): kotlin.String = ""
+}

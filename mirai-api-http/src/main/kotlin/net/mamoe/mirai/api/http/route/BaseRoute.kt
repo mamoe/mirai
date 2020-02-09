@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.api.http.route
 
 import io.ktor.application.Application
@@ -21,7 +30,9 @@ import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.TempSession
 import net.mamoe.mirai.api.http.data.*
-import net.mamoe.mirai.api.http.data.common.*
+import net.mamoe.mirai.api.http.data.common.AuthDTO
+import net.mamoe.mirai.api.http.data.common.DTO
+import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.util.jsonParseOrNull
 import net.mamoe.mirai.api.http.util.toJson
 
@@ -109,7 +120,7 @@ internal inline fun <reified T : VerifyDTO> Route.miraiVerify(
  */
 internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Unit, ApplicationCall>.() -> Unit) = handle {
     try {
-       blk(this)
+        blk(this)
     } catch (e: IllegalSessionException) {
         call.respondStateCode(StateCode.IllegalSession)
     } catch (e: NotVerifiedSessionException) {
@@ -128,11 +139,9 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
 /*
     extend function
  */
-internal suspend inline fun <reified T : StateCode> ApplicationCall.respondStateCode(code: T, status: HttpStatusCode = HttpStatusCode.OK)
-        = respondJson(code.toJson(StateCode.serializer()), status)
+internal suspend inline fun <reified T : StateCode> ApplicationCall.respondStateCode(code: T, status: HttpStatusCode = HttpStatusCode.OK) = respondJson(code.toJson(StateCode.serializer()), status)
 
-internal suspend inline fun <reified T : DTO> ApplicationCall.respondDTO(dto: T, status: HttpStatusCode = HttpStatusCode.OK)
-        = respondJson(dto.toJson(), status)
+internal suspend inline fun <reified T : DTO> ApplicationCall.respondDTO(dto: T, status: HttpStatusCode = HttpStatusCode.OK) = respondJson(dto.toJson(), status)
 
 internal suspend fun ApplicationCall.respondJson(json: String, status: HttpStatusCode = HttpStatusCode.OK) =
     respondText(json, defaultTextContentType(ContentType("application", "json")), status)

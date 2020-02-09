@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
@@ -6,20 +15,23 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.data.NoPakcet
+import net.mamoe.mirai.data.NoPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
+import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.message.toMessageChain
+import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.read
@@ -33,7 +45,6 @@ internal inline class GroupMessageOrNull(val delegate: GroupMessage?) : Packet {
 }
 
 internal class OnlinePush {
-
     /**
      * 接受群消息
      */
@@ -60,7 +71,7 @@ internal class OnlinePush {
                     group = group,
                     senderName = pbPushMsg.msg.msgHead.groupInfo.groupCard,
                     sender = group[pbPushMsg.msg.msgHead.fromUin],
-                    message = pbPushMsg.msg.msgBody.richText.toMessageChain(),
+                    message = pbPushMsg.msg.toMessageChain(),
                     permission = when {
                         flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
                         flags and 8 != 0 -> MemberPermission.OWNER
@@ -75,20 +86,63 @@ internal class OnlinePush {
         }
 
         override suspend fun QQAndroidBot.handle(packet: GroupMessageOrNull, sequenceId: Int): OutgoingPacket? {
-            if (packet.delegate != null) {
-                packet.delegate.broadcast()
-            }
+            packet.delegate?.broadcast()
             return null
         }
+
+    }
+
+    internal object PbPushTransMsg : IncomingPacketFactory<Packet>("OnlinePush.PbPushTransMsg", "OnlinePush.RespPush") {
+
+        @ExperimentalUnsignedTypes
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
+            val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
+            content.msgData.read {
+                when (content.msgType) {
+                    44 -> {
+                        this.discardExact(5)
+                        val var4 = readByte().toInt()
+                        var var5 = 0L
+                        val var7 = readUInt().toLong()
+                        if (var4 != 0 && var4 != 1) {
+                            var5 = readUInt().toLong()
+                        }
+                        if (var5 == 0L && this.remaining == 1L) {//管理员变更
+                            val groupUin = content.fromUin
+                            val target = var7
+                            if (this.readByte().toInt() == 1) {
+                                println("群uin" + groupUin + "新增管理员" + target)
+                            } else {
+                                println("群uin" + groupUin + "减少管理员" + target)
+                            }
+                        }
+                    }
+                    34 -> {
+                        var groupUinorCode = readUInt().toLong()
+                        if (readByte().toInt() == 1) {
+                            val target = readUInt().toLong()
+                            val groupUin = content.fromUin
+                            println("群uin" + groupUin + "t掉了" + target)
+                        }
+
+                    }
+                }
+            }
+            return NoPacket
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
+            return buildResponseUniPacket(client, sequenceId = sequenceId) {}
+        }
+
     }
 
     //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
-    internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush") {
+    internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush", "OnlinePush.RespPush") {
         @ExperimentalUnsignedTypes
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
-            println(reqPushMsg.contentToString())
             reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
                 var debug = ""
                 msgInfo.vMsg!!.read {
@@ -147,14 +201,17 @@ internal class OnlinePush {
                                     }
                                 }
                             }
+                            4352 -> {
+                                println(msgInfo.contentToString())
+                                println(msgInfo.vMsg.toUHexString())
+                            }
                             else -> {
                                 println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
                             }
                         }
                     } else if (msgInfo.shMsgType.toInt() == 528) {
-
-                    } else if (msgInfo.shMsgType.toInt() == 4352) {
-
+                        val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
+                        println(content.contentToString())
                     } else {
                         println("unknown shtype ${msgInfo.shMsgType.toInt()}")
                     }
@@ -162,12 +219,14 @@ internal class OnlinePush {
                 println(debug)
             }
 
-            return NoPakcet
+            return NoPacket
         }
 
 
         override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
-            return null
+            return buildResponseUniPacket(client, sequenceId = sequenceId) {
+
+            }
         }
     }
 }

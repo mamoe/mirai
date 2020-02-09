@@ -1,8 +1,18 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.qqandroid.message
 
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.hexToBytes
@@ -177,6 +187,16 @@ notOnlineImage=NotOnlineImage#2050019814 {
 internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
 
+    if (this.any<QuoteReply>()) {
+        when (val source = this[QuoteReply].source) {
+            is MessageSourceFromServer -> {
+                elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
+            }
+            is MessageSourceFromMsg -> { elements.add(ImMsgBody.Elem(srcMsg = source.toJceData())) }
+            else -> error("unsupported MessageSource implementation: ${source::class.simpleName}")
+        }
+    }
+
     this.forEach {
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
@@ -252,11 +272,15 @@ internal class NotOnlineImageFromServer(
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal fun ImMsgBody.RichText.toMessageChain(): MessageChain {
+internal fun MsgComm.Msg.toMessageChain(): MessageChain {
+    val elems = this.msgBody.richText.elems
+
     val message = MessageChain(initialCapacity = elems.size)
+    message.add(MessageSourceFromMsg(delegate = this))
 
     elems.forEach {
         when {
+            it.srcMsg != null -> message.add(QuoteReplyImpl(MessageSourceFromServer(it.srcMsg)))
             it.notOnlineImage != null -> message.add(NotOnlineImageFromServer(it.notOnlineImage))
             it.customFace != null -> message.add(CustomFaceFromServer(it.customFace))
             it.text != null -> {
