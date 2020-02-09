@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.SerialId
@@ -83,7 +92,7 @@ internal class MsgComm : ProtoBuf {
         @SerialId(4) val c2cCmd: Int = 0,
         @SerialId(5) val msgSeq: Int = 0,
         @SerialId(6) val msgTime: Int = 0,
-        @SerialId(7) val msgUid: Long = 0L,
+        @SerialId(7) var msgUid: Long = 0L,
         @SerialId(8) val c2cTmpMsgHead: C2CTmpMsgHead? = null,
         @SerialId(9) val groupInfo: GroupInfo? = null,
         @SerialId(10) val fromAppid: Int = 0,

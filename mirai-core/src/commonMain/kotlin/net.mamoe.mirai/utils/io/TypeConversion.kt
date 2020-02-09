@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.utils.io
@@ -26,14 +35,14 @@ fun Int.toByteArray(): ByteArray = byteArrayOf(
  * 255 -> 00 00 00 FF
  */
 fun Long.toByteArray(): ByteArray = byteArrayOf(
-    (shr(56) and 0xFF).toByte(),
-    (shr(48) and 0xFF).toByte(),
-    (shr(40) and 0xFF).toByte(),
-    (shr(32) and 0xFF).toByte(),
-    (shr(24) and 0xFF).toByte(),
-    (shr(16) and 0xFF).toByte(),
-    (shr(8) and 0xFF).toByte(),
-    (shr(0) and 0xFF).toByte()
+    (ushr(56) and 0xFF).toByte(),
+    (ushr(48) and 0xFF).toByte(),
+    (ushr(40) and 0xFF).toByte(),
+    (ushr(32) and 0xFF).toByte(),
+    (ushr(24) and 0xFF).toByte(),
+    (ushr(16) and 0xFF).toByte(),
+    (ushr(8) and 0xFF).toByte(),
+    (ushr(0) and 0xFF).toByte()
 )
 
 fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
