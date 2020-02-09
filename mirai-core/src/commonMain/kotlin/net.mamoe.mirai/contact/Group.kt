@@ -106,6 +106,28 @@ interface Group : Contact, CoroutineScope {
     suspend fun quit(): Boolean
 
 
+    companion object {
+
+        /**
+         * by @kar98k
+         */
+        fun calculateGroupIdByGroupCode(groupCode: Long): Long {
+            var left: Long = groupCode / 1000000L
+
+            when {
+                left <= 10 -> left += 202
+                left <= 19 -> left += 480 - 11
+                left <= 66 -> left += 2100 - 20
+                left <= 156 -> left += 2010 - 67
+                left <= 209 -> left += 2147 - 157
+                left <= 309 -> left += 4100 - 210
+                left <= 499 -> left += 3800 - 310
+            }
+
+            return left * 1000000L + groupCode % 1000000L
+        }
+    }
+
     @MiraiExperimentalAPI
     fun toFullString(): String = "Group(id=${this.id}, name=$name, owner=${owner.id}, members=${members.idContentString})"
 }

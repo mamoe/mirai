@@ -22,6 +22,8 @@ import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.message.toMessageChain
+import net.mamoe.mirai.qqandroid.message.toRichTextElems
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushNotify
@@ -30,8 +32,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
-import net.mamoe.mirai.qqandroid.message.toMessageChain
-import net.mamoe.mirai.qqandroid.message.toRichTextElems
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.math.absoluteValue
@@ -184,8 +184,8 @@ internal class MessageSvc {
                 override fun toString(): String = "MessageSvc.PbSendMsg.Response.SUCCESS"
             }
 
-            data class Failed(val errorCode: Int, val errorMessage: String) : Response() {
-                override fun toString(): String = "MessageSvc.PbSendMsg.Response.Failed(errorCode=$errorCode, errorMessage=$errorMessage)"
+            data class Failed(val resultType: Int, val errorCode: Int, val errorMessage: String) : Response() {
+                override fun toString(): String = "MessageSvc.PbSendMsg.Response.Failed(resultType=$resultType, errorCode=$errorCode, errorMessage=$errorMessage)"
             }
         }
 
@@ -236,21 +236,16 @@ internal class MessageSvc {
             writeProtoBuf(
                 MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
                     routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupCode)),
-                    contentHead = MsgComm.ContentHead(pkgNum = 1, divSeq = seq),
+                    contentHead = MsgComm.ContentHead(pkgNum = 1),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(
                             elems = message.toRichTextElems()
                         )
                     ),
-
-                    //
-                    //
-                    //
                     msgSeq = seq,
                     msgRand = Random.nextInt().absoluteValue,
-                    syncCookie = EMPTY_BYTE_ARRAY
-                    //  ?: SyncCookie(time = currentTimeSeconds + client.timeDifference).toByteArray(SyncCookie.serializer()),
-                    , msgVia = 1
+                    syncCookie = EMPTY_BYTE_ARRAY,
+                    msgVia = 1
                 )
             )
         }
@@ -260,7 +255,7 @@ internal class MessageSvc {
             return if (response.result == 0) {
                 Response.SUCCESS
             } else {
-                Response.Failed(response.errtype, response.errmsg)
+                Response.Failed(response.result, response.errtype, response.errmsg)
             }
         }
     }

@@ -48,6 +48,8 @@ internal abstract class ContactImpl : Contact {
 internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: CoroutineContext, override val id: Long) : ContactImpl(), QQ {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 
+    override lateinit var nick: String
+
     override suspend fun sendMessage(message: MessageChain) {
         bot.network.run {
             check(
@@ -186,39 +188,42 @@ internal class MemberImpl(
     override val bot: QQAndroidBot get() = qq.bot
 
     override suspend fun mute(durationSeconds: Int): Boolean {
-        if (bot.uin == this.qq.id) {
+        if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
             return false
         }
-        //判断有无禁言权限
-        val myPermission = group.botPermission
-        val targetPermission = this.permission
-        if (myPermission != MemberPermission.OWNER) {
-            if (targetPermission == MemberPermission.OWNER || targetPermission == MemberPermission.ADMINISTRATOR) {
-                return false
-            }
-        } else if (myPermission == MemberPermission.MEMBER) {
-            return false
+
+        bot.network.run {
+            TroopManagement.Mute(
+                client = bot.client,
+                groupCode = group.id,
+                memberUin = this@MemberImpl.id,
+                timeInSecond = durationSeconds
+            ).sendAndExpect<TroopManagement.Mute.Response>()
         }
-        return try {
-            bot.network.run {
-                TroopManagement.Mute(
-                    client = bot.client,
-                    groupCode = group.id,
-                    memberUin = this@MemberImpl.id,
-                    timeInSecond = durationSeconds
-                ).sendAndExpect<TroopManagement.Mute.Response>()
-            }
-            true
-        } catch (e: Exception) {
-            false
-        }
+        return true
     }
 
     override suspend fun unmute(): Boolean {
-        return mute(0)
+        if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
+            return false
+        }
+
+        bot.network.run {
+            TroopManagement.Mute(
+                client = bot.client,
+                groupCode = group.id,
+                memberUin = this@MemberImpl.id,
+                timeInSecond = 0
+            ).sendAndExpect<TroopManagement.Mute.Response>()
+        }
+        return true
     }
 
     override suspend fun kick(message: String): Boolean {
+        if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
+            return false
+        }
+
         bot.network.run {
             return TroopManagement.Kick(
                 client = bot.client,

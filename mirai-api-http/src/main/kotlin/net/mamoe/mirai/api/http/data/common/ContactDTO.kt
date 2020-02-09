@@ -10,10 +10,8 @@
 package net.mamoe.mirai.api.http.data.common
 
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 @Serializable
 abstract class ContactDTO : DTO {
@@ -38,8 +36,8 @@ data class MemberDTO(
     val permission: MemberPermission,
     val group: GroupDTO
 ) : ContactDTO() {
-    constructor(member: Member) : this (
-        member.id, member.groupCard, member.permission,
+    constructor(member: Member) : this(
+        member.id, member.groupCardOrNick, member.permission,
         GroupDTO(member.group)
     )
 }
@@ -50,5 +48,6 @@ data class GroupDTO(
     val name: String,
     val permission: MemberPermission
 ) : ContactDTO() {
+    @UseExperimental(MiraiExperimentalAPI::class)
     constructor(group: Group) : this(group.id, group.name, group.botPermission)
 }

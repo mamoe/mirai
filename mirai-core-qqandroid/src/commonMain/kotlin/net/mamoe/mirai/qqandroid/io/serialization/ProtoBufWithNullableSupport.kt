@@ -1,14 +1,8 @@
 /*
- * Copyright 2020 Mamoe Technologies and contributors.
+ * Copyright 2017-2019 JetBrains s.r.o.
+ * Use of this source code is governed by the Apache 2.0 license.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
- *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
- */
-
-/*
- * Copyright 2017-2019 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ * Some code changed by Mamoe is annotated around "MIRAI MODIFY START" and "MIRAI MODIFY END"
  */
 
 package net.mamoe.mirai.qqandroid.io.serialization
@@ -73,7 +67,7 @@ class ProtoBufWithNullableSupport(context: SerialModule = EmptyModule) : Abstrac
 
         override fun SerialDescriptor.getTag(index: Int) = this.getProtoDesc(index)
 
-        // MIRAI MODIFY START:
+        // MIRAI MODIFY START
         override fun encodeTaggedNull(tag: ProtoDesc) {
 
         }

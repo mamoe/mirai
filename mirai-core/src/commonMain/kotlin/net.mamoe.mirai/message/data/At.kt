@@ -12,6 +12,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.groupCardOrNick
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 
@@ -20,7 +21,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  */
 class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
     @UseExperimental(MiraiInternalAPI::class)
-    constructor(member: Member) : this(member.id, "@${member.groupCard}")
+    constructor(member: Member) : this(member.id, "@${member.groupCardOrNick}")
 
     override fun toString(): String = display
 

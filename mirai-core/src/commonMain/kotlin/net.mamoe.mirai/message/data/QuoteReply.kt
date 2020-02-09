@@ -9,12 +9,28 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.utils.MiraiInternalAPI
+
 
 /**
- * 群内的引用回复. 它将由协议模块实现为 `QuoteReplyImpl`
+ * 群内的引用回复.
+ * 总是使用 [quote] 来构造实例.
  */
-interface QuoteReply : Message {
-    val source: MessageSource
-
+class QuoteReply @MiraiInternalAPI constructor(val source: MessageSource) : Message {
     companion object Key : Message.Key<QuoteReply>
+
+    override fun toString(): String = ""
+}
+
+/**
+ * 引用这条消息.
+ * 返回 `[QuoteReply] + [At] + [PlainText]`(必要的结构)
+ */
+fun MessageChain.quote(sender: Member): MessageChain {
+    this.firstOrNull<MessageSource>()?.let {
+        @UseExperimental(MiraiInternalAPI::class)
+        return QuoteReply(it) + sender.at() + " " // required
+    }
+    error("cannot find MessageSource")
 }

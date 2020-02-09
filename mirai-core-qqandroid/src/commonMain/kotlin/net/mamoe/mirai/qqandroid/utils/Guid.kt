@@ -75,8 +75,3 @@ internal fun guidFlag(
     flag = flag or (macOrAndroidIdChangeFlag.value shl 8 and 0xFF00)
     return flag
 }
-
-/**
- * Defaults "%4;7t>;28<fc.5*6".toByteArray()
- */
-fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray = md5(androidId + macAddress)

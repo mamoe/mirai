@@ -20,6 +20,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.toUHexString
 
 
 fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {

@@ -80,7 +80,7 @@ object Highway {
                 writeFully(head)
                 check(body.copyTo(this).toInt() == bodySize) { "bad body size" }
                 writeByte(41)
-            }.also { println(it.remaining) }
+            }
         }
     }
 }

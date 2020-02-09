@@ -18,10 +18,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.Context
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 
 @UseExperimental(MiraiInternalAPI::class)
@@ -37,7 +34,8 @@ internal abstract class QQAndroidBotBase constructor(
     account: BotAccount,
     configuration: BotConfiguration
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
-    val client: QQAndroidClient = QQAndroidClient(context, account, bot = @Suppress("LeakingThis") this as QQAndroidBot)
+    val client: QQAndroidClient =
+        QQAndroidClient(context, account, bot = @Suppress("LeakingThis") this as QQAndroidBot, device = configuration.deviceInfo?.invoke(context) ?: SystemDeviceInfo(context))
     internal var firstLoginSucceed: Boolean = false
     override val uin: Long get() = client.uin
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())

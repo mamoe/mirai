@@ -36,6 +36,11 @@ interface QQ : Contact, CoroutineScope {
     override val id: Long
 
     /**
+     * 昵称
+     */
+    val nick: String
+
+    /**
      * 请求头像下载链接
      */
     // @MiraiExperimentalAPI

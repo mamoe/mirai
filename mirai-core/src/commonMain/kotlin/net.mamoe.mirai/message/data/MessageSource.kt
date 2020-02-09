@@ -10,32 +10,18 @@
 package net.mamoe.mirai.message.data
 
 /**
- * 消息源, 用于被引用. 它将由协议模块实现为 `MessageSourceImpl`
+ * 消息源, 用于被引用. 它将由协议模块实现.
+ * 消息源只用于 [QuoteReply]
+ *
+ * `mirai-core-qqandroid`: `net.mamoe.mirai.qqandroid.message.MessageSourceFromMsg`
  */
 interface MessageSource : Message {
     companion object : Message.Key<MessageSource>
 
-    /* 以下属性均无 backing field, 即都是以 `get() =` 实现 */
-
     /**
-     * 原消息序列号
+     * 实际上是个随机数, 但服务器确实是用它当做 uid
      */
-    val originalSeq: Int
-
-    /**
-     * 发送人 id
-     */
-    val senderId: Long
-
-    /**
-     * 群 id
-     */
-    val groupId: Long
-
-    /**
-     * in seconds
-     */
-    val time: Int
+    val messageUid: Long
 
     /**
      * 固定返回空字符串 ("")

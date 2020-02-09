@@ -20,12 +20,11 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
-import net.mamoe.mirai.qqandroid.utils.DeviceInfo
+import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.qqandroid.utils.NetworkType
-import net.mamoe.mirai.qqandroid.utils.SystemDeviceInfo
+import net.mamoe.mirai.utils.SystemDeviceInfo
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.ECDH
-import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
 
@@ -105,7 +104,7 @@ internal open class QQAndroidClient(
     val apkVersionName: ByteArray get() = "8.2.0".toByteArray()
     val buildVer: String get() = "8.2.0.1296"
 
-    private val messageSequenceId: AtomicInt = atomic(0)
+    private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
 
     private val requestPacketRequestId: AtomicInt = atomic(1921334513)

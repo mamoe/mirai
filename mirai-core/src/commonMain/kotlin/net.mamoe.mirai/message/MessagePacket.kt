@@ -89,6 +89,15 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
 
     // endregion
 
+    // region
+
+    /**
+     * 引用这个消息.
+     */
+    inline fun MessageChain.quote(): MessageChain = this.quote(sender as? Member ?: error("only group message can be quoted"))
+
+    // endregion
+
     // region 上传图片
     suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
     // endregion

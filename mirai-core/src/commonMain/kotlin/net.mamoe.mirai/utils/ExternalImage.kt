@@ -50,6 +50,10 @@ class ExternalImage(
             data: ByteReadPacket,
             filename: String
         ): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining, filename)
+
+        fun generateUUID(md5: ByteArray): String{
+            return "${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}"
+        }
     }
 
     val format: String =
@@ -83,7 +87,7 @@ class ExternalImage(
     override fun toString(): String = "[ExternalImage(${width}x$height $format)]"
 
     fun calculateImageResourceId(): String {
-        return "{${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}}.$format"
+        return "{${generateUUID(md5)}}.$format"
     }
 }
 

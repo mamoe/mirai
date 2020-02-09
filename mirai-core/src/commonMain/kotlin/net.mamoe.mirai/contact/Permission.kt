@@ -62,7 +62,7 @@ inline fun Member.isOwner(): Boolean = this.permission.isOwner()
 inline fun Member.isAdministrator(): Boolean = this.permission.isAdministrator()
 
 /**
- * 时管理员或群主
+ * 是管理员或群主
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun Member.isOperator(): Boolean = this.permission.isOperator()

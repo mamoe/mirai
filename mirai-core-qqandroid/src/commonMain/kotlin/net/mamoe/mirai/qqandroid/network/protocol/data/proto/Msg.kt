@@ -356,7 +356,7 @@ internal class ImMsgBody : ProtoBuf {
         @SerialId(26) val conferenceTipsInfo: ConferenceTipsInfo? = null,
         @SerialId(27) val redbagInfo: RedBagInfo? = null,
         @SerialId(28) val lowVersionTips: LowVersionTips? = null,
-        @SerialId(29) val bankcodeCtrlInfo: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(29) val bankcodeCtrlInfo: ByteArray? = null,
         @SerialId(30) val nearByMsg: NearByMessageType? = null,
         @SerialId(31) val customElem: CustomElem? = null,
         @SerialId(32) val locationInfo: LocationInfo? = null,
@@ -1142,7 +1142,7 @@ internal class ImReceipt : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    data internal class ReceiptResp(
+    internal data class ReceiptResp(
         @SerialId(1) val command: Int /* enum */ = 1,
         @SerialId(2) val receiptInfo: ReceiptInfo? = null
     ) : ProtoBuf
@@ -1194,10 +1194,10 @@ internal class Submsgtype0xc7 : ProtoBuf {
         @SerialId(2) val srcUin: Long = 0L,
         @SerialId(3) val dstUin: Long = 0L,
         @SerialId(4) val changeType: Int /* enum */ = 1,
-        @SerialId(5) val msgRelationalChainInfoOld: Submsgtype0xc7.RelationalChainInfo? = null,
-        @SerialId(6) val msgRelationalChainInfoNew: Submsgtype0xc7.RelationalChainInfo? = null,
-        @SerialId(7) val msgToDegradeInfo: Submsgtype0xc7.ToDegradeInfo? = null,
-        @SerialId(20) val relationalChainInfos: List<Submsgtype0xc7.RelationalChainInfos>? = null,
+        @SerialId(5) val msgRelationalChainInfoOld: RelationalChainInfo? = null,
+        @SerialId(6) val msgRelationalChainInfoNew: RelationalChainInfo? = null,
+        @SerialId(7) val msgToDegradeInfo: ToDegradeInfo? = null,
+        @SerialId(20) val relationalChainInfos: List<RelationalChainInfos>? = null,
         @SerialId(100) val uint32FeatureId: List<Int>? = null
     ) : ProtoBuf
 
@@ -1235,8 +1235,8 @@ internal class Submsgtype0xc7 : ProtoBuf {
     internal class ForwardBody(
         @SerialId(1) val notifyType: Int = 0,
         @SerialId(2) val opType: Int = 0,
-        @SerialId(3000) val msgHotFriendNotify: Submsgtype0xc7.HotFriendNotify? = null,
-        @SerialId(4000) val msgRelationalChainChange: Submsgtype0xc7.RelationalChainChange? = null
+        @SerialId(3000) val msgHotFriendNotify: HotFriendNotify? = null,
+        @SerialId(4000) val msgRelationalChainChange: RelationalChainChange? = null
     ) : ProtoBuf
 
     @Serializable
@@ -1277,24 +1277,24 @@ internal class Submsgtype0xc7 : ProtoBuf {
         @SerialId(303) val lastBoatTime: Int = 0,
         @SerialId(304) val boatWording: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(400) val notifyType: Int = 0,
-        @SerialId(401) val msgFriendshipFlagNotify: Submsgtype0xc7.FriendShipFlagNotify? = null
+        @SerialId(401) val msgFriendshipFlagNotify: FriendShipFlagNotify? = null
     ) : ProtoBuf
 
     @Serializable
     internal class RelationalChainInfos(
-        @SerialId(1) val msgRelationalChainInfoOld: Submsgtype0xc7.RelationalChainInfo? = null,
-        @SerialId(2) val msgRelationalChainInfoNew: Submsgtype0xc7.RelationalChainInfo? = null
+        @SerialId(1) val msgRelationalChainInfoOld: RelationalChainInfo? = null,
+        @SerialId(2) val msgRelationalChainInfoNew: RelationalChainInfo? = null
     ) : ProtoBuf
 
     @Serializable
     internal class ToDegradeInfo(
-        @SerialId(1) val toDegradeItem: List<Submsgtype0xc7.ToDegradeItem>? = null,
+        @SerialId(1) val toDegradeItem: List<ToDegradeItem>? = null,
         @SerialId(2) val nick: ByteArray = EMPTY_BYTE_ARRAY,
         @SerialId(3) val notifyTime: Long = 0L
     ) : ProtoBuf
 
     @Serializable
     internal class MsgBody(
-        @SerialId(1) val msgModInfos: List<Submsgtype0xc7.ForwardBody>? = null
+        @SerialId(1) val msgModInfos: List<ForwardBody>? = null
     ) : ProtoBuf
 }

@@ -189,10 +189,8 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
 
     if (this.any<QuoteReply>()) {
         when (val source = this[QuoteReply].source) {
-            is MessageSourceFromServer -> {
-                elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
-            }
-            is MessageSourceFromMsg -> { elements.add(ImMsgBody.Elem(srcMsg = source.toJceData())) }
+            is MessageSourceFromServer -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
+            is MessageSourceFromMsg -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
             else -> error("unsupported MessageSource implementation: ${source::class.simpleName}")
         }
     }
@@ -204,15 +202,18 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             is CustomFaceFromFile -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
-            is NotOnlineImageFromFile -> elements.add(
-                ImMsgBody.Elem(
-                    notOnlineImage = it.toJceData(), generalFlags = ImMsgBody.GeneralFlags(
-                        pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
-                    )
-                )
-            )
+            is NotOnlineImageFromFile -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is QuoteReply,
+            is MessageSource -> {
+
+            }
+            else -> error("unsupported message type: ${it::class.simpleName}")
         }
     }
+
+    // if(this.any<QuoteReply>()){
+    elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
+    // }
 
     return elements
 }
@@ -275,12 +276,12 @@ internal class NotOnlineImageFromServer(
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elems = this.msgBody.richText.elems
 
-    val message = MessageChain(initialCapacity = elems.size)
+    val message = MessageChain(initialCapacity = elems.size + 1)
     message.add(MessageSourceFromMsg(delegate = this))
 
     elems.forEach {
         when {
-            it.srcMsg != null -> message.add(QuoteReplyImpl(MessageSourceFromServer(it.srcMsg)))
+            it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))
             it.notOnlineImage != null -> message.add(NotOnlineImageFromServer(it.notOnlineImage))
             it.customFace != null -> message.add(CustomFaceFromServer(it.customFace))
             it.text != null -> {

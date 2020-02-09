@@ -135,18 +135,18 @@ inline fun List<Message>.toMessageChain(): MessageChain = MessageChain(this)
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-inline fun <reified M : Message> MessageChain.firstOrNull(): Message? = this.firstOrNull { it is M }
+inline fun <reified M : Message> MessageChain.firstOrNull(): M? = this.firstOrNull { it is M } as M?
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
-inline fun <reified M : Message> MessageChain.first(): Message = this.first { it is M }
+inline fun <reified M : Message> MessageChain.first(): M = this.first { it is M } as M
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-inline fun <reified M : Message> MessageChain.any(): Boolean = this.firstOrNull { it is M } !== null
+inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is M }
 
 
 /**
