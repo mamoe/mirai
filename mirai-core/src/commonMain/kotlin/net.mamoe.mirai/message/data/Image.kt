@@ -81,6 +81,7 @@ private fun calculateImageMd5ByImageId(imageId: String): ByteArray {
             .substringAfter('{')
             .substringBefore('}')
             .replace("-", "")
+            .take(16 * 2)
             .chunkedHexToBytes()
     }
 }
