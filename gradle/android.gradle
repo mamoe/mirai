@@ -1,6 +1,9 @@
 apply plugin: "com.android.library"
 
 android {
+    dexOptions{
+        javaMaxHeapSize "4g"
+    }
     compileSdkVersion(29)
     defaultConfig {
         minSdkVersion(15)
