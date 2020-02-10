@@ -206,6 +206,8 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
     @PublishedApi
     internal var switch: Boolean = default
 
+    val isEnabled: Boolean get() = switch
+
     fun enable() {
         switch = true
     }
