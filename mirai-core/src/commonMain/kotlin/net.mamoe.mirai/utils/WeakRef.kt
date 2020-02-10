@@ -13,6 +13,8 @@ package net.mamoe.mirai.utils
 
 import kotlin.reflect.KProperty
 
+// TODO: 2020/2/10 添加中文 doc
+
 /**
  * WeakRef that `getValue` for delegation throws an [IllegalStateException] if the referent is released by GC. Therefore it returns notnull value only
  */
@@ -32,13 +34,12 @@ operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>
 
 /**
  * Weak Reference.
- * In JVM, this is implemented as a typealias to `WeakReference` from JDK.
+ * On JVM, it is implemented as a typealias referring to `WeakReference` from JDK.
  *
- * Reference details:
- * In JVM, instances of objects are stored in the Heap and are accessed via references.
- * GC can automatically collect and release the memory used by objects that are not directly referred by any other.
- * WeakReference is not direct reference, therefore it does no influence on garbage collection.
- * Using weak reference can help GC with that.
+ * Details:
+ * On JVM, instances of objects are stored in the JVM Heap and are accessed via references.
+ * GC(garbage collection) can automatically collect and release the memory used by objects that are not directly referred by any other.
+ * [WeakRef] is not a direct reference, therefore it doesn't hinder GC.
  *
  * @see weakRef provides a WeakRef
  * @see unsafeWeakRef provides a UnsafeWeakRef

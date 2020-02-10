@@ -181,6 +181,12 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
             ListeningFilter { !filter.invoke(this, it) || !another.filter.invoke(this, it) }
 
         /**
+         * 进行逻辑 `not`
+         */
+        fun not(): ListeningFilter =
+            ListeningFilter { !filter.invoke(this, it) }
+
+        /**
          * 启动事件监听.
          */
         // do not inline due to kotlin (1.3.61) bug: java.lang.IllegalAccessError
@@ -359,7 +365,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      */
     @MessageDsl
     inline fun sentByFriend(crossinline onEvent: MessageListener<FriendMessage>): Listener<T> =
-        content({ this is FriendMessage }){
+        content({ this is FriendMessage }) {
             onEvent(this as FriendMessage, it)
         }
 

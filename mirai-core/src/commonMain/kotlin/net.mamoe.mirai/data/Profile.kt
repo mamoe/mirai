@@ -53,7 +53,7 @@ data class Profile(
 
 /**
  * 性别
- */ // 在 Android 中 enum 的使用被严格控制.
+ */
 enum class Gender(val value: Byte) {
     SECRET(0),
     MALE(1),

@@ -42,6 +42,8 @@ fun MiraiLogger.withSwitch(default: Boolean = true): MiraiLoggerWithSwitch = Mir
  *
  * 在定义 logger 变量时, 请一直使用 [MiraiLogger] 或者 [MiraiLoggerWithSwitch].
  *
+ * Mirai 内建三种日志实现, 分别是 [SimpleLogger], [PlatformLogger], [SilentLogger]
+ *
  * @see SimpleLogger 简易 logger, 它将所有的日志记录操作都转移给 lambda `(String?, Throwable?) -> Unit`
  * @see PlatformLogger 各个平台下的默认日志记录实现.
  * @see SilentLogger 忽略任何日志记录操作的 logger 实例.

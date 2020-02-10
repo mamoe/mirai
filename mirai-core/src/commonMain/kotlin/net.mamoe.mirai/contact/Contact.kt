@@ -28,7 +28,7 @@ interface Contact : CoroutineScope {
      * 这个联系人所属 [Bot].
      */
     @WeakRefProperty
-    val bot: Bot // weak ref
+    val bot: Bot
 
     /**
      * 可以是 QQ 号码或者群号码.
