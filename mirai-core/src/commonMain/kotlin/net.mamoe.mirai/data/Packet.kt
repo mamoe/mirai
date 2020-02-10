@@ -12,9 +12,14 @@ package net.mamoe.mirai.data
 /**
  * 从服务器收到的包解析之后的结构化数据.
  */
-interface Packet
+interface Packet {
+    /**
+     * 实现这个接口的包将不会被记录到日志中
+     */
+    interface NoLog
+}
 
-object NoPacket : Packet{
+object NoPacket : Packet {
     override fun toString(): String {
         return "NoPacket"
     }
