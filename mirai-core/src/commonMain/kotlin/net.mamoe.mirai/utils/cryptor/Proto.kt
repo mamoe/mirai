@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "NO_REFLECTION_IN_CLASS_PATH")
 
 package net.mamoe.mirai.utils.cryptor
 
@@ -145,7 +145,7 @@ fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) -> CharS
 /**
  * 将内容格式化为较可读的字符串输出.
  *
- * 各数字类型极其无符号类型: 十六进制表示 + 十进制表示. e.g. `0x1000(4096)`
+ * 各数字类型及其无符号类型: 十六进制表示 + 十进制表示. e.g. `0x1000(4096)`
  * [ByteArray] 和 [UByteaArray]: 十六进制表示, 通过 [ByteArray.toUHexString]
  * [ProtoMap]: 调用 [ProtoMap.toStringPrefixed]
  * [Iterable], [Iterator], [Sequence]: 调用各自的 joinToString.
@@ -154,6 +154,7 @@ fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) -> CharS
  * 其他类型: 反射获取它和它的所有来自 Mirai 的 super 类型的所有自有属性并递归调用 [contentToString]. 嵌套结构将会以缩进表示
  */
 @MiraiDebugAPI("Extremely slow")
+//@Suppress("Unsupported") // false positive
 fun Any?.contentToString(prefix: String = ""): String = when (this) {
     is Unit -> "Unit"
     is UInt -> "0x" + this.toUHexString("") + "($this)"
