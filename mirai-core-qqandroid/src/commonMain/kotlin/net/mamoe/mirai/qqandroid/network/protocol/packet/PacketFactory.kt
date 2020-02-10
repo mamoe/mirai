@@ -229,6 +229,7 @@ internal object KnownPacketFactories {
             }?.let {
                 // 处理内层真实的包
                 if (it.packetFactory == null) {
+                    bot.logger.debug("Received commandName: ${it.commandName}")
                     PacketLogger.warning { "找不到 PacketFactory" }
                     PacketLogger.verbose { "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}" }
                     return
@@ -270,7 +271,8 @@ internal object KnownPacketFactories {
     class IncomingPacket(
         val packetFactory: PacketFactory<*>?,
         val sequenceId: Int,
-        val data: ByteReadPacket
+        val data: ByteReadPacket,
+        val commandName: String
     )
 
     /**
@@ -340,8 +342,8 @@ internal object KnownPacketFactories {
         // body
         val packetFactory = findPacketFactory(commandName)
 
-        bot.logger.debug("Received commandName: $commandName")
-        return IncomingPacket(packetFactory, ssoSequenceId, packet)
+
+        return IncomingPacket(packetFactory, ssoSequenceId, packet, commandName)
     }
 
     private suspend fun <T : Packet> ByteReadPacket.parseOicqResponse(
