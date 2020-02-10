@@ -36,8 +36,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.LoginPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.*
 import kotlin.coroutines.CoroutineContext
@@ -65,16 +66,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         this.launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
         // bot.logger.info("Trying login")
-        var response: LoginPacket.LoginPacketResponse = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+        var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
-                is LoginPacket.LoginPacketResponse.UnsafeLogin -> {
+                is WtLogin.Login.LoginPacketResponse.UnsafeLogin -> {
                     bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
-                    response = LoginPacket.SubCommand9(bot.client).sendAndExpect()
+                    response = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
                 }
 
-                is LoginPacket.LoginPacketResponse.Captcha -> when (response) {
-                    is LoginPacket.LoginPacketResponse.Captcha.Picture -> {
+                is WtLogin.Login.LoginPacketResponse.Captcha -> when (response) {
+                    is WtLogin.Login.LoginPacketResponse.Captcha.Picture -> {
                         var result = response.data.withUse {
                             bot.configuration.loginSolver.onSolvePicCaptcha(bot, this)
                         }
@@ -82,30 +83,30 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             //refresh captcha
                             result = "ABCD"
                         }
-                        response = LoginPacket.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
+                        response = WtLogin.Login.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
                         continue@mainloop
                     }
-                    is LoginPacket.LoginPacketResponse.Captcha.Slider -> {
+                    is WtLogin.Login.LoginPacketResponse.Captcha.Slider -> {
                         var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
                         if (ticket == null) {
                             ticket = ""
                         }
-                        response = LoginPacket.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
+                        response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
                     }
                 }
 
-                is LoginPacket.LoginPacketResponse.Error -> error(response.toString())
+                is WtLogin.Login.LoginPacketResponse.Error -> error(response.toString())
 
-                is LoginPacket.LoginPacketResponse.DeviceLockLogin -> {
-                    response = LoginPacket.SubCommand20(
+                is WtLogin.Login.LoginPacketResponse.DeviceLockLogin -> {
+                    response = WtLogin.Login.SubCommand20(
                         bot.client,
                         response.t402
                     ).sendAndExpect()
                     continue@mainloop
                 }
 
-                is LoginPacket.LoginPacketResponse.Success -> {
+                is WtLogin.Login.LoginPacketResponse.Success -> {
                     bot.logger.info("Login successful")
                     break@mainloop
                 }
@@ -214,7 +215,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
             while (this.isActive) {
                 delay(bot.configuration.heartbeatPeriodMillis)
-                val failException = null//doHeartBeat()
+                val failException = doHeartBeat()
                 if (failException != null) {
                     delay(bot.configuration.firstReconnectDelayMillis)
                     close()
@@ -227,15 +228,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     suspend fun doHeartBeat(): Exception? {
-        var lastException: Exception?
+        val lastException: Exception?
         try {
-            check(
-                StatSvc.GetOnlineStatus(bot.client)
-                    .sendAndExpect<StatSvc.GetOnlineStatus.Response>(
-                        timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
-                        retry = 1
-                    ) is StatSvc.GetOnlineStatus.Response.Success
-            )
+            Heartbeat.Alive(bot.client)
+                .sendAndExpect<Heartbeat.Alive.Response>(
+                    timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                    retry = 2
+                )
             return null
         } catch (e: Exception) {
             lastException = e
