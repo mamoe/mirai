@@ -26,7 +26,7 @@ import java.util.zip.Inflater
 /**
  * Ktor HttpClient. 不同平台使用不同引擎.
  */
-@KtorExperimentalAPI
+@UseExperimental(KtorExperimentalAPI::class)
 actual val Http: HttpClient
     get() = HttpClient(CIO)
 

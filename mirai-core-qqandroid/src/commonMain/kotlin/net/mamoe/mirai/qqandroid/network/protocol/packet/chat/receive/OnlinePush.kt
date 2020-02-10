@@ -118,7 +118,7 @@ internal class OnlinePush {
                         }
                     }
                     34 -> {
-                        var groupUinorCode = readUInt().toLong()
+                        var groupUinOrCode = readUInt().toLong()
                         if (readByte().toInt() == 1) {
                             val target = readUInt().toLong()
                             val groupUin = content.fromUin

@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("DEPRECATION")
+
 package androidPacketTests
 
 import net.mamoe.mirai.utils.cryptor.decryptBy
@@ -24,6 +26,7 @@ fun ByteArray.decryptBy16Zero() = this.decryptBy(ByteArray(16))
 fun ByteArray.dropTCPHead(): ByteArray = this.drop(16 * 3 + 6).toByteArray()
 
 
+@Suppress("LocalVariableName")
 fun loadPrivateKey(s: String): ECPrivateKey {
     fun fromHex(
         hex: String

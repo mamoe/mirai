@@ -258,6 +258,7 @@ fun String.generateProtoBufDataClass(): GeneratedClass {
                 }
 
                 fun adjustPropertyName(_name: String): String {
+                    @Suppress("NAME_SHADOWING")
                     var name = _name
                     when {
                         name.startsWith("str") -> {

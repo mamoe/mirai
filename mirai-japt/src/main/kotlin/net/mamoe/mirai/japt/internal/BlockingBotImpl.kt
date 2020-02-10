@@ -11,6 +11,7 @@ package net.mamoe.mirai.japt.internal
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.data.AddFriendResult
@@ -39,7 +40,7 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     override fun getGroup(id: Long): BlockingGroup = runBlocking { bot.getGroup(id).blocking() }
     override fun getNetwork(): BotNetworkHandler = bot.network
     override fun login() = runBlocking { bot.login() }
-    override fun downloadAsByteArray(image: Image): ByteArray = bot.run { runBlocking { image.downloadAsByteArray() } }
+    override fun downloadAsByteArray(image: Image): ByteArray = bot.run { runBlocking { image.download().readBytes() } }
     override fun download(image: Image): ByteReadPacket = bot.run { runBlocking { image.download() } }
     override fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult = runBlocking { bot.addFriend(id, message, remark) }
     override fun approveFriendAddRequest(id: Long, remark: String?) = runBlocking { bot.approveFriendAddRequest(id, remark) }
