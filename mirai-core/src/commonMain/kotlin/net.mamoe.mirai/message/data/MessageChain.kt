@@ -62,7 +62,7 @@ interface MessageChain : Message, MutableList<Message> {
 /**
  * 提供一个类型的值. 若不存在则会抛出异常 [NoSuchElementException]
  */
-inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T = this.first<T>() as T
+inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T = this.first()
 
 /**
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 8
@@ -431,25 +431,3 @@ internal inline class SingleMessageChainImpl(
     override val size: Int get() = 1
     // endregion
 }
-
-
-@Suppress("FunctionName")
-private fun <E> EmptyMutableIterator(): MutableIterator<E> = object : MutableIterator<E> {
-    override fun hasNext(): Boolean = false
-    override fun next(): E = throw NoSuchElementException()
-    override fun remove() = throw NoSuchElementException()
-}
-
-@Suppress("FunctionName")
-private fun <E> EmptyMutableListIterator(): MutableListIterator<E> = object : MutableListIterator<E> {
-    override fun hasPrevious(): Boolean = false
-    override fun nextIndex(): Int = -1
-    override fun previous(): E = throw NoSuchElementException()
-    override fun previousIndex(): Int = -1
-    override fun add(element: E) = throw UnsupportedOperationException()
-    override fun hasNext(): Boolean = false
-    override fun next(): E = throw NoSuchElementException()
-    override fun remove() = throw NoSuchElementException()
-    override fun set(element: E) = throw UnsupportedOperationException()
-}
-
