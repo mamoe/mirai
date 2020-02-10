@@ -156,6 +156,7 @@ internal inline fun BytePacketBuilder.writeUniPacket(
     writeIntLVPacket(lengthOffset = { it + 4 }, builder = body)
 }
 
+internal val NO_ENCRYPT: ByteArray = ByteArray(0)
 
 /**
  * com.tencent.qphone.base.util.CodecWarpper#encodeRequest(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, byte[], int, int, java.lang.String, byte, byte, byte, byte[], byte[], boolean)
@@ -187,8 +188,10 @@ internal inline fun OutgoingPacketFactory<*>.buildLoginOutgoingPacket(
                 writeStringUtf8(it)
             }
 
-            encryptAndWrite(key) {
+            if (key === NO_ENCRYPT) {
                 body(sequenceId)
+            } else {
+                encryptAndWrite(key) { body(sequenceId) }
             }
         }
     })
@@ -206,6 +209,23 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
     sequenceId: Int,
     body: BytePacketBuilder.() -> Unit
 ) {
+
+    /* send
+     * 00 00 00 78
+     * 00 00 94 90
+     * 20 02 ED BD
+     * 20 02 ED BD
+     * 01 00 00 00 00 00 00 00 00 00 01 00
+     * 00 00 00 04
+     * 00 00 00 13 48 65 61 72 74 62 65 61 74 2E 41 6C 69 76 65
+     * 00 00 00 08 59 E7 DF 4F
+     * 00 00 00 13 38 36 35 31 36 36 30 32 36 34 34 36 39 32 35
+     * 00 00 00 04
+     * 00 22 7C 34 36 30 30 30 31 39 31 39 38 37 36 30 32 36 7C 41 38 2E 32 2E 30 2E 32 37 66 36 65 61 39 36
+     * 00 00 00 04
+     *
+     * 00 00 00 04
+     */
     writeIntLVPacket(lengthOffset = { it + 4 }) {
         writeInt(sequenceId)
         writeInt(subAppId.toInt())
