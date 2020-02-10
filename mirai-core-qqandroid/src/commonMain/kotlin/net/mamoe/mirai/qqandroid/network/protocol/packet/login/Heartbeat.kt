@@ -18,7 +18,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 internal class Heartbeat {
 
     object Alive : OutgoingPacketFactory<Alive.Response>("Heartbeat.Alive") {
-        object Response : Packet
+        object Response : Packet {
+            override fun toString(): String {
+                return "Heartbeat.Alive.Response"
+            }
+        }
 
         operator fun invoke(
             client: QQAndroidClient
