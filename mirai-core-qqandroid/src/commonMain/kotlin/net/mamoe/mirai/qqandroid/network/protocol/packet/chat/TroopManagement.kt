@@ -31,7 +31,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement.Ge
 import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.utils.io.encodeToString
 
-internal object TroopManagement {
+internal class TroopManagement {
 
     internal object Mute : OutgoingPacketFactory<Mute.Response>("OidbSvc.0x570_8") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
@@ -426,8 +426,8 @@ internal object TroopManagement {
     }
 
     /*
-    internal object Recall: OutgoingPacketFactory<LoginPacket.LoginPacketResponse>("wtlogin.login"){
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacket.LoginPacketResponse {
+    internal object Recall: OutgoingPacketFactory<WtLogin.Login.LoginPacketResponse>("wtlogin.login"){
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): WtLogin.Login.LoginPacketResponse {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }
