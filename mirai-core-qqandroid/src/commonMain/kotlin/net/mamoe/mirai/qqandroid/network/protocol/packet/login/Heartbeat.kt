@@ -19,9 +19,7 @@ internal class Heartbeat {
 
     object Alive : OutgoingPacketFactory<Alive.Response>("Heartbeat.Alive") {
         object Response : Packet {
-            override fun toString(): String {
-                return "Heartbeat.Alive.Response"
-            }
+            override fun toString(): String = "Heartbeat.Alive.Response"
         }
 
         operator fun invoke(
