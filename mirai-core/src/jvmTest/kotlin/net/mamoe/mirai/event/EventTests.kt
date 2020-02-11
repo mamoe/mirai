@@ -12,6 +12,7 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.test.shouldBeEqualTo
 import kotlin.system.exitProcess
 import kotlin.test.Test
 

@@ -23,11 +23,8 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.BroadcastControllable
-import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.ForceOfflineEvent
-import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.MemberImpl
@@ -347,7 +344,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         // check top-level cancelling
-        if (PacketReceivedEvent(packet).broadcast().cancelled) {
+        if (PacketReceivedEvent(packet).broadcast().isCancelled) {
             return
         }
 
@@ -360,7 +357,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 packet.broadcast()
             }
 
-            if (packet is Cancellable && packet.cancelled) return
+            if (packet is CancellableEvent && packet.isCancelled) return
         }
 
         bot.logger.info("Received packet: ${packet.toString().replace("\n", """\n""").replace("\r", "")}")
