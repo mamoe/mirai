@@ -34,18 +34,33 @@ interface Event
 /**
  * 可被取消的事件
  */
-abstract class CancellableEvent : Event {
+interface CancellableEvent {
     /**
      * 事件是否已取消.
      */
-    val cancelled: Boolean get() = _cancelled
+    val isCancelled: Boolean
+
+    /**
+     * 取消这个事件.
+     */
+    fun cancel()
+}
+
+/**
+ * 可被取消的事件的实现
+ */
+abstract class AbstractCancellableEvent : Event, CancellableEvent {
+    /**
+     * 事件是否已取消.
+     */
+    override val isCancelled: Boolean get() = _cancelled
 
     private var _cancelled: Boolean = false
 
     /**
      * 取消事件.
      */
-    fun cancel() {
+    override fun cancel() {
         _cancelled = true
     }
 }
