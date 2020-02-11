@@ -11,6 +11,7 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.AbstractCancellableEvent
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.message.data.Image
@@ -47,7 +48,7 @@ sealed class BotOfflineEvent : BotActiveEvent {
     /**
      * 被挤下线
      */
-    data class Force(override val bot: Bot) : BotOfflineEvent()
+    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet
 }
 
 // endregion
