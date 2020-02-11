@@ -110,6 +110,37 @@ sealed class MemberLeftEvent : GroupMemberEvent, BotPassiveEvent {
 
 // endregion
 
+// region
+
+/**
+ * 群名片改动
+ */
+sealed class MemberCardChangeEvent : GroupMemberEvent, BotPassiveEvent {
+    /**
+     * 群名片
+     */
+    abstract val card: String
+
+    /**
+     * 由管理员修改
+     */
+    data class ByOperator(
+        override val card: String,
+        override val member: Member,
+        val operator: Member
+    ) : MemberCardChangeEvent()
+
+    /**
+     * 该成员自己修改
+     */
+    data class BySelf(
+        override val card: String,
+        override val member: Member
+    ) : MemberCardChangeEvent()
+}
+
+// endregion
+
 
 // region 成员权限
 
