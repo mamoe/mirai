@@ -111,20 +111,36 @@ interface Group : Contact, CoroutineScope {
         /**
          * by @kar98k
          */
-        fun calculateGroupIdByGroupCode(groupCode: Long): Long {
+        fun calculateGroupUinByGroupCode(groupCode: Long): Long {
             var left: Long = groupCode / 1000000L
 
-            when {
-                left <= 10 -> left += 202
-                left <= 19 -> left += 480 - 11
-                left <= 66 -> left += 2100 - 20
-                left <= 156 -> left += 2010 - 67
-                left <= 209 -> left += 2147 - 157
-                left <= 309 -> left += 4100 - 210
-                left <= 499 -> left += 3800 - 310
+            when (left) {
+                in 0..10 -> left += 202
+                in 11..19 -> left += 480 - 11
+                in 20..66 -> left += 2100 - 20
+                in 67..156 -> left += 2010 - 67
+                in 157..209 -> left += 2147 - 157
+                in 210..309 -> left += 4100 - 210
+                in 310..499 -> left += 3800 - 310
             }
 
             return left * 1000000L + groupCode % 1000000L
+        }
+
+        fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
+            var left: Long = groupUin / 1000000L
+
+            when (left) {
+                in 0 + 202..10 + 202 -> left -= 202
+                in 11 + 480 - 11..19 + 480 - 11 -> left -= 480 - 11
+                in 20 + 2100 - 20..66 + 2100 - 20 -> left -= 2100 - 20
+                in 67 + 2010 - 67..156 + 2010 - 67 -> left -= 2010 - 67
+                in 157 + 2147 - 157..209 + 2147 - 157 -> left -= 2147 - 157
+                in 210 + 4100 - 210..309 + 4100 - 210 -> left -= 4100 - 210
+                in 310 + 3800 - 310..499 + 3800 - 310 -> left -= 3800 - 310
+            }
+
+            return left * 1000000L + groupUin % 1000000L
         }
     }
 
