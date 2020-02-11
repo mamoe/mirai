@@ -135,135 +135,81 @@ interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent {
 /**
  * 群名改变. 此事件广播前修改就已经完成.
  */
-sealed class GroupNameChangeEvent : GroupSettingChangeEvent<String>, BotPassiveEvent {
-
+data class GroupNameChangeEvent(
+    override val origin: String,
+    override val new: String,
+    override val group: Group,
     /**
-     * 由管理员操作
+     * 操作人. 为 null 时则是机器人操作
      */
-    data class ByOperator(
-        override val origin: String,
-        override val new: String,
-        val operator: Member
-    ) : GroupNameChangeEvent() {
-        override val group: Group
-            get() = operator.group
-    }
-
-    /**
-     * 由机器人操作
-     */
-    data class ByBot(
-        override val origin: String,
-        override val new: String,
-        override val group: Group
-    ) : GroupNameChangeEvent()
-}
-
+    val operator: Member?
+) : GroupSettingChangeEvent<String>, Packet
 
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
  */
-sealed class GroupEntranceAnnouncementChangeEvent : GroupSettingChangeEvent<String>, BotPassiveEvent {
-
+data class GroupEntranceAnnouncementChangeEvent(
+    override val origin: String,
+    override val new: String,
+    override val group: Group,
     /**
-     * 由管理员操作
+     * 操作人. 为 null 时则是机器人操作
      */
-    data class ByOperator(
-        override val origin: String,
-        override val new: String,
-        val operator: Member
-    ) : GroupEntranceAnnouncementChangeEvent() {
-        override val group: Group
-            get() = operator.group
-    }
+    val operator: Member?
+) : GroupSettingChangeEvent<String>, Packet
 
-    /**
-     * 由机器人操作
-     */
-    data class ByBot(
-        override val origin: String,
-        override val new: String,
-        override val group: Group
-    ) : GroupEntranceAnnouncementChangeEvent()
-}
 
 /**
  * 群 "全员禁言" 功能状态改变. 此事件广播前修改就已经完成.
  */
-sealed class GroupMuteAllEvent : GroupSettingChangeEvent<Boolean>, BotPassiveEvent {
+data class GroupMuteAllEvent(
+    override val origin: Boolean,
+    override val new: Boolean,
+    override val group: Group,
     /**
-     * 由管理员操作
+     * 操作人. 为 null 时则是机器人操作
      */
-    data class ByOperator(
-        override val origin: Boolean,
-        override val new: Boolean,
-        val operator: Member
-    ) : GroupMuteAllEvent() {
-        override val group: Group
-            get() = operator.group
-    }
+    val operator: Member?
+) : GroupSettingChangeEvent<Boolean>, Packet
 
+/**
+ * 群 "匿名聊天" 功能状态改变. 此事件广播前修改就已经完成.
+ */
+data class GroupAllowAnonymousChatEvent(
+    override val origin: Boolean,
+    override val new: Boolean,
+    override val group: Group,
     /**
-     * 由机器人操作
+     * 操作人. 为 null 时则是机器人操作
      */
-    data class ByBot(
-        override val origin: Boolean,
-        override val new: Boolean,
-        override val group: Group
-    ) : GroupMuteAllEvent()
-}
+    val operator: Member?
+) : GroupSettingChangeEvent<Boolean>, Packet
 
 /**
  * 群 "坦白说" 功能状态改变. 此事件广播前修改就已经完成.
  */
-sealed class GroupAllowConfessTalkEvent : GroupSettingChangeEvent<Boolean>, BotPassiveEvent {
+data class GroupAllowConfessTalkEvent(
+    override val origin: Boolean,
+    override val new: Boolean,
+    override val group: Group,
     /**
-     * 由管理员操作
+     * 操作人. 为 null 时则是机器人操作
      */
-    data class ByOperator(
-        override val origin: Boolean,
-        override val new: Boolean,
-        val operator: Member
-    ) : GroupAllowConfessTalkEvent() {
-        override val group: Group
-            get() = operator.group
-    }
-
-    /**
-     * 由机器人操作
-     */
-    data class ByBot(
-        override val origin: Boolean,
-        override val new: Boolean,
-        override val group: Group
-    ) : GroupAllowConfessTalkEvent()
-}
+    val operator: Member?
+) : GroupSettingChangeEvent<Boolean>, Packet
 
 /**
  * 群 "允许群员邀请好友加群" 功能状态改变. 此事件广播前修改就已经完成.
  */
-sealed class GroupAllowMemberInviteEvent : GroupSettingChangeEvent<Boolean>, BotPassiveEvent {
+data class GroupAllowMemberInviteEvent(
+    override val origin: Boolean,
+    override val new: Boolean,
+    override val group: Group,
     /**
-     * 由管理员操作
+     * 操作人. 为 null 时则是机器人操作
      */
-    data class ByOperator(
-        override val origin: Boolean,
-        override val new: Boolean,
-        val operator: Member
-    ) : GroupAllowMemberInviteEvent() {
-        override val group: Group
-            get() = operator.group
-    }
-
-    /**
-     * 由机器人操作
-     */
-    data class ByBot(
-        override val origin: Boolean,
-        override val new: Boolean,
-        override val group: Group
-    ) : GroupAllowMemberInviteEvent()
-}
+    val operator: Member?
+) : GroupSettingChangeEvent<Boolean>, Packet
 
 // endregion
 
@@ -284,22 +230,13 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
     /**
      * 成员被踢出群. 成员不可能是机器人自己.
      */
-    sealed class Kick : MemberLeaveEvent() {
+    data class Kick(
+        override val member: Member,
         /**
-         * 被管理员踢出
+         * 操作人. 为 null 则是机器人操作
          */
-        data class ByOperator(
-            override val member: Member,
-            val operator: Member
-        ) : Kick(), BotPassiveEvent
-
-        /**
-         * 被机器人踢出
-         */
-        data class ByBot(
-            override val member: Member
-        ) : Kick(), BotActiveEvent
-    }
+        val operator: Member?
+    ) : MemberLeaveEvent(), Packet
 
     /**
      * 成员主动离开
@@ -314,47 +251,24 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
 /**
  * 群名片改动. 此事件广播前修改就已经完成.
  */
-sealed class MemberCardChangeEvent : GroupMemberEvent {
+data class MemberCardChangeEvent(
     /**
      * 修改前
      */
-    abstract val origin: String
+    val origin: String,
 
     /**
      * 修改后
      */
-    abstract val new: String
+    val new: String,
 
-    abstract override val member: Member
-
-    /**
-     * 由管理员修改
-     */
-    data class ByOperator(
-        override val origin: String,
-        override val new: String,
-        override val member: Member,
-        val operator: Member
-    ) : MemberCardChangeEvent(), BotPassiveEvent
+    override val member: Member,
 
     /**
-     * 由 [Bot] 修改. 由 [Member.nameCard]
+     * 操作人. 为 null 时则是机器人操作. 可能与 [member] 引用相同, 此时为群员自己修改.
      */
-    data class ByBot(
-        override val origin: String,
-        override val new: String,
-        override val member: Member
-    ) : MemberCardChangeEvent(), BotActiveEvent
-
-    /**
-     * 该成员自己修改
-     */
-    data class BySelf(
-        override val origin: String,
-        override val new: String,
-        override val member: Member
-    ) : MemberCardChangeEvent(), BotPassiveEvent
-}
+    val operator: Member?
+) : GroupMemberEvent
 
 /**
  * 群头衔改动. 一定为群主操作
@@ -385,7 +299,7 @@ data class MemberPermissionChangeEvent(
     override val member: Member,
     val origin: MemberPermission,
     val new: MemberPermission
-) : GroupMemberEvent, BotPassiveEvent
+) : GroupMemberEvent, BotPassiveEvent, Packet
 
 // endregion
 
@@ -395,50 +309,25 @@ data class MemberPermissionChangeEvent(
 /**
  * 群成员被禁言事件. 操作人和被禁言的成员都不可能是机器人本人
  */
-sealed class MemberMuteEvent : GroupMemberEvent {
-    abstract override val member: Member
-
-    abstract val durationSeconds: Int
-
+data class MemberMuteEvent(
+    override val member: Member,
+    val durationSeconds: Int,
     /**
-     * 管理员禁言成员
+     * 操作人. 为 null 则为机器人操作
      */
-    data class ByOperator(
-        override val member: Member,
-        override val durationSeconds: Int,
-        val operator: Member
-    ) : MemberMuteEvent(), BotPassiveEvent
-
-    /**
-     * 机器人禁言成员. 通过 [Member.mute] 触发
-     */
-    data class ByBot(
-        override val member: Member,
-        override var durationSeconds: Int
-    ) : MemberMuteEvent(), BotActiveEvent
-}
+    val operator: Member?
+) : GroupMemberEvent, Packet
 
 /**
  * 群成员被取消禁言事件. 操作人和被禁言的成员都不可能是机器人本人
  */
-sealed class MemberUnmuteEvent : GroupMemberEvent, BotPassiveEvent {
-    abstract override val member: Member
-
+data class MemberUnmuteEvent(
+    override val member: Member,
     /**
-     * 管理员禁言成员
+     * 操作人. 为 null 则为机器人操作
      */
-    data class ByOperator(
-        override val member: Member,
-        val operator: Member
-    ) : MemberUnmuteEvent(), BotPassiveEvent
-
-    /**
-     * 机器人禁言成员. 通过 [Member.unmute] 触发
-     */
-    data class ByBot(
-        override val member: Member
-    ) : MemberUnmuteEvent(), BotActiveEvent
-}
+    val operator: Member?
+) : GroupMemberEvent, Packet
 
 // endregion
 

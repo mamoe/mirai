@@ -162,7 +162,7 @@ internal class MemberImpl(
     var _specialTitle: String,
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
-    override val permission: MemberPermission
+    override var permission: MemberPermission
 ) : ContactImpl(), Member, QQ by qq {
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
@@ -182,7 +182,7 @@ internal class MemberImpl(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberCardChangeEvent.ByBot(oldValue, newValue, this@MemberImpl).broadcast()
+                    MemberCardChangeEvent(oldValue, newValue, this@MemberImpl, null).broadcast()
                 }
             }
         }
@@ -190,7 +190,7 @@ internal class MemberImpl(
     override var specialTitle: String
         get() = _specialTitle
         set(newValue) {
-            group.checkBotPermissionOperator()
+            group.checkBotPermission(MemberPermission.OWNER)
             if (_specialTitle != newValue) {
                 val oldValue = _specialTitle
                 _specialTitle = newValue
@@ -223,7 +223,7 @@ internal class MemberImpl(
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
 
-        MemberMuteEvent.ByBot(this@MemberImpl, durationSeconds).broadcast()
+        MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
         return true
     }
 
@@ -241,7 +241,7 @@ internal class MemberImpl(
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
 
-        MemberUnmuteEvent.ByBot(this@MemberImpl).broadcast()
+        MemberUnmuteEvent(this@MemberImpl, null).broadcast()
         return true
     }
 
@@ -256,7 +256,7 @@ internal class MemberImpl(
                 member = this@MemberImpl,
                 message = message
             ).sendAndExpect<TroopManagement.Kick.Response>().success.also {
-                MemberLeaveEvent.Kick.ByBot(this@MemberImpl).broadcast()
+                MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
             }
         }
     }
@@ -304,7 +304,7 @@ internal class GroupImpl(
                             newName = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupNameChangeEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
+                    GroupNameChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
         }
@@ -324,7 +324,7 @@ internal class GroupImpl(
                             newMemo = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupEntranceAnnouncementChangeEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
+                    GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
         }
@@ -345,7 +345,7 @@ internal class GroupImpl(
                             switch = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupAllowMemberInviteEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
+                    GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
         }
@@ -377,7 +377,7 @@ internal class GroupImpl(
                             switch = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupAllowConfessTalkEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
+                    GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
         }
@@ -398,7 +398,7 @@ internal class GroupImpl(
                             switch = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupMuteAllEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
+                    GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
         }

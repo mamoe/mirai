@@ -12,10 +12,7 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.MemberCardChangeEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
-import net.mamoe.mirai.event.events.MemberMuteEvent
-import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -64,13 +61,15 @@ interface Member : QQ, Contact {
      * @see Int.minutesToSeconds
      * @see Int.hoursToSeconds
      * @see Int.daysToSeconds
+     *
+     * @see MemberMuteEvent 成员被禁言事件
      */
     suspend fun mute(durationSeconds: Int): Boolean
 
     /**
      * 解除禁言. 机器人无权限时返回 `false`.
      *
-     * @see MemberMuteEvent 成员被禁言事件.
+     * @see MemberUnmuteEvent 成员被取消禁言事件.
      */
     suspend fun unmute(): Boolean
 
