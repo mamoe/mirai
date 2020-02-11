@@ -59,14 +59,14 @@ interface Message {
     infix fun eq(other: Message): Boolean = this == other
 
     /**
-     * 将 [stringValue] 与 [other] 比较
+     * 将 [toString] 与 [other] 比较
      */
     infix fun eq(other: String): Boolean = this.toString() == other
 
     operator fun contains(sub: String): Boolean = false
 
     /**
-     * 把 [this] 连接到 [tail] 的头部. 类似于字符串相加.
+     * 把 `this` 连接到 [tail] 的头部. 类似于字符串相加.
      *
      * 例:
      * ```kotlin
@@ -92,7 +92,7 @@ interface Message {
     override fun toString(): String
 
     operator fun plus(another: Message): MessageChain = this.followedBy(another)
-    operator fun plus(another: String): MessageChain = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
 }

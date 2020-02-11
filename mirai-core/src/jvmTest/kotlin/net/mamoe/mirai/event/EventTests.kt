@@ -12,12 +12,11 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.test.shouldBeEqualTo
 import kotlin.system.exitProcess
 import kotlin.test.Test
 
 
-class TestEvent : Subscribable {
+class TestEvent : Event {
     var triggered = false
 }
 
@@ -46,7 +45,7 @@ class EventTests {
     }
 
 
-    open class ParentEvent : Subscribable {
+    open class ParentEvent : Event {
         var triggered = false
     }
 

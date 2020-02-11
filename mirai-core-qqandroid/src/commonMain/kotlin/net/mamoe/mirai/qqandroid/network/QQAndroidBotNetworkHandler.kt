@@ -21,10 +21,13 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.event.events.ForceOfflineEvent
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.BroadcastControllable
+import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.ForceOfflineEvent
+import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.MemberImpl
@@ -350,7 +353,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
 
         // broadcast
-        if (packet is Subscribable) {
+        if (packet is Event) {
             if (packet is BroadcastControllable) {
                 if (packet.shouldBroadcast) packet.broadcast()
             } else {

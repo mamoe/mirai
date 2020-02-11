@@ -295,7 +295,7 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
 }
 
 
-@UseExperimental(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
     this.forEach {
         when {

@@ -7,10 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.data
+package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.data.EventPacket
 
 
 // region mute

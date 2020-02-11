@@ -39,7 +39,7 @@ enum class ListeningStatus {
  * 事件监听器.
  * 由 [subscribe] 等方法返回.
  */
-interface Listener<in E : Subscribable> : CompletableJob {
+interface Listener<in E : Event> : CompletableJob {
     suspend fun onEvent(event: E): ListeningStatus
 }
 
@@ -47,7 +47,7 @@ interface Listener<in E : Subscribable> : CompletableJob {
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
- * 每当 [事件广播][Subscribable.broadcast] 时, [handler] 都会被执行.
+ * 每当 [事件广播][Event.broadcast] 时, [handler] 都会被执行.
  *
  * 当 [handler] 返回 [ListeningStatus.STOPPED] 时停止监听.
  * 或 [Listener] complete 时结束.
@@ -57,7 +57,7 @@ interface Listener<in E : Subscribable> : CompletableJob {
  * 例如:
  * ```kotlin
  * runBlocking { // this: CoroutineScope
- *   subscribe<Subscribable> { /* 一些处理 */ } // 返回 Listener, 即 CompletableJob
+ *   subscribe<Event> { /* 一些处理 */ } // 返回 Listener, 即 CompletableJob
  * }
  * foo()
  * ```
@@ -66,7 +66,7 @@ interface Listener<in E : Subscribable> : CompletableJob {
  *
  * 要创建一个全局都存在的监听, 即守护协程, 请在 [GlobalScope] 下调用本函数:
  * ```kotlin
- * GlobalScope.subscribe<Subscribable> { /* 一些处理 */ }
+ * GlobalScope.subscribe<Event> { /* 一些处理 */ }
  * ```
  *
  *
@@ -75,52 +75,52 @@ interface Listener<in E : Subscribable> : CompletableJob {
  * bot.subscribe<Subscribe> { /* 一些处理 */ }
  * ```
  */
-inline fun <reified E : Subscribable> CoroutineScope.subscribe(crossinline handler: suspend E.(E) -> ListeningStatus): Listener<E> =
+inline fun <reified E : Event> CoroutineScope.subscribe(crossinline handler: suspend E.(E) -> ListeningStatus): Listener<E> =
     E::class.subscribeInternal(Handler { it.handler(it) })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
- * 每当 [事件广播][Subscribable.broadcast] 时, [listener] 都会被执行.
+ * 每当 [事件广播][Event.broadcast] 时, [listener] 都会被执行.
  *
  * 仅当 [Listener] complete 时结束.
  *
  * @see subscribe 获取更多说明
  */
-inline fun <reified E : Subscribable> CoroutineScope.subscribeAlways(crossinline listener: suspend E.(E) -> Unit): Listener<E> =
+inline fun <reified E : Event> CoroutineScope.subscribeAlways(crossinline listener: suspend E.(E) -> Unit): Listener<E> =
     E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.LISTENING })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
- * 仅在第一次 [事件广播][Subscribable.broadcast] 时, [listener] 会被执行.
+ * 仅在第一次 [事件广播][Event.broadcast] 时, [listener] 会被执行.
  *
  * 在这之前, 可通过 [Listener.complete] 来停止监听.
  *
  * @see subscribe 获取更多说明
  */
-inline fun <reified E : Subscribable> CoroutineScope.subscribeOnce(crossinline listener: suspend E.(E) -> Unit): Listener<E> =
+inline fun <reified E : Event> CoroutineScope.subscribeOnce(crossinline listener: suspend E.(E) -> Unit): Listener<E> =
     E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.STOPPED })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
- * 每当 [事件广播][Subscribable.broadcast] 时, [listener] 都会被执行, 直到 [listener] 的返回值 [equals] 于 [valueIfStop]
+ * 每当 [事件广播][Event.broadcast] 时, [listener] 都会被执行, 直到 [listener] 的返回值 [equals] 于 [valueIfStop]
  *
  * 可在任意时刻通过 [Listener.complete] 来停止监听.
  *
  * @see subscribe 获取更多说明
  */
-inline fun <reified E : Subscribable, T> CoroutineScope.subscribeUntil(valueIfStop: T, crossinline listener: suspend E.(E) -> T): Listener<E> =
+inline fun <reified E : Event, T> CoroutineScope.subscribeUntil(valueIfStop: T, crossinline listener: suspend E.(E) -> T): Listener<E> =
     E::class.subscribeInternal(Handler { if (it.listener(it) == valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
- * 每当 [事件广播][Subscribable.broadcast] 时, [listener] 都会被执行,
+ * 每当 [事件广播][Event.broadcast] 时, [listener] 都会被执行,
  * 如果 [listener] 的返回值 [equals] 于 [valueIfContinue], 则继续监听, 否则停止
  *
  * 可在任意时刻通过 [Listener.complete] 来停止监听.
  *
  * @see subscribe 获取更多说明
  */
-inline fun <reified E : Subscribable, T> CoroutineScope.subscribeWhile(valueIfContinue: T, crossinline listener: suspend E.(E) -> T): Listener<E> =
+inline fun <reified E : Event, T> CoroutineScope.subscribeWhile(valueIfContinue: T, crossinline listener: suspend E.(E) -> T): Listener<E> =
     E::class.subscribeInternal(Handler { if (it.listener(it) != valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
 // endregion
@@ -146,7 +146,7 @@ inline fun <reified E : Subscribable, T> CoroutineScope.subscribeWhile(valueIfCo
  */
 @ListenersBuilderDsl
 @Suppress("MemberVisibilityCanBePrivate", "unused")
-inline class ListenerBuilder<out E : Subscribable>(
+inline class ListenerBuilder<out E : Event>(
     @PublishedApi internal inline val handlerConsumer: CoroutineCoroutineScope.(Listener<E>) -> Unit
 ) {
     fun CoroutineCoroutineScope.handler(listener: suspend E.(E) -> ListeningStatus) {

@@ -9,11 +9,11 @@
 
 package net.mamoe.mirai.data
 
-import net.mamoe.mirai.event.Subscribable
+import net.mamoe.mirai.event.Event
 
 /**
  * 事件包. 可被监听.
  *
- * @see Subscribable
+ * @see Event
  */
-interface EventPacket : Subscribable, Packet
+interface EventPacket : Event, Packet

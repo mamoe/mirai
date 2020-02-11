@@ -20,7 +20,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.event.Subscribable
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.ReceiveFriendAddRequestEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeGroupMessages
@@ -48,8 +48,8 @@ suspend fun main() {
         // override config here.
     }.alsoLogin()
 
-    // 任何可以监听的对象都继承 Subscribable, 因此这个订阅会订阅全部的事件.
-    GlobalScope.subscribeAlways<Subscribable> {
+    // 任何可以监听的对象都继承 Event, 因此这个订阅会订阅全部的事件.
+    GlobalScope.subscribeAlways<Event> {
         //bot.logger.verbose("收到了一个事件: $this")
     }
 

@@ -13,86 +13,120 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.utils.WeakRef
-import kotlin.properties.Delegates
 
-
-abstract class BotEvent : Event {
-    private lateinit var _bot: Bot
-    open val bot: Bot get() = _bot
-
-    constructor(bot: Bot) : super() {
-        this._bot = bot
-    }
-
-    constructor() : super()
+/**
+ * 有关一个 [Bot] 的事件
+ */
+interface BotEvent : Event {
+    val bot: Bot
 }
 
-class BotLoginSucceedEvent(bot: Bot) : BotEvent(bot)
+/**
+ * [Bot] 登录完成, 好友列表, 群组列表初始化完成
+ */
+data class BotLoginSucceedEvent(override val bot: Bot) : BotEvent
 
-class BotOfflineEvent(bot: Bot) : BotEvent(bot)
+/**
+ * [Bot] 离线.
+ */
+data class BotOfflineEvent(override val bot: Bot) : BotEvent
 
-class BotReadyEvent(bot: Bot) : BotEvent(bot)
+/**
+ * 被挤下线
+ */
+data class ForceOfflineEvent(
+    override val bot: Bot,
+    val title: String,
+    val tips: String
+) : BotEvent, Packet
 
-interface GroupEvent {
+/**
+ * 有关群的事件
+ */
+interface GroupEvent : BotEvent {
     val group: Group
+    override val bot: Bot
+        get() = group.bot
 }
 
-class AddGroupEvent(bot: Bot, override val group: Group) : BotEvent(bot), GroupEvent
+data class AddGroupEvent(override val group: Group) : BotEvent, GroupEvent
 
-class RemoveGroupEvent(bot: Bot, override val group: Group) : BotEvent(bot), GroupEvent
+data class RemoveGroupEvent(override val group: Group) : BotEvent, GroupEvent
 
-class BotGroupPermissionChangeEvent(
-    bot: Bot,
+data class BotGroupPermissionChangeEvent(
     override val group: Group,
     val origin: MemberPermission,
     val new: MemberPermission
-) : BotEvent(bot), GroupEvent
+) : BotEvent, GroupEvent
+
 
 interface GroupSettingChangeEvent<T> : GroupEvent {
+    val operator: Member
     val origin: T
     val new: T
+
+    override val group: Group
+        get() = operator.group
 }
 
-class GroupNameChangeEvent(
-    bot: Bot,
-    override val group: Group,
+data class GroupNameChangeEvent(
+    override val operator: Member,
     override val origin: String,
     override val new: String
-) : BotEvent(bot), GroupSettingChangeEvent<String>
+) : BotEvent, GroupSettingChangeEvent<String>
 
-class GroupMuteAllEvent(
-    bot: Bot,
-    override val group: Group,
+/**
+ * 群 "全员禁言" 功能开启
+ */
+data class GroupMuteAllEvent(
+    override val operator: Member,
     override val origin: Boolean,
     override val new: Boolean
-) : BotEvent(bot), GroupSettingChangeEvent<Boolean>
+) : BotEvent, GroupSettingChangeEvent<Boolean>
 
-class GroupConfessTalkEvent(
-    bot: Bot,
-    override val group: Group,
+data class GroupConfessTalkEvent(
+    override val operator: Member,
     override val origin: Boolean,
     override val new: Boolean
-) : BotEvent(bot), GroupSettingChangeEvent<Boolean>
+) : BotEvent, GroupSettingChangeEvent<Boolean>
 
+
+/**
+ * 有关群成员的事件
+ */
 interface GroupMemberEvent : GroupEvent {
     val member: Member
     override val group: Group
         get() = member.group
 }
 
-class MemberJoinEvent(bot: Bot, override val member: Member) : BotEvent(bot), GroupMemberEvent
+/**
+ * 成员加入群的事件
+ */
+data class MemberJoinEvent(override val member: Member) : BotEvent, GroupMemberEvent
 
-class MemberLeftEvent(bot: Bot, override val member: Member) : BotEvent(bot), GroupMemberEvent
+/**
+ * 成员离开群的事件
+ */
+sealed class MemberLeftEvent : BotEvent, GroupMemberEvent {
+    /**
+     * 成员被踢出群
+     */
+    data class Kick(override val member: Member, val operator: Member) : MemberLeftEvent()
 
-class MemberMuteEvent(bot: Bot, override val member: Member) : BotEvent(bot), GroupMemberEvent
+    /**
+     * 成员主动离开
+     */
+    data class Quit(override val member: Member) : MemberLeftEvent()
+}
 
-class MemberPermissionChangeEvent(
-    bot: Bot,
+data class MemberPermissionChangeEvent(
+    override val bot: Bot,
     override val member: Member,
     val origin: MemberPermission,
     val new: MemberPermission
-) : BotEvent(bot), GroupMemberEvent
+) : BotEvent, GroupMemberEvent
 
 
