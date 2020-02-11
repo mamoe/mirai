@@ -52,7 +52,7 @@ internal class BlockingGroupImpl(private val delegate: Group) : BlockingGroup {
     override fun toFullString(): String = delegate.toFullString()
     override fun getMember(id: Long): BlockingMember = delegate[id].blocking()
     override fun getBot(): BlockingBot = delegate.bot.blocking()
-    override fun getAnnouncement(): String = delegate.announcement
+    override fun getAnnouncement(): String = delegate.entranceAnnouncement
     @UseExperimental(MiraiInternalAPI::class)
     override fun getMembers(): Map<Long, BlockingMember> =
         delegate.members.delegate.toList().associateBy { it.id }.mapValues { it.value.blocking() }

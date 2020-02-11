@@ -13,6 +13,9 @@ package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
+import net.mamoe.mirai.event.events.MemberLeaveEvent
+import net.mamoe.mirai.event.events.MemberMuteEvent
+import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -38,6 +41,7 @@ interface Member : QQ, Contact {
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
      *
      * @see [groupCardOrNick] 获取非空群名片或昵称
+     *
      * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
      */
     var nameCard: String
@@ -55,7 +59,7 @@ interface Member : QQ, Contact {
      * 禁言
      *
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
-     * @return 当机器人无权限禁言这个群成员时返回 `false`
+     * @return 机器人无权限时返回 `false`
      *
      * @see Int.minutesToSeconds
      * @see Int.hoursToSeconds
@@ -64,12 +68,16 @@ interface Member : QQ, Contact {
     suspend fun mute(durationSeconds: Int): Boolean
 
     /**
-     * 解除禁言. 在没有权限时会返回 `false`.
+     * 解除禁言. 机器人无权限时返回 `false`.
+     *
+     * @see MemberMuteEvent 成员被禁言事件.
      */
     suspend fun unmute(): Boolean
 
     /**
-     * 踢出该成员. 机器人无权限时返回 `false`
+     * 踢出该成员. 机器人无权限时返回 `false`.
+     *
+     * @see MemberLeaveEvent.Kick 成员被踢出事件.
      */
     suspend fun kick(message: String = ""): Boolean
 

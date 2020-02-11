@@ -64,7 +64,7 @@ fun Application.groupManageModule() {
             val group = dto.session.bot.getGroup(dto.target)
             with(dto.config) {
                 name?.let { group.name = it }
-                announcement?.let { group.announcement = it }
+                announcement?.let { group.entranceAnnouncement = it }
                 confessTalk?.let { group.confessTalk = it }
                 allowMemberInvite?.let { group.allowMemberInvite = it }
                 // TODO: 待core接口实现设置可改
@@ -128,7 +128,7 @@ private data class GroupDetailDTO(
     val anonymousChat: Boolean? = null
 ) : DTO {
     constructor(group: Group) : this(
-        group.name, group.announcement, group.confessTalk, group.allowMemberInvite,
+        group.name, group.entranceAnnouncement, group.confessTalk, group.allowMemberInvite,
         group.autoApprove, group.anonymousChat
     )
 }

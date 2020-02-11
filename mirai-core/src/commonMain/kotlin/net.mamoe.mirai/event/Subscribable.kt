@@ -70,6 +70,9 @@ abstract class AbstractCancellableEvent : Event, CancellableEvent {
  */
 @UseExperimental(MiraiInternalAPI::class)
 suspend fun <E : Event> E.broadcast(): E = apply {
+    if (this is BroadcastControllable && !this.shouldBroadcast) {
+        return@apply
+    }
     if (this is BotEvent && !(this.bot as BotImpl<*>).onEvent(this)) {
         return@apply
     }

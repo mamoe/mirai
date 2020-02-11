@@ -81,14 +81,6 @@ suspend fun main() {
 
         "你好" reply "你好!"
 
-        startsWith("profile", removePrefix = true) {
-            val account = it.trim()
-            if (account.isNotEmpty()) {
-                bot.getFriend(account.toLong())
-            } else {
-                sender
-            }.queryProfile().toString().reply()
-        }
         "grouplist" reply {
 
             //"https://ssl.ptlogin2.qq.com/jump?pt_clientver=5509&pt_src=1&keyindex=9&clientuin=" + bot.qqAccount + "&clientkey=" + com.tick_tock.pctim.utils.Util.byte2HexString(

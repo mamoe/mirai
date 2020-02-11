@@ -27,7 +27,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement.GetGroupOperationInfo.decode
 import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.utils.io.encodeToString
 
@@ -66,9 +65,7 @@ internal class TroopManagement {
         }
 
         object Response : Packet {
-            override fun toString(): String {
-                return "Response(Mute)"
-            }
+            override fun toString(): String = "Response(Mute)"
         }
     }
 
@@ -80,9 +77,7 @@ internal class TroopManagement {
             val autoApprove: Boolean,
             val confessTalk: Boolean
         ) : Packet {
-            override fun toString(): String {
-                return "Response(GroupInfo)"
-            }
+            override fun toString(): String = "Response(GroupInfo)"
         }
 
         operator fun invoke(
@@ -146,9 +141,7 @@ internal class TroopManagement {
         class Response(
             val success: Boolean
         ) : Packet {
-            override fun toString(): String {
-                return "Response(Kick Member)"
-            }
+            override fun toString(): String = "Response(Kick Member)"
         }
 
         operator fun invoke(
@@ -424,13 +417,4 @@ internal class TroopManagement {
         }
 
     }
-
-    /*
-    internal object Recall: OutgoingPacketFactory<WtLogin.Login.LoginPacketResponse>("wtlogin.login"){
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): WtLogin.Login.LoginPacketResponse {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-    }
-     */
-
 }

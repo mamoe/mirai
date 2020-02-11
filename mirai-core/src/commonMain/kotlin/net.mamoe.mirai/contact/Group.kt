@@ -12,6 +12,7 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
@@ -22,32 +23,41 @@ interface Group : Contact, CoroutineScope {
      * 群名称.
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     * 频繁修改可能会被服务器拒绝.
      *
-     * 注: 频繁修改可能会被服务器拒绝.
+     * @see MemberPermissionChangeEvent
      */
     var name: String
     /**
      * 入群公告, 没有时为空字符串.
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     *
+     * @see GroupEntranceAnnouncementChangeEvent
      */
-    var announcement: String
+    var entranceAnnouncement: String
     /**
      * 全体禁言状态. `true` 为开启.
      *
      * 当前仅能修改状态.
+     *
+     * @see GroupMuteAllEvent
      */// TODO: 2020/2/5 实现 muteAll 的查询
     var muteAll: Boolean
     /**
      * 坦白说状态. `true` 为允许.
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+
+     * @see GroupAllowConfessTalkEvent
      */
     var confessTalk: Boolean
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     *
+     * @see GroupAllowMemberInviteEvent
      */
     var allowMemberInvite: Boolean
     /**
@@ -74,6 +84,8 @@ interface Group : Contact, CoroutineScope {
      * 机器人在这个群里的权限
      *
      * **MiraiExperimentalAPI**: 在未来可能会被修改
+     *
+     * @see BotGroupPermissionChangeEvent
      */
     @MiraiExperimentalAPI
     val botPermission: MemberPermission

@@ -10,9 +10,21 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.AbstractCancellableEvent
+import net.mamoe.mirai.event.CancellableEvent
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.ExternalImage
+
+
+@Suppress("unused")
+class EventCancelledException : RuntimeException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+}
 
 
 // region Bot 状态
@@ -36,6 +48,64 @@ sealed class BotOfflineEvent : BotActiveEvent {
      * 被挤下线
      */
     data class Force(override val bot: Bot) : BotOfflineEvent()
+}
+
+// endregion
+
+// region 消息
+
+sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
+    abstract val target: Contact
+    final override val bot: Bot
+        get() = target.bot
+
+    data class GroupMessageSendEvent(
+        override val target: Group,
+        var message: MessageChain
+    ) : MessageSendEvent(), CancellableEvent
+
+    data class FriendMessageSendEvent(
+        override val target: QQ,
+        var message: MessageChain
+    ) : MessageSendEvent(), CancellableEvent
+}
+
+// endregion
+
+// region 图片
+
+/**
+ * 图片上传前. 可以阻止上传
+ */
+data class BeforeImageUploadEvent(
+    val target: Contact,
+    val source: ExternalImage
+) : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
+    override val bot: Bot
+        get() = target.bot
+}
+
+/**
+ * 图片上传完成
+ */
+sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
+    abstract val target: Contact
+    abstract val source: ExternalImage
+    override val bot: Bot
+        get() = target.bot
+
+    data class Succeed(
+        override val target: Contact,
+        override val source: ExternalImage,
+        val image: Image
+    ) : ImageUploadEvent(), CancellableEvent
+
+    data class Failed(
+        override val target: Contact,
+        override val source: ExternalImage,
+        val errno: Int,
+        val message: String
+    ) : ImageUploadEvent(), CancellableEvent
 }
 
 // endregion
@@ -64,8 +134,7 @@ interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent {
 /**
  * 群名改变. 此事件广播前修改就已经完成.
  */
-sealed class GroupNameChangeEvent(
-) : GroupSettingChangeEvent<String>, BotPassiveEvent {
+sealed class GroupNameChangeEvent : GroupSettingChangeEvent<String>, BotPassiveEvent {
 
     /**
      * 由管理员操作
@@ -87,6 +156,34 @@ sealed class GroupNameChangeEvent(
         override val new: String,
         override val group: Group
     ) : GroupNameChangeEvent()
+}
+
+
+/**
+ * 入群公告改变. 此事件广播前修改就已经完成.
+ */
+sealed class GroupEntranceAnnouncementChangeEvent : GroupSettingChangeEvent<String>, BotPassiveEvent {
+
+    /**
+     * 由管理员操作
+     */
+    data class ByOperator(
+        override val origin: String,
+        override val new: String,
+        val operator: Member
+    ) : GroupEntranceAnnouncementChangeEvent() {
+        override val group: Group
+            get() = operator.group
+    }
+
+    /**
+     * 由机器人操作
+     */
+    data class ByBot(
+        override val origin: String,
+        override val new: String,
+        override val group: Group
+    ) : GroupEntranceAnnouncementChangeEvent()
 }
 
 /**
@@ -118,8 +215,7 @@ sealed class GroupMuteAllEvent : GroupSettingChangeEvent<Boolean>, BotPassiveEve
 /**
  * 群 "坦白说" 功能状态改变. 此事件广播前修改就已经完成.
  */
-sealed class GroupConfessTalkEvent : GroupSettingChangeEvent<Boolean>, BotPassiveEvent {
-
+sealed class GroupAllowConfessTalkEvent : GroupSettingChangeEvent<Boolean>, BotPassiveEvent {
     /**
      * 由管理员操作
      */
@@ -127,7 +223,7 @@ sealed class GroupConfessTalkEvent : GroupSettingChangeEvent<Boolean>, BotPassiv
         override val origin: Boolean,
         override val new: Boolean,
         val operator: Member
-    ) : GroupConfessTalkEvent() {
+    ) : GroupAllowConfessTalkEvent() {
         override val group: Group
             get() = operator.group
     }
@@ -139,7 +235,33 @@ sealed class GroupConfessTalkEvent : GroupSettingChangeEvent<Boolean>, BotPassiv
         override val origin: Boolean,
         override val new: Boolean,
         override val group: Group
-    ) : GroupConfessTalkEvent()
+    ) : GroupAllowConfessTalkEvent()
+}
+
+/**
+ * 群 "允许群员邀请好友加群" 功能状态改变. 此事件广播前修改就已经完成.
+ */
+sealed class GroupAllowMemberInviteEvent : GroupSettingChangeEvent<Boolean>, BotPassiveEvent {
+    /**
+     * 由管理员操作
+     */
+    data class ByOperator(
+        override val origin: Boolean,
+        override val new: Boolean,
+        val operator: Member
+    ) : GroupAllowMemberInviteEvent() {
+        override val group: Group
+            get() = operator.group
+    }
+
+    /**
+     * 由机器人操作
+     */
+    data class ByBot(
+        override val origin: Boolean,
+        override val new: Boolean,
+        override val group: Group
+    ) : GroupAllowMemberInviteEvent()
 }
 
 // endregion
@@ -157,11 +279,11 @@ data class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotP
 /**
  * 成员离开群的事件
  */
-sealed class MemberLeftEvent : GroupMemberEvent {
+sealed class MemberLeaveEvent : GroupMemberEvent {
     /**
      * 成员被踢出群. 成员不可能是机器人自己.
      */
-    sealed class Kick : MemberLeftEvent() {
+    sealed class Kick : MemberLeaveEvent() {
         /**
          * 被管理员踢出
          */
@@ -181,7 +303,7 @@ sealed class MemberLeftEvent : GroupMemberEvent {
     /**
      * 成员主动离开
      */
-    data class Quit(override val member: Member) : MemberLeftEvent()
+    data class Quit(override val member: Member) : MemberLeaveEvent()
 }
 
 // endregion

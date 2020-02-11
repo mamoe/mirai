@@ -15,7 +15,9 @@ import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.MemberCardChangeEvent
+import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
+import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.data.CustomFaceFromFile
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -53,18 +55,25 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
     override lateinit var nick: String
 
     override suspend fun sendMessage(message: MessageChain) {
+        val event = FriendMessageSendEvent(this, message).broadcast()
+        if (event.isCancelled) {
+            throw EventCancelledException("cancelled by FriendMessageSendEvent")
+        }
         bot.network.run {
             check(
                 MessageSvc.PbSendMsg.ToFriend(
                     bot.client,
                     id,
-                    message
+                    event.message
                 ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
+        if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
+            throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
+        }
         bot.network.run {
             val response = LongConn.OffPicUp(
                 bot.client, Cmd0x352.TryUpImgReq(
@@ -89,7 +98,9 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                     height = response.imageInfo.fileHeight,
                     width = response.imageInfo.fileWidth,
                     resourceId = response.resourceId
-                )
+                ).also {
+                    ImageUploadEvent.Succeed(this@QQImpl, image, it).broadcast()
+                }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     Http.postImage("0x6ff0070", bot.uin, null, imageInput = image.input, inputSize = image.inputSize, uKeyHex = response.uKey.toUHexString(""))
 //                    HighwayHelper.uploadImage(
@@ -110,9 +121,14 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
                         height = image.height,
                         width = image.width,
                         resourceId = response.resourceId
-                    )
+                    ).also {
+                        ImageUploadEvent.Succeed(this@QQImpl, image, it).broadcast()
+                    }
                 }
-                is LongConn.OffPicUp.Response.Failed -> error(response.message)
+                is LongConn.OffPicUp.Response.Failed -> {
+                    ImageUploadEvent.Failed(this@QQImpl, image, -1, response.message).broadcast()
+                    error(response.message)
+                }
             }
         }
     } finally {
@@ -159,7 +175,6 @@ internal class MemberImpl(
                 val oldValue = _groupCard
                 _groupCard = newValue
                 launch {
-                    MemberCardChangeEvent.ByBot(oldValue, newValue, this@MemberImpl).broadcast()
                     bot.network.run {
                         TroopManagement.EditGroupNametag(
                             bot.client,
@@ -167,6 +182,7 @@ internal class MemberImpl(
                             newValue
                         ).sendWithoutExpect()
                     }
+                    MemberCardChangeEvent.ByBot(oldValue, newValue, this@MemberImpl).broadcast()
                 }
             }
         }
@@ -176,6 +192,7 @@ internal class MemberImpl(
         set(newValue) {
             group.checkBotPermissionOperator()
             if (_specialTitle != newValue) {
+                val oldValue = _specialTitle
                 _specialTitle = newValue
                 launch {
                     bot.network.run {
@@ -185,6 +202,7 @@ internal class MemberImpl(
                             newValue
                         ).sendWithoutExpect()
                     }
+                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl).broadcast()
                 }
             }
         }
@@ -204,6 +222,8 @@ internal class MemberImpl(
                 timeInSecond = durationSeconds
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
+
+        MemberMuteEvent.ByBot(this@MemberImpl, durationSeconds).broadcast()
         return true
     }
 
@@ -220,6 +240,8 @@ internal class MemberImpl(
                 timeInSecond = 0
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
+
+        MemberUnmuteEvent.ByBot(this@MemberImpl).broadcast()
         return true
     }
 
@@ -233,7 +255,9 @@ internal class MemberImpl(
                 client = bot.client,
                 member = this@MemberImpl,
                 message = message
-            ).sendAndExpect<TroopManagement.Kick.Response>().success
+            ).sendAndExpect<TroopManagement.Kick.Response>().success.also {
+                MemberLeaveEvent.Kick.ByBot(this@MemberImpl).broadcast()
+            }
         }
     }
 
@@ -270,6 +294,7 @@ internal class GroupImpl(
         set(newValue) {
             this.checkBotPermissionOperator()
             if (_name != newValue) {
+                val oldValue = _name
                 _name = newValue
                 launch {
                     bot.network.run {
@@ -279,15 +304,17 @@ internal class GroupImpl(
                             newName = newValue
                         ).sendWithoutExpect()
                     }
+                    GroupNameChangeEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
                 }
             }
         }
 
-    override var announcement: String
+    override var entranceAnnouncement: String
         get() = _announcement
         set(newValue) {
             this.checkBotPermissionOperator()
             if (_announcement != newValue) {
+                val oldValue = _announcement
                 _announcement = newValue
                 launch {
                     bot.network.run {
@@ -297,6 +324,7 @@ internal class GroupImpl(
                             newMemo = newValue
                         ).sendWithoutExpect()
                     }
+                    GroupEntranceAnnouncementChangeEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
                 }
             }
         }
@@ -307,6 +335,7 @@ internal class GroupImpl(
         set(newValue) {
             this.checkBotPermissionOperator()
             if (_allowMemberInvite != newValue) {
+                val oldValue = _allowMemberInvite
                 _allowMemberInvite = newValue
                 launch {
                     bot.network.run {
@@ -316,6 +345,7 @@ internal class GroupImpl(
                             switch = newValue
                         ).sendWithoutExpect()
                     }
+                    GroupAllowMemberInviteEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
                 }
             }
         }
@@ -337,6 +367,7 @@ internal class GroupImpl(
         set(newValue) {
             this.checkBotPermissionOperator()
             if (_confessTalk != newValue) {
+                val oldValue = _confessTalk
                 _confessTalk = newValue
                 launch {
                     bot.network.run {
@@ -346,6 +377,7 @@ internal class GroupImpl(
                             switch = newValue
                         ).sendWithoutExpect()
                     }
+                    GroupAllowConfessTalkEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
                 }
             }
         }
@@ -356,6 +388,7 @@ internal class GroupImpl(
         set(newValue) {
             this.checkBotPermissionOperator()
             if (_muteAll != newValue) {
+                val oldValue = _muteAll
                 _muteAll = newValue
                 launch {
                     bot.network.run {
@@ -365,6 +398,7 @@ internal class GroupImpl(
                             switch = newValue
                         ).sendWithoutExpect()
                     }
+                    GroupMuteAllEvent.ByBot(oldValue, newValue, this@GroupImpl).broadcast()
                 }
             }
         }
@@ -376,7 +410,7 @@ internal class GroupImpl(
 
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
 
 
@@ -395,11 +429,15 @@ internal class GroupImpl(
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     override suspend fun sendMessage(message: MessageChain) {
+        val event = GroupMessageSendEvent(this, message).broadcast()
+        if (event.isCancelled) {
+            throw EventCancelledException("cancelled by FriendMessageSendEvent")
+        }
         bot.network.run {
             val response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,
                 id,
-                message
+                event.message
             ).sendAndExpect<MessageSvc.PbSendMsg.Response>()
             check(
                 response is MessageSvc.PbSendMsg.Response.SUCCESS
@@ -408,6 +446,9 @@ internal class GroupImpl(
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
+        if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
+            throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
+        }
         bot.network.run {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                 bot.client,
@@ -422,7 +463,10 @@ internal class GroupImpl(
             ).sendAndExpect()
 
             when (response) {
-                is ImgStore.GroupPicUp.Response.Failed -> error("upload group image failed with reason ${response.message}")
+                is ImgStore.GroupPicUp.Response.Failed -> {
+                    ImageUploadEvent.Failed(this@GroupImpl, image, response.resultCode, response.message).broadcast()
+                    error("upload group image failed with reason ${response.message}")
+                }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
                     val resourceId = image.calculateImageResourceId()
 //                    return NotOnlineImageFromFile(
@@ -439,10 +483,9 @@ internal class GroupImpl(
                     return CustomFaceFromFile(
                         md5 = image.md5,
                         filepath = resourceId
-                    )
+                    ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-
                     HighwayHelper.uploadImage(
                         client = bot.client,
                         serverIp = response.uploadIpList.first().toIpV4AddressString(),
@@ -467,7 +510,7 @@ internal class GroupImpl(
                     return CustomFaceFromFile(
                         md5 = image.md5,
                         filepath = resourceId
-                    )
+                    ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                     /*
                         fileId = response.fileId.toInt(),
                         fileType = 0, // ?
