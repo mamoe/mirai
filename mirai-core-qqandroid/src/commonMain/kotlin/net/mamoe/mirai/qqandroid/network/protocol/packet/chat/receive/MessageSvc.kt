@@ -11,10 +11,10 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
-import net.mamoe.mirai.event.events.ForceOfflineEvent
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.BroadcastControllable
+import net.mamoe.mirai.event.events.BotForceOfflineEvent
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -178,10 +178,10 @@ internal class MessageSvc {
     /**
      * 被挤下线
      */
-    internal object PushForceOffline : OutgoingPacketFactory<ForceOfflineEvent>("MessageSvc.PushForceOffline") {
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): ForceOfflineEvent {
+    internal object PushForceOffline : OutgoingPacketFactory<BotForceOfflineEvent>("MessageSvc.PushForceOffline") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): BotForceOfflineEvent {
             val struct = this.decodeUniPacket(RequestPushForceOffline.serializer())
-            return ForceOfflineEvent(bot, title = struct.title ?: "", tips = struct.tips ?: "")
+            return BotForceOfflineEvent(bot, title = struct.title ?: "", tips = struct.tips ?: "")
         }
     }
 

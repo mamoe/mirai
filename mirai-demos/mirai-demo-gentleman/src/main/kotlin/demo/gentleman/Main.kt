@@ -21,7 +21,7 @@ import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.events.ReceiveFriendAddRequestEvent
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
@@ -54,8 +54,8 @@ suspend fun main() {
     }
 
     // 全局范围订阅事件, 不受 bot 实例影响
-    GlobalScope.subscribeAlways<ReceiveFriendAddRequestEvent> {
-        it.approve()
+    GlobalScope.subscribeAlways<BotEvent> {
+
     }
 
     // 订阅来自这个 bot 的群消息事件

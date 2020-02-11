@@ -24,7 +24,7 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.events.ForceOfflineEvent
+import net.mamoe.mirai.event.events.BotForceOfflineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.MemberImpl
@@ -119,7 +119,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
-        this@QQAndroidBotNetworkHandler.subscribeAlways<ForceOfflineEvent> {
+        this@QQAndroidBotNetworkHandler.subscribeAlways<BotForceOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
                 this.bot.logger.error("被挤下线")
                 close()
