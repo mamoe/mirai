@@ -14,6 +14,8 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.message.data.CustomFaceFromFile
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -149,13 +151,15 @@ internal class MemberImpl(
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
-    override var groupCard: String
+    override var nameCard: String
         get() = _groupCard
         set(newValue) {
             group.checkBotPermissionOperator()
             if (_groupCard != newValue) {
+                val oldValue = _groupCard
                 _groupCard = newValue
                 launch {
+                    MemberCardChangeEvent.ByBot(oldValue, newValue, this@MemberImpl).broadcast()
                     bot.network.run {
                         TroopManagement.EditGroupNametag(
                             bot.client,

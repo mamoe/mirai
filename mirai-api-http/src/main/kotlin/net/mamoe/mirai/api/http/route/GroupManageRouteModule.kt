@@ -4,7 +4,8 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.PermissionDeniedException
+import net.mamoe.mirai.api.http.data.StateCode
 import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.contact.Group
@@ -84,7 +85,7 @@ fun Application.groupManageModule() {
         miraiVerify<MemberInfoDTO>("/memberInfo") { dto ->
             val member = dto.session.bot.getGroup(dto.target)[dto.memberId]
             with(dto.info) {
-                name?.let { member.groupCard = it }
+                name?.let { member.nameCard = it }
                 specialTitle?.let { member.specialTitle = it }
             }
             call.respondStateCode(StateCode.Success)
@@ -145,5 +146,5 @@ private data class MemberDetailDTO(
     val name: String? = null,
     val specialTitle: String? = null
 ) : DTO {
-    constructor(member: Member) : this(member.groupCard, member.specialTitle)
+    constructor(member: Member) : this(member.nameCard, member.specialTitle)
 }

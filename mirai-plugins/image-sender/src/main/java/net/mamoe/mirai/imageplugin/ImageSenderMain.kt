@@ -11,7 +11,7 @@ package net.mamoe.mirai.imageplugin
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import net.mamoe.mirai.event.events.BotLoginSucceedEvent
+import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.plugin.PluginBase
@@ -22,7 +22,7 @@ class ImageSenderMain : PluginBase() {
     @MiraiExperimentalAPI
     override fun onEnable() {
         logger.info("Image Sender plugin enabled")
-        GlobalScope.subscribeAlways<BotLoginSucceedEvent> {
+        GlobalScope.subscribeAlways<BotOnlineEvent> {
             logger.info("${this.bot.uin} login succeed, it will be controlled by Image Sender Plugin")
             this.bot.subscribeMessages {
 

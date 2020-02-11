@@ -13,7 +13,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.event.AbstractCancellableEvent
 import net.mamoe.mirai.event.Event
 
 /**
@@ -31,7 +30,7 @@ interface BotPassiveEvent : BotEvent
 /**
  * 由 [Bot] 主动发起的动作的事件
  */
-abstract class BotActiveEvent : BotEvent, AbstractCancellableEvent()
+interface BotActiveEvent : BotEvent
 
 
 /**

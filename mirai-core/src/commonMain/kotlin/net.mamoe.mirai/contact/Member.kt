@@ -11,8 +11,9 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.jvm.JvmName
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -32,18 +33,21 @@ interface Member : QQ, Contact {
     val permission: MemberPermission
 
     /**
-     * 群名片. 可能为空.
+     * 群名片. 可能为空. 修改时将会触发事件
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
      *
      * @see [groupCardOrNick] 获取非空群名片或昵称
+     * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
      */
-    var groupCard: String
+    var nameCard: String
 
     /**
      * 群头衔
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     *
+     * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
      */
     var specialTitle: String
 
@@ -78,9 +82,9 @@ interface Member : QQ, Contact {
 /**
  * 获取非空群名片或昵称.
  *
- * 若 [群名片][Member.groupCard] 不为空则返回群名片, 为空则返回 [QQ.nick]
+ * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [QQ.nick]
  */
-val Member.groupCardOrNick: String get() = this.groupCard.takeIf { it.isNotEmpty() } ?: this.nick
+val Member.groupCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
 
 @ExperimentalTime
 suspend inline fun Member.mute(duration: Duration): Boolean {
