@@ -249,7 +249,7 @@ private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactori
     } else {
 
     }
-    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, data.toReadPacket())
+    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, data.toReadPacket(), commandName)
 }
 
 
@@ -291,7 +291,7 @@ private fun parseUniFrame(input: ByteReadPacket): KnownPacketFactories.IncomingP
         println("找不到包 PacketFactory")
         PacketLogger.verbose("传递给 PacketFactory 的数据 = ${input.readBytes().toUHexString()}")
     }
-    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, input)
+    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, input, commandName)
 }
 
 private inline fun <R> inline(block: () -> R): R = block()
