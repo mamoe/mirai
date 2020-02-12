@@ -24,7 +24,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.QQAndroidGroupInfo
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.*
@@ -92,11 +92,7 @@ internal abstract class QQAndroidBotBase constructor(
         TroopManagement.GetGroupInfo(
             client = bot.client,
             groupCode = id
-        ).sendAndExpect<QQAndroidGroupInfo>().apply {
-            if (this.delegate.groupUin == null) {
-                this.delegate.groupUin = Group.calculateGroupUinByGroupCode(id)
-            }
-        }
+        ).sendAndExpect<GroupInfoImpl>()
     }
 
     override suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo> = network.run {
@@ -110,8 +106,7 @@ internal abstract class QQAndroidBotBase constructor(
                 nextUin = nextUin
             ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
             sequence += data.members.asSequence().map { troopMemberInfo ->
-                MemberInfoImpl(troopMemberInfo.apply {
-                }, ownerId)
+                MemberInfoImpl(troopMemberInfo, ownerId)
             }
             nextUin = data.nextUin
             if (nextUin == 0L) {

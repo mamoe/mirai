@@ -30,6 +30,7 @@ import net.mamoe.mirai.qqandroid.QQImpl
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
@@ -174,7 +175,23 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                     bot = bot,
                                     coroutineContext = bot.coroutineContext,
                                     id = troopNum.groupCode,
-                                    groupInfo = bot.queryGroupInfo(troopNum.groupCode),
+                                    groupInfo = bot.queryGroupInfo(troopNum.groupCode).apply {
+                                        this as GroupInfoImpl
+
+                                        if (this.delegate.groupName == null) {
+                                            this.delegate.groupName = troopNum.groupName
+                                        }
+
+                                        if (this.delegate.groupMemo == null) {
+                                            this.delegate.groupMemo = troopNum.groupMemo
+                                        }
+
+                                        if (this.delegate.groupUin == null) {
+                                            this.delegate.groupUin = troopNum.groupUin
+                                        }
+
+                                        this.delegate.groupCode = troopNum.groupCode
+                                    },
                                     members = bot.queryGroupMemberList(troopNum.groupUin, troopNum.groupCode, troopNum.dwGroupOwnerUin)
                                 )
                             )

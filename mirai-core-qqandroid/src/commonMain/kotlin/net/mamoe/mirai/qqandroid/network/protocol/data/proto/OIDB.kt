@@ -180,8 +180,8 @@ class Oidb0x88d : ProtoBuf {
         @SerialId(12) val groupDefaultPage: Int? = null,
         @SerialId(13) val groupInfoSeq: Int? = null,
         @SerialId(14) val groupRoamingTime: Int? = null,
-        @SerialId(15) val groupName: String? = null,
-        @SerialId(16) val groupMemo: String? = null,
+        @SerialId(15) var groupName: String? = null,
+        @SerialId(16) var groupMemo: String? = null,
         @SerialId(17) val ingGroupFingerMemo: String? = null,
         @SerialId(18) val ingGroupClassText: String? = null,
         @SerialId(19) val groupAllianceCode: List<Int>? = null,
@@ -254,7 +254,7 @@ class Oidb0x88d : ProtoBuf {
         @SerialId(86) val isAllowConfGroupMemberNick: Int? = null,
         @SerialId(87) val isAllowConfGroupMemberAtAll: Int? = null,
         @SerialId(88) val isAllowConfGroupMemberModifyGroupName: Int? = null,
-        @SerialId(89) val ingLongGroupName: ByteArray? = null,
+        @SerialId(89) val longGroupName: String? = null,
         @SerialId(90) val cmduinJoinRealMsgSeq: Int? = null,
         @SerialId(91) val isGroupFreeze: Int? = null,
         @SerialId(92) val msgLimitFrequency: Int? = null,
@@ -265,7 +265,8 @@ class Oidb0x88d : ProtoBuf {
         @SerialId(97) val isAllowHlGuildBinary: Int? = null,
         @SerialId(98) val cmduinRingtoneId: Int? = null,
         @SerialId(99) val groupFlagext4: Int? = null,
-        @SerialId(100) val groupFreezeReason: Int? = null
+        @SerialId(100) val groupFreezeReason: Int? = null,
+        @SerialId(101) var groupCode: Long? = null // mirai 添加
     ) : ProtoBuf
 
     @Serializable

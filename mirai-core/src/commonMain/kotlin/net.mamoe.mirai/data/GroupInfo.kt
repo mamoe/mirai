@@ -21,17 +21,17 @@ interface GroupInfo {
     /**
      * 名称
      */
-    val name: String
+    val name: String // 不一定能获取到
 
     /**
      * 群主
      */
-    val owner: Long
+    val owner: Long // 不一定能获取到
 
     /**
      * 入群公告
      */
-    val memo: String
+    val memo: String // 不一定能获取到
 
     /**
      * 允许群员邀请其他人加入群

@@ -325,7 +325,7 @@ internal class GroupImpl(
     @UseExperimental(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
-    override val members: ContactList<Member> = ContactList(members.asSequence().mapNotNull {
+    override val members: ContactList<Member> = ContactList(members.mapNotNull {
         if (it.uin == bot.uin) {
             botPermission = it.permission
             null

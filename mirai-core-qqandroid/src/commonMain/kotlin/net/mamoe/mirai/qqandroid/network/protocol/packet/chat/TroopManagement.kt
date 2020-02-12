@@ -31,14 +31,14 @@ import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.data.GroupInfo as MiraiGroupInfo
 
-internal inline class QQAndroidGroupInfo(
+internal inline class GroupInfoImpl(
     internal val delegate: Oidb0x88d.GroupInfo
 ) : MiraiGroupInfo, Packet {
     override val uin: Long get() = delegate.groupUin ?: error("cannot find groupUin")
     override val owner: Long get() = delegate.groupOwner ?: error("cannot find groupOwner")
     override val groupCode: Long get() = Group.calculateGroupCodeByGroupUin(uin)
     override val memo: String get() = delegate.groupMemo ?: error("cannot find groupMemo")
-    override val name: String get() = delegate.groupName ?: error("cannot find groupName")
+    override val name: String get() = delegate.groupName ?: delegate.longGroupName ?: error("cannot find groupName")
     override val allowMemberInvite get() = delegate.groupFlagExt?.and(0x000000c0) != 0
     override val allowAnonymousChat get() = delegate.groupFlagExt?.and(0x40000000) == 0
     override val autoApprove get() = delegate.groupFlagext3?.and(0x00100000) == 0
@@ -86,7 +86,7 @@ internal class TroopManagement {
     }
 
 
-    internal object GetGroupInfo : OutgoingPacketFactory<QQAndroidGroupInfo>("OidbSvc.0x88d_7") {
+    internal object GetGroupInfo : OutgoingPacketFactory<GroupInfoImpl>("OidbSvc.0x88d_7") {
         operator fun invoke(
             client: QQAndroidClient,
             groupCode: Long
@@ -117,7 +117,12 @@ internal class TroopManagement {
                                         createSourceFlag = 0,
                                         noCodeFingerOpenFlag = 0,
                                         ingGroupQuestion = "",
-                                        ingGroupAnswer = ""
+                                        ingGroupAnswer = "",
+                                        groupName = "",
+                                        longGroupName = "",
+                                        groupMemo = "",
+                                        groupUin = 0,
+                                        groupOwner = 0
                                     ),
                                     groupCode = groupCode
                                 )
@@ -128,9 +133,9 @@ internal class TroopManagement {
             }
         }
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): QQAndroidGroupInfo {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GroupInfoImpl {
             with(this.readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x88d.RspBody.serializer()).stzrspgroupinfo!![0].stgroupinfo!!) {
-                return QQAndroidGroupInfo(this)
+                return GroupInfoImpl(this)
             }
         }
     }

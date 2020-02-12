@@ -133,6 +133,15 @@ internal class MessageSvc {
             val messages = resp.uinPairMsgs.asSequence().filterNot { it.msg == null }.flatMap { it.msg!!.asSequence() }.mapNotNull {
                 when (it.msgHead.msgType) {
                     33 -> {
+                        if (it.msgHead.authUin == bot.uin) {
+                            val group = bot.getGroupByUinOrNull(it.msgHead.fromUin)
+                            if (group == null) {
+                                TODO("查询群信息, 添加群")
+                            }
+                        }
+
+                        TODO("为 group 添加一个 fun Member() 来构造 member")
+                        // bot.getGroupByUin(it.msgHead.fromUin).members.delegate.addLast()
                         println("GroupUin" + it.msgHead.fromUin + "新群员" + it.msgHead.authUin + " 出现了[" + it.msgHead.authNick + "] 添加刷新")
                         null
                     }
