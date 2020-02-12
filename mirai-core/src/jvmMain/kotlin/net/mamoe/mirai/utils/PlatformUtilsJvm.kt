@@ -74,8 +74,3 @@ actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
         return output.toByteArray()
     }
 }
-
-/**
- * 时间戳
- */
-actual val currentTimeMillis: Long get() = System.currentTimeMillis()
