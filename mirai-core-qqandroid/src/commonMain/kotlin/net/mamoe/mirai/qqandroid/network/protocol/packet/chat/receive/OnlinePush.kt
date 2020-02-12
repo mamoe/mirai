@@ -128,12 +128,10 @@ internal class OnlinePush {
                         if (readByte().toInt() == 1) {
                             val target = readUInt().toLong()
                             val groupUin = content.fromUin
-
                             val member = bot.getGroupByUin(groupUin)[target] as MemberImpl
-
-                            return MemberLeaveEvent.Kick(member, TODO("踢出时获取管理员"))
+                            this.discardExact(1)
+                            return MemberLeaveEvent.Kick(member, readUInt().toLong())
                         }
-
                     }
                 }
             }
