@@ -9,20 +9,19 @@
 
 package net.mamoe.mirai.plugin
 
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.properties.Delegates
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.isSubclassOf
 
 /**
  * TODO: support all config types
+ * only JSON is now supported
+ *
  */
 
 interface Config {
@@ -42,9 +41,29 @@ interface Config {
     operator fun get(key: String): Any?
     fun exist(key: String): Boolean
     fun asMap(): Map<String, Any>
+    fun save()
+
+    companion object {
+        fun load(fileName: String): Config {
+            return load(File(fileName.replace("//", "/")))
+        }
+
+        fun load(file: File): Config {
+            if (!file.exists()) {
+                file.createNewFile()
+            }
+            return when (file.extension.toLowerCase()) {
+                "json" -> JsonConfig(file)
+                else -> error("Unsupported file config type ${file.extension.toLowerCase()}")
+            }
+        }
+    }
 }
 
-inline fun <reified T : Any> Config.withDefault(crossinline defaultValue: () -> T): ReadWriteProperty<Any, T> {
+inline fun <reified T : Any> Config.withDefault(
+    autoSave: Boolean = true,
+    crossinline defaultValue: () -> T
+): ReadWriteProperty<Any, T> {
     return object : ReadWriteProperty<Any, T> {
         override fun getValue(thisRef: Any, property: KProperty<*>): T {
             if (!this@withDefault.exist(property.name)) {
@@ -55,12 +74,13 @@ inline fun <reified T : Any> Config.withDefault(crossinline defaultValue: () -> 
 
         override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
             this@withDefault[property.name] = value
+            if (autoSave) save()
         }
     }
 }
 
 @Suppress("IMPLICIT_CAST_TO_ANY")
-inline operator fun <reified T> ConfigSection.getValue(thisRef: Any?, property: KProperty<*>): T {
+inline operator fun <reified T> Config.getValue(thisRef: Any?, property: KProperty<*>): T {
     return when (T::class) {
         String::class -> this.getString(property.name)
         Int::class -> this.getInt(property.name)
@@ -93,7 +113,7 @@ inline operator fun <reified T> ConfigSection.getValue(thisRef: Any?, property: 
     } as T
 }
 
-inline operator fun <reified T> ConfigSection.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+inline operator fun <reified T> Config.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
     this[property.name] = value!!
 }
 
@@ -147,14 +167,17 @@ interface ConfigSection : Config {
         return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toLong() }
     }
 
-    override operator fun set(key: String, value: Any) {
-        this[key] = value
+    override fun exist(key: String): Boolean {
+        return get(key) != null
     }
-
 }
 
 @Serializable
 open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection {
+    override fun set(key: String, value: Any) {
+        this[key] = value
+    }
+
     override operator fun get(key: String): Any? {
         return super.get(key)
     }
@@ -166,48 +189,66 @@ open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection
     override fun asMap(): Map<String, Any> {
         return this
     }
+
+    override fun save() {
+
+    }
 }
 
 
-interface FileConfig {
+interface FileConfig : Config {
+    fun deserialize(content: String): ConfigSectionImpl
 
+    fun serialize(config: ConfigSectionImpl): String
 }
 
-@Serializable
-abstract class FileConfigImpl internal constructor() : ConfigSectionImpl(), FileConfig {
 
-}
+abstract class FileConfigImpl internal constructor(
+    private val file: File
+) : FileConfig, ConfigSection {
 
-@Serializable
-class JsonConfig internal constructor() : FileConfigImpl() {
+    private val content by lazy {
+        deserialize(file.readText())
+    }
 
-    companion object {
-        @UnstableDefault
-        fun load(file: File): Config {
-            require(file.extension.toLowerCase() == "json")
-            val content = file.apply {
-                if (!this.exists()) this.createNewFile()
-            }.readText()
-
-            if (content.isEmpty() || content.isBlank()) {
-                return JsonConfig()
-            }
-            return Json.parse(
-                JsonConfig.serializer(),
-                content
-            )
+    override fun save() {
+        if (!file.exists()) {
+            file.createNewFile()
         }
+        file.writeText(serialize(content))
+    }
 
-        @UnstableDefault
-        fun save(file: File, config: JsonConfig) {
-            require(file.extension.toLowerCase() == "json")
-            val content = Json.stringify(
-                JsonConfig.serializer(),
-                config
-            )
-            file.apply {
-                if (!this.exists()) this.createNewFile()
-            }.writeText(content)
+    override fun get(key: String): Any? {
+        return content[key]
+    }
+
+    override fun set(key: String, value: Any) {
+        content[key] = value
+    }
+
+    override fun asMap(): Map<String, Any> {
+        return content
+    }
+
+}
+
+class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
+    @UnstableDefault
+    override fun deserialize(content: String): ConfigSectionImpl {
+        if (content.isEmpty() || content.isBlank() || content == "{}") {
+            return ConfigSectionImpl()
         }
+        return Json.parse(
+            ConfigSectionImpl.serializer(),
+            content
+        )
+    }
+
+    @UnstableDefault
+    override fun serialize(config: ConfigSectionImpl): String {
+        if (config.isEmpty()) {
+            return "{}"
+        }
+        return Json.stringify(ConfigSectionImpl.serializer(), config)
     }
 }

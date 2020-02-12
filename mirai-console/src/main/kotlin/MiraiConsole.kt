@@ -8,12 +8,11 @@
  */
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.UnstableDefault
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.api.http.generateSessionKey
-import net.mamoe.mirai.plugin.JsonConfig
-import net.mamoe.mirai.plugin.PluginBase
-import net.mamoe.mirai.plugin.PluginManager
+import net.mamoe.mirai.plugin.*
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -112,24 +111,13 @@ object MiraiConsole {
         }
     }
 
+    @UnstableDefault
     object MiraiProperties {
-        var HTTP_API_ENABLE: Boolean = true
-        var HTTP_API_PORT: Short = 8080
-        var HTTP_API_AUTH_KEY: String = ""
-        private val file = File(path + "/mirai.json".replace("//", "/"))
-        private lateinit var config: JsonConfig
-        fun load() {
-            if (!file.exists()) {
-                HTTP_API_AUTH_KEY = "INITKEY" + generateSessionKey()
-                save()
-                return
-            }
-            config = PluginBase
-        }
+        var config = Config.load("$path/mirai.json")
 
-        fun save() {
-
-        }
+        var HTTP_API_ENABLE: Boolean by config.withDefault { true }
+        var HTTP_API_PORT: Int by config.withDefault { 8080 }
+        var HTTP_API_AUTH_KEY: String by config.withDefault { "INITKEY" + generateSessionKey() }
     }
 }
 
