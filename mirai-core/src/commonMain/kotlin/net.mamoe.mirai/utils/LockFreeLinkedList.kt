@@ -69,6 +69,20 @@ fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
 }
 
 /**
+ * 构建链表结构然后转为 [LockFreeLinkedList]
+ */
+fun <E> Iterable<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
+    return LockFreeLinkedList<E>().apply { addLastAll(this@toLockFreeLinkedList) }
+}
+
+/**
+ * 构建链表结构然后转为 [LockFreeLinkedList]
+ */
+fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
+    return LockFreeLinkedList<E>().apply { addLastAll(this@toLockFreeLinkedList) }
+}
+
+/**
  * Implementation of lock-free LinkedList.
  *
  * Modifying can be performed concurrently.
@@ -111,14 +125,46 @@ open class LockFreeLinkedList<E> {
     }
 
     open fun addLast(element: E) {
-        val node = element.asNode(tail)
+        addLastNode(element.asNode(tail))
+    }
 
+    private fun addLastNode(node: Node<E>) {
         while (true) {
             val tail = head.iterateBeforeFirst { it === tail } // find the last node.
             if (tail.nextNodeRef.compareAndSet(this.tail, node)) { // ensure the last node is the last node
                 return
             }
         }
+    }
+
+    /**
+     * 先把元素建立好链表, 再加入到 list.
+     */
+    @Suppress("DuplicatedCode")
+    open fun addLastAll(iterable: Iterable<E>) {
+        var currentNode: Node<E>? = null
+        iterable.forEach {
+            val nextNode = it.asNode(tail)
+            currentNode?.nextNode = nextNode
+            currentNode = nextNode
+        }
+        addLastNode(currentNode ?: error("iterable is empty"))
+    }
+
+    /**
+     * 先把元素建立好链表, 再加入到 list.
+     */
+    @Suppress("DuplicatedCode")
+    open fun addLastAll(iterable: Sequence<E>) {
+        var currentNode: Node<E>? = null
+        iterable.forEach {
+            val nextNode = it.asNode(tail)
+            if (currentNode != null) { // do not use `?.` because atomicfu cannot transform properly: IllegalArgumentException: null passed
+                currentNode!!.nextNodeRef.value = nextNode
+            }
+            currentNode = nextNode
+        }
+        addLastNode(currentNode ?: error("iterable is empty"))
     }
 
     open operator fun plusAssign(element: E) = this.addLast(element)
