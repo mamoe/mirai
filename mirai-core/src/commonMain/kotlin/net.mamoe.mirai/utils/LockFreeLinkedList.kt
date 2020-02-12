@@ -142,13 +142,19 @@ open class LockFreeLinkedList<E> {
      */
     @Suppress("DuplicatedCode")
     open fun addLastAll(iterable: Iterable<E>) {
+        var firstNode: Node<E>? = null
+
         var currentNode: Node<E>? = null
         iterable.forEach {
             val nextNode = it.asNode(tail)
+            if (firstNode == null) {
+                firstNode = nextNode
+            }
             currentNode?.nextNode = nextNode
             currentNode = nextNode
         }
-        addLastNode(currentNode ?: error("iterable is empty"))
+
+        firstNode?.let { addLastNode(it) }
     }
 
     /**
@@ -156,15 +162,19 @@ open class LockFreeLinkedList<E> {
      */
     @Suppress("DuplicatedCode")
     open fun addLastAll(iterable: Sequence<E>) {
+        var firstNode: Node<E>? = null
+
         var currentNode: Node<E>? = null
         iterable.forEach {
             val nextNode = it.asNode(tail)
-            if (currentNode != null) { // do not use `?.` because atomicfu cannot transform properly: IllegalArgumentException: null passed
-                currentNode!!.nextNodeRef.value = nextNode
+            if (firstNode == null) {
+                firstNode = nextNode
             }
+            currentNode?.nextNode = nextNode
             currentNode = nextNode
         }
-        addLastNode(currentNode ?: error("iterable is empty"))
+
+        firstNode?.let { addLastNode(it) }
     }
 
     open operator fun plusAssign(element: E) = this.addLast(element)
