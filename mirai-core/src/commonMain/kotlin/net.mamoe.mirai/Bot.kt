@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai
 
@@ -24,8 +24,11 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.WeakRef
 import net.mamoe.mirai.utils.io.transferTo
+import net.mamoe.mirai.utils.toList
 
 /**
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
@@ -186,6 +189,7 @@ abstract class Bot : CoroutineScope {
 
     @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("getFriend(this.toLong())"))
     fun Int.qq(): QQ = getFriend(this.toLong())
+
     @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("getFriend(this)"))
     fun Long.qq(): QQ = getFriend(this)
 
@@ -201,3 +205,11 @@ abstract class Bot : CoroutineScope {
 
     // endregion
 }
+
+inline fun Bot.containsFriend(id: Long): Boolean = this.qqs.contains(id)
+
+inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
+
+inline fun Bot.getFriendOrNull(id: Long): QQ? = this.qqs.getOrNull(id)
+
+inline fun Bot.getGroupOrNull(id: Long): Group? = this.groups.getOrNull(id)
