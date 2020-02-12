@@ -12,7 +12,10 @@ package net.mamoe.mirai.qqandroid
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.ContactList
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.filteringGetOrNull
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.Image
@@ -40,12 +43,7 @@ internal abstract class QQAndroidBotBase constructor(
     override val uin: Long get() = client.uin
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
-    val selfQQ: QQ by lazy { QQ(uin) }
-
-    override fun getFriend(id: Long): QQ {
-        if (id == uin) return selfQQ
-        return qqs.delegate[id]
-    }
+    override val selfQQ: QQ by lazy { QQ(uin) }
 
     override fun QQ(id: Long): QQ {
         return QQImpl(this as QQAndroidBot, coroutineContext, id)
@@ -59,11 +57,6 @@ internal abstract class QQAndroidBotBase constructor(
 
     fun getGroupByUin(uin: Long): Group {
         return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin } ?: throw NoSuchElementException("Can not found group with ID=${uin}")
-    }
-
-    override fun getGroup(id: Long): Group {
-        return groups.delegate.getOrNull(id)
-            ?: throw NoSuchElementException("Can not found group with GroupCode=${id}")
     }
 
     override fun onEvent(event: BotEvent): Boolean {

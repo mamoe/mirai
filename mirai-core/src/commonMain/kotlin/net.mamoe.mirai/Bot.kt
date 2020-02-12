@@ -17,10 +17,7 @@ import kotlinx.io.OutputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.use
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -38,8 +35,8 @@ import net.mamoe.mirai.utils.toList
  *
  * @see Contact
  */
+@UseExperimental(MiraiInternalAPI::class)
 abstract class Bot : CoroutineScope {
-    @UseExperimental(MiraiInternalAPI::class)
     companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.
@@ -75,6 +72,8 @@ abstract class Bot : CoroutineScope {
 
     // region contacts
 
+    abstract val selfQQ: QQ
+
     /**
      * 机器人的好友列表. 它将与服务器同步更新
      */
@@ -105,7 +104,11 @@ abstract class Bot : CoroutineScope {
     /**
      * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
      */
-    abstract fun getFriend(id: Long): QQ
+    fun getFriend(id: Long): QQ {
+        if (id == uin) return selfQQ
+        return qqs.delegate.getOrNull(id)
+            ?: throw NoSuchElementException("No such friend $id for bot ${this.uin}")
+    }
 
     /**
      * 构造一个 [QQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
@@ -123,7 +126,10 @@ abstract class Bot : CoroutineScope {
     /**
      * 获取一个机器人加入的群. 若没有这个群, 则会抛出异常 [NoSuchElementException]
      */
-    abstract fun getGroup(id: Long): Group
+    fun getGroup(id: Long): Group {
+        return groups.delegate.getOrNull(id)
+            ?: throw NoSuchElementException("No such group $id for bot ${this.uin}")
+    }
 
     // TODO 目前还不能构造群对象. 这将在以后支持
 
