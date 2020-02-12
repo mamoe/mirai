@@ -61,13 +61,13 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
 
             dependencies {
-                api(kotlin("stdlib", kotlinVersion))
-                api(kotlin("serialization", kotlinVersion))
+                implementation(kotlin("stdlib", kotlinVersion))
+                implementation(kotlin("serialization", kotlinVersion))
 
-                api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-                api(kotlinx("io", kotlinXIoVersion))
-                api(kotlinx("coroutines-io", coroutinesIoVersion))
-                api(kotlinx("coroutines-core", coroutinesVersion))
+                implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+                implementation(kotlinx("io", kotlinXIoVersion))
+                implementation(kotlinx("coroutines-io", coroutinesIoVersion))
+                implementation(kotlinx("coroutines-core", coroutinesVersion))
             }
         }
         commonMain {
@@ -90,8 +90,8 @@ kotlin {
         }
         commonTest {
             dependencies {
-                api(kotlin("test-annotations-common"))
-                api(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
+                implementation(kotlin("test-common"))
 
                 //runtimeOnly(files("build/classes/kotlin/metadata/test")) // classpath is not properly set by IDE
             }
@@ -102,6 +102,8 @@ kotlin {
                 dependencies {
                     api(kotlin("reflect", kotlinVersion))
 
+                    api(kotlinx("io", kotlinXIoVersion))
+                    api(kotlinx("io-jvm", kotlinXIoVersion))
                     api(kotlinx("serialization-runtime", serializationVersion))
                     api(kotlinx("coroutines-android", coroutinesVersion))
 
@@ -111,10 +113,10 @@ kotlin {
 
             val androidTest by getting {
                 dependencies {
-                    api(kotlin("test", kotlinVersion))
-                    api(kotlin("test-junit", kotlinVersion))
-                    api(kotlin("test-annotations-common"))
-                    api(kotlin("test-common"))
+                    implementation(kotlin("test", kotlinVersion))
+                    implementation(kotlin("test-junit", kotlinVersion))
+                    implementation(kotlin("test-annotations-common"))
+                    implementation(kotlin("test-common"))
                 }
             }
         }
@@ -128,6 +130,9 @@ kotlin {
                 api(ktor("client-core-jvm", ktorVersion))
                 api(kotlinx("io-jvm", kotlinXIoVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
+                api(kotlinx("coroutines-io", coroutinesIoVersion))
+                api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
+                api(kotlinx("io-jvm", coroutinesIoVersion))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
@@ -136,8 +141,8 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                api(kotlin("test", kotlinVersion))
-                api(kotlin("test-junit", kotlinVersion))
+                implementation(kotlin("test", kotlinVersion))
+                implementation(kotlin("test-junit", kotlinVersion))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
 
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE

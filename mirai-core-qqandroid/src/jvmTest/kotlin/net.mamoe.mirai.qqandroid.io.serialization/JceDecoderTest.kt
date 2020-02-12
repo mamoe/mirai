@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
+/*
+
 import kotlinx.io.core.readBytes
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
@@ -311,3 +313,5 @@ class JceDecoderTest {
         )
     }
 }
+
+ */

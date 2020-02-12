@@ -12,7 +12,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.Subscribable
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
@@ -20,7 +20,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.network.protocol.packet.login.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
@@ -59,7 +58,7 @@ internal abstract class OutgoingPacketFactory<TPacket : Packet>(
     final override val receivingCommandName: String get() = commandName
 
     /**
-     * **解码**服务器的回复数据包. 返回的包若是 [Subscribable], 则会 broadcast.
+     * **解码**服务器的回复数据包. 返回的包若是 [Event], 则会 broadcast.
      */
     abstract suspend fun ByteReadPacket.decode(bot: QQAndroidBot): TPacket
 
@@ -85,7 +84,7 @@ internal abstract class IncomingPacketFactory<TPacket : Packet>(
     val responseCommandName: String = ""
 ) : PacketFactory<TPacket>() {
     /**
-     * **解码**服务器的回复数据包. 返回的包若是 [Subscribable], 则会 broadcast.
+     * **解码**服务器的回复数据包. 返回的包若是 [Event], 则会 broadcast.
      */
     abstract suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): TPacket
 

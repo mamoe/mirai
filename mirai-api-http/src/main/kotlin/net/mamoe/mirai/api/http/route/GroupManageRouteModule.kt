@@ -4,7 +4,8 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.PermissionDeniedException
+import net.mamoe.mirai.api.http.data.StateCode
 import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.contact.Group
@@ -63,7 +64,7 @@ fun Application.groupManageModule() {
             val group = dto.session.bot.getGroup(dto.target)
             with(dto.config) {
                 name?.let { group.name = it }
-                announcement?.let { group.announcement = it }
+                announcement?.let { group.entranceAnnouncement = it }
                 confessTalk?.let { group.confessTalk = it }
                 allowMemberInvite?.let { group.allowMemberInvite = it }
                 // TODO: 待core接口实现设置可改
@@ -84,7 +85,7 @@ fun Application.groupManageModule() {
         miraiVerify<MemberInfoDTO>("/memberInfo") { dto ->
             val member = dto.session.bot.getGroup(dto.target)[dto.memberId]
             with(dto.info) {
-                name?.let { member.groupCard = it }
+                name?.let { member.nameCard = it }
                 specialTitle?.let { member.specialTitle = it }
             }
             call.respondStateCode(StateCode.Success)
@@ -127,7 +128,7 @@ private data class GroupDetailDTO(
     val anonymousChat: Boolean? = null
 ) : DTO {
     constructor(group: Group) : this(
-        group.name, group.announcement, group.confessTalk, group.allowMemberInvite,
+        group.name, group.entranceAnnouncement, group.confessTalk, group.allowMemberInvite,
         group.autoApprove, group.anonymousChat
     )
 }
@@ -145,5 +146,5 @@ private data class MemberDetailDTO(
     val name: String? = null,
     val specialTitle: String? = null
 ) : DTO {
-    constructor(member: Member) : this(member.groupCard, member.specialTitle)
+    constructor(member: Member) : this(member.nameCard, member.specialTitle)
 }

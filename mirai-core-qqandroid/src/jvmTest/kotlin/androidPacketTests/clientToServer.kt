@@ -248,6 +248,7 @@ fun ByteReadPacket.analysisOneFullPacket(): ByteReadPacket = debugIfFail("Failed
 
                         val encryptedBody = readBytes((remaining - 1).toInt())
 
+                        @Suppress("NAME_SHADOWING")
                         val decrypted = kotlin.runCatching {
                             encryptedBody.decryptBy(encrypt).also { println("first by calculatedShareKey or sessionKey(method=7)") }
                         }.getOrElse {

@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.util.asStream
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
@@ -132,7 +131,7 @@ suspend inline fun InputStream.suspendToExternalImage(): ExternalImage = withCon
 fun Input.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().asOutput().use {
-        this.asStream().asInput().copyTo(it)
+        this.copyTo(it)
     }
     return file.toExternalImage()
 }

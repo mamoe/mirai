@@ -16,7 +16,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.userAgent
-import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
 import kotlinx.io.core.use
@@ -64,7 +63,7 @@ internal suspend inline fun HttpClient.postImage(
             override val contentType: ContentType = ContentType.Image.Any
             override val contentLength: Long = inputSize
 
-            override suspend fun writeTo(channel: ByteWriteChannel) {
+            override suspend fun writeTo(channel: io.ktor.utils.io.ByteWriteChannel) {
                 ByteArrayPool.useInstance { buffer: ByteArray ->
                     var size: Int
                     while (imageInput.readAvailable(buffer).also { size = it } != 0) {

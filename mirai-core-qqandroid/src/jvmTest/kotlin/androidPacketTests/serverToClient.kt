@@ -75,7 +75,7 @@ private fun processFullPacketWithoutLength(packet: ByteReadPacket) {
 
         val flag3 = readByte().toInt()
 
-        val uinAccount = readString(readInt() - 4)//uin
+        readString(readInt() - 4)//uin
 
         //debugPrint("remaining")
 
@@ -163,17 +163,17 @@ private fun Map<Int, ByteArray>.getOrEmpty(key: Int): ByteArray {
 
 var randomKey: ByteArray = byteArrayOf()
 private fun ByteReadPacket.parseOicqResponse(body: ByteReadPacket.() -> Unit) {
-    val qq: Long
     readIoBuffer(readInt() - 4).withUse {
         check(readByte().toInt() == 2)
         this.discardExact(2) // 27 + 2 + body.size
         this.discardExact(2) // const, =8001
         this.readUShort() // commandId
         this.readShort() // const, =0x0001
-        qq = this.readUInt().toLong()
+        this.readUInt().toLong() // qq
         val encryptionMethod = this.readUShort().toInt()
 
         this.discardExact(1) // const = 0
+        @Suppress("UNUSED_VARIABLE")
         val packet = when (encryptionMethod) {
             4 -> { // peer public key, ECDH
                 var data = this.decryptBy(shareKeyCalculatedByConstPubKey, 0, this.readRemaining - 1)
@@ -229,7 +229,7 @@ private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactori
 
         commandName = readString(readInt() - 4)
         DebugLogger.warning("commandName=$commandName")
-        val unknown = readBytes(readInt() - 4)
+        readBytes(readInt() - 4) // unknown, sessionId?
         //if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 
         check(readInt() == 0)
@@ -249,7 +249,7 @@ private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactori
     } else {
 
     }
-    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, data.toReadPacket())
+    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, data.toReadPacket(), commandName)
 }
 
 
@@ -278,7 +278,7 @@ private fun parseUniFrame(input: ByteReadPacket): KnownPacketFactories.IncomingP
 
         commandName = readString(readInt() - 4)
         DebugLogger.warning("commandName=$commandName")
-        val unknown = readBytes(readInt() - 4)
+        readBytes(readInt() - 4) // unknown
         //if (unknown.toInt() != 0x02B05B8B) DebugLogger.debug("got new unknown: ${unknown.toUHexString()}")
 
         check(readInt() == 0)
@@ -291,7 +291,7 @@ private fun parseUniFrame(input: ByteReadPacket): KnownPacketFactories.IncomingP
         println("找不到包 PacketFactory")
         PacketLogger.verbose("传递给 PacketFactory 的数据 = ${input.readBytes().toUHexString()}")
     }
-    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, input)
+    return KnownPacketFactories.IncomingPacket(packetFactory, ssoSequenceId, input, commandName)
 }
 
 private inline fun <R> inline(block: () -> R): R = block()

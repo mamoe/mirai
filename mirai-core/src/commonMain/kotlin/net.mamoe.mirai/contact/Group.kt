@@ -12,6 +12,7 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
@@ -22,32 +23,41 @@ interface Group : Contact, CoroutineScope {
      * 群名称.
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     * 频繁修改可能会被服务器拒绝.
      *
-     * 注: 频繁修改可能会被服务器拒绝.
+     * @see MemberPermissionChangeEvent
      */
     var name: String
     /**
      * 入群公告, 没有时为空字符串.
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     *
+     * @see GroupEntranceAnnouncementChangeEvent
      */
-    var announcement: String
+    var entranceAnnouncement: String
     /**
      * 全体禁言状态. `true` 为开启.
      *
      * 当前仅能修改状态.
+     *
+     * @see GroupMuteAllEvent
      */// TODO: 2020/2/5 实现 muteAll 的查询
     var muteAll: Boolean
     /**
      * 坦白说状态. `true` 为允许.
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+
+     * @see GroupAllowConfessTalkEvent
      */
     var confessTalk: Boolean
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许
      *
      * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     *
+     * @see GroupAllowMemberInviteEvent
      */
     var allowMemberInvite: Boolean
     /**
@@ -74,6 +84,8 @@ interface Group : Contact, CoroutineScope {
      * 机器人在这个群里的权限
      *
      * **MiraiExperimentalAPI**: 在未来可能会被修改
+     *
+     * @see BotGroupPermissionChangeEvent
      */
     @MiraiExperimentalAPI
     val botPermission: MemberPermission
@@ -111,20 +123,36 @@ interface Group : Contact, CoroutineScope {
         /**
          * by @kar98k
          */
-        fun calculateGroupIdByGroupCode(groupCode: Long): Long {
+        fun calculateGroupUinByGroupCode(groupCode: Long): Long {
             var left: Long = groupCode / 1000000L
 
-            when {
-                left <= 10 -> left += 202
-                left <= 19 -> left += 480 - 11
-                left <= 66 -> left += 2100 - 20
-                left <= 156 -> left += 2010 - 67
-                left <= 209 -> left += 2147 - 157
-                left <= 309 -> left += 4100 - 210
-                left <= 499 -> left += 3800 - 310
+            when (left) {
+                in 0..10 -> left += 202
+                in 11..19 -> left += 480 - 11
+                in 20..66 -> left += 2100 - 20
+                in 67..156 -> left += 2010 - 67
+                in 157..209 -> left += 2147 - 157
+                in 210..309 -> left += 4100 - 210
+                in 310..499 -> left += 3800 - 310
             }
 
             return left * 1000000L + groupCode % 1000000L
+        }
+
+        fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
+            var left: Long = groupUin / 1000000L
+
+            when (left) {
+                in 0 + 202..10 + 202 -> left -= 202
+                in 11 + 480 - 11..19 + 480 - 11 -> left -= 480 - 11
+                in 20 + 2100 - 20..66 + 2100 - 20 -> left -= 2100 - 20
+                in 67 + 2010 - 67..156 + 2010 - 67 -> left -= 2010 - 67
+                in 157 + 2147 - 157..209 + 2147 - 157 -> left -= 2147 - 157
+                in 210 + 4100 - 210..309 + 4100 - 210 -> left -= 4100 - 210
+                in 310 + 3800 - 310..499 + 3800 - 310 -> left -= 3800 - 310
+            }
+
+            return left * 1000000L + groupUin % 1000000L
         }
     }
 

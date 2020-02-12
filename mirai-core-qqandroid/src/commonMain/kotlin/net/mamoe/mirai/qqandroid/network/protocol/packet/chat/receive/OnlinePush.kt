@@ -18,7 +18,9 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.NoPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.qqandroid.MemberImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
@@ -103,26 +105,33 @@ internal class OnlinePush {
                         this.discardExact(5)
                         val var4 = readByte().toInt()
                         var var5 = 0L
-                        val var7 = readUInt().toLong()
+                        val target = readUInt().toLong()
                         if (var4 != 0 && var4 != 1) {
                             var5 = readUInt().toLong()
                         }
                         if (var5 == 0L && this.remaining == 1L) {//管理员变更
                             val groupUin = content.fromUin
-                            val target = var7
-                            if (this.readByte().toInt() == 1) {
-                                println("群uin" + groupUin + "新增管理员" + target)
+
+                            val member = bot.getGroupByUin(groupUin)[target] as MemberImpl
+                            val old = member.permission
+                            return if (this.readByte().toInt() == 1) {
+                                member.permission = MemberPermission.ADMINISTRATOR
+                                MemberPermissionChangeEvent(member, old, MemberPermission.ADMINISTRATOR)
                             } else {
-                                println("群uin" + groupUin + "减少管理员" + target)
+                                member.permission = MemberPermission.MEMBER
+                                MemberPermissionChangeEvent(member, old, MemberPermission.ADMINISTRATOR)
                             }
                         }
                     }
                     34 -> {
-                        var groupUinOrCode = readUInt().toLong()
+                        readUInt().toLong() // uin or code ?
                         if (readByte().toInt() == 1) {
                             val target = readUInt().toLong()
                             val groupUin = content.fromUin
-                            println("群uin" + groupUin + "t掉了" + target)
+
+                            val member = bot.getGroupByUin(groupUin)[target] as MemberImpl
+
+                            return MemberLeaveEvent.Kick(member, TODO("踢出时获取管理员"))
                         }
 
                     }
@@ -144,79 +153,86 @@ internal class OnlinePush {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
             reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
-                var debug = ""
                 msgInfo.vMsg!!.read {
-                    if (msgInfo.shMsgType.toInt() == 732) {
-                        val groupCode = this.readUInt().toLong()
-                        debug = "群 $groupCode "
-                        when (val internalType = this.readShort().toInt()) {
-                            3073 -> {
-                                val operatorUin = this.readUInt().toLong()
-                                debug += " 管理员 $operatorUin"
-                                val operationTime = this.readUInt().toLong()
-                                debug += " 禁言 "
-                                this.discardExact(2)
-                                val target = this.readUInt().toLong()
-                                val time = this.readUInt().toLong()
-                                if (target == 0L) {
-                                    debug += "全群"
-                                } else {
-                                    debug += target
-                                }
+                    when {
+                        msgInfo.shMsgType.toInt() == 732 -> {
+                            val group = bot.getGroup(this.readUInt().toLong())
 
-                                if (time == 0L) {
-                                    debug += " 解除 "
-                                } else {
-                                    debug += " " + time + "s"
-                                }
-                            }
-                            3585 -> {
-                                val operatorUin = this.readUInt().toLong()
-                                debug += " 管理员 $operatorUin"
-                                debug += " 匿名聊天 "
-                                if (this.readInt() == 0) {
-                                    debug += " 开启 "
-                                } else {
-                                    debug += " 关闭 "
-                                }
-                            }
-                            4096 -> {
-                                val dataBytes = this.readBytes(26)
-                                val message = this.readString(this.readByte().toInt())
-                                if (dataBytes[0].toInt() != 59) {
-                                    println("更改群名为$message")
-                                } else {
-                                    println(message + ":" + dataBytes.toUHexString())
-                                    debug += message
-                                    when (message) {
-                                        "管理员已关闭群聊坦白说" -> {
+                            when (val internalType = this.readShort().toInt()) {
+                                3073 -> { // mute
+                                    val operator = group[this.readUInt().toLong()]
+                                    this.readUInt().toLong() // time
+                                    this.discardExact(2)
+                                    val target = this.readUInt().toLong()
+                                    val time = this.readInt()
 
+                                    return if (target == 0L) {
+                                        if (time == 0) {
+                                            GroupMuteAllEvent(origin = true, new = false, operator = operator, group = group)
+                                        } else {
+                                            GroupMuteAllEvent(origin = false, new = true, operator = operator, group = group)
                                         }
-                                        "管理员已开启群聊坦白说" -> {
-
-                                        }
-                                        else -> {
-                                            println("Unknown server messages $message")
+                                    } else {
+                                        val member = group[target]
+                                        if (time == 0) {
+                                            MemberUnmuteEvent(operator = operator, member = member)
+                                        } else {
+                                            MemberMuteEvent(operator = operator, member = member, durationSeconds = time)
                                         }
                                     }
                                 }
-                            }
-                            4352 -> {
-                                println(msgInfo.contentToString())
-                                println(msgInfo.vMsg.toUHexString())
-                            }
-                            else -> {
-                                println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
+                                3585 -> { // 匿名
+                                    val operator = group[this.readUInt().toLong()]
+                                    return GroupAllowAnonymousChatEvent(
+                                        origin = group.anonymousChat,
+                                        new = this.readInt() == 0,
+                                        operator = operator,
+                                        group = group
+                                    )
+                                }
+                                4096 -> {
+                                    val dataBytes = this.readBytes(26)
+                                    val message = this.readString(this.readByte().toInt())
+
+                                    TODO("读取操作人")
+
+                                    /*
+                                    return if (dataBytes[0].toInt() != 59) {
+                                        GroupNameChangeEvent(origin = group.name, new = )
+                                    } else {
+                                        println(message + ":" + dataBytes.toUHexString())
+                                        when (message) {
+                                            "管理员已关闭群聊坦白说" -> {
+                                                GroupAllowConfessTalkEvent(group.confessTalk, false, ope)
+                                            }
+                                            "管理员已开启群聊坦白说" -> {
+
+                                            }
+                                            else -> {
+                                                println("Unknown server messages $message")
+                                            }
+                                        }
+                                    }
+                                    */
+                                }
+                                4352 -> {
+                                    println(msgInfo.contentToString())
+                                    println(msgInfo.vMsg.toUHexString())
+                                }
+                                else -> {
+                                    println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
+                                }
                             }
                         }
-                    } else if (msgInfo.shMsgType.toInt() == 528) {
-                        val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
-                        println(content.contentToString())
-                    } else {
-                        println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                        msgInfo.shMsgType.toInt() == 528 -> {
+                            val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
+                            println(content.contentToString())
+                        }
+                        else -> {
+                            println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                        }
                     }
                 }
-                println(debug)
             }
 
             return NoPacket

@@ -274,12 +274,30 @@ internal class NotOnlineImageFromServer(
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
-    val elems = this.msgBody.richText.elems
+    val elements = this.msgBody.richText.elems
 
-    val message = MessageChain(initialCapacity = elems.size + 1)
+    val message = MessageChain(initialCapacity = elements.size + 1)
     message.add(MessageSourceFromMsg(delegate = this))
+    elements.joinToMessageChain(message)
+    return message
+}
 
-    elems.forEach {
+// These two functions are not the same.
+
+@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
+    val elements = this.elems!!
+
+    val message = MessageChain(initialCapacity = elements.size + 1)
+    message.add(MessageSourceFromServer(delegate = this))
+    elements.joinToMessageChain(message)
+    return message
+}
+
+
+@UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class)
+internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
+    this.forEach {
         when {
             it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))
             it.notOnlineImage != null -> message.add(NotOnlineImageFromServer(it.notOnlineImage))
@@ -296,5 +314,4 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
         }
     }
 
-    return message
 }

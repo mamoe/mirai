@@ -16,6 +16,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
  * QQ 对象.
@@ -49,6 +50,7 @@ interface QQ : Contact, CoroutineScope {
     /**
      * 查询用户资料
      */
+    @MiraiExperimentalAPI("还未支持")
     suspend fun queryProfile(): Profile
 
     /**
@@ -58,10 +60,12 @@ interface QQ : Contact, CoroutineScope {
      * - 昵称
      * - 共同群内的群名片
      */
+    @MiraiExperimentalAPI("还未支持")
     suspend fun queryPreviousNameList(): PreviousNameList
 
     /**
      * 查询机器人账号给这个人设置的备注
      */
+    @MiraiExperimentalAPI("还未支持")
     suspend fun queryRemark(): FriendNameRemark
 }

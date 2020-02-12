@@ -20,8 +20,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.event.Subscribable
-import net.mamoe.mirai.event.events.ReceiveFriendAddRequestEvent
+import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeGroupMessages
 import net.mamoe.mirai.event.subscribeMessages
@@ -48,14 +48,14 @@ suspend fun main() {
         // override config here.
     }.alsoLogin()
 
-    // 任何可以监听的对象都继承 Subscribable, 因此这个订阅会订阅全部的事件.
-    GlobalScope.subscribeAlways<Subscribable> {
+    // 任何可以监听的对象都继承 Event, 因此这个订阅会订阅全部的事件.
+    GlobalScope.subscribeAlways<Event> {
         //bot.logger.verbose("收到了一个事件: $this")
     }
 
     // 全局范围订阅事件, 不受 bot 实例影响
-    GlobalScope.subscribeAlways<ReceiveFriendAddRequestEvent> {
-        it.approve()
+    GlobalScope.subscribeAlways<BotEvent> {
+
     }
 
     // 订阅来自这个 bot 的群消息事件
@@ -81,14 +81,6 @@ suspend fun main() {
 
         "你好" reply "你好!"
 
-        startsWith("profile", removePrefix = true) {
-            val account = it.trim()
-            if (account.isNotEmpty()) {
-                bot.getFriend(account.toLong())
-            } else {
-                sender
-            }.queryProfile().toString().reply()
-        }
         "grouplist" reply {
 
             //"https://ssl.ptlogin2.qq.com/jump?pt_clientver=5509&pt_src=1&keyindex=9&clientuin=" + bot.qqAccount + "&clientkey=" + com.tick_tock.pctim.utils.Util.byte2HexString(

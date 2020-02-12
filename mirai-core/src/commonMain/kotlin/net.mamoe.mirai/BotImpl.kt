@@ -107,7 +107,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         logger.info("Initializing BotNetworkHandler")
         try {
             if (::_network.isInitialized) {
-                BotOfflineEvent(this).broadcast()
+                BotOfflineEvent.Active(this, cause).broadcast()
                 _network.closeAndJoin(cause)
             }
         } catch (e: Exception) {

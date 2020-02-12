@@ -12,7 +12,6 @@
 package net.mamoe.mirai.utils
 
 import android.graphics.BitmapFactory
-import io.ktor.util.asStream
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
@@ -100,7 +99,7 @@ suspend fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO
 fun Input.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().asOutput().use {
-        this.asStream().asInput().copyTo(it)
+        this.copyTo(it)
     }
     return file.toExternalImage()
 }

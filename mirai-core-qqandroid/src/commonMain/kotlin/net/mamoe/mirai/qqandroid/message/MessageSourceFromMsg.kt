@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid.message
 
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
@@ -20,8 +21,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
 internal inline class MessageSourceFromServer(
     val delegate: ImMsgBody.SourceMsg
 ) : MessageSource {
-    override val messageUid: Long
-        get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!
+    override val messageUid: Long get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!
+    override val sourceMessage: MessageChain get() = delegate.toMessageChain()
+    override val senderId: Long get() = delegate.senderUin
+    override val groupId: Long get() = Group.calculateGroupCodeByGroupUin(delegate.toUin)
 
     override fun toString(): String = ""
 }
@@ -29,12 +32,14 @@ internal inline class MessageSourceFromServer(
 internal inline class MessageSourceFromMsg(
     val delegate: MsgComm.Msg
 ) : MessageSource {
-    override val messageUid: Long
-        get() = delegate.msgBody.richText.attr!!.random.toLong()
+    override val messageUid: Long get() = delegate.msgBody.richText.attr!!.random.toLong()
+    override val sourceMessage: MessageChain get() = delegate.toMessageChain()
+    override val senderId: Long get() = delegate.msgHead.fromUin
+    override val groupId: Long get() = delegate.msgHead.groupInfo!!.groupCode
 
     fun toJceData(): ImMsgBody.SourceMsg {
 
-        val groupUin = Group.calculateGroupIdByGroupCode(delegate.msgHead.groupInfo!!.groupCode)
+        val groupUin = Group.calculateGroupUinByGroupCode(delegate.msgHead.groupInfo!!.groupCode)
 
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(delegate.msgHead.msgSeq),

@@ -10,9 +10,9 @@
 package net.mamoe.mirai.event.internal
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.event.Subscribable
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiLogger
@@ -29,14 +29,14 @@ import kotlin.reflect.KClass
 var EventDisabled = false
 
 @PublishedApi
-internal fun <L : Listener<E>, E : Subscribable> KClass<out E>.subscribeInternal(listener: L): L {
+internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     this.listeners().addLast(listener)
     return listener
 }
 
 @PublishedApi
 @Suppress("FunctionName")
-internal fun <E : Subscribable> CoroutineScope.Handler(handler: suspend (E) -> ListeningStatus): Handler<E> {
+internal fun <E : Event> CoroutineScope.Handler(handler: suspend (E) -> ListeningStatus): Handler<E> {
     return Handler(coroutineContext[Job], coroutineContext, handler)
 }
 
@@ -45,7 +45,7 @@ private inline fun inline(block: () -> Unit) = block()
  * 事件处理器.
  */
 @PublishedApi
-internal class Handler<in E : Subscribable>
+internal class Handler<in E : Event>
 @PublishedApi internal constructor(parentJob: Job?, private val subscriberContext: CoroutineContext, @JvmField val handler: suspend (E) -> ListeningStatus) :
     Listener<E>, CompletableJob by Job(parentJob) {
 
@@ -79,21 +79,21 @@ internal class Handler<in E : Subscribable>
 /**
  * 这个事件类的监听器 list
  */
-internal fun <E : Subscribable> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
+internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
 
-internal class EventListeners<E : Subscribable> : LockFreeLinkedList<Listener<E>>()
+internal class EventListeners<E : Event> : LockFreeLinkedList<Listener<E>>()
 
 /**
  * 管理每个事件 class 的 [EventListeners].
  * [EventListeners] 是 lazy 的: 它们只会在被需要的时候才创建和存储.
  */
 internal object EventListenerManager {
-    private data class Registry<E : Subscribable>(val clazz: KClass<E>, val listeners: EventListeners<E>)
+    private data class Registry<E : Event>(val clazz: KClass<E>, val listeners: EventListeners<E>)
 
     private val registries = LockFreeLinkedList<Registry<*>>()
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <E : Subscribable> get(clazz: KClass<out E>): EventListeners<E> {
+    internal fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
         return registries.filteringGetOrAdd({ it.clazz == clazz }) {
             Registry(
                 clazz,
@@ -105,7 +105,7 @@ internal object EventListenerManager {
 
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
-internal suspend inline fun Subscribable.broadcastInternal() {
+internal suspend inline fun Event.broadcastInternal() {
     if (EventDisabled) return
 
     callAndRemoveIfRequired(this::class.listeners())
@@ -113,18 +113,18 @@ internal suspend inline fun Subscribable.broadcastInternal() {
     var supertypes = this::class.supertypes
     while (true) {
         val superSubscribableType = supertypes.firstOrNull {
-            it.classifier as? KClass<out Subscribable> != null
+            it.classifier as? KClass<out Event> != null
         }
 
         superSubscribableType?.let {
-            callAndRemoveIfRequired((it.classifier as KClass<out Subscribable>).listeners())
+            callAndRemoveIfRequired((it.classifier as KClass<out Event>).listeners())
         }
 
         supertypes = (superSubscribableType?.classifier as? KClass<*>)?.supertypes ?: return
     }
 }
 
-private suspend inline fun <E : Subscribable> E.callAndRemoveIfRequired(listeners: EventListeners<E>) {
+private suspend inline fun <E : Event> E.callAndRemoveIfRequired(listeners: EventListeners<E>) {
     // atomic foreach
     listeners.forEach {
         if (it.onEvent(this) == ListeningStatus.STOPPED) {
