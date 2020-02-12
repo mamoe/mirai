@@ -14,14 +14,14 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiDebugAPI
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
+
+internal val EventLogger: MiraiLoggerWithSwitch = DefaultLogger("Event").withSwitch(false)
 
 @PublishedApi
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
@@ -102,6 +102,8 @@ internal object EventListenerManager {
 @Suppress("UNCHECKED_CAST")
 internal suspend inline fun Event.broadcastInternal() {
     if (EventDisabled) return
+
+    EventLogger.info { "Event broadcast: $this" }
 
     callAndRemoveIfRequired(this::class.listeners())
 
