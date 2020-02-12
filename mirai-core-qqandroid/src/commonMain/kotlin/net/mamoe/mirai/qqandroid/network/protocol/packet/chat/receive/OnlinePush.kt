@@ -128,9 +128,12 @@ internal class OnlinePush {
                         if (readByte().toInt() == 1) {
                             val target = readUInt().toLong()
                             val groupUin = content.fromUin
-                            val member = bot.getGroupByUin(groupUin)[target] as MemberImpl
-                            this.discardExact(1)
-                            return MemberLeaveEvent.Kick(member, readUInt().toLong())
+
+                            bot.getGroupByUin(groupUin).let {
+                                val member = it[target] as MemberImpl
+                                this.discardExact(1)
+                                return MemberLeaveEvent.Kick(member, it.members[readUInt().toLong()])
+                            }
                         }
                     }
                 }
@@ -191,27 +194,33 @@ internal class OnlinePush {
                                 4096 -> {
                                     val dataBytes = this.readBytes(26)
                                     val message = this.readString(this.readByte().toInt())
+                                    println(dataBytes.toUHexString())
 
-                                    TODO("读取操作人")
-
-                                    /*
                                     return if (dataBytes[0].toInt() != 59) {
-                                        GroupNameChangeEvent(origin = group.name, new = )
+                                        return GroupNameChangeEvent(origin = group.name, new = message, group = group)
                                     } else {
-                                        println(message + ":" + dataBytes.toUHexString())
+                                        //println(message + ":" + dataBytes.toUHexString())
                                         when (message) {
                                             "管理员已关闭群聊坦白说" -> {
-                                                GroupAllowConfessTalkEvent(group.confessTalk, false, ope)
+                                                return GroupAllowConfessTalkEvent(
+                                                    origin = group.confessTalk,
+                                                    new = false,
+                                                    group = group
+                                                )
                                             }
                                             "管理员已开启群聊坦白说" -> {
-
+                                                return GroupAllowConfessTalkEvent(
+                                                    origin = group.confessTalk,
+                                                    new = false,
+                                                    group = group
+                                                )
                                             }
                                             else -> {
                                                 println("Unknown server messages $message")
+                                                return NoPacket
                                             }
                                         }
                                     }
-                                    */
                                 }
                                 4352 -> {
                                     println(msgInfo.contentToString())
