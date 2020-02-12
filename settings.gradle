@@ -21,15 +21,19 @@ pluginManagement {
 
 rootProject.name = 'mirai'
 
-def keyProps = new Properties()
-def keyFile = file("local.properties")
-if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
-if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
-    include(':mirai-demos:mirai-demo-android')
-    project(':mirai-demos:mirai-demo-android').projectDir = file('mirai-demos/mirai-demo-android')
-} else {
-    println("Android SDK 可能未安装. \n将不会加载模块 `mirai-demo-android`, 但这并不影响其他 demo 的加载 ")
-    println("Android SDK might not be installed. \nModule `mirai-demo-android` will not be included, but other demos will not be influenced")
+try {
+    def keyProps = new Properties()
+    def keyFile = file("local.properties")
+    if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+    if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
+        include(':mirai-demos:mirai-demo-android')
+        project(':mirai-demos:mirai-demo-android').projectDir = file('mirai-demos/mirai-demo-android')
+    } else {
+        println("Android SDK 可能未安装. \n将不会加载模块 `mirai-demo-android`, 但这并不影响其他 demo 的加载 ")
+        println("Android SDK might not be installed. \nModule `mirai-demo-android` will not be included, but other demos will not be influenced")
+    }
+} catch (Exception e) {
+    e.printStackTrace()
 }
 
 include(':mirai-core')
@@ -47,10 +51,18 @@ include(':mirai-plugins')
 include(':mirai-plugins:image-sender')
 
 def javaVersion = System.getProperty("java.version")
-if (javaVersion.substring(0, javaVersion.indexOf(".")).toInteger() >= 11) {
-    include(':mirai-debug')
-} else {
-    println("当前使用的 JDK 版本为 ${System.getProperty("java.version")}, 最低需要 JDK 11 才能引入模块 `:mirai-debug`")
+def versionPos = javaVersion.indexOf(".")
+if (versionPos==-1) versionPos = javaVersion.indexOf("-")
+if (versionPos==-1){
+    println("jdk version unknown")
+}else{
+    def javaVersionNum = javaVersion.substring(0, versionPos).toInteger()
+    if (javaVersionNum >= 11) {
+        println("jdk版本为 "+ javaVersionNum)
+        include(':mirai-debug')
+    } else {
+        println("当前使用的 JDK 版本为 ${System.getProperty("java.version")}, 最低需要 JDK 11 才能引入模块 `:mirai-debug`")
+    }
 }
 
 project(':mirai-demos:mirai-demo-1').projectDir = file('mirai-demos/mirai-demo-1')

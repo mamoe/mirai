@@ -12,14 +12,12 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
-import io.ktor.util.date.GMTDate
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.io.core.toByteArray
 
 /**
  * 时间戳
  */
-inline val currentTimeMillis: Long get() = GMTDate().timestamp
+expect val currentTimeMillis: Long
 
 inline val currentTimeSeconds: Long get() = currentTimeMillis / 1000
 

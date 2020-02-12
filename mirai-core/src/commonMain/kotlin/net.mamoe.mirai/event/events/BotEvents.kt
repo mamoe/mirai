@@ -129,12 +129,27 @@ data class BotGroupPermissionChangeEvent(
  */
 data class BotMuteEvent(
     val durationSeconds: Int,
-    override val group: Group,
     /**
-     * 操作人. 为 null 则为机器人操作
+     * 操作人.
      */
-    val operator: Member?
-) : GroupEvent, Packet, BotPassiveEvent
+    val operator: Member
+) : GroupEvent, Packet, BotPassiveEvent {
+    override val group: Group
+        get() = operator.group
+}
+
+/**
+ * Bot 被取消禁言
+ */
+data class BotUnmuteEvent(
+    /**
+     * 操作人.
+     */
+    val operator: Member
+) : GroupEvent, Packet, BotPassiveEvent {
+    override val group: Group
+        get() = operator.group
+}
 
 /**
  * Bot 加入了一个新群

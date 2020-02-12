@@ -80,6 +80,12 @@ suspend fun <E : Event> E.broadcast(): E = apply {
 }
 
 /**
+ * 设置为 `true` 以关闭事件.
+ * 所有的 `subscribe` 都能正常添加到监听器列表, 但所有的广播都会直接返回.
+ */
+var EventDisabled = false
+
+/**
  * 可控制是否需要广播这个事件包
  */
 interface BroadcastControllable : Event {

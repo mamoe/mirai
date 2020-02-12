@@ -47,9 +47,10 @@ import kotlin.time.ExperimentalTime
 internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
+    override val logger: MiraiLogger get() = bot.configuration.networkLoggerSupplier(this)
 
     override val coroutineContext: CoroutineContext = bot.coroutineContext + CoroutineExceptionHandler { _, throwable ->
-        bot.logger.error("Exception in NetworkHandler", throwable)
+        logger.error("Exception in NetworkHandler", throwable)
     }
 
     private lateinit var channel: PlatformSocket
@@ -62,7 +63,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         channel.connect("113.96.13.208", 8080)
         this.launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
 
-        // bot.logger.info("Trying login")
+        // logger.info("Trying login")
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
@@ -104,7 +105,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 }
 
                 is WtLogin.Login.LoginPacketResponse.Success -> {
-                    bot.logger.info("Login successful")
+                    logger.info("Login successful")
                     break@mainloop
                 }
             }
@@ -118,7 +119,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     override suspend fun init(): Unit = coroutineScope {
         this@QQAndroidBotNetworkHandler.subscribeAlways<BotOfflineEvent> {
             if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
-                this.bot.logger.error("被挤下线")
+                logger.error("被挤下线")
                 close()
             }
         }
@@ -130,7 +131,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         val friendListJob = launch {
             try {
-                bot.logger.info("开始加载好友信息")
+                logger.info("开始加载好友信息")
                 var currentFriendCount = 0
                 var totalFriendCount: Short
                 while (true) {
@@ -149,21 +150,21 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             currentFriendCount++
                         }
                     }
-                    bot.logger.verbose("正在加载好友列表 ${currentFriendCount}/${totalFriendCount}")
+                    logger.verbose("正在加载好友列表 ${currentFriendCount}/${totalFriendCount}")
                     if (currentFriendCount >= totalFriendCount) {
                         break
                     }
                     // delay(200)
                 }
-                bot.logger.info("好友列表加载完成, 共 ${currentFriendCount}个")
+                logger.info("好友列表加载完成, 共 ${currentFriendCount}个")
             } catch (e: Exception) {
-                bot.logger.error("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
+                logger.error("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
             }
         }
 
         val groupJob = launch {
             try {
-                bot.logger.info("开始加载群组列表与群成员列表")
+                logger.info("开始加载群组列表与群成员列表")
                 val troopListData = FriendList.GetTroopListSimplify(bot.client)
                     .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
 
@@ -196,15 +197,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                 )
                             )
                         } catch (e: Exception) {
-                            bot.logger.error("群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试")
-                            bot.logger.error(e)
+                            logger.error("群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试")
+                            logger.error(e)
                         }
                     }
                 }
-                bot.logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
+                logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
             } catch (e: Exception) {
-                bot.logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
-                bot.logger.error(e)
+                logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+                logger.error(e)
             }
         }
 
@@ -317,7 +318,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (packet is CancellableEvent && packet.isCancelled) return
         }
 
-        bot.logger.info("Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}")
+        logger.info("Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}")
 
         packetFactory?.run {
             when (this) {
@@ -416,13 +417,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 bot.tryReinitializeNetworkHandler(e)
                 return
             } catch (e: ReadPacketInternalException) {
-                bot.logger.error("Socket channel read failed: ${e.message}")
+                logger.error("Socket channel read failed: ${e.message}")
                 bot.tryReinitializeNetworkHandler(e)
                 return
             } catch (e: CancellationException) {
                 return
             } catch (e: Throwable) {
-                bot.logger.error("Caught unexpected exceptions", e)
+                logger.error("Caught unexpected exceptions", e)
                 bot.tryReinitializeNetworkHandler(e)
                 return
             }
@@ -438,7 +439,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 发送一个包, 但不期待任何返回.
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
-        bot.logger.info("Send: ${this.commandName}")
+        logger.info("Send: ${this.commandName}")
         withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
             channel.send(delegate)
         }
@@ -461,7 +462,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
                     channel.send(delegate)
                 }
-                bot.logger.info("Send: ${this.commandName}")
+                logger.info("Send: ${this.commandName}")
                 return withTimeoutOrNull(timeoutMillis) {
                     @Suppress("UNCHECKED_CAST")
                     handler.await() as E
@@ -480,7 +481,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
                         channel.send(data, 0, length)
                     }
-                    bot.logger.info("Send: ${this.commandName}")
+                    logger.info("Send: ${this.commandName}")
                     return withTimeoutOrNull(timeoutMillis) {
                         @Suppress("UNCHECKED_CAST")
                         handler.await() as E

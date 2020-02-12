@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
@@ -46,6 +47,11 @@ abstract class BotNetworkHandler : CoroutineScope {
      * 监管 child [Job]s
      */
     abstract val supervisor: CompletableJob
+
+    /**
+     * logger
+     */
+    abstract val logger: MiraiLogger
 
     /**
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回.
