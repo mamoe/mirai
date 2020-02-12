@@ -72,14 +72,14 @@ fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
  * 构建链表结构然后转为 [LockFreeLinkedList]
  */
 fun <E> Iterable<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
-    return LockFreeLinkedList<E>().apply { addLastAll(this@toLockFreeLinkedList) }
+    return LockFreeLinkedList<E>().apply { addAll(this@toLockFreeLinkedList) }
 }
 
 /**
  * 构建链表结构然后转为 [LockFreeLinkedList]
  */
 fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
-    return LockFreeLinkedList<E>().apply { addLastAll(this@toLockFreeLinkedList) }
+    return LockFreeLinkedList<E>().apply { addAll(this@toLockFreeLinkedList) }
 }
 
 /**
@@ -141,7 +141,7 @@ open class LockFreeLinkedList<E> {
      * 先把元素建立好链表, 再加入到 list.
      */
     @Suppress("DuplicatedCode")
-    open fun addLastAll(iterable: Iterable<E>) {
+    open fun addAll(iterable: Iterable<E>) {
         var firstNode: Node<E>? = null
 
         var currentNode: Node<E>? = null
@@ -161,7 +161,7 @@ open class LockFreeLinkedList<E> {
      * 先把元素建立好链表, 再加入到 list.
      */
     @Suppress("DuplicatedCode")
-    open fun addLastAll(iterable: Sequence<E>) {
+    open fun addAll(iterable: Sequence<E>) {
         var firstNode: Node<E>? = null
 
         var currentNode: Node<E>? = null
@@ -298,8 +298,6 @@ open class LockFreeLinkedList<E> {
             node = node.nextNode
         }
     }
-
-    open fun addAll(elements: Collection<E>) = elements.forEach { addLast(it) }
 
     @Suppress("unused")
     open fun clear() {
