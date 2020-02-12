@@ -21,7 +21,7 @@ import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 
-internal val EventLogger: MiraiLoggerWithSwitch = DefaultLogger("Event").withSwitch(false)
+val EventLogger: MiraiLoggerWithSwitch = DefaultLogger("Event").withSwitch(false)
 
 @PublishedApi
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
