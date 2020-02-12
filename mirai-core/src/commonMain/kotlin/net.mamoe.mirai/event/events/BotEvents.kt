@@ -29,6 +29,8 @@ class EventCancelledException : RuntimeException {
     constructor(cause: Throwable?) : super(cause)
 }
 
+// note: 若你使用 IntelliJ IDEA, 按 alt + 7 可打开结构
+
 
 // region Bot 状态
 
