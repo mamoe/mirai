@@ -24,6 +24,10 @@ object MiraiHttpAPIServer {
         SessionManager.authKey = generateSessionKey()//用于验证的key, 使用和SessionKey相同的方法生成, 但意义不同
     }
 
+    fun setAuthKey(key: String) {
+        SessionManager.authKey = key
+    }
+
     @UseExperimental(KtorExperimentalAPI::class)
     fun start(
         port: Int = 8080,

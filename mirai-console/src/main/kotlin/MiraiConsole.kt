@@ -9,73 +9,134 @@
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.plugin.Command
-import net.mamoe.mirai.plugin.CommandManager
+import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.api.http.generateSessionKey
+import net.mamoe.mirai.plugin.JsonConfig
+import net.mamoe.mirai.plugin.PluginBase
 import net.mamoe.mirai.plugin.PluginManager
+import java.io.File
 import kotlin.concurrent.thread
 
-val bots = mutableMapOf<Long, Bot>()
+object MiraiConsole {
+    val bots
+        get() = Bot.instances
 
-fun main() {
-    println("loading Mirai in console environments")
-    println("正在控制台环境中启动Mirai ")
-    println()
-    println("Mirai-console is still in testing stage, some feature is not available")
-    println("Mirai-console 还处于测试阶段, 部分功能不可用")
-    println()
-    println("Mirai-console now running on " + System.getProperty("user.dir"))
-    println("Mirai-console 正在 " + System.getProperty("user.dir") + " 运行")
-    println()
-    println("\"/login qqnumber qqpassword \" to login a bot")
-    println("\"/login qq号 qq密码 \" 来登陆一个BOT")
+    val pluginManager: PluginManager
+        get() = PluginManager
 
-    thread { processNextCommandLine() }
+    var logger: MiraiConsoleLogger = DefaultLogger
 
-    PluginManager.loadPlugins()
-    defaultCommands()
+    var path: String = System.getProperty("user.dir")
 
-    Runtime.getRuntime().addShutdownHook(thread(start = false) {
+    val version = " 0.13"
+    val build = "Beta"
+
+    fun start() {
+        logger("Mirai-console v${version} $build is still in testing stage, majority feature is available")
+        logger("Mirai-console v${version} $build 还处于测试阶段, 大部分功能可用")
+        logger()
+        logger("Mirai-console now running under " + System.getProperty("user.dir"))
+        logger("Mirai-console 正在 " + System.getProperty("user.dir") + "下运行")
+        logger()
+        logger("Get news in github: https://github.com/mamoe/mirai")
+        logger("在Github中获取项目最新进展: https://github.com/mamoe/mirai")
+        logger("Mirai为开源项目，请自觉遵守开源项目协议")
+        logger("Powered by Mamoe Technology")
+        logger()
+        logger("\"/login qqnumber qqpassword \" to login a bot")
+        logger("\"/login qq号 qq密码 \" 来登陆一个BOT")
+
+        CommandManager.register(DefaultCommands.DefaultLoginCommand())
+        pluginManager.loadPlugins()
+        CommandListener.start()
+    }
+
+    fun stop() {
         PluginManager.disableAllPlugins()
-    })
-}
+    }
 
-
-fun defaultCommands() {
-    class LoginCommand : Command(
-        "login"
-    ) {
-        override fun onCommand(args: List<String>): Boolean {
-            if (args.size < 2) {
-                println("\"/login qqnumber qqpassword \" to login a bot")
-                println("\"/login qq号 qq密码 \" 来登录一个BOT")
-                return false
-            }
-            val qqNumber = args[0].toLong()
-            val qqPassword = args[1]
-            println("login...")
-            runBlocking {
+    /**
+     * Defaults Commands are recommend to be replaced by plugin provided commands
+     */
+    object DefaultCommands {
+        class DefaultLoginCommand : Command(
+            "login"
+        ) {
+            override fun onCommand(args: List<String>): Boolean {
+                if (args.size < 2) {
+                    println("\"/login qqnumber qqpassword \" to login a bot")
+                    println("\"/login qq号 qq密码 \" 来登录一个BOT")
+                    return false
+                }
+                val qqNumber = args[0].toLong()
+                val qqPassword = args[1]
+                println("login...")
                 try {
-                    Bot(qqNumber, qqPassword).also {
-                        it.login()
-                        bots[qqNumber] = it
+                    runBlocking {
+                        Bot(qqNumber, qqPassword).alsoLogin()
                     }
                 } catch (e: Exception) {
                     println("$qqNumber login failed")
                 }
+                return true
             }
-            return true
         }
     }
-    CommandManager.register(LoginCommand())
+
+    object CommandListener {
+        fun start() {
+            thread {
+                processNextCommandLine()
+            }
+        }
+
+        tailrec fun processNextCommandLine() {
+            val fullCommand = readLine()
+            if (fullCommand != null && fullCommand.startsWith("/")) {
+                if (!CommandManager.runCommand(fullCommand)) {
+                    logger("unknown command $fullCommand")
+                    logger("未知指令 $fullCommand")
+                }
+            }
+            processNextCommandLine();
+        }
+    }
+
+    interface MiraiConsoleLogger {
+        operator fun invoke(any: Any? = null)
+    }
+
+    object DefaultLogger : MiraiConsoleLogger {
+        override fun invoke(any: Any?) {
+            println("[Mirai${version} $build]: " + any?.toString())
+        }
+    }
+
+    object MiraiProperties {
+        var HTTP_API_ENABLE: Boolean = true
+        var HTTP_API_PORT: Short = 8080
+        var HTTP_API_AUTH_KEY: String = ""
+        private val file = File(path + "/mirai.json".replace("//", "/"))
+        private lateinit var config: JsonConfig
+        fun load() {
+            if (!file.exists()) {
+                HTTP_API_AUTH_KEY = "INITKEY" + generateSessionKey()
+                save()
+                return
+            }
+            config = PluginBase
+        }
+
+        fun save() {
+
+        }
+    }
 }
 
-tailrec fun processNextCommandLine() {
-    val fullCommand = readLine()
-    if (fullCommand != null && fullCommand.startsWith("/")) {
-        if (!CommandManager.runCommand(fullCommand)) {
-            println("unknown command $fullCommand")
-            println("未知指令 $fullCommand")
-        }
-    }
-    processNextCommandLine();
+fun main() {
+    MiraiConsole.start()
+    Runtime.getRuntime().addShutdownHook(thread(start = false) {
+        MiraiConsole.stop()
+    })
 }
+

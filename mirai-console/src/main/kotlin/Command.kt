@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.plugin
+import net.mamoe.mirai.plugin.PluginManager
 
 object CommandManager {
     private val registeredCommand: MutableMap<String, Command> = mutableMapOf()
@@ -22,6 +22,13 @@ object CommandManager {
         }
         allNames.forEach {
             registeredCommand[it] = command
+        }
+    }
+
+    fun unregister(command: Command) {
+        val allNames = mutableListOf<String>(command.name).also { it.addAll(command.alias) }
+        allNames.forEach {
+            registeredCommand.remove(it)
         }
     }
 
@@ -43,12 +50,12 @@ object CommandManager {
         return true
     }
 
-
 }
 
 abstract class Command(
     val name: String,
-    val alias: List<String> = listOf()
+    val alias: List<String> = listOf(),
+    val description: String = ""
 ) {
     /**
      * 最高优先级监听器
@@ -58,3 +65,4 @@ abstract class Command(
         return true
     }
 }
+
