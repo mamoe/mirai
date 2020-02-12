@@ -261,6 +261,12 @@ fun String.generateProtoBufDataClass(): GeneratedClass {
                     @Suppress("NAME_SHADOWING")
                     var name = _name
                     when {
+
+                        name.startsWith("string") -> {
+                            name = name.substringAfter("string").takeIf { it.isNotBlank() }?.adjustName() ?: "string"
+                            if (defaultValue == "EMPTY_BYTE_ARRAY")
+                                defaultValue = "\"\""
+                        }
                         name.startsWith("str") -> {
                             name = name.substringAfter("str").takeIf { it.isNotBlank() }?.adjustName() ?: "str"
                             if (defaultValue == "EMPTY_BYTE_ARRAY")
