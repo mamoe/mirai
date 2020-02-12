@@ -360,7 +360,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (packet is CancellableEvent && packet.isCancelled) return
         }
 
-        bot.logger.info("Received packet: ${packet.toString().replace("\n", """\n""").replace("\r", "")}")
+        bot.logger.info("Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}")
 
         packetFactory?.run {
             when (this) {
