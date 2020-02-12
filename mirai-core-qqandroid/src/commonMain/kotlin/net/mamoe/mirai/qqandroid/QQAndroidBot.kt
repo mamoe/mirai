@@ -55,6 +55,7 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
+    // internally visible only
     fun getGroupByUin(uin: Long): Group {
         return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin } ?: throw NoSuchElementException("Can not found group with ID=${uin}")
     }

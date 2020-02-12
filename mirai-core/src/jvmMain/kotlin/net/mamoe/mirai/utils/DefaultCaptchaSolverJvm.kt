@@ -9,11 +9,11 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.util.cio.use
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.io.ByteWriteChannel
+import kotlinx.coroutines.io.close
 import kotlinx.coroutines.io.jvm.nio.copyTo
 import kotlinx.coroutines.io.reader
 import kotlinx.coroutines.sync.Mutex
@@ -44,7 +44,7 @@ internal class DefaultLoginSolver : LoginSolver() {
             tempFile.createNewFile()
             bot.logger.info("需要图片验证码登录, 验证码为 4 字母")
             try {
-                tempFile.writeChannel().use { writeFully(data) }
+                tempFile.writeChannel().apply { writeFully(data); close() }
                 bot.logger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
             } catch (e: Exception) {
                 bot.logger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
