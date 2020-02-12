@@ -50,6 +50,7 @@ class BotGroupPermissionChangeEvent(
     val new: MemberPermission
 ) : BotEvent(bot), GroupEvent
 
+
 interface GroupSettingChangeEvent<T> : GroupEvent {
     val origin: T
     val new: T
@@ -94,5 +95,4 @@ class MemberPermissionChangeEvent(
     val origin: MemberPermission,
     val new: MemberPermission
 ) : BotEvent(bot), GroupMemberEvent
-
 
