@@ -67,18 +67,9 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onEnable()
     }
 
-    /**
-     * TODO: support all config types
-     */
 
-    @UnstableDefault
     fun loadConfig(fileName: String): Config {
-        return JsonConfig.load(File(fileName))
-    }
-
-    @UnstableDefault
-    fun saveConfig(config: Config, fileName: String = "config.json") {
-        JsonConfig.save(file = File(fileName), config = config as JsonConfig)
+        return Config.load(File(fileName))
     }
 
 

@@ -29,5 +29,6 @@ dependencies {
     runtimeOnly(files("../mirai-core-qqandroid/build/classes/kotlin/jvm/main"))
     runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main"))
     api(kotlin("serialization"))
+    api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
     // classpath is not set correctly by IDE
 }

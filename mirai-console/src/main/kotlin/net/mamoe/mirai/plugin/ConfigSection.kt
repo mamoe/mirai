@@ -9,14 +9,20 @@
 
 package net.mamoe.mirai.plugin
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
+import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.JSONObject
+import com.alibaba.fastjson.TypeReference
+import com.alibaba.fastjson.parser.Feature
+import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.utils.cryptor.contentToString
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.BiConsumer
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.isSubclassOf
+
 
 /**
  * TODO: support all config types
@@ -31,6 +37,7 @@ interface Config {
     fun getFloat(key: String): Float
     fun getDouble(key: String): Double
     fun getLong(key: String): Long
+    fun getBoolean(key: String): Boolean
     fun getList(key: String): List<*>
     fun getStringList(key: String): List<String>
     fun getIntList(key: String): List<Int>
@@ -69,7 +76,7 @@ inline fun <reified T : Any> Config.withDefault(
             if (!this@withDefault.exist(property.name)) {
                 return defaultValue.invoke()
             }
-            return getValue(thisRef, property)
+            return smartCast(property)
         }
 
         override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
@@ -80,13 +87,14 @@ inline fun <reified T : Any> Config.withDefault(
 }
 
 @Suppress("IMPLICIT_CAST_TO_ANY")
-inline operator fun <reified T> Config.getValue(thisRef: Any?, property: KProperty<*>): T {
+inline fun <reified T> Config.smartCast(property: KProperty<*>): T {
     return when (T::class) {
         String::class -> this.getString(property.name)
         Int::class -> this.getInt(property.name)
         Float::class -> this.getFloat(property.name)
         Double::class -> this.getDouble(property.name)
         Long::class -> this.getLong(property.name)
+        Boolean::class -> this.getBoolean(property.name)
         else -> when {
             T::class.isSubclassOf(ConfigSection::class) -> this.getConfigSection(property.name)
             T::class == List::class || T::class == MutableList::class -> {
@@ -113,8 +121,13 @@ inline operator fun <reified T> Config.getValue(thisRef: Any?, property: KProper
     } as T
 }
 
+inline operator fun <reified T> Config.getValue(thisRef: Any?, property: KProperty<*>): T {
+    return smartCast(property)
+}
+
 inline operator fun <reified T> Config.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
     this[property.name] = value!!
+    this.save()
 }
 
 
@@ -133,6 +146,10 @@ interface ConfigSection : Config {
 
     override fun getFloat(key: String): Float {
         return (get(key) ?: error("ConfigSection does not contain $key ")).toString().toFloat()
+    }
+
+    override fun getBoolean(key: String): Boolean {
+        return (get(key) ?: error("ConfigSection does not contain $key ")).toString().toBoolean()
     }
 
     override fun getDouble(key: String): Double {
@@ -175,7 +192,7 @@ interface ConfigSection : Config {
 @Serializable
 open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection {
     override fun set(key: String, value: Any) {
-        this[key] = value
+        this.put(key, value)
     }
 
     override operator fun get(key: String): Any? {
@@ -238,17 +255,30 @@ class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
         if (content.isEmpty() || content.isBlank() || content == "{}") {
             return ConfigSectionImpl()
         }
-        return Json.parse(
-            ConfigSectionImpl.serializer(),
-            content
+        val section = ConfigSectionImpl()
+        val map: LinkedHashMap<String, Any> = JSON.parseObject(
+            content,
+            object : TypeReference<LinkedHashMap<String, Any>>() {},
+            Feature.OrderedField
         )
+        map.forEach { (t, u) ->
+            section[t] = u
+        }
+        return section
     }
 
     @UnstableDefault
     override fun serialize(config: ConfigSectionImpl): String {
-        if (config.isEmpty()) {
-            return "{}"
+        return JSONObject.toJSONString(config)
+    }
+
+    internal class AnySerializer(override val descriptor: SerialDescriptor) : KSerializer<Any> {
+        override fun deserialize(decoder: Decoder): Any {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
-        return Json.stringify(ConfigSectionImpl.serializer(), config)
+
+        override fun serialize(encoder: Encoder, obj: Any) {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
     }
 }
