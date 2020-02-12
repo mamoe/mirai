@@ -21,15 +21,19 @@ pluginManagement {
 
 rootProject.name = 'mirai'
 
-def keyProps = new Properties()
-def keyFile = file("local.properties")
-if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
-if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
-    include(':mirai-demos:mirai-demo-android')
-    project(':mirai-demos:mirai-demo-android').projectDir = file('mirai-demos/mirai-demo-android')
-} else {
-    println("Android SDK 可能未安装. \n将不会加载模块 `mirai-demo-android`, 但这并不影响其他 demo 的加载 ")
-    println("Android SDK might not be installed. \nModule `mirai-demo-android` will not be included, but other demos will not be influenced")
+try {
+    def keyProps = new Properties()
+    def keyFile = file("local.properties")
+    if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+    if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
+        include(':mirai-demos:mirai-demo-android')
+        project(':mirai-demos:mirai-demo-android').projectDir = file('mirai-demos/mirai-demo-android')
+    } else {
+        println("Android SDK 可能未安装. \n将不会加载模块 `mirai-demo-android`, 但这并不影响其他 demo 的加载 ")
+        println("Android SDK might not be installed. \nModule `mirai-demo-android` will not be included, but other demos will not be influenced")
+    }
+} catch (Exception e) {
+    e.printStackTrace()
 }
 
 include(':mirai-core')
