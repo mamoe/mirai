@@ -11,6 +11,7 @@ package net.mamoe.mirai.event.internal
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.EventDisabled
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.utils.LockFreeLinkedList
@@ -21,12 +22,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
-
-/**
- * 设置为 `true` 以关闭事件.
- * 所有的 `subscribe` 都能正常添加到监听器列表, 但所有的广播都会直接返回.
- */
-var EventDisabled = false
 
 @PublishedApi
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
