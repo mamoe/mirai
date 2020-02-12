@@ -325,6 +325,15 @@ internal class GroupImpl(
     @UseExperimental(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
+    var _botMuteRemaining: Int = groupInfo.botMuteRemaining
+
+    override val botMuteRemaining: Int =
+        if (_botMuteRemaining == 0 || _botMuteRemaining == 0xFFFFFFFF.toInt()) {
+            0
+        } else {
+            _botMuteRemaining - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+        }
+
     override val members: ContactList<Member> = ContactList(members.mapNotNull {
         if (it.uin == bot.uin) {
             botPermission = it.permission
@@ -487,6 +496,7 @@ internal class GroupImpl(
     }
 
     override suspend fun sendMessage(message: MessageChain) {
+        check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
         val event = GroupMessageSendEvent(this, message).broadcast()
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")

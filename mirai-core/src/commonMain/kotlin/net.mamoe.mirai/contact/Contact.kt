@@ -14,6 +14,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
+import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
@@ -47,16 +48,20 @@ interface Contact : CoroutineScope {
      *
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
      */
     suspend fun sendMessage(message: MessageChain)
 
     /**
      * 上传一个图片以备发送.
-     * TODO: 群图片与好友图片之间是否通用还不确定.
-     * TODO: 好友之间图片是否通用还不确定.
+     * TODO 群图片与好友图片在服务器上是通用的, 在 mirai 目前不通用.
      *
      * @see BeforeImageUploadEvent 图片发送前事件, cancellable
      * @see ImageUploadEvent 图片发送完成事件
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
      */
     suspend fun uploadImage(image: ExternalImage): Image
 

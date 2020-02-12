@@ -187,6 +187,9 @@ internal class OnlinePush {
                                             )
                                         }
                                     } else {
+                                        if (target == bot.uin) {
+
+                                        }
                                         val member = group[target]
                                         if (time == 0) {
                                             MemberUnmuteEvent(operator = operator, member = member)
