@@ -53,7 +53,7 @@ interface GroupMemberEvent : GroupEvent {
 
 
 /**
- * 有关群的事件
+ * 有关好友的事件
  */
 interface FriendEvent : BotEvent {
     val friend: QQ
