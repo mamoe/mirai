@@ -53,7 +53,7 @@ repositories{
 若您需要使用在跨平台项目, 则要对各个目标平台添加不同的依赖，这与 kotlin 相关跨平台库的依赖是类似的。   
 **若您只需要使用在单一平台, 则只需要添加一项该平台的依赖. 如只在 JVM 运行则只需要`-jvm`的依赖**  
 
-请将 `VERSION` 替换为最新的版本(如 `0.10.6`):
+请将 `VERSION` 替换为最新的版本(如 `0.13.0`):
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
@@ -64,15 +64,15 @@ Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。
 
 **common**
 ```kotlin
-implementation("net.mamoe:mirai-core-timpc-common:VERSION")
+implementation("net.mamoe:mirai-core-qqandroid-common:VERSION")
 ```
 **jvm**
 ```kotlin
-implementation("net.mamoe:mirai-core-timpc-jvm:VERSION")
+implementation("net.mamoe:mirai-core-qqandroid-jvm:VERSION")
 ```
 **android**
 ```kotlin
-implementation("net.mamoe:mirai-core-timpc-android:VERSION")
+implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
 ```
 ### Performance
 Android 上, Mirai 运行需使用 80M 内存.  
