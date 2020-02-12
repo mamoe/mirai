@@ -12,8 +12,10 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import kotlin.jvm.JvmName
 
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
@@ -117,6 +119,14 @@ interface Group : Contact, CoroutineScope {
      */
     suspend fun quit(): Boolean
 
+    /**
+     * 构造一个 [Member].
+     * 非特殊情况请不要使用这个函数. 优先使用 [get].
+     */
+    @MiraiExperimentalAPI("dangerous")
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("newMember")
+    fun Member(memberInfo: MemberInfo): Member
 
     companion object {
 

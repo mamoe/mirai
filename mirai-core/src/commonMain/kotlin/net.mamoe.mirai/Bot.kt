@@ -19,13 +19,13 @@ import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.use
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
+import net.mamoe.mirai.data.FriendInfo
+import net.mamoe.mirai.data.GroupInfo
+import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.WeakRef
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.transferTo
-import net.mamoe.mirai.utils.toList
 
 /**
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
@@ -64,6 +64,13 @@ abstract class Bot : CoroutineScope {
      * QQ 号码. 实际类型为 uint
      */
     abstract val uin: Long
+
+    /**
+     * 昵称
+     */
+    @MiraiExperimentalAPI("还未支持")
+    val nick: String
+        get() = TODO("bot 昵称获取")
 
     /**
      * 日志记录器
@@ -116,7 +123,7 @@ abstract class Bot : CoroutineScope {
      * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
      * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
      */
-    abstract fun QQ(id: Long): QQ
+    abstract fun QQ(friendInfo: FriendInfo): QQ
 
     /**
      * 机器人加入的群列表.
@@ -130,6 +137,25 @@ abstract class Bot : CoroutineScope {
         return groups.delegate.getOrNull(id)
             ?: throw NoSuchElementException("No such group $id for bot ${this.uin}")
     }
+
+    /**
+     * 获取群列表. 返回值前 32 bits 为 uin, 后 32 bits 为 groupCode
+     */
+    abstract suspend fun queryGroupList(): Sequence<Long>
+
+    /**
+     * 查询群资料. 获得的仅为当前时刻的资料.
+     * 请优先使用 [getGroup] 然后查看群资料.
+     */
+    abstract suspend fun queryGroupInfo(id: Long): GroupInfo
+
+    /**
+     * 查询群成员列表.
+     * 请优先使用 [getGroup], [Group.members] 查看群成员.
+     *
+     * 这个函数很慢. 请不要频繁使用.
+     */
+    abstract suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo>
 
     // TODO 目前还不能构造群对象. 这将在以后支持
 

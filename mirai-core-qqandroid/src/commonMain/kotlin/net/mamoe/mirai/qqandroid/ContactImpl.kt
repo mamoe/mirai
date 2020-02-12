@@ -11,9 +11,7 @@ package net.mamoe.mirai.qqandroid
 
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.FriendNameRemark
-import net.mamoe.mirai.data.PreviousNameList
-import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
@@ -24,6 +22,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.NotOnlineImageFromFile
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
@@ -33,6 +32,7 @@ import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.coroutines.CoroutineContext
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
 internal abstract class ContactImpl : Contact {
     override fun hashCode(): Int {
@@ -49,10 +49,22 @@ internal abstract class ContactImpl : Contact {
     }
 }
 
-internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: CoroutineContext, override val id: Long) : ContactImpl(), QQ {
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
+internal inline class FriendInfoImpl(
+    private val jceFriendInfo: JceFriendInfo
+) : FriendInfo {
+    override val nick: String get() = jceFriendInfo.nick ?: ""
+    override val uin: Long get() = jceFriendInfo.friendUin
+}
 
-    override lateinit var nick: String
+internal class QQImpl(
+    bot: QQAndroidBot,
+    override val coroutineContext: CoroutineContext,
+    override val id: Long,
+    private val friendInfo: FriendInfo
+) : ContactImpl(), QQ {
+    override val bot: QQAndroidBot by bot.unsafeWeakRef()
+    override val nick: String
+        get() = friendInfo.nick
 
     override suspend fun sendMessage(message: MessageChain) {
         val event = FriendMessageSendEvent(this, message).broadcast()
@@ -135,14 +147,17 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
         image.input.close()
     }
 
+    @MiraiExperimentalAPI
     override suspend fun queryProfile(): Profile {
         TODO("not implemented")
     }
 
+    @MiraiExperimentalAPI
     override suspend fun queryPreviousNameList(): PreviousNameList {
         TODO("not implemented")
     }
 
+    @MiraiExperimentalAPI
     override suspend fun queryRemark(): FriendNameRemark {
         TODO("not implemented")
     }
@@ -156,24 +171,27 @@ internal class QQImpl(bot: QQAndroidBot, override val coroutineContext: Coroutin
 }
 
 
+@Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl(
     qq: QQImpl,
-    var _groupCard: String,
-    var _specialTitle: String,
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
-    override var permission: MemberPermission
+    memberInfo: MemberInfo
 ) : ContactImpl(), Member, QQ by qq {
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
 
+    override var permission: MemberPermission = memberInfo.permission
+    internal var _nameCard: String = memberInfo.nameCard
+    internal var _specialTitle: String = memberInfo.specialTitle
+
     override var nameCard: String
-        get() = _groupCard
+        get() = _nameCard
         set(newValue) {
             group.checkBotPermissionOperator()
-            if (_groupCard != newValue) {
-                val oldValue = _groupCard
-                _groupCard = newValue
+            if (_nameCard != newValue) {
+                val oldValue = _nameCard
+                _nameCard = newValue
                 launch {
                     bot.network.run {
                         TroopManagement.EditGroupNametag(
@@ -223,7 +241,8 @@ internal class MemberImpl(
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
 
-        MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
+        @Suppress("RemoveRedundantQualifierName") // or unresolved reference
+        net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
         return true
     }
 
@@ -241,7 +260,8 @@ internal class MemberImpl(
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
 
-        MemberUnmuteEvent(this@MemberImpl, null).broadcast()
+        @Suppress("RemoveRedundantQualifierName") // or unresolved reference
+        net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
         return true
     }
 
@@ -269,25 +289,60 @@ internal class MemberImpl(
     override fun hashCode(): Int = super.hashCode()
 }
 
+internal class MemberInfoImpl(
+    private val jceInfo: StTroopMemberInfo,
+    private val groupOwnerId: Long
+) : MemberInfo {
+    override val uin: Long get() = jceInfo.memberUin
+    override val nameCard: String get() = jceInfo.sName ?: ""
+    override val nick: String get() = jceInfo.nick
+    override val permission: MemberPermission
+        get() = when {
+            jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
+            jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+            else -> MemberPermission.MEMBER
+        }
+    override val specialTitle: String get() = jceInfo.sSpecialTitle ?: ""
+}
 
 /**
  * 对GroupImpl
  * 中name/announcement的更改会直接向服务器异步汇报
  */
+@Suppress("PropertyName")
 @UseExperimental(MiraiInternalAPI::class)
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
-    val uin: Long,
-    var _name: String,
-    var _announcement: String,
-    var _allowMemberInvite: Boolean,
-    var _confessTalk: Boolean,
-    var _muteAll: Boolean,
-    var _autoApprove: Boolean,
-    var _anonymousChat: Boolean,
-    override val members: ContactList<Member>
+    groupInfo: GroupInfo,
+    members: Sequence<MemberInfo>
 ) : ContactImpl(), Group {
+    override val bot: QQAndroidBot by bot.unsafeWeakRef()
+    val uin: Long = groupInfo.uin
+
+    override lateinit var owner: Member
+
+    @UseExperimental(MiraiExperimentalAPI::class)
+    override lateinit var botPermission: MemberPermission
+
+    override val members: ContactList<Member> = ContactList(members.asSequence().mapNotNull {
+        if (it.uin == bot.uin) {
+            botPermission = it.permission
+            null
+        } else Member(it).also { member ->
+            if (member.permission == MemberPermission.OWNER) {
+                owner = member
+            }
+        }
+    }.toLockFreeLinkedList())
+
+    internal var _name: String = groupInfo.name
+    internal var _announcement: String = groupInfo.memo
+    internal var _allowMemberInvite: Boolean = groupInfo.allowMemberInvite
+    internal var _confessTalk: Boolean = groupInfo.confessTalk
+    internal var _muteAll: Boolean = groupInfo.muteAll
+    internal var _autoApprove: Boolean = groupInfo.autoApprove
+    internal var _anonymousChat: Boolean = groupInfo.allowAnonymousChat
 
     override var name: String
         get() = _name
@@ -304,7 +359,7 @@ internal class GroupImpl(
                             newName = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupNameChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                    GroupNameChangeEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
                 }
             }
         }
@@ -377,7 +432,7 @@ internal class GroupImpl(
                             switch = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                    GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
                 }
             }
         }
@@ -403,14 +458,19 @@ internal class GroupImpl(
             }
         }
 
-
-    override lateinit var owner: Member
-    @UseExperimental(MiraiExperimentalAPI::class)
-    override var botPermission: MemberPermission = MemberPermission.MEMBER
-
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
         TODO("not implemented")
+    }
+
+    @UseExperimental(MiraiExperimentalAPI::class)
+    override fun Member(memberInfo: MemberInfo): Member {
+        return MemberImpl(
+            bot.QQ(memberInfo) as QQImpl,
+            this,
+            this.coroutineContext,
+            memberInfo
+        )
     }
 
 
@@ -425,8 +485,6 @@ internal class GroupImpl(
     override fun getOrNull(id: Long): Member? {
         return members.delegate.filteringGetOrNull { it.id == id }
     }
-
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     override suspend fun sendMessage(message: MessageChain) {
         val event = GroupMessageSendEvent(this, message).broadcast()
