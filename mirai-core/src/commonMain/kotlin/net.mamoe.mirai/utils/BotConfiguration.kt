@@ -11,6 +11,7 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmStatic
@@ -38,7 +39,11 @@ class BotConfiguration {
     /**
      * 日志记录器
      */
-    var logger: MiraiLogger? = null
+    var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot(${it.uin})") }
+    /**
+     * 网络层日志构造器
+     */
+    var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.uin})") }
     /**
      * 设备信息覆盖
      */
