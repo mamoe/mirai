@@ -196,19 +196,19 @@ suspend fun directlySubscribe(bot: Bot) {
     // 在当前协程作用域 (CoroutineScope) 下创建一个子 Job, 监听一个事件.
     //
     // 手动处理消息
-    // 使用 Bot 的扩展方法监听, 将在处理事件时得到一个 this: Bot.
-    // 这样可以调用 Bot 内的一些扩展方法如 UInt.qq():QQ
     //
-    // 这个函数返回 Listener, Listener 是一个 CompletableJob. 如果不手动 close 它, 它会一直阻止当前 CoroutineScope 结束.
+    // subscribeAlways 函数返回 Listener, Listener 是一个 CompletableJob.
+    //
     // 例如:
     // ```kotlin
     // runBlocking {// this: CoroutineScope
-    //     bot.subscribeAlways<FriendMessage> {
+    //     subscribeAlways<FriendMessage> {
     //     }
     // }
     // ```
     // 则这个 `runBlocking` 永远不会结束, 因为 `subscribeAlways` 在 `runBlocking` 的 `CoroutineScope` 下创建了一个 Job.
     // 正确的用法为:
+    // 在 Bot 的 CoroutineScope 下创建一个监听事件的 Job, 则这个子 Job 会在 Bot 离线后自动完成 (complete).
     bot.subscribeAlways<FriendMessage> {
         // this: FriendMessageEvent
         // event: FriendMessageEvent
