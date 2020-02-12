@@ -30,7 +30,7 @@ inline class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
  * val bot: Bot by param.unsafeWeakRef()
  * ```
  */
-operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>?): T = get()
+operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
 
 /**
  * Weak Reference.
@@ -84,7 +84,7 @@ fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef())
  * val bot: Bot? by param.weakRef()
  * ```
  */
-operator fun <T> WeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>?): T? = this.get()
+operator fun <T> WeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T? = this.get()
 
 /**
  * Call the block if the referent is absent
