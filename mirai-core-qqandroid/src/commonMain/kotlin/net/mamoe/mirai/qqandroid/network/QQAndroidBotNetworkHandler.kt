@@ -18,22 +18,18 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
-import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.qqandroid.FriendInfoImpl
 import net.mamoe.mirai.qqandroid.GroupImpl
-import net.mamoe.mirai.qqandroid.MemberImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.QQImpl
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
@@ -148,7 +144,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     totalFriendCount = data.totalFriendCount
                     data.friendList.forEach {
                         // atomic add
-                        bot.qqs.delegate.addLast(QQImpl(bot, bot.coroutineContext, it.friendUin)).also {
+                        bot.qqs.delegate.addLast(QQImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))).also {
                             currentFriendCount++
                         }
                     }
@@ -171,32 +167,17 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
 
                 troopListData.groups.forEach { troopNum ->
-                    val contactList = ContactList(LockFreeLinkedList<Member>())
-                    val groupInfoResponse =
-                        TroopManagement.GetGroupOperationInfo(
-                            client = bot.client,
-                            groupCode = troopNum.groupCode
-                        ).sendAndExpect<TroopManagement.GetGroupOperationInfo.Response>()
-
-                    val group =
-                        GroupImpl(
-                            bot = bot,
-                            coroutineContext = bot.coroutineContext,
-                            id = troopNum.groupCode,
-                            uin = troopNum.groupUin,
-                            _name = troopNum.groupName,
-                            _announcement = troopNum.groupMemo,
-                            _allowMemberInvite = groupInfoResponse.allowMemberInvite,
-                            _confessTalk = groupInfoResponse.confessTalk,
-                            _muteAll = troopNum.dwShutUpTimestamp != 0L,
-                            _autoApprove = groupInfoResponse.autoApprove,
-                            _anonymousChat = groupInfoResponse.allowAnonymousChat,
-                            members = contactList
-                        )
-                    bot.groups.delegate.addLast(group)
                     launch {
                         try {
-                            fillTroopMemberList(group, contactList, troopNum.dwGroupOwnerUin)
+                            bot.groups.delegate.addLast(
+                                GroupImpl(
+                                    bot = bot,
+                                    coroutineContext = bot.coroutineContext,
+                                    id = troopNum.groupCode,
+                                    groupInfo = bot.queryGroupInfo(troopNum.groupCode),
+                                    members = bot.queryGroupMemberList(troopNum.groupUin, troopNum.groupCode, troopNum.dwGroupOwnerUin)
+                                )
+                            )
                         } catch (e: Exception) {
                             bot.logger.error("群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试")
                             bot.logger.error(e)
@@ -240,47 +221,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             lastException = e
         }
         return lastException
-    }
-
-    suspend fun fillTroopMemberList(group: GroupImpl, list: ContactList<Member>, owner: Long) {
-        bot.logger.verbose("开始获取群[${group.uin}]成员列表")
-        var size = 0
-        var nextUin = 0L
-        while (true) {
-            val data = FriendList.GetTroopMemberList(
-                client = bot.client,
-                targetGroupUin = group.uin,
-                targetGroupCode = group.id,
-                nextUin = nextUin
-            ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
-            data.members.forEach { troopMemberInfo ->
-                val member = MemberImpl(
-                    qq = (bot.QQ(troopMemberInfo.memberUin) as QQImpl).also { it.nick = troopMemberInfo.nick },
-                    _groupCard = troopMemberInfo.sName ?: "",
-                    _specialTitle = troopMemberInfo.sSpecialTitle ?: "",
-                    group = group,
-                    coroutineContext = group.coroutineContext,
-                    permission = when {
-                        troopMemberInfo.memberUin == owner -> MemberPermission.OWNER
-                        troopMemberInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
-                        else -> MemberPermission.MEMBER
-                    }
-                )
-                if (member.permission == MemberPermission.OWNER) {
-                    group.owner = member
-                }
-                if (troopMemberInfo.memberUin != bot.uin) {
-                    list.delegate.addLast(member)
-                } else {
-                    group.botPermission = member.permission
-                }
-                size += data.members.size
-                nextUin = data.nextUin
-            }
-            if (nextUin == 0L) {
-                break
-            }
-        }
     }
 
     /**

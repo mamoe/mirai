@@ -17,11 +17,18 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.contact.filteringGetOrNull
 import net.mamoe.mirai.data.AddFriendResult
+import net.mamoe.mirai.data.FriendInfo
+import net.mamoe.mirai.data.GroupInfo
+import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.QQAndroidGroupInfo
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.*
+import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext
 
 @UseExperimental(MiraiInternalAPI::class)
@@ -31,7 +38,7 @@ internal expect class QQAndroidBot constructor(
     configuration: BotConfiguration
 ) : QQAndroidBotBase
 
-@UseExperimental(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal abstract class QQAndroidBotBase constructor(
     context: Context,
     account: BotAccount,
@@ -48,10 +55,15 @@ internal abstract class QQAndroidBotBase constructor(
     override val uin: Long get() = client.uin
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
-    override val selfQQ: QQ by lazy { QQ(uin) }
+    override val selfQQ: QQ by lazy {
+        QQ(object : FriendInfo {
+            override val uin: Long get() = this@QQAndroidBotBase.uin
+            override val nick: String get() = this@QQAndroidBotBase.nick
+        })
+    }
 
-    override fun QQ(id: Long): QQ {
-        return QQImpl(this as QQAndroidBot, coroutineContext, id)
+    override fun QQ(friendInfo: FriendInfo): QQ {
+        return QQImpl(this as QQAndroidBot, coroutineContext, friendInfo.uin, friendInfo)
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
@@ -69,6 +81,45 @@ internal abstract class QQAndroidBotBase constructor(
         return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin }
     }
 
+    override suspend fun queryGroupList(): Sequence<Long> {
+        return network.run {
+            FriendList.GetTroopListSimplify(bot.client)
+                .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
+        }.groups.asSequence().map { it.groupUin.shl(32) and it.groupCode }
+    }
+
+    override suspend fun queryGroupInfo(id: Long): GroupInfo = network.run {
+        TroopManagement.GetGroupInfo(
+            client = bot.client,
+            groupCode = id
+        ).sendAndExpect<QQAndroidGroupInfo>().apply {
+            if (this.delegate.groupUin == null) {
+                this.delegate.groupUin = Group.calculateGroupUinByGroupCode(id)
+            }
+        }
+    }
+
+    override suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo> = network.run {
+        var nextUin = 0L
+        var sequence = sequenceOf<MemberInfoImpl>()
+        while (true) {
+            val data = FriendList.GetTroopMemberList(
+                client = bot.client,
+                targetGroupUin = groupUin,
+                targetGroupCode = groupCode,
+                nextUin = nextUin
+            ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
+            sequence += data.members.asSequence().map { troopMemberInfo ->
+                MemberInfoImpl(troopMemberInfo.apply {
+                }, ownerId)
+            }
+            nextUin = data.nextUin
+            if (nextUin == 0L) {
+                break
+            }
+        }
+        return sequence
+    }
 
     override fun onEvent(event: BotEvent): Boolean {
         return firstLoginSucceed

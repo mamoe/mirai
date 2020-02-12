@@ -20,10 +20,10 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.MemberImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
-import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
@@ -34,7 +34,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readString
@@ -96,6 +96,7 @@ internal class OnlinePush {
 
     internal object PbPushTransMsg : IncomingPacketFactory<Packet>("OnlinePush.PbPushTransMsg", "OnlinePush.RespPush") {
 
+        @UseExperimental(MiraiInternalAPI::class)
         @ExperimentalUnsignedTypes
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
@@ -109,17 +110,16 @@ internal class OnlinePush {
                         if (var4 != 0 && var4 != 1) {
                             var5 = readUInt().toLong()
                         }
-                        if (var5 == 0L && this.remaining == 1L) {//管理员变更
-                            val groupUin = content.fromUin
 
-                            val member = bot.getGroupByUin(groupUin)[target] as MemberImpl
-                            val old = member.permission
-                            return if (this.readByte().toInt() == 1) {
-                                member.permission = MemberPermission.ADMINISTRATOR
-                                MemberPermissionChangeEvent(member, old, MemberPermission.ADMINISTRATOR)
+                        val group = bot.getGroupByUin(content.fromUin) as GroupImpl
+                        if (var5 == 0L && this.remaining == 1L) {//管理员变更
+                            val newPermission = if (this.readByte().toInt() == 1) MemberPermission.ADMINISTRATOR else MemberPermission.MEMBER
+
+                            return if (target == bot.uin) {
+                                BotGroupPermissionChangeEvent(group, group.botPermission.also { group.botPermission = newPermission }, newPermission)
                             } else {
-                                member.permission = MemberPermission.MEMBER
-                                MemberPermissionChangeEvent(member, old, MemberPermission.ADMINISTRATOR)
+                                val member = group[target] as MemberImpl
+                                MemberPermissionChangeEvent(member, member.permission.also { member.permission = newPermission }, newPermission)
                             }
                         }
                     }
@@ -129,10 +129,12 @@ internal class OnlinePush {
                             val target = readUInt().toLong()
                             val groupUin = content.fromUin
 
-                            bot.getGroupByUin(groupUin).let {
-                                val member = it[target] as MemberImpl
+                            bot.getGroupByUin(groupUin).let { group ->
+                                val member = group[target] as MemberImpl
                                 this.discardExact(1)
-                                return MemberLeaveEvent.Kick(member, it.members[readUInt().toLong()])
+                                return MemberLeaveEvent.Kick(member, group.members[readUInt().toLong()].also {
+                                    group.members.delegate.remove(it)
+                                })
                             }
                         }
                     }
@@ -158,6 +160,7 @@ internal class OnlinePush {
                     when {
                         msgInfo.shMsgType.toInt() == 732 -> {
                             val group = bot.getGroup(this.readUInt().toLong())
+                            group as GroupImpl
 
                             when (val internalType = this.readShort().toInt()) {
                                 3073 -> { // mute
@@ -169,9 +172,19 @@ internal class OnlinePush {
 
                                     return if (target == 0L) {
                                         if (time == 0) {
-                                            GroupMuteAllEvent(origin = true, new = false, operator = operator, group = group)
+                                            GroupMuteAllEvent(
+                                                origin = group.muteAll.also { group._muteAll = false },
+                                                new = false,
+                                                operator = operator,
+                                                group = group
+                                            )
                                         } else {
-                                            GroupMuteAllEvent(origin = false, new = true, operator = operator, group = group)
+                                            GroupMuteAllEvent(
+                                                origin = group.muteAll.also { group._muteAll = true },
+                                                new = true,
+                                                operator = operator,
+                                                group = group
+                                            )
                                         }
                                     } else {
                                         val member = group[target]
@@ -184,9 +197,10 @@ internal class OnlinePush {
                                 }
                                 3585 -> { // 匿名
                                     val operator = group[this.readUInt().toLong()]
+                                    val switch = this.readInt() == 0
                                     return GroupAllowAnonymousChatEvent(
-                                        origin = group.anonymousChat,
-                                        new = this.readInt() == 0,
+                                        origin = group.anonymousChat.also { group._anonymousChat = switch },
+                                        new = switch,
                                         operator = operator,
                                         group = group
                                     )
@@ -196,23 +210,30 @@ internal class OnlinePush {
                                     val message = this.readString(this.readByte().toInt())
                                     println(dataBytes.toUHexString())
 
-                                    return if (dataBytes[0].toInt() != 59) {
-                                        return GroupNameChangeEvent(origin = group.name, new = message, group = group)
+                                    if (dataBytes[0].toInt() != 59) {
+                                        return GroupNameChangeEvent(
+                                            origin = group.name.also { group._name = message },
+                                            new = message,
+                                            group = group,
+                                            isByBot = false
+                                        )
                                     } else {
                                         //println(message + ":" + dataBytes.toUHexString())
                                         when (message) {
                                             "管理员已关闭群聊坦白说" -> {
                                                 return GroupAllowConfessTalkEvent(
-                                                    origin = group.confessTalk,
+                                                    origin = group.confessTalk.also { group._confessTalk = false },
                                                     new = false,
-                                                    group = group
+                                                    group = group,
+                                                    isByBot = false
                                                 )
                                             }
                                             "管理员已开启群聊坦白说" -> {
                                                 return GroupAllowConfessTalkEvent(
-                                                    origin = group.confessTalk,
-                                                    new = false,
-                                                    group = group
+                                                    origin = group.confessTalk.also { group._confessTalk = true },
+                                                    new = true,
+                                                    group = group,
+                                                    isByBot = false
                                                 )
                                             }
                                             else -> {
@@ -222,18 +243,19 @@ internal class OnlinePush {
                                         }
                                     }
                                 }
-                                4352 -> {
-                                    println(msgInfo.contentToString())
-                                    println(msgInfo.vMsg.toUHexString())
-                                }
+                                // 4352 -> {
+                                //     println(msgInfo.contentToString())
+                                //     println(msgInfo.vMsg.toUHexString())
+                                // }
                                 else -> {
                                     println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
                                 }
                             }
                         }
                         msgInfo.shMsgType.toInt() == 528 -> {
-                            val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
-                            println(content.contentToString())
+                            println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                            // val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
+                            // println(content.contentToString())
                         }
                         else -> {
                             println("unknown shtype ${msgInfo.shMsgType.toInt()}")
