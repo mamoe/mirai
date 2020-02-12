@@ -38,7 +38,12 @@ internal abstract class QQAndroidBotBase constructor(
     configuration: BotConfiguration
 ) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
     val client: QQAndroidClient =
-        QQAndroidClient(context, account, bot = @Suppress("LeakingThis") this as QQAndroidBot, device = configuration.deviceInfo?.invoke(context) ?: SystemDeviceInfo(context))
+        QQAndroidClient(
+            context,
+            account,
+            bot = @Suppress("LeakingThis") this as QQAndroidBot,
+            device = configuration.deviceInfo?.invoke(context) ?: SystemDeviceInfo(context)
+        )
     internal var firstLoginSucceed: Boolean = false
     override val uin: Long get() = client.uin
     override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
@@ -59,6 +64,11 @@ internal abstract class QQAndroidBotBase constructor(
     fun getGroupByUin(uin: Long): Group {
         return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin } ?: throw NoSuchElementException("Can not found group with ID=${uin}")
     }
+
+    fun getGroupByUinOrNull(uin: Long): Group? {
+        return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin }
+    }
+
 
     override fun onEvent(event: BotEvent): Boolean {
         return firstLoginSucceed
