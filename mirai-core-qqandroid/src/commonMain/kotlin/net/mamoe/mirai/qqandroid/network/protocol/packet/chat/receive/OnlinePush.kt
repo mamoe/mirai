@@ -132,9 +132,9 @@ internal class OnlinePush {
                             bot.getGroupByUin(groupUin).let { group ->
                                 val member = group[target] as MemberImpl
                                 this.discardExact(1)
-                                return MemberLeaveEvent.Kick(member, group.members[readUInt().toLong()].also {
-                                    group.members.delegate.remove(it)
-                                })
+                                return MemberLeaveEvent.Kick(member.also {
+                                    group.members.delegate.remove(member)
+                                }, group.members[readUInt().toLong()])
                             }
                         }
                     }
@@ -187,14 +187,18 @@ internal class OnlinePush {
                                             )
                                         }
                                     } else {
-                                        if (target == bot.uin) {
-
-                                        }
-                                        val member = group[target]
-                                        if (time == 0) {
-                                            MemberUnmuteEvent(operator = operator, member = member)
+                                        return if (target == bot.uin) {
+                                            if (time == 0) {
+                                                BotUnmuteEvent(operator)
+                                            } else
+                                                BotMuteEvent(durationSeconds = time, operator = operator)
                                         } else {
-                                            MemberMuteEvent(operator = operator, member = member, durationSeconds = time)
+                                            val member = group[target]
+                                            if (time == 0) {
+                                                MemberUnmuteEvent(operator = operator, member = member)
+                                            } else {
+                                                MemberMuteEvent(operator = operator, member = member, durationSeconds = time)
+                                            }
                                         }
                                     }
                                 }
