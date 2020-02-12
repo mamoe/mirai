@@ -138,11 +138,7 @@ interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent {
 data class GroupNameChangeEvent(
     override val origin: String,
     override val new: String,
-    override val group: Group,
-    /**
-     * 操作人. 为 null 时则是机器人操作
-     */
-    val operator: Member?
+    override val group: Group
 ) : GroupSettingChangeEvent<String>, Packet
 
 /**
@@ -191,11 +187,7 @@ data class GroupAllowAnonymousChatEvent(
 data class GroupAllowConfessTalkEvent(
     override val origin: Boolean,
     override val new: Boolean,
-    override val group: Group,
-    /**
-     * 操作人. 为 null 时则是机器人操作
-     */
-    val operator: Member?
+    override val group: Group
 ) : GroupSettingChangeEvent<Boolean>, Packet
 
 /**
