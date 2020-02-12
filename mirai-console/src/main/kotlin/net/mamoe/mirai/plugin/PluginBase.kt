@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.plugin
 
+import Command
 import kotlinx.coroutines.*
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
@@ -66,32 +67,18 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onEnable()
     }
 
-    @UnstableDefault
-    fun loadConfig(fileName: String = "config.json"): ConfigSection {
-        var content = File(dataFolder.name + "/" + fileName)
-            .also {
-                if (!it.exists()) it.createNewFile()
-            }.readText()
+    /**
+     * TODO: support all config types
+     */
 
-        if (content == "") {
-            content = "{}"
-        }
-        return Json.parse(
-            ConfigSection.serializer(),
-            content
-        )
+    @UnstableDefault
+    fun loadConfig(fileName: String): Config {
+        return JsonConfig.load(File(fileName))
     }
 
     @UnstableDefault
-    fun saveConfig(config: ConfigSection, fileName: String = "config.json") {
-        val content = Json.stringify(
-            ConfigSection.serializer(),
-            config
-        )
-        File(dataFolder.name + "/" + fileName)
-            .also {
-                if (!it.exists()) it.createNewFile()
-            }.writeText(content)
+    fun saveConfig(config: Config, fileName: String = "config.json") {
+        JsonConfig.save(file = File(fileName), config = config as JsonConfig)
     }
 
 
