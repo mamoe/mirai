@@ -74,6 +74,10 @@ interface Listener<in E : Event> : CompletableJob {
  * ```kotlin
  * bot.subscribe<Subscribe> { /* 一些处理 */ }
  * ```
+ *
+ * @see subscribeMessages 监听消息 DSL
+ * @see subscribeGroupMessages 监听群消息
+ * @see subscribeFriendMessages 监听好友消息
  */
 inline fun <reified E : Event> CoroutineScope.subscribe(crossinline handler: suspend E.(E) -> ListeningStatus): Listener<E> =
     E::class.subscribeInternal(Handler { it.handler(it) })
