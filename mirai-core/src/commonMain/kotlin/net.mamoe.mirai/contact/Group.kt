@@ -24,18 +24,20 @@ interface Group : Contact, CoroutineScope {
     /**
      * 群名称.
      *
-     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     * 在修改时将会异步上传至服务器.
      * 频繁修改可能会被服务器拒绝.
      *
      * @see MemberPermissionChangeEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     var name: String
     /**
      * 入群公告, 没有时为空字符串.
      *
-     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     * 在修改时将会异步上传至服务器.
      *
      * @see GroupEntranceAnnouncementChangeEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     var entranceAnnouncement: String
     /**
@@ -49,17 +51,19 @@ interface Group : Contact, CoroutineScope {
     /**
      * 坦白说状态. `true` 为允许.
      *
-     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
-
+     * 在修改时将会异步上传至服务器.
+     *
      * @see GroupAllowConfessTalkEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     var confessTalk: Boolean
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许
      *
-     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     * 在修改时将会异步上传至服务器.
      *
      * @see GroupAllowMemberInviteEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     var allowMemberInvite: Boolean
     /**
@@ -77,10 +81,17 @@ interface Group : Contact, CoroutineScope {
     override val id: Long
 
     /**
-     * 群主 (同步事件更新)
+     * 群主
      */
     val owner: Member
 
+    /**
+     * 机器人被禁言还剩余多少秒
+     *
+     * @see BotMuteEvent
+     * @see isBotMuted
+     */
+    val botMuteRemaining: Int
 
     /**
      * 机器人在这个群里的权限
@@ -124,7 +135,7 @@ interface Group : Contact, CoroutineScope {
      * 非特殊情况请不要使用这个函数. 优先使用 [get].
      */
     @MiraiExperimentalAPI("dangerous")
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName")
     @JvmName("newMember")
     fun Member(memberInfo: MemberInfo): Member
 
@@ -169,3 +180,8 @@ interface Group : Contact, CoroutineScope {
     @MiraiExperimentalAPI
     fun toFullString(): String = "Group(id=${this.id}, name=$name, owner=${owner.id}, members=${members.idContentString})"
 }
+
+/**
+ * 返回机器人是否正在被禁言
+ */
+val Group.isBotMuted: Boolean get() = this.botMuteRemaining == 0

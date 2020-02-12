@@ -57,4 +57,9 @@ interface GroupInfo {
      * 全员禁言
      */
     val muteAll: Boolean
+
+    /**
+     * 机器人被禁言还剩时间, 秒.
+     */
+    val botMuteRemaining: Int
 }

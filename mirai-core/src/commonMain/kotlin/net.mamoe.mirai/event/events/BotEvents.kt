@@ -18,6 +18,7 @@ import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 
 @Suppress("unused")
@@ -123,6 +124,26 @@ data class BotGroupPermissionChangeEvent(
     val new: MemberPermission
 ) : BotPassiveEvent, GroupEvent, Packet
 
+/**
+ * Bot 被禁言
+ */
+data class BotMuteEvent(
+    val durationSeconds: Int,
+    override val group: Group,
+    /**
+     * 操作人. 为 null 则为机器人操作
+     */
+    val operator: Member?
+) : GroupEvent, Packet, BotPassiveEvent
+
+/**
+ * Bot 加入了一个新群
+ */
+@MiraiExperimentalAPI
+data class BotJoinGroupEvent(
+    override val group: Group
+) : BotPassiveEvent, GroupEvent, Packet
+
 // region 群设置
 
 /**
@@ -219,7 +240,7 @@ data class GroupAllowMemberInviteEvent(
 /**
  * 成员加入群的事件
  */
-data class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent
+data class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet
 
 /**
  * 成员离开群的事件
