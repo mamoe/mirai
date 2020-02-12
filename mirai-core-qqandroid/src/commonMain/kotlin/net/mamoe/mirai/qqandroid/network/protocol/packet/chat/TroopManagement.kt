@@ -14,6 +14,7 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
 import kotlinx.serialization.toUtf8Bytes
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -23,12 +24,27 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.stUinInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
-import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.utils.io.encodeToString
+import net.mamoe.mirai.data.GroupInfo as MiraiGroupInfo
+
+internal inline class GroupInfoImpl(
+    internal val delegate: Oidb0x88d.GroupInfo
+) : MiraiGroupInfo, Packet {
+    override val uin: Long get() = delegate.groupUin ?: error("cannot find groupUin")
+    override val owner: Long get() = delegate.groupOwner ?: error("cannot find groupOwner")
+    override val groupCode: Long get() = Group.calculateGroupCodeByGroupUin(uin)
+    override val memo: String get() = delegate.groupMemo ?: error("cannot find groupMemo")
+    override val name: String get() = delegate.groupName ?: delegate.longGroupName ?: error("cannot find groupName")
+    override val allowMemberInvite get() = delegate.groupFlagExt?.and(0x000000c0) != 0
+    override val allowAnonymousChat get() = delegate.groupFlagExt?.and(0x40000000) == 0
+    override val autoApprove get() = delegate.groupFlagext3?.and(0x00100000) == 0
+    override val confessTalk get() = delegate.groupFlagext3?.and(0x00002000) == 0
+    override val muteAll: Boolean get() = delegate.shutupTimestamp != 0
+}
 
 internal class TroopManagement {
 
@@ -70,16 +86,7 @@ internal class TroopManagement {
     }
 
 
-    internal object GetGroupOperationInfo : OutgoingPacketFactory<GetGroupOperationInfo.Response>("OidbSvc.0x88d_7") {
-        class Response(
-            val allowAnonymousChat: Boolean,
-            val allowMemberInvite: Boolean,
-            val autoApprove: Boolean,
-            val confessTalk: Boolean
-        ) : Packet {
-            override fun toString(): String = "Response(GroupInfo)"
-        }
-
+    internal object GetGroupInfo : OutgoingPacketFactory<GroupInfoImpl>("OidbSvc.0x88d_7") {
         operator fun invoke(
             client: QQAndroidClient,
             groupCode: Long
@@ -109,8 +116,13 @@ internal class TroopManagement {
                                         cmduinUinFlag = 0,
                                         createSourceFlag = 0,
                                         noCodeFingerOpenFlag = 0,
-                                        ingGroupQuestion = EMPTY_BYTE_ARRAY,
-                                        ingGroupAnswer = EMPTY_BYTE_ARRAY
+                                        ingGroupQuestion = "",
+                                        ingGroupAnswer = "",
+                                        groupName = "",
+                                        longGroupName = "",
+                                        groupMemo = "",
+                                        groupUin = 0,
+                                        groupOwner = 0
                                     ),
                                     groupCode = groupCode
                                 )
@@ -121,14 +133,9 @@ internal class TroopManagement {
             }
         }
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GroupInfoImpl {
             with(this.readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x88d.RspBody.serializer()).stzrspgroupinfo!![0].stgroupinfo!!) {
-                return Response(
-                    allowMemberInvite = (this.groupFlagExt?.and(0x000000c0) != 0),
-                    allowAnonymousChat = (this.groupFlagExt?.and(0x40000000) == 0),
-                    autoApprove = (this.groupFlagext3?.and(0x00100000) == 0),
-                    confessTalk = (this.groupFlagext3?.and(0x00002000) == 0)
-                )
+                return GroupInfoImpl(this)
             }
         }
     }

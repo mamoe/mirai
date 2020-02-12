@@ -69,6 +69,20 @@ fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
 }
 
 /**
+ * 构建链表结构然后转为 [LockFreeLinkedList]
+ */
+fun <E> Iterable<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
+    return LockFreeLinkedList<E>().apply { addAll(this@toLockFreeLinkedList) }
+}
+
+/**
+ * 构建链表结构然后转为 [LockFreeLinkedList]
+ */
+fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
+    return LockFreeLinkedList<E>().apply { addAll(this@toLockFreeLinkedList) }
+}
+
+/**
  * Implementation of lock-free LinkedList.
  *
  * Modifying can be performed concurrently.
@@ -111,14 +125,56 @@ open class LockFreeLinkedList<E> {
     }
 
     open fun addLast(element: E) {
-        val node = element.asNode(tail)
+        addLastNode(element.asNode(tail))
+    }
 
+    private fun addLastNode(node: Node<E>) {
         while (true) {
             val tail = head.iterateBeforeFirst { it === tail } // find the last node.
             if (tail.nextNodeRef.compareAndSet(this.tail, node)) { // ensure the last node is the last node
                 return
             }
         }
+    }
+
+    /**
+     * 先把元素建立好链表, 再加入到 list.
+     */
+    @Suppress("DuplicatedCode")
+    open fun addAll(iterable: Iterable<E>) {
+        var firstNode: Node<E>? = null
+
+        var currentNode: Node<E>? = null
+        iterable.forEach {
+            val nextNode = it.asNode(tail)
+            if (firstNode == null) {
+                firstNode = nextNode
+            }
+            currentNode?.nextNode = nextNode
+            currentNode = nextNode
+        }
+
+        firstNode?.let { addLastNode(it) }
+    }
+
+    /**
+     * 先把元素建立好链表, 再加入到 list.
+     */
+    @Suppress("DuplicatedCode")
+    open fun addAll(iterable: Sequence<E>) {
+        var firstNode: Node<E>? = null
+
+        var currentNode: Node<E>? = null
+        iterable.forEach {
+            val nextNode = it.asNode(tail)
+            if (firstNode == null) {
+                firstNode = nextNode
+            }
+            currentNode?.nextNode = nextNode
+            currentNode = nextNode
+        }
+
+        firstNode?.let { addLastNode(it) }
     }
 
     open operator fun plusAssign(element: E) = this.addLast(element)
@@ -242,8 +298,6 @@ open class LockFreeLinkedList<E> {
             node = node.nextNode
         }
     }
-
-    open fun addAll(elements: Collection<E>) = elements.forEach { addLast(it) }
 
     @Suppress("unused")
     open fun clear() {

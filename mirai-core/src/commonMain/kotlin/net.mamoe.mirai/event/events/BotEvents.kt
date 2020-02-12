@@ -13,6 +13,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.AbstractCancellableEvent
+import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -120,16 +121,19 @@ data class BotGroupPermissionChangeEvent(
     override val group: Group,
     val origin: MemberPermission,
     val new: MemberPermission
-) : BotPassiveEvent, GroupEvent
+) : BotPassiveEvent, GroupEvent, Packet
 
 // region 群设置
 
 /**
  * 群设置改变. 此事件广播前修改就已经完成.
  */
-interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent {
+interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent, BroadcastControllable {
     val origin: T
     val new: T
+
+    override val shouldBroadcast: Boolean
+        get() = origin != new
 }
 
 /**
@@ -138,7 +142,8 @@ interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent {
 data class GroupNameChangeEvent(
     override val origin: String,
     override val new: String,
-    override val group: Group
+    override val group: Group,
+    val isByBot: Boolean
 ) : GroupSettingChangeEvent<String>, Packet
 
 /**
@@ -187,7 +192,8 @@ data class GroupAllowAnonymousChatEvent(
 data class GroupAllowConfessTalkEvent(
     override val origin: Boolean,
     override val new: Boolean,
-    override val group: Group
+    override val group: Group,
+    val isByBot: Boolean
 ) : GroupSettingChangeEvent<Boolean>, Packet
 
 /**
@@ -299,7 +305,7 @@ data class MemberPermissionChangeEvent(
 // region 禁言
 
 /**
- * 群成员被禁言事件. 操作人和被禁言的成员都不可能是机器人本人
+ * 群成员被禁言事件. 被禁言的成员都不可能是机器人本人
  */
 data class MemberMuteEvent(
     override val member: Member,
@@ -311,7 +317,7 @@ data class MemberMuteEvent(
 ) : GroupMemberEvent, Packet
 
 /**
- * 群成员被取消禁言事件. 操作人和被禁言的成员都不可能是机器人本人
+ * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
  */
 data class MemberUnmuteEvent(
     override val member: Member,

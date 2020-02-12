@@ -17,7 +17,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-io:$coroutinesIoVersion")
     implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.62'
-    implementation 'org.jsoup:jsoup:1.12.1'
+    api 'org.jsoup:jsoup:1.12.1'
 }
 
 run{
