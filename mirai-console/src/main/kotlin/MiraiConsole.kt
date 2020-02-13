@@ -12,13 +12,24 @@ import kotlinx.serialization.UnstableDefault
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.api.http.generateSessionKey
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.plugin.*
 import java.io.File
 import kotlin.concurrent.thread
+import kotlin.math.log
 
 object MiraiConsole {
     val bots
         get() = Bot.instances
+
+    fun getBotByUIN(uin: Long): Bot? {
+        bots.forEach {
+            if (it.get()?.uin == uin) {
+                return it.get()
+            }
+        }
+        return null
+    }
 
     val pluginManager: PluginManager
         get() = PluginManager
@@ -46,7 +57,6 @@ object MiraiConsole {
         DefaultCommands()
         pluginManager.loadPlugins()
         CommandListener.start()
-        println(MiraiProperties.HTTP_API_ENABLE)
         logger("\"/login qqnumber qqpassword \" to login a bot")
         logger("\"/login qq号 qq密码 \" 来登陆一个BOT")
 
@@ -64,19 +74,19 @@ object MiraiConsole {
             buildCommand {
                 name = "login"
                 description = "Mirai-Console default bot login command"
-                onCommand = {
+                onCommand {
                     if (it.size < 2) {
                         logger("\"/login qqnumber qqpassword \" to login a bot")
                         logger("\"/login qq号 qq密码 \" 来登录一个BOT")
-                        false
+                        return@onCommand false
                     }
                     val qqNumber = it[0].toLong()
                     val qqPassword = it[1]
-                    println("login...")
+                    logger("login...")
                     try {
                         runBlocking {
                             Bot(qqNumber, qqPassword).alsoLogin()
-                            println("$qqNumber login successed")
+                            println("$qqNumber login successes")
                         }
                     } catch (e: Exception) {
                         println("$qqNumber login failed")
@@ -88,13 +98,23 @@ object MiraiConsole {
             buildCommand {
                 name = "status"
                 description = "Mirai-Console default status command"
-                onCommand = {
+                onCommand {
                     when (it.size) {
                         0 -> {
-
+                            logger("当前有" + bots.size + "个BOT在线")
                         }
                         1 -> {
-
+                            val bot = it[0]
+                            var find = false
+                            bots.forEach {
+                                if (it.get()?.uin.toString().contains(bot)) {
+                                    find = true
+                                    logger("" + it.get()?.uin + ": 在线中; 好友数量:" + it.get()?.qqs?.size + "; 群组数量:" + it.get()?.groups?.size)
+                                }
+                            }
+                            if (!find) {
+                                logger("没有找到BOT$bot")
+                            }
                         }
                     }
                     true
@@ -105,14 +125,36 @@ object MiraiConsole {
             buildCommand {
                 name = "say"
                 description = "Mirai-Console default say command"
-                onCommand = {
-                    when (it.size) {
-                        0 -> {
-
+                onCommand {
+                    if (it.size < 2) {
+                        logger("say [好友qq号或者群号] [文本消息]     //将默认使用第一个BOT")
+                        logger("say [bot号] [好友qq号或者群号] [文本消息]")
+                        return@onCommand false
+                    }
+                    val bot: Bot? = if (it.size == 2) {
+                        if (bots.size == 0) {
+                            logger("还没有BOT登陆")
+                            return@onCommand false
                         }
-                        1 -> {
-
+                        bots[0].get()
+                    } else {
+                        getBotByUIN(it[0].toLong())
+                    }
+                    if (bot == null) {
+                        logger("没有找到BOT")
+                        return@onCommand false
+                    }
+                    val target = it[it.size - 2].toLong()
+                    val message = it[it.size - 1]
+                    try {
+                        val contact = bot[target]
+                        runBlocking {
+                            contact.sendMessage(message)
+                            logger("消息已推送")
                         }
+                    } catch (e: NoSuchElementException) {
+                        logger("没有找到群或好友 号码为${target}")
+                        return@onCommand false
                     }
                     true
                 }
@@ -123,16 +165,14 @@ object MiraiConsole {
                 name = "plugins"
                 alias = listOf("plugin")
                 description = "show all plugins"
-                onCommand = {
-                    when (it.size) {
-                        0 -> {
-
+                onCommand {
+                    PluginManager.getAllPluginDescriptions().let {
+                        println("loaded " + it.size + " plugins")
+                        it.forEach {
+                            logger("\t" + it.name + " v" + it.version + " by" + it.author + " " + it.info)
                         }
-                        1 -> {
-
-                        }
+                        true
                     }
-                    true
                 }
             }
 
@@ -140,13 +180,11 @@ object MiraiConsole {
                 name = "command"
                 alias = listOf("commands", "help", "helps")
                 description = "show all commands"
-                onCommand = {
-                    when (it.size) {
-                        0 -> {
-
-                        }
-                        1 -> {
-
+                onCommand {
+                    CommandManager.getCommands().let {
+                        println("currently have " + it.size + " commands")
+                        it.toSet().forEach {
+                            logger("\t" + it.name + " :" + it.description)
                         }
                     }
                     true
@@ -155,16 +193,13 @@ object MiraiConsole {
 
             buildCommand {
                 name = "about"
-                description = ""
-                onCommand = {
-                    when (it.size) {
-                        0 -> {
-
-                        }
-                        1 -> {
-
-                        }
-                    }
+                description = "About Mirai-Console"
+                onCommand {
+                    logger("v${version} $build is still in testing stage, majority feature is available")
+                    logger("now running under " + System.getProperty("user.dir"))
+                    logger("在Github中获取项目最新进展: https://github.com/mamoe/mirai")
+                    logger("Mirai为开源项目，请自觉遵守开源项目协议")
+                    logger("Powered by Mamoe Technology")
                     true
                 }
             }
@@ -180,10 +215,12 @@ object MiraiConsole {
         }
 
         tailrec fun processNextCommandLine() {
-            val fullCommand = readLine()
-            if (fullCommand != null && fullCommand.startsWith("/")) {
+            var fullCommand = readLine()
+            if (fullCommand != null) {
+                if (!fullCommand.startsWith("/")) {
+                    fullCommand = "/$fullCommand"
+                }
                 if (!CommandManager.runCommand(fullCommand)) {
-                    logger("unknown command $fullCommand")
                     logger("未知指令 $fullCommand")
                 }
             }

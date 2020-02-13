@@ -12,6 +12,10 @@ import net.mamoe.mirai.plugin.PluginManager
 object CommandManager {
     private val registeredCommand: MutableMap<String, ICommand> = mutableMapOf()
 
+    fun getCommands(): Collection<ICommand> {
+        return registeredCommand.values
+    }
+
 
     fun register(command: ICommand) {
         val allNames = mutableListOf(command.name).also { it.addAll(command.alias) }
@@ -30,6 +34,10 @@ object CommandManager {
         allNames.forEach {
             registeredCommand.remove(it)
         }
+    }
+
+    fun unregister(commandName: String) {
+        registeredCommand.remove(commandName)
     }
 
     fun runCommand(fullCommand: String): Boolean {
@@ -99,6 +107,10 @@ class CommandBuilder internal constructor() {
     var description: String = ""
     var onCommand: (ICommand.(args: List<String>) -> Boolean)? = null
 
+    fun onCommand(commandProcess: ICommand.(args: List<String>) -> Boolean) {
+        onCommand = commandProcess
+    }
+
     fun register(): ICommand {
         if (name == null || onCommand == null) {
             error("CommandBuilder not complete")
@@ -111,8 +123,6 @@ class CommandBuilder internal constructor() {
 }
 
 fun buildCommand(builder: CommandBuilder.() -> Unit): ICommand {
-    val builder2 = CommandBuilder()
-    builder.invoke(builder2)
-    return builder2.register()
+    return CommandBuilder().apply(builder).register()
 }
 

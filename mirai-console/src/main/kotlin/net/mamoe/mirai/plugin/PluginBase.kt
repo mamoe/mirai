@@ -163,11 +163,16 @@ object PluginManager {
 
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
+    private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
 
     fun onCommand(command: ICommand, args: List<String>) {
         this.nameToPluginBaseMap.values.forEach {
             it.onCommand(command, args)
         }
+    }
+
+    fun getAllPluginDescriptions(): Collection<PluginDescription> {
+        return pluginDescriptions.values
     }
 
     /**
@@ -176,6 +181,8 @@ object PluginManager {
     fun loadPlugins() {
         val pluginsFound: MutableMap<String, PluginDescription> = mutableMapOf()
         val pluginsLocation: MutableMap<String, File> = mutableMapOf()
+
+        logger.info("""开始加载${this.pluginsPath}下的插件""")
 
         File(pluginsPath).listFiles()?.forEach { file ->
             if (file != null && file.extension == "jar") {
@@ -270,6 +277,7 @@ object PluginManager {
                     logger.info(description.info)
 
                     nameToPluginBaseMap[description.name] = plugin
+                    pluginDescriptions[description.name] = description
                     plugin.init(description)
                     true
                 } catch (e: ClassCastException) {
@@ -290,6 +298,9 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             it.enable()
         }
+
+        logger.info("""加载了${this.nameToPluginBaseMap.size}个插件""")
+
     }
 
 
