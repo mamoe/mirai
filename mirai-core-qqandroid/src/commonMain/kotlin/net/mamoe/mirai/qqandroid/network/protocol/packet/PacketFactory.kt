@@ -228,7 +228,7 @@ internal object KnownPacketFactories {
             }?.let {
                 // 处理内层真实的包
                 if (it.packetFactory == null) {
-                    bot.logger.debug("Received commandName: ${it.commandName}")
+                    bot.network.logger.debug("Received commandName: ${it.commandName}")
                     PacketLogger.warning { "找不到 PacketFactory" }
                     PacketLogger.verbose { "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}" }
                     return
