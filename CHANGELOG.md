@@ -9,6 +9,7 @@
 ### mirai-core-qqandroid
 - **支持 `AtAll` 的发送和解析**
 - **修复某些情况下禁言处理异常**
+
 小优化:
 - 在 `GroupMessage` 添加 `quoteReply(Message)`, 可快速引用消息并回复
 - 为 `CoroutineScope.subscribeMessages` 添加返回值. 返回 lambda 的返回值
