@@ -27,7 +27,6 @@ import net.mamoe.mirai.message.data.firstOrNull
 import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.qqandroid.Bot
 import net.mamoe.mirai.qqandroid.QQAndroid
-import net.mamoe.mirai.utils.SilentLogger
 import java.io.File
 
 private fun readTestAccount(): BotAccount? {
@@ -52,7 +51,8 @@ suspend fun main() {
         "123456"
     ) {
         // 覆盖默认的配置
-        networkLoggerSupplier = { SilentLogger } // 禁用网络层输出
+
+        // networkLoggerSupplier = { SilentLogger } // 禁用网络层输出
     }.alsoLogin()
 
     bot.messageDSL()
