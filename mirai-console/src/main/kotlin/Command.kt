@@ -10,11 +10,11 @@
 import net.mamoe.mirai.plugin.PluginManager
 
 object CommandManager {
-    private val registeredCommand: MutableMap<String, Command> = mutableMapOf()
+    private val registeredCommand: MutableMap<String, ICommand> = mutableMapOf()
 
 
-    fun register(command: Command) {
-        val allNames = mutableListOf<String>(command.name).also { it.addAll(command.alias) }
+    fun register(command: ICommand) {
+        val allNames = mutableListOf(command.name).also { it.addAll(command.alias) }
         allNames.forEach {
             if (registeredCommand.containsKey(it)) {
                 error("Command Name(or Alias) $it is already registered, consider if same function plugin was installed")
@@ -25,7 +25,7 @@ object CommandManager {
         }
     }
 
-    fun unregister(command: Command) {
+    fun unregister(command: ICommand) {
         val allNames = mutableListOf<String>(command.name).also { it.addAll(command.alias) }
         allNames.forEach {
             registeredCommand.remove(it)
@@ -52,17 +52,67 @@ object CommandManager {
 
 }
 
+interface ICommand {
+    val name: String
+    val alias: List<String>
+    val description: String
+    fun onCommand(args: List<String>): Boolean
+    fun register()
+}
+
 abstract class Command(
-    val name: String,
-    val alias: List<String> = listOf(),
-    val description: String = ""
-) {
+    override val name: String,
+    override val alias: List<String> = listOf(),
+    override val description: String = ""
+) : ICommand {
     /**
      * 最高优先级监听器
      * 如果return [false] 这次指令不会被[PluginBase]的全局onCommand监听器监听
      * */
-    open fun onCommand(args: List<String>): Boolean {
+    open override fun onCommand(args: List<String>): Boolean {
         return true
     }
+
+    override fun register() {
+        CommandManager.register(this)
+    }
+}
+
+class AnonymousCommand internal constructor(
+    override val name: String,
+    override val alias: List<String>,
+    override val description: String,
+    val onCommand: ICommand.(args: List<String>) -> Boolean
+) : ICommand {
+    override fun onCommand(args: List<String>): Boolean {
+        return onCommand.invoke(this, args)
+    }
+
+    override fun register() {
+        CommandManager.register(this)
+    }
+}
+
+class CommandBuilder internal constructor() {
+    var name: String? = null
+    var alias: List<String>? = null
+    var description: String = ""
+    var onCommand: (ICommand.(args: List<String>) -> Boolean)? = null
+
+    fun register(): ICommand {
+        if (name == null || onCommand == null) {
+            error("CommandBuilder not complete")
+        }
+        if (alias == null) {
+            alias = listOf()
+        }
+        return AnonymousCommand(name!!, alias!!, description, onCommand!!).also { it.register() }
+    }
+}
+
+fun buildCommand(builder: CommandBuilder.() -> Unit): ICommand {
+    val builder2 = CommandBuilder()
+    builder.invoke(builder2)
+    return builder2.register()
 }
 

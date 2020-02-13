@@ -42,7 +42,8 @@ object MiraiConsole {
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technology")
         logger()
-        CommandManager.register(DefaultCommands.DefaultLoginCommand())
+
+        DefaultCommands()
         pluginManager.loadPlugins()
         CommandListener.start()
         println(MiraiProperties.HTTP_API_ENABLE)
@@ -59,29 +60,116 @@ object MiraiConsole {
      * Defaults Commands are recommend to be replaced by plugin provided commands
      */
     object DefaultCommands {
-        class DefaultLoginCommand : Command(
-            "login"
-        ) {
-            override fun onCommand(args: List<String>): Boolean {
-                if (args.size < 2) {
-                    println("\"/login qqnumber qqpassword \" to login a bot")
-                    println("\"/login qq号 qq密码 \" 来登录一个BOT")
-                    return false
-                }
-                val qqNumber = args[0].toLong()
-                val qqPassword = args[1]
-                println("login...")
-                try {
-                    runBlocking {
-                        Bot(qqNumber, qqPassword).alsoLogin()
+        operator fun invoke() {
+            buildCommand {
+                name = "login"
+                description = "Mirai-Console default bot login command"
+                onCommand = {
+                    if (it.size < 2) {
+                        logger("\"/login qqnumber qqpassword \" to login a bot")
+                        logger("\"/login qq号 qq密码 \" 来登录一个BOT")
+                        false
                     }
-                } catch (e: Exception) {
-                    println("$qqNumber login failed")
+                    val qqNumber = it[0].toLong()
+                    val qqPassword = it[1]
+                    println("login...")
+                    try {
+                        runBlocking {
+                            Bot(qqNumber, qqPassword).alsoLogin()
+                            println("$qqNumber login successed")
+                        }
+                    } catch (e: Exception) {
+                        println("$qqNumber login failed")
+                    }
+                    true
                 }
-                return true
             }
-        }
 
+            buildCommand {
+                name = "status"
+                description = "Mirai-Console default status command"
+                onCommand = {
+                    when (it.size) {
+                        0 -> {
+
+                        }
+                        1 -> {
+
+                        }
+                    }
+                    true
+                }
+            }
+
+
+            buildCommand {
+                name = "say"
+                description = "Mirai-Console default say command"
+                onCommand = {
+                    when (it.size) {
+                        0 -> {
+
+                        }
+                        1 -> {
+
+                        }
+                    }
+                    true
+                }
+            }
+
+
+            buildCommand {
+                name = "plugins"
+                alias = listOf("plugin")
+                description = "show all plugins"
+                onCommand = {
+                    when (it.size) {
+                        0 -> {
+
+                        }
+                        1 -> {
+
+                        }
+                    }
+                    true
+                }
+            }
+
+            buildCommand {
+                name = "command"
+                alias = listOf("commands", "help", "helps")
+                description = "show all commands"
+                onCommand = {
+                    when (it.size) {
+                        0 -> {
+
+                        }
+                        1 -> {
+
+                        }
+                    }
+                    true
+                }
+            }
+
+            buildCommand {
+                name = "about"
+                description = ""
+                onCommand = {
+                    when (it.size) {
+                        0 -> {
+
+                        }
+                        1 -> {
+
+                        }
+                    }
+                    true
+                }
+            }
+
+        }
     }
 
     object CommandListener {

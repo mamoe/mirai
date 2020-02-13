@@ -10,6 +10,7 @@
 package net.mamoe.mirai.plugin
 
 import Command
+import ICommand
 import kotlinx.coroutines.*
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
@@ -58,7 +59,7 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     /**
      * 当任意指令被使用
      */
-    open fun onCommand(command: Command, args: List<String>) {
+    open fun onCommand(command: ICommand, args: List<String>) {
 
     }
 
@@ -163,7 +164,7 @@ object PluginManager {
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
 
-    fun onCommand(command: Command, args: List<String>) {
+    fun onCommand(command: ICommand, args: List<String>) {
         this.nameToPluginBaseMap.values.forEach {
             it.onCommand(command, args)
         }
