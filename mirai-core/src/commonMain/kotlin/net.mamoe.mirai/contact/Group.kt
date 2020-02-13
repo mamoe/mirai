@@ -184,4 +184,4 @@ interface Group : Contact, CoroutineScope {
 /**
  * 返回机器人是否正在被禁言
  */
-val Group.isBotMuted: Boolean get() = this.botMuteRemaining == 0
+val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0

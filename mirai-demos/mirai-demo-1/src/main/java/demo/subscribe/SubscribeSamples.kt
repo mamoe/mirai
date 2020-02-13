@@ -11,6 +11,7 @@
 
 package demo.subscribe
 
+import kotlinx.coroutines.CompletableJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.alsoLogin
@@ -19,6 +20,7 @@ import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.firstOrNull
@@ -44,12 +46,13 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = QQAndroid.Bot( // JVM 下也可以不写 `TIMPC.` 引用顶层函数
-        1994701121,
+    val bot = QQAndroid.Bot( // JVM 下也可以不写 `QQAndroid.` 引用顶层函数
+        123456789,
         "123456"
     ) {
         // 覆盖默认的配置
-        randomDeviceName = false
+
+        // networkLoggerSupplier = { SilentLogger } // 禁用网络层输出
     }.alsoLogin()
 
     bot.messageDSL()
@@ -96,7 +99,7 @@ fun Bot.messageDSL() {
             // it: String (MessageChain.toString)
 
 
-            message[Image].download()
+            // message[Image].download() // 还未支持 download
             if (this is GroupMessage) {
                 //如果是群消息
                 // group: Group
@@ -118,6 +121,7 @@ fun Bot.messageDSL() {
         // 当收到 "我的qq" 就执行 lambda 并回复 lambda 的返回值 String
         "我的qq" reply { sender.id }
 
+        "at all" reply AtAll // at 全体成员
 
         // 如果是这个 QQ 号发送的消息(可以是好友消息也可以是群消息)
         sentBy(123456789) {
@@ -133,12 +137,27 @@ fun Bot.messageDSL() {
         }
 
 
-        // 当消息中包含 "复读" 时
-        val listener = (contains("复读1") or contains("复读2")) {
-            reply(message)
+        // listener 管理
+
+        var repeaterListener: CompletableJob? = null
+        contains("开启复读") {
+            repeaterListener?.complete()
+            bot.subscribeGroupMessages {
+                repeaterListener = contains("复读") {
+                    reply(message)
+                }
+            }
+
         }
 
-        listener.complete() // 停止监听
+        contains("关闭复读") {
+            if (repeaterListener?.complete() == null) {
+                reply("没有开启复读")
+            } else {
+                reply("成功关闭复读")
+            }
+        }
+
 
         // 自定义的 filter, filter 中 it 为转为 String 的消息.
         // 也可以用任何能在处理时使用的变量, 如 subject, sender, message
@@ -196,19 +215,19 @@ suspend fun directlySubscribe(bot: Bot) {
     // 在当前协程作用域 (CoroutineScope) 下创建一个子 Job, 监听一个事件.
     //
     // 手动处理消息
-    // 使用 Bot 的扩展方法监听, 将在处理事件时得到一个 this: Bot.
-    // 这样可以调用 Bot 内的一些扩展方法如 UInt.qq():QQ
     //
-    // 这个函数返回 Listener, Listener 是一个 CompletableJob. 如果不手动 close 它, 它会一直阻止当前 CoroutineScope 结束.
+    // subscribeAlways 函数返回 Listener, Listener 是一个 CompletableJob.
+    //
     // 例如:
     // ```kotlin
     // runBlocking {// this: CoroutineScope
-    //     bot.subscribeAlways<FriendMessage> {
+    //     subscribeAlways<FriendMessage> {
     //     }
     // }
     // ```
     // 则这个 `runBlocking` 永远不会结束, 因为 `subscribeAlways` 在 `runBlocking` 的 `CoroutineScope` 下创建了一个 Job.
     // 正确的用法为:
+    // 在 Bot 的 CoroutineScope 下创建一个监听事件的 Job, 则这个子 Job 会在 Bot 离线后自动完成 (complete).
     bot.subscribeAlways<FriendMessage> {
         // this: FriendMessageEvent
         // event: FriendMessageEvent

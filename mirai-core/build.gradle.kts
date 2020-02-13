@@ -61,13 +61,13 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
 
             dependencies {
-                implementation(kotlin("stdlib", kotlinVersion))
-                implementation(kotlin("serialization", kotlinVersion))
+                api(kotlin("stdlib", kotlinVersion))
+                api(kotlin("serialization", kotlinVersion))
 
-                implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-                implementation(kotlinx("io", kotlinXIoVersion))
-                implementation(kotlinx("coroutines-io", coroutinesIoVersion))
-                implementation(kotlinx("coroutines-core", coroutinesVersion))
+                api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+                api(kotlinx("io", kotlinXIoVersion))
+                api(kotlinx("coroutines-io", coroutinesIoVersion))
+                api(kotlinx("coroutines-core", coroutinesVersion))
             }
         }
         commonMain {

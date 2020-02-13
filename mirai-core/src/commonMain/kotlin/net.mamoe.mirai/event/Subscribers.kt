@@ -10,11 +10,13 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
+import kotlin.coroutines.CoroutineContext
 
 /*
  * 该文件为所有的订阅事件的方法.
@@ -38,6 +40,8 @@ enum class ListeningStatus {
 /**
  * 事件监听器.
  * 由 [subscribe] 等方法返回.
+ *
+ * 取消监听: [complete]
  */
 interface Listener<in E : Event> : CompletableJob {
     suspend fun onEvent(event: E): ListeningStatus
@@ -50,11 +54,10 @@ interface Listener<in E : Event> : CompletableJob {
  * 每当 [事件广播][Event.broadcast] 时, [handler] 都会被执行.
  *
  * 当 [handler] 返回 [ListeningStatus.STOPPED] 时停止监听.
- * 或 [Listener] complete 时结束.
+ * 或 [Listener.complete] 后结束.
  *
- *
- * **注意**: 这个函数返回 [Listener], 它是一个 [CompletableJob]. 如果不手动 [CompletableJob.complete], 它将会阻止当前 [CoroutineScope] 结束.
- * 例如:
+ * 这个函数返回 [Listener], 它是一个 [CompletableJob]. 请注意它除非被 [Listener.complete] 或 [Listener.cancel], 则不会完成.
+ * 例:
  * ```kotlin
  * runBlocking { // this: CoroutineScope
  *   subscribe<Event> { /* 一些处理 */ } // 返回 Listener, 即 CompletableJob
@@ -70,23 +73,37 @@ interface Listener<in E : Event> : CompletableJob {
  * ```
  *
  *
- * 要创建一个仅在机器人在线时的监听, 请在 [Bot] 下调用本函数 (因为 [Bot] 也实现 [CoroutineScope]):
+ * 要创建一个仅在某个机器人在线时的监听, 请在 [Bot] 下调用本函数 (因为 [Bot] 也实现 [CoroutineScope]):
  * ```kotlin
  * bot.subscribe<Subscribe> { /* 一些处理 */ }
  * ```
  *
+ *
+ * 事件处理时的 [CoroutineContext] 为调用本函数时的 [receiver][this] 的 [CoroutineScope.coroutineContext].
+ * 因此:
+ * - 事件处理时抛出的异常将会在 [this] 的 [CoroutineExceptionHandler] 中处理
+ *   若 [this] 没有 [CoroutineExceptionHandler], 则在事件广播方的 [CoroutineExceptionHandler] 处理
+ *   若均找不到, 则会触发 logger warning.
+ * - 事件处理时抛出异常不会停止监听器.
+ * - 建议在事件处理中, 即 [handler] 里处理异常, 或在 [this] 指定 [CoroutineExceptionHandler].
+ *
+ *
+ * **注意:** 事件处理是 `suspend` 的, 请严格控制 JVM 阻塞方法的使用. 若致事件处理阻塞, 则会导致一些逻辑无法进行.
+ *
+ * // TODO: 2020/2/13 在 bot 下监听时同时筛选对应 bot 实例
+ *
  * @see subscribeMessages 监听消息 DSL
- * @see subscribeGroupMessages 监听群消息
- * @see subscribeFriendMessages 监听好友消息
+ * @see subscribeGroupMessages 监听群消息 DSL
+ * @see subscribeFriendMessages 监听好友消息 DSL
  */
 inline fun <reified E : Event> CoroutineScope.subscribe(crossinline handler: suspend E.(E) -> ListeningStatus): Listener<E> =
-    E::class.subscribeInternal(Handler { it.handler(it) })
+    E::class.subscribeInternal(Handler { it.handler(it); })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
  * 每当 [事件广播][Event.broadcast] 时, [listener] 都会被执行.
  *
- * 仅当 [Listener] complete 时结束.
+ * 仅当 [Listener.complete] 或 [Listener.cancel] 时结束.
  *
  * @see subscribe 获取更多说明
  */

@@ -47,7 +47,7 @@ class GentleImage(val contact: Contact, val keyword: String) {
                             Jsoup.connect("https://api.lolicon.app/setu/?r18=$r18" + if (keyword.isNotBlank()) "&keyword=$keyword&num=10" else "")
                                 .ignoreContentType(true)
                                 .userAgent(UserAgent.randomUserAgent)
-                                .proxy("127.0.0.1", 1088)
+                              //  .proxy("127.0.0.1", 1088)
                                 .timeout(10_0000)
                                 .get().body().text()
                         )
@@ -60,7 +60,7 @@ class GentleImage(val contact: Contact, val keyword: String) {
                         .ignoreContentType(true)
                         .userAgent("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; ja-jp) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27")
                         .referrer("https://www.pixiv.net/member_illust.php?mode=medium&illust_id=${setu.pid}")
-                        .proxy("127.0.0.1", 1088)
+                        //  .proxy("127.0.0.1", 1088)
                         .ignoreHttpErrors(true)
                         .maxBodySize(10000000)
                         .execute().also { check(it.statusCode() == 200) { "Failed to download image" } }

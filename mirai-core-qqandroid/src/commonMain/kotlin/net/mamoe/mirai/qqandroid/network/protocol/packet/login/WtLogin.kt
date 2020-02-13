@@ -22,6 +22,7 @@ import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.cryptor.contentToString
 import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.io.*
@@ -359,27 +360,30 @@ internal class WtLogin{
         @UseExperimental(MiraiDebugAPI::class)
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
             // val ret = tlvMap[0x104]?.let { println(it.toUHexString()) }
+            bot.client.t104 = tlvMap.getOrFail(0x104)
             tlvMap[0x192]?.let {
-                bot.client.t104 = tlvMap.getOrFail(0x104)
                 return LoginPacketResponse.Captcha.Slider(it.encodeToString())
             }
             tlvMap[0x165]?.let { question ->
                 if (question[18].toInt() == 0x36) {
                     //图片验证
                     DebugLogger.debug("是一个图片验证码")
-                    bot.client.t104 = tlvMap.getOrFail(0x104)
                     val imageData = tlvMap.getOrFail(0x105).toReadPacket()
                     val signInfoLength = imageData.readShort()
                     imageData.discardExact(2)//image Length
                     val sign = imageData.readBytes(signInfoLength.toInt())
+
+
+                    val buffer = IoBuffer.Pool.borrow()
+                    imageData.readFully(buffer)
                     return LoginPacketResponse.Captcha.Picture(
-                        data = imageData.readBytes().toIoBuffer(),
+                        data = buffer,
                         sign = sign
                     )
-                } else error("UNKNOWN CAPTCHA QUESTION: $question")
+                } else error("UNKNOWN CAPTCHA QUESTION: ${question.toUHexString()}, tlvMap=" + tlvMap.contentToString())
             }
 
-            error("UNKNOWN CAPTCHA")
+            error("UNKNOWN CAPTCHA, tlvMap=" + tlvMap.contentToString())
         }
 
         @UseExperimental(MiraiDebugAPI::class)

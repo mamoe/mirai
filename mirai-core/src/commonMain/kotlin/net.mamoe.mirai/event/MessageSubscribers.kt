@@ -29,20 +29,20 @@ import kotlin.contracts.contract
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun CoroutineScope.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> Unit) {
+inline fun <R> CoroutineScope.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R): R {
     // contract 可帮助 IDE 进行类型推断. 无实际代码作用.
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
 
-    MessageSubscribersBuilder { messageListener: MessageListener<MessagePacket<*, *>> ->
+    return MessageSubscribersBuilder { messageListener: MessageListener<MessagePacket<*, *>> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [listener]
         // listener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
         subscribeAlways {
             messageListener.invoke(this, this.message.toString())
             // this.message.toString() 即为 messageListener 中 it 接收到的值
         }
-    }.apply { listeners() }
+    }.run(listeners)
 }
 
 /**
@@ -50,15 +50,15 @@ inline fun CoroutineScope.subscribeMessages(crossinline listeners: MessageSubscr
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun CoroutineScope.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+inline fun <R> CoroutineScope.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    MessageSubscribersBuilder<GroupMessage> { listener ->
+    return MessageSubscribersBuilder<GroupMessage> { listener ->
         subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
-    }.apply { listeners() }
+    }.run(listeners)
 }
 
 /**
@@ -66,15 +66,15 @@ inline fun CoroutineScope.subscribeGroupMessages(crossinline listeners: MessageS
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun CoroutineScope.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+inline fun <R> CoroutineScope.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    MessageSubscribersBuilder<FriendMessage> { listener ->
+    return MessageSubscribersBuilder<FriendMessage> { listener ->
         subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
-    }.apply { listeners() }
+    }.run(listeners)
 }
 
 /**
@@ -82,15 +82,15 @@ inline fun CoroutineScope.subscribeFriendMessages(crossinline listeners: Message
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun Bot.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> Unit) {
+inline fun <R> Bot.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
+    return MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
         this.subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
-    }.apply { listeners() }
+    }.run(listeners)
 }
 
 /**
@@ -98,15 +98,15 @@ inline fun Bot.subscribeMessages(crossinline listeners: MessageSubscribersBuilde
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun Bot.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> Unit) {
+inline fun <R> Bot.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    MessageSubscribersBuilder<GroupMessage> { listener ->
+    return MessageSubscribersBuilder<GroupMessage> { listener ->
         this.subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
-    }.apply { listeners() }
+    }.run(listeners)
 }
 
 /**
@@ -114,15 +114,15 @@ inline fun Bot.subscribeGroupMessages(crossinline listeners: MessageSubscribersB
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun Bot.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> Unit) {
+inline fun <R> Bot.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    MessageSubscribersBuilder<FriendMessage> { listener ->
+    return MessageSubscribersBuilder<FriendMessage> { listener ->
         this.subscribeAlways {
-            it.listener(it.message.toString())
+            listener(this, this.message.toString())
         }
-    }.apply { listeners() }
+    }.run(listeners)
 }
 
 
@@ -584,6 +584,12 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
 
     @MessageDsl
     infix fun String.reply(reply: String): Listener<T> {
+        val toCheck = this.trim()
+        return content({ it.trim() == toCheck }, { reply(reply) })
+    }
+
+    @MessageDsl
+    infix fun String.reply(reply: Message): Listener<T> {
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, { reply(reply) })
     }
