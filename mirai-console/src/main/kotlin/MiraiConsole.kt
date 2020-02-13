@@ -45,7 +45,6 @@ object MiraiConsole {
         logger("\"/login qqnumber qqpassword \" to login a bot")
         logger("\"/login qq号 qq密码 \" 来登陆一个BOT")
 
-        MiraiProperties()
         CommandManager.register(DefaultCommands.DefaultLoginCommand())
         pluginManager.loadPlugins()
         CommandListener.start()
@@ -117,21 +116,15 @@ object MiraiConsole {
     }
 
     object MiraiProperties {
-        val init = !File("$path/mirai.json").exists()
+        var config = File("$path/mirai.json").loadAsConfig()
 
-        var config = Config.load("$path/mirai.json")
-
-        var HTTP_API_ENABLE: Boolean by config.withDefault { true }
-        var HTTP_API_PORT: Int by config.withDefault { 8080 }
-        var HTTP_API_AUTH_KEY: String by config
-
-        operator fun invoke() {
-            if (init) {
-                HTTP_API_AUTH_KEY = "INITKEY" + generateSessionKey()
-                logger("Mirai HTTPAPI authkey 已随机生成, 请注意修改")
-            }
+        var HTTP_API_ENABLE: Boolean by config.withDefaultWrite { true }
+        var HTTP_API_PORT: Int by config.withDefaultWrite { 8080 }
+        var HTTP_API_AUTH_KEY: String by config.withDefaultWriteSave {
+            "InitKey".also {
+                logger("Mirai HTTPAPI auth key 已随机生成 请注意修改")
+            } + generateSessionKey()
         }
-
 
     }
 }
