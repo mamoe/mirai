@@ -215,7 +215,7 @@ internal class OnlinePush {
                                 4096 -> {
                                     val dataBytes = this.readBytes(26)
                                     val message = this.readString(this.readByte().toInt())
-                                    println(dataBytes.toUHexString())
+                                    // println(dataBytes.toUHexString())
 
                                     if (dataBytes[0].toInt() != 59) {
                                         return GroupNameChangeEvent(
@@ -244,7 +244,7 @@ internal class OnlinePush {
                                                 )
                                             }
                                             else -> {
-                                                println("Unknown server messages $message")
+                                                bot.network.logger.debug{"Unknown server messages $message"}
                                                 return NoPacket
                                             }
                                         }
@@ -255,17 +255,17 @@ internal class OnlinePush {
                                 //     println(msgInfo.vMsg.toUHexString())
                                 // }
                                 else -> {
-                                    println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
+                                    bot.network.logger.debug { "unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " " }
                                 }
                             }
                         }
                         msgInfo.shMsgType.toInt() == 528 -> {
-                            println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                            bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
                             // val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
                             // println(content.contentToString())
                         }
                         else -> {
-                            println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                            bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
                         }
                     }
                 }
