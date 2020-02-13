@@ -589,6 +589,12 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     }
 
     @MessageDsl
+    infix fun String.reply(reply: Message): Listener<T> {
+        val toCheck = this.trim()
+        return content({ it.trim() == toCheck }, { reply(reply) })
+    }
+
+    @MessageDsl
     inline infix fun String.reply(crossinline replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> {
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, {
