@@ -99,3 +99,5 @@ suspend inline fun Member.mute(duration: Duration): Boolean {
     require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
     return this.mute(duration.inSeconds.toInt())
 }
+
+suspend inline fun Member.mute(durationSeconds: Long) = this.mute(durationSeconds.toInt())
