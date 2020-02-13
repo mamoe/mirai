@@ -376,7 +376,7 @@ internal class WtLogin{
                         data = imageData.readBytes().toIoBuffer(),
                         sign = sign
                     )
-                } else error("UNKNOWN CAPTCHA QUESTION: $question")
+                } else error("UNKNOWN CAPTCHA QUESTION: ${question.toUHexString()}")
             }
 
             error("UNKNOWN CAPTCHA")
