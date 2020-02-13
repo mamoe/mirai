@@ -13,7 +13,7 @@ import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
 
-class OnlinePushPack {
+internal class OnlinePushPack {
     @Serializable
     internal class DelMsgInfo(
         @SerialId(0) val fromUin: Long,
