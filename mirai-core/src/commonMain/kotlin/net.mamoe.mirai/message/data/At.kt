@@ -17,6 +17,8 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * At 一个人. 只能发送给一个群.
+ *
+ * @see AtAll 全体成员
  */
 class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
     @UseExperimental(MiraiInternalAPI::class)
@@ -33,10 +35,10 @@ class At @MiraiInternalAPI constructor(val target: Long, val display: String) : 
     // 自动为消息补充 " "
 
     override fun followedBy(tail: Message): MessageChain {
-        if(tail is PlainText && !tail.stringValue.startsWith(' ')){
-            return super.followedBy(PlainText(" ")) + tail
+        if(tail is PlainText && tail.stringValue.startsWith(' ')){
+            return super.followedBy(tail)
         }
-        return super.followedBy(tail)
+        return super.followedBy(PlainText(" ")) + tail
     }
 }
 
