@@ -1,9 +1,10 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "5.2.0"
     id("kotlinx-serialization")
     id("kotlin")
     id("java")
 }
+
+apply(plugin="com.github.johnrengelman.shadow")
 
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext

@@ -59,7 +59,7 @@ if (versionPos==-1){
     def javaVersionNum = javaVersion.substring(0, versionPos).toInteger()
     if (javaVersionNum >= 11) {
         println("jdk版本为 "+ javaVersionNum)
-        include(':mirai-debug')
+        //include(':mirai-debug')
     } else {
         println("当前使用的 JDK 版本为 ${System.getProperty("java.version")}, 最低需要 JDK 11 才能引入模块 `:mirai-debug`")
     }

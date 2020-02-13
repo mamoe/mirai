@@ -11,20 +11,22 @@ buildscript {
         // Do try to waste your time.
         classpath 'com.android.tools.build:gradle:3.5.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion"
     }
 }
 
-def keyProps = new Properties()
-def keyFile = file("local.properties")
-if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
-if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
-    project.ext.set("isAndroidSDKAvailable", true)
-} else {
-    project.ext.set("isAndroidSDKAvailable", false)
-}
-
+try {
+    def keyProps = new Properties()
+    def keyFile = file("local.properties")
+    if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+    if (!keyProps.getProperty("sdk.dir", "").isEmpty()) {
+        project.ext.set("isAndroidSDKAvailable", true)
+    } else {
+        project.ext.set("isAndroidSDKAvailable", false)
+    }
+}catch(Exception e){}
 allprojects {
     group = "net.mamoe"
     version = getProperty("mirai_version")
