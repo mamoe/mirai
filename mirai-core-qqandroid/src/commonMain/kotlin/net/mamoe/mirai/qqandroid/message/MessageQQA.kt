@@ -13,6 +13,7 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.hexToBytes
@@ -184,6 +185,14 @@ notOnlineImage=NotOnlineImage#2050019814 {
         pbReserve=08 01 10 00 32 00 42 0E 5B E5 8A A8 E7 94 BB E8 A1 A8 E6 83 85 5D 50 00 78 05
 }
  */
+
+private val atAllData = ImMsgBody.Elem(
+    text = ImMsgBody.Text(
+        str = "@全体成员",
+        attr6Buf = "00 01 00 00 00 05 01 00 00 00 00 00 00".hexToBytes()
+    )
+)
+
 internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
 
@@ -203,6 +212,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
             is NotOnlineImageFromFile -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is AtAll -> elements.add(atAllData)
             is QuoteReply,
             is MessageSource -> {
 
@@ -295,7 +305,7 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
 }
 
 
-@UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class)
+@UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
     this.forEach {
         when {
@@ -306,9 +316,18 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
                 if (it.text.attr6Buf.isEmpty()) {
                     message.add(it.text.str.toMessage())
                 } else {
-                    //00 01 00 00 00 0A 00 3E 03 3F A2 00 00
-                    val id = it.text.attr6Buf.read { discardExact(7); readUInt().toLong() }
-                    message.add(At(id, it.text.str))
+                    //00 01 00 00 00 05 01 00 00 00 00 00 00 all
+                    //00 01 00 00 00 0A 00 3E 03 3F A2 00 00 one
+                    val id: Long
+                    it.text.attr6Buf.read {
+                        discardExact(7)
+                        id = readUInt().toLong()
+                    }
+                    if (id == 0L){
+                        message.add(AtAll)
+                    } else {
+                        message.add(At(id, it.text.str))
+                    }
                 }
             }
         }
