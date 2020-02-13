@@ -214,9 +214,9 @@ open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection
 
 
 interface FileConfig : Config {
-    fun deserialize(content: String): ConfigSectionImpl
+    fun deserialize(content: String): ConfigSection
 
-    fun serialize(config: ConfigSectionImpl): String
+    fun serialize(config: ConfigSection): String
 }
 
 
@@ -244,31 +244,27 @@ abstract class FileConfigImpl internal constructor(
     }
 
     override fun asMap(): Map<String, Any> {
-        return content
+        return content.asMap()
     }
 
 }
 
 class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
     @UnstableDefault
-    override fun deserialize(content: String): ConfigSectionImpl {
+    override fun deserialize(content: String): ConfigSection {
         if (content.isEmpty() || content.isBlank() || content == "{}") {
             return ConfigSectionImpl()
         }
-        val section = ConfigSectionImpl()
-        val map: LinkedHashMap<String, Any> = JSON.parseObject(
+        val section = JSON.parseObject(
             content,
-            object : TypeReference<LinkedHashMap<String, Any>>() {},
+            object : TypeReference<ConfigSectionImpl>() {},
             Feature.OrderedField
         )
-        map.forEach { (t, u) ->
-            section[t] = u
-        }
         return section
     }
 
     @UnstableDefault
-    override fun serialize(config: ConfigSectionImpl): String {
+    override fun serialize(config: ConfigSection): String {
         return JSONObject.toJSONString(config)
     }
 
