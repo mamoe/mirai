@@ -30,7 +30,7 @@ annotation class MiraiInternalAPI(
 )
 
 /**
- * 标记这个类, 类型, 函数, 属性, 字段, 或构造器为实验性的.
+ * 标记这个类, 类型, 函数, 属性, 字段, 或构造器为实验性的 API.
  *
  * 这些 API 不具有稳定性, 且可能会在任意时刻更改.
  * 不建议在发行版本中使用这些 API.
@@ -56,7 +56,7 @@ annotation class MiraiDebugAPI(
 )
 
 /**
- * 标记这个 API 是自 Mirai 某个版本起才受支持.
+ * 标记一个自 Mirai 某个版本起才支持的 API.
  */
 @Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
 @Retention(AnnotationRetention.BINARY)
