@@ -25,6 +25,7 @@ import net.mamoe.mirai.message.data.firstOrNull
 import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.qqandroid.Bot
 import net.mamoe.mirai.qqandroid.QQAndroid
+import net.mamoe.mirai.utils.SilentLogger
 import java.io.File
 
 private fun readTestAccount(): BotAccount? {
@@ -44,12 +45,12 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = QQAndroid.Bot( // JVM 下也可以不写 `TIMPC.` 引用顶层函数
-        1994701121,
+    val bot = QQAndroid.Bot( // JVM 下也可以不写 `QQAndroid.` 引用顶层函数
+        123456789,
         "123456"
     ) {
         // 覆盖默认的配置
-        randomDeviceName = false
+        networkLoggerSupplier = { SilentLogger } // 禁用网络层输出
     }.alsoLogin()
 
     bot.messageDSL()
