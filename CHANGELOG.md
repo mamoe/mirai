@@ -2,12 +2,26 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.14.0` 2020/2/13
+### mirai-core
+- **支持 at 全体成员: `AtAll`**
+
+### mirai-core-qqandroid
+- **支持 `AtAll` 的发送和解析**
+- **修复某些情况下禁言处理异常**
+小优化:
+- 在 `GroupMessage` 添加 `quoteReply(Message)`, 可快速引用消息并回复
+- 为 `CoroutineScope.subscribeMessages` 添加返回值. 返回 lambda 的返回值
+- 在验证码无法处理时记录更多信息
+- 优化 `At` 的空格处理 (自动为 `At` 之后的消息添加空格)
+- 删除 `BotConfiguration` 中一些过时的设置
+
 ## `0.13.0` 2020/2/12
 
 ### mirai-core
-1. 修改 BotFactory, 添加 `context` 参数.
-2. currentTimeMillis 减少不必要对象创建
-3. 优化无锁链表性能 (大幅提升 `addAll` 性能)
+- 修改 BotFactory, 添加 `context` 参数.
+- currentTimeMillis 减少不必要对象创建
+- 优化无锁链表性能 (大幅提升 `addAll` 性能)
 
 ### mirai-core-qqanroid
 安卓协议发布, 基于最新 QQ, 版本 `8.2.0`
