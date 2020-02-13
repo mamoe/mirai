@@ -4,7 +4,16 @@ plugins {
     id("java")
 }
 
-apply(plugin="com.github.johnrengelman.shadow")
+
+apply(plugin = "com.github.johnrengelman.shadow")
+
+apply(plugin = "java-library")
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
+    manifest {
+        attributes["Main-Class"] = "net.mamoe.mirai.MiraiConsoleLoader"
+    }
+}
 
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext

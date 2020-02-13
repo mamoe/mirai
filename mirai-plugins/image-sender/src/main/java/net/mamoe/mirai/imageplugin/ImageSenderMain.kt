@@ -14,7 +14,7 @@ import kotlinx.coroutines.GlobalScope
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.plugin.PluginBase
+import net.mamoe.mirai.plugins.PluginBase
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 class ImageSenderMain : PluginBase() {
