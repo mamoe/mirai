@@ -52,13 +52,13 @@ class GroupMessage(
     suspend inline fun quoteReply(plain: String) = reply(this.message.quote() + plain)
 
 
-    @JvmName("reply1")
+    @JvmName("reply2")
     suspend inline fun String.quoteReply() = quoteReply(this)
 
-    @JvmName("reply1")
+    @JvmName("reply2")
     suspend inline fun Message.quoteReply() = quoteReply(this)
 
-    @JvmName("reply1")
+    @JvmName("reply2")
     suspend inline fun MessageChain.quoteReply() = quoteReply(this)
 
     override fun toString(): String =
