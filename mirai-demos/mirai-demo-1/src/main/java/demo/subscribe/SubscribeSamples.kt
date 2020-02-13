@@ -11,6 +11,7 @@
 
 package demo.subscribe
 
+import kotlinx.coroutines.CompletableJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.alsoLogin
@@ -19,6 +20,7 @@ import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.firstOrNull
@@ -97,7 +99,7 @@ fun Bot.messageDSL() {
             // it: String (MessageChain.toString)
 
 
-            message[Image].download()
+            // message[Image].download() // 还未支持 download
             if (this is GroupMessage) {
                 //如果是群消息
                 // group: Group
@@ -119,6 +121,7 @@ fun Bot.messageDSL() {
         // 当收到 "我的qq" 就执行 lambda 并回复 lambda 的返回值 String
         "我的qq" reply { sender.id }
 
+        "at all" reply AtAll // at 全体成员
 
         // 如果是这个 QQ 号发送的消息(可以是好友消息也可以是群消息)
         sentBy(123456789) {
@@ -134,12 +137,27 @@ fun Bot.messageDSL() {
         }
 
 
-        // 当消息中包含 "复读" 时
-        val listener = (contains("复读1") or contains("复读2")) {
-            reply(message)
+        // listener 管理
+
+        var repeaterListener: CompletableJob? = null
+        contains("开启复读") {
+            repeaterListener?.complete()
+            bot.subscribeGroupMessages {
+                repeaterListener = contains("复读") {
+                    reply(message)
+                }
+            }
+
         }
 
-        listener.complete() // 停止监听
+        contains("关闭复读") {
+            if (repeaterListener?.complete() == null) {
+                reply("没有开启复读")
+            } else {
+                reply("成功关闭复读")
+            }
+        }
+
 
         // 自定义的 filter, filter 中 it 为转为 String 的消息.
         // 也可以用任何能在处理时使用的变量, 如 subject, sender, message
