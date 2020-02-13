@@ -56,7 +56,7 @@ inline fun <R> CoroutineScope.subscribeGroupMessages(crossinline listeners: Mess
     }
     return MessageSubscribersBuilder<GroupMessage> { listener ->
         subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
     }.run(listeners)
 }
@@ -72,7 +72,7 @@ inline fun <R> CoroutineScope.subscribeFriendMessages(crossinline listeners: Mes
     }
     return MessageSubscribersBuilder<FriendMessage> { listener ->
         subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
     }.run(listeners)
 }
@@ -88,7 +88,7 @@ inline fun <R> Bot.subscribeMessages(crossinline listeners: MessageSubscribersBu
     }
     return MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
         this.subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
     }.run(listeners)
 }
@@ -104,7 +104,7 @@ inline fun <R> Bot.subscribeGroupMessages(crossinline listeners: MessageSubscrib
     }
     return MessageSubscribersBuilder<GroupMessage> { listener ->
         this.subscribeAlways {
-            listener(it, this.message.toString())
+            listener(this, this.message.toString())
         }
     }.run(listeners)
 }
@@ -120,7 +120,7 @@ inline fun <R> Bot.subscribeFriendMessages(crossinline listeners: MessageSubscri
     }
     return MessageSubscribersBuilder<FriendMessage> { listener ->
         this.subscribeAlways {
-            it.listener(it.message.toString())
+            listener(this, this.message.toString())
         }
     }.run(listeners)
 }
