@@ -61,6 +61,14 @@ interface Config {
             }
             return when (file.extension.toLowerCase()) {
                 "json" -> JsonConfig(file)
+                "yml" -> YamlConfig(file)
+                "yaml" -> YamlConfig(file)
+                "mirai" -> YamlConfig(file)
+                "ini" -> IniConfig(file)
+                "toml" -> IniConfig(file)
+                "properties" -> IniConfig(file)
+                "property" -> IniConfig(file)
+                "data" -> IniConfig(file)
                 else -> error("Unsupported file config type ${file.extension.toLowerCase()}")
             }
         }
@@ -328,4 +336,26 @@ class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
     override fun serialize(config: ConfigSection): String {
         return JSONObject.toJSONString(config)
     }
+}
+
+class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
+    override fun deserialize(content: String): ConfigSection {
+        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun serialize(config: ConfigSection): String {
+        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+    }
+
+}
+
+class IniConfig internal constructor(file: File) : FileConfigImpl(file) {
+    override fun deserialize(content: String): ConfigSection {
+        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun serialize(config: ConfigSection): String {
+        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }
