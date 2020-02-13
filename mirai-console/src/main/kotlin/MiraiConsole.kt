@@ -27,7 +27,7 @@ object MiraiConsole {
 
     var path: String = System.getProperty("user.dir")
 
-    val version = " 0.13"
+    val version = "0.13"
     val build = "Beta"
 
     fun start() {
@@ -42,13 +42,13 @@ object MiraiConsole {
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technology")
         logger()
-        logger("\"/login qqnumber qqpassword \" to login a bot")
-        logger("\"/login qq号 qq密码 \" 来登陆一个BOT")
-
         CommandManager.register(DefaultCommands.DefaultLoginCommand())
         pluginManager.loadPlugins()
         CommandListener.start()
         println(MiraiProperties.HTTP_API_ENABLE)
+        logger("\"/login qqnumber qqpassword \" to login a bot")
+        logger("\"/login qq号 qq密码 \" 来登陆一个BOT")
+
     }
 
     fun stop() {
