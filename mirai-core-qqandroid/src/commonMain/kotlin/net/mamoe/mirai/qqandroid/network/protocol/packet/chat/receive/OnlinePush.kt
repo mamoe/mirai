@@ -157,6 +157,8 @@ internal class OnlinePush {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
             reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
                 msgInfo.vMsg!!.read {
+
+                    // TODO: 2020/2/13 可能会同时收到多个事件. 使用 map 而不要直接 return
                     when {
                         msgInfo.shMsgType.toInt() == 732 -> {
                             val group = bot.getGroup(this.readUInt().toLong())
@@ -164,7 +166,11 @@ internal class OnlinePush {
 
                             when (val internalType = this.readShort().toInt()) {
                                 3073 -> { // mute
-                                    val operator = group[this.readUInt().toLong()]
+                                    val operatorUin = this.readUInt().toLong()
+                                    if (operatorUin == bot.uin) {
+                                        return NoPacket
+                                    }
+                                    val operator = group[operatorUin]
                                     this.readUInt().toLong() // time
                                     this.discardExact(2)
                                     val target = this.readUInt().toLong()
