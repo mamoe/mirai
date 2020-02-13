@@ -14,12 +14,11 @@ import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson.TypeReference
 import com.alibaba.fastjson.parser.Feature
 import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
-import net.mamoe.mirai.utils.cryptor.contentToString
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.BiConsumer
+import java.util.concurrent.ConcurrentSkipListMap
 import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.isSubclassOf
 
@@ -47,6 +46,7 @@ interface Config {
     operator fun set(key: String, value: Any)
     operator fun get(key: String): Any?
     fun exist(key: String): Boolean
+    fun setIfAbsent(key: String, value: Any)
     fun asMap(): Map<String, Any>
     fun save()
 
@@ -67,47 +67,109 @@ interface Config {
     }
 }
 
+
+fun File.loadAsConfig(): Config {
+    return Config.load(this)
+}
+
+/* 最简单的代理 */
+inline operator fun <reified T : Any> Config.getValue(thisRef: Any?, property: KProperty<*>): T {
+    return smartCast(property)
+}
+
+inline operator fun <reified T : Any> Config.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+    this[property.name] = value
+}
+
+/* 带有默认值的代理 */
 inline fun <reified T : Any> Config.withDefault(
-    autoSave: Boolean = true,
-    crossinline defaultValue: () -> T
+    noinline defaultValue: () -> T
 ): ReadWriteProperty<Any, T> {
+    val default by lazy { defaultValue.invoke() }
     return object : ReadWriteProperty<Any, T> {
         override fun getValue(thisRef: Any, property: KProperty<*>): T {
-            if (!this@withDefault.exist(property.name)) {
-                return defaultValue.invoke()
+            if (this@withDefault.exist(property.name)) {//unsafe
+                return this@withDefault.smartCast(property)
             }
-            return smartCast(property)
+            return default
         }
 
         override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
             this@withDefault[property.name] = value
-            if (autoSave) save()
         }
     }
 }
 
-@Suppress("IMPLICIT_CAST_TO_ANY")
-inline fun <reified T> Config.smartCast(property: KProperty<*>): T {
-    return when (T::class) {
-        String::class -> this.getString(property.name)
-        Int::class -> this.getInt(property.name)
-        Float::class -> this.getFloat(property.name)
-        Double::class -> this.getDouble(property.name)
-        Long::class -> this.getLong(property.name)
-        Boolean::class -> this.getBoolean(property.name)
+/* 带有默认值且如果为空会写入的代理 */
+inline fun <reified T : Any> Config.withDefaultWrite(
+    noinline defaultValue: () -> T
+): WithDefaultWriteLoader<T> {
+    return WithDefaultWriteLoader(T::class, this, defaultValue, false)
+}
+
+/* 带有默认值且如果为空会写入保存的代理 */
+inline fun <reified T : Any> Config.withDefaultWriteSave(
+    noinline defaultValue: () -> T
+): WithDefaultWriteLoader<T> {
+    return WithDefaultWriteLoader(T::class, this, defaultValue, true)
+}
+
+class WithDefaultWriteLoader<T : Any>(
+    private val _class: KClass<T>,
+    private val config: Config,
+    private val defaultValue: () -> T,
+    private val save: Boolean
+) {
+    operator fun provideDelegate(
+        thisRef: Any,
+        prop: KProperty<*>
+    ): ReadWriteProperty<Any, T> {
+        val defaultValue by lazy { defaultValue.invoke() }
+        config.setIfAbsent(prop.name, defaultValue)
+        if (save) {
+            config.save()
+        }
+        return object : ReadWriteProperty<Any, T> {
+            override fun getValue(thisRef: Any, property: KProperty<*>): T {
+                if (config.exist(property.name)) {//unsafe
+                    return config._smartCast(property.name, _class)
+                }
+                return defaultValue
+            }
+
+            override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+                config[property.name] = value
+            }
+        }
+    }
+}
+
+inline fun <reified T : Any> Config.smartCast(property: KProperty<*>): T {
+    return _smartCast(property.name, T::class)
+}
+
+@Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
+fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
+    return when (_class) {
+        String::class -> this.getString(propertyName)
+        Int::class -> this.getInt(propertyName)
+        Float::class -> this.getFloat(propertyName)
+        Double::class -> this.getDouble(propertyName)
+        Long::class -> this.getLong(propertyName)
+        Boolean::class -> this.getBoolean(propertyName)
         else -> when {
-            T::class.isSubclassOf(ConfigSection::class) -> this.getConfigSection(property.name)
-            T::class == List::class || T::class == MutableList::class -> {
-                val list = this.getList(property.name)
+            _class.isSubclassOf(ConfigSection::class) -> this.getConfigSection(propertyName)
+            _class == List::class || _class == MutableList::class -> {
+                val list = this.getList(propertyName)
                 return if (list.isEmpty()) {
                     list
                 } else {
                     when (list[0]!!::class) {
-                        String::class -> getStringList(property.name)
-                        Int::class -> getIntList(property.name)
-                        Float::class -> getFloatList(property.name)
-                        Double::class -> getDoubleList(property.name)
-                        Long::class -> getLongList(property.name)
+                        String::class -> getStringList(propertyName)
+                        Int::class -> getIntList(propertyName)
+                        Float::class -> getFloatList(propertyName)
+                        Double::class -> getDoubleList(propertyName)
+                        Long::class -> getLongList(propertyName)
                         else -> {
                             error("unsupported type")
                         }
@@ -121,14 +183,6 @@ inline fun <reified T> Config.smartCast(property: KProperty<*>): T {
     } as T
 }
 
-inline operator fun <reified T> Config.getValue(thisRef: Any?, property: KProperty<*>): T {
-    return smartCast(property)
-}
-
-inline operator fun <reified T> Config.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-    this[property.name] = value!!
-    this.save()
-}
 
 
 interface ConfigSection : Config {
@@ -187,12 +241,16 @@ interface ConfigSection : Config {
     override fun exist(key: String): Boolean {
         return get(key) != null
     }
+
+    override fun setIfAbsent(key: String, value: Any) {
+        if (!exist(key)) set(key, value)
+    }
 }
 
 @Serializable
 open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection {
     override fun set(key: String, value: Any) {
-        this.put(key, value)
+        super.put(key, value)
     }
 
     override operator fun get(key: String): Any? {
@@ -209,6 +267,10 @@ open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection
 
     override fun save() {
 
+    }
+
+    override fun setIfAbsent(key: String, value: Any) {
+        this.putIfAbsent(key, value)//atomic
     }
 }
 
@@ -255,26 +317,15 @@ class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
         if (content.isEmpty() || content.isBlank() || content == "{}") {
             return ConfigSectionImpl()
         }
-        val section = JSON.parseObject(
+        return JSON.parseObject<ConfigSectionImpl>(
             content,
             object : TypeReference<ConfigSectionImpl>() {},
             Feature.OrderedField
         )
-        return section
     }
 
     @UnstableDefault
     override fun serialize(config: ConfigSection): String {
         return JSONObject.toJSONString(config)
-    }
-
-    internal class AnySerializer(override val descriptor: SerialDescriptor) : KSerializer<Any> {
-        override fun deserialize(decoder: Decoder): Any {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun serialize(encoder: Encoder, obj: Any) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
     }
 }
