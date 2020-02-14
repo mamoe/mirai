@@ -67,11 +67,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     private val packetReceiveLock: Mutex = Mutex()
 
-    private fun startPacketReceiverJobOrGet(): Job {
-        val job = _packetReceiverJob
-        if (job != null && job.isActive && channel.isOpen) {
-            return job
-        }
+    private fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
+        _packetReceiverJob?.cancel(cancelCause)
 
         return this.launch(CoroutineName("Incoming Packet Receiver")) {
             while (channel.isOpen) {
@@ -103,8 +100,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
         channel = PlatformSocket()
         // TODO: 2020/2/14 连接多个服务器
-        channel.connect("113.96.13.208", 8080)
-        startPacketReceiverJobOrGet()
+        withTimeout(3000) {
+            channel.connect("113.96.13.208", 8080)
+        }
+        startPacketReceiverJobOrKill(CancellationException("reconnect"))
 
         // logger.info("Trying login")
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
