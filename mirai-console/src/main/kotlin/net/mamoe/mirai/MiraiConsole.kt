@@ -267,7 +267,7 @@ object MiraiConsole {
     }
 
     object MiraiProperties {
-        var config = File("$path/mirai.json").loadAsConfig()
+        var config = File("$path/mirai.properties").loadAsConfig()
 
         var HTTP_API_ENABLE: Boolean by config.withDefaultWrite { true }
         var HTTP_API_PORT: Int by config.withDefaultWrite { 8080 }

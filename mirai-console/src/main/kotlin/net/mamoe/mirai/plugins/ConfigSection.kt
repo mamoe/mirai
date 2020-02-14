@@ -13,8 +13,12 @@ import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson.TypeReference
 import com.alibaba.fastjson.parser.Feature
+import com.moandjiezana.toml.Toml
+import com.moandjiezana.toml.TomlWriter
 import kotlinx.serialization.*
+import org.yaml.snakeyaml.Yaml
 import java.io.File
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
@@ -63,11 +67,11 @@ interface Config {
                 "yml" -> YamlConfig(file)
                 "yaml" -> YamlConfig(file)
                 "mirai" -> YamlConfig(file)
-                "ini" -> IniConfig(file)
-                "toml" -> IniConfig(file)
-                "properties" -> IniConfig(file)
-                "property" -> IniConfig(file)
-                "data" -> IniConfig(file)
+                "ini" -> TomlConfig(file)
+                "toml" -> TomlConfig(file)
+                "properties" -> TomlConfig(file)
+                "property" -> TomlConfig(file)
+                "data" -> TomlConfig(file)
                 else -> error("Unsupported file config type ${file.extension.toLowerCase()}")
             }
         }
@@ -191,8 +195,7 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
 }
 
 
-
-interface ConfigSection : Config {
+interface ConfigSection : Config, MutableMap<String, Any> {
     override fun getConfigSection(key: String): ConfigSection {
         return (get(key) ?: error("ConfigSection does not contain $key ")) as ConfigSection
     }
@@ -281,6 +284,22 @@ open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection
     }
 }
 
+open class ConfigSectionDelegation(
+    private val delegation: MutableMap<String, Any>
+) : ConfigSection, MutableMap<String, Any> by delegation {
+    override fun set(key: String, value: Any) {
+        delegation.put(key, value)
+    }
+
+    override fun asMap(): Map<String, Any> {
+        return delegation
+    }
+
+    override fun save() {
+
+    }
+}
+
 
 interface FileConfig : Config {
     fun deserialize(content: String): ConfigSection
@@ -296,6 +315,18 @@ abstract class FileConfigImpl internal constructor(
     private val content by lazy {
         deserialize(file.readText())
     }
+
+    override val size: Int get() = content.size
+    override val entries: MutableSet<MutableMap.MutableEntry<String, Any>> get() = content.entries
+    override val keys: MutableSet<String> get() = content.keys
+    override val values: MutableCollection<Any> get() = content.values
+    override fun containsKey(key: String): Boolean = content.containsKey(key)
+    override fun containsValue(value: Any): Boolean = content.containsValue(value)
+    override fun put(key: String, value: Any): Any? = content.put(key, value)
+    override fun isEmpty(): Boolean = content.isEmpty()
+    override fun putAll(from: Map<out String, Any>) = content.putAll(from)
+    override fun clear() = content.clear()
+    override fun remove(key: String): Any? = content.remove(key)
 
     override fun save() {
         if (!file.exists()) {
@@ -318,7 +349,9 @@ abstract class FileConfigImpl internal constructor(
 
 }
 
-class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
+class JsonConfig internal constructor(
+    file: File
+) : FileConfigImpl(file) {
     @UnstableDefault
     override fun deserialize(content: String): ConfigSection {
         if (content.isEmpty() || content.isBlank() || content == "{}") {
@@ -339,22 +372,35 @@ class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
 
 class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
     override fun deserialize(content: String): ConfigSection {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+        if (content.isEmpty() || content.isBlank()) {
+            return ConfigSectionImpl()
+        }
+        return ConfigSectionDelegation(
+            Collections.synchronizedMap(
+                Yaml().load<LinkedHashMap<String, Any>>(content) as LinkedHashMap<String, Any>
+            )
+        )
     }
 
     override fun serialize(config: ConfigSection): String {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+        return Yaml().dumpAsMap(config)
     }
 
 }
 
-class IniConfig internal constructor(file: File) : FileConfigImpl(file) {
+class TomlConfig internal constructor(file: File) : FileConfigImpl(file) {
     override fun deserialize(content: String): ConfigSection {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+        if (content.isEmpty() || content.isBlank()) {
+            return ConfigSectionImpl()
+        }
+        return ConfigSectionDelegation(
+            Collections.synchronizedMap(
+                Toml().read(content).toMap()
+            )
+        )
     }
 
     override fun serialize(config: ConfigSection): String {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+        return TomlWriter().write(config)
     }
-
 }
