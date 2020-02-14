@@ -17,8 +17,9 @@ import kotlinx.serialization.*
 import org.ini4j.Wini
 import org.yaml.snakeyaml.Yaml
 import java.io.File
-import java.util.LinkedHashMap
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.HashMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -194,7 +195,7 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
 }
 
 
-interface ConfigSection : Config {
+interface ConfigSection : Config, MutableMap<String, Any> {
     override fun getConfigSection(key: String): ConfigSection {
         return (get(key) ?: error("ConfigSection does not contain $key ")) as ConfigSection
     }
@@ -290,6 +291,21 @@ interface FileConfig : Config {
     fun serialize(config: ConfigSection): String
 }
 
+open class ConfigSectionDelegation(
+    val delegation: MutableMap<String, Any>
+) : ConfigSection, MutableMap<String, Any> by delegation {
+    override fun set(key: String, value: Any) {
+        delegation.put(key, value)
+    }
+
+    override fun asMap(): Map<String, Any> {
+        return delegation
+    }
+
+    override fun save() {
+
+    }
+}
 
 abstract class FileConfigImpl internal constructor(
     private val file: File
@@ -298,6 +314,27 @@ abstract class FileConfigImpl internal constructor(
     private val content by lazy {
         deserialize(file.readText())
     }
+
+    override val size: Int
+        get() = content.size
+
+    override val entries: MutableSet<MutableMap.MutableEntry<String, Any>>
+        get() = content.entries
+
+    override val keys: MutableSet<String>
+        get() = content.keys
+
+    override val values: MutableCollection<Any>
+        get() = content.values
+
+    override fun containsKey(key: String): Boolean = content.containsKey(key)
+    override fun containsValue(value: Any): Boolean = content.containsValue(value)
+    override fun put(key: String, value: Any): Any? = content.put(key, value)
+    override fun isEmpty(): Boolean = content.isEmpty()
+    override fun putAll(from: Map<out String, Any>) = content.putAll(from)
+    override fun clear() = content.clear()
+    override fun remove(key: String): Any? = content.remove(key)
+
 
     override fun save() {
         if (!file.exists()) {
@@ -320,7 +357,9 @@ abstract class FileConfigImpl internal constructor(
 
 }
 
-class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
+class JsonConfig internal constructor(
+    file: File
+) : FileConfigImpl(file) {
     @UnstableDefault
     override fun deserialize(content: String): ConfigSection {
         if (content.isEmpty() || content.isBlank() || content == "{}") {
@@ -344,22 +383,20 @@ class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
         if (content.isEmpty() || content.isBlank()) {
             return ConfigSectionImpl()
         }
-        val yamlObj = Yaml().load<LinkedHashMap<String, Any>>(content)
-        return JSON.parseObject<ConfigSectionImpl>(
-            JSONObject.toJSONString(yamlObj),
-            object : TypeReference<ConfigSectionImpl>() {},
-            Feature.OrderedField
+        return ConfigSectionDelegation(
+            Collections.synchronizedMap(
+                Yaml().load<LinkedHashMap<String, Any>>(content) as LinkedHashMap<String, Any>
+            )
         )
     }
 
     override fun serialize(config: ConfigSection): String {
-        val jsonStr = (JSONObject.toJSONString(config))
-        return Yaml().dump(JSON.parseObject(jsonStr))
+        return Yaml().dumpAsMap(config)
     }
 
 }
 
-class IniConfig internal constructor(val file: File) : ConfigSection {
+class IniConfig internal constructor(val file: File) : FileConfigImpl(file) {
     private val iniObj by lazy {
         Wini(file)
     }
@@ -384,5 +421,13 @@ class IniConfig internal constructor(val file: File) : ConfigSection {
 
     override fun save() {
         iniObj.store()
+    }
+
+    override fun deserialize(content: String): ConfigSection {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun serialize(config: ConfigSection): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
