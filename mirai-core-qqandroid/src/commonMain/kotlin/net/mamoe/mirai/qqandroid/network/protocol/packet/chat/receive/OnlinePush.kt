@@ -35,6 +35,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readString
