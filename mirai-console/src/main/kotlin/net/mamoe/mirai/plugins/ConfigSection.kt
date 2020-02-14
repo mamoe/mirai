@@ -284,15 +284,8 @@ open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection
     }
 }
 
-
-interface FileConfig : Config {
-    fun deserialize(content: String): ConfigSection
-
-    fun serialize(config: ConfigSection): String
-}
-
 open class ConfigSectionDelegation(
-    val delegation: MutableMap<String, Any>
+    private val delegation: MutableMap<String, Any>
 ) : ConfigSection, MutableMap<String, Any> by delegation {
     override fun set(key: String, value: Any) {
         delegation.put(key, value)
@@ -307,6 +300,14 @@ open class ConfigSectionDelegation(
     }
 }
 
+
+interface FileConfig : Config {
+    fun deserialize(content: String): ConfigSection
+
+    fun serialize(config: ConfigSection): String
+}
+
+
 abstract class FileConfigImpl internal constructor(
     private val file: File
 ) : FileConfig, ConfigSection {
@@ -315,18 +316,10 @@ abstract class FileConfigImpl internal constructor(
         deserialize(file.readText())
     }
 
-    override val size: Int
-        get() = content.size
-
-    override val entries: MutableSet<MutableMap.MutableEntry<String, Any>>
-        get() = content.entries
-
-    override val keys: MutableSet<String>
-        get() = content.keys
-
-    override val values: MutableCollection<Any>
-        get() = content.values
-
+    override val size: Int get() = content.size
+    override val entries: MutableSet<MutableMap.MutableEntry<String, Any>> get() = content.entries
+    override val keys: MutableSet<String> get() = content.keys
+    override val values: MutableCollection<Any> get() = content.values
     override fun containsKey(key: String): Boolean = content.containsKey(key)
     override fun containsValue(value: Any): Boolean = content.containsValue(value)
     override fun put(key: String, value: Any): Any? = content.put(key, value)
@@ -334,7 +327,6 @@ abstract class FileConfigImpl internal constructor(
     override fun putAll(from: Map<out String, Any>) = content.putAll(from)
     override fun clear() = content.clear()
     override fun remove(key: String): Any? = content.remove(key)
-
 
     override fun save() {
         if (!file.exists()) {
@@ -401,7 +393,11 @@ class TomlConfig internal constructor(file: File) : FileConfigImpl(file) {
         if (content.isEmpty() || content.isBlank()) {
             return ConfigSectionImpl()
         }
-        return ConfigSectionDelegation(Toml().read(content).toMap())
+        return ConfigSectionDelegation(
+            Collections.synchronizedMap(
+                Toml().read(content).toMap()
+            )
+        )
     }
 
     override fun serialize(config: ConfigSection): String {
