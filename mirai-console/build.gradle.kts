@@ -1,8 +1,18 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "5.2.0"
     id("kotlinx-serialization")
     id("kotlin")
     id("java")
+}
+
+
+apply(plugin = "com.github.johnrengelman.shadow")
+
+apply(plugin = "java-library")
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
+    manifest {
+        attributes["Main-Class"] = "net.mamoe.mirai.MiraiConsoleLoader"
+    }
 }
 
 val kotlinVersion: String by rootProject.ext
