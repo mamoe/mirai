@@ -32,7 +32,7 @@ actual class PlatformSocket : Closeable {
     actual val isOpen: Boolean
         get() = socket.isConnected
 
-    override fun close() {
+    actual override fun close() {
         if (::socket.isInitialized) {
             socket.close()
         }
