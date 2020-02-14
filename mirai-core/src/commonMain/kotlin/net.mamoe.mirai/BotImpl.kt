@@ -38,7 +38,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     private val botJob = SupervisorJob(configuration.parentCoroutineContext[Job])
     override val coroutineContext: CoroutineContext =
         configuration.parentCoroutineContext + botJob + (configuration.parentCoroutineContext[CoroutineExceptionHandler]
-            ?: CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") })
+            ?: CoroutineExceptionHandler { _, e -> logger.error("An exception was thrown under a coroutine of Bot", e) })
 
     @Suppress("CanBePrimaryConstructorProperty") // for logger
     final override val account: BotAccount = account
