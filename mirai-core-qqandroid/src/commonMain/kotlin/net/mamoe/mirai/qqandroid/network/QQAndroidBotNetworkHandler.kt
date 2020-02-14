@@ -100,9 +100,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
         channel = PlatformSocket()
         // TODO: 2020/2/14 连接多个服务器
-        withTimeout(3000) {
+        withTimeoutOrNull(3000) {
             channel.connect("113.96.13.208", 8080)
-        }
+        } ?: error("timeout connecting server")
         startPacketReceiverJobOrKill(CancellationException("reconnect"))
 
         // logger.info("Trying login")
