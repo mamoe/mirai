@@ -155,6 +155,7 @@ inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is 
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {
     At -> first<At>()
+    AtAll -> first<AtAll>()
     PlainText -> first<PlainText>()
     Image -> first<Image>()
     Face -> first<Face>()
