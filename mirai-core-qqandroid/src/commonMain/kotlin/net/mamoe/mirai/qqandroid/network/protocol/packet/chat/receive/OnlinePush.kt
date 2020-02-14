@@ -251,7 +251,7 @@ internal class OnlinePush {
                                                 )
                                             }
                                             else -> {
-                                                bot.network.logger.debug{"Unknown server messages $message"}
+                                                bot.network.logger.debug { "Unknown server messages $message" }
                                                 return NoPacket
                                             }
                                         }
