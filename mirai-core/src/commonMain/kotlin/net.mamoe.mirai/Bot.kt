@@ -24,6 +24,7 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.transferTo
 
@@ -175,9 +176,11 @@ abstract class Bot : CoroutineScope {
 
     /**
      * 登录, 或重新登录.
-     * 不建议调用这个函数.
+     * 重新登录时不会再次拉取联系人列表.
      *
-     * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.login]
+     * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.relogin]
+     *
+     * @throws LoginFailedException
      */
     abstract suspend fun login()
     // endregion
