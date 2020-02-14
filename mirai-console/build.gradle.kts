@@ -40,5 +40,7 @@ dependencies {
     runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main"))
     api(kotlin("serialization"))
     api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
+    api(group = "org.yaml", name = "snakeyaml", version = "1.25")
+    api(group = "org.ini4j", name = "ini4j", version = "0.5.4")
     // classpath is not set correctly by IDE
 }

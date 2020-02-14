@@ -14,7 +14,10 @@ import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson.TypeReference
 import com.alibaba.fastjson.parser.Feature
 import kotlinx.serialization.*
+import org.ini4j.Wini
+import org.yaml.snakeyaml.Yaml
 import java.io.File
+import java.util.LinkedHashMap
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
@@ -191,7 +194,6 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
 }
 
 
-
 interface ConfigSection : Config {
     override fun getConfigSection(key: String): ConfigSection {
         return (get(key) ?: error("ConfigSection does not contain $key ")) as ConfigSection
@@ -339,22 +341,48 @@ class JsonConfig internal constructor(file: File) : FileConfigImpl(file) {
 
 class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
     override fun deserialize(content: String): ConfigSection {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+        if (content.isEmpty() || content.isBlank()) {
+            return ConfigSectionImpl()
+        }
+        val yamlObj = Yaml().load<LinkedHashMap<String, Any>>(content)
+        return JSON.parseObject<ConfigSectionImpl>(
+            JSONObject.toJSONString(yamlObj),
+            object : TypeReference<ConfigSectionImpl>() {},
+            Feature.OrderedField
+        )
     }
 
     override fun serialize(config: ConfigSection): String {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+        val jsonStr = (JSONObject.toJSONString(config))
+        return Yaml().dump(JSON.parseObject(jsonStr))
     }
 
 }
 
-class IniConfig internal constructor(file: File) : FileConfigImpl(file) {
-    override fun deserialize(content: String): ConfigSection {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+class IniConfig internal constructor(val file: File) : ConfigSection {
+    private val iniObj by lazy {
+        Wini(file)
+    }
+    private val rootSection
+        get() = iniObj["root"]
+
+    override fun asMap(): Map<String, Any> {
+        return JSON.parseObject<ConfigSectionImpl>(
+            JSONObject.toJSONString(rootSection),
+            object : TypeReference<ConfigSectionImpl>() {},
+            Feature.OrderedField
+        ).asMap()
     }
 
-    override fun serialize(config: ConfigSection): String {
-        TODO("崔崔还没有写") //To change body of created functions use File | Settings | File Templates.
+    override fun set(key: String, value: Any) {
+        iniObj.put("root", key, value)
     }
 
+    override fun get(key: String): Any? {
+        return iniObj.get("root", key)
+    }
+
+    override fun save() {
+        iniObj.store()
+    }
 }
