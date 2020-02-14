@@ -385,7 +385,7 @@ internal class WtLogin {
 
 
                 val buffer = IoBuffer.Pool.borrow()
-                imageData.readFully(buffer)
+                imageData.readAvailable(buffer)
                 return LoginPacketResponse.Captcha.Picture(
                     data = buffer,
                     sign = sign
