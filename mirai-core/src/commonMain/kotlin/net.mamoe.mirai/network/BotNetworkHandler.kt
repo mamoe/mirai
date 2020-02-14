@@ -36,7 +36,6 @@ import net.mamoe.mirai.utils.io.PlatformDatagramChannel
  *
  * [BotNetworkHandler.close] 时将会 [取消][Job.cancel] 所有此作用域下的协程
  */
-@MiraiInternalAPI
 @Suppress("PropertyName")
 abstract class BotNetworkHandler : CoroutineScope {
     /**
