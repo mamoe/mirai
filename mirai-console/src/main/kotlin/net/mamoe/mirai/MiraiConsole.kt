@@ -17,6 +17,7 @@ import net.mamoe.mirai.plugins.withDefaultWriteSave
 import net.mamoe.mirai.api.http.MiraiHttpAPIServer
 import net.mamoe.mirai.api.http.generateSessionKey
 import net.mamoe.mirai.contact.sendMessage
+import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -37,7 +38,7 @@ object MiraiConsole {
         get() = PluginManager
 
     var logger: MiraiConsoleLogger =
-        DefaultLogger
+        UIPushLogger()
 
     var path: String = System.getProperty("user.dir")
 
@@ -254,14 +255,11 @@ object MiraiConsole {
         }
     }
 
-    interface MiraiConsoleLogger {
-        operator fun invoke(any: Any? = null)
-    }
-
-    object DefaultLogger : MiraiConsoleLogger {
+    class UIPushLogger(override val identity: String?, override var follower: MiraiLogger?) : MiraiLogger {
         override fun invoke(any: Any?) {
+            MiraiConsoleUI.start()
             if (any != null) {
-                println("[Mirai$version $build]: " + any.toString())
+                MiraiConsoleUI.pushLog(0, "[Mirai$version $build]: $any")
             }
         }
     }
@@ -287,6 +285,7 @@ class MiraiConsoleLoader {
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
             })
+
         }
     }
 }
