@@ -11,16 +11,15 @@ package net.mamoe.mirai.utils
 
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.protobuf.ProtoBuf
-import net.mamoe.mirai.utils.cryptor.contentToString
 
 /**
  * 设备信息. 可通过继承 [SystemDeviceInfo] 来在默认的基础上修改
  */
-abstract class DeviceInfo internal constructor(
-    context: Context
-) {
-    val context: Context by context.unsafeWeakRef()
+abstract class DeviceInfo {
+    @Transient
+    abstract val context: Context
 
     abstract val display: ByteArray
     abstract val product: ByteArray

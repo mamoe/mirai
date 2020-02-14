@@ -9,13 +9,13 @@
 
 package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.utils.Context
-import net.mamoe.mirai.utils.DeviceInfo
-
 /**
  * 通过本机信息来获取设备信息.
  *
  * Android: 获取手机信息, 与 QQ 官方相同.
  * JVM: 部分为常量, 部分为随机
  */
-open expect class SystemDeviceInfo(context: Context) : DeviceInfo
+expect open class SystemDeviceInfo : DeviceInfo {
+    constructor()
+    constructor(context: Context)
+}

@@ -45,7 +45,7 @@ class BotConfiguration {
      */
     var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.uin})") }
     /**
-     * 设备信息覆盖
+     * 设备信息覆盖. 默认使用随机的设备信息.
      */
     var deviceInfo: ((Context) -> DeviceInfo)? = null
 

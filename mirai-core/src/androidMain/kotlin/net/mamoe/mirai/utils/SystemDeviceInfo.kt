@@ -14,13 +14,23 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import kotlinx.io.core.toByteArray
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.io.File
 
 /**
  * 部分引用指向 [Build].
  * 部分需要权限, 若无权限则会使用默认值.
  */
-actual open class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(context) {
+@Serializable
+actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
+    actual constructor(context: Context) : this() {
+        this.context = context
+    }
+
+    @Transient
+    final override lateinit var context: Context
+
     override val display: ByteArray get() = Build.DISPLAY.toByteArray()
     override val product: ByteArray get() = Build.PRODUCT.toByteArray()
     override val device: ByteArray get() = Build.DEVICE.toByteArray()
@@ -88,6 +98,7 @@ actual open class SystemDeviceInfo actual constructor(context: Context) : Device
     override val androidId: ByteArray get() = Build.ID.toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()
 
+    @Serializable
     object Version : DeviceInfo.Version {
         override val incremental: ByteArray get() = Build.VERSION.INCREMENTAL.toByteArray()
         override val release: ByteArray get() = Build.VERSION.RELEASE.toByteArray()
