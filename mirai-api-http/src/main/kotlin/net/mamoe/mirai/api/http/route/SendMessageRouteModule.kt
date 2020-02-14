@@ -52,6 +52,12 @@ fun Application.messageModule() {
             call.respondStateCode(StateCode.Success)
         }
 
+        miraiVerify<SendDTO>("/quoteMessage") {
+            it.session.messageQueue.quoteCache[it.target]?.quoteReply(it.messageChain.toMessageChain())
+                ?: throw NoSuchElementException()
+            call.respondStateCode(StateCode.Success)
+        }
+
         miraiVerify<SendImageDTO>("sendImageMessage") {
             val bot = it.session.bot
             val contact = when {
@@ -72,12 +78,14 @@ fun Application.messageModule() {
             if (!SessionManager.containSession(sessionKey)) throw IllegalSessionException
             val session = try {
                 SessionManager[sessionKey] as AuthedSession
-            } catch (e: TypeCastException) { throw NotVerifiedSessionException }
+            } catch (e: TypeCastException) {
+                throw NotVerifiedSessionException
+            }
 
             val type = parts.value("type")
             parts.file("img")?.apply {
                 val image = streamProvider().use {
-                    when(type) {
+                    when (type) {
                         "group" -> session.bot.groups.toList().random().uploadImage(it)
                         "friend" -> session.bot.qqs.toList().random().uploadImage(it)
                         else -> null

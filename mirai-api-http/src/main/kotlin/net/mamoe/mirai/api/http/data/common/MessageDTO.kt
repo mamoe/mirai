@@ -36,6 +36,9 @@ data class UnKnownMessagePacketDTO(val msg: String) : MessagePacketDTO()
 
 // Message
 @Serializable
+@SerialName("Source")
+data class MessageSourceDTO(val uid: Long) : MessageDTO()
+@Serializable
 @SerialName("At")
 data class AtDTO(val target: Long, val display: String) : MessageDTO()
 @Serializable
@@ -85,6 +88,7 @@ fun MessageChainDTO.toMessageChain() =
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {
+    is MessageSource -> MessageSourceDTO(messageUid)
     is At -> AtDTO(target, display)
     is AtAll -> AtAllDTO(0L)
     is Face -> FaceDTO(id.value.toInt())
@@ -102,7 +106,7 @@ fun MessageDTO.toMessage() = when (this) {
     is PlainDTO -> PlainText(text)
     is ImageDTO -> Image(imageId)
     is XmlDTO -> XMLMessage(xml)
-    is UnknownMessageDTO -> PlainText("assert cannot reach")
+    is MessageSourceDTO, is UnknownMessageDTO -> PlainText("assert cannot reach")
 }
 
 
