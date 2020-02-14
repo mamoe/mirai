@@ -16,12 +16,10 @@ import com.alibaba.fastjson.parser.Feature
 import com.moandjiezana.toml.Toml
 import com.moandjiezana.toml.TomlWriter
 import kotlinx.serialization.*
-import org.ini4j.Wini
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.HashMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -69,11 +67,11 @@ interface Config {
                 "yml" -> YamlConfig(file)
                 "yaml" -> YamlConfig(file)
                 "mirai" -> YamlConfig(file)
-                "ini" -> IniConfig(file)
-                "toml" -> IniConfig(file)
-                "properties" -> IniConfig(file)
-                "property" -> IniConfig(file)
-                "data" -> IniConfig(file)
+                "ini" -> TomlConfig(file)
+                "toml" -> TomlConfig(file)
+                "properties" -> TomlConfig(file)
+                "property" -> TomlConfig(file)
+                "data" -> TomlConfig(file)
                 else -> error("Unsupported file config type ${file.extension.toLowerCase()}")
             }
         }
@@ -398,7 +396,7 @@ class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
 
 }
 
-class IniConfig internal constructor(file: File) : FileConfigImpl(file) {
+class TomlConfig internal constructor(file: File) : FileConfigImpl(file) {
     override fun deserialize(content: String): ConfigSection {
         if (content.isEmpty() || content.isBlank()) {
             return ConfigSectionImpl()
