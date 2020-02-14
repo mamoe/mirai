@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils.io.getRandomString
 import java.io.File
 
 /**
- * 加载或创建一个设备信息.
+ * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
  */
 @UseExperimental(UnstableDefault::class)
 fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
@@ -55,7 +55,7 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     override val bootId: ByteArray = ExternalImage.generateUUID(md5(getRandomByteArray(16))).toByteArray()
     override val procVersion: ByteArray = "Linux version 3.0.31-${getRandomString(8)} (android-build@xxx.xxx.xxx.xxx.com)".toByteArray()
     override val baseBand: ByteArray = byteArrayOf()
-    override val version: DeviceInfo.Version get() = Version
+    override val version: Version = Version
     override val simInfo: ByteArray = "T-Mobile".toByteArray()
     override val osType: ByteArray = "android".toByteArray()
     override val macAddress: ByteArray = "02:00:00:00:00:00".toByteArray()
@@ -89,7 +89,7 @@ class DeviceInfoData(
     override val bootId: ByteArray,
     override val procVersion: ByteArray,
     override val baseBand: ByteArray,
-    override val version: Version,
+    override val version: VersionData,
     override val simInfo: ByteArray,
     override val osType: ByteArray,
     override val macAddress: ByteArray,
@@ -97,10 +97,21 @@ class DeviceInfoData(
     override val wifiSSID: ByteArray?,
     override val imsiMd5: ByteArray,
     override val imei: String,
-    override val ipAddress: ByteArray,
-    override val androidId: ByteArray,
     override val apn: ByteArray
 ) : DeviceInfo() {
     @Transient
     override lateinit var context: Context
+
+    @UseExperimental(ExperimentalUnsignedTypes::class)
+    override val ipAddress: ByteArray
+        get() = localIpAddress().split(".").map { it.toUByte().toByte() }.takeIf { it.size == 4 }?.toByteArray() ?: byteArrayOf()
+    override val androidId: ByteArray get() = display
+
+    @Serializable
+    class VersionData(
+        override val incremental: ByteArray,
+        override val release: ByteArray,
+        override val codename: ByteArray,
+        override val sdk: Int
+    ) : Version
 }
