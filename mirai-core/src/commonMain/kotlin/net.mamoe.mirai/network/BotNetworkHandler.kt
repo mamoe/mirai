@@ -36,6 +36,7 @@ import net.mamoe.mirai.utils.io.PlatformDatagramChannel
  *
  * [BotNetworkHandler.close] 时将会 [取消][Job.cancel] 所有此作用域下的协程
  */
+@MiraiInternalAPI
 @Suppress("PropertyName")
 abstract class BotNetworkHandler : CoroutineScope {
     /**
@@ -55,12 +56,20 @@ abstract class BotNetworkHandler : CoroutineScope {
 
     /**
      * 依次尝试登录到可用的服务器. 在任一服务器登录完成后返回.
-     * 本函数将挂起直到登录成功.
+     *
+     * - 会断开连接并重新登录.
+     * - 不会停止网络层的 [Job].
+     * - 重新登录时不会再次拉取联系人列表.
+     * - 挂起直到登录成功.
      *
      * 不要使用这个 API. 请使用 [Bot.login]
+     *
+     * @throws LoginFailedException 登录失败时
+     * @throws WrongPasswordException 密码错误时
      */
+    @Suppress("SpellCheckingInspection")
     @MiraiInternalAPI
-    abstract suspend fun login()
+    abstract suspend fun relogin()
 
     /**
      * 初始化获取好友列表等值.
@@ -92,6 +101,7 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 }
 
+@UseExperimental(MiraiInternalAPI::class)
 suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null) {
     this.close(cause)
     this.supervisor.join()
