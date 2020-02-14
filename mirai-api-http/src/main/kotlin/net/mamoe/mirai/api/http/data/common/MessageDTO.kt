@@ -39,6 +39,9 @@ data class UnKnownMessagePacketDTO(val msg: String) : MessagePacketDTO()
 @SerialName("At")
 data class AtDTO(val target: Long, val display: String) : MessageDTO()
 @Serializable
+@SerialName("AtAll")
+data class AtAllDTO(val target: Long = 0) : MessageDTO() // target为保留字段
+@Serializable
 @SerialName("Face")
 data class FaceDTO(val faceId: Int) : MessageDTO()
 @Serializable
@@ -83,6 +86,7 @@ fun MessageChainDTO.toMessageChain() =
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {
     is At -> AtDTO(target, display)
+    is AtAll -> AtAllDTO(0L)
     is Face -> FaceDTO(id.value.toInt())
     is PlainText -> PlainDTO(stringValue)
     is Image -> ImageDTO(imageId)
@@ -93,6 +97,7 @@ fun Message.toDTO() = when (this) {
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 fun MessageDTO.toMessage() = when (this) {
     is AtDTO -> At(target, display)
+    is AtAllDTO -> AtAll
     is FaceDTO -> Face(FaceId(faceId.toUByte()))
     is PlainDTO -> PlainText(text)
     is ImageDTO -> Image(imageId)
