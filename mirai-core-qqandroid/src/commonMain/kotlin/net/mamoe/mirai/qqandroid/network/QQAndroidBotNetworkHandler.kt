@@ -63,6 +63,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     private lateinit var channel: PlatformSocket
 
     private var _packetReceiverJob: Job? = null
+    private var heartbeatJob: Job? = null
 
     private val packetReceiveLock: Mutex = Mutex()
 
@@ -90,11 +91,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     override suspend fun relogin() {
+        heartbeatJob?.cancel()
         if (::channel.isInitialized) {
             if (channel.isOpen) {
                 kotlin.runCatching {
                     registerClientOnline()
                 }.exceptionOrNull() ?: return
+                logger.info("Cannot do fast relogin. Trying slow relogin")
             }
             channel.close()
         }
@@ -157,7 +160,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     private suspend fun registerClientOnline() {
-        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000) // it's slow
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
     }
 
     @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
@@ -250,7 +253,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         joinAll(friendListJob, groupJob)
 
-        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
+        heartbeatJob = this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
             while (this.isActive) {
                 delay(bot.configuration.heartbeatPeriodMillis)
                 val failException = doHeartBeat()
