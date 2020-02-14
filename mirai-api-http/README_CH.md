@@ -343,9 +343,10 @@ Content-Type：multipart/form-data
 #### 消息是构成消息链的基本对象，目前支持的消息类型有
 
 + [x] At，@消息
++ [x] AtAll，@全体成员
 + [x] Face，表情消息
 + [x] Plain，文字消息
-+ [ ] Image，图片消息
++ [x] Image，图片消息
 + [ ] Xml，Xml卡片消息
 + [ ] 敬请期待
 
@@ -363,6 +364,18 @@ Content-Type：multipart/form-data
 | ------- | ------ | ------------------------- |
 | target  | Long   | 群员QQ号                  |
 | display | String | @时显示的文本如："@Mirai" |
+
+#### AtAll
+
+```json5
+{
+    "type": "AtAll"
+}
+```
+
+| 名字    | 类型   | 说明                      |
+| ------- | ------ | ------------------------- |
+| -       | -      | -                         |
 
 #### Face
 

@@ -51,6 +51,7 @@ object MiraiJson {
         }
         polymorphic(MessageDTO.serializer()) {
             AtDTO::class with AtDTO.serializer()
+            AtAllDTO::class with AtAllDTO.serializer()
             FaceDTO::class with FaceDTO.serializer()
             PlainDTO::class with PlainDTO.serializer()
             ImageDTO::class with ImageDTO.serializer()
