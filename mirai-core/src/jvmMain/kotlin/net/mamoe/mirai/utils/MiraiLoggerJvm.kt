@@ -18,37 +18,37 @@ import java.util.*
 actual open class PlatformLogger @JvmOverloads internal actual constructor(
     override val identity: String?
 ) : MiraiLoggerPlatformBase() {
-    override fun verbose0(any: Any?) = println(any, LoggerTextFormat.RESET)
+    override fun verbose0(message: String?) = println(message, LoggerTextFormat.RESET)
     override fun verbose0(message: String?, e: Throwable?) {
         if (message != null) verbose(message.toString())
         e?.printStackTrace()
     }
 
-    override fun info0(any: Any?) = println(any, LoggerTextFormat.LIGHT_GREEN)
+    override fun info0(message: String?) = println(message, LoggerTextFormat.LIGHT_GREEN)
     override fun info0(message: String?, e: Throwable?) {
         if (message != null) info(message.toString())
         e?.printStackTrace()
     }
 
-    override fun warning0(any: Any?) = println(any, LoggerTextFormat.LIGHT_RED)
+    override fun warning0(message: String?) = println(message, LoggerTextFormat.LIGHT_RED)
     override fun warning0(message: String?, e: Throwable?) {
         if (message != null) warning(message.toString())
         e?.printStackTrace()
     }
 
-    override fun error0(any: Any?) = println(any, LoggerTextFormat.RED)
+    override fun error0(message: String?) = println(message, LoggerTextFormat.RED)
     override fun error0(message: String?, e: Throwable?) {
         if (message != null) error(message.toString())
         e?.printStackTrace()
     }
 
-    override fun debug0(any: Any?) = println(any, LoggerTextFormat.LIGHT_CYAN)
+    override fun debug0(message: String?) = println(message, LoggerTextFormat.LIGHT_CYAN)
     override fun debug0(message: String?, e: Throwable?) {
         if (message != null) debug(message.toString())
         e?.printStackTrace()
     }
 
-    private fun println(value: Any?, color: LoggerTextFormat) {
+    private fun println(value: String?, color: LoggerTextFormat) {
         val time = SimpleDateFormat("HH:mm:ss", Locale.SIMPLIFIED_CHINESE).format(Date())
 
         if (identity == null) {
@@ -62,6 +62,7 @@ actual open class PlatformLogger @JvmOverloads internal actual constructor(
 /**
  * @author NaturalHG
  */
+@Suppress("unused")
 internal enum class LoggerTextFormat(private val format: String) {
     RESET("\u001b[0m"),
 
