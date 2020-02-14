@@ -11,7 +11,6 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
-import kotlinx.io.errors.IOException
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
@@ -37,4 +36,6 @@ expect class PlatformSocket() : Closeable {
     suspend fun read(): ByteReadPacket
 
     val isOpen: Boolean
+
+    override fun close()
 }

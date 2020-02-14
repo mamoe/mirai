@@ -14,6 +14,8 @@ package net.mamoe.mirai.message.data
  * 消息源只用于 [QuoteReply]
  *
  * `mirai-core-qqandroid`: `net.mamoe.mirai.qqandroid.message.MessageSourceFromMsg`
+ *
+ * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  */
 interface MessageSource : Message {
     companion object : Message.Key<MessageSource>

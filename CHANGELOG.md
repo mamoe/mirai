@@ -2,11 +2,34 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
-## `0.14.0` 2020/2/13
+## `0.15.0` 2020/2/14
+
 ### mirai-core
+
+- 新增事件: `BotReloginEvent` 和 `BotOfflineEvent.Dropped`
+- `AtAll` 现在实现 `Message.Key`
+- 新增 `BotConfiguration` DSL, 支持自动将设备信息存储在文件系统等
+- 新增 `MessageSource.quote(Member)`
+
+- 更好的网络层连接逻辑
+- 密码错误后不再重试登录
+- 掉线后尝试快速重连, 失败则普通重连 (#47)
+- 有原因的登录失败时将抛出特定异常: `LoginFailedException`
+- 默认心跳时间调整为 60s
+
+### mirai-core-qqandroid
+
+- 解决一些验证码无法识别的问题
+- 忽略一些不需要处理的事件(机器人主动操作触发的事件)
+
+## `0.14.0` 2020/2/13
+
+### mirai-core
+
 - **支持 at 全体成员: `AtAll`**
 
 ### mirai-core-qqandroid
+
 - **支持 `AtAll` 的发送和解析**
 - **修复某些情况下禁言处理异常**
 

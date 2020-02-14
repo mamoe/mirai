@@ -9,17 +9,32 @@
 
 package net.mamoe.mirai.api.http.queue
 
+import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
+import net.mamoe.mirai.message.data.MessageSource
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 
 class MessageQueue : ConcurrentLinkedDeque<MessagePacket<*, *>>() {
 
+    val quoteCache = ConcurrentHashMap<Long, GroupMessage>()
+
     fun fetch(size: Int): List<MessagePacket<*, *>> {
         var count = size
+        quoteCache.clear()
         val ret = ArrayList<MessagePacket<*, *>>(count)
         while (!this.isEmpty() && count-- > 0) {
-            ret.add(this.pop())
+            val packet = pop()
+            ret.add(packet)
+
+            if (packet is GroupMessage) {
+                addCache(packet)
+            }
         }
         return ret
+    }
+
+    private fun addCache(msg: GroupMessage) {
+        quoteCache[msg.message[MessageSource].messageUid] = msg
     }
 }

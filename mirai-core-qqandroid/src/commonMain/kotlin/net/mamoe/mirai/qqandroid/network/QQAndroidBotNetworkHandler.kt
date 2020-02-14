@@ -20,9 +20,13 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.BroadcastControllable
+import net.mamoe.mirai.event.CancellableEvent
+import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.FriendInfoImpl
 import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -37,7 +41,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.PlatformSocket
+import net.mamoe.mirai.utils.io.readPacket
+import net.mamoe.mirai.utils.io.useBytes
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime
@@ -55,13 +62,48 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     private lateinit var channel: PlatformSocket
 
-    override suspend fun login() {
+    private var _packetReceiverJob: Job? = null
+    private var heartbeatJob: Job? = null
+
+    private val packetReceiveLock: Mutex = Mutex()
+
+    private fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
+        _packetReceiverJob?.cancel(cancelCause)
+
+        return this.launch(CoroutineName("Incoming Packet Receiver")) {
+            while (channel.isOpen) {
+                val rawInput = try {
+                    channel.read()
+                } catch (e: CancellationException) {
+                    return@launch
+                } catch (e: Throwable) {
+                    BotOfflineEvent.Dropped(bot).broadcast()
+                    return@launch
+                }
+                packetReceiveLock.withLock {
+                    processPacket(rawInput)
+                }
+            }
+        }.also { _packetReceiverJob = it }
+    }
+
+    override suspend fun relogin() {
+        heartbeatJob?.cancel()
         if (::channel.isInitialized) {
+            if (channel.isOpen) {
+                kotlin.runCatching {
+                    registerClientOnline()
+                }.exceptionOrNull() ?: return
+                logger.info("Cannot do fast relogin. Trying slow relogin")
+            }
             channel.close()
         }
         channel = PlatformSocket()
-        channel.connect("113.96.13.208", 8080)
-        this.launch(CoroutineName("Incoming Packet Receiver")) { processReceive() }
+        // TODO: 2020/2/14 连接多个服务器
+        withTimeoutOrNull(3000) {
+            channel.connect("113.96.13.208", 8080)
+        } ?: error("timeout connecting server")
+        startPacketReceiverJobOrKill(CancellationException("reconnect"))
 
         // logger.info("Trying login")
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
@@ -94,7 +136,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     }
                 }
 
-                is WtLogin.Login.LoginPacketResponse.Error -> error(response.toString())
+                is WtLogin.Login.LoginPacketResponse.Error ->
+                    throw WrongPasswordException(response.toString())
 
                 is WtLogin.Login.LoginPacketResponse.DeviceLockLogin -> {
                     response = WtLogin.Login.SubCommand20(
@@ -112,18 +155,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
-        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000) // it's slow
+        registerClientOnline()
+    }
+
+    private suspend fun registerClientOnline() {
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
     }
 
     @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
-        this@QQAndroidBotNetworkHandler.subscribeAlways<BotOfflineEvent> {
-            if (this@QQAndroidBotNetworkHandler.bot == this.bot) {
-                logger.error("被挤下线")
-                close()
-            }
-        }
-
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
 
         bot.qqs.delegate.clear()
@@ -172,6 +212,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     launch {
                         try {
                             bot.groups.delegate.addLast(
+                                @Suppress("DuplicatedCode")
                                 GroupImpl(
                                     bot = bot,
                                     coroutineContext = bot.coroutineContext,
@@ -211,14 +252,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         joinAll(friendListJob, groupJob)
 
-        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
+        heartbeatJob = this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
             while (this.isActive) {
                 delay(bot.configuration.heartbeatPeriodMillis)
                 val failException = doHeartBeat()
                 if (failException != null) {
                     delay(bot.configuration.firstReconnectDelayMillis)
                     close()
-                    bot.tryReinitializeNetworkHandler(failException)
+                    BotOfflineEvent.Dropped(bot).broadcast()
                 }
             }
         }
@@ -407,33 +448,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
     }
 
-
-    @UseExperimental(ExperimentalCoroutinesApi::class)
-    private suspend fun processReceive() {
-        while (channel.isOpen) {
-            val rawInput = try {
-                channel.read()
-            } catch (e: ClosedChannelException) {
-                bot.tryReinitializeNetworkHandler(e)
-                return
-            } catch (e: ReadPacketInternalException) {
-                logger.error("Socket channel read failed: ${e.message}")
-                bot.tryReinitializeNetworkHandler(e)
-                return
-            } catch (e: CancellationException) {
-                return
-            } catch (e: Throwable) {
-                logger.error("Caught unexpected exceptions", e)
-                bot.tryReinitializeNetworkHandler(e)
-                return
-            }
-            packetReceiveLock.withLock {
-                processPacket(rawInput)
-            }
-        }
-    }
-
-    private val packetReceiveLock: Mutex = Mutex()
 
     /**
      * 发送一个包, 但不期待任何返回.

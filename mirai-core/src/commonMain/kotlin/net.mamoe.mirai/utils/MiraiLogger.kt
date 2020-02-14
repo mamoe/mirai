@@ -86,7 +86,7 @@ interface MiraiLogger {
      * 记录一个 `verbose` 级别的日志.
      * 无关紧要的, 经常大量输出的日志应使用它.
      */
-    fun verbose(any: Any?)
+    fun verbose(message: String?)
 
     fun verbose(e: Throwable?) = verbose(null, e)
     fun verbose(message: String?, e: Throwable?)
@@ -94,7 +94,7 @@ interface MiraiLogger {
     /**
      * 记录一个 _调试_ 级别的日志.
      */
-    fun debug(any: Any?)
+    fun debug(message: String?)
 
     fun debug(e: Throwable?) = debug(null, e)
     fun debug(message: String?, e: Throwable?)
@@ -103,7 +103,7 @@ interface MiraiLogger {
     /**
      * 记录一个 _信息_ 级别的日志.
      */
-    fun info(any: Any?)
+    fun info(message: String?)
 
     fun info(e: Throwable?) = info(null, e)
     fun info(message: String?, e: Throwable?)
@@ -112,7 +112,7 @@ interface MiraiLogger {
     /**
      * 记录一个 _警告_ 级别的日志.
      */
-    fun warning(any: Any?)
+    fun warning(message: String?)
 
     fun warning(e: Throwable?) = warning(null, e)
     fun warning(message: String?, e: Throwable?)
@@ -121,7 +121,7 @@ interface MiraiLogger {
     /**
      * 记录一个 _错误_ 级别的日志.
      */
-    fun error(e: Any?)
+    fun error(message: String?)
 
     fun error(e: Throwable?) = error(null, e)
     fun error(message: String?, e: Throwable?)
@@ -149,6 +149,47 @@ interface MiraiLogger {
     operator fun plusAssign(follower: MiraiLogger)
 }
 
+
+inline fun MiraiLogger.verbose(lazyMessage: () -> String) {
+    if (this is MiraiLoggerWithSwitch && switch) verbose(lazyMessage())
+}
+
+inline fun MiraiLogger.verbose(lazyMessage: () -> String, e: Throwable?) {
+    if (this is MiraiLoggerWithSwitch && switch) verbose(lazyMessage(), e)
+}
+
+inline fun MiraiLogger.debug(lazyMessage: () -> String?) {
+    if (this is MiraiLoggerWithSwitch && switch) debug(lazyMessage())
+}
+
+inline fun MiraiLogger.debug(lazyMessage: () -> String?, e: Throwable?) {
+    if (this is MiraiLoggerWithSwitch && switch) debug(lazyMessage(), e)
+}
+
+inline fun MiraiLogger.info(lazyMessage: () -> String?) {
+    if (this is MiraiLoggerWithSwitch && switch) info(lazyMessage())
+}
+
+inline fun MiraiLogger.info(lazyMessage: () -> String?, e: Throwable?) {
+    if (this is MiraiLoggerWithSwitch && switch) info(lazyMessage(), e)
+}
+
+inline fun MiraiLogger.warning(lazyMessage: () -> String?) {
+    if (this is MiraiLoggerWithSwitch && switch) warning(lazyMessage())
+}
+
+inline fun MiraiLogger.warning(lazyMessage: () -> String?, e: Throwable?) {
+    if (this is MiraiLoggerWithSwitch && switch) warning(lazyMessage(), e)
+}
+
+inline fun MiraiLogger.error(lazyMessage: () -> String?) {
+    if (this is MiraiLoggerWithSwitch && switch) error(lazyMessage())
+}
+
+inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
+    if (this is MiraiLoggerWithSwitch && switch) error(lazyMessage(), e)
+}
+
 /**
  * 当前平台的默认的日志记录器.
  * 在 _JVM 控制台_ 端的实现为 [println]
@@ -165,11 +206,11 @@ expect open class PlatformLogger @JvmOverloads internal constructor(identity: St
 object SilentLogger : PlatformLogger() {
     override val identity: String? = null
 
-    override fun error0(any: Any?) = Unit
-    override fun debug0(any: Any?) = Unit
-    override fun warning0(any: Any?) = Unit
-    override fun verbose0(any: Any?) = Unit
-    override fun info0(any: Any?) = Unit
+    override fun error0(message: String?) = Unit
+    override fun debug0(message: String?) = Unit
+    override fun warning0(message: String?) = Unit
+    override fun verbose0(message: String?) = Unit
+    override fun info0(message: String?) = Unit
 }
 
 /**
@@ -180,15 +221,15 @@ class SimpleLogger(override val identity: String?, private val logger: (String?,
         operator fun invoke(logger: (String?, Throwable?) -> Unit): SimpleLogger = SimpleLogger(null, logger)
     }
 
-    override fun verbose0(any: Any?) = logger(any?.toString(), null)
+    override fun verbose0(message: String?) = logger(message, null)
     override fun verbose0(message: String?, e: Throwable?) = logger(message, e)
-    override fun debug0(any: Any?) = logger(any?.toString(), null)
+    override fun debug0(message: String?) = logger(message, null)
     override fun debug0(message: String?, e: Throwable?) = logger(message, e)
-    override fun info0(any: Any?) = logger(any?.toString(), null)
+    override fun info0(message: String?) = logger(message, null)
     override fun info0(message: String?, e: Throwable?) = logger(message, e)
-    override fun warning0(any: Any?) = logger(any?.toString(), null)
+    override fun warning0(message: String?) = logger(message, null)
     override fun warning0(message: String?, e: Throwable?) = logger(message, e)
-    override fun error0(any: Any?) = logger(any?.toString(), null)
+    override fun error0(message: String?) = logger(message, null)
     override fun error0(message: String?, e: Throwable?) = logger(message, e)
 }
 
@@ -218,56 +259,16 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
         switch = false
     }
 
-    override fun verbose0(any: Any?) = if (switch) delegate.verbose(any) else Unit
+    override fun verbose0(message: String?) = if (switch) delegate.verbose(message) else Unit
     override fun verbose0(message: String?, e: Throwable?) = if (switch) delegate.verbose(message, e) else Unit
-    override fun debug0(any: Any?) = if (switch) delegate.debug(any) else Unit
+    override fun debug0(message: String?) = if (switch) delegate.debug(message) else Unit
     override fun debug0(message: String?, e: Throwable?) = if (switch) delegate.debug(message, e) else Unit
-    override fun info0(any: Any?) = if (switch) delegate.info(any) else Unit
+    override fun info0(message: String?) = if (switch) delegate.info(message) else Unit
     override fun info0(message: String?, e: Throwable?) = if (switch) delegate.info(message, e) else Unit
-    override fun warning0(any: Any?) = if (switch) delegate.warning(any) else Unit
+    override fun warning0(message: String?) = if (switch) delegate.warning(message) else Unit
     override fun warning0(message: String?, e: Throwable?) = if (switch) delegate.warning(message, e) else Unit
-    override fun error0(any: Any?) = if (switch) delegate.error(any) else Unit
+    override fun error0(message: String?) = if (switch) delegate.error(message) else Unit
     override fun error0(message: String?, e: Throwable?) = if (switch) delegate.error(message, e) else Unit
-
-    inline fun verbose(lazyMessage: () -> String) {
-        if (switch) verbose(lazyMessage())
-    }
-
-    inline fun verbose(lazyMessage: () -> String, e: Throwable?) {
-        if (switch) verbose(lazyMessage(), e)
-    }
-
-    inline fun debug(lazyMessage: () -> Any?) {
-        if (switch) debug(lazyMessage())
-    }
-
-    inline fun debug(lazyMessage: () -> String?, e: Throwable?) {
-        if (switch) debug(lazyMessage(), e)
-    }
-
-    inline fun info(lazyMessage: () -> Any?) {
-        if (switch) info(lazyMessage())
-    }
-
-    inline fun info(lazyMessage: () -> String?, e: Throwable?) {
-        if (switch) info(lazyMessage(), e)
-    }
-
-    inline fun warning(lazyMessage: () -> Any?) {
-        if (switch) warning(lazyMessage())
-    }
-
-    inline fun warning(lazyMessage: () -> String?, e: Throwable?) {
-        if (switch) warning(lazyMessage(), e)
-    }
-
-    inline fun error(lazyMessage: () -> Any?) {
-        if (switch) error(lazyMessage())
-    }
-
-    inline fun error(lazyMessage: () -> String?, e: Throwable?) {
-        if (switch) error(lazyMessage(), e)
-    }
 }
 
 /**
@@ -280,9 +281,9 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
 abstract class MiraiLoggerPlatformBase : MiraiLogger {
     final override var follower: MiraiLogger? = null
 
-    final override fun verbose(any: Any?) {
-        follower?.verbose(any)
-        verbose0(any)
+    final override fun verbose(message: String?) {
+        follower?.verbose(message)
+        verbose0(message)
     }
 
     final override fun verbose(message: String?, e: Throwable?) {
@@ -290,9 +291,9 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         verbose0(message, e)
     }
 
-    final override fun debug(any: Any?) {
-        follower?.debug(any)
-        debug0(any)
+    final override fun debug(message: String?) {
+        follower?.debug(message)
+        debug0(message)
     }
 
     final override fun debug(message: String?, e: Throwable?) {
@@ -300,9 +301,9 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         debug0(message, e)
     }
 
-    final override fun info(any: Any?) {
-        follower?.info(any)
-        info0(any)
+    final override fun info(message: String?) {
+        follower?.info(message)
+        info0(message)
     }
 
     final override fun info(message: String?, e: Throwable?) {
@@ -310,9 +311,9 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         info0(message, e)
     }
 
-    final override fun warning(any: Any?) {
-        follower?.warning(any)
-        warning0(any)
+    final override fun warning(message: String?) {
+        follower?.warning(message)
+        warning0(message)
     }
 
     final override fun warning(message: String?, e: Throwable?) {
@@ -320,9 +321,9 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         warning0(message, e)
     }
 
-    final override fun error(e: Any?) {
-        follower?.error(e)
-        error0(e)
+    final override fun error(message: String?) {
+        follower?.error(message)
+        error0(message)
     }
 
     final override fun error(message: String?, e: Throwable?) {
@@ -330,15 +331,15 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         error0(message, e)
     }
 
-    protected abstract fun verbose0(any: Any?)
+    protected abstract fun verbose0(message: String?)
     protected abstract fun verbose0(message: String?, e: Throwable?)
-    protected abstract fun debug0(any: Any?)
+    protected abstract fun debug0(message: String?)
     protected abstract fun debug0(message: String?, e: Throwable?)
-    protected abstract fun info0(any: Any?)
+    protected abstract fun info0(message: String?)
     protected abstract fun info0(message: String?, e: Throwable?)
-    protected abstract fun warning0(any: Any?)
+    protected abstract fun warning0(message: String?)
     protected abstract fun warning0(message: String?, e: Throwable?)
-    protected abstract fun error0(any: Any?)
+    protected abstract fun error0(message: String?)
     protected abstract fun error0(message: String?, e: Throwable?)
 
     override operator fun <T : MiraiLogger> plus(follower: T): T {

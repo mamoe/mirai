@@ -14,13 +14,40 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import kotlinx.io.core.toByteArray
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
 import java.io.File
+
+/**
+ * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
+ */
+@UseExperimental(UnstableDefault::class)
+fun File.loadAsDeviceInfo(context: Context): DeviceInfo {
+    if (!this.exists() || this.length() == 0L) {
+        return SystemDeviceInfo(context).also {
+            this.writeText(Json.plain.stringify(SystemDeviceInfo.serializer(), it))
+        }
+    }
+    return Json.nonstrict.parse(DeviceInfoData.serializer(), this.readText()).also {
+        it.context = context
+    }
+}
 
 /**
  * 部分引用指向 [Build].
  * 部分需要权限, 若无权限则会使用默认值.
  */
-actual open class SystemDeviceInfo actual constructor(context: Context) : DeviceInfo(context) {
+@Serializable
+actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
+    actual constructor(context: Context) : this() {
+        this.context = context
+    }
+
+    @Transient
+    final override lateinit var context: Context
+
     override val display: ByteArray get() = Build.DISPLAY.toByteArray()
     override val product: ByteArray get() = Build.PRODUCT.toByteArray()
     override val device: ByteArray get() = Build.DEVICE.toByteArray()
@@ -88,7 +115,8 @@ actual open class SystemDeviceInfo actual constructor(context: Context) : Device
     override val androidId: ByteArray get() = Build.ID.toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()
 
-    object Version : DeviceInfo.Version {
+    @Serializable
+    actual object Version : DeviceInfo.Version {
         override val incremental: ByteArray get() = Build.VERSION.INCREMENTAL.toByteArray()
         override val release: ByteArray get() = Build.VERSION.RELEASE.toByteArray()
         override val codename: ByteArray get() = Build.VERSION.CODENAME.toByteArray()

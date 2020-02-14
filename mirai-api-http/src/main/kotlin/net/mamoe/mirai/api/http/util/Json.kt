@@ -13,6 +13,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import net.mamoe.mirai.api.http.data.common.*
+import net.mamoe.mirai.message.data.MessageSource
 
 // 解析失败时直接返回null，由路由判断响应400状态
 @UseExperimental(ImplicitReflectionSerializer::class)
@@ -50,7 +51,9 @@ object MiraiJson {
             UnKnownMessagePacketDTO::class with UnKnownMessagePacketDTO.serializer()
         }
         polymorphic(MessageDTO.serializer()) {
+            MessageSourceDTO::class with MessageSourceDTO.serializer()
             AtDTO::class with AtDTO.serializer()
+            AtAllDTO::class with AtAllDTO.serializer()
             FaceDTO::class with FaceDTO.serializer()
             PlainDTO::class with PlainDTO.serializer()
             ImageDTO::class with ImageDTO.serializer()

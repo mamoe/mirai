@@ -631,4 +631,4 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 @DslMarker
-internal annotation class MessageDsl
+annotation class MessageDsl

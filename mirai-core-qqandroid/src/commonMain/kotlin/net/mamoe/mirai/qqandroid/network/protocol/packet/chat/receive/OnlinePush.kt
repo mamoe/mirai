@@ -35,6 +35,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.io.discardExact
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readString
@@ -157,6 +158,8 @@ internal class OnlinePush {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
             reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
                 msgInfo.vMsg!!.read {
+
+                    // TODO: 2020/2/13 可能会同时收到多个事件. 使用 map 而不要直接 return
                     when {
                         msgInfo.shMsgType.toInt() == 732 -> {
                             val group = bot.getGroup(this.readUInt().toLong())
@@ -164,7 +167,11 @@ internal class OnlinePush {
 
                             when (val internalType = this.readShort().toInt()) {
                                 3073 -> { // mute
-                                    val operator = group[this.readUInt().toLong()]
+                                    val operatorUin = this.readUInt().toLong()
+                                    if (operatorUin == bot.uin) {
+                                        return NoPacket
+                                    }
+                                    val operator = group[operatorUin]
                                     this.readUInt().toLong() // time
                                     this.discardExact(2)
                                     val target = this.readUInt().toLong()
@@ -215,7 +222,7 @@ internal class OnlinePush {
                                 4096 -> {
                                     val dataBytes = this.readBytes(26)
                                     val message = this.readString(this.readByte().toInt())
-                                    println(dataBytes.toUHexString())
+                                    // println(dataBytes.toUHexString())
 
                                     if (dataBytes[0].toInt() != 59) {
                                         return GroupNameChangeEvent(
@@ -244,7 +251,7 @@ internal class OnlinePush {
                                                 )
                                             }
                                             else -> {
-                                                println("Unknown server messages $message")
+                                                bot.network.logger.debug { "Unknown server messages $message" }
                                                 return NoPacket
                                             }
                                         }
@@ -255,17 +262,17 @@ internal class OnlinePush {
                                 //     println(msgInfo.vMsg.toUHexString())
                                 // }
                                 else -> {
-                                    println("unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " ")
+                                    bot.network.logger.debug { "unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " " }
                                 }
                             }
                         }
                         msgInfo.shMsgType.toInt() == 528 -> {
-                            println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                            bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
                             // val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
                             // println(content.contentToString())
                         }
                         else -> {
-                            println("unknown shtype ${msgInfo.shMsgType.toInt()}")
+                            bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
                         }
                     }
                 }

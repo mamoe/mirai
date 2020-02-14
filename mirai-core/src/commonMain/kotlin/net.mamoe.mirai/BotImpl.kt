@@ -12,10 +12,15 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.ForceOfflineException
+import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.closeAndJoin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.logStacktrace
@@ -33,7 +38,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     private val botJob = SupervisorJob(configuration.parentCoroutineContext[Job])
     override val coroutineContext: CoroutineContext =
         configuration.parentCoroutineContext + botJob + (configuration.parentCoroutineContext[CoroutineExceptionHandler]
-            ?: CoroutineExceptionHandler { _, e -> e.logStacktrace("An exception was thrown under a coroutine of Bot") })
+            ?: CoroutineExceptionHandler { _, e -> logger.error("An exception was thrown under a coroutine of Bot", e) })
 
     @Suppress("CanBePrimaryConstructorProperty") // for logger
     final override val account: BotAccount = account
@@ -78,60 +83,70 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Suppress("PropertyName")
     internal lateinit var _network: N
 
-    final override suspend fun login() = reinitializeNetworkHandler(null)
+    @Suppress("unused")
+    private val offlineListener: Listener<BotOfflineEvent> = this.subscribeAlways { event ->
+        when (event) {
+            is BotOfflineEvent.Dropped -> {
+                bot.logger.info("Connection dropped or lost by server, retrying login")
 
-    // shouldn't be suspend!! This function MUST NOT inherit the context from the caller because the caller(NetworkHandler) is going to close
-    fun tryReinitializeNetworkHandler(
-        cause: Throwable?
-    ): Job = launch {
-        var lastFailedException: Throwable? = null
-        repeat(configuration.reconnectionRetryTimes) {
-            try {
-                reinitializeNetworkHandler(cause)
-                logger.info("Reconnected successfully")
-                return@launch
-            } catch (e: Throwable) {
-                lastFailedException = e
-                delay(configuration.reconnectPeriodMillis)
+                var lastFailedException: Throwable? = null
+                repeat(configuration.reconnectionRetryTimes) {
+                    try {
+                        network.relogin()
+                        logger.info("Reconnected successfully")
+                        return@subscribeAlways
+                    } catch (e: Throwable) {
+                        lastFailedException = e
+                        delay(configuration.reconnectPeriodMillis)
+                    }
+                }
+                if (lastFailedException != null) {
+                    throw lastFailedException!!
+                }
+            }
+            is BotOfflineEvent.Active -> {
+                val msg = if (event.cause == null) {
+                    ""
+                } else {
+                    " with exception: " + event.cause.message
+                }
+                bot.logger.info("Bot is closed manually$msg")
+                close(CancellationException(event.toString()))
+            }
+            is BotOfflineEvent.Force -> {
+                bot.logger.info("Connection occupied by another android device: ${event.message}")
+                close(ForceOfflineException(event.toString()))
             }
         }
-        if (lastFailedException != null) {
-            throw lastFailedException!!
-        }
     }
+
+    final override suspend fun login() = reinitializeNetworkHandler(null)
 
     private suspend fun reinitializeNetworkHandler(
         cause: Throwable?
     ) {
-        logger.info("BotAccount: $uin")
-        logger.info("Initializing BotNetworkHandler")
-        try {
-            if (::_network.isInitialized) {
-                BotOfflineEvent.Active(this, cause).broadcast()
-                _network.closeAndJoin(cause)
+        suspend fun doRelogin() {
+            while (true) {
+                _network = createNetworkHandler(this.coroutineContext)
+                try {
+                    _network.relogin()
+                    return
+                } catch (e: LoginFailedException) {
+                    throw e
+                } catch (e: Exception) {
+                    network.logger.error(e)
+                    _network.closeAndJoin(e)
+                }
+                logger.warning("Login failed. Retrying in 3s...")
+                delay(3000)
             }
-        } catch (e: Exception) {
-            logger.error("Cannot close network handler", e)
         }
 
-        loginLoop@ while (true) {
-            _network = createNetworkHandler(this.coroutineContext)
-            try {
-                _network.login()
-                break@loginLoop
-            } catch (e: Exception) {
-                e.logStacktrace()
-                _network.closeAndJoin(e)
-            }
-            logger.warning("Login failed. Retrying in 3s...")
-            delay(3000)
-        }
-
-        repeat(1) block@{
+        suspend fun doInit() {
             repeat(2) {
                 try {
                     _network.init()
-                    return@block
+                    return
                 } catch (e: Exception) {
                     e.logStacktrace()
                 }
@@ -141,6 +156,16 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             logger.error("cannot init. some features may be affected")
         }
 
+        logger.info("Initializing BotNetworkHandler")
+
+        if (::_network.isInitialized) {
+            BotReloginEvent(this, cause).broadcast()
+            doRelogin()
+            return
+        }
+
+        doRelogin()
+        doInit()
     }
 
     protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): N
@@ -153,9 +178,11 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             if (cause == null) {
                 network.close()
                 this.botJob.complete()
+                offlineListener.complete()
             } else {
                 network.close(cause)
                 this.botJob.completeExceptionally(cause)
+                offlineListener.completeExceptionally(cause)
             }
         }
         groups.delegate.clear()

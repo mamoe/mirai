@@ -14,7 +14,7 @@ package net.mamoe.mirai.message.data
  *
  * @see At at 单个群成员
  */
-object AtAll : Message {
+object AtAll : Message, Message.Key<AtAll> {
     override fun toString(): String = "@全体成员"
 
     // 自动为消息补充 " "

@@ -81,7 +81,7 @@ inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteAr
     return this[tag] ?: error(lazyMessage(tag))
 }
 
-@MiraiDebugAPI
+@MiraiInternalAPI
 inline fun Input.readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap = readTLVMap(true, tagSize, suppressDuplication)
 
 @MiraiDebugAPI

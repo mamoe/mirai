@@ -42,18 +42,31 @@ data class BotOnlineEvent(override val bot: Bot) : BotActiveEvent
 /**
  * [Bot] 离线.
  */
-sealed class BotOfflineEvent : BotActiveEvent {
+sealed class BotOfflineEvent : BotEvent {
 
     /**
      * 主动离线
      */
-    data class Active(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent()
+    data class Active(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), BotActiveEvent
 
     /**
      * 被挤下线
      */
-    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet
+    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet, BotPassiveEvent
+
+    /**
+     * 被服务器断开或因网络问题而掉线
+     */
+    data class Dropped(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
+
+/**
+ * [Bot] 主动重新登录.
+ */
+data class BotReloginEvent(
+    override val bot: Bot,
+    val cause: Throwable?
+) : BotEvent, BotActiveEvent
 
 // endregion
 
