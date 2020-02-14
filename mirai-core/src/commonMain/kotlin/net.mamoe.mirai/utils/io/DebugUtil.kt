@@ -15,11 +15,13 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiDebugAPI
+import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
+import net.mamoe.mirai.utils.withSwitch
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -29,9 +31,6 @@ val DebugLogger : MiraiLoggerWithSwitch = DefaultLogger("Packet Debug").withSwit
 
 @MiraiDebugAPI("Unstable")
 inline fun Throwable.logStacktrace(message: String? = null) = DebugLogger.error(message, this)
-
-@MiraiDebugAPI("Low efficiency.")
-inline fun debugPrintln(any: Any?) = DebugLogger.debug(any)
 
 @MiraiDebugAPI("Low efficiency.")
 inline fun String.debugPrintThis(name: String): String {
