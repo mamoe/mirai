@@ -13,6 +13,8 @@ import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson.TypeReference
 import com.alibaba.fastjson.parser.Feature
+import com.moandjiezana.toml.Toml
+import com.moandjiezana.toml.TomlWriter
 import kotlinx.serialization.*
 import org.ini4j.Wini
 import org.yaml.snakeyaml.Yaml
@@ -396,38 +398,15 @@ class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
 
 }
 
-class IniConfig internal constructor(val file: File) : FileConfigImpl(file) {
-    private val iniObj by lazy {
-        Wini(file)
-    }
-    private val rootSection
-        get() = iniObj["root"]
-
-    override fun asMap(): Map<String, Any> {
-        return JSON.parseObject<ConfigSectionImpl>(
-            JSONObject.toJSONString(rootSection),
-            object : TypeReference<ConfigSectionImpl>() {},
-            Feature.OrderedField
-        ).asMap()
-    }
-
-    override fun set(key: String, value: Any) {
-        iniObj.put("root", key, value)
-    }
-
-    override fun get(key: String): Any? {
-        return iniObj.get("root", key)
-    }
-
-    override fun save() {
-        iniObj.store()
-    }
-
+class IniConfig internal constructor(file: File) : FileConfigImpl(file) {
     override fun deserialize(content: String): ConfigSection {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (content.isEmpty() || content.isBlank()) {
+            return ConfigSectionImpl()
+        }
+        return ConfigSectionDelegation(Toml().read(content).toMap())
     }
 
     override fun serialize(config: ConfigSection): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return TomlWriter().write(config)
     }
 }
