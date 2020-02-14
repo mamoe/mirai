@@ -34,3 +34,12 @@ fun MessageChain.quote(sender: Member): MessageChain {
     }
     error("cannot find MessageSource")
 }
+
+/**
+ * 引用这条消息.
+ * 返回 `[QuoteReply] + [At] + [PlainText]`(必要的结构)
+ */
+fun MessageSource.quote(sender: Member): MessageChain {
+    @UseExperimental(MiraiInternalAPI::class)
+    return QuoteReply(this) + sender.at() + " " // required
+}
