@@ -12,7 +12,6 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -85,18 +84,6 @@ actual open class BotConfiguration actual constructor() {
          */
         @JvmStatic
         actual val Default = BotConfiguration()
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    @BotConfigurationDsl
-    inline operator fun FileBasedDeviceInfo.unaryPlus() {
-        deviceInfo = { File(filepath).loadAsDeviceInfo(it) }
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    @BotConfigurationDsl
-    inline operator fun FileBasedDeviceInfo.ByDeviceDotJson.unaryPlus() {
-        deviceInfo = { File("device.json").loadAsDeviceInfo(it) }
     }
 
     actual operator fun _NoNetworkLog.unaryPlus() {
