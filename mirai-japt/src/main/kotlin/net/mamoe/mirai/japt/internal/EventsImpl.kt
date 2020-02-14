@@ -7,16 +7,10 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.event
+package net.mamoe.mirai.japt.internal
 
+import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 
-// TODO 添加更多
-/**
- * Jvm 调用实现(阻塞)
- */
-object Events {
-    /*
-    @JvmStatic
-    fun <E : Event> subscribe(type: Class<E>, handler: suspend (E) -> ListeningStatus) =
-        runBlocking { type.kotlin.subscribe(handler) }*/
-}
+internal fun <E : Event> broadcast(e: E): E = runBlocking { e.broadcast() }
