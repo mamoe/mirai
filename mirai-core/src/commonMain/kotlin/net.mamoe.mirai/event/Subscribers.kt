@@ -16,6 +16,7 @@ import kotlinx.coroutines.GlobalScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.coroutines.CoroutineContext
 
 /*
@@ -96,6 +97,7 @@ interface Listener<in E : Event> : CompletableJob {
  * @see subscribeGroupMessages 监听群消息 DSL
  * @see subscribeFriendMessages 监听好友消息 DSL
  */
+@UseExperimental(MiraiInternalAPI::class)
 inline fun <reified E : Event> CoroutineScope.subscribe(crossinline handler: suspend E.(E) -> ListeningStatus): Listener<E> =
     E::class.subscribeInternal(Handler { it.handler(it); })
 
@@ -107,6 +109,7 @@ inline fun <reified E : Event> CoroutineScope.subscribe(crossinline handler: sus
  *
  * @see subscribe 获取更多说明
  */
+@UseExperimental(MiraiInternalAPI::class)
 inline fun <reified E : Event> CoroutineScope.subscribeAlways(crossinline listener: suspend E.(E) -> Unit): Listener<E> =
     E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.LISTENING })
 
@@ -118,6 +121,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeAlways(crossinline listen
  *
  * @see subscribe 获取更多说明
  */
+@UseExperimental(MiraiInternalAPI::class)
 inline fun <reified E : Event> CoroutineScope.subscribeOnce(crossinline listener: suspend E.(E) -> Unit): Listener<E> =
     E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.STOPPED })
 
@@ -129,6 +133,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnce(crossinline listener
  *
  * @see subscribe 获取更多说明
  */
+@UseExperimental(MiraiInternalAPI::class)
 inline fun <reified E : Event, T> CoroutineScope.subscribeUntil(valueIfStop: T, crossinline listener: suspend E.(E) -> T): Listener<E> =
     E::class.subscribeInternal(Handler { if (it.listener(it) == valueIfStop) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
@@ -141,6 +146,7 @@ inline fun <reified E : Event, T> CoroutineScope.subscribeUntil(valueIfStop: T, 
  *
  * @see subscribe 获取更多说明
  */
+@UseExperimental(MiraiInternalAPI::class)
 inline fun <reified E : Event, T> CoroutineScope.subscribeWhile(valueIfContinue: T, crossinline listener: suspend E.(E) -> T): Listener<E> =
     E::class.subscribeInternal(Handler { if (it.listener(it) != valueIfContinue) ListeningStatus.STOPPED else ListeningStatus.LISTENING })
 
