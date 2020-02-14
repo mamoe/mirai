@@ -90,13 +90,13 @@ actual open class BotConfiguration actual constructor() {
     @Suppress("NOTHING_TO_INLINE")
     @BotConfigurationDsl
     inline operator fun FileBasedDeviceInfo.unaryPlus() {
-        deviceInfo = { File(filepath).loadAsDeviceInfo() }
+        deviceInfo = { File(filepath).loadAsDeviceInfo(it) }
     }
 
     @Suppress("NOTHING_TO_INLINE")
     @BotConfigurationDsl
     inline operator fun FileBasedDeviceInfo.ByDeviceDotJson.unaryPlus() {
-        deviceInfo = { File("device.json").loadAsDeviceInfo() }
+        deviceInfo = { File("device.json").loadAsDeviceInfo(it) }
     }
 
     actual operator fun _NoNetworkLog.unaryPlus() {

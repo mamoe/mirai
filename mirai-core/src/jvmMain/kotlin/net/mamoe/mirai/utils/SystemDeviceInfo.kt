@@ -68,50 +68,10 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     override val apn: ByteArray = "wifi".toByteArray()
 
     @Serializable
-    object Version : DeviceInfo.Version {
+    actual object Version : DeviceInfo.Version {
         override val incremental: ByteArray = "5891938".toByteArray()
         override val release: ByteArray = "10".toByteArray()
         override val codename: ByteArray = "REL".toByteArray()
         override val sdk: Int = 29
     }
-}
-
-@Serializable
-class DeviceInfoData(
-    override val display: ByteArray,
-    override val product: ByteArray,
-    override val device: ByteArray,
-    override val board: ByteArray,
-    override val brand: ByteArray,
-    override val model: ByteArray,
-    override val bootloader: ByteArray,
-    override val fingerprint: ByteArray,
-    override val bootId: ByteArray,
-    override val procVersion: ByteArray,
-    override val baseBand: ByteArray,
-    override val version: VersionData,
-    override val simInfo: ByteArray,
-    override val osType: ByteArray,
-    override val macAddress: ByteArray,
-    override val wifiBSSID: ByteArray?,
-    override val wifiSSID: ByteArray?,
-    override val imsiMd5: ByteArray,
-    override val imei: String,
-    override val apn: ByteArray
-) : DeviceInfo() {
-    @Transient
-    override lateinit var context: Context
-
-    @UseExperimental(ExperimentalUnsignedTypes::class)
-    override val ipAddress: ByteArray
-        get() = localIpAddress().split(".").map { it.toUByte().toByte() }.takeIf { it.size == 4 }?.toByteArray() ?: byteArrayOf()
-    override val androidId: ByteArray get() = display
-
-    @Serializable
-    class VersionData(
-        override val incremental: ByteArray = SystemDeviceInfo.Version.incremental,
-        override val release: ByteArray = SystemDeviceInfo.Version.release,
-        override val codename: ByteArray = SystemDeviceInfo.Version.codename,
-        override val sdk: Int = SystemDeviceInfo.Version.sdk
-    ) : Version
 }

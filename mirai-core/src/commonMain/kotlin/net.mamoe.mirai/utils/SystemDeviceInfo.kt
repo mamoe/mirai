@@ -18,4 +18,6 @@ package net.mamoe.mirai.utils
 expect open class SystemDeviceInfo : DeviceInfo {
     constructor()
     constructor(context: Context)
+
+    object Version : DeviceInfo.Version
 }

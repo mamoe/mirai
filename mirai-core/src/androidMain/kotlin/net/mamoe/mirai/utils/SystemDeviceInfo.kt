@@ -16,7 +16,24 @@ import android.telephony.TelephonyManager
 import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
 import java.io.File
+
+/**
+ * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
+ */
+@UseExperimental(UnstableDefault::class)
+fun File.loadAsDeviceInfo(context: Context): DeviceInfo {
+    if (!this.exists() || this.length() == 0L) {
+        return SystemDeviceInfo(context).also {
+            this.writeText(Json.plain.stringify(SystemDeviceInfo.serializer(), it))
+        }
+    }
+    return Json.nonstrict.parse(DeviceInfoData.serializer(), this.readText()).also {
+        it.context = context
+    }
+}
 
 /**
  * 部分引用指向 [Build].
@@ -99,7 +116,7 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     override val apn: ByteArray get() = "wifi".toByteArray()
 
     @Serializable
-    object Version : DeviceInfo.Version {
+    actual object Version : DeviceInfo.Version {
         override val incremental: ByteArray get() = Build.VERSION.INCREMENTAL.toByteArray()
         override val release: ByteArray get() = Build.VERSION.RELEASE.toByteArray()
         override val codename: ByteArray get() = Build.VERSION.CODENAME.toByteArray()
