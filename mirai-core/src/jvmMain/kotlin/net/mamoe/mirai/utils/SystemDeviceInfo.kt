@@ -109,9 +109,9 @@ class DeviceInfoData(
 
     @Serializable
     class VersionData(
-        override val incremental: ByteArray,
-        override val release: ByteArray,
-        override val codename: ByteArray,
-        override val sdk: Int
+        override val incremental: ByteArray = SystemDeviceInfo.Version.incremental,
+        override val release: ByteArray = SystemDeviceInfo.Version.release,
+        override val codename: ByteArray = SystemDeviceInfo.Version.codename,
+        override val sdk: Int = SystemDeviceInfo.Version.sdk
     ) : Version
 }
