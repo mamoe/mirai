@@ -89,9 +89,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }.also { _packetReceiverJob = it }
     }
 
-
     override suspend fun relogin() {
         if (::channel.isInitialized) {
+            if (channel.isOpen) {
+                kotlin.runCatching {
+                    registerClientOnline()
+                }.exceptionOrNull() ?: return
+            }
             channel.close()
         }
         channel = PlatformSocket()
@@ -149,10 +153,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
+        registerClientOnline()
+    }
 
-        repeat(2) {
-            StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000) // it's slow
-        }
+    private suspend fun registerClientOnline() {
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(6000) // it's slow
     }
 
     @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
