@@ -384,7 +384,8 @@ object MiraiConsoleUI {
         if (commandBuilder.isEmpty() && c != '/') {
             addCommandChar('/')
         }
-        textGraphics.foregroundColor = TextColor.ANSI.BLUE
+        textGraphics.foregroundColor = TextColor.ANSI.WHITE
+        textGraphics.backgroundColor = TextColor.ANSI.BLACK
         val height = terminal.terminalSize.rows
         commandBuilder.append(c)
         if (terminal is SwingTerminalFrame) {
@@ -392,6 +393,7 @@ object MiraiConsoleUI {
         } else {
             textGraphics.putString(6 + commandBuilder.length, height - 3, c.toString())
         }
+        textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
     }
 
     private fun deleteCommandChar() {
