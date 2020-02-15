@@ -10,19 +10,17 @@ package net.mamoe.mirai.console
  */
 
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.api.http.MiraiHttpAPIServer
 import net.mamoe.mirai.api.http.generateSessionKey
-import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
 import net.mamoe.mirai.console.plugins.withDefaultWriteSave
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.utils.SimpleLogger
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.io.File
-import java.security.Security
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
@@ -307,10 +305,6 @@ class MiraiConsoleLoader {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            Security.removeProvider("BC")
-            Security.addProvider(BouncyCastleProvider())
-            Security.addProvider(org.bouncycastle.jce.provider.BouncyCastleProvider())
-            //Security.addProvider(BouncyCastle)
             MiraiConsoleUI.start()
             MiraiConsole.start()
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
