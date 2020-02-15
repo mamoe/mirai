@@ -382,11 +382,13 @@ object MiraiConsoleUI {
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.putString(2, height - 3, "|>>>")
         textGraphics.putString(width - 3, height - 3, "|")
-        textGraphics.foregroundColor = TextColor.ANSI.BLUE
+        textGraphics.foregroundColor = TextColor.ANSI.WHITE
+        textGraphics.backgroundColor = TextColor.ANSI.BLACK
         textGraphics.putString(7, height - 3, commandBuilder.toString())
         if (terminal is SwingTerminalFrame) {
             terminal.flush()
         }
+        textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
     }
 
     private fun addCommandChar(
