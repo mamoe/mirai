@@ -11,6 +11,8 @@ import com.googlecode.lanterna.terminal.Terminal
 import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
+import java.io.OutputStream
+import java.io.PrintStream
 import java.lang.StringBuilder
 import java.util.*
 import kotlin.concurrent.thread
@@ -138,7 +140,7 @@ object MiraiConsoleUI {
         val height = terminal.terminalSize.rows
         terminal.setBackgroundColor(TextColor.ANSI.DEFAULT)
         if (!inited) {
-            val mainTitle = "Mirai Console v0.01 Core v0.14"
+            val mainTitle = "Mirai Console v0.01 Core v0.15"
             textGraphics.foregroundColor = TextColor.ANSI.WHITE
             textGraphics.backgroundColor = TextColor.ANSI.GREEN
             textGraphics.putString((width - mainTitle.length) / 2, 1, mainTitle, SGR.BOLD)

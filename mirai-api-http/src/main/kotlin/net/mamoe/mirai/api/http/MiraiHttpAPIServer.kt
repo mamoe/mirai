@@ -11,10 +11,15 @@ package net.mamoe.mirai.api.http
 
 import io.ktor.application.Application
 import io.ktor.server.cio.CIO
+import io.ktor.server.engine.applicationEngineEnvironment
+import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.util.KtorExperimentalAPI
 import net.mamoe.mirai.api.http.route.mirai
 import net.mamoe.mirai.utils.DefaultLogger
+import org.slf4j.LoggerFactory
+import org.slf4j.helpers.NOPLogger
+import org.slf4j.helpers.NOPLoggerFactory
 
 object MiraiHttpAPIServer {
 
@@ -39,7 +44,14 @@ object MiraiHttpAPIServer {
 
         // TODO: start是无阻塞的，理应获取启动状态后再执行后续代码
         try {
-            embeddedServer(CIO, port, module = Application::mirai).start()
+            embeddedServer(CIO, environment = applicationEngineEnvironment {
+                this.log = NOPLoggerFactory().getLogger("NMYSL")
+                this.module(Application::mirai)
+
+                connector {
+                    this.port = port
+                }
+            }).start()
 
             logger.info("Http api server is running with authKey: ${SessionManager.authKey}")
             callback?.invoke()

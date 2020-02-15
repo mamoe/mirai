@@ -19,6 +19,7 @@ import net.mamoe.mirai.api.http.generateSessionKey
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
+import java.io.PrintStream
 import kotlin.concurrent.thread
 
 object MiraiConsole {
@@ -280,6 +281,7 @@ class MiraiConsoleLoader {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
+
             MiraiConsole.start()
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
