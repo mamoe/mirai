@@ -35,20 +35,22 @@ interface Member : QQ, Contact {
     /**
      * 群名片. 可能为空. 修改时将会触发事件
      *
-     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     * 在修改时将会异步上传至服务器.
      *
      * @see [groupCardOrNick] 获取非空群名片或昵称
      *
      * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
+     * @throws PermissionDeniedException 无权限修改时
      */
     var nameCard: String
 
     /**
      * 群头衔
      *
-     * 在修改时将会异步上传至服务器. 无权限修改时将会抛出异常 [PermissionDeniedException]
+     * 在修改时将会异步上传至服务器.
      *
      * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
+     * @throws PermissionDeniedException 无权限修改时
      */
     var specialTitle: String
 
@@ -63,22 +65,25 @@ interface Member : QQ, Contact {
      * @see Int.daysToSeconds
      *
      * @see MemberMuteEvent 成员被禁言事件
+     * @throws PermissionDeniedException 无权限修改时
      */
-    suspend fun mute(durationSeconds: Int): Boolean
+    suspend fun mute(durationSeconds: Int)
 
     /**
-     * 解除禁言. 机器人无权限时返回 `false`.
+     * 解除禁言.
      *
      * @see MemberUnmuteEvent 成员被取消禁言事件.
+     * @throws PermissionDeniedException 无权限修改时
      */
-    suspend fun unmute(): Boolean
+    suspend fun unmute()
 
     /**
-     * 踢出该成员. 机器人无权限时返回 `false`.
+     * 踢出该成员.
      *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
+     * @throws PermissionDeniedException 无权限修改时
      */
-    suspend fun kick(message: String = ""): Boolean
+    suspend fun kick(message: String = "")
 
     /**
      * 当且仅当 `[other] is [Member] && [other].id == this.id && [other].group == this.group` 时为 true
@@ -94,10 +99,10 @@ interface Member : QQ, Contact {
 val Member.groupCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
 
 @ExperimentalTime
-suspend inline fun Member.mute(duration: Duration): Boolean {
+suspend inline fun Member.mute(duration: Duration) {
     require(duration.inDays <= 30) { "duration must be at most 1 month" }
     require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
-    return this.mute(duration.inSeconds.toInt())
+    this.mute(duration.inSeconds.toInt())
 }
 
 suspend inline fun Member.mute(durationSeconds: Long) = this.mute(durationSeconds.toInt())

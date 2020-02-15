@@ -16,6 +16,7 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
@@ -145,6 +146,7 @@ interface Group : Contact, CoroutineScope {
         /**
          * by @kar98k
          */
+        @JvmStatic
         fun calculateGroupUinByGroupCode(groupCode: Long): Long {
             var left: Long = groupCode / 1000000L
 
@@ -161,6 +163,7 @@ interface Group : Contact, CoroutineScope {
             return left * 1000000L + groupCode % 1000000L
         }
 
+        @JvmStatic
         fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
             var left: Long = groupUin / 1000000L
 
