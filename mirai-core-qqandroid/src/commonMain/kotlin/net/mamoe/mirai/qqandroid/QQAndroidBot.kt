@@ -92,7 +92,7 @@ internal abstract class QQAndroidBotBase constructor(
         TroopManagement.GetGroupInfo(
             client = bot.client,
             groupCode = id
-        ).sendAndExpect<GroupInfoImpl>()
+        ).sendAndExpect<GroupInfoImpl>(retry = 2)
     }
 
     override suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo> = network.run {
