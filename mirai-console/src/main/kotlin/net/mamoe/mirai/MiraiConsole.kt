@@ -10,18 +10,21 @@ package net.mamoe.mirai
  */
 
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.api.http.MiraiHttpAPIServer
+import net.mamoe.mirai.api.http.generateSessionKey
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.plugins.PluginManager
 import net.mamoe.mirai.plugins.loadAsConfig
 import net.mamoe.mirai.plugins.withDefaultWrite
 import net.mamoe.mirai.plugins.withDefaultWriteSave
-import net.mamoe.mirai.api.http.MiraiHttpAPIServer
-import net.mamoe.mirai.api.http.generateSessionKey
-import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.io.File
-import java.io.PrintStream
+import java.security.Security
+import java.util.*
+import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
+
 
 object MiraiConsole {
     val bots
@@ -48,7 +51,6 @@ object MiraiConsole {
     val build = "Beta"
 
     fun start() {
-        MiraiConsoleUI.start()
         logger("Mirai-console [v$version $build | core version v$coreVersion] is still in testing stage, majority feature is available")
         logger("Mirai-console now running under " + System.getProperty("user.dir"))
         logger("Get news in github: https://github.com/mamoe/mirai")
@@ -65,7 +67,6 @@ object MiraiConsole {
         logger("Mirai-console 启动完成")
         logger("\"/login qqnumber qqpassword \" to login a bot")
         logger("\"/login qq号 qq密码 \" 来登陆一个BOT")
-
     }
 
     fun stop() {
@@ -108,14 +109,15 @@ object MiraiConsole {
                     }
                     val qqNumber = it[0].toLong()
                     val qqPassword = it[1]
-                    logger("login...")
+                    logger("[Bot Login]", 0, "login...")
                     try {
                         runBlocking {
                             Bot(qqNumber, qqPassword).alsoLogin()
-                            println("$qqNumber login successes")
+                            logger("[Bot Login]", 0, "$qqNumber login successes")
                         }
                     } catch (e: Exception) {
-                        println("$qqNumber login failed")
+                        logger("[Bot Login]", 0, "$qqNumber login failed -> " + e.message)
+                        e.printStackTrace()
                     }
                     true
                 }
@@ -234,14 +236,15 @@ object MiraiConsole {
     }
 
     object CommandListener {
+        val commandChannel: Queue<String> = LinkedBlockingQueue<String>()
         fun start() {
             thread {
-                //processNextCommandLine()
+                processNextCommandLine()
             }
         }
 
         tailrec fun processNextCommandLine() {
-            var fullCommand = readLine()
+            var fullCommand = commandChannel.poll()
             if (fullCommand != null) {
                 if (!fullCommand.startsWith("/")) {
                     fullCommand = "/$fullCommand"
@@ -283,11 +286,14 @@ class MiraiConsoleLoader {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
+            Security.removeProvider("BC")
+            Security.addProvider(BouncyCastleProvider())
+            //Security.addProvider(BouncyCastle)
+            MiraiConsoleUI.start()
             MiraiConsole.start()
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
             })
-
         }
     }
 }
