@@ -10,7 +10,7 @@ apply(plugin = "com.github.johnrengelman.shadow")
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
     manifest {
-        attributes["Main-Class"] = "net.mamoe.mirai.MiraiConsoleLoader"
+        attributes["Main-Class"] = "net.mamoe.mirai.console.MiraiConsoleLoader"
     }
 }
 

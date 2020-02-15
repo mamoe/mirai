@@ -63,12 +63,11 @@ object MiraiConsole {
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
 
-        runBlocking {
-            DefaultCommands()
-            HTTPAPIAdaptar()
-            pluginManager.loadPlugins()
-            CommandListener.start()
-        }
+
+        DefaultCommands()
+        HTTPAPIAdaptar()
+        pluginManager.loadPlugins()
+        CommandListener.start()
 
         logger("Mirai-console 启动完成")
         logger("\"/login qqnumber qqpassword \" to login a bot")
