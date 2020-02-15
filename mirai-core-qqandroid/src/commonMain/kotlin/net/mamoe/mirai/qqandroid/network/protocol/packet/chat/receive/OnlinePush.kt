@@ -131,7 +131,7 @@ internal class OnlinePush {
                             val groupUin = content.fromUin
 
                             bot.getGroupByUin(groupUin).let { group ->
-                                val member = group[target] as MemberImpl
+                                val member = group.getOrNull(target) as? MemberImpl ?: return NoPacket
                                 this.discardExact(1)
                                 return MemberLeaveEvent.Kick(member.also {
                                     group.members.delegate.remove(member)
