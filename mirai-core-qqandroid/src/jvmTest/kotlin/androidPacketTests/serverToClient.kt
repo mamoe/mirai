@@ -215,7 +215,7 @@ fun ByteReadPacket.readIoBuffer(
  * 解析 SSO 层包装
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactories.IncomingPacket {
+private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactories.IncomingPacket<*> {
     val commandName: String
     val ssoSequenceId: Int
 
@@ -257,7 +257,7 @@ private fun parseSsoFrame(flag3: Int, input: ByteReadPacket): KnownPacketFactori
  * 解析 Uni 层包装
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-private fun parseUniFrame(input: ByteReadPacket): KnownPacketFactories.IncomingPacket {
+private fun parseUniFrame(input: ByteReadPacket): KnownPacketFactories.IncomingPacket<*> {
     // 00 00 00 30 00 01 2F 7C 00 00 00 00 00 00 00 04 00 00 00 14 67 78 68 72 65 70 6F 72 74 2E 72 65 70 6F 72 74 00 00 00 08 66 82 D3 0B 00 00 00 00
     // 00 00 00 06 08 00
 

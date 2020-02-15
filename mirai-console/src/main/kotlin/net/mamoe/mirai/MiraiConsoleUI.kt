@@ -11,11 +11,15 @@ import com.googlecode.lanterna.terminal.Terminal
 import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
+import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.drawLog
+import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.utils.currentTimeSeconds
 import java.io.OutputStream
 import java.io.PrintStream
-import java.lang.StringBuilder
+import java.nio.charset.Charset
 import java.util.*
 import kotlin.concurrent.thread
+import kotlin.math.ceil
 
 
 object MiraiConsoleUI {
@@ -36,12 +40,17 @@ object MiraiConsoleUI {
     lateinit var textGraphics: TextGraphics
 
     var hasStart = false
+    private lateinit var internalPrinter: PrintStream
     fun start() {
         if (hasStart) {
             return
         }
+
+        internalPrinter = System.out
+
+
         hasStart = true
-        val defaultTerminalFactory = DefaultTerminalFactory()
+        val defaultTerminalFactory = DefaultTerminalFactory(internalPrinter, System.`in`, Charset.defaultCharset())
         try {
             terminal = defaultTerminalFactory.createTerminal()
             terminal.enterPrivateMode()
@@ -64,7 +73,26 @@ object MiraiConsoleUI {
             inited = false
             update()
             redrawCommand()
+            redrawLogs(log[screens[currentScreenId]]!!)
         })
+
+        if (terminal !is SwingTerminalFrame) {
+            System.setOut(PrintStream(object : OutputStream() {
+                var builder = java.lang.StringBuilder()
+                override fun write(b: Int) {
+                    with(b.toChar()) {
+                        if (this == '\n') {
+                            pushLog(0, builder.toString())
+                            builder = java.lang.StringBuilder()
+                        } else {
+                            builder.append(this)
+                        }
+                    }
+                }
+            }))
+        }
+
+        System.setErr(System.out)
 
         update()
 
@@ -197,52 +225,83 @@ object MiraiConsoleUI {
         textGraphics.putString(width - 2 - "Add admins via commands|".length, 4, "Add admins via commands|")
     }
 
-    fun drawLogs(values: List<String>) {
-        val width = terminal.terminalSize.columns - 6
-        val heightMin = 5
 
-        var currentHeight = terminal.terminalSize.rows - 5
+    object LoggerDrawer {
+        var currentHeight = 6
 
-        for (index in heightMin until currentHeight) {
-            clearRows(index)
-        }
-
-        values.forEach {
-            if (currentHeight > heightMin) {
-                var x = it
-                while (currentHeight > heightMin) {
-                    if (x.isEmpty() || x.isBlank()) break
-                    textGraphics.foregroundColor = TextColor.ANSI.GREEN
-                    textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-                    val towrite = if (x.length > width) {
-                        x.substring(0, width).also {
-                            x = x.substring(width)
-                        }
-                    } else {
-                        x.also {
-                            x = ""
-                        }
+        fun drawLog(string: String, flush: Boolean = true) {
+            val maxHeight = terminal.terminalSize.rows - 6
+            val heightNeed = (string.length / (terminal.terminalSize.columns - 6)) + 1
+            if (currentHeight + heightNeed > maxHeight) {
+                cleanPage()
+            }
+            textGraphics.foregroundColor = TextColor.ANSI.GREEN
+            textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
+            val width = terminal.terminalSize.columns - 6
+            var x = string
+            while (true) {
+                if (x == "") break
+                val toWrite = if (x.length > width) {
+                    x.substring(0, width).also {
+                        x = x.substring(width)
                     }
-                    textGraphics.putString(3, currentHeight, towrite, SGR.ITALIC)
-                    --currentHeight
+                } else {
+                    x.also {
+                        x = ""
+                    }
                 }
+                try {
+                    textGraphics.putString(3, currentHeight, toWrite, SGR.ITALIC)
+                } catch (ignored: Exception) {
+                    //
+                }
+                ++currentHeight
+            }
+            if (flush && terminal is SwingTerminalFrame) {
+                terminal.flush()
             }
         }
 
-        textGraphics.putString(3, 9, "AAAAAAAAAAAAAAAAAAAAAAa", SGR.ITALIC)
-        terminal.flush()
+
+        fun cleanPage() {
+            for (index in 6 until terminal.terminalSize.rows - 6) {
+                clearRows(index)
+            }
+            currentHeight = 6
+        }
+
+
+        fun redrawLogs(toDraw: List<String>) {
+            this.cleanPage()
+            var logsToDraw = 0
+            var vara = 0
+            toDraw.reversed().forEach {
+                val heightNeed = (it.length / (terminal.terminalSize.columns - 6)) + 1
+                vara += heightNeed
+                if (currentHeight + vara < terminal.terminalSize.rows - 6) {
+                    logsToDraw++
+                } else {
+                    return
+                }
+            }
+            for (index in (toDraw.size - logsToDraw) until toDraw.size - 1) {
+                drawLog(toDraw[index], false)
+            }
+            if (terminal is SwingTerminalFrame) {
+                terminal.flush()
+            }
+        }
     }
 
     fun pushLog(uin: Long, str: String) {
         log[uin]!!.push(str)
         if (uin == screens[currentScreenId]) {
-            drawLogs(log[screens[currentScreenId]]!!)
+            drawLog(str)
         }
     }
 
 
     var commandBuilder = StringBuilder()
-
     fun redrawCommand() {
         val height = terminal.terminalSize.rows
         val width = terminal.terminalSize.columns
@@ -303,7 +362,7 @@ object MiraiConsoleUI {
                 drawBotFrame(screens[currentScreenId], 0)
             }
         }
-        terminal.flush()
+        redrawLogs(log[screens[currentScreenId]]!!)
     }
 }
 

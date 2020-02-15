@@ -237,7 +237,7 @@ object MiraiConsole {
     object CommandListener {
         fun start() {
             thread {
-                processNextCommandLine()
+                //processNextCommandLine()
             }
         }
 
@@ -281,7 +281,6 @@ class MiraiConsoleLoader {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-
             MiraiConsole.start()
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
