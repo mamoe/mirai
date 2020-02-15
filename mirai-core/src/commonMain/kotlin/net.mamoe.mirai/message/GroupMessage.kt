@@ -13,6 +13,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
@@ -31,7 +32,7 @@ class GroupMessage(
     val permission: MemberPermission,
     sender: Member,
     override val message: MessageChain
-) : MessagePacket<Member, Group>(bot) {
+) : MessagePacket<Member, Group>(bot), Event {
     val group: Group by group.unsafeWeakRef()
     override val sender: Member by sender.unsafeWeakRef()
 
