@@ -12,6 +12,8 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
@@ -123,6 +125,17 @@ inline fun <R> Bot.subscribeFriendMessages(crossinline listeners: MessageSubscri
             listener(this, this.message.toString())
         }
     }.run(listeners)
+}
+
+/**
+ * 返回一个指定事件的接收通道
+ */
+inline fun <reified E : Event> Bot.incoming(): ReceiveChannel<E> {
+    return Channel<E>(8).apply {
+        subscribeAlways<E> {
+            send(this)
+        }
+    }
 }
 
 
