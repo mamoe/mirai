@@ -70,6 +70,11 @@ object MiraiConsoleUI {
 
         hasStart = true
         val defaultTerminalFactory = DefaultTerminalFactory(internalPrinter, System.`in`, Charset.defaultCharset())
+        defaultTerminalFactory.setInitialTerminalSize(
+            TerminalSize(
+                90, 120
+            )
+        )
         try {
             terminal = defaultTerminalFactory.createTerminal()
             terminal.enterPrivateMode()
@@ -168,6 +173,7 @@ object MiraiConsoleUI {
                         update()
                     }
                     KeyType.Enter -> {
+                        MiraiConsole.CommandListener.commandChannel.offer(commandBuilder.toString())
                         emptyCommand()
                     }
                     else -> {
@@ -290,8 +296,6 @@ object MiraiConsoleUI {
             if (currentHeight + heightNeed > maxHeight) {
                 cleanPage()
             }
-            textGraphics.foregroundColor = TextColor.ANSI.GREEN
-            textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
             val width = terminal.terminalSize.columns - 7
             var x = string
             while (true) {
@@ -306,6 +310,8 @@ object MiraiConsoleUI {
                     }
                 }
                 try {
+                    textGraphics.foregroundColor = TextColor.ANSI.GREEN
+                    textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
                     textGraphics.putString(3, currentHeight, toWrite, SGR.ITALIC)
                 } catch (ignored: Exception) {
                     //
@@ -401,11 +407,23 @@ object MiraiConsoleUI {
     }
 
 
+    var lastEmpty: Job? = null
     private fun emptyCommand() {
         commandBuilder = StringBuilder()
-        redrawCommand()
         if (terminal is SwingTerminal) {
+            redrawCommand()
             terminal.flush()
+        } else {
+            lastEmpty = GlobalScope.launch {
+                delay(100)
+                if (lastEmpty == coroutineContext[Job]) {
+                    terminal.clearScreen()
+                    //inited = false
+                    update()
+                    redrawCommand()
+                    redrawLogs(log[screens[currentScreenId]]!!)
+                }
+            }
         }
     }
 
