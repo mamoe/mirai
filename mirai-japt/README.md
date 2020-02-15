@@ -5,6 +5,10 @@ Mirai Java Apt
 
 提供阻塞API 来让 Java 调用 Mirai 的 API 更容易
 
+## Requirements
+
+- JDK 1.8+
+
 ## 开始
 
 ```java
