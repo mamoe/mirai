@@ -35,11 +35,18 @@ import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.util.jsonParseOrNull
 import net.mamoe.mirai.api.http.util.toJson
+import org.slf4j.Logger
+import org.slf4j.helpers.NOPLogger
+import org.slf4j.helpers.NOPLoggerFactory
+import org.slf4j.impl.SimpleLogger
+import org.slf4j.impl.SimpleLoggerFactory
 
 fun Application.mirai() {
     install(DefaultHeaders)
-    install(CallLogging)
+    install(CallLogging) {
+        logger = NOPLoggerFactory().getLogger("NMSL")
 
+    }
     authModule()
     messageModule()
     infoModule()
