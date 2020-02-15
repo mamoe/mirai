@@ -1,7 +1,11 @@
 plugins {
     kotlin("jvm")
     java
+    `maven-publish`
+    id("com.jfrog.bintray") version "1.8.4-jetbrains-3" // DO NOT CHANGE THIS VERSION UNLESS YOU WANT TO WASTE YOUR TIME
 }
+
+apply(from = rootProject.file("gradle/publish.gradle"))
 
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
