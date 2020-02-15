@@ -384,7 +384,7 @@ object MiraiConsoleUI {
         if (commandBuilder.isEmpty() && c != '/') {
             addCommandChar('/')
         }
-        textGraphics.foregroundColor = TextColor.ANSI.BLUE
+        textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.BLACK
         val height = terminal.terminalSize.rows
         commandBuilder.append(c)
