@@ -4,7 +4,6 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.api.http.data.PermissionDeniedException
 import net.mamoe.mirai.api.http.data.StateCode
 import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
@@ -29,27 +28,21 @@ fun Application.groupManageModule() {
         }
 
         miraiVerify<MuteDTO>("/mute") {
-            when (it.session.bot.getGroup(it.target)[it.memberId].mute(it.time)) {
-                true -> call.respondStateCode(StateCode.Success)
-                else -> throw PermissionDeniedException
-            }
+            it.session.bot.getGroup(it.target)[it.memberId].mute(it.time)
+            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<MuteDTO>("/unmute") {
-            when (it.session.bot.getGroup(it.target).members[it.memberId].unmute()) {
-                true -> call.respondStateCode(StateCode.Success)
-                else -> throw PermissionDeniedException
-            }
+            it.session.bot.getGroup(it.target).members[it.memberId].unmute()
+            call.respondStateCode(StateCode.Success)
         }
 
         /**
          * 移出群聊（需要相关权限）
          */
         miraiVerify<KickDTO>("/kick") {
-            when (it.session.bot.getGroup(it.target)[it.memberId].kick(it.msg)) {
-                true -> call.respondStateCode(StateCode.Success)
-                else -> throw PermissionDeniedException
-            }
+            it.session.bot.getGroup(it.target)[it.memberId].kick(it.msg)
+            call.respondStateCode(StateCode.Success)
         }
 
         /**

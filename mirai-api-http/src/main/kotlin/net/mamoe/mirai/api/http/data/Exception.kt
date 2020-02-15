@@ -28,11 +28,6 @@ object NotVerifiedSessionException : IllegalAccessException("Session未激活")
 object NoSuchBotException: IllegalAccessException("指定Bot不存在")
 
 /**
- * 指定Bot不存在
- */
-object PermissionDeniedException: IllegalAccessException("无操作限权")
-
-/**
  * 错误参数
  */
 class IllegalParamException(message: String) : IllegalAccessException(message)
