@@ -216,21 +216,40 @@ object SilentLogger : PlatformLogger() {
 /**
  * 简易日志记录, 所有类型日志都会被重定向 [logger]
  */
-class SimpleLogger(override val identity: String?, private val logger: (String?, Throwable?) -> Unit) : MiraiLoggerPlatformBase() {
-    companion object {
-        operator fun invoke(logger: (String?, Throwable?) -> Unit): SimpleLogger = SimpleLogger(null, logger)
+class SimpleLogger(
+    override val identity: String?,
+    private val logger: (priority: LogPriority, message: String?, e: Throwable?) -> Unit
+) : MiraiLoggerPlatformBase() {
+
+    enum class LogPriority {
+        VERBOSE,
+        DEBUG,
+        INFO,
+        WARNING,
+        ERROR
     }
 
-    override fun verbose0(message: String?) = logger(message, null)
-    override fun verbose0(message: String?, e: Throwable?) = logger(message, e)
-    override fun debug0(message: String?) = logger(message, null)
-    override fun debug0(message: String?, e: Throwable?) = logger(message, e)
-    override fun info0(message: String?) = logger(message, null)
-    override fun info0(message: String?, e: Throwable?) = logger(message, e)
-    override fun warning0(message: String?) = logger(message, null)
-    override fun warning0(message: String?, e: Throwable?) = logger(message, e)
-    override fun error0(message: String?) = logger(message, null)
-    override fun error0(message: String?, e: Throwable?) = logger(message, e)
+    companion object {
+        inline operator fun invoke(crossinline logger: (message: String?, e: Throwable?) -> Unit): SimpleLogger = SimpleLogger(null, logger)
+
+        inline operator fun invoke(identity: String?, crossinline logger: (message: String?, e: Throwable?) -> Unit): SimpleLogger =
+            SimpleLogger(identity) { _, message, e ->
+                logger(message, e)
+            }
+
+        operator fun invoke(logger: (priority: LogPriority, message: String?, e: Throwable?) -> Unit): SimpleLogger = SimpleLogger(null, logger)
+    }
+
+    override fun verbose0(message: String?) = logger(LogPriority.VERBOSE, message, null)
+    override fun verbose0(message: String?, e: Throwable?) = logger(LogPriority.VERBOSE, message, e)
+    override fun debug0(message: String?) = logger(LogPriority.DEBUG, message, null)
+    override fun debug0(message: String?, e: Throwable?) = logger(LogPriority.DEBUG, message, e)
+    override fun info0(message: String?) = logger(LogPriority.INFO, message, null)
+    override fun info0(message: String?, e: Throwable?) = logger(LogPriority.INFO, message, e)
+    override fun warning0(message: String?) = logger(LogPriority.WARNING, message, null)
+    override fun warning0(message: String?, e: Throwable?) = logger(LogPriority.WARNING, message, e)
+    override fun error0(message: String?) = logger(LogPriority.ERROR, message, null)
+    override fun error0(message: String?, e: Throwable?) = logger(LogPriority.ERROR, message, e)
 }
 
 /**

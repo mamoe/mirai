@@ -162,6 +162,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
     }
 
+    // caches
+    private val _pendingEnabled = atomic(true)
+    internal val pendingEnabled get() = _pendingEnabled.value
+    internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? = LockFreeLinkedList()
+
     @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
@@ -265,6 +270,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         bot.firstLoginSucceed = true
+
+        _pendingEnabled.value = false
+        pendingIncomingPackets?.forEach {
+            @Suppress("UNCHECKED_CAST")
+            KnownPacketFactories.handleIncomingPacket(it as KnownPacketFactories.IncomingPacket<Packet>, bot, it.flag2, it.consumer)
+        }
+        pendingIncomingPackets = null // release
+
+        Unit
     }
 
     suspend fun doHeartBeat(): Exception? {
