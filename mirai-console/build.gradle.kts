@@ -7,7 +7,6 @@ plugins {
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
-apply(plugin = "java-library")
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
     manifest {

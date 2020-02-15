@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.plugins
+package net.mamoe.mirai.console.plugins
 
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
@@ -55,7 +55,14 @@ interface Config {
 
     companion object {
         fun load(fileName: String): Config {
-            return load(File(fileName.replace("//", "/")))
+            return load(
+                File(
+                    fileName.replace(
+                        "//",
+                        "/"
+                    )
+                )
+            )
         }
 
         fun load(file: File): Config {
@@ -115,7 +122,12 @@ inline fun <reified T : Any> Config.withDefault(
 inline fun <reified T : Any> Config.withDefaultWrite(
     noinline defaultValue: () -> T
 ): WithDefaultWriteLoader<T> {
-    return WithDefaultWriteLoader(T::class, this, defaultValue, false)
+    return WithDefaultWriteLoader(
+        T::class,
+        this,
+        defaultValue,
+        false
+    )
 }
 
 /* 带有默认值且如果为空会写入保存的代理 */
@@ -258,7 +270,8 @@ interface ConfigSection : Config, MutableMap<String, Any> {
 }
 
 @Serializable
-open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(), ConfigSection {
+open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(),
+    ConfigSection {
     override fun set(key: String, value: Any) {
         super.put(key, value)
     }
@@ -310,7 +323,8 @@ interface FileConfig : Config {
 
 abstract class FileConfigImpl internal constructor(
     private val file: File
-) : FileConfig, ConfigSection {
+) : FileConfig,
+    ConfigSection {
 
     private val content by lazy {
         deserialize(file.readText())

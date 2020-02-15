@@ -1,4 +1,4 @@
-package net.mamoe.mirai
+package net.mamoe.mirai.console
 
 import com.googlecode.lanterna.SGR
 import com.googlecode.lanterna.TerminalSize
@@ -16,9 +16,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.cleanPage
-import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.drawLog
-import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.console.MiraiConsoleUI.LoggerDrawer.cleanPage
+import net.mamoe.mirai.console.MiraiConsoleUI.LoggerDrawer.drawLog
+import net.mamoe.mirai.console.MiraiConsoleUI.LoggerDrawer.redrawLogs
 import java.awt.Font
 import java.io.OutputStream
 import java.io.PrintStream
@@ -42,8 +42,10 @@ object MiraiConsoleUI {
     val cacheLogSize = 50
 
     val log = mutableMapOf<Long, LimitLinkedQueue<String>>().also {
-        it[0L] = LimitLinkedQueue(cacheLogSize)
-        it[2821869985L] = LimitLinkedQueue(cacheLogSize)
+        it[0L] =
+            LimitLinkedQueue(cacheLogSize)
+        it[2821869985L] =
+            LimitLinkedQueue(cacheLogSize)
     }
     val botAdminCount = mutableMapOf<Long, Long>()
 
@@ -54,7 +56,8 @@ object MiraiConsoleUI {
 
     fun addBotScreen(uin: Long) {
         screens.add(uin)
-        log[uin] = LimitLinkedQueue(cacheLogSize)
+        log[uin] =
+            LimitLinkedQueue(cacheLogSize)
         botAdminCount[uin] = 0
     }
 
@@ -173,19 +176,23 @@ object MiraiConsoleUI {
 
                 when (keyStroke.keyType) {
                     KeyType.ArrowLeft -> {
-                        currentScreenId = getLeftScreenId()
+                        currentScreenId =
+                            getLeftScreenId()
                         clearRows(2)
                         cleanPage()
                         update()
                     }
                     KeyType.ArrowRight -> {
-                        currentScreenId = getRightScreenId()
+                        currentScreenId =
+                            getRightScreenId()
                         clearRows(2)
                         cleanPage()
                         update()
                     }
                     KeyType.Enter -> {
-                        MiraiConsole.CommandListener.commandChannel.offer(commandBuilder.toString())
+                        MiraiConsole.CommandListener.commandChannel.offer(
+                            commandBuilder.toString()
+                        )
                         emptyCommand()
                     }
                     else -> {
@@ -232,7 +239,11 @@ object MiraiConsoleUI {
 
 
     fun clearRows(row: Int) {
-        textGraphics.putString(0, row, " ".repeat(terminal.terminalSize.columns))
+        textGraphics.putString(
+            0, row, " ".repeat(
+                terminal.terminalSize.columns
+            )
+        )
     }
 
     fun drawFrame(
@@ -257,7 +268,8 @@ object MiraiConsoleUI {
 
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-        val leftName = getScreenName(getLeftScreenId())
+        val leftName =
+            getScreenName(getLeftScreenId())
         // clearRows(2)
         textGraphics.putString((width - title.length) / 2 - "$leftName << ".length, 2, "$leftName << ")
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
@@ -265,7 +277,8 @@ object MiraiConsoleUI {
         textGraphics.putString((width - title.length) / 2, 2, title, SGR.BOLD)
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-        val rightName = getScreenName(getRightScreenId())
+        val rightName =
+            getScreenName(getRightScreenId())
         textGraphics.putString((width + title.length) / 2 + 1, 2, ">> $rightName")
     }
 
@@ -324,7 +337,10 @@ object MiraiConsoleUI {
                 try {
                     textGraphics.foregroundColor = TextColor.ANSI.GREEN
                     textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-                    textGraphics.putString(3, currentHeight, toWrite, SGR.ITALIC)
+                    textGraphics.putString(
+                        3,
+                        currentHeight, toWrite, SGR.ITALIC
+                    )
                 } catch (ignored: Exception) {
                     //
                 }
@@ -449,7 +465,10 @@ object MiraiConsoleUI {
                 drawMainFrame(screens.size - 1)
             }
             else -> {
-                drawBotFrame(screens[currentScreenId], 0)
+                drawBotFrame(
+                    screens[currentScreenId],
+                    0
+                )
             }
         }
         redrawLogs(log[screens[currentScreenId]]!!)

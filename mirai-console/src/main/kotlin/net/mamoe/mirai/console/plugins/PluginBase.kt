@@ -7,11 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.plugins
+package net.mamoe.mirai.console.plugins
 
-import net.mamoe.mirai.ICommand
+import net.mamoe.mirai.console.ICommand
 import kotlinx.coroutines.*
-import net.mamoe.mirai.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
@@ -146,7 +146,14 @@ class PluginDescription(
                     depends.add(line.substringAfter("-").trim())
                 }
             }
-            return PluginDescription(name, author, basePath, version, info, depends)
+            return PluginDescription(
+                name,
+                author,
+                basePath,
+                version,
+                info,
+                depends
+            )
         }
     }
 }
@@ -194,9 +201,10 @@ object PluginManager {
                     logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
                 } else {
                     val description =
-                        PluginDescription.readFromContent(URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
-                            it.readBytes().encodeToString()
-                        })
+                        PluginDescription.readFromContent(
+                            URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
+                                it.readBytes().encodeToString()
+                            })
                     pluginsFound[description.name] = description
                     pluginsLocation[description.name] = file
                 }

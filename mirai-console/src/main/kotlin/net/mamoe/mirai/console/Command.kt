@@ -1,4 +1,4 @@
-package net.mamoe.mirai
+package net.mamoe.mirai.console
 
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
@@ -9,7 +9,7 @@ package net.mamoe.mirai
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-import net.mamoe.mirai.plugins.PluginManager
+import net.mamoe.mirai.console.plugins.PluginManager
 
 object CommandManager {
     private val registeredCommand: MutableMap<String, ICommand> = mutableMapOf()
