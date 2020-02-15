@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.event.internal
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
@@ -87,14 +88,22 @@ internal object EventListenerManager {
 
     private val registries = LockFreeLinkedList<Registry<*>>()
 
-    @Suppress("UNCHECKED_CAST")
-    internal fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
-        return registries.filteringGetOrAdd({ it.clazz == clazz }) {
-            Registry(
-                clazz,
-                EventListeners()
-            )
-        }.listeners as EventListeners<E>
+    private val lock = atomic(false)
+
+    @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
+    internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
+        registries.forEach {
+            if (it.clazz == clazz) {
+                return it.listeners as EventListeners<E>
+            }
+        }
+        if (lock.compareAndSet(false, true)) {
+            val registry = Registry(clazz, EventListeners())
+            registries.addLast(registry)
+            lock.value = false
+            return registry.listeners as EventListeners<E>
+        }
+        return get(clazz)
     }
 }
 
