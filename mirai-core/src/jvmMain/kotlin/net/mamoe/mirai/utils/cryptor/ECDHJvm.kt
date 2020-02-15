@@ -42,14 +42,13 @@ actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
-        private var isECDHAvailable = false
+        private var isECDHAvailable = true
+
         init {
-            if (kotlin.runCatching {
-                    Security.addProvider(BouncyCastleProvider())
-                    generateKeyPair() // try if it is working
-                }.isSuccess) {
-                isECDHAvailable = true
-            }
+            isECDHAvailable = kotlin.runCatching {
+                Security.addProvider(BouncyCastleProvider())
+                generateKeyPair() // try if it is working
+            }.isSuccess
         }
 
         actual fun generateKeyPair(): ECDHKeyPair {
