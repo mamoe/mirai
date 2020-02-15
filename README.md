@@ -157,6 +157,10 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 - [javafx](https://github.com/openjdk/jfx)
 - [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
 - [bouncycastle](https://www.bouncycastle.org/java.html)
+- [lanterna](https://github.com/mabe02/lanterna/tree/master)
+- [fastjson](https://github.com/alibaba/fastjson)
+- [toml4j](https://github.com/mwanji/toml4j)
+- [snakeyaml](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
 
 ## License
 协议原版权归属腾讯科技股份有限公司所有，本项目其他代码遵守：  
