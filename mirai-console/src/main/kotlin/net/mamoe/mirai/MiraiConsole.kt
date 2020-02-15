@@ -37,8 +37,7 @@ object MiraiConsole {
     val pluginManager: PluginManager
         get() = PluginManager
 
-    var logger: MiraiConsoleLogger =
-        UIPushLogger()
+    var logger = UIPushLogger(0)
 
     var path: String = System.getProperty("user.dir")
 
@@ -255,11 +254,11 @@ object MiraiConsole {
         }
     }
 
-    class UIPushLogger(override val identity: String?, override var follower: MiraiLogger?) : MiraiLogger {
-        override fun invoke(any: Any?) {
+    class UIPushLogger(val identity: Long) {
+        operator fun invoke(any: Any? = null) {
             MiraiConsoleUI.start()
             if (any != null) {
-                MiraiConsoleUI.pushLog(0, "[Mirai$version $build]: $any")
+                MiraiConsoleUI.pushLog(identity, "[Mirai$version $build]: $any")
             }
         }
     }
