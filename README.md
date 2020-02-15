@@ -43,54 +43,76 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅
 ## Use as a library
 **mirai-core 为独立设计, 可以作为库内置于任意 Java(JVM)/Android 项目中使用.**   
 
+### Maven
+Kotlin 在 Maven 上只支持 JVM 平台.
+```xml
+<repositories>
+    <repository>
+        <id>jcenter</id>
+        <url>https://jcenter.bintray.com/</url>
+    </repository>
+</repositories>
+```
+```xml
+<dependencies>
+    <dependency>
+        <groupId>net.mamoe</groupId>
+        <artifactId>mirai-core-qqandroid-jvm</artifactId>
+        <version>0.15.1</version> <!-- 替换版本为最新版本 -->
+    </dependency>
+</dependencies>
+```
+
 ### Gradle
-Mirai 只发布在 `jcenter`, 因此请确保在 `build.gradle` 添加 `jcenter()` 仓库：  
+Mirai 只发布在 `jcenter`, 因此请确保添加 `jcenter()` 仓库：
 ```kotlin
 repositories{
   jcenter()
 }
 ```
-若您需要使用在跨平台项目, 则要对各个目标平台添加不同的依赖，这与 kotlin 相关跨平台库的依赖是类似的。   
+若您需要使用在跨平台项目, 则要对各个目标平台添加不同的依赖，这与 kotlin 相关多平台库的依赖是类似的。  
 **若您只需要使用在单一平台, 则只需要添加一项该平台的依赖. 如只在 JVM 运行则只需要`-jvm`的依赖**  
 
-请将 `VERSION` 替换为最新的版本(如 `0.13.0`):
+请将 `VERSION` 替换为最新的版本(如 `0.15.0`):
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
 **注意：**
 Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。  
 只添加 API 模块将无法正常工作。  
-现在只推荐使用 TIMPC 协议，请参照下文选择对应目标平台的依赖添加。
+现在只推荐使用 QQAndroid 协议，请参照下文选择对应目标平台的依赖添加。
 
-**common**
+**common** (通用平台)
 ```kotlin
 implementation("net.mamoe:mirai-core-qqandroid-common:VERSION")
 ```
-**jvm**
+**jvm** (JVM 平台)
 ```kotlin
 implementation("net.mamoe:mirai-core-qqandroid-jvm:VERSION")
 ```
-**android**
+**android** (Android 平台)
 ```kotlin
 implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
 ```
+
+## Java Compatibility
+**若你希望使用 Java 开发**, 请查看: [mirai-japt](mirai-japt/README.md)
+
 ### Performance
 Android 上, Mirai 运行需使用 80M 内存.  
-JVM 上需 120M-150M 内存
+JVM 上启动需 80M 内存, 每多一个机器人实例需要 30M 内存.
 
 ## Contribution
-
-我们 (Mamoe Technologies) 将会一直维护这个项目，除非遇到不可抗力因素。
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 Mirai 的开发。  
 
 若在使用过程中有任何疑问, 可提交 issue 或是邮件联系(support@mamoe.net). 我们希望 Mirai 变得更易用.
 
-您的 star 是对我们最大的鼓励(点击项目右上角);  
+您的 star 是对我们最大的鼓励(点击项目右上角)
 
 ## Wiki
-在 [Wiki](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin) 中查看各类帮助，**如 API 示例**（可能过时，待 QQ Android 协议完成后会重写）。
+在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**（可能过时，待 QQ Android 协议完成后会重写）。
 
 ## Try
 
@@ -109,8 +131,6 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
     reply("${it.member.id} 成为了管理员")
 }
 ```
-
-我们也考虑到了 Java 兼容的问题，这正在计划中，但不是高优先的。
 
 1. Clone
 2. Import as Gradle project

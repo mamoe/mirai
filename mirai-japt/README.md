@@ -5,9 +5,56 @@ Mirai Java Apt
 
 提供阻塞API 来让 Java 调用 Mirai 的 API 更容易
 
-## Requirements
+## 编译需求
 
 - JDK 1.8+
+
+## 配置依赖
+
+使用 `Gradle` 或 `Maven`.
+
+请将 `CORE_VERSION` 替换为最新的版本(如 `0.15.0`):
+[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)
+
+请将 `JAPT_VERSION` 替换为最新的版本(如 `1.0.0`):
+[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-japt/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-japt/)
+
+### Maven
+```xml
+<repositories>
+    <repository>
+        <id>jcenter</id>
+        <url>https://jcenter.bintray.com/</url>
+    </repository>
+</repositories>
+```
+```xml
+<dependencies>
+    <dependency>
+        <groupId>net.mamoe</groupId>
+        <artifactId>mirai-core-qqandroid-jvm</artifactId>
+        <version>CORE_VERSION</version> <!-- 替换版本为最新版本 -->
+    </dependency>
+    
+    <dependency>
+        <groupId>net.mamoe</groupId>
+        <artifactId>mirai-japt</artifactId>
+        <version>JAPT_VERSION</version> <!-- 替换版本为最新版本 -->
+    </dependency>
+</dependencies>
+```
+
+### Gradle
+```kotlin
+repositories {
+  jcenter()
+}
+
+dependencies {
+  implementation("net.mamoe:mirai-core-qqandroid-jvm:CORE_VERSION")
+  implementation("net.mamoe:mirai-japt:JAPT_VERSION")
+}
+```
 
 ## 开始
 
