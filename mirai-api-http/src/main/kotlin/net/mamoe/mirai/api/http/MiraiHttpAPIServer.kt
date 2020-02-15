@@ -25,8 +25,9 @@ import kotlin.coroutines.CoroutineContext
 
 object MiraiHttpAPIServer : CoroutineScope {
 
-    private val logger = DefaultLogger("Mirai HTTP API")
-    override val coroutineContext: CoroutineContext = CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
+    var logger = DefaultLogger("Mirai HTTP API")
+    override val coroutineContext: CoroutineContext =
+        CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
 
     init {
         SessionManager.authKey = generateSessionKey()//用于验证的key, 使用和SessionKey相同的方法生成, 但意义不同

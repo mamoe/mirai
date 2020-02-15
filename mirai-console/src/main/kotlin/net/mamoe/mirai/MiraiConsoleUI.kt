@@ -11,6 +11,8 @@ import com.googlecode.lanterna.terminal.Terminal
 import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
+import kotlinx.coroutines.*
+import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.redrawLogs
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -21,18 +23,35 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.ceil
 
+/**
+ * 此文件不推荐任何人看
+ * 可能导致
+ *  1：心肌梗死
+ *  2：呼吸困难
+ *  3：想要重写但是发现改任何一个看似不合理的地方都会崩
+ *
+ * @author NaturalHG
+ *
+ */
 
+@SuppressWarnings("UNCHECKED")
 object MiraiConsoleUI {
+    val cacheLogSize = 50
 
-    val log = mutableMapOf<Long, LimitLinkedQueue<String>>().also { it[0L] = LimitLinkedQueue(50) }
+    val log = mutableMapOf<Long, LimitLinkedQueue<String>>().also {
+        it[0L] = LimitLinkedQueue(cacheLogSize)
+    }
+    val botAdminCount = mutableMapOf<Long, Long>()
 
 
-    private val screens = mutableListOf(0L)
+    private val screens = mutableListOf(0L, 2821869985L)
     private var currentScreenId = 0
+
 
     fun addBotScreen(uin: Long) {
         screens.add(uin)
-        log[uin] = LimitLinkedQueue()
+        log[uin] = LimitLinkedQueue(cacheLogSize)
+        botAdminCount[uin] = 0
     }
 
 
@@ -68,12 +87,46 @@ object MiraiConsoleUI {
         }
         textGraphics = terminal.newTextGraphics()
 
+        /*
+        var lastRedrawTime = 0L
+        var lastNewWidth = 0
+        var lastNewHeight = 0
+
         terminal.addResizeListener(TerminalResizeListener { terminal1: Terminal, newSize: TerminalSize ->
-            terminal.clearScreen()
-            inited = false
-            update()
-            redrawCommand()
-            redrawLogs(log[screens[currentScreenId]]!!)
+            try {
+                if (lastNewHeight == newSize.rows
+                    &&
+                    lastNewWidth == newSize.columns
+                ) {
+                    return@TerminalResizeListener
+                }
+                lastNewHeight = newSize.rows
+                lastNewWidth = newSize.columns
+                terminal.clearScreen()
+                if(terminal !is SwingTerminalFrame) {
+                    Thread.sleep(300)
+                }
+                update()
+                redrawCommand()
+                redrawLogs(log[screens[currentScreenId]]!!)
+            }catch (ignored:Exception){
+
+            }
+        })
+
+       */
+        var lastJob: Job? = null
+        terminal.addResizeListener(TerminalResizeListener { terminal1: Terminal, newSize: TerminalSize ->
+            lastJob = GlobalScope.launch {
+                delay(300)
+                if (lastJob == coroutineContext[Job]) {
+                    terminal.clearScreen()
+                    //inited = false
+                    update()
+                    redrawCommand()
+                    redrawLogs(log[screens[currentScreenId]]!!)
+                }
+            }
         })
 
         if (terminal !is SwingTerminalFrame) {
@@ -104,10 +157,14 @@ object MiraiConsoleUI {
                 when (keyStroke.keyType) {
                     KeyType.ArrowLeft -> {
                         currentScreenId = getLeftScreenId()
+                        clearRows(2)
+                        cleanPage()
                         update()
                     }
                     KeyType.ArrowRight -> {
                         currentScreenId = getRightScreenId()
+                        clearRows(2)
+                        cleanPage()
                         update()
                     }
                     KeyType.Enter -> {
@@ -128,7 +185,7 @@ object MiraiConsoleUI {
         }
     }
 
-    fun getLeftScreenId(): Int {
+    private fun getLeftScreenId(): Int {
         var newId = currentScreenId - 1
         if (newId < 0) {
             newId = screens.size - 1
@@ -136,7 +193,7 @@ object MiraiConsoleUI {
         return newId
     }
 
-    fun getRightScreenId(): Int {
+    private fun getRightScreenId(): Int {
         var newId = 1 + currentScreenId
         if (newId >= screens.size) {
             newId = 0
@@ -144,7 +201,7 @@ object MiraiConsoleUI {
         return newId
     }
 
-    fun getScreenName(id: Int): String {
+    private fun getScreenName(id: Int): String {
         return when (screens[id]) {
             0L -> {
                 "Console Screen"
@@ -156,7 +213,6 @@ object MiraiConsoleUI {
     }
 
 
-    var inited = false
     fun clearRows(row: Int) {
         textGraphics.putString(0, row, " ".repeat(terminal.terminalSize.columns))
     }
@@ -167,25 +223,24 @@ object MiraiConsoleUI {
         val width = terminal.terminalSize.columns
         val height = terminal.terminalSize.rows
         terminal.setBackgroundColor(TextColor.ANSI.DEFAULT)
-        if (!inited) {
-            val mainTitle = "Mirai Console v0.01 Core v0.15"
-            textGraphics.foregroundColor = TextColor.ANSI.WHITE
-            textGraphics.backgroundColor = TextColor.ANSI.GREEN
-            textGraphics.putString((width - mainTitle.length) / 2, 1, mainTitle, SGR.BOLD)
-            textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
-            textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-            textGraphics.putString(2, 3, "-".repeat(width - 4))
-            textGraphics.putString(2, 5, "-".repeat(width - 4))
-            textGraphics.putString(2, height - 4, "-".repeat(width - 4))
-            textGraphics.putString(2, height - 3, "|>>>")
-            textGraphics.putString(width - 3, height - 3, "|")
-            textGraphics.putString(2, height - 2, "-".repeat(width - 4))
-            inited = true
-        }
+
+        val mainTitle = "Mirai Console v0.01 Core v0.15"
+        textGraphics.foregroundColor = TextColor.ANSI.WHITE
+        textGraphics.backgroundColor = TextColor.ANSI.GREEN
+        textGraphics.putString((width - mainTitle.length) / 2, 1, mainTitle, SGR.BOLD)
+        textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
+        textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
+        textGraphics.putString(2, 3, "-".repeat(width - 4))
+        textGraphics.putString(2, 5, "-".repeat(width - 4))
+        textGraphics.putString(2, height - 4, "-".repeat(width - 4))
+        textGraphics.putString(2, height - 3, "|>>>")
+        textGraphics.putString(width - 3, height - 3, "|")
+        textGraphics.putString(2, height - 2, "-".repeat(width - 4))
+
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         val leftName = getScreenName(getLeftScreenId())
-        clearRows(2)
+        // clearRows(2)
         textGraphics.putString((width - title.length) / 2 - "$leftName << ".length, 2, "$leftName << ")
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.YELLOW
@@ -230,14 +285,14 @@ object MiraiConsoleUI {
         var currentHeight = 6
 
         fun drawLog(string: String, flush: Boolean = true) {
-            val maxHeight = terminal.terminalSize.rows - 6
+            val maxHeight = terminal.terminalSize.rows - 4
             val heightNeed = (string.length / (terminal.terminalSize.columns - 6)) + 1
             if (currentHeight + heightNeed > maxHeight) {
                 cleanPage()
             }
             textGraphics.foregroundColor = TextColor.ANSI.GREEN
             textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-            val width = terminal.terminalSize.columns - 6
+            val width = terminal.terminalSize.columns - 7
             var x = string
             while (true) {
                 if (x == "") break
@@ -264,7 +319,7 @@ object MiraiConsoleUI {
 
 
         fun cleanPage() {
-            for (index in 6 until terminal.terminalSize.rows - 6) {
+            for (index in 6 until terminal.terminalSize.rows - 4) {
                 clearRows(index)
             }
             currentHeight = 6
@@ -272,20 +327,21 @@ object MiraiConsoleUI {
 
 
         fun redrawLogs(toDraw: List<String>) {
-            this.cleanPage()
+            //this.cleanPage()
+            currentHeight = 6
             var logsToDraw = 0
             var vara = 0
-            toDraw.reversed().forEach {
+            toDraw.forEach {
                 val heightNeed = (it.length / (terminal.terminalSize.columns - 6)) + 1
                 vara += heightNeed
-                if (currentHeight + vara < terminal.terminalSize.rows - 6) {
+                if (currentHeight + vara < terminal.terminalSize.rows - 4) {
                     logsToDraw++
                 } else {
-                    return
+                    return@forEach
                 }
             }
-            for (index in (toDraw.size - logsToDraw) until toDraw.size - 1) {
-                drawLog(toDraw[index], false)
+            for (index in 0 until logsToDraw) {
+                drawLog(toDraw[logsToDraw - index - 1], false)
             }
             if (terminal is SwingTerminalFrame) {
                 terminal.flush()
@@ -316,7 +372,7 @@ object MiraiConsoleUI {
         }
     }
 
-    fun addCommandChar(
+    private fun addCommandChar(
         c: Char
     ) {
         if (commandBuilder.isEmpty() && c != '/') {
@@ -332,7 +388,7 @@ object MiraiConsoleUI {
         }
     }
 
-    fun deleteCommandChar() {
+    private fun deleteCommandChar() {
         if (!commandBuilder.isEmpty()) {
             commandBuilder = StringBuilder(commandBuilder.toString().substring(0, commandBuilder.length - 1))
         }
@@ -345,7 +401,7 @@ object MiraiConsoleUI {
     }
 
 
-    fun emptyCommand() {
+    private fun emptyCommand() {
         commandBuilder = StringBuilder()
         redrawCommand()
         if (terminal is SwingTerminal) {
