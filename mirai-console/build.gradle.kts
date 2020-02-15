@@ -42,5 +42,6 @@ dependencies {
     api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
     api(group = "org.yaml", name = "snakeyaml", version = "1.25")
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
+    api(group = "com.googlecode.lanterna", name = "lanterna", version = "3.0.2")
     // classpath is not set correctly by IDE
 }

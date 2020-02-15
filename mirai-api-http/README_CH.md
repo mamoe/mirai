@@ -220,6 +220,44 @@ fun main() {
 
 
 
+### 发送引用回复消息（仅支持群消息）
+
+```
+[POST] /sendQuoteMessage
+```
+
+使用此方法向指定的消息进行引用回复
+
+#### 请求
+
+```json5
+{
+    "sessionKey": "YourSession",
+    "target": 987654321,
+    "messageChain": [
+        { "type": "Plain", "text":"hello\n" },
+        { "type": "Plain", "text":"world" }
+    ]
+}
+```
+
+| 名字         | 类型   | 可选  | 举例        | 说明                             |
+| ------------ | ------ | ----- | ----------- | -------------------------------- |
+| sessionKey   | String | false | YourSession | 已经激活的Session                |
+| target       | Long   | false | 987654321   | 引用消息的Message Source的Uid    |
+| messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+
+
+
 ### 发送图片消息（通过URL）
 
 ```
@@ -308,6 +346,9 @@ Content-Type：multipart/form-data
 [{
     "type": "GroupMessage",        // 消息类型：GroupMessage或FriendMessage
 	"messageChain": [{             // 消息链，是一个消息对象构成的数组
+	    "type": "Source",
+	    "uid": 123456
+	},{
         "type": "Plain",
         "text": "Miral牛逼"
     }],
@@ -349,6 +390,19 @@ Content-Type：multipart/form-data
 + [x] Image，图片消息
 + [ ] Xml，Xml卡片消息
 + [ ] 敬请期待
+
+#### Source
+
+```json5
+{
+    "type": "Source",
+    "uid": 123456
+}
+```
+
+| 名字 | 类型 | 说明                                                         |
+| ---- | ---- | ------------------------------------------------------------ |
+| uid  | Long | 消息的识别号，用于引用回复（Source类型只在群消息中返回，且永远为chain的第一个元素） |
 
 #### At
 
