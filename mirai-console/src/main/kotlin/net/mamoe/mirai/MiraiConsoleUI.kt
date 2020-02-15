@@ -23,7 +23,18 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.ceil
 
+/**
+ * 此文件不推荐任何人看
+ * 可能导致
+ *  1：心肌梗死
+ *  2：呼吸困难
+ *  3：想要重写但是发现改任何一个看似不合理的地方都会崩
+ *
+ * @author NaturalHG
+ *
+ */
 
+@SuppressWarnings("UNCHECKED")
 object MiraiConsoleUI {
 
     val log = mutableMapOf<Long, LimitLinkedQueue<String>>().also {
