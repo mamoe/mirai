@@ -29,7 +29,7 @@ bintray {
 
     pkg {
         repo = 'mirai'
-        name = "mirai-core"
+        name = "mirai-japt"
         licenses = ['AGPL']
         vcsUrl = 'https://github.com/mamoe/mirai'
     }
@@ -88,7 +88,7 @@ publishing {
                 it.artifactId = "$project.name-common"
                 break
             case 'jvm':
-                it.artifactId = "${project.name.replace("-jvm", "")}"
+                it.artifactId = "$project.name"
                 break
             case 'js':
             case 'native':

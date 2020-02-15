@@ -1,11 +1,27 @@
+import java.util.*
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+        google()
+    }
+
+    dependencies {
+        // Do try to waste your time.
+        @kotlin.Suppress("GradleDependency") // 1.8.4 不能跑
+        classpath("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0")
+    }
+}
+
 plugins {
     kotlin("jvm")
     java
     `maven-publish`
-    id("com.jfrog.bintray") version "1.8.4-jetbrains-3" // DO NOT CHANGE THIS VERSION UNLESS YOU WANT TO WASTE YOUR TIME
+    // maven
+    id("com.jfrog.bintray") version "1.8.0"
 }
-
-apply(from = rootProject.file("gradle/publish.gradle"))
 
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
@@ -54,4 +70,58 @@ dependencies {
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
+}
+
+bintray {
+    val keyProps = Properties()
+    val keyFile = file("../keys.properties")
+    if (keyFile.exists()) keyFile.inputStream().use { keyProps.load(it) }
+
+    user = keyProps.getProperty("bintrayUser")
+    key = keyProps.getProperty("bintrayKey")
+    setPublications("mavenJava")
+    setConfigurations("archives")
+
+    pkg.apply {
+        repo = "mirai"
+        name = "mirai-japt"
+        setLicenses("AGPLv3")
+        publicDownloadNumbers = true
+        vcsUrl = "https://github.com/mamoe/mirai"
+    }
+}
+
+@Suppress("DEPRECATION")
+val sourcesJar by tasks.registering(Jar::class) {
+    classifier = "sources"
+    from(sourceSets.main.get().allSource)
+}
+
+publishing {
+    /*
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            url = uri("$buildDir/repo")
+        }
+    }*/
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            from(components["java"])
+
+            groupId = rootProject.group.toString()
+            artifactId = "mirai-japt"
+            version = mirai_japt_version
+
+            pom.withXml {
+                val root = asNode()
+                root.appendNode("description", description)
+                root.appendNode("name", project.name)
+                root.appendNode("url", "https://github.com/mamoe/mirai")
+                root.children().last()
+            }
+
+            artifact(sourcesJar.get())
+        }
+    }
 }

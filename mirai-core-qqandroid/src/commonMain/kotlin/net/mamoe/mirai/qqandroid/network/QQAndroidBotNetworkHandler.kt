@@ -25,6 +25,7 @@ import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.FriendInfoImpl
@@ -278,6 +279,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
         pendingIncomingPackets = null // release
 
+        BotOnlineEvent(bot).broadcast()
         Unit
     }
 
