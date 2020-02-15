@@ -44,6 +44,7 @@ internal val factory: BotFactory = run {
 /**
  * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmOverloads
 fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
     factory.Bot(context, qq, password, configuration)
 
@@ -57,6 +58,7 @@ inline fun Bot(context: Context, qq: Long, password: String, configuration: (Bot
 /**
  * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmOverloads
 fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
     factory.Bot(ContextImpl(), qq, password, configuration)
 

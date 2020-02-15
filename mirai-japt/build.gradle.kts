@@ -1,7 +1,11 @@
 plugins {
     kotlin("jvm")
     java
+    `maven-publish`
+    id("com.jfrog.bintray") version "1.8.4-jetbrains-3" // DO NOT CHANGE THIS VERSION UNLESS YOU WANT TO WASTE YOUR TIME
 }
+
+apply(from = rootProject.file("gradle/publish.gradle"))
 
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
@@ -12,6 +16,12 @@ val serializationVersion: String by rootProject.ext
 
 val klockVersion: String by rootProject.ext
 val ktorVersion: String by rootProject.ext
+
+description = "Java helper for Mirai"
+
+@Suppress("PropertyName")
+val mirai_japt_version: String by rootProject.ext
+version = mirai_japt_version
 
 kotlin {
     sourceSets {
@@ -38,6 +48,8 @@ dependencies {
     api(kotlinx("io", kotlinXIoVersion))
     api(kotlinx("coroutines-io", coroutinesIoVersion))
     api(kotlinx("coroutines-core", coroutinesVersion))
+    api(kotlin("stdlib-jdk7", kotlinVersion))
+    api(kotlin("stdlib-jdk8", kotlinVersion))
 }
 
 tasks.withType<JavaCompile>() {

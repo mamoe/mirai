@@ -27,6 +27,7 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.transferTo
+import kotlin.jvm.JvmStatic
 
 /**
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
@@ -42,6 +43,7 @@ abstract class Bot : CoroutineScope {
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
+        @JvmStatic
         val instances: List<WeakRef<Bot>> get() = BotImpl.instances.toList()
 
         /**
@@ -52,6 +54,7 @@ abstract class Bot : CoroutineScope {
         /**
          * 获取一个 [Bot] 实例, 找不到则 [NoSuchElementException]
          */
+        @JvmStatic
         fun instanceWhose(qq: Long): Bot = BotImpl.instanceWhose(qq = qq)
     }
 

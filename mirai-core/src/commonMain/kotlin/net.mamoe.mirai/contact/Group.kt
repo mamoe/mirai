@@ -46,8 +46,9 @@ interface Group : Contact, CoroutineScope {
      * 当前仅能修改状态.
      *
      * @see GroupMuteAllEvent
-     */// TODO: 2020/2/5 实现 muteAll 的查询
-    var muteAll: Boolean
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     */
+    var isMuteAll: Boolean
     /**
      * 坦白说状态. `true` 为允许.
      *
@@ -56,7 +57,7 @@ interface Group : Contact, CoroutineScope {
      * @see GroupAllowConfessTalkEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var confessTalk: Boolean
+    var isConfessTalkEnabled: Boolean
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许
      *
@@ -65,15 +66,15 @@ interface Group : Contact, CoroutineScope {
      * @see GroupAllowMemberInviteEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var allowMemberInvite: Boolean
+    var isAllowMemberInvite: Boolean
     /**
      * 自动加群审批
      */
-    val autoApprove: Boolean
+    val isAutoApproveEnabled: Boolean
     /**
      * 匿名聊天
      */
-    val anonymousChat: Boolean
+    val isAnonymousChatEnabled: Boolean
 
     /**
      * 同为 groupCode, 用户看到的群号码.
@@ -143,7 +144,7 @@ interface Group : Contact, CoroutineScope {
 
         /**
          * by @kar98k
-         */
+         */ // don't @JvmStatic: JDK 1.8 required
         fun calculateGroupUinByGroupCode(groupCode: Long): Long {
             var left: Long = groupCode / 1000000L
 

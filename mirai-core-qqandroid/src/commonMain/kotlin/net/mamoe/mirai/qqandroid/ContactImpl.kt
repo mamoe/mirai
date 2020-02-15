@@ -227,9 +227,9 @@ internal class MemberImpl(
 
     override val bot: QQAndroidBot get() = qq.bot
 
-    override suspend fun mute(durationSeconds: Int): Boolean {
+    override suspend fun mute(durationSeconds: Int) {
         if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
-            return false
+            throw PermissionDeniedException()
         }
 
         bot.network.run {
@@ -243,12 +243,11 @@ internal class MemberImpl(
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
-        return true
     }
 
-    override suspend fun unmute(): Boolean {
+    override suspend fun unmute() {
         if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
-            return false
+            throw PermissionDeniedException()
         }
 
         bot.network.run {
@@ -262,16 +261,15 @@ internal class MemberImpl(
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
-        return true
     }
 
-    override suspend fun kick(message: String): Boolean {
+    override suspend fun kick(message: String) {
         if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
-            return false
+            throw PermissionDeniedException()
         }
 
         bot.network.run {
-            return TroopManagement.Kick(
+            TroopManagement.Kick(
                 client = bot.client,
                 member = this@MemberImpl,
                 message = message
@@ -394,7 +392,7 @@ internal class GroupImpl(
         }
 
 
-    override var allowMemberInvite: Boolean
+    override var isAllowMemberInvite: Boolean
         get() = _allowMemberInvite
         set(newValue) {
             this.checkBotPermissionOperator()
@@ -414,19 +412,19 @@ internal class GroupImpl(
             }
         }
 
-    override var autoApprove: Boolean
+    override var isAutoApproveEnabled: Boolean
         get() = _autoApprove
         set(newValue) {
             TODO()
         }
 
-    override var anonymousChat: Boolean
+    override var isAnonymousChatEnabled: Boolean
         get() = _anonymousChat
         set(newValue) {
             TODO()
         }
 
-    override var confessTalk: Boolean
+    override var isConfessTalkEnabled: Boolean
         get() = _confessTalk
         set(newValue) {
             this.checkBotPermissionOperator()
@@ -447,7 +445,7 @@ internal class GroupImpl(
         }
 
 
-    override var muteAll: Boolean
+    override var isMuteAll: Boolean
         get() = _muteAll
         set(newValue) {
             this.checkBotPermissionOperator()

@@ -4,7 +4,6 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.api.http.data.PermissionDeniedException
 import net.mamoe.mirai.api.http.data.StateCode
 import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
@@ -19,37 +18,31 @@ fun Application.groupManageModule() {
          * 禁言（需要相关权限）
          */
         miraiVerify<MuteDTO>("/muteAll") {
-            it.session.bot.getGroup(it.target).muteAll = true
+            it.session.bot.getGroup(it.target).isMuteAll = true
             call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<MuteDTO>("/unmuteAll") {
-            it.session.bot.getGroup(it.target).muteAll = false
+            it.session.bot.getGroup(it.target).isMuteAll = false
             call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<MuteDTO>("/mute") {
-            when (it.session.bot.getGroup(it.target)[it.memberId].mute(it.time)) {
-                true -> call.respondStateCode(StateCode.Success)
-                else -> throw PermissionDeniedException
-            }
+            it.session.bot.getGroup(it.target)[it.memberId].mute(it.time)
+            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<MuteDTO>("/unmute") {
-            when (it.session.bot.getGroup(it.target).members[it.memberId].unmute()) {
-                true -> call.respondStateCode(StateCode.Success)
-                else -> throw PermissionDeniedException
-            }
+            it.session.bot.getGroup(it.target).members[it.memberId].unmute()
+            call.respondStateCode(StateCode.Success)
         }
 
         /**
          * 移出群聊（需要相关权限）
          */
         miraiVerify<KickDTO>("/kick") {
-            when (it.session.bot.getGroup(it.target)[it.memberId].kick(it.msg)) {
-                true -> call.respondStateCode(StateCode.Success)
-                else -> throw PermissionDeniedException
-            }
+            it.session.bot.getGroup(it.target)[it.memberId].kick(it.msg)
+            call.respondStateCode(StateCode.Success)
         }
 
         /**
@@ -65,8 +58,8 @@ fun Application.groupManageModule() {
             with(dto.config) {
                 name?.let { group.name = it }
                 announcement?.let { group.entranceAnnouncement = it }
-                confessTalk?.let { group.confessTalk = it }
-                allowMemberInvite?.let { group.allowMemberInvite = it }
+                confessTalk?.let { group.isConfessTalkEnabled = it }
+                allowMemberInvite?.let { group.isAllowMemberInvite = it }
                 // TODO: 待core接口实现设置可改
 //                autoApprove?.let { group.autoApprove = it }
 //                anonymousChat?.let { group.anonymousChat = it }
@@ -128,8 +121,8 @@ private data class GroupDetailDTO(
     val anonymousChat: Boolean? = null
 ) : DTO {
     constructor(group: Group) : this(
-        group.name, group.entranceAnnouncement, group.confessTalk, group.allowMemberInvite,
-        group.autoApprove, group.anonymousChat
+        group.name, group.entranceAnnouncement, group.isConfessTalkEnabled, group.isAllowMemberInvite,
+        group.isAutoApproveEnabled, group.isAnonymousChatEnabled
     )
 }
 

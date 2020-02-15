@@ -22,11 +22,11 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 
 @Suppress("unused")
-class EventCancelledException : RuntimeException {
-    constructor() : super()
-    constructor(message: String?) : super(message)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-    constructor(cause: Throwable?) : super(cause)
+expect class EventCancelledException : RuntimeException {
+    constructor()
+    constructor(message: String?)
+    constructor(message: String?, cause: Throwable?)
+    constructor(cause: Throwable?)
 }
 
 // note: 若你使用 IntelliJ IDEA, 按 alt + 7 可打开结构

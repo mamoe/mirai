@@ -8,24 +8,31 @@ import net.mamoe.mirai.japt.internal.BlockingBotImpl;
 import net.mamoe.mirai.japt.internal.BlockingGroupImpl;
 import net.mamoe.mirai.japt.internal.BlockingMemberImpl;
 import net.mamoe.mirai.japt.internal.BlockingQQImpl;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * 构造阻塞式的联系人.
  */
 public final class BlockingContacts {
-    public static BlockingQQ createBlocking(QQ qq) {
-        return new BlockingQQImpl(qq);
+    @NotNull
+    public static BlockingQQ createBlocking(@NotNull QQ qq) {
+        return new BlockingQQImpl(Objects.requireNonNull(qq));
     }
 
-    public static BlockingGroup createBlocking(Group group) {
-        return new BlockingGroupImpl(group);
+    @NotNull
+    public static BlockingGroup createBlocking(@NotNull Group group) {
+        return new BlockingGroupImpl(Objects.requireNonNull(group));
     }
 
-    public static BlockingMember createBlocking(Member member) {
-        return new BlockingMemberImpl(member);
+    @NotNull
+    public static BlockingMember createBlocking(@NotNull Member member) {
+        return new BlockingMemberImpl(Objects.requireNonNull(member));
     }
 
-    public static BlockingBot createBlocking(Bot bot) {
-        return new BlockingBotImpl(bot);
+    @NotNull
+    public static BlockingBot createBlocking(@NotNull Bot bot) {
+        return new BlockingBotImpl(Objects.requireNonNull(bot));
     }
 }

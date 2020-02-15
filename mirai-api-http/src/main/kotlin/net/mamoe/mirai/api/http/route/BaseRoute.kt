@@ -35,6 +35,7 @@ import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.util.jsonParseOrNull
 import net.mamoe.mirai.api.http.util.toJson
+import net.mamoe.mirai.contact.PermissionDeniedException
 import org.slf4j.Logger
 import org.slf4j.helpers.NOPLogger
 import org.slf4j.helpers.NOPLoggerFactory

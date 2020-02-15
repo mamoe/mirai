@@ -38,8 +38,8 @@ interface Contact : CoroutineScope {
     /**
      * 可以是 QQ 号码或者群号码.
      *
-     * 对于 QQ, `uin` 与 `id` 是相同的意思.
-     * 对于 Group, `groupCode` 与 `id` 是相同的意思.
+     * 对于 [QQ], `uin` 与 `id` 是相同的意思.
+     * 对于 [Group], `groupCode` 与 `id` 是相同的意思.
      */
     val id: Long
 

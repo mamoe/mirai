@@ -21,6 +21,8 @@ pluginManagement {
 
 rootProject.name = 'mirai'
 
+include(':mirai-demos')
+
 try {
     def keyProps = new Properties()
     def keyFile = file("local.properties")
@@ -46,7 +48,7 @@ include(':mirai-console')
 include(':mirai-api-http')
 include(':mirai-demos:mirai-demo-1')
 include(':mirai-demos:mirai-demo-gentleman')
-include(':mirai-demos')
+include(':mirai-demos:mirai-demo-java')
 include(':mirai-plugins')
 include(':mirai-plugins:image-sender')
 
@@ -67,6 +69,7 @@ if (versionPos==-1){
 
 project(':mirai-demos:mirai-demo-1').projectDir = file('mirai-demos/mirai-demo-1')
 project(':mirai-demos:mirai-demo-gentleman').projectDir = file('mirai-demos/mirai-demo-gentleman')
+project(':mirai-demos:mirai-demo-java').projectDir = file('mirai-demos/mirai-demo-java')
 project(':mirai-plugins:image-sender').projectDir = file('mirai-plugins/image-sender')
 
 enableFeaturePreview('GRADLE_METADATA')

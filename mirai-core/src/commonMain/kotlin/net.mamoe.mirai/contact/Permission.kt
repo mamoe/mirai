@@ -72,9 +72,9 @@ inline fun Member.isOperator(): Boolean = this.permission.isOperator()
 /**
  * 权限不足
  */
-class PermissionDeniedException : IllegalStateException {
-    constructor() : super("Permission denied")
-    constructor(message: String?) : super(message)
+expect class PermissionDeniedException : IllegalStateException {
+    constructor()
+    constructor(message: String?)
 }
 
 @UseExperimental(MiraiExperimentalAPI::class)
