@@ -43,6 +43,7 @@ object MiraiConsoleUI {
 
     val log = mutableMapOf<Long, LimitLinkedQueue<String>>().also {
         it[0L] = LimitLinkedQueue(cacheLogSize)
+        it[2821869985L] = LimitLinkedQueue(cacheLogSize)
     }
     val botAdminCount = mutableMapOf<Long, Long>()
 
