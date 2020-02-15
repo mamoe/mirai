@@ -180,14 +180,14 @@ internal class OnlinePush {
                                     return if (target == 0L) {
                                         if (time == 0) {
                                             GroupMuteAllEvent(
-                                                origin = group.muteAll.also { group._muteAll = false },
+                                                origin = group.isMuteAll.also { group._muteAll = false },
                                                 new = false,
                                                 operator = operator,
                                                 group = group
                                             )
                                         } else {
                                             GroupMuteAllEvent(
-                                                origin = group.muteAll.also { group._muteAll = true },
+                                                origin = group.isMuteAll.also { group._muteAll = true },
                                                 new = true,
                                                 operator = operator,
                                                 group = group
@@ -213,7 +213,7 @@ internal class OnlinePush {
                                     val operator = group[this.readUInt().toLong()]
                                     val switch = this.readInt() == 0
                                     return GroupAllowAnonymousChatEvent(
-                                        origin = group.anonymousChat.also { group._anonymousChat = switch },
+                                        origin = group.isAnonymousChatEnabled.also { group._anonymousChat = switch },
                                         new = switch,
                                         operator = operator,
                                         group = group
@@ -236,7 +236,7 @@ internal class OnlinePush {
                                         when (message) {
                                             "管理员已关闭群聊坦白说" -> {
                                                 return GroupAllowConfessTalkEvent(
-                                                    origin = group.confessTalk.also { group._confessTalk = false },
+                                                    origin = group.isConfessTalkEnabled.also { group._confessTalk = false },
                                                     new = false,
                                                     group = group,
                                                     isByBot = false
@@ -244,7 +244,7 @@ internal class OnlinePush {
                                             }
                                             "管理员已开启群聊坦白说" -> {
                                                 return GroupAllowConfessTalkEvent(
-                                                    origin = group.confessTalk.also { group._confessTalk = true },
+                                                    origin = group.isConfessTalkEnabled.also { group._confessTalk = true },
                                                     new = true,
                                                     group = group,
                                                     isByBot = false

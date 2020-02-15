@@ -394,7 +394,7 @@ internal class GroupImpl(
         }
 
 
-    override var allowMemberInvite: Boolean
+    override var isAllowMemberInvite: Boolean
         get() = _allowMemberInvite
         set(newValue) {
             this.checkBotPermissionOperator()
@@ -414,19 +414,19 @@ internal class GroupImpl(
             }
         }
 
-    override var autoApprove: Boolean
+    override var isAutoApproveEnabled: Boolean
         get() = _autoApprove
         set(newValue) {
             TODO()
         }
 
-    override var anonymousChat: Boolean
+    override var isAnonymousChatEnabled: Boolean
         get() = _anonymousChat
         set(newValue) {
             TODO()
         }
 
-    override var confessTalk: Boolean
+    override var isConfessTalkEnabled: Boolean
         get() = _confessTalk
         set(newValue) {
             this.checkBotPermissionOperator()
@@ -447,7 +447,7 @@ internal class GroupImpl(
         }
 
 
-    override var muteAll: Boolean
+    override var isMuteAll: Boolean
         get() = _muteAll
         set(newValue) {
             this.checkBotPermissionOperator()
