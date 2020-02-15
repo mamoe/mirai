@@ -1,5 +1,6 @@
 package net.mamoe.mirai.japt;
 
+import kotlin.text.StringsKt;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.contact.PermissionDeniedException;
 import net.mamoe.mirai.event.events.MemberCardChangeEvent;
@@ -40,7 +41,7 @@ public interface BlockingMember extends BlockingQQ {
     @NotNull
     default String getGroupCardOrNick() {
         String nameCard = this.getNameCard();
-        if (!nameCard.isBlank()) {
+        if (!StringsKt.isBlank(nameCard)) {
             return nameCard;
         }
         return this.getNick();
