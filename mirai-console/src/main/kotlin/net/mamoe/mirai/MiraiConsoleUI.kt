@@ -10,18 +10,21 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
 import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
+import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.MiraiConsoleUI.LoggerDrawer.redrawLogs
-import net.mamoe.mirai.utils.currentTimeSeconds
+import java.awt.Font
 import java.io.OutputStream
 import java.io.PrintStream
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.concurrent.thread
-import kotlin.math.ceil
 
 /**
  * 此文件不推荐任何人看
@@ -70,11 +73,19 @@ object MiraiConsoleUI {
 
         hasStart = true
         val defaultTerminalFactory = DefaultTerminalFactory(internalPrinter, System.`in`, Charset.defaultCharset())
-        defaultTerminalFactory.setInitialTerminalSize(
-            TerminalSize(
-                90, 120
+
+        val fontSize = 12
+        defaultTerminalFactory
+            .setInitialTerminalSize(
+                TerminalSize(
+                    101, 60
+                )
             )
-        )
+            .setTerminalEmulatorFontConfiguration(
+                SwingTerminalFontConfiguration.newInstance(
+                    Font("Monospaced", Font.PLAIN, fontSize)
+                )
+            )
         try {
             terminal = defaultTerminalFactory.createTerminal()
             terminal.enterPrivateMode()
