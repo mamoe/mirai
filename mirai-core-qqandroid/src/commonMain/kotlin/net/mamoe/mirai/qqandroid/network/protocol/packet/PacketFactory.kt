@@ -211,34 +211,15 @@ internal object KnownPacketFactories {
                     else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
                 }
             }?.let {
-                if (it.packetFactory == null) {
-                    bot.network.logger.debug("Received commandName: ${it.commandName}")
-                    PacketLogger.warning { "找不到 PacketFactory" }
-                    PacketLogger.verbose { "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}" }
-                    return
-                }
+                it as IncomingPacket<T>
 
-                it.data.withUse {
-                    when (flag2) {
-                        0, 1 ->
-                            when (it.packetFactory) {
-                                is OutgoingPacketFactory<*> -> consumer(
-                                    it.packetFactory as OutgoingPacketFactory<T>,
-                                    it.packetFactory.run { decode(bot, it.data) },
-                                    it.packetFactory.commandName,
-                                    it.sequenceId
-                                )
-                                is IncomingPacketFactory<*> -> consumer(
-                                    it.packetFactory as IncomingPacketFactory<T>,
-                                    it.packetFactory.run { decode(bot, it.data, it.sequenceId) },
-                                    it.packetFactory.receivingCommandName,
-                                    it.sequenceId
-                                )
-                            }
-
-                        2 -> it.data.parseOicqResponse(bot, it.packetFactory as OutgoingPacketFactory<T>, it.sequenceId, consumer)
-                        else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
-                    }
+                if (it.packetFactory is IncomingPacketFactory<T> && bot.network.pendingEnabled) {
+                    bot.network.pendingIncomingPackets?.addLast(it.also {
+                        it.consumer = consumer
+                        it.flag2 = flag2
+                    }) ?: handleIncomingPacket(it, bot, flag2, consumer)
+                } else {
+                    handleIncomingPacket(it, bot, flag2, consumer)
                 }
             } ?: inline {
                 PacketLogger.error { "任何key都无法解密: ${data.take(size).toUHexString()}" }
@@ -247,20 +228,56 @@ internal object KnownPacketFactories {
         }
     }
 
+    @UseExperimental(MiraiInternalAPI::class)
+    internal suspend fun <T : Packet> handleIncomingPacket(it: IncomingPacket<T>, bot: QQAndroidBot, flag2: Int, consumer: PacketConsumer<T>) {
+        if (it.packetFactory == null) {
+            bot.network.logger.debug("Received commandName: ${it.commandName}")
+            PacketLogger.warning { "找不到 PacketFactory" }
+            PacketLogger.verbose { "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}" }
+            return
+        }
+
+        it.data.withUse {
+            when (flag2) {
+                0, 1 ->
+                    when (it.packetFactory) {
+                        is OutgoingPacketFactory<*> -> consumer(
+                            it.packetFactory as OutgoingPacketFactory<T>,
+                            it.packetFactory.run { decode(bot, it.data) },
+                            it.packetFactory.commandName,
+                            it.sequenceId
+                        )
+                        is IncomingPacketFactory<*> -> consumer(
+                            it.packetFactory as IncomingPacketFactory<T>,
+                            it.packetFactory.run { decode(bot, it.data, it.sequenceId) },
+                            it.packetFactory.receivingCommandName,
+                            it.sequenceId
+                        )
+                    }
+
+                2 -> it.data.parseOicqResponse(bot, it.packetFactory as OutgoingPacketFactory<T>, it.sequenceId, consumer)
+                else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
+            }
+        }
+    }
+
     private inline fun <R> inline(block: () -> R): R = block()
 
-    class IncomingPacket(
-        val packetFactory: PacketFactory<*>?,
+    class IncomingPacket<T : Packet>(
+        val packetFactory: PacketFactory<T>?,
         val sequenceId: Int,
         val data: ByteReadPacket,
         val commandName: String
-    )
+    ) {
+        var flag2: Int = -1
+        lateinit var consumer: PacketConsumer<T>
+    }
 
     /**
      * 解析 SSO 层包装
      */
     @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-    private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket {
+    private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket<*> {
         val commandName: String
         val ssoSequenceId: Int
         val dataCompressed: Int
