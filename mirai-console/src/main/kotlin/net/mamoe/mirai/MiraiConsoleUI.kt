@@ -70,6 +70,11 @@ object MiraiConsoleUI {
 
         hasStart = true
         val defaultTerminalFactory = DefaultTerminalFactory(internalPrinter, System.`in`, Charset.defaultCharset())
+        defaultTerminalFactory.setInitialTerminalSize(
+            TerminalSize(
+                90, 120
+            )
+        )
         try {
             terminal = defaultTerminalFactory.createTerminal()
             terminal.enterPrivateMode()
