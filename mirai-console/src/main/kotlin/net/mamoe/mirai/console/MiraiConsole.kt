@@ -1,4 +1,4 @@
-package net.mamoe.mirai
+package net.mamoe.mirai.console
 
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
@@ -13,10 +13,12 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.api.http.MiraiHttpAPIServer
 import net.mamoe.mirai.api.http.generateSessionKey
 import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.plugins.PluginManager
-import net.mamoe.mirai.plugins.loadAsConfig
-import net.mamoe.mirai.plugins.withDefaultWrite
-import net.mamoe.mirai.plugins.withDefaultWriteSave
+import net.mamoe.mirai.console.plugins.PluginManager
+import net.mamoe.mirai.console.plugins.loadAsConfig
+import net.mamoe.mirai.console.plugins.withDefaultWrite
+import net.mamoe.mirai.console.plugins.withDefaultWriteSave
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.utils.SimpleLogger
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.io.File
@@ -52,17 +54,20 @@ object MiraiConsole {
 
     fun start() {
         logger("Mirai-console [v$version $build | core version v$coreVersion] is still in testing stage, majority feature is available")
-        logger("Mirai-console now running under " + System.getProperty("user.dir"))
+        logger(
+            "Mirai-console now running under " + System.getProperty(
+                "user.dir"
+            )
+        )
         logger("Get news in github: https://github.com/mamoe/mirai")
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
 
-        runBlocking {
-            DefaultCommands()
-            HTTPAPIAdaptar()
-            pluginManager.loadPlugins()
-            CommandListener.start()
-        }
+
+        DefaultCommands()
+        HTTPAPIAdaptar()
+        pluginManager.loadPlugins()
+        CommandListener.start()
 
         logger("Mirai-console 启动完成")
         logger("\"/login qqnumber qqpassword \" to login a bot")
@@ -113,10 +118,18 @@ object MiraiConsole {
                     try {
                         runBlocking {
                             Bot(qqNumber, qqPassword).alsoLogin()
-                            logger("[Bot Login]", 0, "$qqNumber login successes")
+                            logger(
+                                "[Bot Login]",
+                                0,
+                                "$qqNumber login successes"
+                            )
                         }
                     } catch (e: Exception) {
-                        logger("[Bot Login]", 0, "$qqNumber login failed -> " + e.message)
+                        logger(
+                            "[Bot Login]",
+                            0,
+                            "$qqNumber login failed -> " + e.message
+                        )
                         e.printStackTrace()
                     }
                     true
@@ -224,7 +237,11 @@ object MiraiConsole {
                 description = "About Mirai-Console"
                 onCommand {
                     logger("v$version $build is still in testing stage, majority feature is available")
-                    logger("now running under " + System.getProperty("user.dir"))
+                    logger(
+                        "now running under " + System.getProperty(
+                            "user.dir"
+                        )
+                    )
                     logger("在Github中获取项目最新进展: https://github.com/mamoe/mirai")
                     logger("Mirai为开源项目，请自觉遵守开源项目协议")
                     logger("Powered by Mamoe Technologies and contributors")
@@ -259,7 +276,11 @@ object MiraiConsole {
 
     object UIPushLogger {
         operator fun invoke(any: Any? = null) {
-            invoke("[Mirai$version $build]", 0L, any)
+            invoke(
+                "[Mirai$version $build]",
+                0L,
+                any
+            )
         }
 
         operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
