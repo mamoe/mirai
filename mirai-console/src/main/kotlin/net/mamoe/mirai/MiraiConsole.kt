@@ -18,6 +18,7 @@ import net.mamoe.mirai.api.http.MiraiHttpAPIServer
 import net.mamoe.mirai.api.http.generateSessionKey
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.io.PrintStream
 import kotlin.concurrent.thread
@@ -38,16 +39,17 @@ object MiraiConsole {
     val pluginManager: PluginManager
         get() = PluginManager
 
-    var logger = UIPushLogger(0)
+    var logger = UIPushLogger
 
     var path: String = System.getProperty("user.dir")
 
     val version = "0.01"
-    var coreVersion = "0.13"
+    var coreVersion = "0.15"
     val build = "Beta"
 
     fun start() {
-        logger("Mirai-console v$version $build | core version v$coreVersion is still in testing stage, majority feature is available")
+        MiraiConsoleUI.start()
+        logger("Mirai-console [v$version $build | core version v$coreVersion] is still in testing stage, majority feature is available")
         logger("Mirai-console now running under " + System.getProperty("user.dir"))
         logger("Get news in github: https://github.com/mamoe/mirai")
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
@@ -77,11 +79,14 @@ object MiraiConsole {
                     logger("请尽快更改初始生成的HTTP API AUTHKEY")
                 }
                 logger("正在启动HTTPAPI; 端口=" + MiraiProperties.HTTP_API_PORT)
+                MiraiHttpAPIServer.logger = SimpleLogger("HTTP API") { _, message, e ->
+                    logger("[Mirai HTTP API]", 0, message)
+                }
                 MiraiHttpAPIServer.start(
                     MiraiProperties.HTTP_API_PORT,
                     MiraiProperties.HTTP_API_AUTH_KEY
                 )
-                logger("HTTPAPI启动完成; 端口=" + MiraiProperties.HTTP_API_PORT)
+                logger("HTTPAPI启动完成; 端口= " + MiraiProperties.HTTP_API_PORT)
 
             }
         }
@@ -249,11 +254,14 @@ object MiraiConsole {
         }
     }
 
-    class UIPushLogger(val identity: Long) {
+    object UIPushLogger {
         operator fun invoke(any: Any? = null) {
-            MiraiConsoleUI.start()
+            invoke("[Mirai$version $build]", 0L, any)
+        }
+
+        operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
             if (any != null) {
-                MiraiConsoleUI.pushLog(identity, "[Mirai$version $build]: $any")
+                MiraiConsoleUI.pushLog(identity, "$identityStr: $any")
             }
         }
     }

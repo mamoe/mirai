@@ -11,8 +11,10 @@ package net.mamoe.mirai.plugins
 
 import net.mamoe.mirai.ICommand
 import kotlinx.coroutines.*
+import net.mamoe.mirai.MiraiConsole
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
 import java.net.URL
@@ -156,7 +158,9 @@ object PluginManager {
         File(it).mkdirs()
     }
 
-    val logger = DefaultLogger("Mirai Plugin Manager")
+    val logger = SimpleLogger("Plugin Manager") { _, message, e ->
+        MiraiConsole.logger("[Plugin Manager]", 0, message)
+    }
 
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()

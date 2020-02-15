@@ -36,19 +36,22 @@ import kotlin.math.ceil
 
 @SuppressWarnings("UNCHECKED")
 object MiraiConsoleUI {
+    val cacheLogSize = 50
 
     val log = mutableMapOf<Long, LimitLinkedQueue<String>>().also {
-        it[0L] = LimitLinkedQueue(50)
-        it[2821869985L] = LimitLinkedQueue(50)
+        it[0L] = LimitLinkedQueue(cacheLogSize)
     }
+    val botAdminCount = mutableMapOf<Long, Long>()
 
 
     private val screens = mutableListOf(0L, 2821869985L)
     private var currentScreenId = 0
 
+
     fun addBotScreen(uin: Long) {
         screens.add(uin)
-        log[uin] = LimitLinkedQueue()
+        log[uin] = LimitLinkedQueue(cacheLogSize)
+        botAdminCount[uin] = 0
     }
 
 
@@ -182,7 +185,7 @@ object MiraiConsoleUI {
         }
     }
 
-    fun getLeftScreenId(): Int {
+    private fun getLeftScreenId(): Int {
         var newId = currentScreenId - 1
         if (newId < 0) {
             newId = screens.size - 1
@@ -190,7 +193,7 @@ object MiraiConsoleUI {
         return newId
     }
 
-    fun getRightScreenId(): Int {
+    private fun getRightScreenId(): Int {
         var newId = 1 + currentScreenId
         if (newId >= screens.size) {
             newId = 0
@@ -198,7 +201,7 @@ object MiraiConsoleUI {
         return newId
     }
 
-    fun getScreenName(id: Int): String {
+    private fun getScreenName(id: Int): String {
         return when (screens[id]) {
             0L -> {
                 "Console Screen"
@@ -369,7 +372,7 @@ object MiraiConsoleUI {
         }
     }
 
-    fun addCommandChar(
+    private fun addCommandChar(
         c: Char
     ) {
         if (commandBuilder.isEmpty() && c != '/') {
@@ -385,7 +388,7 @@ object MiraiConsoleUI {
         }
     }
 
-    fun deleteCommandChar() {
+    private fun deleteCommandChar() {
         if (!commandBuilder.isEmpty()) {
             commandBuilder = StringBuilder(commandBuilder.toString().substring(0, commandBuilder.length - 1))
         }
@@ -398,7 +401,7 @@ object MiraiConsoleUI {
     }
 
 
-    fun emptyCommand() {
+    private fun emptyCommand() {
         commandBuilder = StringBuilder()
         redrawCommand()
         if (terminal is SwingTerminal) {
