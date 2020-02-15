@@ -15,15 +15,18 @@ import io.ktor.server.engine.applicationEngineEnvironment
 import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.api.http.route.mirai
 import net.mamoe.mirai.utils.DefaultLogger
-import org.slf4j.LoggerFactory
-import org.slf4j.helpers.NOPLogger
 import org.slf4j.helpers.NOPLoggerFactory
+import kotlin.coroutines.CoroutineContext
 
-object MiraiHttpAPIServer {
+object MiraiHttpAPIServer : CoroutineScope {
 
     private val logger = DefaultLogger("Mirai HTTP API")
+    override val coroutineContext: CoroutineContext = CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
 
     init {
         SessionManager.authKey = generateSessionKey()//用于验证的key, 使用和SessionKey相同的方法生成, 但意义不同
@@ -43,20 +46,19 @@ object MiraiHttpAPIServer {
         SessionManager.authKey = authKey
 
         // TODO: start是无阻塞的，理应获取启动状态后再执行后续代码
-        try {
+        launch {
             embeddedServer(CIO, environment = applicationEngineEnvironment {
+                this.parentCoroutineContext = coroutineContext
                 this.log = NOPLoggerFactory().getLogger("NMYSL")
                 this.module(Application::mirai)
 
                 connector {
                     this.port = port
                 }
-            }).start()
-
-            logger.info("Http api server is running with authKey: ${SessionManager.authKey}")
-            callback?.invoke()
-        } catch (e: Exception) {
-            logger.error("Http api server launch error")
+            }).start(wait = true)
         }
+
+        logger.info("Http api server is running with authKey: ${SessionManager.authKey}")
+        callback?.invoke()
     }
 }
