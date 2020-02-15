@@ -438,14 +438,14 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      */
     @MessageDsl
     inline fun <reified M : Message> has(): ListeningFilter =
-        content { message.any { it::class == M::class } }
+        content { message.any { it is M } }
 
     /**
      * 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent]
      */
     @MessageDsl
     inline fun <reified M : Message> has(crossinline onEvent: MessageListener<T>): Listener<T> =
-        content({ message.any { it::class == M::class } }, onEvent)
+        content({ message.any { it is M } }, onEvent)
 
     /**
      * 如果 [filter] 返回 `true`
