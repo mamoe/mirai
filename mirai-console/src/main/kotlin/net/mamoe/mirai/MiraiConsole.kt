@@ -48,16 +48,10 @@ object MiraiConsole {
 
     fun start() {
         logger("Mirai-console v$version $build | core version v$coreVersion is still in testing stage, majority feature is available")
-        logger("Mirai-console v$version $build | 核心版本 v${coreVersion}还处于测试阶段, 大部分功能可用")
-        logger()
         logger("Mirai-console now running under " + System.getProperty("user.dir"))
-        logger("Mirai-console 正在 " + System.getProperty("user.dir") + "下运行")
-        logger()
         logger("Get news in github: https://github.com/mamoe/mirai")
-        logger("在Github中获取项目最新进展: https://github.com/mamoe/mirai")
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
-        logger()
 
         runBlocking {
             DefaultCommands()
