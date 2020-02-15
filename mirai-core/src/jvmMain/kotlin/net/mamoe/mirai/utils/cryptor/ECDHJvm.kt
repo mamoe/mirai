@@ -46,6 +46,7 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
         init {
             if (kotlin.runCatching {
                     Security.addProvider(BouncyCastleProvider())
+                    generateKeyPair() // try if it is working
                 }.exceptionOrNull() == null) {
                 isECDHAvailable = true
             }
