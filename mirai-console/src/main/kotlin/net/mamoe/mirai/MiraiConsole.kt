@@ -288,6 +288,7 @@ class MiraiConsoleLoader {
         fun main(args: Array<String>) {
             Security.removeProvider("BC")
             Security.addProvider(BouncyCastleProvider())
+            Security.addProvider(org.bouncycastle.jce.provider.BouncyCastleProvider())
             //Security.addProvider(BouncyCastle)
             MiraiConsoleUI.start()
             MiraiConsole.start()
