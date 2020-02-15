@@ -13,6 +13,12 @@ val serializationVersion: String by rootProject.ext
 val klockVersion: String by rootProject.ext
 val ktorVersion: String by rootProject.ext
 
+description = "Java helper for Mirai"
+
+@Suppress("PropertyName")
+val mirai_japt_version: String by rootProject.ext
+version = mirai_japt_version
+
 kotlin {
     sourceSets {
         all {
@@ -38,6 +44,8 @@ dependencies {
     api(kotlinx("io", kotlinXIoVersion))
     api(kotlinx("coroutines-io", coroutinesIoVersion))
     api(kotlinx("coroutines-core", coroutinesVersion))
+    api(kotlin("stdlib-jdk7", kotlinVersion))
+    api(kotlin("stdlib-jdk8", kotlinVersion))
 }
 
 tasks.withType<JavaCompile>() {
