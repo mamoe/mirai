@@ -117,7 +117,8 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     }
                 }
                 pushLog(0, "[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
-                return requestInput("[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!.takeUnless { it.isEmpty() || it.length != 4 }
+                return requestInput("[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!
+                    .takeUnless { it.isEmpty() || it.length != 4 }
                     .also {
                         pushLog(0, "[Login Solver]正在提交[$it]中...")
                     }
@@ -132,7 +133,6 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     pushLog(0, "[Login Solver]正在提交中")
                 }
             }
-
 
             override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
                 pushLog(0, "[Login Solver]需要进行账户安全认证")
@@ -235,13 +235,17 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         var lastJob: Job? = null
         terminal.addResizeListener(TerminalResizeListener { terminal1: Terminal, newSize: TerminalSize ->
             lastJob = GlobalScope.launch {
-                delay(300)
-                if (lastJob == coroutineContext[Job]) {
-                    terminal.clearScreen()
-                    //inited = false
-                    update()
-                    redrawCommand()
-                    redrawLogs(log[screens[currentScreenId]]!!)
+                try {
+                    delay(300)
+                    if (lastJob == coroutineContext[Job]) {
+                        terminal.clearScreen()
+                        //inited = false
+                        update()
+                        redrawCommand()
+                        redrawLogs(log[screens[currentScreenId]]!!)
+                    }
+                } catch (e: Exception) {
+                    pushLog(0, "[UI ERROR] ${e.message}")
                 }
             }
         })
@@ -264,45 +268,53 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         System.setErr(System.out)
 
-        update()
+        try {
+            update()
+        } catch (e: Exception) {
+            pushLog(0, "[UI ERROR] ${e.message}")
+        }
 
         val charList = listOf(',', '.', '/', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '=', '+', '!', ' ')
         thread {
             while (true) {
-                var keyStroke: KeyStroke = terminal.readInput()
+                try {
+                    var keyStroke: KeyStroke = terminal.readInput()
 
-                when (keyStroke.keyType) {
-                    KeyType.ArrowLeft -> {
-                        currentScreenId =
-                            getLeftScreenId()
-                        clearRows(2)
-                        cleanPage()
-                        update()
-                    }
-                    KeyType.ArrowRight -> {
-                        currentScreenId =
-                            getRightScreenId()
-                        clearRows(2)
-                        cleanPage()
-                        update()
-                    }
-                    KeyType.Enter -> {
-                        provideInput(commandBuilder.toString())
-                        emptyCommand()
-                    }
-                    KeyType.Escape -> {
-                        exitProcess(0)
-                    }
-                    else -> {
-                        if (keyStroke.character != null) {
-                            if (keyStroke.character.toInt() == 8) {
-                                deleteCommandChar()
-                            }
-                            if (keyStroke.character.isLetterOrDigit() || charList.contains(keyStroke.character)) {
-                                addCommandChar(keyStroke.character)
+                    when (keyStroke.keyType) {
+                        KeyType.ArrowLeft -> {
+                            currentScreenId =
+                                getLeftScreenId()
+                            clearRows(2)
+                            cleanPage()
+                            update()
+                        }
+                        KeyType.ArrowRight -> {
+                            currentScreenId =
+                                getRightScreenId()
+                            clearRows(2)
+                            cleanPage()
+                            update()
+                        }
+                        KeyType.Enter -> {
+                            provideInput(commandBuilder.toString())
+                            emptyCommand()
+                        }
+                        KeyType.Escape -> {
+                            exitProcess(0)
+                        }
+                        else -> {
+                            if (keyStroke.character != null) {
+                                if (keyStroke.character.toInt() == 8) {
+                                    deleteCommandChar()
+                                }
+                                if (keyStroke.character.isLetterOrDigit() || charList.contains(keyStroke.character)) {
+                                    addCommandChar(keyStroke.character)
+                                }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    pushLog(0, "[UI ERROR] ${e.message}")
                 }
             }
         }
@@ -542,13 +554,17 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             terminal.flush()
         } else {
             lastEmpty = GlobalScope.launch {
-                delay(100)
-                if (lastEmpty == coroutineContext[Job]) {
-                    terminal.clearScreen()
-                    //inited = false
-                    update()
-                    redrawCommand()
-                    redrawLogs(log[screens[currentScreenId]]!!)
+                try {
+                    delay(100)
+                    if (lastEmpty == coroutineContext[Job]) {
+                        terminal.clearScreen()
+                        //inited = false
+                        update()
+                        redrawCommand()
+                        redrawLogs(log[screens[currentScreenId]]!!)
+                    }
+                } catch (e: Exception) {
+                    pushLog(0, "[UI ERROR] ${e.message}")
                 }
             }
         }
