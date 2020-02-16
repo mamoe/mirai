@@ -7,7 +7,7 @@ import net.mamoe.mirai.Bot
  * 注意线程
  */
 
-interface MiraiConsoleUIFrontEnd {
+interface MiraiConsoleUI {
     /**
      * 让UI层展示一条log
      * identityString: log前面的prefix

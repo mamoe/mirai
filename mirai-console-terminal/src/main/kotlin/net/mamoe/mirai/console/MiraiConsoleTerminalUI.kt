@@ -40,7 +40,7 @@ import kotlin.system.exitProcess
  *
  */
 
-object MiraiConsoleTerminalUI : MiraiConsoleUIFrontEnd {
+object MiraiConsoleTerminalUI : MiraiConsoleUI {
     val cacheLogSize = 50
 
     override fun pushLog(identity: Long, message: String) {

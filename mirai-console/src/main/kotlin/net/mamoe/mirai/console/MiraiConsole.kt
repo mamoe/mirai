@@ -50,9 +50,9 @@ object MiraiConsole {
     var coreVersion = "0.15"
     val build = "Beta"
 
-    lateinit var frontEnd: MiraiConsoleUIFrontEnd
+    lateinit var frontEnd: MiraiConsoleUI
     fun start(
-        frontEnd: MiraiConsoleUIFrontEnd
+        frontEnd: MiraiConsoleUI
     ) {
         this.frontEnd = frontEnd
         logger("Mirai-console [v$version $build | core version v$coreVersion] is still in testing stage, majority feature is available")
