@@ -32,3 +32,7 @@ dependencies {
     api("org.bouncycastle:bcprov-jdk15on:1.64")
     // classpath is not set correctly by IDE
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
