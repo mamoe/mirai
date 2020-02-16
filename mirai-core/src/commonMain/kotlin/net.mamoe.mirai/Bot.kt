@@ -44,7 +44,8 @@ abstract class Bot : CoroutineScope {
          * 复制一份此时的 [Bot] 实例列表.
          */
         @JvmStatic
-        val instances: List<WeakRef<Bot>> get() = BotImpl.instances.toList()
+        val instances: List<WeakRef<Bot>>
+            get() = BotImpl.instances.toList()
 
         /**
          * 遍历每一个 [Bot] 实例
@@ -57,6 +58,14 @@ abstract class Bot : CoroutineScope {
         @JvmStatic
         fun instanceWhose(qq: Long): Bot = BotImpl.instanceWhose(qq = qq)
     }
+
+    /**
+     * [Bot] 运行的 [Context].
+     *
+     * 在 JVM 的默认实现为 `class ContextImpl : Context`
+     * 在 Android 实现为 `android.content.Context`
+     */
+    abstract val context: Context
 
     /**
      * 账号信息

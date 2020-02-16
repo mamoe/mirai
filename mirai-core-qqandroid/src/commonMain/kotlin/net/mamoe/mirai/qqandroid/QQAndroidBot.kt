@@ -43,7 +43,7 @@ internal abstract class QQAndroidBotBase constructor(
     context: Context,
     account: BotAccount,
     configuration: BotConfiguration
-) : BotImpl<QQAndroidBotNetworkHandler>(account, configuration) {
+) : BotImpl<QQAndroidBotNetworkHandler>(context, account, configuration) {
     val client: QQAndroidClient =
         QQAndroidClient(
             context,
