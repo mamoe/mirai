@@ -120,7 +120,7 @@ JVM 上启动需 80M 内存, 每多一个机器人实例需要 30M 内存.
 现在体验低付出高效率的 Mirai
 
 ```kotlin
-val bot = TIMPC.Bot(qqId, password).alsoLogin()
+val bot = Bot(qqId, password).alsoLogin()
 bot.subscribeMessages {
   "你好" reply "你好!"
   "profile" reply { sender.queryProfile() }
