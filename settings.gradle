@@ -44,6 +44,8 @@ include(':mirai-core-qqandroid')
 
 include(':mirai-japt')
 include(':mirai-console')
+include(':mirai-console-graphical')
+include(':mirai-console-terminal')
 //include(':mirai-api')
 include(':mirai-api-http')
 include(':mirai-demos:mirai-demo-1')
