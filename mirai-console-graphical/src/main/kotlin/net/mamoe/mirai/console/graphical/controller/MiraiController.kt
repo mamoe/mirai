@@ -2,6 +2,7 @@ package net.mamoe.mirai.console.graphical.controller
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleUI
+import net.mamoe.mirai.utils.LoginSolver
 import tornadofx.Controller
 
 class MiraiController : Controller(), MiraiConsoleUI {
@@ -26,6 +27,10 @@ class MiraiController : Controller(), MiraiConsoleUI {
     }
 
     override fun pushBotAdminStatus(identity: Long, admins: List<Long>) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun createLoginSolver(): LoginSolver {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

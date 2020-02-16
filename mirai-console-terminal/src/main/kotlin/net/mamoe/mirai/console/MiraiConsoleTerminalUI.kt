@@ -107,8 +107,11 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     tempFile.createNewFile()
                     pushLog(0, "[Login Solver]需要图片验证码登录, 验证码为 4 字母")
                     try {
-                        tempFile.writeChannel().apply { writeFully(data); close() }
-                        pushLog(0, "将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
+                        tempFile.writeChannel().apply {
+                            writeFully(data)
+                            close()
+                        }
+                        pushLog(0, "请查看文件 ${tempFile.absolutePath}")
                     } catch (e: Exception) {
                         error("[Login Solver]验证码无法保存[Error0001]")
                     }
