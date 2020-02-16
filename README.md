@@ -9,7 +9,7 @@
 
 </div>
 
-### Mirai
+## Mirai
 **[English](README-eng.md)**  
 
 多平台 **QQ Android 和 TimPC** 协议支持库与高效率的机器人框架.   
