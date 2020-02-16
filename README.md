@@ -1,15 +1,15 @@
 <div align="center">
-  <a href="https://mamoe.net" target="_blank">
-    <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo">
-  </a>
-  <h1 id="koishi"><a style="color: #39C5BB">Mirai</a></h1>
-
+ 
+   <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo">
+   <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="logo">
+    
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Actions Status](https://github.com/mamoe/mirai/workflows/CI/badge.svg)](https://github.com/mamoe/mirai/actions)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
 </div>
 
+###Mirai
 **[English](README-eng.md)**  
 
 多平台 **QQ Android 和 TimPC** 协议支持库与高效率的机器人框架.   
