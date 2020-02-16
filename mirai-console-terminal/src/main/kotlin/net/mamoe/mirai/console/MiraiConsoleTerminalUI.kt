@@ -12,22 +12,26 @@ import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.io.close
+import kotlinx.io.core.IoBuffer
+import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.createCharImg
+import net.mamoe.mirai.utils.writeChannel
 import java.awt.Font
+import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
-import java.util.concurrent.ConcurrentLinkedQueue
+import javax.imageio.ImageIO
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
@@ -41,6 +45,47 @@ import kotlin.system.exitProcess
  * @author NaturalHG
  *
  */
+
+fun String.actualLength(): Int {
+    var x = 0
+    this.forEach {
+        if (it.isChineseChar()) {
+            x += 2
+        } else {
+            x += 1
+        }
+    }
+    return x
+}
+
+fun String.getSubStringIndexByActualLength(widthMax: Int): Int {
+    var index = 0
+    var currentLength = 0
+    this.forEach {
+        if (it.isChineseChar()) {
+            currentLength += 2
+        } else {
+            currentLength += 1
+        }
+        if (currentLength > widthMax) {
+            return@forEach
+        }
+        ++index
+    }
+    if (index < 2) {
+        index = 2
+    }
+    return index
+}
+
+fun Char.isChineseChar(): Boolean {
+    return this.toString().isChineseChar()
+}
+
+fun String.isChineseChar(): Boolean {
+    return this.matches(Regex("[\u4e00-\u9fa5]"))
+}
+
 
 object MiraiConsoleTerminalUI : MiraiConsoleUI {
     val cacheLogSize = 50
@@ -97,6 +142,65 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         botAdminCount[identity] = admins.size
     }
 
+    override fun createLoginSolver(): LoginSolver {
+        return object : LoginSolver() {
+            override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+                val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
+                withContext(Dispatchers.IO) {
+                    tempFile.createNewFile()
+                    pushLog(0, "[Login Solver]需要图片验证码登录, 验证码为 4 字母")
+                    try {
+                        tempFile.writeChannel().apply {
+                            writeFully(data)
+                            close()
+                        }
+                        pushLog(0, "请查看文件 ${tempFile.absolutePath}")
+                    } catch (e: Exception) {
+                        error("[Login Solver]验证码无法保存[Error0001]")
+                    }
+                }
+
+                var toLog = ""
+                tempFile.inputStream().use {
+                    val img = ImageIO.read(it)
+                    if (img == null) {
+                        toLog += "无法创建字符图片. 请查看文件\n"
+                    } else {
+                        toLog += img.createCharImg((terminal.terminalSize.columns / 1.5).toInt())
+                    }
+                }
+                pushLog(0, "$toLog[Login Solver]请输验证码. ${tempFile.absolutePath}")
+                return requestInput("[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!
+                    .takeUnless { it.isEmpty() || it.length != 4 }
+                    .also {
+                        pushLog(0, "[Login Solver]正在提交[$it]中...")
+                    }
+            }
+
+            override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+                pushLog(0, "[Login Solver]需要滑动验证码")
+                pushLog(0, "[Login Solver]请在任意浏览器中打开以下链接并完成验证码. ")
+                pushLog(0, "[Login Solver]完成后请输入任意字符 ")
+                pushLog(0, url)
+                return requestInput("[Login Solver]完成后请输入任意字符").also {
+                    pushLog(0, "[Login Solver]正在提交中")
+                }
+            }
+
+            override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+                pushLog(0, "[Login Solver]需要进行账户安全认证")
+                pushLog(0, "[Login Solver]该账户有[设备锁]/[不常用登陆地点]/[不常用设备登陆]的问题")
+                pushLog(0, "[Login Solver]完成以下账号认证即可成功登陆|理论本认证在mirai每个账户中最多出现1次")
+                pushLog(0, "[Login Solver]请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
+                pushLog(0, "[Login Solver]这步操作将在后续的版本中优化")
+                pushLog(0, url)
+                return requestInput("[Login Solver]完成后请输入任意字符").also {
+                    pushLog(0, "[Login Solver]正在提交中...")
+                }
+            }
+
+        }
+    }
 
     val log = ConcurrentHashMap<Long, LimitLinkedQueue<String>>().also {
         it[0L] = LimitLinkedQueue(cacheLogSize)
@@ -184,13 +288,17 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         var lastJob: Job? = null
         terminal.addResizeListener(TerminalResizeListener { terminal1: Terminal, newSize: TerminalSize ->
             lastJob = GlobalScope.launch {
-                delay(300)
-                if (lastJob == coroutineContext[Job]) {
-                    terminal.clearScreen()
-                    //inited = false
-                    update()
-                    redrawCommand()
-                    redrawLogs(log[screens[currentScreenId]]!!)
+                try {
+                    delay(300)
+                    if (lastJob == coroutineContext[Job]) {
+                        terminal.clearScreen()
+                        //inited = false
+                        update()
+                        redrawCommand()
+                        redrawLogs(log[screens[currentScreenId]]!!)
+                    }
+                } catch (e: Exception) {
+                    pushLog(0, "[UI ERROR] ${e.message}")
                 }
             }
         })
@@ -213,45 +321,53 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         System.setErr(System.out)
 
-        update()
+        try {
+            update()
+        } catch (e: Exception) {
+            pushLog(0, "[UI ERROR] ${e.message}")
+        }
 
         val charList = listOf(',', '.', '/', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '=', '+', '!', ' ')
         thread {
             while (true) {
-                var keyStroke: KeyStroke = terminal.readInput()
+                try {
+                    var keyStroke: KeyStroke = terminal.readInput()
 
-                when (keyStroke.keyType) {
-                    KeyType.ArrowLeft -> {
-                        currentScreenId =
-                            getLeftScreenId()
-                        clearRows(2)
-                        cleanPage()
-                        update()
-                    }
-                    KeyType.ArrowRight -> {
-                        currentScreenId =
-                            getRightScreenId()
-                        clearRows(2)
-                        cleanPage()
-                        update()
-                    }
-                    KeyType.Enter -> {
-                        provideInput(commandBuilder.toString())
-                        emptyCommand()
-                    }
-                    KeyType.Escape -> {
-                        exitProcess(0)
-                    }
-                    else -> {
-                        if (keyStroke.character != null) {
-                            if (keyStroke.character.toInt() == 8) {
-                                deleteCommandChar()
-                            }
-                            if (keyStroke.character.isLetterOrDigit() || charList.contains(keyStroke.character)) {
-                                addCommandChar(keyStroke.character)
+                    when (keyStroke.keyType) {
+                        KeyType.ArrowLeft -> {
+                            currentScreenId =
+                                getLeftScreenId()
+                            clearRows(2)
+                            cleanPage()
+                            update()
+                        }
+                        KeyType.ArrowRight -> {
+                            currentScreenId =
+                                getRightScreenId()
+                            clearRows(2)
+                            cleanPage()
+                            update()
+                        }
+                        KeyType.Enter -> {
+                            provideInput(commandBuilder.toString())
+                            emptyCommand()
+                        }
+                        KeyType.Escape -> {
+                            exitProcess(0)
+                        }
+                        else -> {
+                            if (keyStroke.character != null) {
+                                if (keyStroke.character.toInt() == 8) {
+                                    deleteCommandChar()
+                                }
+                                if (keyStroke.character.isLetterOrDigit() || charList.contains(keyStroke.character)) {
+                                    addCommandChar(keyStroke.character)
+                                }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    pushLog(0, "[UI ERROR] ${e.message}")
                 }
             }
         }
@@ -302,7 +418,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.GREEN
-        textGraphics.putString((width - mainTitle.length) / 2, 1, mainTitle, SGR.BOLD)
+        textGraphics.putString((width - mainTitle.actualLength()) / 2, 1, mainTitle, SGR.BOLD)
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         textGraphics.putString(2, 3, "-".repeat(width - 4))
@@ -317,15 +433,15 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         val leftName =
             getScreenName(getLeftScreenId())
         // clearRows(2)
-        textGraphics.putString((width - title.length) / 2 - "$leftName << ".length, 2, "$leftName << ")
+        textGraphics.putString((width - title.actualLength()) / 2 - "$leftName << ".length, 2, "$leftName << ")
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.YELLOW
-        textGraphics.putString((width - title.length) / 2, 2, title, SGR.BOLD)
+        textGraphics.putString((width - title.actualLength()) / 2, 2, title, SGR.BOLD)
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         val rightName =
             getScreenName(getRightScreenId())
-        textGraphics.putString((width + title.length) / 2 + 1, 2, ">> $rightName")
+        textGraphics.putString((width + title.actualLength()) / 2 + 1, 2, ">> $rightName")
     }
 
     fun drawMainFrame(
@@ -338,7 +454,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         clearRows(4)
         textGraphics.putString(2, 4, "|Online Bots: $onlineBotCount")
         textGraphics.putString(
-            width - 2 - "Powered By Mamoe Technologies|".length,
+            width - 2 - "Powered By Mamoe Technologies|".actualLength(),
             4,
             "Powered By Mamoe Technologies|"
         )
@@ -354,7 +470,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         clearRows(4)
         textGraphics.putString(2, 4, "|Admins: $adminCount")
-        textGraphics.putString(width - 2 - "Add admins via commands|".length, 4, "Add admins via commands|")
+        textGraphics.putString(width - 2 - "Add admins via commands|".actualLength(), 4, "Add admins via commands|")
     }
 
 
@@ -363,37 +479,49 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         fun drawLog(string: String, flush: Boolean = true) {
             val maxHeight = terminal.terminalSize.rows - 4
-            val heightNeed = (string.length / (terminal.terminalSize.columns - 6)) + 1
+            val heightNeed = (string.actualLength() / (terminal.terminalSize.columns - 6)) + 1
             if (heightNeed - 1 > maxHeight) {
+                pushLog(0, "[UI ERROR]: 您的屏幕太小, 有一条超长LOG无法显示")
                 return//拒绝打印
             }
             if (currentHeight + heightNeed > maxHeight) {
-                cleanPage()
+                cleanPage()//翻页
             }
-            val width = terminal.terminalSize.columns - 7
-            var x = string
-            while (true) {
-                if (x == "") break
-                val toWrite = if (x.length > width) {
-                    x.substring(0, width).also {
-                        x = x.substring(width)
-                    }
-                } else {
-                    x.also {
-                        x = ""
-                    }
+            if (string.contains("\n")) {
+                string.split("\n").forEach {
+                    drawLog(string, false)
                 }
-                try {
-                    textGraphics.foregroundColor = TextColor.ANSI.GREEN
-                    textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-                    textGraphics.putString(
-                        3,
-                        currentHeight, toWrite, SGR.ITALIC
-                    )
-                } catch (ignored: Exception) {
-                    //
+            } else {
+                val width = terminal.terminalSize.columns - 6
+                var x = string
+                while (true) {
+                    if (x == "") break
+                    val toWrite = if (x.actualLength() > width) {
+                        val index = x.getSubStringIndexByActualLength(width)
+                        x.substring(0, index).also {
+                            x = if (index < x.length) {
+                                x.substring(index)
+                            } else {
+                                ""
+                            }
+                        }
+                    } else {
+                        x.also {
+                            x = ""
+                        }
+                    }
+                    try {
+                        textGraphics.foregroundColor = TextColor.ANSI.GREEN
+                        textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
+                        textGraphics.putString(
+                            3,
+                            currentHeight, toWrite, SGR.ITALIC
+                        )
+                    } catch (ignored: Exception) {
+                        //
+                    }
+                    ++currentHeight
                 }
-                ++currentHeight
             }
             if (flush && terminal is SwingTerminalFrame) {
                 terminal.flush()
@@ -416,7 +544,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             var vara = 0
             val toPrint = mutableListOf<String>()
             toDraw.forEach {
-                val heightNeed = (it.length / (terminal.terminalSize.columns - 6)) + 1
+                val heightNeed = (it.actualLength() / (terminal.terminalSize.columns - 6)) + 1
                 vara += heightNeed
                 if (currentHeight + vara < terminal.terminalSize.rows - 4) {
                     logsToDraw++
@@ -491,13 +619,17 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             terminal.flush()
         } else {
             lastEmpty = GlobalScope.launch {
-                delay(100)
-                if (lastEmpty == coroutineContext[Job]) {
-                    terminal.clearScreen()
-                    //inited = false
-                    update()
-                    redrawCommand()
-                    redrawLogs(log[screens[currentScreenId]]!!)
+                try {
+                    delay(100)
+                    if (lastEmpty == coroutineContext[Job]) {
+                        terminal.clearScreen()
+                        //inited = false
+                        update()
+                        redrawCommand()
+                        redrawLogs(log[screens[currentScreenId]]!!)
+                    }
+                } catch (e: Exception) {
+                    pushLog(0, "[UI ERROR] ${e.message}")
                 }
             }
         }

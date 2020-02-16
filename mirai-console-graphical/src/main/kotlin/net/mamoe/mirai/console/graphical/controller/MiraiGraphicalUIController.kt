@@ -2,6 +2,7 @@ package net.mamoe.mirai.console.graphical.controller
 
 import javafx.application.Platform
 import javafx.stage.Modality
+import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleUI
@@ -9,6 +10,7 @@ import net.mamoe.mirai.console.graphical.model.BotModel
 import net.mamoe.mirai.console.graphical.model.ConsoleInfo
 import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
+import net.mamoe.mirai.utils.LoginSolver
 import tornadofx.Controller
 import tornadofx.Scope
 import tornadofx.find
@@ -16,6 +18,7 @@ import tornadofx.observableListOf
 
 class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
+    private val loginSolver = GraphicalLoginSolver()
     private val cache = mutableMapOf<Long, BotModel>()
     val mainLog = observableListOf<String>()
     val botList = observableListOf<BotModel>()
@@ -62,5 +65,21 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     override fun pushBotAdminStatus(identity: Long, admins: List<Long>) = Platform.runLater {
         cache[identity]?.admins?.setAll(admins)
+    }
+
+    override fun createLoginSolver(): LoginSolver = loginSolver
+}
+
+class GraphicalLoginSolver : LoginSolver() {
+    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

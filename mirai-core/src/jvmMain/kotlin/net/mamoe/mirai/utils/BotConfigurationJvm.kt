@@ -118,7 +118,7 @@ class DefaultLoginSolver(
 }
 
 // Copied from Ktor CIO
-private fun File.writeChannel(
+public fun File.writeChannel(
     coroutineContext: CoroutineContext = Dispatchers.IO
 ): ByteWriteChannel = GlobalScope.reader(CoroutineName("file-writer") + coroutineContext, autoFlush = true) {
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -134,7 +134,7 @@ private val loginSolverLock = Mutex()
 /**
  * @author NaturalHG
  */
-private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
+public fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
     val newHeight = (this.height * (outputWidth.toDouble() / this.width)).toInt()
     val tmp = this.getScaledInstance(outputWidth, newHeight, Image.SCALE_SMOOTH)
     val image = BufferedImage(outputWidth, newHeight, BufferedImage.TYPE_INT_ARGB)
