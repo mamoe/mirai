@@ -11,7 +11,6 @@ package net.mamoe.mirai.console
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.api.http.MiraiHttpAPIServer
 import net.mamoe.mirai.api.http.generateSessionKey
 import net.mamoe.mirai.console.plugins.PluginManager
@@ -19,7 +18,7 @@ import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
 import net.mamoe.mirai.console.plugins.withDefaultWriteSave
 import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.utils.SimpleLogger
+import net.mamoe.mirai.utils.*
 import java.io.File
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
@@ -46,12 +45,19 @@ object MiraiConsole {
 
     var path: String = System.getProperty("user.dir")
 
-    val version = "0.01"
-    var coreVersion = "0.15"
+    val version = "v0.01"
+    var coreVersion = "v0.15.1"
     val build = "Beta"
 
-    fun start() {
-        logger("Mirai-console [v$version $build | core version v$coreVersion] is still in testing stage, majority feature is available")
+    lateinit var frontEnd: MiraiConsoleUI
+    fun start(
+        frontEnd: MiraiConsoleUI
+    ) {
+        this.frontEnd = frontEnd
+        frontEnd.pushVersion(
+            version, build, coreVersion
+        )
+        logger("Mirai-console [$version $build | core version $coreVersion] is still in testing stage, majority feature is available")
         logger(
             "Mirai-console now running under " + System.getProperty(
                 "user.dir"
@@ -115,12 +121,47 @@ object MiraiConsole {
                     logger("[Bot Login]", 0, "login...")
                     try {
                         runBlocking {
-                            Bot(qqNumber, qqPassword).alsoLogin()
+                            frontEnd.prePushBot(qqNumber)
+                            val bot = Bot(qqNumber, qqPassword) {
+                                this.loginSolver = DefaultLoginSolver(object : LoginSolverInputReader {
+                                    override suspend fun read(question: String): String? {
+                                        return frontEnd.requestInput(question)
+                                    }
+                                },
+                                    SimpleLogger("Login Helper") { _, message, e ->
+                                        logger("[Login Helper]", qqNumber, message)
+                                        if (e != null) {
+                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                )
+                                this.botLoggerSupplier = {
+                                    SimpleLogger("BOT $qqNumber]") { _, message, e ->
+                                        logger("[BOT $qqNumber]", qqNumber, message)
+                                        if (e != null) {
+                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                                this.networkLoggerSupplier = {
+                                    SimpleLogger("BOT $qqNumber") { _, message, e ->
+                                        logger("[NETWORK]", qqNumber, message)//因为在一页 所以可以不打QQ
+                                        if (e != null) {
+                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                            }
+                            bot.login()
                             logger(
                                 "[Bot Login]",
                                 0,
                                 "$qqNumber login successes"
                             )
+                            frontEnd.pushBot(bot)
                         }
                     } catch (e: Exception) {
                         logger(
@@ -128,7 +169,6 @@ object MiraiConsole {
                             0,
                             "$qqNumber login failed -> " + e.message
                         )
-                        e.printStackTrace()
                     }
                     true
                 }
@@ -283,7 +323,7 @@ object MiraiConsole {
 
         operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
             if (any != null) {
-                MiraiConsoleUI.pushLog(identity, "$identityStr: $any")
+                frontEnd.pushLog(identity, "$identityStr: $any")
             }
         }
     }
@@ -299,19 +339,6 @@ object MiraiConsole {
 
     }
 
-}
-
-class MiraiConsoleLoader {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            MiraiConsoleUI.start()
-            MiraiConsole.start()
-            Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                MiraiConsole.stop()
-            })
-        }
-    }
 }
 
 
