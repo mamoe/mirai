@@ -1,6 +1,6 @@
 <div align="center">
  
-   <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo">
+   <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
    <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="logo">
     
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
