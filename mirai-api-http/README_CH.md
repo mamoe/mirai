@@ -461,14 +461,15 @@ Content-Type：multipart/form-data
 
 ```json5
 {
-    "type": "Image"
-    // 暂时不支持Image
+    "type": "Image",
+    "imageId": "{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png" //群图片格式
+    "imageId": "/f8f1ab55-bf8e-4236-b55e-955848d7069f"      //好友图片格式
 }
 ```
 
-| 名字 | 类型 | 说明 |
-| ---- | ---- | ---- |
-|      |      |      |
+| 名字    | 类型   | 说明                                    |
+| ------- | ------ | --------------------------------------- |
+| imageId | String | 图片的imageId，群图片与好友图片格式不同 |
 
 #### Xml
 
