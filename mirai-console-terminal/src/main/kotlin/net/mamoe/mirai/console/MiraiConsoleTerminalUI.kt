@@ -15,11 +15,13 @@ import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
 import kotlinx.coroutines.*
 import kotlinx.coroutines.io.close
 import kotlinx.io.core.IoBuffer
+import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.createCharImg
 import net.mamoe.mirai.utils.writeChannel
 import java.awt.Font
 import java.io.File
@@ -29,6 +31,7 @@ import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
+import javax.imageio.ImageIO
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
@@ -156,7 +159,17 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                         error("[Login Solver]验证码无法保存[Error0001]")
                     }
                 }
-                pushLog(0, "[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
+
+                var toLog = ""
+                tempFile.inputStream().use {
+                    val img = ImageIO.read(it)
+                    if (img == null) {
+                        toLog += "无法创建字符图片. 请查看文件\n"
+                    } else {
+                        toLog += img.createCharImg((terminal.terminalSize.columns / 1.5).toInt())
+                    }
+                }
+                pushLog(0, "$toLog[Login Solver]请输验证码. ${tempFile.absolutePath}")
                 return requestInput("[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!
                     .takeUnless { it.isEmpty() || it.length != 4 }
                     .also {
@@ -468,40 +481,47 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             val maxHeight = terminal.terminalSize.rows - 4
             val heightNeed = (string.actualLength() / (terminal.terminalSize.columns - 6)) + 1
             if (heightNeed - 1 > maxHeight) {
+                pushLog(0, "[UI ERROR]: 您的屏幕太小, 有一条超长LOG无法显示")
                 return//拒绝打印
             }
             if (currentHeight + heightNeed > maxHeight) {
-                cleanPage()
+                cleanPage()//翻页
             }
-            val width = terminal.terminalSize.columns - 6
-            var x = string
-            while (true) {
-                if (x == "") break
-                val toWrite = if (x.actualLength() > width) {
-                    val index = x.getSubStringIndexByActualLength(width)
-                    x.substring(0, index).also {
-                        x = if (index < x.length) {
-                            x.substring(index)
-                        } else {
-                            ""
+            if (string.contains("\n")) {
+                string.split("\n").forEach {
+                    drawLog(string, false)
+                }
+            } else {
+                val width = terminal.terminalSize.columns - 6
+                var x = string
+                while (true) {
+                    if (x == "") break
+                    val toWrite = if (x.actualLength() > width) {
+                        val index = x.getSubStringIndexByActualLength(width)
+                        x.substring(0, index).also {
+                            x = if (index < x.length) {
+                                x.substring(index)
+                            } else {
+                                ""
+                            }
+                        }
+                    } else {
+                        x.also {
+                            x = ""
                         }
                     }
-                } else {
-                    x.also {
-                        x = ""
+                    try {
+                        textGraphics.foregroundColor = TextColor.ANSI.GREEN
+                        textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
+                        textGraphics.putString(
+                            3,
+                            currentHeight, toWrite, SGR.ITALIC
+                        )
+                    } catch (ignored: Exception) {
+                        //
                     }
+                    ++currentHeight
                 }
-                try {
-                    textGraphics.foregroundColor = TextColor.ANSI.GREEN
-                    textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
-                    textGraphics.putString(
-                        3,
-                        currentHeight, toWrite, SGR.ITALIC
-                    )
-                } catch (ignored: Exception) {
-                    //
-                }
-                ++currentHeight
             }
             if (flush && terminal is SwingTerminalFrame) {
                 terminal.flush()
