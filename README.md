@@ -10,24 +10,9 @@
 Mirai 是一个在全平台下运行，提供QQ Android 和 TimPC 协议支持库与高效率的机器人框架
 
 这个项目的名字来源于
-       <div>
-                <a href = "http://www.kyotoanimation.co.jp/">京都动画</a>
-                            作品
-                <a href = "https://www.bilibili.com/bangumi/media/md3365/?from=search&seid=14448313700764690387">《境界的彼方》</a>
-                            的
-                <a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a>
-        </div>
-      
-       
-        <div>
-           
-                <a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>
-                的线下创作文化活动
-                <a href = "https://magicalmirai.com/2019/index_en.html">(Magical <b>Mirai</b>)</a>
-           
-      </div>
-       
-       图标以及形象由画师<a href = "">DazeCake</a>绘制
+     <p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>作品<a href = "https://www.bilibili.com/bangumi/media/md3365/?from=search&seid=14448313700764690387">《境界的彼方》</a>的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a></p>
+     <p><a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>的线下创作文化活动<a href = "https://magicalmirai.com/2019/index_en.html">(Magical <b>Mirai</b>)</a></p>
+图标以及形象由画师<a href = "">DazeCake</a>绘制
 </div>
 
 ## Mirai
