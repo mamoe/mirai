@@ -1,8 +1,8 @@
 <div align="center">
  
    <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
-   <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="logo">
-    
+   <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
+----
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Actions Status](https://github.com/mamoe/mirai/workflows/CI/badge.svg)](https://github.com/mamoe/mirai/actions)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
