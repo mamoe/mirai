@@ -477,25 +477,44 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         }
 
     /**
-     * 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent`
+     * 如果消息内容可由正则表达式匹配([Regex.matchEntire])
      */
     @MessageDsl
     fun matching(regex: Regex): ListeningFilter =
         content { regex.matchEntire(it) != null }
 
     /**
-     * 如果 [filter] 返回 `true` 就执行 `onEvent`
+     * 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent`
      */
     @MessageDsl
-    inline fun matching(regex: Regex, crossinline onEvent: MessageListener<T>): Listener<T> =
-        content({ regex.matchEntire(it) != null }, onEvent)
+    inline fun matching(regex: Regex, crossinline onEvent: @MessageDsl suspend T.(MatchResult) -> Unit): Listener<T> =
+        always {
+            val find = regex.matchEntire(it) ?: return@always
+            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
+            this.executeAndReply {
+                onEvent.invoke(this, find)
+            }
+        }
+
+    /**
+     * 如果消息内容可由正则表达式查找([Regex.find])
+     */
+    @MessageDsl
+    fun finding(regex: Regex): ListeningFilter =
+        content { regex.find(it) != null }
 
     /**
      * 如果消息内容可由正则表达式查找([Regex.find]), 就执行 `onEvent`
      */
     @MessageDsl
-    fun finding(regex: Regex): ListeningFilter =
-        content { regex.find(it) != null }
+    inline fun finding(regex: Regex, crossinline onEvent: @MessageDsl suspend T.(MatchResult) -> Unit): Listener<T> =
+        always {
+            val find = regex.find(it) ?: return@always
+            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
+            this.executeAndReply {
+                onEvent.invoke(this, find)
+            }
+        }
 
 
     /**
@@ -527,11 +546,14 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    inline infix fun Regex.matchingReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> =
-        content({ this@matchingReply.matchEntire(it) != null }, {
+    inline infix fun Regex.matchingReply(crossinline replier: @MessageDsl suspend T.(MatchResult) -> Any?): Listener<T> =
+        always {
+            val find = this@matchingReply.matchEntire(it) ?: return@always
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply(replier)
-        })
+            this.executeAndReply {
+                replier.invoke(this, find)
+            }
+        }
 
     /**
      * 若消息内容可由正则表达式查找([Regex.find]), 则执行 [replier] 并将其返回值回复给发信对象.
@@ -541,11 +563,14 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    inline infix fun Regex.findingReply(crossinline replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> =
-        content({ this@findingReply.find(it) != null }, {
+    inline infix fun Regex.findingReply(crossinline replier: @MessageDsl suspend T.(MatchResult) -> Any?): Listener<T> =
+        always {
+            val find = this@findingReply.find(it) ?: return@always
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply(replier)
-        })
+            this.executeAndReply {
+                replier.invoke(this, find)
+            }
+        }
 
     /**
      * 不考虑空格, 若消息内容以 [this] 开始则执行 [replier] 并将其返回值回复给发信对象.
