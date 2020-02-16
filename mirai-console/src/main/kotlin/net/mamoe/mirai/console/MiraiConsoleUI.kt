@@ -32,6 +32,13 @@ interface MiraiConsoleUI {
         bot: Bot
     )
 
+
+    fun pushVersion(
+        consoleVersion: String,
+        consoleBuild: String,
+        coreVersion: String
+    )
+
     /**
      * 让UI层提供一个Input
      * 这个Input 不 等于 Command
@@ -40,6 +47,7 @@ interface MiraiConsoleUI {
     suspend fun requestInput(
         question: String
     ): String
+
 
     /**
      * 让UI层更新BOT管理员的数据

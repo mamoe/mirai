@@ -44,6 +44,11 @@ import kotlin.system.exitProcess
 
 object MiraiConsoleTerminalUI : MiraiConsoleUI {
     val cacheLogSize = 50
+    var mainTitle = "Mirai Console v0.01 Core v0.15"
+
+    override fun pushVersion(consoleVersion: String, consoleBuild: String, coreVersion: String) {
+        mainTitle = "Mirai Console(Terminal) $consoleVersion $consoleBuild Core $coreVersion"
+    }
 
     override fun pushLog(identity: Long, message: String) {
         log[identity]!!.push(message)
@@ -70,7 +75,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     override suspend fun requestInput(question: String): String {
         requesting = true
         while (requesting) {
-            Thread.sleep(100)//不然会卡死 迷惑吧
+            delay(100)//不然会卡死 迷惑吧
         }
         return requestResult!!
     }
@@ -96,6 +101,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     val log = ConcurrentHashMap<Long, LimitLinkedQueue<String>>().also {
         it[0L] = LimitLinkedQueue(cacheLogSize)
     }
+
     val botAdminCount = ConcurrentHashMap<Long, Int>()
 
     private val screens = mutableListOf(0L)
@@ -294,7 +300,6 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         val height = terminal.terminalSize.rows
         terminal.setBackgroundColor(TextColor.ANSI.DEFAULT)
 
-        val mainTitle = "Mirai Console v0.01 Core v0.15"
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.GREEN
         textGraphics.putString((width - mainTitle.length) / 2, 1, mainTitle, SGR.BOLD)

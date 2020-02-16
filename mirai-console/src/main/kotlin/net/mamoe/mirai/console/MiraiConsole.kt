@@ -45,8 +45,8 @@ object MiraiConsole {
 
     var path: String = System.getProperty("user.dir")
 
-    val version = "0.01"
-    var coreVersion = "0.15"
+    val version = "v0.01"
+    var coreVersion = "v0.15.1"
     val build = "Beta"
 
     lateinit var frontEnd: MiraiConsoleUI
@@ -54,7 +54,10 @@ object MiraiConsole {
         frontEnd: MiraiConsoleUI
     ) {
         this.frontEnd = frontEnd
-        logger("Mirai-console [v$version $build | core version v$coreVersion] is still in testing stage, majority feature is available")
+        frontEnd.pushVersion(
+            version, build, coreVersion
+        )
+        logger("Mirai-console [$version $build | core version $coreVersion] is still in testing stage, majority feature is available")
         logger(
             "Mirai-console now running under " + System.getProperty(
                 "user.dir"
