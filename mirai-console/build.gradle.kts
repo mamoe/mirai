@@ -43,5 +43,7 @@ dependencies {
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
     api(group = "com.googlecode.lanterna", name = "lanterna", version = "3.0.2")
     api("org.bouncycastle:bcprov-jdk15on:1.64")
+
+    implementation("no.tornado:tornadofx:1.7.17")
     // classpath is not set correctly by IDE
 }
