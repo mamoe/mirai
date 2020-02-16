@@ -12,22 +12,24 @@ import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.io.close
+import kotlinx.io.core.IoBuffer
+import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.writeChannel
 import java.awt.Font
+import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
@@ -97,6 +99,52 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         botAdminCount[identity] = admins.size
     }
 
+    override fun createLoginSolver(): LoginSolver {
+        return object : LoginSolver() {
+            override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+                val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
+                withContext(Dispatchers.IO) {
+                    tempFile.createNewFile()
+                    pushLog(0, "[Login Solver]需要图片验证码登录, 验证码为 4 字母")
+                    try {
+                        tempFile.writeChannel().apply { writeFully(data); close() }
+                        pushLog(0, "将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
+                    } catch (e: Exception) {
+                        error("[Login Solver]验证码无法保存[Error0001]")
+                    }
+                }
+                pushLog(0, "[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
+                return requestInput("[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!.takeUnless { it.isEmpty() || it.length != 4 }
+                    .also {
+                        pushLog(0, "[Login Solver]正在提交[$it]中...")
+                    }
+            }
+
+            override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+                pushLog(0, "[Login Solver]需要滑动验证码")
+                pushLog(0, "[Login Solver]请在任意浏览器中打开以下链接并完成验证码. ")
+                pushLog(0, "[Login Solver]完成后请输入任意字符 ")
+                pushLog(0, url)
+                return requestInput("[Login Solver]完成后请输入任意字符").also {
+                    pushLog(0, "[Login Solver]正在提交中")
+                }
+            }
+
+
+            override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+                pushLog(0, "[Login Solver]需要进行账户安全认证")
+                pushLog(0, "[Login Solver]该账户有[设备锁]/[不常用登陆地点]/[不常用设备登陆]的问题")
+                pushLog(0, "[Login Solver]完成以下账号认证即可成功登陆|理论本认证在mirai每个账户中最多出现1次")
+                pushLog(0, "[Login Solver]请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
+                pushLog(0, "[Login Solver]这步操作将在后续的版本中优化")
+                pushLog(0, url)
+                return requestInput("[Login Solver]完成后请输入任意字符").also {
+                    pushLog(0, "[Login Solver]正在提交中...")
+                }
+            }
+
+        }
+    }
 
     val log = ConcurrentHashMap<Long, LimitLinkedQueue<String>>().also {
         it[0L] = LimitLinkedQueue(cacheLogSize)

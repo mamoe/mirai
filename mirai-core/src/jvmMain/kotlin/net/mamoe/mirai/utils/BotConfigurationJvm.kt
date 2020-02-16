@@ -118,7 +118,7 @@ class DefaultLoginSolver(
 }
 
 // Copied from Ktor CIO
-private fun File.writeChannel(
+public fun File.writeChannel(
     coroutineContext: CoroutineContext = Dispatchers.IO
 ): ByteWriteChannel = GlobalScope.reader(CoroutineName("file-writer") + coroutineContext, autoFlush = true) {
     @Suppress("BlockingMethodInNonBlockingContext")

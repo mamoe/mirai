@@ -1,6 +1,7 @@
 package net.mamoe.mirai.console
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.LoginSolver
 
 /**
  * 只需要实现一个这个 传入MiraiConsole 就可以绑定UI层与Console层
@@ -56,5 +57,10 @@ interface MiraiConsoleUI {
         identity: Long,
         admins: List<Long>
     )
+
+    /**
+     * 由UI层创建一个LoginSolver
+     */
+    fun createLoginSolver(): LoginSolver
 
 }
