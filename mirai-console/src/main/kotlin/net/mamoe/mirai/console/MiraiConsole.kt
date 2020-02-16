@@ -50,7 +50,11 @@ object MiraiConsole {
     var coreVersion = "0.15"
     val build = "Beta"
 
-    fun start() {
+    lateinit var frontEnd: MiraiConsoleUIFrontEnd
+    fun start(
+        frontEnd: MiraiConsoleUIFrontEnd
+    ) {
+        this.frontEnd = frontEnd
         logger("Mirai-console [v$version $build | core version v$coreVersion] is still in testing stage, majority feature is available")
         logger(
             "Mirai-console now running under " + System.getProperty(
@@ -283,7 +287,7 @@ object MiraiConsole {
 
         operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
             if (any != null) {
-                MiraiConsoleUI.pushLog(identity, "$identityStr: $any")
+                frontEnd.pushLog(identity, "$identityStr: $any")
             }
         }
     }
@@ -299,19 +303,6 @@ object MiraiConsole {
 
     }
 
-}
-
-class MiraiConsoleLoader {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            MiraiConsoleUI.start()
-            MiraiConsole.start()
-            Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                MiraiConsole.stop()
-            })
-        }
-    }
 }
 
 

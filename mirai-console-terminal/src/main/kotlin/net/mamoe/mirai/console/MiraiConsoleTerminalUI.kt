@@ -16,15 +16,18 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.mamoe.mirai.console.MiraiConsoleUI.LoggerDrawer.cleanPage
-import net.mamoe.mirai.console.MiraiConsoleUI.LoggerDrawer.drawLog
-import net.mamoe.mirai.console.MiraiConsoleUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
+import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
+import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
 import java.awt.Font
 import java.io.OutputStream
 import java.io.PrintStream
 import java.nio.charset.Charset
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
+import kotlin.system.exitProcess
 
 /**
  * 此文件不推荐任何人看
@@ -37,29 +40,38 @@ import kotlin.concurrent.thread
  *
  */
 
-@SuppressWarnings("UNCHECKED")
-object MiraiConsoleUI {
+object MiraiConsoleTerminalUI : MiraiConsoleUIFrontEnd {
     val cacheLogSize = 50
 
-    val log = mutableMapOf<Long, LimitLinkedQueue<String>>().also {
-        it[0L] =
-            LimitLinkedQueue(cacheLogSize)
-        it[2821869985L] =
-            LimitLinkedQueue(cacheLogSize)
+    override fun pushLog(identity: Long, message: String) {
+        log[identity]!!.offer(message)
+        if (identity == screens[currentScreenId]) {
+            drawLog(message)
+        }
     }
-    val botAdminCount = mutableMapOf<Long, Long>()
+
+    override fun prePushBot(identity: Long) {
+        log[identity] = LimitLinkedQueue(cacheLogSize)
+        botAdminCount[identity] = 0
+        screens.add(identity)
+    }
+
+    override fun pushBot(bot: Bot) {
+        //nothing to do
+    }
+
+    override fun pushBotAdminStatus(identity: Long, admins: List<Long>) {
+        botAdminCount[identity] = admins.size
+    }
 
 
-    private val screens = mutableListOf(0L, 2821869985L)
+    val log = mutableMapOf<Long, Queue<String>>().also {
+        it[0L] = LimitLinkedQueue(cacheLogSize)
+    }
+    val botAdminCount = mutableMapOf<Long, Int>()
+
+    private val screens = mutableListOf(0L)
     private var currentScreenId = 0
-
-
-    fun addBotScreen(uin: Long) {
-        screens.add(uin)
-        log[uin] =
-            LimitLinkedQueue(cacheLogSize)
-        botAdminCount[uin] = 0
-    }
 
 
     lateinit var terminal: Terminal
@@ -194,6 +206,9 @@ object MiraiConsoleUI {
                             commandBuilder.toString()
                         )
                         emptyCommand()
+                    }
+                    KeyType.Escape -> {
+                        exitProcess(0)
                     }
                     else -> {
                         if (keyStroke.character != null) {
@@ -360,33 +375,28 @@ object MiraiConsoleUI {
         }
 
 
-        fun redrawLogs(toDraw: List<String>) {
+        fun redrawLogs(toDraw: Queue<String>) {
             //this.cleanPage()
             currentHeight = 6
             var logsToDraw = 0
             var vara = 0
+            val toPrint = mutableListOf<String>()
             toDraw.forEach {
                 val heightNeed = (it.length / (terminal.terminalSize.columns - 6)) + 1
                 vara += heightNeed
                 if (currentHeight + vara < terminal.terminalSize.rows - 4) {
                     logsToDraw++
+                    toPrint.add(it)
                 } else {
                     return@forEach
                 }
             }
-            for (index in 0 until logsToDraw) {
-                drawLog(toDraw[logsToDraw - index - 1], false)
+            toPrint.reversed().forEach {
+                drawLog(it, false)
             }
             if (terminal is SwingTerminalFrame) {
                 terminal.flush()
             }
-        }
-    }
-
-    fun pushLog(uin: Long, str: String) {
-        log[uin]!!.push(str)
-        if (uin == screens[currentScreenId]) {
-            drawLog(str)
         }
     }
 
@@ -475,13 +485,14 @@ object MiraiConsoleUI {
     }
 }
 
+
 class LimitLinkedQueue<T>(
     val limit: Int = 50
-) : LinkedList<T>(), List<T> {
-    override fun push(e: T) {
+) : ConcurrentLinkedQueue<T>() {
+    override fun offer(e: T): Boolean {
         if (size >= limit) {
-            pollLast()
+            poll()
         }
-        super.push(e)
+        return super.offer(e)
     }
 }

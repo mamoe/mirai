@@ -14,7 +14,6 @@ interface MiraiConsoleUIFrontEnd {
      * identity：log所属的screen, Main=0; Bot=Bot.uin
      */
     fun pushLog(
-        identityString: String,
         identity: Long,
         message: String
     )
