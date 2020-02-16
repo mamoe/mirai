@@ -23,7 +23,7 @@ Mirai 是一个在全平台下运行，提供QQ Android 和 TimPC 协议支持�
         <ul>
             <li>
                 <a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>
-                线下创作文化的活动
+                的线下创作文化活动
                 <a href = "https://magicalmirai.com/2019/index_en.html">(Magical <b>Mirai</b>)</a>
             </li>
        </ul>
