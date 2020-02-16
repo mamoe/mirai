@@ -39,7 +39,22 @@ import kotlin.coroutines.EmptyCoroutineContext
 actual var defaultLoginSolver: LoginSolver = DefaultLoginSolver()
 
 
-internal class DefaultLoginSolver : LoginSolver() {
+interface LoginSolverInputReader{
+    suspend fun read(question:String):String?
+
+    suspend operator fun invoke(question: String):String?{
+        return read(question)
+    }
+}
+class DefaultLoginSolverInputReader: LoginSolverInputReader{
+    override suspend fun read(question: String): String? {
+        return readLine()
+    }
+}
+
+class DefaultLoginSolver(
+    val reader: LoginSolverInputReader = DefaultLoginSolverInputReader()
+) : LoginSolver() {
     override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? = loginSolverLock.withLock {
         val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
         withContext(Dispatchers.IO) {
@@ -62,7 +77,7 @@ internal class DefaultLoginSolver : LoginSolver() {
             }
         }
         bot.logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
-        return readLine()!!.takeUnless { it.isEmpty() || it.length != 4 }.also {
+                return reader("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!.takeUnless { it.isEmpty() || it.length != 4 }.also {
             bot.logger.info("正在提交[$it]中...")
         }
     }
@@ -72,7 +87,7 @@ internal class DefaultLoginSolver : LoginSolver() {
         bot.logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
         bot.logger.info("完成后请输入任意字符 ")
         bot.logger.info(url)
-        return readLine().also {
+        return reader("完成后请输入任意字符").also {
             bot.logger.info("正在提交中...")
         }
     }
@@ -84,7 +99,7 @@ internal class DefaultLoginSolver : LoginSolver() {
         bot.logger.info("请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
         bot.logger.info("这步操作将在后续的版本中优化")
         bot.logger.info(url)
-        return readLine().also {
+        return reader("完成后请输入任意字符").also {
             bot.logger.info("正在提交中...")
         }
     }

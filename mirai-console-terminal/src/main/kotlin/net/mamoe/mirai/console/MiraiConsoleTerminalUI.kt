@@ -25,6 +25,8 @@ import java.io.OutputStream
 import java.io.PrintStream
 import java.nio.charset.Charset
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
@@ -44,7 +46,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     val cacheLogSize = 50
 
     override fun pushLog(identity: Long, message: String) {
-        log[identity]!!.offer(message)
+        log[identity]!!.push(message)
         if (identity == screens[currentScreenId]) {
             drawLog(message)
         }
@@ -52,23 +54,49 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
     override fun prePushBot(identity: Long) {
         log[identity] = LimitLinkedQueue(cacheLogSize)
-        botAdminCount[identity] = 0
-        screens.add(identity)
     }
 
     override fun pushBot(bot: Bot) {
-        //nothing to do
+        botAdminCount[bot.uin] = 0
+        screens.add(bot.uin)
+        drawFrame(this.getScreenName(currentScreenId))
+        if (terminal is SwingTerminalFrame) {
+            terminal.flush()
+        }
     }
+
+    var requesting = false
+    var requestResult: String? = null
+    override suspend fun requestInput(question: String): String {
+        requesting = true
+        while (requesting) {
+            Thread.sleep(100)//不然会卡死 迷惑吧
+        }
+        return requestResult!!
+    }
+
+
+    fun provideInput(input: String) {
+        if (requesting) {
+            requestResult = input
+            requesting = false
+        } else {
+            MiraiConsole.CommandListener.commandChannel.offer(
+                commandBuilder.toString()
+            )
+        }
+    }
+
 
     override fun pushBotAdminStatus(identity: Long, admins: List<Long>) {
         botAdminCount[identity] = admins.size
     }
 
 
-    val log = mutableMapOf<Long, Queue<String>>().also {
+    val log = ConcurrentHashMap<Long, LimitLinkedQueue<String>>().also {
         it[0L] = LimitLinkedQueue(cacheLogSize)
     }
-    val botAdminCount = mutableMapOf<Long, Int>()
+    val botAdminCount = ConcurrentHashMap<Long, Int>()
 
     private val screens = mutableListOf(0L)
     private var currentScreenId = 0
@@ -202,9 +230,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                         update()
                     }
                     KeyType.Enter -> {
-                        MiraiConsole.CommandListener.commandChannel.offer(
-                            commandBuilder.toString()
-                        )
+                        provideInput(commandBuilder.toString())
                         emptyCommand()
                     }
                     KeyType.Escape -> {
@@ -333,6 +359,9 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         fun drawLog(string: String, flush: Boolean = true) {
             val maxHeight = terminal.terminalSize.rows - 4
             val heightNeed = (string.length / (terminal.terminalSize.columns - 6)) + 1
+            if (heightNeed - 1 > maxHeight) {
+                return//拒绝打印
+            }
             if (currentHeight + heightNeed > maxHeight) {
                 cleanPage()
             }
@@ -421,7 +450,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     private fun addCommandChar(
         c: Char
     ) {
-        if (commandBuilder.isEmpty() && c != '/') {
+        if (!requesting && commandBuilder.isEmpty() && c != '/') {
             addCommandChar('/')
         }
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
@@ -488,11 +517,11 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
 class LimitLinkedQueue<T>(
     val limit: Int = 50
-) : ConcurrentLinkedQueue<T>() {
-    override fun offer(e: T): Boolean {
+) : ConcurrentLinkedDeque<T>() {
+    override fun push(e: T) {
         if (size >= limit) {
-            poll()
+            this.pollLast()
         }
-        return super.offer(e)
+        return super.push(e)
     }
 }

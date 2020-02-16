@@ -7,9 +7,11 @@ class MiraiConsoleTerminalLoader {
         @JvmStatic
         fun main(args: Array<String>) {
             MiraiConsoleTerminalUI.start()
-            MiraiConsole.start(
-                MiraiConsoleTerminalUI
-            )
+            thread {
+                MiraiConsole.start(
+                    MiraiConsoleTerminalUI
+                )
+            }
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
             })

@@ -11,7 +11,6 @@ package net.mamoe.mirai.console
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.api.http.MiraiHttpAPIServer
 import net.mamoe.mirai.api.http.generateSessionKey
 import net.mamoe.mirai.console.plugins.PluginManager
@@ -19,7 +18,7 @@ import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
 import net.mamoe.mirai.console.plugins.withDefaultWriteSave
 import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.utils.SimpleLogger
+import net.mamoe.mirai.utils.*
 import java.io.File
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
@@ -119,12 +118,39 @@ object MiraiConsole {
                     logger("[Bot Login]", 0, "login...")
                     try {
                         runBlocking {
-                            Bot(qqNumber, qqPassword).alsoLogin()
+                            frontEnd.prePushBot(qqNumber)
+                            val bot = Bot(qqNumber, qqPassword) {
+                                this.loginSolver = DefaultLoginSolver(object : LoginSolverInputReader {
+                                    override suspend fun read(question: String): String? {
+                                        return frontEnd.requestInput(question)
+                                    }
+                                })
+                                this.botLoggerSupplier = {
+                                    SimpleLogger("BOT $qqNumber") { _, message, e ->
+                                        logger("[BOT $qqNumber]", qqNumber, message)
+                                        if (e != null) {
+                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                                this.networkLoggerSupplier = {
+                                    SimpleLogger("BOT $qqNumber") { _, message, e ->
+                                        logger("[NETWORK]", qqNumber, message)//因为在一页 所以可以不打QQ
+                                        if (e != null) {
+                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                            }
+                            bot.login()
                             logger(
                                 "[Bot Login]",
                                 0,
                                 "$qqNumber login successes"
                             )
+                            frontEnd.pushBot(bot)
                         }
                     } catch (e: Exception) {
                         logger(
@@ -132,7 +158,6 @@ object MiraiConsole {
                             0,
                             "$qqNumber login failed -> " + e.message
                         )
-                        e.printStackTrace()
                     }
                     true
                 }

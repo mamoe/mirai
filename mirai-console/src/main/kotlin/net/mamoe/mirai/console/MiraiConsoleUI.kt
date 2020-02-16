@@ -10,7 +10,7 @@ import net.mamoe.mirai.Bot
 interface MiraiConsoleUI {
     /**
      * 让UI层展示一条log
-     * identityString: log前面的prefix
+     *
      * identity：log所属的screen, Main=0; Bot=Bot.uin
      */
     fun pushLog(
@@ -33,10 +33,20 @@ interface MiraiConsoleUI {
     )
 
     /**
+     * 让UI层提供一个Input
+     * 这个Input 不 等于 Command
+     *
+     */
+    suspend fun requestInput(
+        question: String
+    ): String
+
+    /**
      * 让UI层更新BOT管理员的数据
      */
     fun pushBotAdminStatus(
         identity: Long,
         admins: List<Long>
     )
+
 }
