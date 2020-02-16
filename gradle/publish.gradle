@@ -65,12 +65,16 @@ bintrayUpload.dependsOn {
     list
 }
 
+try{
 
 // empty xxx-javadoc.jar
-task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-}
+    task javadocJar(type: Jar) {
+        archiveClassifier = 'javadoc'
+    }
 
+} catch (Exception e){
+
+}
 publishing {
     publications.all {
         // add empty javadocs (no need for MPP root publication which publishes only pom file)
