@@ -15,7 +15,6 @@ import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
 import kotlinx.coroutines.*
 import kotlinx.coroutines.io.close
 import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
@@ -43,6 +42,47 @@ import kotlin.system.exitProcess
  * @author NaturalHG
  *
  */
+
+fun String.actualLength(): Int {
+    var x = 0
+    this.forEach {
+        if (it.isChineseChar()) {
+            x += 2
+        } else {
+            x += 1
+        }
+    }
+    return x
+}
+
+fun String.getSubStringIndexByActualLength(widthMax: Int): Int {
+    var index = 0
+    var currentLength = 0
+    this.forEach {
+        if (it.isChineseChar()) {
+            currentLength += 2
+        } else {
+            currentLength += 1
+        }
+        if (currentLength > widthMax) {
+            return@forEach
+        }
+        ++index
+    }
+    if (index < 2) {
+        index = 2
+    }
+    return index
+}
+
+fun Char.isChineseChar(): Boolean {
+    return this.toString().isChineseChar()
+}
+
+fun String.isChineseChar(): Boolean {
+    return this.matches(Regex("[\u4e00-\u9fa5]"))
+}
+
 
 object MiraiConsoleTerminalUI : MiraiConsoleUI {
     val cacheLogSize = 50
@@ -365,7 +405,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.GREEN
-        textGraphics.putString((width - mainTitle.length) / 2, 1, mainTitle, SGR.BOLD)
+        textGraphics.putString((width - mainTitle.actualLength()) / 2, 1, mainTitle, SGR.BOLD)
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         textGraphics.putString(2, 3, "-".repeat(width - 4))
@@ -380,15 +420,15 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         val leftName =
             getScreenName(getLeftScreenId())
         // clearRows(2)
-        textGraphics.putString((width - title.length) / 2 - "$leftName << ".length, 2, "$leftName << ")
+        textGraphics.putString((width - title.actualLength()) / 2 - "$leftName << ".length, 2, "$leftName << ")
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.YELLOW
-        textGraphics.putString((width - title.length) / 2, 2, title, SGR.BOLD)
+        textGraphics.putString((width - title.actualLength()) / 2, 2, title, SGR.BOLD)
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         val rightName =
             getScreenName(getRightScreenId())
-        textGraphics.putString((width + title.length) / 2 + 1, 2, ">> $rightName")
+        textGraphics.putString((width + title.actualLength()) / 2 + 1, 2, ">> $rightName")
     }
 
     fun drawMainFrame(
@@ -401,7 +441,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         clearRows(4)
         textGraphics.putString(2, 4, "|Online Bots: $onlineBotCount")
         textGraphics.putString(
-            width - 2 - "Powered By Mamoe Technologies|".length,
+            width - 2 - "Powered By Mamoe Technologies|".actualLength(),
             4,
             "Powered By Mamoe Technologies|"
         )
@@ -417,7 +457,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         clearRows(4)
         textGraphics.putString(2, 4, "|Admins: $adminCount")
-        textGraphics.putString(width - 2 - "Add admins via commands|".length, 4, "Add admins via commands|")
+        textGraphics.putString(width - 2 - "Add admins via commands|".actualLength(), 4, "Add admins via commands|")
     }
 
 
@@ -426,20 +466,25 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         fun drawLog(string: String, flush: Boolean = true) {
             val maxHeight = terminal.terminalSize.rows - 4
-            val heightNeed = (string.length / (terminal.terminalSize.columns - 6)) + 1
+            val heightNeed = (string.actualLength() / (terminal.terminalSize.columns - 6)) + 1
             if (heightNeed - 1 > maxHeight) {
                 return//拒绝打印
             }
             if (currentHeight + heightNeed > maxHeight) {
                 cleanPage()
             }
-            val width = terminal.terminalSize.columns - 7
+            val width = terminal.terminalSize.columns - 6
             var x = string
             while (true) {
                 if (x == "") break
-                val toWrite = if (x.length > width) {
-                    x.substring(0, width).also {
-                        x = x.substring(width)
+                val toWrite = if (x.actualLength() > width) {
+                    val index = x.getSubStringIndexByActualLength(width)
+                    x.substring(0, index).also {
+                        x = if (index < x.length) {
+                            x.substring(index)
+                        } else {
+                            ""
+                        }
                     }
                 } else {
                     x.also {
@@ -479,7 +524,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             var vara = 0
             val toPrint = mutableListOf<String>()
             toDraw.forEach {
-                val heightNeed = (it.length / (terminal.terminalSize.columns - 6)) + 1
+                val heightNeed = (it.actualLength() / (terminal.terminalSize.columns - 6)) + 1
                 vara += heightNeed
                 if (currentHeight + vara < terminal.terminalSize.rows - 4) {
                     logsToDraw++
