@@ -39,6 +39,11 @@ description = "Java helper for Mirai"
 val mirai_japt_version: String by rootProject.ext
 version = mirai_japt_version
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 kotlin {
     sourceSets {
         all {
