@@ -7,6 +7,25 @@
 [![Actions Status](https://github.com/mamoe/mirai/workflows/CI/badge.svg)](https://github.com/mamoe/mirai/actions)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
+Mirai 是一个在全平台下运行，提供QQ Android 和 TimPC 协议支持库与高效率的机器人框架
+
+这个项目的名字和图标来源于
+        <ul>
+            <li>
+                <a href = "http://www.kyotoanimation.co.jp/">京都动画</a>
+                            作品
+                <a href = "https://www.bilibili.com/bangumi/media/md3365/?from=search&seid=14448313700764690387">《境界的彼方》</a>
+                            的
+                <a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a>
+            </li>
+            
+            <li>
+            
+            </li>
+        </ul>
+        
+        
+
 </div>
 
 ## Mirai
