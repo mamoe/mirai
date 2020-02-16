@@ -127,9 +127,17 @@ object MiraiConsole {
                                     override suspend fun read(question: String): String? {
                                         return frontEnd.requestInput(question)
                                     }
-                                })
+                                },
+                                    SimpleLogger("Login Helper") { _, message, e ->
+                                        logger("[Login Helper]", qqNumber, message)
+                                        if (e != null) {
+                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                )
                                 this.botLoggerSupplier = {
-                                    SimpleLogger("BOT $qqNumber") { _, message, e ->
+                                    SimpleLogger("BOT $qqNumber]") { _, message, e ->
                                         logger("[BOT $qqNumber]", qqNumber, message)
                                         if (e != null) {
                                             logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
