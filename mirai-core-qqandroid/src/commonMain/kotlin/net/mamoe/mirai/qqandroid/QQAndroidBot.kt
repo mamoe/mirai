@@ -88,10 +88,10 @@ internal abstract class QQAndroidBotBase constructor(
         }.groups.asSequence().map { it.groupUin.shl(32) and it.groupCode }
     }
 
-    override suspend fun queryGroupInfo(id: Long): GroupInfo = network.run {
+    override suspend fun queryGroupInfo(groupCode: Long): GroupInfo = network.run {
         TroopManagement.GetGroupInfo(
             client = bot.client,
-            groupCode = id
+            groupCode = groupCode
         ).sendAndExpect<GroupInfoImpl>(retry = 2)
     }
 
