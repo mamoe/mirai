@@ -22,17 +22,17 @@
         MAC_OS  -> listOf("Graphical","Terminal","WebPanel","Pure") 
         Linux   -> listOf("Terminal","Pure")
         ANDROID -> listOf("Android","Pure","WebPanel") 
-        else -> listOf("Pure") 
+        else    -> listOf("Pure") 
     }      
 ```
 3: 以策略区分
 ```kotlin
     return when(task){
-        体验 -> listOf("Graphical","Terminal","WebPanel","Android","Pure")
-        测试插件 -> listOf("Pure") 
-        调试插件 -> byOperatingSystem() 
+        体验         -> listOf("Graphical","Terminal","WebPanel","Android","Pure")
+        测试插件      -> listOf("Pure") 
+        调试插件      -> byOperatingSystem() 
         Linux稳定挂机 -> listOf("Terminal","Pure") 
-        else -> listOf("Pure") 
+        else         -> listOf("Pure") 
     }      
 ```
 
