@@ -2,7 +2,7 @@
 你可以全平台运行Mirai高效率机器人框架
 ### Mirai Console提供了5个版本以满足各种需要
 
-|  name    | type |
+|  名字    | 介绍 |
 | --- | --- |
 | Mirai-Console-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
 | Mirai-Console-Terminal  |  (UNIX)Terminal环境 提供简介好用的富文本控制台 |
