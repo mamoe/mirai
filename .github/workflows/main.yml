@@ -16,8 +16,8 @@ jobs:
         java-version: 11
         # The package type (jre, jdk, jdk+fx)
         java-package: jdk+fx
-    - name: setup-android
-      uses: msfjarvis/setup-android@0.2
+    - name: Gradle Command
+      uses: eskatos/gradle-command-action@v1
       with:
-        # Gradle tasks to run - If you want to run ./gradlew assemble, specify assemble here. 
-        gradleTasks: build -x mirai-core:jvmTest
+        # Gradle command line arguments, see gradle --help
+        arguments: build -x mirai-core:jvmTest
