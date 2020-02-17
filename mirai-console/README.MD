@@ -10,6 +10,7 @@
 | Mirai-Console-Android   |  安卓APP (TODO) |
 | Mirai-Console-Graphical  |  JavaFX的图形化界面, 有Native版本(.jar/.exe/.dmg) |
 | Mirai-Console-WebPanel  |   Web Panel操作(TODO) |
+| Mirai-Console-Ios   |  IOS APP (TODO) |
 
 
 
@@ -22,6 +23,7 @@
         MAC_OS  -> listOf("Graphical","Terminal","WebPanel","Pure") 
         LINUX   -> listOf("Terminal","Pure")
         ANDROID -> listOf("Android","Pure","WebPanel") 
+        IOS     -> listOf("Ios") 
         else    -> listOf("Pure") 
     }      
 ```
