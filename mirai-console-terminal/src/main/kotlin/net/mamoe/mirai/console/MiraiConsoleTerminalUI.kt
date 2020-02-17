@@ -227,19 +227,6 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         hasStart = true
         val defaultTerminalFactory = DefaultTerminalFactory(internalPrinter, System.`in`, Charset.defaultCharset())
-
-        val fontSize = 12
-        defaultTerminalFactory
-            .setInitialTerminalSize(
-                TerminalSize(
-                    101, 60
-                )
-            )
-            .setTerminalEmulatorFontConfiguration(
-                SwingTerminalFontConfiguration.newInstance(
-                    Font("Monospaced", Font.PLAIN, fontSize)
-                )
-            )
         try {
             terminal = defaultTerminalFactory.createTerminal()
             terminal.enterPrivateMode()
@@ -353,7 +340,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                             emptyCommand()
                         }
                         KeyType.Escape -> {
-                            exitProcess(0)
+                            exit()
                         }
                         else -> {
                             if (keyStroke.character != null) {
@@ -648,6 +635,16 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             }
         }
         redrawLogs(log[screens[currentScreenId]]!!)
+    }
+
+    fun exit() {
+        try {
+            terminal.exitPrivateMode()
+            terminal.close()
+            exitProcess(0)
+        } catch (ignored: Exception) {
+
+        }
     }
 }
 

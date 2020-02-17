@@ -49,6 +49,8 @@ object MiraiConsole {
     var coreVersion = "v0.15.1"
     val build = "Beta"
 
+    var allDown = false
+
     lateinit var frontEnd: MiraiConsoleUI
     fun start(
         frontEnd: MiraiConsoleUI
@@ -80,6 +82,14 @@ object MiraiConsole {
 
     fun stop() {
         PluginManager.disableAllPlugins()
+        allDown = true
+        try {
+            bots.forEach {
+                it.get()?.close()
+            }
+        } catch (ignored: Exception) {
+
+        }
     }
 
     object HTTPAPIAdaptar {
@@ -287,6 +297,9 @@ object MiraiConsole {
         }
 
         tailrec fun processNextCommandLine() {
+            if (allDown) {
+                return
+            }
             var fullCommand = commandChannel.poll()
             if (fullCommand != null) {
                 if (!fullCommand.startsWith("/")) {

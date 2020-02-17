@@ -2,7 +2,6 @@ package net.mamoe.mirai.console.graphical.view
 
 import javafx.scene.control.TabPane
 import javafx.stage.Modality
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import tornadofx.*
 
