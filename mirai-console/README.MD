@@ -20,7 +20,7 @@
     return when(operatingSystem){
         WINDOWS -> listOf("Graphical","WebPanel","Pure")
         MAC_OS  -> listOf("Graphical","Terminal","WebPanel","Pure") 
-        Linux   -> listOf("Terminal","Pure")
+        LINUX   -> listOf("Terminal","Pure")
         ANDROID -> listOf("Android","Pure","WebPanel") 
         else    -> listOf("Pure") 
     }      
@@ -31,7 +31,7 @@
         体验         -> listOf("Graphical","Terminal","WebPanel","Android","Pure")
         测试插件      -> listOf("Pure") 
         调试插件      -> byOperatingSystem() 
-        Linux稳定挂机 -> listOf("Terminal","Pure") 
+        UNIX稳定挂机 -> listOf("Terminal","Pure") 
         else         -> listOf("Pure") 
     }      
 ```
