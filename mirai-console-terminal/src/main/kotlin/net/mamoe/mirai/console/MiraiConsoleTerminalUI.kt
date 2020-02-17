@@ -643,7 +643,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             terminal.close()
             exitProcess(0)
         } catch (ignored: Exception) {
-            exitProcess(0)
+
         }
     }
 }

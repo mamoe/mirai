@@ -83,8 +83,12 @@ object MiraiConsole {
     fun stop() {
         PluginManager.disableAllPlugins()
         allDown = true
-        bots.forEach {
-            it.get()?.close()
+        try {
+            bots.forEach {
+                it.get()?.close()
+            }
+        } catch (ignored: Exception) {
+
         }
     }
 

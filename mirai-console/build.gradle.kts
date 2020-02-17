@@ -7,7 +7,6 @@ plugins {
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
-
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
@@ -25,7 +24,7 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
     manifest {
-        attributes["Main-Class"] = "net.mamoe.mirai.console.MiraiConsoleUIPureLoader"
+        attributes["Main-Class"] = "net.mamoe.mirai.console.MiraiConsolePureLoader"
     }
 }
 

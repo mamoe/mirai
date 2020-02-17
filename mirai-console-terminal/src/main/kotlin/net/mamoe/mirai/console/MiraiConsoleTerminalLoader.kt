@@ -12,7 +12,7 @@ class MiraiConsoleTerminalLoader {
                 ).toLowerCase().contains("windows")
             ) {
                 println("[MiraiConsoleTerminalLoader]: 将以Pure[兼容模式]启动Console")
-                MiraiConsole.start(MiraiConsoleUIPure)
+                MiraiConsole.start(MiraiConsoleUIPure())
             } else {
                 MiraiConsoleTerminalUI.start()
                 thread {
