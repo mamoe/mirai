@@ -353,7 +353,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                             emptyCommand()
                         }
                         KeyType.Escape -> {
-                            exitProcess(0)
+                            exit()
                         }
                         else -> {
                             if (keyStroke.character != null) {
@@ -648,6 +648,12 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             }
         }
         redrawLogs(log[screens[currentScreenId]]!!)
+    }
+
+    fun exit() {
+        terminal.exitPrivateMode()
+        terminal.close()
+        exitProcess(0)
     }
 }
 

@@ -23,6 +23,7 @@ class MiraiConsoleTerminalLoader {
             }
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
+                MiraiConsoleTerminalUI.exit()
             })
         }
     }
