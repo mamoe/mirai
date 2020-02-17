@@ -28,6 +28,8 @@ import kotlin.contracts.contract
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
+ *
+ * @see CoroutineScope.incoming
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
@@ -49,6 +51,8 @@ inline fun <R> CoroutineScope.subscribeMessages(crossinline listeners: MessageSu
 
 /**
  * 订阅来自所有 [Bot] 的所有群消息事件
+ *
+ * @see CoroutineScope.incoming
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
@@ -65,6 +69,8 @@ inline fun <R> CoroutineScope.subscribeGroupMessages(crossinline listeners: Mess
 
 /**
  * 订阅来自所有 [Bot] 的所有好友消息事件
+ *
+ * @see CoroutineScope.incoming
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
@@ -81,6 +87,8 @@ inline fun <R> CoroutineScope.subscribeFriendMessages(crossinline listeners: Mes
 
 /**
  * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
+ *
+ * @see CoroutineScope.incoming
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
@@ -97,6 +105,8 @@ inline fun <R> Bot.subscribeMessages(crossinline listeners: MessageSubscribersBu
 
 /**
  * 订阅来自这个 [Bot] 的所有群消息事件
+ *
+ * @see CoroutineScope.incoming
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
@@ -113,6 +123,8 @@ inline fun <R> Bot.subscribeGroupMessages(crossinline listeners: MessageSubscrib
 
 /**
  * 订阅来自这个 [Bot] 的所有好友消息事件.
+ *
+ * @see CoroutineScope.incoming
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
@@ -131,6 +143,10 @@ inline fun <R> Bot.subscribeFriendMessages(crossinline listeners: MessageSubscri
  * 返回一个指定事件的接收通道
  *
  * @param capacity 同 [Channel] 的参数, 参见 [Channel.Factory] 中的常量.
+ *
+ * @see subscribeFriendMessages
+ * @see subscribeMessages
+ * @see subscribeGroupMessages
  */
 inline fun <reified E : Event> CoroutineScope.incoming(capacity: Int = Channel.RENDEZVOUS): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
