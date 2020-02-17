@@ -90,6 +90,15 @@ internal object EventListenerManager {
 
     private val lock = atomic(false)
 
+    private fun setLockValue(value: Boolean) {
+        lock.value = value
+    }
+
+    @Suppress("BooleanLiteralArgument")
+    private fun trySetLockTrue(): Boolean {
+        return lock.compareAndSet(false, true)
+    }
+
     @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
     internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
         registries.forEach {
@@ -97,10 +106,10 @@ internal object EventListenerManager {
                 return it.listeners as EventListeners<E>
             }
         }
-        if (lock.compareAndSet(false, true)) {
+        if (trySetLockTrue()) {
             val registry = Registry(clazz, EventListeners())
             registries.addLast(registry)
-            lock.value = false
+            setLockValue(false)
             return registry.listeners as EventListeners<E>
         }
         return get(clazz)
