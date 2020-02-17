@@ -13,7 +13,7 @@ jobs:
       uses: actions/setup-java@v1.3.0
       with:
         # The Java version to make available on the path. Takes a whole or semver Java version, or 1.x syntax (e.g. 1.8 => Java 8.x)
-        java-version: 1.8
+        java-version: 11
         # The package type (jre, jdk, jdk+fx)
         java-package: jdk+fx
     - name: setup-android
