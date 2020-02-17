@@ -227,19 +227,6 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         hasStart = true
         val defaultTerminalFactory = DefaultTerminalFactory(internalPrinter, System.`in`, Charset.defaultCharset())
-
-        val fontSize = 12
-        defaultTerminalFactory
-            .setInitialTerminalSize(
-                TerminalSize(
-                    101, 60
-                )
-            )
-            .setTerminalEmulatorFontConfiguration(
-                SwingTerminalFontConfiguration.newInstance(
-                    Font("Monospaced", Font.PLAIN, fontSize)
-                )
-            )
         try {
             terminal = defaultTerminalFactory.createTerminal()
             terminal.enterPrivateMode()
