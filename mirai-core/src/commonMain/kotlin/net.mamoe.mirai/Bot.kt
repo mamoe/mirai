@@ -33,7 +33,7 @@ import kotlin.jvm.JvmStatic
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
  * Mirai 为多账号设计, 可同时维护多个机器人.
  *
- * 注: Bot 为全协程实现, 没有其他任务时若不使用 [awaitDisconnection], 主线程将会退出.
+ * 注: Bot 为全协程实现, 没有其他任务时若不使用 [join], 主线程将会退出.
  *
  * @see Contact
  */
@@ -44,7 +44,8 @@ abstract class Bot : CoroutineScope {
          * 复制一份此时的 [Bot] 实例列表.
          */
         @JvmStatic
-        val instances: List<WeakRef<Bot>> get() = BotImpl.instances.toList()
+        val instances: List<WeakRef<Bot>>
+            get() = BotImpl.instances.toList()
 
         /**
          * 遍历每一个 [Bot] 实例
@@ -57,6 +58,14 @@ abstract class Bot : CoroutineScope {
         @JvmStatic
         fun instanceWhose(qq: Long): Bot = BotImpl.instanceWhose(qq = qq)
     }
+
+    /**
+     * [Bot] 运行的 [Context].
+     *
+     * 在 JVM 的默认实现为 `class ContextImpl : Context`
+     * 在 Android 实现为 `android.content.Context`
+     */
+    abstract val context: Context
 
     /**
      * 账号信息
@@ -135,7 +144,9 @@ abstract class Bot : CoroutineScope {
     abstract val groups: ContactList<Group>
 
     /**
-     * 获取一个机器人加入的群. 若没有这个群, 则会抛出异常 [NoSuchElementException]
+     * 获取一个机器人加入的群.
+     *
+     * @throws NoSuchElementException 当不存在这个群时
      */
     fun getGroup(id: Long): Group {
         return groups.delegate.getOrNull(id)
@@ -143,21 +154,23 @@ abstract class Bot : CoroutineScope {
     }
 
     /**
-     * 获取群列表. 返回值前 32 bits 为 uin, 后 32 bits 为 groupCode
+     * 向服务器查询群列表. 返回值前 32 bits 为 uin, 后 32 bits 为 groupCode
      */
     abstract suspend fun queryGroupList(): Sequence<Long>
 
     /**
-     * 查询群资料. 获得的仅为当前时刻的资料.
+     * 向服务器查询群资料. 获得的仅为当前时刻的资料.
      * 请优先使用 [getGroup] 然后查看群资料.
      */
-    abstract suspend fun queryGroupInfo(id: Long): GroupInfo
+    abstract suspend fun queryGroupInfo(groupCode: Long): GroupInfo
 
     /**
-     * 查询群成员列表.
+     * 向服务器查询群成员列表.
      * 请优先使用 [getGroup], [Group.members] 查看群成员.
      *
      * 这个函数很慢. 请不要频繁使用.
+     *
+     * @see Group.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
      */
     abstract suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo>
 
@@ -175,7 +188,10 @@ abstract class Bot : CoroutineScope {
     /**
      * 挂起直到 [Bot] 下线.
      */
-    suspend inline fun awaitDisconnection() = network.awaitDisconnection()
+    suspend inline fun join() = network.join()
+
+    @Deprecated("使用 join()", ReplaceWith("this.join()"), level = DeprecationLevel.HIDDEN)
+    suspend inline fun awaitDisconnection() = join()
 
     /**
      * 登录, 或重新登录.
@@ -220,6 +236,8 @@ abstract class Bot : CoroutineScope {
      * 注: 不可重新登录. 必须重新实例化一个 [Bot].
      *
      * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
+     *
+     * @see closeAndJoin
      */
     abstract fun close(cause: Throwable? = null)
 
@@ -242,6 +260,18 @@ abstract class Bot : CoroutineScope {
         download().use { input -> input.transferTo(output) }
 
     // endregion
+}
+
+/**
+ * 关闭这个 [Bot], 停止一切相关活动. 所有引用都会被释放.
+ *
+ * 注: 不可重新登录. 必须重新实例化一个 [Bot].
+ *
+ * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
+ */
+suspend inline fun Bot.closeAndJoin(cause: Throwable? = null) {
+    close(cause)
+    coroutineContext[Job]?.join()
 }
 
 inline fun Bot.containsFriend(id: Long): Boolean = this.qqs.contains(id)

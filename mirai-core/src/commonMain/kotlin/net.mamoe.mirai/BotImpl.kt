@@ -32,6 +32,7 @@ import kotlin.coroutines.CoroutineContext
 @UseExperimental(MiraiExperimentalAPI::class)
 @MiraiInternalAPI
 abstract class BotImpl<N : BotNetworkHandler> constructor(
+    context: Context,
     account: BotAccount,
     val configuration: BotConfiguration
 ) : Bot(), CoroutineScope {
@@ -39,6 +40,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     override val coroutineContext: CoroutineContext =
         configuration.parentCoroutineContext + botJob + (configuration.parentCoroutineContext[CoroutineExceptionHandler]
             ?: CoroutineExceptionHandler { _, e -> logger.error("An exception was thrown under a coroutine of Bot", e) })
+    override val context: Context by context.unsafeWeakRef()
 
     @Suppress("CanBePrimaryConstructorProperty") // for logger
     final override val account: BotAccount = account

@@ -547,5 +547,5 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         super.close(cause)
     }
 
-    override suspend fun awaitDisconnection() = supervisor.join()
+    override suspend fun join() = supervisor.join()
 }

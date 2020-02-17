@@ -9,9 +9,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: setup-android
-      uses: msfjarvis/setup-android@0.2
+    - name: Setup Java JDK
+      uses: actions/setup-java@v1.3.0
       with:
-        # Gradle tasks to run - If you want to run ./gradlew assemble, specify assemble here. 
-        gradleTasks: build -x mirai-core:jvmTest
-    
+        # The Java version to make available on the path. Takes a whole or semver Java version, or 1.x syntax (e.g. 1.8 => Java 8.x)
+        java-version: 11
+        # The package type (jre, jdk, jdk+fx)
+        java-package: jdk+fx
+    - name: Gradle Command
+      uses: eskatos/gradle-command-action@v1
+      with:
+        # Gradle command line arguments, see gradle --help
+        arguments: build -x mirai-core:jvmTest

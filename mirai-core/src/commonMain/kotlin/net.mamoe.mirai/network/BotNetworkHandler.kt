@@ -80,9 +80,10 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 
     /**
-     * 等待直到与服务器断开连接. 若未连接则立即返回
+     * 当 [Bot] 正常运作时, 这个函数将一直挂起协程到 [Bot] 被 [Bot.close]
+     * 当 [Bot] 离线时, 这个函数立即返回.
      */
-    abstract suspend fun awaitDisconnection()
+    abstract suspend fun join()
 
     /**
      * 关闭网络接口, 停止所有有关协程和任务
