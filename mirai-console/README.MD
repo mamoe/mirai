@@ -1,6 +1,7 @@
 # Mirai Console
 你可以在全平台运行Mirai高效率机器人框架
 ### Mirai Console提供了5个版本以满足各种需要
+#### 所有版本的Mirai Console API相同 插件系统相同
 
 |  名字    | 介绍 |
 | --- | --- |
@@ -9,6 +10,7 @@
 | Mirai-Console-Android   |  安卓APP (TODO) |
 | Mirai-Console-Graphical  |  JavaFX的图形化界面, 有Native版本(.jar/.exe/.dmg) |
 | Mirai-Console-WebPanel  |   Web Panel操作(TODO) |
+
 
 
 ### 如何选择版本
