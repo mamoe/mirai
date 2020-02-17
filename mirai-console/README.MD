@@ -31,7 +31,7 @@
         体验         -> listOf("Graphical","Terminal","WebPanel","Android","Pure")
         测试插件      -> listOf("Pure") 
         调试插件      -> byOperatingSystem() 
-        UNIX稳定挂机 -> listOf("Terminal","Pure") 
+        稳定挂机      -> listOf("Terminal","Pure") 
         else         -> listOf("Pure") 
     }      
 ```
