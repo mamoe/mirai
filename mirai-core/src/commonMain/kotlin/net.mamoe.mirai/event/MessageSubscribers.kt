@@ -129,9 +129,11 @@ inline fun <R> Bot.subscribeFriendMessages(crossinline listeners: MessageSubscri
 
 /**
  * 返回一个指定事件的接收通道
+ *
+ * @param capacity 同 [Channel] 的参数, 参见 [Channel.Factory] 中的常量.
  */
-inline fun <reified E : Event> Bot.incoming(): ReceiveChannel<E> {
-    return Channel<E>(8).apply {
+inline fun <reified E : Event> CoroutineScope.incoming(capacity: Int = Channel.RENDEZVOUS): ReceiveChannel<E> {
+    return Channel<E>(capacity).apply {
         subscribeAlways<E> {
             send(this)
         }
