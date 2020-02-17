@@ -176,7 +176,7 @@ suspend fun main() {
 
     }
 
-    bot.network.awaitDisconnection()//等到直到断开连接
+    bot.join()//等到直到断开连接
 }
 
 private fun newTestTempFile(filename: String = "${UUID.randomUUID()}", suffix: String = ".tmp"): File =
