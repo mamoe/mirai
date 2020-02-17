@@ -1,6 +1,14 @@
 # Mirai Console
-#### Mirai Console allows you to run Mirai in command lines/terminal.
-#### 你可以终端中或命令行环境下运行在Mirai
+你可以全平台运行Mirai高效率机器人框架
+### Mirai Console提供了4个版本以满足各种需要
+#### MiraiConsole-Pure
+#### 最纯净版的Mirai-Console   CLI环境 通过标准输入与标准输出 交互
+#### Mirai-Console-Terminal   (UNIX)Terminal环境 提供简介好用的富文本控制台
+#### Mirai-Console-Android    安卓APP (TODO)
+#### Mirai-Console-Graphical  JavaFX的图形化界面, 有Native版本(.jar/.exe/.dmg)
+#### Mirai-Console-WebPanel   Web Panel操作(TODO)
+
+### 如何选择版本
 <br>
 
 #### More Importantly, Mirai Console support <b>Plugins</b>, tells the bot what to do
