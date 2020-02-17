@@ -6,11 +6,20 @@ class MiraiConsoleTerminalLoader {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            MiraiConsoleTerminalUI.start()
-            thread {
-                MiraiConsole.start(
-                    MiraiConsoleTerminalUI
-                )
+            if (args.contains("pure") || args.contains("-pure") || System.getProperty(
+                    "os.name",
+                    ""
+                ).toLowerCase().contains("windows")
+            ) {
+                println("[MiraiConsoleTerminalLoader]: 将以Pure[兼容模式]启动Console")
+                MiraiConsole.start(MiraiConsoleUIPure)
+            } else {
+                MiraiConsoleTerminalUI.start()
+                thread {
+                    MiraiConsole.start(
+                        MiraiConsoleTerminalUI
+                    )
+                }
             }
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()

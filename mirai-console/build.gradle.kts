@@ -23,6 +23,11 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
+    manifest {
+        attributes["Main-Class"] = "net.mamoe.mirai.console.MiraiConsoleUIPureLoader"
+    }
+}
 
 
 dependencies {
