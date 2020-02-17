@@ -4,7 +4,7 @@
 
 |  name    | type |
 | --- | --- |
-| MiraiConsole-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
+| Mirai-Console-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
 | Mirai-Console-Terminal  |  (UNIX)Terminal环境 提供简介好用的富文本控制台 |
 | Mirai-Console-Android   |  安卓APP (TODO) |
 | Mirai-Console-Graphical  |  JavaFX的图形化界面, 有Native版本(.jar/.exe/.dmg) |
