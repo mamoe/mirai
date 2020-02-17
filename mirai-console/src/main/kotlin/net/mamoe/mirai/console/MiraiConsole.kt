@@ -80,6 +80,9 @@ object MiraiConsole {
 
     fun stop() {
         PluginManager.disableAllPlugins()
+        bots.forEach {
+            it.get()?.close()
+        }
     }
 
     object HTTPAPIAdaptar {
