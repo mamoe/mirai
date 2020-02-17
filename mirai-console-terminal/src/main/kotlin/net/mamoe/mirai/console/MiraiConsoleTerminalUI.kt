@@ -638,9 +638,13 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     }
 
     fun exit() {
-        terminal.exitPrivateMode()
-        terminal.close()
-        exitProcess(0)
+        try {
+            terminal.exitPrivateMode()
+            terminal.close()
+            exitProcess(0)
+        } catch (ignored: Exception) {
+            exitProcess(0)
+        }
     }
 }
 
