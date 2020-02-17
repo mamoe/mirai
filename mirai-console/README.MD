@@ -1,5 +1,5 @@
 # Mirai Console
-你可以全平台运行Mirai高效率机器人框架
+你可以在全平台运行Mirai高效率机器人框架
 ### Mirai Console提供了5个版本以满足各种需要
 
 |  名字    | 介绍 |
