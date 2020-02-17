@@ -14,7 +14,7 @@
 
 
 ### 如何选择版本
-1:  Mirai-Console-Pure 兼容性最高, 在其他都表现不佳的时候请使用
+1:  Mirai-Console-Pure 兼容性最高, 在其他都表现不佳的时候请使用</br>
 2:  以系统区分
 ```kotlin
     return when(operatingSystem){
