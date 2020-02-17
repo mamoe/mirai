@@ -236,6 +236,8 @@ abstract class Bot : CoroutineScope {
      * 注: 不可重新登录. 必须重新实例化一个 [Bot].
      *
      * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
+     *
+     * @see closeAndJoin
      */
     abstract fun close(cause: Throwable? = null)
 
@@ -258,6 +260,18 @@ abstract class Bot : CoroutineScope {
         download().use { input -> input.transferTo(output) }
 
     // endregion
+}
+
+/**
+ * 关闭这个 [Bot], 停止一切相关活动. 所有引用都会被释放.
+ *
+ * 注: 不可重新登录. 必须重新实例化一个 [Bot].
+ *
+ * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
+ */
+suspend inline fun Bot.closeAndJoin(cause: Throwable? = null) {
+    close(cause)
+    coroutineContext[Job]?.join()
 }
 
 inline fun Bot.containsFriend(id: Long): Boolean = this.qqs.contains(id)
