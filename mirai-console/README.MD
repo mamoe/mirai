@@ -14,7 +14,28 @@
 
 
 ### 如何选择版本
-<br>
+1:  Mirai-Console-Pure 兼容性最高, 在其他都表现不佳的时候请使用
+2:  以系统区分
+```kotlin
+    return when(operatingSystem){
+        WINDOWS -> listOf("Graphical","WebPanel","Pure")
+        MAC_OS  -> listOf("Graphical","Terminal","WebPanel","Pure") 
+        Linux   -> listOf("Terminal","Pure")
+        ANDROID -> listOf("Android","Pure","WebPanel") 
+        else -> listOf("Pure") 
+    }      
+```
+3: 以策略区分
+```kotlin
+    return when(task){
+        体验 -> listOf("Graphical","Terminal","WebPanel","Android","Pure")
+        测试插件 -> listOf("Pure") 
+        调试插件 -> byOperatingSystem() 
+        Linux稳定挂机 -> listOf("Terminal","Pure") 
+        else -> listOf("Pure") 
+    }      
+```
+
 
 #### More Importantly, Mirai Console support <b>Plugins</b>, tells the bot what to do
 #### Mirai Console 支持插件系统, 你可以自己开发或使用公开的插件来逻辑化机器人, 如群管
