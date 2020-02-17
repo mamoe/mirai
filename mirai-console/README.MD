@@ -1,6 +1,6 @@
 # Mirai Console
 你可以在全平台运行Mirai高效率机器人框架
-### Mirai Console提供了5个版本以满足各种需要
+### Mirai Console提供了6个版本以满足各种需要
 #### 所有版本的Mirai Console API相同 插件系统相同
 
 |  名字    | 介绍 |
