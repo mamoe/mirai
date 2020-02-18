@@ -300,7 +300,7 @@ object MiraiConsole {
             if (allDown) {
                 return
             }
-            var fullCommand = commandChannel.poll()
+            var fullCommand = commandChannel.take(1)[0]
             if (fullCommand != null) {
                 if (!fullCommand.startsWith("/")) {
                     fullCommand = "/$fullCommand"
