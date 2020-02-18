@@ -65,11 +65,11 @@ try{
             println("jdk版本为 "+ javaVersionNum)
             include(':mirai-console-graphical')
         } else {
-            println("当前使用的 JDK 版本为 ${System.getProperty("java.version")}, 最低需要 JDK 11 才能引入模块 `:mirai-debug`")
+            println("当前使用的 JDK 版本为 ${System.getProperty("java.version")}, 最低需要 JDK 11 才能引入模块 `:mirai-console-graphical`")
         }
     }
 }catch(Exception ignored){
-
+    println("无法确定 JDK 版本, 将不会引入 `:mirai-console-graphical`")
 }
 
 enableFeaturePreview('GRADLE_METADATA')
