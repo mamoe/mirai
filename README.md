@@ -55,7 +55,11 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅
 本模块还未完善。
 
 ## Use as a library
-**mirai-core 为独立设计, 可以作为库内置于任意 Java(JVM)/Android 项目中使用.**   
+**mirai-core 为独立设计, 可以作为库内置于任意 Java(JVM)/Android 项目中使用.**
+
+请将 `VERSION` 替换为最新的版本(如 `0.15.0`):
+[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+**Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
 ### Maven
 Kotlin 在 Maven 上只支持 JVM 平台.
@@ -86,10 +90,6 @@ repositories{
 ```
 若您需要使用在跨平台项目, 则要对各个目标平台添加不同的依赖，这与 kotlin 相关多平台库的依赖是类似的。  
 **若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.**
-
-请将 `VERSION` 替换为最新的版本(如 `0.15.0`):
-[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
-**Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
 **注意：**
 Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。  
