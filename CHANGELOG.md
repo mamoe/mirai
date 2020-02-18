@@ -7,6 +7,9 @@
 ### mirai-core
 - 尝试修复 `atomicfu` 编译错误的问题
 
+### mirai-core-qqandroid
+- 查询群信息失败后重试
+
 ## `0.15.1` 2020/2/15
 
 ### mirai-core
