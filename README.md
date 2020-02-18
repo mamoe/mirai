@@ -71,7 +71,7 @@ Kotlin 在 Maven 上只支持 JVM 平台.
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core-qqandroid-jvm</artifactId>
+        <artifactId>mirai-core-qqandroid</artifactId>
         <version>0.15.1</version> <!-- 替换版本为最新版本 -->
     </dependency>
 </dependencies>
@@ -85,7 +85,7 @@ repositories{
 }
 ```
 若您需要使用在跨平台项目, 则要对各个目标平台添加不同的依赖，这与 kotlin 相关多平台库的依赖是类似的。  
-**若您只需要使用在单一平台, 则只需要添加一项该平台的依赖. 如只在 JVM 运行则只需要`-jvm`的依赖**  
+**若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.**
 
 请将 `VERSION` 替换为最新的版本(如 `0.15.0`):
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
@@ -96,13 +96,13 @@ Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。
 只添加 API 模块将无法正常工作。  
 现在只推荐使用 QQAndroid 协议，请参照下文选择对应目标平台的依赖添加。
 
+**jvm** (JVM 平台)
+```kotlin
+implementation("net.mamoe:mirai-core-qqandroid:VERSION")
+```
 **common** (通用平台)
 ```kotlin
 implementation("net.mamoe:mirai-core-qqandroid-common:VERSION")
-```
-**jvm** (JVM 平台)
-```kotlin
-implementation("net.mamoe:mirai-core-qqandroid-jvm:VERSION")
 ```
 **android** (Android 平台)
 ```kotlin
