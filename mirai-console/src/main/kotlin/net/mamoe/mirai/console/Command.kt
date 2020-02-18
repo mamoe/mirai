@@ -124,7 +124,7 @@ class CommandBuilder internal constructor() {
     }
 }
 
-fun buildCommand(builder: CommandBuilder.() -> Unit): ICommand {
+fun registerCommand(builder: CommandBuilder.() -> Unit): ICommand {
     return CommandBuilder().apply(builder).register()
 }
 
