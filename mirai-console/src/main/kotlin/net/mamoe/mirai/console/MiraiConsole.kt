@@ -117,7 +117,7 @@ object MiraiConsole {
      */
     object DefaultCommands {
         operator fun invoke() {
-            buildCommand {
+            registerCommand {
                 name = "login"
                 description = "Mirai-Console default bot login command"
                 onCommand {
@@ -170,7 +170,7 @@ object MiraiConsole {
                 }
             }
 
-            buildCommand {
+            registerCommand {
                 name = "status"
                 description = "Mirai-Console default status command"
                 onCommand {
@@ -197,7 +197,7 @@ object MiraiConsole {
             }
 
 
-            buildCommand {
+            registerCommand {
                 name = "say"
                 description = "Mirai-Console default say command"
                 onCommand {
@@ -236,7 +236,7 @@ object MiraiConsole {
             }
 
 
-            buildCommand {
+            registerCommand {
                 name = "plugins"
                 alias = listOf("plugin")
                 description = "show all plugins"
@@ -251,7 +251,7 @@ object MiraiConsole {
                 }
             }
 
-            buildCommand {
+            registerCommand {
                 name = "command"
                 alias = listOf("commands", "help", "helps")
                 description = "show all commands"
@@ -266,7 +266,7 @@ object MiraiConsole {
                 }
             }
 
-            buildCommand {
+            registerCommand {
                 name = "about"
                 description = "About Mirai-Console"
                 onCommand {
