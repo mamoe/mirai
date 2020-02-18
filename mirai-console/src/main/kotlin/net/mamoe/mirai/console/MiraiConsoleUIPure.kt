@@ -4,6 +4,7 @@ import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.LoginSolverInputReader
 import kotlin.concurrent.thread
 
 class MiraiConsoleUIPure() : MiraiConsoleUI {
@@ -55,7 +56,13 @@ class MiraiConsoleUIPure() : MiraiConsoleUI {
     }
 
     override fun createLoginSolver(): LoginSolver {
-        return DefaultLoginSolver()
+        return DefaultLoginSolver(
+            reader = object : LoginSolverInputReader {
+                override suspend fun read(question: String): String? {
+                    return requestInput(question)
+                }
+            }
+        )
     }
 
 }
