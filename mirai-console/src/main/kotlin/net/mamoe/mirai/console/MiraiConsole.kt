@@ -130,37 +130,35 @@ object MiraiConsole {
                     val qqPassword = it[1]
                     logger("[Bot Login]", 0, "login...")
                     try {
-                        runBlocking {
-                            frontEnd.prePushBot(qqNumber)
-                            val bot = Bot(qqNumber, qqPassword) {
-                                this.loginSolver = frontEnd.createLoginSolver()
-                                this.botLoggerSupplier = {
-                                    SimpleLogger("BOT $qqNumber]") { _, message, e ->
-                                        logger("[BOT $qqNumber]", qqNumber, message)
-                                        if (e != null) {
-                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
-                                            e.printStackTrace()
-                                        }
-                                    }
-                                }
-                                this.networkLoggerSupplier = {
-                                    SimpleLogger("BOT $qqNumber") { _, message, e ->
-                                        logger("[NETWORK]", qqNumber, message)//因为在一页 所以可以不打QQ
-                                        if (e != null) {
-                                            logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
-                                            e.printStackTrace()
-                                        }
+                        frontEnd.prePushBot(qqNumber)
+                        val bot = Bot(qqNumber, qqPassword) {
+                            this.loginSolver = frontEnd.createLoginSolver()
+                            this.botLoggerSupplier = {
+                                SimpleLogger("BOT $qqNumber]") { _, message, e ->
+                                    logger("[BOT $qqNumber]", qqNumber, message)
+                                    if (e != null) {
+                                        logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                        e.printStackTrace()
                                     }
                                 }
                             }
-                            bot.login()
-                            logger(
-                                "[Bot Login]",
-                                0,
-                                "$qqNumber login successes"
-                            )
-                            frontEnd.pushBot(bot)
+                            this.networkLoggerSupplier = {
+                                SimpleLogger("BOT $qqNumber") { _, message, e ->
+                                    logger("[NETWORK]", qqNumber, message)//因为在一页 所以可以不打QQ
+                                    if (e != null) {
+                                        logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
+                                        e.printStackTrace()
+                                    }
+                                }
+                            }
                         }
+                        bot.login()
+                        logger(
+                            "[Bot Login]",
+                            0,
+                            "$qqNumber login successes"
+                        )
+                        frontEnd.pushBot(bot)
                     } catch (e: Exception) {
                         logger(
                             "[Bot Login]",
