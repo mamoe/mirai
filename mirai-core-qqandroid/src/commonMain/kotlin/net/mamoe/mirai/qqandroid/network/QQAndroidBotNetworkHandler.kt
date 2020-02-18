@@ -216,7 +216,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                 troopListData.groups.forEach { troopNum ->
                     launch {
-                        try {
+
+                    try {
                             bot.groups.delegate.addLast(
                                 @Suppress("DuplicatedCode")
                                 GroupImpl(

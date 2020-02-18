@@ -7,6 +7,9 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.message.data
@@ -14,13 +17,18 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.utils.io.chunkedHexToBytes
+import kotlin.js.JsName
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
 /**
  * 自定义表情 (收藏的表情), 图片
  */
 sealed class Image : Message {
     companion object Key : Message.Key<Image> {
+        @JvmStatic
+        @JsName("fromId")
         @JvmName("fromId")
         operator fun invoke(imageId: String): Image = when (imageId.length) {
             37 -> NotOnlineImageFromFile(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f

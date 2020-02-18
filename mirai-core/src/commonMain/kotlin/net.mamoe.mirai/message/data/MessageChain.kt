@@ -7,6 +7,9 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.NullMessageChain.toString
@@ -14,6 +17,9 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.js.JsName
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 import kotlin.jvm.Volatile
 import kotlin.reflect.KProperty
 
@@ -35,10 +41,12 @@ interface MessageChain : Message, MutableList<Message> {
     override fun followedBy(tail: Message): MessageChain
     // endregion
 
+    @JvmSynthetic
     operator fun plusAssign(message: Message) {
         this.followedBy(message)
     }
 
+    @JvmSynthetic // make java user happier
     operator fun plusAssign(plain: String) {
         this.plusAssign(plain.toMessage())
     }
@@ -53,7 +61,7 @@ interface MessageChain : Message, MutableList<Message> {
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
 
     override fun eq(other: Message): Boolean {
-        if(other is MessageChain && other.size != this.size)
+        if (other is MessageChain && other.size != this.size)
             return false
         return this.toString() == other.toString()
     }
@@ -67,13 +75,16 @@ inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, p
 /**
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 8
  */
-@JsName("emptyMessageChain")
+@JvmName("newChain")
+@JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(): MessageChain = EmptyMessageChain()
 
 /**
  * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 [initialCapacity]
  */
+@JvmName("newChain")
+@JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(initialCapacity: Int): MessageChain =
     if (initialCapacity == 0) EmptyMessageChain()
@@ -83,6 +94,8 @@ fun MessageChain(initialCapacity: Int): MessageChain =
  * 构造 [MessageChain]
  * 若仅提供一个参数, 请考虑使用 [Message.toChain] 以优化性能
  */
+@JvmName("newChain")
+@JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(vararg messages: Message): MessageChain =
     if (messages.isEmpty()) EmptyMessageChain()
@@ -91,6 +104,8 @@ fun MessageChain(vararg messages: Message): MessageChain =
 /**
  * 构造 [MessageChain]
  */
+@JvmName("newChain")
+@JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(messages: Iterable<Message>): MessageChain =
     MessageChainImpl(messages.toMutableList())
@@ -106,6 +121,8 @@ fun MessageChain(messages: Iterable<Message>): MessageChain =
  *
  * @see Message.toChain receiver 模式
  */
+@JvmName("newSingleMessageChain")
+@JsName("newChain")
 @MiraiExperimentalAPI
 @UseExperimental(ExperimentalContracts::class)
 @Suppress("FunctionName")
@@ -301,7 +318,7 @@ internal inline class MessageChainImpl constructor(
     constructor(vararg messages: Message) : this(messages.toMutableList())
 
     // region Message override
-    override fun toString(): String =  this.delegate.joinToString("") { it.toString() }
+    override fun toString(): String = this.delegate.joinToString("") { it.toString() }
 
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
     override fun followedBy(tail: Message): MessageChain {
@@ -352,6 +369,7 @@ internal inline class SingleMessageChainImpl(
 
     // region Message override
     override operator fun contains(sub: String): Boolean = delegate.contains(sub)
+
     override fun followedBy(tail: Message): MessageChain {
         require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
         return if (tail is MessageChain) tail.apply { followedBy(delegate) }

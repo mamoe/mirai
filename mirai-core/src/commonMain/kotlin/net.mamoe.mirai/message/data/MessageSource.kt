@@ -7,7 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 package net.mamoe.mirai.message.data
+
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * 消息源, 用于被引用. 它将由协议模块实现.
@@ -18,7 +24,7 @@ package net.mamoe.mirai.message.data
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  */
 interface MessageSource : Message {
-    companion object : Message.Key<MessageSource>
+    companion object Key : Message.Key<MessageSource>
 
     /**
      * 实际上是个随机数, 但服务器确实是用它当做 uid
