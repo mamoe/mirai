@@ -1,9 +1,15 @@
 plugins {
     id("kotlinx-serialization")
+    id("org.openjfx.javafxplugin") version "0.0.8"
     id("kotlin")
     id("java")
 }
 
+javafx {
+    version = "11"
+    modules = listOf("javafx.controls")
+    //mainClassName = "Application"
+}
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
