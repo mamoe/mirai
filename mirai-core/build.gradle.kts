@@ -8,8 +8,6 @@ plugins {
     id("com.jfrog.bintray") version "1.8.4-jetbrains-3"
 }
 
-apply(from = rootProject.file("gradle/publish.gradle"))
-
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
