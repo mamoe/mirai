@@ -94,7 +94,7 @@ publishing {
                 it.artifactId = "$project.name-common"
                 break
             case 'jvm':
-                it.artifactId = "${project.name.replace("-jvm", "")}"
+                it.artifactId = "$project.name-jvm"
                 break
             case 'js':
             case 'native':
