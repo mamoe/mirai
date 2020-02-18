@@ -215,12 +215,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
 
                 troopListData.groups.forEach { troopNum ->
-                    launch {
-
-                    try {
+                    suspend fun loadGroup() {
+                        tryNTimesOrException(3) {
                             bot.groups.delegate.addLast(
                                 @Suppress("DuplicatedCode")
-                                GroupImpl(
+                                (GroupImpl(
                                     bot = bot,
                                     coroutineContext = bot.coroutineContext,
                                     id = troopNum.groupCode,
@@ -242,12 +241,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                         this.delegate.groupCode = troopNum.groupCode
                                     },
                                     members = bot.queryGroupMemberList(troopNum.groupUin, troopNum.groupCode, troopNum.dwGroupOwnerUin)
-                                )
+                                ))
                             )
-                        } catch (e: Exception) {
+                        }?.let {
                             logger.error("群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试")
-                            logger.error(e)
+                            logger.error(it)
+                            this@QQAndroidBotNetworkHandler.launch {
+                                delay(10_000)
+                                loadGroup()
+                            }
                         }
+                    }
+                    launch {
+                        loadGroup()
                     }
                 }
                 logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
