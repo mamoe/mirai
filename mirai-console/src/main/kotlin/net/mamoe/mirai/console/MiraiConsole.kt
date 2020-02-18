@@ -9,20 +9,20 @@ package net.mamoe.mirai.console
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.api.http.MiraiHttpAPIServer
 import net.mamoe.mirai.api.http.generateSessionKey
+import net.mamoe.mirai.console.MiraiConsole.CommandListener.processNextCommandLine
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
 import net.mamoe.mirai.console.plugins.withDefaultWriteSave
 import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.util.*
-import java.util.concurrent.LinkedBlockingQueue
-import kotlin.concurrent.thread
 
 
 object MiraiConsole {
@@ -288,20 +288,19 @@ object MiraiConsole {
         }
     }
 
-    object CommandListener {
-        val commandChannel: Queue<String> = LinkedBlockingQueue<String>()
-        fun start() {
-            thread {
-                processNextCommandLine()
-            }
+    object CommandListener : Job by {
+        GlobalScope.launch(start = CoroutineStart.LAZY) {
+            processNextCommandLine()
         }
+    }() {
+        val commandChannel: Channel<String> = Channel()
 
-        tailrec fun processNextCommandLine() {
+        suspend fun processNextCommandLine() {
             if (allDown) {
                 return
             }
-            var fullCommand = commandChannel.poll()
-            if (fullCommand != null) {
+            for (command in commandChannel) {
+                var fullCommand = command
                 if (!fullCommand.startsWith("/")) {
                     fullCommand = "/$fullCommand"
                 }
@@ -309,7 +308,6 @@ object MiraiConsole {
                     logger("未知指令 $fullCommand")
                 }
             }
-            processNextCommandLine();
         }
     }
 

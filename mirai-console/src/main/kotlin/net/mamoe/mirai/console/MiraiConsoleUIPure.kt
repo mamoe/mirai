@@ -1,25 +1,28 @@
 package net.mamoe.mirai.console
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.LoginSolverInputReader
 import kotlin.concurrent.thread
 
-class MiraiConsoleUIPure() : MiraiConsoleUI {
+class MiraiConsoleUIPure : MiraiConsoleUI {
     var requesting = false
     var requestStr = ""
 
     init {
         thread {
             while (true) {
-                val input = readLine() ?: ""
+                val input = readLine() ?: return@thread
                 if (requesting) {
                     requestStr = input
                     requesting = false
                 } else {
-                    MiraiConsole.CommandListener.commandChannel.offer(input)
+                    runBlocking {
+                        MiraiConsole.CommandListener.commandChannel.send(input)
+                    }
                 }
             }
         }

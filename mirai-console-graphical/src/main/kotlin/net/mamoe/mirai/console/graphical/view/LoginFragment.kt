@@ -1,7 +1,7 @@
 package net.mamoe.mirai.console.graphical.view
 
-import com.jfoenix.controls.JFXTextField
 import javafx.beans.property.SimpleStringProperty
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxPasswordfield
@@ -24,7 +24,9 @@ class LoginFragment : Fragment() {
             }
         }
         jfxButton("登录").action {
-            controller.login(qq.value, psd.value)
+            runBlocking {
+                controller.login(qq.value, psd.value)
+            }
             close()
         }
     }
