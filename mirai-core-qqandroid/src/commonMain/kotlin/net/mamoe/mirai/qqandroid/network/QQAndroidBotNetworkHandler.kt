@@ -215,7 +215,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
 
                 troopListData.groups.forEach { troopNum ->
-                    suspend fun loadGroup() {
+                    // 别用 fun, 别 val, 编译失败警告
+                    lateinit var loadGroup: suspend () -> Unit
+
+                    loadGroup = suspend {
                         tryNTimesOrException(3) {
                             bot.groups.delegate.addLast(
                                 @Suppress("DuplicatedCode")
@@ -251,6 +254,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                 loadGroup()
                             }
                         }
+                        Unit // 别删, 编译失败警告
                     }
                     launch {
                         loadGroup()
