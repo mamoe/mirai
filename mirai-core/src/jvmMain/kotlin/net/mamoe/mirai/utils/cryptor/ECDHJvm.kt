@@ -77,6 +77,7 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     }
 
     actual fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray {
+        if (!isECDHAvailable) return keyPair.initialShareKey
         return calculateShareKey(keyPair.privateKey, peerPublicKey)
     }
 
