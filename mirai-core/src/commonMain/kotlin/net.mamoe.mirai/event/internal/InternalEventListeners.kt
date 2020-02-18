@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.event.internal
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
@@ -79,6 +78,13 @@ internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventLis
 
 internal class EventListeners<E : Event> : LockFreeLinkedList<Listener<E>>()
 
+internal expect class MiraiAtomicBoolean(initial: Boolean) {
+
+    fun compareAndSet(expect: Boolean, update: Boolean): Boolean
+
+    var value: Boolean
+}
+
 /**
  * 管理每个事件 class 的 [EventListeners].
  * [EventListeners] 是 lazy 的: 它们只会在被需要的时候才创建和存储.
@@ -88,16 +94,8 @@ internal object EventListenerManager {
 
     private val registries = LockFreeLinkedList<Registry<*>>()
 
-    private val lock = atomic(false)
-
-    private fun setLockValue(value: Boolean) {
-        lock.value = value
-    }
-
-    @Suppress("BooleanLiteralArgument")
-    private fun trySetLockTrue(): Boolean {
-        return lock.compareAndSet(false, true)
-    }
+    // 不要用 atomicfu. 在 publish 后会出现 VerifyError
+    private val lock: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
     internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
@@ -106,10 +104,10 @@ internal object EventListenerManager {
                 return it.listeners as EventListeners<E>
             }
         }
-        if (trySetLockTrue()) {
+        if (lock.compareAndSet(false, true)) {
             val registry = Registry(clazz, EventListeners())
             registries.addLast(registry)
-            setLockValue(false)
+            lock.value = false
             return registry.listeners as EventListeners<E>
         }
         return get(clazz)
