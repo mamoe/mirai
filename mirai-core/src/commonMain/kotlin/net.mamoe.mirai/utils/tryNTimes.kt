@@ -10,6 +10,7 @@
 package net.mamoe.mirai.utils
 
 @MiraiInternalAPI
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 expect fun Throwable.addSuppressed(e: Throwable)
 
 @MiraiInternalAPI
