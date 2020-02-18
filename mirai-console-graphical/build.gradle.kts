@@ -1,9 +1,15 @@
 plugins {
     id("kotlinx-serialization")
+    id("org.openjfx.javafxplugin") version "0.0.8"
     id("kotlin")
     id("java")
 }
 
+javafx {
+    version = "11"
+    modules = listOf("javafx.controls")
+    //mainClassName = "Application"
+}
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
@@ -29,6 +35,7 @@ dependencies {
     api(project(":mirai-console"))
     runtimeOnly(files("../mirai-core-qqandroid/build/classes/kotlin/jvm/main"))
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
+    api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
     api("org.bouncycastle:bcprov-jdk15on:1.64")
     // classpath is not set correctly by IDE
 }

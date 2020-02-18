@@ -28,8 +28,10 @@ import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.qqandroid.Bot
 import net.mamoe.mirai.qqandroid.QQAndroid
 import net.mamoe.mirai.utils.FileBasedDeviceInfo
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.io.File
 
+@MiraiInternalAPI
 private fun readTestAccount(): BotAccount? {
     val file = File("testAccount.txt")
     if (!file.exists() || !file.canRead()) {
@@ -59,7 +61,7 @@ suspend fun main() {
     bot.messageDSL()
     directlySubscribe(bot)
 
-    bot.network.awaitDisconnection()//等到直到断开连接
+    bot.join()//等到直到断开连接
 }
 
 /**
