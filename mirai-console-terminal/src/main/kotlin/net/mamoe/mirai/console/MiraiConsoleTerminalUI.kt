@@ -10,7 +10,6 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
 import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
-import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
 import kotlinx.coroutines.*
 import kotlinx.coroutines.io.close
@@ -23,7 +22,6 @@ import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.createCharImg
 import net.mamoe.mirai.utils.writeChannel
-import java.awt.Font
 import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
@@ -126,12 +124,12 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     }
 
 
-    fun provideInput(input: String) {
+    suspend fun provideInput(input: String) {
         if (requesting) {
             requestResult = input
             requesting = false
         } else {
-            MiraiConsole.CommandListener.commandChannel.offer(
+            MiraiConsole.CommandListener.commandChannel.send(
                 commandBuilder.toString()
             )
         }
@@ -336,7 +334,9 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                             update()
                         }
                         KeyType.Enter -> {
-                            provideInput(commandBuilder.toString())
+                            runBlocking {
+                                provideInput(commandBuilder.toString())
+                            }
                             emptyCommand()
                         }
                         KeyType.Escape -> {

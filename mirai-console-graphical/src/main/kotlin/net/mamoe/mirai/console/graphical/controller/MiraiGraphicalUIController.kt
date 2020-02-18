@@ -24,8 +24,8 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     val botList = observableListOf<BotModel>()
     val consoleInfo = ConsoleInfo()
 
-    fun login(qq: String, psd: String) {
-        MiraiConsole.CommandListener.commandChannel.offer("/login $qq $psd")
+    suspend fun login(qq: String, psd: String) {
+        MiraiConsole.CommandListener.commandChannel.send("/login $qq $psd")
     }
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {

@@ -18,9 +18,9 @@ buildscript {
 plugins {
     kotlin("jvm")
     java
+    id("com.jfrog.bintray") version "1.8.0"
     `maven-publish`
     // maven
-    id("com.jfrog.bintray") version "1.8.0"
 }
 
 val kotlinVersion: String by rootProject.ext
@@ -75,6 +75,10 @@ dependencies {
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
 }
 
 bintray {

@@ -6,7 +6,7 @@ plugins {
 }
 
 javafx {
-    version = "11"
+    version = "13.0.2"
     modules = listOf("javafx.controls")
     //mainClassName = "Application"
 }

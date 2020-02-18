@@ -7,9 +7,16 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 @file:Suppress("MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.message.data
+
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * XML 消息, 如分享, 卡片等.
@@ -30,6 +37,7 @@ inline class XMLMessage(val stringValue: String) : Message,
  * 构造一条 XML 消息
  */
 @XMLDsl
+@MiraiExperimentalAPI("还未支持")
 inline fun buildXMLMessage(block: @XMLDsl XMLMessageBuilder.() -> Unit): XMLMessage =
     XMLMessage(XMLMessageBuilder().apply(block).text)
 

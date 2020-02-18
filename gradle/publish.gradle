@@ -1,4 +1,5 @@
 // 部分源码来自 kotlinx.coroutines
+// Source code from kotlinx.coroutines
 
 def pomConfig = {
     licenses {
@@ -12,6 +13,7 @@ def pomConfig = {
         developer {
             id "mamoe"
             name "Mamoe Technologies"
+            email "support@mamoe.net"
         }
     }
     scm {

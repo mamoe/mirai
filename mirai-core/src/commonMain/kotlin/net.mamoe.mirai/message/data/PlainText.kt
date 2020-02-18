@@ -7,9 +7,19 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 package net.mamoe.mirai.message.data
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
+/**
+ * 纯文本. 可含 emoji 表情.
+ *
+ * 一般不需要主动构造 [PlainText], [Message] 可直接与 [String] 相加. Java 用户请使用 [MessageChain.plus]
+ */
 inline class PlainText(val stringValue: String) : Message {
     override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
@@ -17,7 +27,7 @@ inline class PlainText(val stringValue: String) : Message {
     companion object Key : Message.Key<PlainText>
 
     override fun eq(other: Message): Boolean {
-        if(other is MessageChain){
+        if (other is MessageChain) {
             return other eq this.toString()
         }
         return other is PlainText && other.stringValue == this.stringValue

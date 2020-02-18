@@ -42,7 +42,7 @@ object CommandManager {
         registeredCommand.remove(commandName)
     }
 
-    fun runCommand(fullCommand: String): Boolean {
+    suspend fun runCommand(fullCommand: String): Boolean {
         val blocks = fullCommand.split(" ")
         val commandHead = blocks[0].replace("/", "")
         if (!registeredCommand.containsKey(commandHead)) {
@@ -66,7 +66,7 @@ interface ICommand {
     val name: String
     val alias: List<String>
     val description: String
-    fun onCommand(args: List<String>): Boolean
+    suspend fun onCommand(args: List<String>): Boolean
     fun register()
 }
 
@@ -77,9 +77,9 @@ abstract class Command(
 ) : ICommand {
     /**
      * 最高优先级监听器
-     * 如果return [false] 这次指令不会被[PluginBase]的全局onCommand监听器监听
+     * 如果 return `false` 这次指令不会被 [PluginBase] 的全局 onCommand 监听器监听
      * */
-    open override fun onCommand(args: List<String>): Boolean {
+    open override suspend fun onCommand(args: List<String>): Boolean {
         return true
     }
 
@@ -92,9 +92,9 @@ class AnonymousCommand internal constructor(
     override val name: String,
     override val alias: List<String>,
     override val description: String,
-    val onCommand: ICommand.(args: List<String>) -> Boolean
+    val onCommand: suspend ICommand.(args: List<String>) -> Boolean
 ) : ICommand {
-    override fun onCommand(args: List<String>): Boolean {
+    override suspend fun onCommand(args: List<String>): Boolean {
         return onCommand.invoke(this, args)
     }
 
@@ -107,9 +107,9 @@ class CommandBuilder internal constructor() {
     var name: String? = null
     var alias: List<String>? = null
     var description: String = ""
-    var onCommand: (ICommand.(args: List<String>) -> Boolean)? = null
+    var onCommand: (suspend ICommand.(args: List<String>) -> Boolean)? = null
 
-    fun onCommand(commandProcess: ICommand.(args: List<String>) -> Boolean) {
+    fun onCommand(commandProcess: suspend ICommand.(args: List<String>) -> Boolean) {
         onCommand = commandProcess
     }
 

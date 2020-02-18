@@ -5,6 +5,9 @@ import net.mamoe.mirai.japt.BlockingContacts;
 import net.mamoe.mirai.japt.BlockingQQ;
 import net.mamoe.mirai.japt.Events;
 import net.mamoe.mirai.message.GroupMessage;
+import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.message.data.Image;
+import net.mamoe.mirai.message.data.MessageUtils;
 
 class BlockingTest {
 
@@ -19,8 +22,14 @@ class BlockingTest {
 
         Events.subscribeAlways(GroupMessage.class, (GroupMessage message) -> {
             final BlockingQQ sender = BlockingContacts.createBlocking(message.getSender());
+            sender.sendMessage("Hello World!");
+            System.out.println("发送完了");
 
-            sender.sendMessage("Hello");
+            sender.sendMessage(MessageUtils.newChain()
+                    .plus(new At(message.getSender()))
+                    .plus(Image.fromId("{xxxx}.jpg"))
+                    .plus("123465")
+            );
         });
 
         Thread.sleep(999999999);

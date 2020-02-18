@@ -7,10 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 /**

@@ -13,6 +13,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.sendMessage
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -82,6 +83,7 @@ interface Message {
      * println(c)// "Hello world!"
      * ```
      */
+    @JvmSynthetic // in java they should use `plus` instead
     fun followedBy(tail: Message): MessageChain {
         require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
         require(this !is SingleOnly) { "SingleOnly Message cannot be followed" }
@@ -92,6 +94,7 @@ interface Message {
     override fun toString(): String
 
     operator fun plus(another: Message): MessageChain = this.followedBy(another)
+
     operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
