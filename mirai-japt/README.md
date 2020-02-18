@@ -32,7 +32,7 @@ Mirai Java Apt
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core-qqandroid</artifactId>
+        <artifactId>mirai-core-qqandroid-jvm</artifactId>
         <version>CORE_VERSION</version> <!-- 替换版本为最新版本 -->
     </dependency>
     
@@ -51,7 +51,7 @@ repositories {
 }
 
 dependencies {
-  implementation("net.mamoe:mirai-core-qqandroid:CORE_VERSION")
+  implementation("net.mamoe:mirai-core-qqandroid-jvm:CORE_VERSION")
   implementation("net.mamoe:mirai-japt:JAPT_VERSION")
 }
 ```

@@ -43,7 +43,7 @@ Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Ap
   - 已支持大部分使用场景, 详情请在[Project](https://github.com/mamoe/mirai/projects/3)查看
 
 ### mirai-core-timpc
-TIM PC （2.3.2 版本，2019 年 8 月）协议的实现，相较于 core，仅新增少量 API. 详见 [README.md](mirai-core-timpc/)   
+TIM PC （2.3.2 版本，2019 年 8 月）协议的实现  
 支持的功能： 
 - 消息收发：图片文字复合消息，图片消息
 - 群管功能：群员列表，禁言
@@ -75,7 +75,7 @@ Kotlin 在 Maven 上只支持 JVM 平台.
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core-qqandroid</artifactId>
+        <artifactId>mirai-core-qqandroid-jvm</artifactId>
         <version>0.15.1</version> <!-- 替换版本为最新版本 -->
     </dependency>
 </dependencies>
@@ -98,7 +98,7 @@ Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。
 
 **jvm** (JVM 平台)
 ```kotlin
-implementation("net.mamoe:mirai-core-qqandroid:VERSION")
+implementation("net.mamoe:mirai-core-qqandroid-jvm:VERSION")
 ```
 **common** (通用平台)
 ```kotlin
