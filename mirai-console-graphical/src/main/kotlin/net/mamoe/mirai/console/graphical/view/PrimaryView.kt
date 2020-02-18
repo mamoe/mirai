@@ -27,7 +27,7 @@ class PrimaryView : View() {
 
         left = vbox {
 
-            imageview(Image(FileInputStream("logo.png")))
+            imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png")))
 
             // bot list
             jfxListView(controller.botList) {
