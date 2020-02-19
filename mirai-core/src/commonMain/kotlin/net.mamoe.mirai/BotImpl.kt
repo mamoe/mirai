@@ -117,7 +117,11 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
     }
 
-    final override suspend fun login() = reinitializeNetworkHandler(null)
+    final override suspend fun login() {
+        logger.info("Logging in...")
+        reinitializeNetworkHandler(null)
+        logger.info("Login successful")
+    }
 
     private suspend fun reinitializeNetworkHandler(
         cause: Throwable?
