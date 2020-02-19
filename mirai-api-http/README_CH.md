@@ -413,13 +413,15 @@ Content-Type：multipart/form-data
 ```json5
 {
     "type": "At",
-    "target": 123456
+    "target": 123456,
+    "display": "@Mirai"
 }
 ```
 
-| 名字   | 类型 | 说明     |
-| ------ | ---- | -------- |
-| target | Long | 群员QQ号 |
+| 名字    | 类型   | 说明                                           |
+| ------- | ------ | ---------------------------------------------- |
+| target  | Long   | 群员QQ号                                       |
+| dispaly | String | At时显示的文字，发送消息时无效，自动使用群名片 |
 
 #### AtAll
 
