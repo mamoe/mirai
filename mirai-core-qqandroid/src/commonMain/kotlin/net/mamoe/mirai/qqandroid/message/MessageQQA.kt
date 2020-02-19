@@ -86,6 +86,16 @@ _400Height=0x000000EB(235)
 pbReserve=<Empty ByteArray>
 }
  */
+val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
+
+internal fun Face.toJceData(): ImMsgBody.Face {
+    return ImMsgBody.Face(
+        index = this.id,
+        old = (0x1445 - 4 + this.id).toShort().toByteArray(),
+        buf = FACE_BUF
+    )
+}
+
 internal fun CustomFaceFromFile.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = this.filepath,
@@ -213,6 +223,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
             is NotOnlineImageFromFile -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is AtAll -> elements.add(atAllData)
+            is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
             is QuoteReply,
             is MessageSource -> {
 
@@ -312,6 +323,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
             it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))
             it.notOnlineImage != null -> message.add(NotOnlineImageFromServer(it.notOnlineImage))
             it.customFace != null -> message.add(CustomFaceFromServer(it.customFace))
+            it.face != null -> message.add(Face(it.face.index))
             it.text != null -> {
                 if (it.text.attr6Buf.isEmpty()) {
                     message.add(it.text.str.toMessage())
@@ -323,7 +335,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
                         discardExact(7)
                         id = readUInt().toLong()
                     }
-                    if (id == 0L){
+                    if (id == 0L) {
                         message.add(AtAll)
                     } else {
                         message.add(At(id, it.text.str))
