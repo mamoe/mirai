@@ -14,7 +14,6 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.ECDHKeyPair
 import net.mamoe.mirai.utils.io.encryptAndWrite
@@ -111,7 +110,6 @@ internal interface EncryptMethodECDH : EncryptMethod {
                 writeShortLVByteArray(ECDHKeyPair.DefaultStub.defaultPublicKey)
                 encryptAndWrite(ECDHKeyPair.DefaultStub.defaultShareKey, body)
             } else {
-                MiraiLogger.info("Using custom")
                 writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).take(49).toByteArray().also {
                     // it.toUHexString().debugPrint("PUBLIC KEY")
                     check(it[0].toInt() == 0x04) { "Bad publicKey generated. Expected first element=0x04, got${it[0]}" }
