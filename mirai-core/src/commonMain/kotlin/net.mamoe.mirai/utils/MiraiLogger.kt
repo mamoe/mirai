@@ -71,6 +71,13 @@ interface MiraiLogger {
     val identity: String?
 
     /**
+     * 获取 [MiraiLogger] 是否已开启
+     *
+     * 除 [MiraiLoggerWithSwitch] 可控制开关外, 其他的所有 [MiraiLogger] 均一直开启.
+     */
+    val isEnabled: Boolean
+
+    /**
      * 随从. 在 this 中调用所有方法后都应继续往 [follower] 传递调用.
      * [follower] 的存在可以让一次日志被多个日志记录器记录.
      *
@@ -151,43 +158,43 @@ interface MiraiLogger {
 
 
 inline fun MiraiLogger.verbose(lazyMessage: () -> String) {
-    if (this !is MiraiLoggerWithSwitch || switch) verbose(lazyMessage())
+    if (isEnabled) verbose(lazyMessage())
 }
 
 inline fun MiraiLogger.verbose(lazyMessage: () -> String, e: Throwable?) {
-    if (this !is MiraiLoggerWithSwitch || switch) verbose(lazyMessage(), e)
+    if (isEnabled) verbose(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.debug(lazyMessage: () -> String?) {
-    if (this !is MiraiLoggerWithSwitch || switch) debug(lazyMessage())
+    if (isEnabled) debug(lazyMessage())
 }
 
 inline fun MiraiLogger.debug(lazyMessage: () -> String?, e: Throwable?) {
-    if (this !is MiraiLoggerWithSwitch || switch) debug(lazyMessage(), e)
+    if (isEnabled) debug(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.info(lazyMessage: () -> String?) {
-    if (this !is MiraiLoggerWithSwitch || switch) info(lazyMessage())
+    if (isEnabled) info(lazyMessage())
 }
 
 inline fun MiraiLogger.info(lazyMessage: () -> String?, e: Throwable?) {
-    if (this !is MiraiLoggerWithSwitch || switch) info(lazyMessage(), e)
+    if (isEnabled) info(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.warning(lazyMessage: () -> String?) {
-    if (this !is MiraiLoggerWithSwitch || switch) warning(lazyMessage())
+    if (isEnabled) warning(lazyMessage())
 }
 
 inline fun MiraiLogger.warning(lazyMessage: () -> String?, e: Throwable?) {
-    if (this !is MiraiLoggerWithSwitch || switch) warning(lazyMessage(), e)
+    if (isEnabled) warning(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.error(lazyMessage: () -> String?) {
-    if (this !is MiraiLoggerWithSwitch || switch) error(lazyMessage())
+    if (isEnabled) error(lazyMessage())
 }
 
 inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
-    if (this !is MiraiLoggerWithSwitch || switch) error(lazyMessage(), e)
+    if (isEnabled) error(lazyMessage(), e)
 }
 
 /**
@@ -268,7 +275,7 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
     @PublishedApi
     internal var switch: Boolean = default
 
-    val isEnabled: Boolean get() = switch
+    override val isEnabled: Boolean get() = switch
 
     fun enable() {
         switch = true
@@ -298,6 +305,7 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
  * 在定义 logger 变量时, 请一直使用 [MiraiLogger] 或者 [MiraiLoggerWithSwitch].
  */
 abstract class MiraiLoggerPlatformBase : MiraiLogger {
+    override val isEnabled: Boolean get() = true
     final override var follower: MiraiLogger? = null
 
     final override fun verbose(message: String?) {
