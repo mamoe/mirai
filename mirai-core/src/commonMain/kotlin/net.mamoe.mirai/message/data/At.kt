@@ -15,7 +15,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.groupCardOrNick
+import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -28,7 +28,7 @@ import kotlin.jvm.JvmName
  */
 class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
     @UseExperimental(MiraiInternalAPI::class)
-    constructor(member: Member) : this(member.id, "@${member.groupCardOrNick}")
+    constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
 
     override fun toString(): String = display
 

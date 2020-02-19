@@ -37,7 +37,7 @@ data class MemberDTO(
     val group: GroupDTO
 ) : ContactDTO() {
     constructor(member: Member) : this(
-        member.id, member.groupCardOrNick, member.permission,
+        member.id, member.nameCardOrNick, member.permission,
         GroupDTO(member.group)
     )
 }

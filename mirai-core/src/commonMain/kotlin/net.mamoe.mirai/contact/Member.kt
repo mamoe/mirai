@@ -37,7 +37,7 @@ interface Member : QQ, Contact {
      *
      * 在修改时将会异步上传至服务器.
      *
-     * @see [groupCardOrNick] 获取非空群名片或昵称
+     * @see [nameCardOrNick] 获取非空群名片或昵称
      *
      * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
      * @throws PermissionDeniedException 无权限修改时
@@ -96,7 +96,7 @@ interface Member : QQ, Contact {
  *
  * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [QQ.nick]
  */
-val Member.groupCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
+val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
 
 @ExperimentalTime
 suspend inline fun Member.mute(duration: Duration) {
