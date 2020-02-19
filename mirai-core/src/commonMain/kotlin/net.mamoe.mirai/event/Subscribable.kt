@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  * 若监听这个类, 监听器将会接收所有事件的广播.
  *
  * @see subscribeAlways
- * @see subscribeWhile
+ * @see subscribeOnce
  *
  * @see subscribeMessages
  *
