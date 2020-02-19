@@ -285,16 +285,16 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
         switch = false
     }
 
-    override fun verbose0(message: String?) = if (switch) delegate.verbose(message) else Unit
-    override fun verbose0(message: String?, e: Throwable?) = if (switch) delegate.verbose(message, e) else Unit
-    override fun debug0(message: String?) = if (switch) delegate.debug(message) else Unit
-    override fun debug0(message: String?, e: Throwable?) = if (switch) delegate.debug(message, e) else Unit
-    override fun info0(message: String?) = if (switch) delegate.info(message) else Unit
-    override fun info0(message: String?, e: Throwable?) = if (switch) delegate.info(message, e) else Unit
-    override fun warning0(message: String?) = if (switch) delegate.warning(message) else Unit
-    override fun warning0(message: String?, e: Throwable?) = if (switch) delegate.warning(message, e) else Unit
-    override fun error0(message: String?) = if (switch) delegate.error(message) else Unit
-    override fun error0(message: String?, e: Throwable?) = if (switch) delegate.error(message, e) else Unit
+    override fun verbose0(message: String?) = delegate.verbose(message)
+    override fun verbose0(message: String?, e: Throwable?) = delegate.verbose(message, e)
+    override fun debug0(message: String?) = delegate.debug(message)
+    override fun debug0(message: String?, e: Throwable?) = delegate.debug(message, e)
+    override fun info0(message: String?) = delegate.info(message)
+    override fun info0(message: String?, e: Throwable?) = delegate.info(message, e)
+    override fun warning0(message: String?) = delegate.warning(message)
+    override fun warning0(message: String?, e: Throwable?) = delegate.warning(message, e)
+    override fun error0(message: String?) = delegate.error(message)
+    override fun error0(message: String?, e: Throwable?) = delegate.error(message, e)
 }
 
 /**
@@ -309,51 +309,61 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
     final override var follower: MiraiLogger? = null
 
     final override fun verbose(message: String?) {
+        if (!isEnabled) return
         follower?.verbose(message)
         verbose0(message)
     }
 
     final override fun verbose(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.verbose(message, e)
         verbose0(message, e)
     }
 
     final override fun debug(message: String?) {
+        if (!isEnabled) return
         follower?.debug(message)
         debug0(message)
     }
 
     final override fun debug(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.debug(message, e)
         debug0(message, e)
     }
 
     final override fun info(message: String?) {
+        if (!isEnabled) return
         follower?.info(message)
         info0(message)
     }
 
     final override fun info(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.info(message, e)
         info0(message, e)
     }
 
     final override fun warning(message: String?) {
+        if (!isEnabled) return
         follower?.warning(message)
         warning0(message)
     }
 
     final override fun warning(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.warning(message, e)
         warning0(message, e)
     }
 
     final override fun error(message: String?) {
+        if (!isEnabled) return
         follower?.error(message)
         error0(message)
     }
 
     final override fun error(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.error(message, e)
         error0(message, e)
     }
