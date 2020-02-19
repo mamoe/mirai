@@ -159,6 +159,7 @@ internal class MessageSvc {
                                 }.groups.first { it.groupUin == msg.msgHead.fromUin }
 
 
+                                @Suppress("DuplicatedCode")
                                 val newGroup = GroupImpl(
                                     bot = bot,
                                     coroutineContext = bot.coroutineContext,
@@ -264,6 +265,7 @@ internal class MessageSvc {
         /**
          * 发送好友消息
          */
+        @Suppress("FunctionName")
         fun ToFriend(
             client: QQAndroidClient,
             toUin: Long,
@@ -293,6 +295,7 @@ internal class MessageSvc {
         /**
          * 发送群消息
          */
+        @Suppress("FunctionName")
         fun ToGroup(
             client: QQAndroidClient,
             groupCode: Long,
