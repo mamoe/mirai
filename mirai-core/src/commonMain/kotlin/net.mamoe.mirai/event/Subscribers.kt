@@ -170,7 +170,7 @@ inline fun <reified E : BotEvent> Bot.subscribe(noinline handler: suspend E.(E) 
  *
  * @see subscribe 获取更多说明
  */
-@JvmName("subscribeAlwaysForBot")
+@JvmName("subscribeAlwaysForBot1")
 @UseExperimental(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribeAlways(noinline listener: suspend E.(E) -> Unit): Listener<E> {
     return E::class.subscribeInternal(Handler { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING })
@@ -185,7 +185,7 @@ inline fun <reified E : BotEvent> Bot.subscribeAlways(noinline listener: suspend
  *
  * @see subscribe 获取更多说明
  */
-@JvmName("subscribeOnceForBot")
+@JvmName("subscribeOnceForBot2")
 @UseExperimental(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribeOnce(noinline listener: suspend E.(E) -> Unit): Listener<E> =
     E::class.subscribeInternal(Handler {
