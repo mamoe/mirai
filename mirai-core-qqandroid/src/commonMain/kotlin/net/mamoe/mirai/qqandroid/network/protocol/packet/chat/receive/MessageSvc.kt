@@ -16,7 +16,6 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
@@ -109,11 +108,7 @@ internal class MessageSvc {
          * 不要直接 expect 这个 class. 它可能还没同步完成
          */
         @MiraiInternalAPI
-        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) : MultiPacket<Packet>(delegate),
-            BroadcastControllable {
-            override val shouldBroadcast: Boolean
-                get() = syncFlagFromServer == MsgSvc.SyncFlag.STOP
-
+        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) : MultiPacket<Packet>(delegate) {
             override fun toString(): String {
                 return "MessageSvc.PbGetMsg.Response($syncFlagFromServer=$syncFlagFromServer, messages=List(size=${this.size}))"
             }
