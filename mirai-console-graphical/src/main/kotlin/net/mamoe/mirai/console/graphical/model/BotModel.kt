@@ -11,3 +11,9 @@ class BotModel(val uin: Long) {
     val logHistory = observableListOf<String>()
     val admins = observableListOf<Long>()
 }
+
+class BotViewModel(botModel: BotModel? = null) : ItemViewModel<BotModel>(botModel) {
+    val bot = bind(BotModel::botProperty)
+    val logHistory = bind(BotModel::logHistory)
+    val admins = bind(BotModel::admins)
+}

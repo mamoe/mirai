@@ -12,7 +12,7 @@ fun main() {
 
     MiraiHttpAPIServer.start()
     
-    bot.network.awaitDisconnection()
+    bot.join()
 }
 ```
 
@@ -463,7 +463,7 @@ Content-Type：multipart/form-data
 {
     "type": "Image",
     "imageId": "{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png" //群图片格式
-    "imageId": "/f8f1ab55-bf8e-4236-b55e-955848d7069f"      //好友图片格式
+    //"imageId": "/f8f1ab55-bf8e-4236-b55e-955848d7069f"      //好友图片格式
 }
 ```
 

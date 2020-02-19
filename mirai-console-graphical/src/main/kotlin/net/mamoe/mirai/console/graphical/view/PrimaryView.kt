@@ -1,20 +1,15 @@
 package net.mamoe.mirai.console.graphical.view
 
-import com.jfoenix.controls.JFXListCell
-import javafx.geometry.Insets
-import javafx.geometry.Pos
+import com.jfoenix.controls.*
+import javafx.collections.ObservableList
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
-import javafx.scene.paint.Color
-import javafx.scene.text.FontWeight
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.BotModel
-import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxListView
 import net.mamoe.mirai.console.graphical.util.jfxTabPane
 import tornadofx.*
-import java.io.FileInputStream
 
 class PrimaryView : View() {
 
@@ -35,20 +30,12 @@ class PrimaryView : View() {
 
                 setCellFactory {
                     object : JFXListCell<BotModel>() {
-                        var tab: Tab? = null
-
                         init {
                             onDoubleClick {
-                                if (tab == null) {
-                                    (center as TabPane).tab(item.uin.toString()) {
-                                        listview(item.logHistory)
-                                        onDoubleClick { close() }
-                                        tab = this
-                                    }
-                                } else {
-                                    (center as TabPane).tabs.add(tab)
-                                }
-                                tab?.select()
+                                (center as TabPane).logTab(
+                                    text = item.uin.toString(),
+                                    logs = item.logHistory
+                                ).select()
                             }
                         }
 
@@ -65,44 +52,37 @@ class PrimaryView : View() {
                     }
                 }
             }
-
-            hbox {
-                padding = Insets(10.0)
-                spacing = 10.0
-                alignment = Pos.CENTER
-
-                jfxButton("L").action {
-                    find<LoginFragment>().openModal()
-                }
-                jfxButton("P")
-                jfxButton("S")
-
-
-                style { backgroundColor += c("00BCD4") }
-                children.style(true) {
-                    backgroundColor += c("00BCD4")
-                    fontSize = 15.px
-                    fontWeight = FontWeight.BOLD
-                    textFill = Color.WHITE
-                    borderRadius += box(25.px)
-                    backgroundRadius += box(25.px)
-                }
-            }
         }
 
         center = jfxTabPane {
-            tab("Main") {
-                listview(controller.mainLog) {
 
-                    fitToParentSize()
-                    cellFormat {
-                        graphic = label(it) {
-                            maxWidthProperty().bind(this@listview.widthProperty())
-                            isWrapText = true
-                        }
-                    }
-                }
+            tab("Login") {
+                this += find<LoginView>().root
+            }
+
+            tab("Plugin")
+
+            tab("Settings")
+
+            logTab("Main", controller.mainLog)
+        }
+    }
+}
+
+private fun TabPane.logTab(
+    text: String? = null,
+    logs: ObservableList<String>,
+    op: Tab.() -> Unit = {}
+)= tab(text) {
+    listview(logs) {
+
+        fitToParentSize()
+        cellFormat {
+            graphic = label(it) {
+                maxWidthProperty().bind(this@listview.widthProperty())
+                isWrapText = true
             }
         }
     }
+    also(op)
 }
