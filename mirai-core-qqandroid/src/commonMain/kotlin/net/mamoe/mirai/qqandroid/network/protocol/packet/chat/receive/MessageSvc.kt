@@ -127,7 +127,7 @@ internal class MessageSvc {
             val resp = readProtoBuf(MsgSvc.PbGetMsgResp.serializer())
 
             if (resp.result != 0) {
-                // println("!!! Result=${resp.result} !!!: " + resp.contentToString())
+                bot.network.logger.warning("MessageSvc.PushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}")
                 return EmptyResponse
             }
 
@@ -149,7 +149,7 @@ internal class MessageSvc {
                             val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
                             if (msg.msgHead.authUin == bot.uin) {
                                 if (group != null) {
-                                    error("group is not null while bot is invited to the group")
+                                    return@mapNotNull null
                                 }
                                 // 新群
 
