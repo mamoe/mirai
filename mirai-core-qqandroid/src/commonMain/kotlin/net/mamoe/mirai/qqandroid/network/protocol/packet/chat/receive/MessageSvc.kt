@@ -103,7 +103,7 @@ internal class MessageSvc {
         }
 
         @UseExperimental(MiraiInternalAPI::class)
-        internal class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate)
+        open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate)
 
         /**
          * 不要直接 expect 这个 class. 它可能
@@ -119,7 +119,7 @@ internal class MessageSvc {
             }
         }
 
-        object EmptyResponse : Response(MsgSvc.SyncFlag.STOP, emptyList())
+        object EmptyResponse : GetMsgSuccess(emptyList())
 
         @UseExperimental(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
@@ -127,8 +127,8 @@ internal class MessageSvc {
             val resp = readProtoBuf(MsgSvc.PbGetMsgResp.serializer())
 
             if (resp.result != 0) {
-                //  println("!!! Result=${resp.result} !!!: " + resp.contentToString())
-                return GetMsgSuccess(mutableListOf())
+                // println("!!! Result=${resp.result} !!!: " + resp.contentToString())
+                return EmptyResponse
             }
 
             bot.client.c2cMessageSync.syncCookie = resp.syncCookie
