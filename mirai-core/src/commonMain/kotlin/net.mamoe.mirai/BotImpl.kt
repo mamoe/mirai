@@ -94,8 +94,10 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                 }
                 bot.logger.info("Connection dropped or lost by server, retrying login")
 
-                tryNTimesOrException(configuration.reconnectionRetryTimes) {
-                    delay(configuration.reconnectPeriodMillis)
+                tryNTimesOrException(configuration.reconnectionRetryTimes) { tryCount ->
+                    if (tryCount != 0) {
+                        delay(configuration.reconnectPeriodMillis)
+                    }
                     network.relogin()
                     logger.info("Reconnected successfully")
                     return@subscribeAlways
