@@ -38,6 +38,7 @@ import kotlin.reflect.KProperty
 interface MessageChain : Message, MutableList<Message> {
     // region Message override
     override operator fun contains(sub: String): Boolean
+
     override fun followedBy(tail: Message): MessageChain
     // endregion
 
@@ -64,6 +65,36 @@ interface MessageChain : Message, MutableList<Message> {
         if (other is MessageChain && other.size != this.size)
             return false
         return this.toString() == other.toString()
+    }
+}
+
+/**
+ * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage]
+ */
+inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
+    this.forEachIndexed { index: Int, message: Message ->
+        if (message is At) {
+            if (index == 0 || this[index - 1] !is QuoteReply) {
+                block(message)
+            }
+        } else if (message.hasContent()) {
+            block(message)
+        }
+    }
+}
+
+/**
+ * 判断这个 [Message] 是否含有内容, 即是否为 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage]
+ */
+fun Message.hasContent(): Boolean {
+    return when (this) {
+        is At,
+        is AtAll,
+        is PlainText,
+        is Image,
+        is Face,
+        is XMLMessage -> true
+        else -> false
     }
 }
 
