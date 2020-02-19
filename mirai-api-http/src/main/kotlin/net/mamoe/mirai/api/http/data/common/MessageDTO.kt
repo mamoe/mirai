@@ -13,7 +13,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
@@ -80,7 +79,7 @@ sealed class MessageDTO : DTO
 /*
     Extend function
  */
-suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
+fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
     else -> UnKnownMessagePacketDTO("UnKnown Message Packet")
@@ -94,7 +93,7 @@ fun Message.toDTO() = when (this) {
     is MessageSource -> MessageSourceDTO(messageUid)
     is At -> AtDTO(target, display)
     is AtAll -> AtAllDTO(0L)
-    is Face -> FaceDTO(id.value.toInt())
+    is Face -> FaceDTO(id)
     is PlainText -> PlainDTO(stringValue)
     is Image -> ImageDTO(imageId)
     is XMLMessage -> XmlDTO(stringValue)
@@ -105,7 +104,7 @@ fun Message.toDTO() = when (this) {
 fun MessageDTO.toMessage(contact: Contact) = when (this) {
     is AtDTO -> At((contact as Group)[target])
     is AtAllDTO -> AtAll
-    is FaceDTO -> Face(FaceId(faceId.toUByte()))
+    is FaceDTO -> Face(faceId)
     is PlainDTO -> PlainText(text)
     is ImageDTO -> Image(imageId)
     is XmlDTO -> XMLMessage(xml)

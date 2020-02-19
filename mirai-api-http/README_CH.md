@@ -389,7 +389,7 @@ Content-Type：multipart/form-data
 
 + [x] At，@消息
 + [x] AtAll，@全体成员
-+ [ ] Face，表情消息
++ [x] Face，表情消息
 + [x] Plain，文字消息
 + [x] Image，图片消息
 + [ ] Xml，Xml卡片消息
