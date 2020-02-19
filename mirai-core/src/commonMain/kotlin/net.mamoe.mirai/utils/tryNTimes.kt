@@ -15,12 +15,12 @@ expect fun Throwable.addSuppressed(e: Throwable)
 
 @MiraiInternalAPI
 @Suppress("DuplicatedCode")
-inline fun <R> tryNTimes(repeat: Int, block: () -> R): R {
+inline fun <R> tryNTimes(repeat: Int, block: (Int) -> R): R {
     var lastException: Throwable? = null
 
     repeat(repeat) {
         try {
-            return block()
+            return block(it)
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
@@ -34,12 +34,12 @@ inline fun <R> tryNTimes(repeat: Int, block: () -> R): R {
 
 @MiraiInternalAPI
 @Suppress("DuplicatedCode")
-inline fun <R> tryNTimesOrNull(repeat: Int, block: () -> R): R? {
+inline fun <R> tryNTimesOrNull(repeat: Int, block: (Int) -> R): R? {
     var lastException: Throwable? = null
 
     repeat(repeat) {
         try {
-            return block()
+            return block(it)
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
@@ -53,12 +53,12 @@ inline fun <R> tryNTimesOrNull(repeat: Int, block: () -> R): R? {
 
 @MiraiInternalAPI
 @Suppress("DuplicatedCode")
-inline fun <R> tryNTimesOrException(repeat: Int, block: () -> R): Throwable? {
+inline fun <R> tryNTimesOrException(repeat: Int, block: (Int) -> R): Throwable? {
     var lastException: Throwable? = null
 
     repeat(repeat) {
         try {
-            block()
+            block(it)
             return null
         } catch (e: Throwable) {
             if (lastException == null) {
