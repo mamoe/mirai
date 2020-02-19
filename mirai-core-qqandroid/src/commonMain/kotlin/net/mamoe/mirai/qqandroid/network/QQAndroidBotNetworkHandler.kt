@@ -88,8 +88,24 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }.also { _packetReceiverJob = it }
     }
 
+    private fun startHeartbeatJobOrKill(cancelCause: CancellationException? = null): Job {
+        heartbeatJob?.cancel(cancelCause)
+
+        return this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
+            while (this.isActive) {
+                delay(bot.configuration.heartbeatPeriodMillis)
+                val failException = doHeartBeat()
+                if (failException != null) {
+                    delay(bot.configuration.firstReconnectDelayMillis)
+                    close()
+                    BotOfflineEvent.Dropped(bot).broadcast()
+                }
+            }
+        }
+    }
+
     override suspend fun relogin() {
-        heartbeatJob?.cancel()
+        heartbeatJob?.cancel(CancellationException("relogin"))
         if (::channel.isInitialized) {
             if (channel.isOpen) {
                 kotlin.runCatching {
@@ -100,13 +116,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             channel.close()
         }
         channel = PlatformSocket()
-        // TODO: 2020/2/14 连接多个服务器
+        // TODO: 2020/2/14 连接多个服务器, #52
         withTimeoutOrNull(3000) {
             channel.connect("113.96.13.208", 8080)
         } ?: error("timeout connecting server")
         startPacketReceiverJobOrKill(CancellationException("reconnect"))
 
-        // logger.info("Trying login")
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
@@ -159,8 +174,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         registerClientOnline()
     }
 
-    private suspend fun registerClientOnline() {
-        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
+    private suspend fun registerClientOnline(timeoutMillis: Long = 3000) {
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(timeoutMillis)
     }
 
     // caches
@@ -176,19 +191,27 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         bot.groups.delegate.clear()
 
         val friendListJob = launch {
-            try {
+            lateinit var loadFriends: suspend () -> Unit
+            // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
+            loadFriends = suspend loadFriends@{
                 logger.info("开始加载好友信息")
                 var currentFriendCount = 0
                 var totalFriendCount: Short
                 while (true) {
-                    val data = FriendList.GetFriendGroupList(
-                        bot.client,
-                        currentFriendCount,
-                        150,
-                        0,
-                        0
-                    ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
-
+                    val data = runCatching {
+                        FriendList.GetFriendGroupList(
+                            bot.client,
+                            currentFriendCount,
+                            150,
+                            0,
+                            0
+                        ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+                    }.getOrElse {
+                        logger.error("无法加载好友列表", it)
+                        this@QQAndroidBotNetworkHandler.launch { delay(10.secondsToMillis); loadFriends() }
+                        logger.error("稍后重试加载好友列表")
+                        return@loadFriends
+                    }
                     totalFriendCount = data.totalFriendCount
                     data.friendList.forEach {
                         // atomic add
@@ -196,16 +219,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             currentFriendCount++
                         }
                     }
-                    logger.verbose("正在加载好友列表 ${currentFriendCount}/${totalFriendCount}")
+                    logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
                     if (currentFriendCount >= totalFriendCount) {
                         break
                     }
                     // delay(200)
                 }
-                logger.info("好友列表加载完成, 共 ${currentFriendCount}个")
-            } catch (e: Exception) {
-                logger.error("加载好友列表失败|一般这是由于加载过于频繁导致/将以热加载方式加载好友列表")
+                logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
             }
+
+            loadFriends()
         }
 
         val groupJob = launch {
@@ -247,7 +270,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                 ))
                             )
                         }?.let {
-                            logger.error("群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试")
+                            logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
                             logger.error(it)
                             this@QQAndroidBotNetworkHandler.launch {
                                 delay(10_000)
@@ -260,27 +283,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         loadGroup()
                     }
                 }
-                logger.info("群组列表与群成员加载完成, 共 ${troopListData.groups.size}个")
+                logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
             } catch (e: Exception) {
-                logger.error("加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表")
+                logger.error { "加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表" }
                 logger.error(e)
             }
         }
 
+        heartbeatJob = startHeartbeatJobOrKill()
+
         joinAll(friendListJob, groupJob)
-
-        heartbeatJob = this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
-            while (this.isActive) {
-                delay(bot.configuration.heartbeatPeriodMillis)
-                val failException = doHeartBeat()
-                if (failException != null) {
-                    delay(bot.configuration.firstReconnectDelayMillis)
-                    close()
-                    BotOfflineEvent.Dropped(bot).broadcast()
-                }
-            }
-        }
-
         bot.firstLoginSucceed = true
 
         _pendingEnabled.value = false
@@ -288,10 +300,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             @Suppress("UNCHECKED_CAST")
             KnownPacketFactories.handleIncomingPacket(it as KnownPacketFactories.IncomingPacket<Packet>, bot, it.flag2, it.consumer)
         }
-        pendingIncomingPackets = null // release
+        val list = pendingIncomingPackets
+        pendingIncomingPackets = null // release, help gc
+        list?.clear() // help gc
 
         BotOnlineEvent(bot).broadcast()
-        Unit
+        Unit // dont remove. can help type inference
     }
 
     suspend fun doHeartBeat(): Exception? {
