@@ -24,8 +24,7 @@ inline fun <R> tryNTimes(repeat: Int, block: (Int) -> R): R {
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
-            }
-            lastException!!.addSuppressed(e)
+            } else lastException!!.addSuppressed(e)
         }
     }
 
@@ -43,8 +42,7 @@ inline fun <R> tryNTimesOrNull(repeat: Int, block: (Int) -> R): R? {
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
-            }
-            lastException!!.addSuppressed(e)
+            } else lastException!!.addSuppressed(e)
         }
     }
 
@@ -63,8 +61,7 @@ inline fun <R> tryNTimesOrException(repeat: Int, block: (Int) -> R): Throwable? 
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
-            }
-            lastException!!.addSuppressed(e)
+            } else lastException!!.addSuppressed(e)
         }
     }
 
