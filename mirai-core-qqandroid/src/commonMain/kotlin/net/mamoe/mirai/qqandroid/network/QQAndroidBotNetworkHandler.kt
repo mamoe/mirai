@@ -373,7 +373,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     // with generic type, less mistakes
-    private suspend inline fun <P : Packet> generifiedParsePacket(input: Input) {
+    private suspend fun <P : Packet?> generifiedParsePacket(input: Input) {
         KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
             handlePacket(packetFactory, packet, commandName, sequenceId)
             if (packet is MultiPacket<*>) {
@@ -387,7 +387,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 处理解析完成的包.
      */
-    suspend fun <P : Packet> handlePacket(packetFactory: PacketFactory<P>?, packet: P, commandName: String, sequenceId: Int) {
+    suspend fun <P : Packet?> handlePacket(packetFactory: PacketFactory<P>?, packet: P, commandName: String, sequenceId: Int) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         packetListeners.forEach { listener ->
             if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
@@ -396,7 +396,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         // check top-level cancelling
-        if (PacketReceivedEvent(packet).broadcast().isCancelled) {
+        if (packet != null && PacketReceivedEvent(packet).broadcast().isCancelled) {
             return
         }
 
@@ -412,7 +412,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (packet is CancellableEvent && packet.isCancelled) return
         }
 
-        if (bot.logger.isEnabled || logger.isEnabled) {
+        if (packet != null && bot.logger.isEnabled || logger.isEnabled) {
             val logMessage = "Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}"
 
             if (packet is Event) {
@@ -585,7 +585,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     internal inner class PacketListener( // callback
         val commandName: String,
         val sequenceId: Int
-    ) : CompletableDeferred<Packet> by CompletableDeferred(supervisor) {
+    ) : CompletableDeferred<Packet?> by CompletableDeferred(supervisor) {
         fun filter(commandName: String, sequenceId: Int) = this.commandName == commandName && this.sequenceId == sequenceId
     }
 

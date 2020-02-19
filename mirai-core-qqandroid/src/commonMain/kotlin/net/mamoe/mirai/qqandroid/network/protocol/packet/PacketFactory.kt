@@ -97,10 +97,10 @@ internal abstract class IncomingPacketFactory<TPacket : Packet?>(
 }
 
 @JvmName("decode0")
-private suspend inline fun <P : Packet> OutgoingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P = packet.decode(bot)
+private suspend inline fun <P : Packet?> OutgoingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P = packet.decode(bot)
 
 @JvmName("decode1")
-private suspend inline fun <P : Packet> IncomingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket, sequenceId: Int): P =
+private suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket, sequenceId: Int): P =
     packet.decode(bot, sequenceId)
 
 internal val DECRYPTER_16_ZERO = ByteArray(16)
@@ -169,7 +169,7 @@ internal object KnownPacketFactories {
     // do not inline. Exceptions thrown will not be reported correctly
     @UseExperimental(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
-    suspend fun <T : Packet> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) = with(rawInput) {
+    suspend fun <T : Packet?> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) = with(rawInput) {
         // login
         val flag1 = readInt()
 
@@ -229,7 +229,7 @@ internal object KnownPacketFactories {
     }
 
     @UseExperimental(MiraiInternalAPI::class)
-    internal suspend fun <T : Packet> handleIncomingPacket(it: IncomingPacket<T>, bot: QQAndroidBot, flag2: Int, consumer: PacketConsumer<T>) {
+    internal suspend fun <T : Packet?> handleIncomingPacket(it: IncomingPacket<T>, bot: QQAndroidBot, flag2: Int, consumer: PacketConsumer<T>) {
         if (it.packetFactory == null) {
             bot.network.logger.debug("Received commandName: ${it.commandName}")
             PacketLogger.warning { "找不到 PacketFactory" }
@@ -337,7 +337,7 @@ internal object KnownPacketFactories {
         return IncomingPacket(packetFactory, ssoSequenceId, packet, commandName)
     }
 
-    private suspend fun <T : Packet> ByteReadPacket.parseOicqResponse(
+    private suspend fun <T : Packet?> ByteReadPacket.parseOicqResponse(
         bot: QQAndroidBot,
         packetFactory: OutgoingPacketFactory<T>,
         ssoSequenceId: Int,
