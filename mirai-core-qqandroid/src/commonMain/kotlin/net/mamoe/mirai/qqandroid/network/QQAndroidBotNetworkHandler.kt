@@ -404,7 +404,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             if (packet is CancellableEvent && packet.isCancelled) return
         }
 
-        logger.info("Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}")
+        if (bot.logger.isEnabled || logger.isEnabled) {
+            val logMessage = "Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}"
+
+            if (packet is Event) {
+                bot.logger.verbose(logMessage)
+            }
+            logger.verbose(logMessage)
+        }
 
         packetFactory?.run {
             when (this) {
