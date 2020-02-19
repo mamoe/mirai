@@ -17,6 +17,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 /*
@@ -109,9 +112,13 @@ inline fun <reified E : Event> CoroutineScope.subscribe(crossinline handler: sus
  *
  * @see subscribe 获取更多说明
  */
-@UseExperimental(MiraiInternalAPI::class)
-inline fun <reified E : Event> CoroutineScope.subscribeAlways(crossinline listener: suspend E.(E) -> Unit): Listener<E> =
-    E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.LISTENING })
+@UseExperimental(MiraiInternalAPI::class, ExperimentalContracts::class)
+inline fun <reified E : Event> CoroutineScope.subscribeAlways(crossinline listener: suspend E.(E) -> Unit): Listener<E> {
+    contract {
+        callsInPlace(listener, InvocationKind.UNKNOWN)
+    }
+    return E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.LISTENING })
+}
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.

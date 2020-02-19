@@ -20,10 +20,7 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.BroadcastControllable
-import net.mamoe.mirai.event.CancellableEvent
-import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -296,7 +293,17 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         heartbeatJob = startHeartbeatJobOrKill()
 
         joinAll(friendListJob, groupJob)
-        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<MessageSvc.PbGetMsg.GetMsgSuccess>()
+
+        withTimeoutOrNull(5000) {
+            lateinit var listener: Listener<PacketReceivedEvent>
+            listener = this.subscribeAlways {
+                if (it.packet is MessageSvc.PbGetMsg.GetMsgSuccess) {
+                    listener.complete()
+                }
+            }
+
+            MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
+        } ?: error("timeout syncing friend message history")
 
         bot.firstLoginSucceed = true
 
