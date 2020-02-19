@@ -417,8 +417,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
             if (packet is Event) {
                 bot.logger.verbose(logMessage)
-            }
-            logger.verbose(logMessage)
+            } else logger.verbose(logMessage)
         }
 
         packetFactory?.run {
