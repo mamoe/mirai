@@ -33,7 +33,7 @@ import kotlin.contracts.contract
 import kotlin.jvm.JvmName
 
 
-internal sealed class PacketFactory<TPacket : Packet> {
+internal sealed class PacketFactory<TPacket : Packet?> {
     /**
      * 筛选从服务器接收到的包时的 commandName
      */
@@ -49,7 +49,7 @@ internal sealed class PacketFactory<TPacket : Packet> {
  * @param TPacket 服务器回复包解析结果
  */
 @UseExperimental(ExperimentalUnsignedTypes::class)
-internal abstract class OutgoingPacketFactory<TPacket : Packet>(
+internal abstract class OutgoingPacketFactory<TPacket : Packet?>(
     /**
      * 命令名. 如 `wtlogin.login`, `ConfigPushSvc.PushDomain`
      */
@@ -73,7 +73,7 @@ internal abstract class OutgoingPacketFactory<TPacket : Packet>(
  * 这个工厂可以在 [handle] 时回复一个 commandId 为 [responseCommandName] 的包, 也可以不回复.
  * 必须先到 [KnownPacketFactories] 中注册工厂, 否则不能处理.
  */
-internal abstract class IncomingPacketFactory<TPacket : Packet>(
+internal abstract class IncomingPacketFactory<TPacket : Packet?>(
     /**
      * 接收自服务器的包的 commandName
      */
@@ -263,7 +263,7 @@ internal object KnownPacketFactories {
 
     private inline fun <R> inline(block: () -> R): R = block()
 
-    class IncomingPacket<T : Packet>(
+    class IncomingPacket<T : Packet?>(
         val packetFactory: PacketFactory<T>?,
         val sequenceId: Int,
         val data: ByteReadPacket,
