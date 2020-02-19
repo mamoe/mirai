@@ -68,11 +68,11 @@ actual open class BotConfiguration actual constructor() {
     /**
      * 重连失败后, 继续尝试的每次等待时间
      */
-    actual var reconnectPeriodMillis: Long = 60.secondsToMillis
+    actual var reconnectPeriodMillis: Long = 5.secondsToMillis
     /**
      * 最多尝试多少次重连
      */
-    actual var reconnectionRetryTimes: Int = 3
+    actual var reconnectionRetryTimes: Int = 10
     /**
      * 验证码处理器
      */
