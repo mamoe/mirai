@@ -89,22 +89,17 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     private val offlineListener: Listener<BotOfflineEvent> = this.subscribeAlways { event ->
         when (event) {
             is BotOfflineEvent.Dropped -> {
+                if (!_network.isActive) {
+                    return@subscribeAlways
+                }
                 bot.logger.info("Connection dropped or lost by server, retrying login")
 
-                var lastFailedException: Throwable? = null
-                repeat(configuration.reconnectionRetryTimes) {
-                    try {
-                        network.relogin()
-                        logger.info("Reconnected successfully")
-                        return@subscribeAlways
-                    } catch (e: Throwable) {
-                        lastFailedException = e
-                        delay(configuration.reconnectPeriodMillis)
-                    }
-                }
-                if (lastFailedException != null) {
-                    throw lastFailedException!!
-                }
+                tryNTimesOrException(configuration.reconnectionRetryTimes) {
+                    delay(configuration.reconnectPeriodMillis)
+                    network.relogin()
+                    logger.info("Reconnected successfully")
+                    return@subscribeAlways
+                }?.let { throw it }
             }
             is BotOfflineEvent.Active -> {
                 val msg = if (event.cause == null) {
@@ -112,12 +107,12 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                 } else {
                     " with exception: " + event.cause.message
                 }
-                bot.logger.info("Bot is closed manually$msg")
-                close(CancellationException(event.toString()))
+                bot.logger.info { "Bot is closed manually$msg" }
+                closeAndJoin(CancellationException(event.toString()))
             }
             is BotOfflineEvent.Force -> {
-                bot.logger.info("Connection occupied by another android device: ${event.message}")
-                close(ForceOfflineException(event.toString()))
+                bot.logger.info { "Connection occupied by another android device: ${event.message}" }
+                closeAndJoin(ForceOfflineException(event.toString()))
             }
         }
     }
@@ -176,15 +171,19 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     @UseExperimental(MiraiInternalAPI::class)
     override fun close(cause: Throwable?) {
+        if (!this.botJob.isActive) {
+            // already cancelled
+            return
+        }
         kotlin.runCatching {
             if (cause == null) {
+                this.botJob.cancel()
                 network.close()
-                this.botJob.complete()
-                offlineListener.complete()
+                offlineListener.cancel()
             } else {
+                this.botJob.cancel(CancellationException("bot cancelled", cause))
                 network.close(cause)
-                this.botJob.completeExceptionally(cause)
-                offlineListener.completeExceptionally(cause)
+                offlineListener.cancel(CancellationException("bot cancelled", cause))
             }
         }
         groups.delegate.clear()

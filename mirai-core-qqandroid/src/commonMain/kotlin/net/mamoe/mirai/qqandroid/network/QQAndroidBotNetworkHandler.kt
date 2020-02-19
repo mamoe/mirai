@@ -78,7 +78,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 } catch (e: CancellationException) {
                     return@launch
                 } catch (e: Throwable) {
-                    BotOfflineEvent.Dropped(bot).broadcast()
+                    if (this@QQAndroidBotNetworkHandler.isActive) {
+                        BotOfflineEvent.Dropped(bot).broadcast()
+                    }
                     return@launch
                 }
                 packetReceiveLock.withLock {
@@ -185,6 +187,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
+        check(bot.isActive) { "bot is dead therefore network can't init" }
+        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
         MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
 
         bot.qqs.delegate.clear()
@@ -494,6 +498,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 发送一个包, 但不期待任何返回.
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
+        check(bot.isActive) { "bot is dead therefore can't send any packet" }
+        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
         logger.info("Send: ${this.commandName}")
         withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
             channel.send(delegate)
@@ -508,6 +514,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 0): E {
         require(timeoutMillis > 0) { "timeoutMillis must > 0" }
         require(retry >= 0) { "retry must >= 0" }
+
+        check(bot.isActive) { "bot is dead therefore can't send any packet" }
+        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
 
         var lastException: Exception? = null
         if (retry == 0) {

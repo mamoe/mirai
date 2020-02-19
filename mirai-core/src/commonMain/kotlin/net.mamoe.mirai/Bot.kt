@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE", "UnusedImport")
 
 package net.mamoe.mirai
 
@@ -35,7 +35,8 @@ import kotlin.jvm.JvmStatic
  *
  * 注: Bot 为全协程实现, 没有其他任务时若不使用 [join], 主线程将会退出.
  *
- * @see Contact
+ * @see Contact 联系人
+ * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
 @UseExperimental(MiraiInternalAPI::class)
 abstract class Bot : CoroutineScope {
@@ -195,7 +196,9 @@ abstract class Bot : CoroutineScope {
 
     /**
      * 登录, 或重新登录.
-     * 重新登录时不会再次拉取联系人列表.
+     * 这个函数总是关闭一切现有网路任务, 然后重新登录并重新缓存好友列表和群列表.
+     *
+     * 一般情况下不需要重新登录. Mirai 能够自动处理掉线情况.
      *
      * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.relogin]
      *
@@ -231,23 +234,18 @@ abstract class Bot : CoroutineScope {
     // endregion
 
     /**
-     * 关闭这个 [Bot], 停止一切相关活动. 所有引用都会被释放.
+     * 关闭这个 [Bot], 立即取消 [Bot] 的 [kotlinx.coroutines.SupervisorJob].
+     * 之后 [kotlinx.coroutines.isActive] 将会返回 `false`.
      *
-     * 注: 不可重新登录. 必须重新实例化一个 [Bot].
+     * **注意:** 不可重新登录. 必须重新实例化一个 [Bot].
      *
      * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
      *
-     * @see closeAndJoin
+     * @see closeAndJoin 取消并 [Bot.join], 以确保 [Bot] 相关的活动被完全关闭
      */
     abstract fun close(cause: Throwable? = null)
 
     // region extensions
-
-    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("getFriend(this.toLong())"))
-    fun Int.qq(): QQ = getFriend(this.toLong())
-
-    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("getFriend(this)"))
-    fun Long.qq(): QQ = getFriend(this)
 
     final override fun toString(): String {
         return "Bot(${uin})"
