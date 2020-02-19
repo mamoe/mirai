@@ -126,7 +126,7 @@ JVM 上启动需 80M 内存, 每多一个机器人实例需要 30M 内存.
 您的 star 是对我们最大的鼓励(点击项目右上角)
 
 ## Wiki
-在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**（可能过时，待 QQ Android 协议完成后会重写）。
+在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
 
 ## Try
 
