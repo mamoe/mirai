@@ -11,8 +11,6 @@
 
 package net.mamoe.mirai.event
 
-import net.mamoe.mirai.BotImpl
-import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
@@ -71,9 +69,6 @@ abstract class AbstractCancellableEvent : Event, CancellableEvent {
 @UseExperimental(MiraiInternalAPI::class)
 suspend fun <E : Event> E.broadcast(): E = apply {
     if (this is BroadcastControllable && !this.shouldBroadcast) {
-        return@apply
-    }
-    if (this is BotEvent && !(this.bot as BotImpl<*>).onEvent(this)) {
         return@apply
     }
     this@broadcast.broadcastInternal() // inline, no extra cost
