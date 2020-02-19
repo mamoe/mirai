@@ -12,6 +12,7 @@ package net.mamoe.mirai.utils.cryptor
 import net.mamoe.mirai.utils.md5
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.*
+import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.KeyAgreement
 
@@ -34,24 +35,23 @@ actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
         @Suppress("ObjectPropertyName")
-        private val _isECDHAvailable: Boolean
-        actual val isECDHAvailable: Boolean get() = _isECDHAvailable
+        private val _isECDHAvailable: Boolean = kotlin.runCatching {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
+            }
+            Security.addProvider(BouncyCastleProvider())
+            generateKeyPair() // try if it is working
+        }.isSuccess
 
-        init {
-            _isECDHAvailable = kotlin.runCatching {
-                if (Security.getProvider("BouncyCastle") != null) {
-                    Security.removeProvider("BouncyCastle")
-                }
-                Security.addProvider(BouncyCastleProvider())
-                generateKeyPair() // try if it is working
-            }.isSuccess
-        }
+        actual val isECDHAvailable: Boolean get() = _isECDHAvailable
 
         actual fun generateKeyPair(): ECDHKeyPair {
             if (!isECDHAvailable) {
                 return ECDHKeyPair.DefaultStub
             }
-            return ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH").genKeyPair())
+            return ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
+                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                .genKeyPair())
         }
 
         actual fun calculateShareKey(

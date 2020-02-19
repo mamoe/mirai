@@ -12,6 +12,7 @@ package net.mamoe.mirai.utils.cryptor
 import android.annotation.SuppressLint
 import net.mamoe.mirai.utils.md5
 import java.security.*
+import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.KeyAgreement
 
@@ -60,11 +61,14 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             _isECDHAvailable = false
         }
 
+
         actual fun generateKeyPair(): ECDHKeyPair {
             if (!isECDHAvailable) {
                 return ECDHKeyPair.DefaultStub
             }
-            return ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH").genKeyPair())
+            return ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
+                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                .genKeyPair())
         }
 
         actual fun calculateShareKey(
