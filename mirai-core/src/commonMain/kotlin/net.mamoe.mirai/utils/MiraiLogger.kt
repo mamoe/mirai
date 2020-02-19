@@ -151,43 +151,43 @@ interface MiraiLogger {
 
 
 inline fun MiraiLogger.verbose(lazyMessage: () -> String) {
-    if (this is MiraiLoggerWithSwitch && switch) verbose(lazyMessage())
+    if (this !is MiraiLoggerWithSwitch || switch) verbose(lazyMessage())
 }
 
 inline fun MiraiLogger.verbose(lazyMessage: () -> String, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) verbose(lazyMessage(), e)
+    if (this !is MiraiLoggerWithSwitch || switch) verbose(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.debug(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) debug(lazyMessage())
+    if (this !is MiraiLoggerWithSwitch || switch) debug(lazyMessage())
 }
 
 inline fun MiraiLogger.debug(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) debug(lazyMessage(), e)
+    if (this !is MiraiLoggerWithSwitch || switch) debug(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.info(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) info(lazyMessage())
+    if (this !is MiraiLoggerWithSwitch || switch) info(lazyMessage())
 }
 
 inline fun MiraiLogger.info(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) info(lazyMessage(), e)
+    if (this !is MiraiLoggerWithSwitch || switch) info(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.warning(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) warning(lazyMessage())
+    if (this !is MiraiLoggerWithSwitch || switch) warning(lazyMessage())
 }
 
 inline fun MiraiLogger.warning(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) warning(lazyMessage(), e)
+    if (this !is MiraiLoggerWithSwitch || switch) warning(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.error(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) error(lazyMessage())
+    if (this !is MiraiLoggerWithSwitch || switch) error(lazyMessage())
 }
 
 inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) error(lazyMessage(), e)
+    if (this !is MiraiLoggerWithSwitch || switch) error(lazyMessage(), e)
 }
 
 /**
