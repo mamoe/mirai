@@ -102,7 +102,11 @@ internal class MessageSvc {
         }
 
         @UseExperimental(MiraiInternalAPI::class)
-        open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate)
+        open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate) {
+            override fun toString(): String {
+                return "MessageSvc.PbGetMsg.GetMsgSuccess(messages=List(size=${this.size}))"
+            }
+        }
 
         /**
          * 不要直接 expect 这个 class. 它可能还没同步完成
