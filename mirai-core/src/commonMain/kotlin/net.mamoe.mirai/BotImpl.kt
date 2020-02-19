@@ -86,7 +86,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                 if (!_network.isActive) {
                     return@subscribeAlways
                 }
-                bot.logger.info("Connection dropped or lost by server, retrying login")
+                bot.logger.info("Connection dropped by server or lost, retrying login")
 
                 tryNTimesOrException(configuration.reconnectionRetryTimes) { tryCount ->
                     if (tryCount != 0) {
@@ -95,7 +95,10 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     network.relogin()
                     logger.info("Reconnected successfully")
                     return@subscribeAlways
-                }?.let { throw it }
+                }?.let {
+                    logger.info("Cannot reconnect")
+                    throw it
+                }
             }
             is BotOfflineEvent.Active -> {
                 val msg = if (event.cause == null) {
