@@ -189,7 +189,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
-        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
 
         bot.qqs.delegate.clear()
         bot.groups.delegate.clear()
@@ -297,6 +296,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         heartbeatJob = startHeartbeatJobOrKill()
 
         joinAll(friendListJob, groupJob)
+        MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<MessageSvc.PbGetMsg.GetMsgSuccess>()
+
         bot.firstLoginSucceed = true
 
         _pendingEnabled.value = false
@@ -507,7 +508,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     suspend fun OutgoingPacket.sendWithoutExpect() {
         check(bot.isActive) { "bot is dead therefore can't send any packet" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
-        logger.info("Send: ${this.commandName}")
+        logger.verbose("Send: ${this.commandName}")
         withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
             channel.send(delegate)
         }
@@ -533,7 +534,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
                     channel.send(delegate)
                 }
-                logger.info("Send: ${this.commandName}")
+                logger.verbose("Send: ${this.commandName}")
                 return withTimeoutOrNull(timeoutMillis) {
                     @Suppress("UNCHECKED_CAST")
                     handler.await() as E
@@ -552,7 +553,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
                         channel.send(data, 0, length)
                     }
-                    logger.info("Send: ${this.commandName}")
+                    logger.verbose("Send: ${this.commandName}")
                     return withTimeoutOrNull(timeoutMillis) {
                         @Suppress("UNCHECKED_CAST")
                         handler.await() as E
