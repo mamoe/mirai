@@ -106,7 +106,7 @@ internal class MessageSvc {
         open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate)
 
         /**
-         * 不要直接 expect 这个 class. 它可能
+         * 不要直接 expect 这个 class. 它可能还没同步完成
          */
         @MiraiInternalAPI
         open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) : MultiPacket<Packet>(delegate),
