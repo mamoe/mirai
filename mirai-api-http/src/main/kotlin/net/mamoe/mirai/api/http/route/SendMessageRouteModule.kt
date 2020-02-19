@@ -43,18 +43,23 @@ fun Application.messageModule() {
         }
 
         miraiVerify<SendDTO>("/sendFriendMessage") {
-            it.session.bot.getFriend(it.target).sendMessage(it.messageChain.toMessageChain())
+            it.session.bot.getFriend(it.target).apply {
+                sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
+            }
             call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
-            it.session.bot.getGroup(it.target).sendMessage(it.messageChain.toMessageChain())
+            it.session.bot.getGroup(it.target).apply {
+                sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
+            }
             call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/quoteMessage") {
-            it.session.messageQueue.quoteCache[it.target]?.quoteReply(it.messageChain.toMessageChain())
-                ?: throw NoSuchElementException()
+            it.session.messageQueue.quoteCache[it.target]?.apply {
+                quoteReply(it.messageChain.toMessageChain(group))
+            } ?: throw NoSuchElementException()
             call.respondStateCode(StateCode.Success)
         }
 

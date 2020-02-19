@@ -18,6 +18,7 @@ import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.data.NoSuchBotException
 import net.mamoe.mirai.api.http.data.StateCode
+import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -28,7 +29,7 @@ fun Application.authModule() {
             if (it.authKey != SessionManager.authKey) {
                 call.respondStateCode(StateCode(1, "Auth Key错误"))
             } else {
-                call.respondStateCode(StateCode(0, SessionManager.createTempSession().key))
+                call.respondDTO(AuthRetDTO(0, SessionManager.createTempSession().key))
             }
         }
 
@@ -54,6 +55,9 @@ fun Application.authModule() {
 
     }
 }
+
+@Serializable
+private data class AuthRetDTO(val code: Int, val session: String) : DTO
 
 @Serializable
 private data class BindDTO(override val sessionKey: String, val qq: Long) : VerifyDTO()

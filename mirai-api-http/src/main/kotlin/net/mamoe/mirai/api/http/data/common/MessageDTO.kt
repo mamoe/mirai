@@ -11,6 +11,9 @@ package net.mamoe.mirai.api.http.data.common
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
@@ -40,7 +43,7 @@ data class UnKnownMessagePacketDTO(val msg: String) : MessagePacketDTO()
 data class MessageSourceDTO(val uid: Long) : MessageDTO()
 @Serializable
 @SerialName("At")
-data class AtDTO(val target: Long, val display: String) : MessageDTO()
+data class AtDTO(val target: Long, val display: String = "") : MessageDTO()
 @Serializable
 @SerialName("AtAll")
 data class AtAllDTO(val target: Long = 0) : MessageDTO() // target为保留字段
@@ -83,8 +86,8 @@ suspend fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
     else -> UnKnownMessagePacketDTO("UnKnown Message Packet")
 }.apply { messageChain = Array(message.size){ message[it].toDTO() }}
 
-fun MessageChainDTO.toMessageChain() =
-    MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage()) } }
+fun MessageChainDTO.toMessageChain(contact: Contact) =
+    MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {
@@ -99,8 +102,8 @@ fun Message.toDTO() = when (this) {
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-fun MessageDTO.toMessage() = when (this) {
-    is AtDTO -> At(target, display)
+fun MessageDTO.toMessage(contact: Contact) = when (this) {
+    is AtDTO -> At((contact as Group)[target])
     is AtAllDTO -> AtAll
     is FaceDTO -> Face(FaceId(faceId.toUByte()))
     is PlainDTO -> PlainText(text)

@@ -16,6 +16,8 @@ fun main() {
 }
 ```
 
+
+
 ## 认证相关
 
 ### 开始会话-认证(Authorize)
@@ -141,6 +143,8 @@ fun main() {
 > SessionKey与Bot 对应错误时将会返回状态码5：指定对象不存在
 
 
+
+
 ## 消息相关
 
 
@@ -261,10 +265,10 @@ fun main() {
 ### 发送图片消息（通过URL）
 
 ```
-[POST] /sendGroupMessage
+[POST] /sendImageMessage
 ```
 
-使用此方法向指定群发送消息
+使用此方法向指定对象（群或好友）发送图片消息
 
 #### 请求
 
@@ -303,7 +307,7 @@ fun main() {
 ### 图片文件上传
 
 ```
-[POST] /sendGroupMessage
+[POST] /uploadImage
 ```
 
 使用此方法上传图片文件至服务器并返回ImageId
@@ -385,7 +389,7 @@ Content-Type：multipart/form-data
 
 + [x] At，@消息
 + [x] AtAll，@全体成员
-+ [x] Face，表情消息
++ [ ] Face，表情消息
 + [x] Plain，文字消息
 + [x] Image，图片消息
 + [ ] Xml，Xml卡片消息
@@ -414,10 +418,10 @@ Content-Type：multipart/form-data
 }
 ```
 
-| 名字    | 类型   | 说明                      |
-| ------- | ------ | ------------------------- |
-| target  | Long   | 群员QQ号                  |
-| display | String | @时显示的文本如："@Mirai" |
+| 名字    | 类型   | 说明                                           |
+| ------- | ------ | ---------------------------------------------- |
+| target  | Long   | 群员QQ号                                       |
+| dispaly | String | At时显示的文字，发送消息时无效，自动使用群名片 |
 
 #### AtAll
 
@@ -515,6 +519,7 @@ Content-Type：multipart/form-data
     "remark":""
 }]
 ```
+
 
 
 ### 获取群列表
@@ -786,6 +791,8 @@ Content-Type：multipart/form-data
 }
 ```
 
+
+
 ### 获取群设置
 
 使用此方法获取群设置
@@ -814,6 +821,7 @@ Content-Type：multipart/form-data
     "anonymousChat": true
 }
 ```
+
 
 
 ### 修改群员资料
@@ -855,6 +863,8 @@ Content-Type：multipart/form-data
     "msg": "success"
 }
 ```
+
+
 
 ### 获取群员资料
 
