@@ -19,7 +19,9 @@ expect interface ECDHPublicKey {
     fun getEncoded(): ByteArray
 }
 
-expect class ECDHKeyPair {
+internal expect class ECDHKeyPairImpl : ECDHKeyPair
+
+interface ECDHKeyPair {
     val privateKey: ECDHPrivateKey
     val publicKey: ECDHPublicKey
 
@@ -27,6 +29,15 @@ expect class ECDHKeyPair {
      * 私匙和固定公匙([initialPublicKey]) 计算得到的 shareKey
      */
     val initialShareKey: ByteArray
+
+    object DefaultStub : ECDHKeyPair {
+        val defaultPublicKey = "020b03cf3d99541f29ffec281bebbd4ea211292ac1f53d7128".chunkedHexToBytes()
+        val defaultShareKey = "4da0f614fc9f29c2054c77048a6566d7".chunkedHexToBytes()
+
+        override val privateKey: Nothing get() = error("stub!")
+        override val publicKey: Nothing get() = error("stub!")
+        override val initialShareKey: ByteArray get() = defaultShareKey
+    }
 }
 
 /**
@@ -41,6 +52,8 @@ expect class ECDH(keyPair: ECDHKeyPair) {
     fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray
 
     companion object {
+        val isECDHAvailable: Boolean
+
         /**
          * 由完整的 publicKey ByteArray 得到 [ECDHPublicKey]
          */
@@ -60,9 +73,6 @@ expect class ECDH(keyPair: ECDHKeyPair) {
     override fun toString(): String
 }
 
-/**
- *
- */
 @Suppress("FunctionName")
 expect fun ECDH(): ECDH
 

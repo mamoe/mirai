@@ -47,7 +47,7 @@ internal class WtLogin {
                 ticket: String
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
-                    writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(2) // subCommand
                         writeShort(4) // count of TLVs
                         t193(ticket)
@@ -64,7 +64,7 @@ internal class WtLogin {
                 captchaAnswer: String
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
-                    writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(2) // subCommand
                         writeShort(4) // count of TLVs
                         t2(captchaAnswer, captchaSign, 0)
@@ -83,7 +83,7 @@ internal class WtLogin {
                 t402: ByteArray
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
-                    writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(20) // subCommand
                         writeShort(4) // count of TLVs, probably ignored by server?
                         t8(2052)
@@ -103,7 +103,7 @@ internal class WtLogin {
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId, unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00") {
-                    writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(8) // subCommand
                         writeShort(6) // count of TLVs, probably ignored by server?TODO
                         t8(2052)
@@ -131,7 +131,7 @@ internal class WtLogin {
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
-                    writeOicqRequestPacket(client, EncryptMethodECDH7(client.ecdh), 0x0810) {
+                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(9) // subCommand
                         writeShort(17) // count of TLVs, probably ignored by server?
                         //writeShort(LoginType.PASSWORD.value.toShort())
