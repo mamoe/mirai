@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.utils.cryptor
 
+import android.annotation.SuppressLint
 import net.mamoe.mirai.utils.md5
 import java.security.*
 import java.security.spec.X509EncodedKeySpec
@@ -32,6 +33,26 @@ actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
+        init {
+            kotlin.runCatching {
+                @SuppressLint("PrivateApi")
+                val clazz = Class.forName(
+                    "com.android.org.bouncycastle.jce.provider.BouncyCastleProvider",
+                    true,
+                    ClassLoader.getSystemClassLoader()
+                )
+
+                val providerName = clazz.getDeclaredField("PROVIDER_NAME").get(null) as String
+
+                if (Security.getProvider(providerName) != null) {
+                    Security.removeProvider(providerName)
+                }
+                Security.addProvider(clazz.newInstance() as Provider)
+            }.exceptionOrNull()?.let {
+                throw IllegalStateException("cannot init BouncyCastle", it)
+            }
+        }
+
         actual fun generateKeyPair(): ECDHKeyPair {
             return ECDHKeyPair(KeyPairGenerator.getInstance("ECDH").genKeyPair())
         }
