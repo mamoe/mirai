@@ -325,7 +325,7 @@ internal class WtLogin {
                 2 -> onSolveLoginCaptcha(tlvMap, bot)
                 160 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
                 204 /*-52*/ -> onSMSVerifyNeeded(tlvMap, bot)
-                else -> tlvMap[0x149]?.let { analysisTlv149(it) } ?: error("unknown login result type: $type")
+                else -> tlvMap[0x149]?.let { analysisTlv149(it) } ?: error("unknown login result type: $type, TLVMap = ${tlvMap.contentToString()}")
             }
         }
 
