@@ -11,7 +11,7 @@
 ## Build Requirements
 
 - Kotlin 1.3.61 
-- JDK 8 (required)
+- JDK 6 (required)
 - JDK 11（for protocol tools, optional）
 - Android SDK 29 (for Android target, optional)
 
