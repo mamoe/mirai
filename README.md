@@ -36,8 +36,7 @@ Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Ap
 
 ## 开始使用Mirai
 
-Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-core，mirai-japt以及mirai-api-http等核心模块进行特性的开发，对于非开发者的使用暂时不做过多支持，仅展示开发计划。
-
+Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-core，mirai-japt, mirai-api-http, mirai-console等核心模块进行特性的开发。
 
 
 ### 开发者
