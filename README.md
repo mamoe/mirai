@@ -55,10 +55,10 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 - [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, <b>全平台可运行(UI版, Unix版, Android版, Web版)</b> **本模块正在完善**
 
 ### 我是其他平台的使用者
-####酷Q平台用户: 
+#### 酷Q平台用户: 
 - 全部酷Q的DLL插件可以在mirai中直接加载, 需使用<b>Mirai-Native</b>[源码](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)]()
 - 全部基于酷Q HTTPAPI 的插件可以在mirai中直接加载, 需使用<b>Mirai-CQ-Adapter</b>[源码](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)]()
-####其他平台
+#### 其他平台
 - 如果你的插件是通过酷Q HTTPAPI 实现的(绝大部分), 都可以通过<b>Mirai-CQ-Adapter</b>在mirai中直接使用
 
 ## CHANGELOG
