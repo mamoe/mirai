@@ -19,7 +19,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.data.EventPacket
+import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -37,7 +37,7 @@ expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>(bot: Bot) 
  */ // Tips: 在 IntelliJ 中 (左侧边栏) 打开 `Structure`, 可查看类结构
 @Suppress("NOTHING_TO_INLINE")
 @MiraiInternalAPI
-abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : EventPacket, BotEvent {
+abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : Packet, BotEvent {
     /**
      * 接受到这条消息的
      */
