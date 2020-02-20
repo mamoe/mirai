@@ -142,9 +142,10 @@ internal class OnlinePush {
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
-            val packets = reqPushMsg.vMsgInfos.mapNotNull { msgInfo: MsgInfo ->
-                msgInfo.vMsg!!.read {
 
+            @Suppress("USELESS_CAST") // 不要信任 kotlin 类型推断
+            val packets: List<Packet> = reqPushMsg.vMsgInfos.mapNotNull { msgInfo: MsgInfo ->
+                msgInfo.vMsg!!.read {
                     when {
                         msgInfo.shMsgType.toInt() == 732 -> {
                             val group = bot.getGroup(this.readUInt().toLong())
@@ -162,41 +163,48 @@ internal class OnlinePush {
                                     val target = this.readUInt().toLong()
                                     val time = this.readInt()
 
-                                    return@mapNotNull if (target == 0L) {
+                                    if (target == 0L) {
                                         if (time == 0) {
-                                            GroupMuteAllEvent(
+                                            return@mapNotNull GroupMuteAllEvent(
                                                 origin = group.isMuteAll.also { group._muteAll = false },
                                                 new = false,
                                                 operator = operator,
                                                 group = group
-                                            )
+                                            ) as Packet
                                         } else {
-                                            GroupMuteAllEvent(
+                                            return@mapNotNull GroupMuteAllEvent(
                                                 origin = group.isMuteAll.also { group._muteAll = true },
                                                 new = true,
                                                 operator = operator,
                                                 group = group
-                                            )
+                                            ) as Packet
                                         }
                                     } else {
                                         if (target == bot.uin) {
-                                            @Suppress("IMPLICIT_CAST_TO_ANY") // false positive
-                                            return@mapNotNull if (time == 0) {
-                                                BotUnmuteEvent(operator)
-                                            } else
-                                                BotMuteEvent(durationSeconds = time, operator = operator)
+                                            if (group._botMuteRemaining != time) {
+                                                if (time == 0) {
+                                                    group._botMuteRemaining = 0
+                                                    return@mapNotNull BotUnmuteEvent(operator) as Packet
+                                                } else {
+                                                    group._botMuteRemaining = time
+                                                    return@mapNotNull BotMuteEvent(durationSeconds = time, operator = operator) as Packet
+                                                }
+                                            } else {
+                                                return@mapNotNull null
+                                            }
                                         } else {
                                             val member = group[target]
-                                            @Suppress("IMPLICIT_CAST_TO_ANY") // false positive
+                                            // TODO: 2020/2/20 检查是否重复
                                             return@mapNotNull if (time == 0) {
                                                 MemberUnmuteEvent(operator = operator, member = member)
                                             } else {
-                                                MemberMuteEvent(operator = operator, member = member, durationSeconds = time)
+                                                MemberMuteEvent(operator = operator, member = member, durationSeconds = time) as Packet
                                             }
                                         }
                                     }
                                 }
-                                3585 -> { // 匿名
+                                3585 -> {
+                                    // 匿名
                                     val operator = group[this.readUInt().toLong()]
                                     val switch = this.readInt() == 0
                                     return@mapNotNull GroupAllowAnonymousChatEvent(
@@ -239,7 +247,7 @@ internal class OnlinePush {
                                             }
                                             else -> {
                                                 bot.network.logger.debug { "Unknown server messages $message" }
-                                                return@mapNotNull NoPacket
+                                                return@mapNotNull null
                                             }
                                         }
                                     }
@@ -250,25 +258,27 @@ internal class OnlinePush {
                                 // }
                                 else -> {
                                     bot.network.logger.debug { "unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " " }
+                                    return@mapNotNull null
                                 }
                             }
+                            return@mapNotNull null
                         }
                         msgInfo.shMsgType.toInt() == 528 -> {
                             bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
                             // val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
                             // println(content.contentToString())
+                            return@mapNotNull null
                         }
                         else -> {
                             bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
+                            return@mapNotNull null
                         }
                     }
+                    return@mapNotNull null
                 }
-                return@mapNotNull null
             }
-
             return MultiPacket(packets)
         }
-
 
         override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
             return buildResponseUniPacket(client, sequenceId = sequenceId) {
