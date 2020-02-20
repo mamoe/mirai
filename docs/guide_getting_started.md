@@ -6,13 +6,13 @@
 
 下面介绍详细的入门步骤。
 
-## With console
+## With Console
 
 使用mirai-console，以插件形式对服务器功能进行管理，启动无需任何IDE。
 
 **由于mirai-console还没有开发完成，暂时不提供入门**
 
-## With loader
+## With Loader
 
 通过编写Kotlin程序启动mirai-core，并定义你的Mirai Bot行为。
 
@@ -103,4 +103,4 @@ suspend fun main() {
 
 
 
-至此，简单的入门已经结束，下面可根据不同的需求参阅文档进行功能的添加。
+至此，简单的入门已经结束，下面可根据不同的需求参阅wiki进行功能的添加。
