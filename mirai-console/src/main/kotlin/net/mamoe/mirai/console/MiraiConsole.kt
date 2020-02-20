@@ -20,8 +20,13 @@ import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
 import net.mamoe.mirai.console.plugins.withDefaultWriteSave
 import net.mamoe.mirai.contact.sendMessage
+import net.mamoe.mirai.utils.DeviceInfo
+import net.mamoe.mirai.utils.FileBasedDeviceInfo
 import net.mamoe.mirai.utils.SimpleLogger
+import net.mamoe.mirai.utils.SystemDeviceInfo
+import net.mamoe.mirai.utils.cryptor.ECDH
 import java.io.File
+import java.security.Security
 import java.util.*
 
 
@@ -46,8 +51,8 @@ object MiraiConsole {
     var path: String = System.getProperty("user.dir")
 
     val version = "v0.01"
-    var coreVersion = "v0.15.1"
-    val build = "Beta"
+    var coreVersion = "v0.18.0"
+    val build = "Zeta"
 
     var allDown = false
 
@@ -55,6 +60,13 @@ object MiraiConsole {
     fun start(
         frontEnd: MiraiConsoleUI
     ) {
+        try {
+            ECDH()
+        } catch (ignored: Exception) {
+
+        }
+        Security.removeProvider("BC")
+
         this.frontEnd = frontEnd
         frontEnd.pushVersion(
             version, build, coreVersion
@@ -333,7 +345,6 @@ object MiraiConsole {
         var HTTP_API_AUTH_KEY: String by config.withDefaultWriteSave {
             "InitKey" + generateSessionKey()
         }
-
     }
 
 }

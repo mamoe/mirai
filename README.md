@@ -38,20 +38,28 @@ Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Ap
 
 Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-core，mirai-japt以及mirai-api-http等核心模块进行特性的开发，对于非开发者的使用暂时不做过多支持，仅展示开发计划。
 
-### 开发者
 
-- 假如你熟悉Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
-- 假如你不熟悉Kotlin，希望一份较详细的起步教程，请参阅[Mirai Guide - Getting Started](/docs/guide_getting_started.md)
-- 假如你使用Java作为开发语言，请参阅[mirai-japt](/mirai-japt/README.md)
-- 假如你是其他平台开发者，可以通过了解 [mirai-api-http](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入，欢迎开发不同平台的mirai-sdk
+
+### 开发者
+#### 以编写机器人逻辑为主
+- 需了解<b>Java</b>或<b>Kotlin</b>, 使用Mirai-Console插件系统进行[插件开发](), 直接进行逻辑编写并与其他插件开发者合作共享
+
+#### 使用Mirai为第三方库
+- 假如你倾向使用Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
+- 假如你想要试用Kotlin，希望一份较详细的起步教程，请参阅[Mirai Guide - Getting Started](/docs/guide_getting_started.md)
+- 假如你倾向Java作为开发语言，请参阅[mirai-japt](/mirai-japt/README.md)
+- 假如你倾向其他语言开发，可以通过了解 [mirai-api-http](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入，欢迎开发不同平台的mirai-sdk
 - 此外，你还可以在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
 
 ### 使用者
+- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, <b>全平台可运行(UI版, Unix版, Android版, Web版)</b> **本模块正在完善**
 
-- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, 在终端中启动 Mirai 并获得机器人服务，**本模块还未完善**，请耐心等待开发完成。
-- mirai-webpanel Mirai的Web控制台，支持在网页中管理机器人与插件。本模块目前在计划中。在其他模块稳定后，将开始进行开发。
-
-
+### 我是其他平台的使用者
+####酷Q平台用户: 
+- 全部酷Q的DLL插件可以在mirai中直接加载, 需使用<b>Mirai-Native</b>[源码](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)]()
+- 全部基于酷Q HTTPAPI 的插件可以在mirai中直接加载, 需使用<b>Mirai-CQ-Adapter</b>[源码](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)]()
+####其他平台
+- 如果你的插件是通过酷Q HTTPAPI 实现的(绝大部分), 都可以通过<b>Mirai-CQ-Adapter</b>在mirai中直接使用
 
 ## CHANGELOG
 
