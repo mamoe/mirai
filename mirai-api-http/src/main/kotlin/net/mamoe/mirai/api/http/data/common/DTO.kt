@@ -17,6 +17,6 @@ abstract class VerifyDTO : DTO {
 }
 
 @Serializable
-open class EventDTO : DTO
+abstract class EventDTO : DTO
 
 object IgnoreEventDTO : EventDTO()

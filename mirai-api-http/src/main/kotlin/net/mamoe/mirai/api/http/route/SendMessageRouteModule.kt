@@ -37,9 +37,8 @@ fun Application.messageModule() {
         miraiGet("/fetchMessage") {
             val count: Int = paramOrNull("count")
             val fetch = it.messageQueue.fetch(count)
-            val ls = Array(fetch.size) { index -> fetch[index].toDTO() }
 
-            call.respondJson(ls.toList().toJson())
+            call.respondJson(fetch.toJson())
         }
 
         miraiVerify<SendDTO>("/sendFriendMessage") {

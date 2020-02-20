@@ -1,8 +1,12 @@
 <div align="center">
- 
+
+
+
    <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
+
    <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
 ----
+
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Actions Status](https://github.com/mamoe/mirai/workflows/CI/badge.svg)](https://github.com/mamoe/mirai/actions)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
@@ -16,6 +20,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 </div>
 
 ## Mirai
+
 **[English](README-eng.md)**  
 
 多平台 **QQ Android 和 TimPC** 协议支持库与高效率的机器人框架.   
@@ -27,94 +32,59 @@ Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Ap
 
 加入 Gitter, 或加入 QQ 群: 655057127
 
+
+
+## 开始使用Mirai
+
+Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-core，mirai-japt以及mirai-api-http等核心模块进行特性的开发，对于非开发者的使用暂时不做过多支持，仅展示开发计划。
+
+### 开发者
+
+- 假如你熟悉Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
+- 假如你不熟悉Kotlin，希望一份较详细的起步教程，请参阅[Mirai Guide - Getting Started](/docs/guide_getting_started.md)
+- 假如你使用Java作为开发语言，请参阅[mirai-japt](/mirai-japt/README.md)
+- 假如你是其他平台开发者，可以通过了解 [mirai-api-http](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入，欢迎开发不同平台的mirai-sdk
+- 此外，你还可以在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
+
+### 使用者
+
+- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, 在终端中启动 Mirai 并获得机器人服务，**本模块还未完善**，请耐心等待开发完成。
+- mirai-webpanel Mirai的Web控制台，支持在网页中管理机器人与插件。本模块目前在计划中。在其他模块稳定后，将开始进行开发。
+
+
+
 ## CHANGELOG
+
 在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
 
+
+
 ## Modules
+
 ### mirai-core
+
 通用 API 模块，一套 API 适配两套协议。  
 **请参考此模块的 API**  
-  
+
 ### mirai-core-qqandroid
+
   QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前完成大部分。   
+
   - 高兼容性：协议仅含极少部分为硬编码，其余全部随官方方式动态生成
   - 高安全性：密匙随机，ECDH 动态计算
   - 已支持大部分使用场景, 详情请在[Project](https://github.com/mamoe/mirai/projects/3)查看
 
 ### mirai-core-timpc
+
 TIM PC （2.3.2 版本，2019 年 8 月）协议的实现  
 支持的功能： 
+
 - 消息收发：图片文字复合消息，图片消息
 - 群管功能：群员列表，禁言
-（目前不再更新此协议，请关注上文的安卓协议）
+  （目前不再更新此协议，请关注上文的安卓协议）
 
-## Use directly
-**直接使用 Mirai(终端环境/网页面板（将来））.**  
-[Mirai-Console](https://github.com/mamoe/mirai/tree/master/mirai-console) 插件支持, 在终端中启动 Mirai 并获得机器人服务  
-本模块还未完善。
 
-## Use as a library
-**mirai-core 为独立设计, 可以作为库内置于任意 Java(JVM)/Android 项目中使用.**
-
-请将 `VERSION` 替换为最新的版本(如 `0.15.0`):
-[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
-**Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
-
-### Maven
-Kotlin 在 Maven 上只支持 JVM 平台.
-```xml
-<repositories>
-    <repository>
-        <id>jcenter</id>
-        <url>https://jcenter.bintray.com/</url>
-    </repository>
-</repositories>
-```
-```xml
-<dependencies>
-    <dependency>
-        <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core-qqandroid-jvm</artifactId>
-        <version>0.15.1</version> <!-- 替换版本为最新版本 -->
-    </dependency>
-</dependencies>
-```
-
-### Gradle
-Mirai 只发布在 `jcenter`, 因此请确保添加 `jcenter()` 仓库：
-```kotlin
-repositories{
-  jcenter()
-}
-```
-若您需要使用在跨平台项目, 则要对各个目标平台添加不同的依赖，这与 kotlin 相关多平台库的依赖是类似的。  
-**若您只需要使用在单一平台, 则只需要添加一项该平台的依赖.**
-
-**注意：**
-Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。  
-只添加 API 模块将无法正常工作。  
-现在只推荐使用 QQAndroid 协议，请参照下文选择对应目标平台的依赖添加。
-
-**jvm** (JVM 平台)
-```kotlin
-implementation("net.mamoe:mirai-core-qqandroid-jvm:VERSION")
-```
-**common** (通用平台)
-```kotlin
-implementation("net.mamoe:mirai-core-qqandroid-common:VERSION")
-```
-**android** (Android 平台)
-```kotlin
-implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
-```
-
-## Java Compatibility
-**若你希望使用 Java 开发**, 请查看: [mirai-japt](mirai-japt/README.md)
-
-### Performance
-Android 上, Mirai 运行需使用 80M 内存.  
-JVM 上启动需 80M 内存, 每多一个机器人实例需要 30M 内存.
 
 ## Contribution
 
@@ -125,41 +95,12 @@ JVM 上启动需 80M 内存, 每多一个机器人实例需要 30M 内存.
 
 您的 star 是对我们最大的鼓励(点击项目右上角)
 
-## Wiki
-在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
-
-## Try
-
-### On JVM or Android
-现在体验低付出高效率的 Mirai
-
-```kotlin
-val bot = Bot(qqId, password).alsoLogin()
-bot.subscribeMessages {
-  "你好" reply "你好!"
-  "profile" reply { sender.queryProfile() }
-  contains("图片"){ File(imagePath).send() }
-}
-bot.subscribeAlways<MemberPermissionChangedEvent> {
-  if (it.kind == BECOME_OPERATOR)
-    reply("${it.member.id} 成为了管理员")
-}
-```
-
-1. Clone
-2. Import as Gradle project
-3. 运行 Demo 程序: [mirai-demo](#mirai-demo) 示例和演示程序
 
 
-## Build Requirements
+## Libraries used
 
-- Kotlin 1.3.61 
-- JDK 8 (required)
-- JDK 11（for protocol tools, optional）
-- Android SDK 29 (for Android target, optional)
-
-#### Libraries used
 感谢:
+
 - [kotlin-stdlib](https://github.com/JetBrains/kotlin)
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
@@ -176,15 +117,21 @@ bot.subscribeAlways<MemberPermissionChangedEvent> {
 - [toml4j](https://github.com/mwanji/toml4j)
 - [snakeyaml](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
 
+
+
 ## License
+
 协议原版权归属腾讯科技股份有限公司所有，本项目其他代码遵守：  
 **GNU AFFERO GENERAL PUBLIC LICENSE version 3**  
 
 其中部分要求:  
+
 - (见 LICENSE 第 13 节) 尽管本许可协议有其他规定，但如果您修改本程序，则修改后的版本必须显着地为所有通过计算机网络与它进行远程交互的用户（如果您的版本支持这种交互）提供从网络服务器通过一些标准或惯用的软件复制方法**免费**访问相应的**源代码**的机会
 - (见 LICENSE 第 4 节) 您可以免费或收费地传递这个项目的源代码或目标代码(即编译结果), **但前提是提供明显的版权声明** (您需要标注本 `GitHub` 项目地址)
 
+
+
 ## Acknowledgement
+
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
- 

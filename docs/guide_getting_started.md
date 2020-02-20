@@ -1,18 +1,20 @@
 # Mirai Guide - Getting Started
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-20```，对应版本```0.16.0```
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-20```，对应版本```0.17.0```
 
 假如仅仅使用Mirai，不需要对整个项目进行Clone，只需在项目内添加Gradle Dependency或使用即可。
 
 下面介绍详细的入门步骤。
 
-## With Console
+本页采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](mirai-japt/README.md)
+
+## Use Console
 
 使用mirai-console，以插件形式对服务器功能进行管理，启动无需任何IDE。
 
 **由于mirai-console还没有开发完成，暂时不提供入门**
 
-## With Loader
+## Use Loader
 
 通过编写Kotlin程序启动mirai-core，并定义你的Mirai Bot行为。
 
@@ -20,7 +22,7 @@
 
 ### 1 安装IDEA与JDK
 
-JDK要求8以上
+JDK要求6以上
 
 ### 2 新建Gradle项目
 
@@ -51,12 +53,11 @@ JDK要求8以上
   }
   ```
 
-- 添加依赖，将dependencies部分覆盖为
+- 添加依赖，将dependencies部分覆盖。 `mirai-core` 的最新版本为: [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
   ```groovy
   dependencies {
-      implementation 'net.mamoe:mirai-core:0.16.0'
-      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.16.0'
+      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.17.0'//此处版本应替换为当前最新
       implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
       testCompile group: 'junit', name: 'junit', version: '4.12'
   }
@@ -83,7 +84,7 @@ import net.mamoe.mirai.event.subscribeMessages
 suspend fun main() {
     val qqId = 10000L//Bot的QQ号，需为Long类型，在结尾处添加大写L
     val password = "your_password"//Bot的密码
-    val miraiBot = Bot(qqId, password).alsoLogin()//新建Bot并登陆
+    val miraiBot = Bot(qqId, password).alsoLogin()//新建Bot并登录
     miraiBot.subscribeMessages {
         "你好" reply "你好!"
         case("at me") {
@@ -94,7 +95,7 @@ suspend fun main() {
             "刘老板太强了".reply()
         }
     }
-    miraiBot.join()
+    miraiBot.join() // 等待 Bot 离线, 避免主线程退出
 }
 ```
 
@@ -104,3 +105,25 @@ suspend fun main() {
 
 
 至此，简单的入门已经结束，下面可根据不同的需求参阅wiki进行功能的添加。
+
+
+### 此外，还可以使用Maven作为包管理工具
+本项目推荐使用gradle，因此不提供详细入门指导
+
+```xml
+<repositories>
+    <repository>
+        <id>jcenter</id>
+        <url>https://jcenter.bintray.com/</url>
+    </repository>
+</repositories>
+```
+```xml
+<dependencies>
+    <dependency>
+        <groupId>net.mamoe</groupId>
+        <artifactId>mirai-core-qqandroid-jvm</artifactId>
+        <version>0.17.0</version> <!-- 替换版本为最新版本 -->
+    </dependency>
+</dependencies>
+```
