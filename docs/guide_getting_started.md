@@ -22,7 +22,7 @@
 
 ### 1 安装IDEA与JDK
 
-JDK要求8以上
+JDK要求6以上
 
 ### 2 新建Gradle项目
 
