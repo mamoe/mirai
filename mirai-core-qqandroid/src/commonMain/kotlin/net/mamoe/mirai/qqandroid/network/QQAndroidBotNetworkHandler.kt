@@ -100,7 +100,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     BotOfflineEvent.Dropped(bot).broadcast()
                 }
             }
-        }
+        }.also { heartbeatJob = it }
     }
 
     override suspend fun relogin() {
@@ -171,6 +171,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         registerClientOnline()
+        startHeartbeatJobOrKill()
     }
 
     private suspend fun registerClientOnline(timeoutMillis: Long = 3000) {
@@ -289,8 +290,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 logger.error(e)
             }
         }
-
-        heartbeatJob = startHeartbeatJobOrKill()
 
         joinAll(friendListJob, groupJob)
 
