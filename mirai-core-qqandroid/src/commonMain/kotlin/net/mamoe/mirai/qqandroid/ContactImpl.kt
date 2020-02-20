@@ -177,9 +177,12 @@ internal class MemberImpl(
     val qq: QQImpl by qq.unsafeWeakRef()
 
     override var permission: MemberPermission = memberInfo.permission
+    @Suppress("PropertyName")
     internal var _nameCard: String = memberInfo.nameCard
+    @Suppress("PropertyName")
     internal var _specialTitle: String = memberInfo.specialTitle
 
+    @Suppress("PropertyName")
     var _muteTimestamp: Int = memberInfo.muteTimestamp
 
     override val muteTimeRemaining: Int =
