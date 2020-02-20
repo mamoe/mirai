@@ -32,6 +32,11 @@ interface MessageSource : Message {
     val messageUid: Long
 
     /**
+     * 发送时间, 单位为秒
+     */
+    val time: Long
+
+    /**
      * 发送人号码
      */
     val senderId: Long

@@ -22,6 +22,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmName
 
 /*
@@ -98,6 +99,8 @@ interface Listener<in E : Event> : CompletableJob {
  *
  * **注意:** 事件处理是 `suspend` 的, 请规范处理 JVM 阻塞方法.
  *
+ * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
+ *
  * @see subscribeAlways 一直监听
  * @see subscribeOnce   只监听一次
  *
@@ -106,8 +109,11 @@ interface Listener<in E : Event> : CompletableJob {
  * @see subscribeFriendMessages 监听好友消息 DSL
  */
 @UseExperimental(MiraiInternalAPI::class)
-inline fun <reified E : Event> CoroutineScope.subscribe(noinline handler: suspend E.(E) -> ListeningStatus): Listener<E> =
-    E::class.subscribeInternal(Handler { it.handler(it); })
+inline fun <reified E : Event> CoroutineScope.subscribe(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    noinline handler: suspend E.(E) -> ListeningStatus
+): Listener<E> =
+    E::class.subscribeInternal(Handler(coroutineContext) { it.handler(it); })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
@@ -116,14 +122,19 @@ inline fun <reified E : Event> CoroutineScope.subscribe(noinline handler: suspen
  * 可在任意时候通过 [Listener.complete] 来主动停止监听.
  * [Bot] 被关闭后事件监听会被 [取消][Listener.cancel].
  *
+ * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
+ *
  * @see subscribe 获取更多说明
  */
 @UseExperimental(MiraiInternalAPI::class, ExperimentalContracts::class)
-inline fun <reified E : Event> CoroutineScope.subscribeAlways(noinline listener: suspend E.(E) -> Unit): Listener<E> {
+inline fun <reified E : Event> CoroutineScope.subscribeAlways(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    noinline listener: suspend E.(E) -> Unit
+): Listener<E> {
     contract {
         callsInPlace(listener, InvocationKind.UNKNOWN)
     }
-    return E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.LISTENING })
+    return E::class.subscribeInternal(Handler(coroutineContext) { it.listener(it); ListeningStatus.LISTENING })
 }
 
 /**
@@ -133,11 +144,16 @@ inline fun <reified E : Event> CoroutineScope.subscribeAlways(noinline listener:
  * 可在任意时候通过 [Listener.complete] 来主动停止监听.
  * [Bot] 被关闭后事件监听会被 [取消][Listener.cancel].
  *
+ * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
+ *
  * @see subscribe 获取更多说明
  */
 @UseExperimental(MiraiInternalAPI::class)
-inline fun <reified E : Event> CoroutineScope.subscribeOnce(noinline listener: suspend E.(E) -> Unit): Listener<E> =
-    E::class.subscribeInternal(Handler { it.listener(it); ListeningStatus.STOPPED })
+inline fun <reified E : Event> CoroutineScope.subscribeOnce(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    noinline listener: suspend E.(E) -> Unit
+): Listener<E> =
+    E::class.subscribeInternal(Handler(coroutineContext) { it.listener(it); ListeningStatus.STOPPED })
 
 
 //
@@ -153,12 +169,17 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnce(noinline listener: s
  * 可在任意时候通过 [Listener.complete] 来主动停止监听.
  * [Bot] 被关闭后事件监听会被 [取消][Listener.cancel].
  *
+ * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
+ *
  * @see subscribe 获取更多说明
  */
 @JvmName("subscribeAlwaysForBot")
 @UseExperimental(MiraiInternalAPI::class)
-inline fun <reified E : BotEvent> Bot.subscribe(noinline handler: suspend E.(E) -> ListeningStatus): Listener<E> =
-    E::class.subscribeInternal(Handler { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING })
+inline fun <reified E : BotEvent> Bot.subscribe(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    noinline handler: suspend E.(E) -> ListeningStatus
+): Listener<E> =
+    E::class.subscribeInternal(Handler(coroutineContext) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING })
 
 
 /**
@@ -168,12 +189,17 @@ inline fun <reified E : BotEvent> Bot.subscribe(noinline handler: suspend E.(E) 
  * 可在任意时候通过 [Listener.complete] 来主动停止监听.
  * [Bot] 被关闭后事件监听会被 [取消][Listener.cancel].
  *
+ * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
+ *
  * @see subscribe 获取更多说明
  */
 @JvmName("subscribeAlwaysForBot1")
 @UseExperimental(MiraiInternalAPI::class)
-inline fun <reified E : BotEvent> Bot.subscribeAlways(noinline listener: suspend E.(E) -> Unit): Listener<E> {
-    return E::class.subscribeInternal(Handler { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING })
+inline fun <reified E : BotEvent> Bot.subscribeAlways(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    noinline listener: suspend E.(E) -> Unit
+): Listener<E> {
+    return E::class.subscribeInternal(Handler(coroutineContext) { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING })
 }
 
 /**
@@ -183,12 +209,17 @@ inline fun <reified E : BotEvent> Bot.subscribeAlways(noinline listener: suspend
  * 可在任意时候通过 [Listener.complete] 来主动停止监听.
  * [Bot] 被关闭后事件监听会被 [取消][Listener.cancel].
  *
+ * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
+ *
  * @see subscribe 获取更多说明
  */
 @JvmName("subscribeOnceForBot2")
 @UseExperimental(MiraiInternalAPI::class)
-inline fun <reified E : BotEvent> Bot.subscribeOnce(noinline listener: suspend E.(E) -> Unit): Listener<E> =
-    E::class.subscribeInternal(Handler {
+inline fun <reified E : BotEvent> Bot.subscribeOnce(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    noinline listener: suspend E.(E) -> Unit
+): Listener<E> =
+    E::class.subscribeInternal(Handler(coroutineContext) {
         if (it.bot === this) {
             it.listener(it)
             ListeningStatus.STOPPED
