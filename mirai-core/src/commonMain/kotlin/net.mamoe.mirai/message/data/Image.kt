@@ -47,7 +47,7 @@ sealed class Image : Message {
     abstract val imageId: String
 
     final override fun toString(): String {
-        return "[image::$imageId]"
+        return "[mirai:$imageId]"
     }
 
     final override fun eq(other: Message): Boolean {

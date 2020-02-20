@@ -12,6 +12,7 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -89,19 +90,19 @@ interface Group : Contact, CoroutineScope {
     /**
      * 机器人被禁言还剩余多少秒
      *
-     * @see BotMuteEvent
-     * @see isBotMuted
+     * @see BotMuteEvent 机器人被禁言事件
+     * @see isBotMuted 判断机器人是否正在被禁言
      */
     val botMuteRemaining: Int
 
     /**
      * 机器人在这个群里的权限
      *
-     * **MiraiExperimentalAPI**: 在未来可能会被修改
+     * @see Group.checkBotPermission 检查 [Bot] 在这个群里的权限
+     * @see Group.checkBotPermissionOperator 要求 [Bot] 在这个群里的权限为 [管理员或群主][MemberPermission.isOperator]
      *
-     * @see BotGroupPermissionChangeEvent
+     * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
-    @MiraiExperimentalAPI
     val botPermission: MemberPermission
 
 
@@ -129,6 +130,7 @@ interface Group : Contact, CoroutineScope {
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
      */
+    @MiraiExperimentalAPI("还未支持")
     suspend fun quit(): Boolean
 
     /**

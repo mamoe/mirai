@@ -13,7 +13,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
 class FriendMessage(
     bot: Bot,

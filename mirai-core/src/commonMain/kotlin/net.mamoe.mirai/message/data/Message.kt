@@ -57,7 +57,7 @@ interface Message {
      */
     interface Key<M : Message>
 
-    infix fun eq(other: Message): Boolean = this == other
+    infix fun eq(other: Message): Boolean = this.toString() == other.toString()
 
     /**
      * 将 [toString] 与 [other] 比较

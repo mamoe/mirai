@@ -14,7 +14,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.getValue
@@ -38,7 +37,6 @@ class GroupMessage(
 
     override val subject: Group get() = group
 
-    inline fun At.member(): Member = group[this.target]
     inline fun Long.member(): Member = group[this]
 
 

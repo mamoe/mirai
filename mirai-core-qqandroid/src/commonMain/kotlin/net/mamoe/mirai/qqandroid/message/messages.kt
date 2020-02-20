@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.qqandroid.message
 
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
@@ -20,13 +22,18 @@ import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toByteArray
 
-private val AT_BUF_1 = byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x00, 0x0A, 0x00)
-private val AT_BUF_2 = ByteArray(2)
-
 internal fun At.toJceData(): ImMsgBody.Text {
+    val text = this.toString()
     return ImMsgBody.Text(
-        str = this.toString(),
-        attr6Buf = AT_BUF_1 + this.target.toInt().toByteArray() + AT_BUF_2
+        str = text,
+        attr6Buf = buildPacket {
+            writeShort(1)
+            writeShort(0)
+            writeShort(text.length.toShort())
+            writeByte(1)
+            writeInt(target.toInt())
+            writeShort(0)
+        }.readBytes()
     )
 }
 
@@ -86,6 +93,16 @@ _400Height=0x000000EB(235)
 pbReserve=<Empty ByteArray>
 }
  */
+val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
+
+internal fun Face.toJceData(): ImMsgBody.Face {
+    return ImMsgBody.Face(
+        index = this.id,
+        old = (0x1445 - 4 + this.id).toShort().toByteArray(),
+        buf = FACE_BUF
+    )
+}
+
 internal fun CustomFaceFromFile.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = this.filepath,
@@ -213,6 +230,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
             is NotOnlineImageFromFile -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is AtAll -> elements.add(atAllData)
+            is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
             is QuoteReply,
             is MessageSource -> {
 
@@ -312,18 +330,20 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
             it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))
             it.notOnlineImage != null -> message.add(NotOnlineImageFromServer(it.notOnlineImage))
             it.customFace != null -> message.add(CustomFaceFromServer(it.customFace))
+            it.face != null -> message.add(Face(it.face.index))
             it.text != null -> {
                 if (it.text.attr6Buf.isEmpty()) {
                     message.add(it.text.str.toMessage())
                 } else {
-                    //00 01 00 00 00 05 01 00 00 00 00 00 00 all
-                    //00 01 00 00 00 0A 00 3E 03 3F A2 00 00 one
+                    // 00 01 00 00 00 05 01 00 00 00 00 00 00 all
+                    // 00 01 00 00 00 0A 00 3E 03 3F A2 00 00 one/nick
+                    // 00 01 00 00 00 07 00 44 71 47 90 00 00 one/groupCard
                     val id: Long
                     it.text.attr6Buf.read {
                         discardExact(7)
                         id = readUInt().toLong()
                     }
-                    if (id == 0L){
+                    if (id == 0L) {
                         message.add(AtAll)
                     } else {
                         message.add(At(id, it.text.str))

@@ -65,5 +65,5 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
 
     override fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult = runBlocking { bot.addFriend(id, message, remark) }
     override fun approveFriendAddRequest(id: Long, remark: String?) = runBlocking { bot.approveFriendAddRequest(id, remark) }
-    override fun dispose(throwable: Throwable?) = bot.close(throwable)
+    override fun close(throwable: Throwable?) = bot.close(throwable)
 }

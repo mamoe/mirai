@@ -184,5 +184,13 @@ public interface BlockingBot {
     /**
      * 关闭这个 [Bot], 停止一切相关活动. 不可重新登录.
      */
-    void dispose(@Nullable Throwable throwable);
+    void close(@Nullable Throwable throwable);
+
+    /**
+     * @deprecated 使用 {@link #close(Throwable)}
+     */
+    @Deprecated
+    default void dispose(@Nullable Throwable throwable) {
+        close(throwable);
+    }
 }

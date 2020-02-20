@@ -7,7 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmName("Utils")
+@file:JvmMultifileClass
+
 package net.mamoe.mirai.qqandroid.utils
+
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 inline class MacOrAndroidIdChangeFlag(val value: Long = 0) {
     fun macChanged(): MacOrAndroidIdChangeFlag =

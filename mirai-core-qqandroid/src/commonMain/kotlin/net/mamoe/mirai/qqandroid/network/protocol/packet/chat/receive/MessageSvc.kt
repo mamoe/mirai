@@ -16,7 +16,6 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
@@ -103,23 +102,23 @@ internal class MessageSvc {
         }
 
         @UseExperimental(MiraiInternalAPI::class)
-        internal class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate)
+        open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate) {
+            override fun toString(): String {
+                return "MessageSvc.PbGetMsg.GetMsgSuccess(messages=List(size=${this.size}))"
+            }
+        }
 
         /**
-         * 不要直接 expect 这个 class. 它可能
+         * 不要直接 expect 这个 class. 它可能还没同步完成
          */
         @MiraiInternalAPI
-        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) : MultiPacket<Packet>(delegate),
-            BroadcastControllable {
-            override val shouldBroadcast: Boolean
-                get() = syncFlagFromServer == MsgSvc.SyncFlag.STOP
-
+        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) : MultiPacket<Packet>(delegate) {
             override fun toString(): String {
                 return "MessageSvc.PbGetMsg.Response($syncFlagFromServer=$syncFlagFromServer, messages=List(size=${this.size}))"
             }
         }
 
-        object EmptyResponse : Response(MsgSvc.SyncFlag.STOP, emptyList())
+        object EmptyResponse : GetMsgSuccess(emptyList())
 
         @UseExperimental(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
@@ -127,8 +126,8 @@ internal class MessageSvc {
             val resp = readProtoBuf(MsgSvc.PbGetMsgResp.serializer())
 
             if (resp.result != 0) {
-                //  println("!!! Result=${resp.result} !!!: " + resp.contentToString())
-                return GetMsgSuccess(mutableListOf())
+                bot.network.logger.warning("MessageSvc.PushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}")
+                return EmptyResponse
             }
 
             bot.client.c2cMessageSync.syncCookie = resp.syncCookie
@@ -149,7 +148,7 @@ internal class MessageSvc {
                             val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
                             if (msg.msgHead.authUin == bot.uin) {
                                 if (group != null) {
-                                    error("group is not null while bot is invited to the group")
+                                    return@mapNotNull null
                                 }
                                 // 新群
 
@@ -159,6 +158,7 @@ internal class MessageSvc {
                                 }.groups.first { it.groupUin == msg.msgHead.fromUin }
 
 
+                                @Suppress("DuplicatedCode")
                                 val newGroup = GroupImpl(
                                     bot = bot,
                                     coroutineContext = bot.coroutineContext,
@@ -194,6 +194,7 @@ internal class MessageSvc {
                                         override val nameCard: String get() = ""
                                         override val permission: MemberPermission get() = MemberPermission.MEMBER
                                         override val specialTitle: String get() = ""
+                                        override val muteTimestamp: Int get() = 0
                                         override val uin: Long get() = msg.msgHead.authUin
                                         override val nick: String get() = msg.msgHead.authNick.takeIf { it.isNotEmpty() } ?: msg.msgHead.fromNick
                                     }).also { group.members.delegate.addLast(it) })
@@ -264,6 +265,7 @@ internal class MessageSvc {
         /**
          * 发送好友消息
          */
+        @Suppress("FunctionName")
         fun ToFriend(
             client: QQAndroidClient,
             toUin: Long,
@@ -293,6 +295,7 @@ internal class MessageSvc {
         /**
          * 发送群消息
          */
+        @Suppress("FunctionName")
         fun ToGroup(
             client: QQAndroidClient,
             groupCode: Long,

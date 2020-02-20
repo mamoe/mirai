@@ -77,7 +77,7 @@ object MiraiConsole {
 
         logger("Mirai-console 启动完成")
         logger("\"/login qqnumber qqpassword \" to login a bot")
-        logger("\"/login qq号 qq密码 \" 来登陆一个BOT")
+        logger("\"/login qq号 qq密码 \" 来登录一个BOT")
     }
 
     fun stop() {
@@ -208,7 +208,7 @@ object MiraiConsole {
                     }
                     val bot: Bot? = if (it.size == 2) {
                         if (bots.size == 0) {
-                            logger("还没有BOT登陆")
+                            logger("还没有BOT登录")
                             return@onCommand false
                         }
                         bots[0].get()

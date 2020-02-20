@@ -14,7 +14,6 @@ package net.mamoe.mirai
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.event.subscribeAlways
@@ -73,11 +72,6 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
     }
 
-    /**
-     * 可阻止事件广播
-     */
-    abstract fun onEvent(event: BotEvent): Boolean
-
     // region network
 
     final override val network: N get() = _network
@@ -89,21 +83,22 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     private val offlineListener: Listener<BotOfflineEvent> = this.subscribeAlways { event ->
         when (event) {
             is BotOfflineEvent.Dropped -> {
-                bot.logger.info("Connection dropped or lost by server, retrying login")
+                if (!_network.isActive) {
+                    return@subscribeAlways
+                }
+                bot.logger.info("Connection dropped by server or lost, retrying login")
 
-                var lastFailedException: Throwable? = null
-                repeat(configuration.reconnectionRetryTimes) {
-                    try {
-                        network.relogin()
-                        logger.info("Reconnected successfully")
-                        return@subscribeAlways
-                    } catch (e: Throwable) {
-                        lastFailedException = e
+                tryNTimesOrException(configuration.reconnectionRetryTimes) { tryCount ->
+                    if (tryCount != 0) {
                         delay(configuration.reconnectPeriodMillis)
                     }
-                }
-                if (lastFailedException != null) {
-                    throw lastFailedException!!
+                    network.relogin(event.cause)
+                    logger.info("Reconnected successfully")
+                    BotReloginEvent(bot, event.cause).broadcast()
+                    return@subscribeAlways
+                }?.let {
+                    logger.info("Cannot reconnect")
+                    throw it
                 }
             }
             is BotOfflineEvent.Active -> {
@@ -112,17 +107,21 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                 } else {
                     " with exception: " + event.cause.message
                 }
-                bot.logger.info("Bot is closed manually$msg")
-                close(CancellationException(event.toString()))
+                bot.logger.info { "Bot is closed manually$msg" }
+                closeAndJoin(CancellationException(event.toString()))
             }
             is BotOfflineEvent.Force -> {
-                bot.logger.info("Connection occupied by another android device: ${event.message}")
-                close(ForceOfflineException(event.toString()))
+                bot.logger.info { "Connection occupied by another android device: ${event.message}" }
+                closeAndJoin(ForceOfflineException(event.toString()))
             }
         }
     }
 
-    final override suspend fun login() = reinitializeNetworkHandler(null)
+    final override suspend fun login() {
+        logger.info("Logging in...")
+        reinitializeNetworkHandler(null)
+        logger.info("Login successful")
+    }
 
     private suspend fun reinitializeNetworkHandler(
         cause: Throwable?
@@ -176,15 +175,19 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     @UseExperimental(MiraiInternalAPI::class)
     override fun close(cause: Throwable?) {
+        if (!this.botJob.isActive) {
+            // already cancelled
+            return
+        }
         kotlin.runCatching {
             if (cause == null) {
+                this.botJob.cancel()
                 network.close()
-                this.botJob.complete()
-                offlineListener.complete()
+                offlineListener.cancel()
             } else {
+                this.botJob.cancel(CancellationException("bot cancelled", cause))
                 network.close(cause)
-                this.botJob.completeExceptionally(cause)
-                offlineListener.completeExceptionally(cause)
+                offlineListener.cancel(CancellationException("bot cancelled", cause))
             }
         }
         groups.delegate.clear()

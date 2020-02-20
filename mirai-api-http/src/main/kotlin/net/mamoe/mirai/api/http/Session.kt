@@ -13,6 +13,8 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.api.http.queue.MessageQueue
 import net.mamoe.mirai.event.Listener
+import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.MessagePacket
 import kotlin.coroutines.CoroutineContext
@@ -102,12 +104,10 @@ class TempSession internal constructor(coroutineContext: CoroutineContext) : Ses
 class AuthedSession internal constructor(val bot: Bot, coroutineContext: CoroutineContext) : Session(coroutineContext) {
 
     val messageQueue = MessageQueue()
-    private val _listener: Listener<MessagePacket<*, *>>
+    private val _listener: Listener<BotEvent>
 
     init {
-        bot.subscribeMessages {
-            _listener = always { this.run(messageQueue::add) } // this aka messagePacket
-        }
+        _listener = bot.subscribeAlways{ this.run(messageQueue::add) }
     }
 
     override fun close() {

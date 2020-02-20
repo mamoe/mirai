@@ -71,6 +71,13 @@ interface MiraiLogger {
     val identity: String?
 
     /**
+     * 获取 [MiraiLogger] 是否已开启
+     *
+     * 除 [MiraiLoggerWithSwitch] 可控制开关外, 其他的所有 [MiraiLogger] 均一直开启.
+     */
+    val isEnabled: Boolean
+
+    /**
      * 随从. 在 this 中调用所有方法后都应继续往 [follower] 传递调用.
      * [follower] 的存在可以让一次日志被多个日志记录器记录.
      *
@@ -151,43 +158,43 @@ interface MiraiLogger {
 
 
 inline fun MiraiLogger.verbose(lazyMessage: () -> String) {
-    if (this is MiraiLoggerWithSwitch && switch) verbose(lazyMessage())
+    if (isEnabled) verbose(lazyMessage())
 }
 
 inline fun MiraiLogger.verbose(lazyMessage: () -> String, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) verbose(lazyMessage(), e)
+    if (isEnabled) verbose(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.debug(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) debug(lazyMessage())
+    if (isEnabled) debug(lazyMessage())
 }
 
 inline fun MiraiLogger.debug(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) debug(lazyMessage(), e)
+    if (isEnabled) debug(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.info(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) info(lazyMessage())
+    if (isEnabled) info(lazyMessage())
 }
 
 inline fun MiraiLogger.info(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) info(lazyMessage(), e)
+    if (isEnabled) info(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.warning(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) warning(lazyMessage())
+    if (isEnabled) warning(lazyMessage())
 }
 
 inline fun MiraiLogger.warning(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) warning(lazyMessage(), e)
+    if (isEnabled) warning(lazyMessage(), e)
 }
 
 inline fun MiraiLogger.error(lazyMessage: () -> String?) {
-    if (this is MiraiLoggerWithSwitch && switch) error(lazyMessage())
+    if (isEnabled) error(lazyMessage())
 }
 
 inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
-    if (this is MiraiLoggerWithSwitch && switch) error(lazyMessage(), e)
+    if (isEnabled) error(lazyMessage(), e)
 }
 
 /**
@@ -268,7 +275,7 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
     @PublishedApi
     internal var switch: Boolean = default
 
-    val isEnabled: Boolean get() = switch
+    override val isEnabled: Boolean get() = switch
 
     fun enable() {
         switch = true
@@ -278,16 +285,16 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
         switch = false
     }
 
-    override fun verbose0(message: String?) = if (switch) delegate.verbose(message) else Unit
-    override fun verbose0(message: String?, e: Throwable?) = if (switch) delegate.verbose(message, e) else Unit
-    override fun debug0(message: String?) = if (switch) delegate.debug(message) else Unit
-    override fun debug0(message: String?, e: Throwable?) = if (switch) delegate.debug(message, e) else Unit
-    override fun info0(message: String?) = if (switch) delegate.info(message) else Unit
-    override fun info0(message: String?, e: Throwable?) = if (switch) delegate.info(message, e) else Unit
-    override fun warning0(message: String?) = if (switch) delegate.warning(message) else Unit
-    override fun warning0(message: String?, e: Throwable?) = if (switch) delegate.warning(message, e) else Unit
-    override fun error0(message: String?) = if (switch) delegate.error(message) else Unit
-    override fun error0(message: String?, e: Throwable?) = if (switch) delegate.error(message, e) else Unit
+    override fun verbose0(message: String?) = delegate.verbose(message)
+    override fun verbose0(message: String?, e: Throwable?) = delegate.verbose(message, e)
+    override fun debug0(message: String?) = delegate.debug(message)
+    override fun debug0(message: String?, e: Throwable?) = delegate.debug(message, e)
+    override fun info0(message: String?) = delegate.info(message)
+    override fun info0(message: String?, e: Throwable?) = delegate.info(message, e)
+    override fun warning0(message: String?) = delegate.warning(message)
+    override fun warning0(message: String?, e: Throwable?) = delegate.warning(message, e)
+    override fun error0(message: String?) = delegate.error(message)
+    override fun error0(message: String?, e: Throwable?) = delegate.error(message, e)
 }
 
 /**
@@ -298,54 +305,65 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
  * 在定义 logger 变量时, 请一直使用 [MiraiLogger] 或者 [MiraiLoggerWithSwitch].
  */
 abstract class MiraiLoggerPlatformBase : MiraiLogger {
+    override val isEnabled: Boolean get() = true
     final override var follower: MiraiLogger? = null
 
     final override fun verbose(message: String?) {
+        if (!isEnabled) return
         follower?.verbose(message)
         verbose0(message)
     }
 
     final override fun verbose(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.verbose(message, e)
         verbose0(message, e)
     }
 
     final override fun debug(message: String?) {
+        if (!isEnabled) return
         follower?.debug(message)
         debug0(message)
     }
 
     final override fun debug(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.debug(message, e)
         debug0(message, e)
     }
 
     final override fun info(message: String?) {
+        if (!isEnabled) return
         follower?.info(message)
         info0(message)
     }
 
     final override fun info(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.info(message, e)
         info0(message, e)
     }
 
     final override fun warning(message: String?) {
+        if (!isEnabled) return
         follower?.warning(message)
         warning0(message)
     }
 
     final override fun warning(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.warning(message, e)
         warning0(message, e)
     }
 
     final override fun error(message: String?) {
+        if (!isEnabled) return
         follower?.error(message)
         error0(message)
     }
 
     final override fun error(message: String?, e: Throwable?) {
+        if (!isEnabled) return
         follower?.error(message, e)
         error0(message, e)
     }

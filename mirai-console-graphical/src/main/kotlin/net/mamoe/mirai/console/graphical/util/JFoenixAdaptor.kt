@@ -17,20 +17,20 @@ internal fun EventTarget.jfxButton(text: String = "", graphic: Node? = null, op:
         if (graphic != null) it.graphic = graphic
     }
 
-fun EventTarget.jfxTextfield(value: String? = null, op: TextField.() -> Unit = {}) = JFXTextField().attachTo(this, op) {
+fun EventTarget.jfxTextfield(value: String? = null, op: JFXTextField.() -> Unit = {}) = JFXTextField().attachTo(this, op) {
     if (value != null) it.text = value
 }
 
-fun EventTarget.jfxTextfield(property: ObservableValue<String>, op: TextField.() -> Unit = {}) = jfxTextfield().apply {
+fun EventTarget.jfxTextfield(property: ObservableValue<String>, op: JFXTextField.() -> Unit = {}) = jfxTextfield().apply {
     bind(property)
     op(this)
 }
 
-fun EventTarget.jfxPasswordfield(value: String? = null, op: TextField.() -> Unit = {}) = JFXPasswordField().attachTo(this, op) {
+fun EventTarget.jfxPasswordfield(value: String? = null, op: JFXPasswordField.() -> Unit = {}) = JFXPasswordField().attachTo(this, op) {
     if (value != null) it.text = value
 }
 
-fun EventTarget.jfxPasswordfield(property: ObservableValue<String>, op: TextField.() -> Unit = {}) = jfxPasswordfield().apply {
+fun EventTarget.jfxPasswordfield(property: ObservableValue<String>, op: JFXPasswordField.() -> Unit = {}) = jfxPasswordfield().apply {
     bind(property)
     op(this)
 }

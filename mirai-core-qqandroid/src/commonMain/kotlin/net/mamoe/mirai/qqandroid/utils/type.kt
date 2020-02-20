@@ -7,10 +7,16 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmName("Utils")
+@file:JvmMultifileClass
+
 package net.mamoe.mirai.qqandroid.utils
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
-fun Int.toIpV4AddressString(): String {
+
+internal fun Int.toIpV4AddressString(): String {
     @Suppress("NAME_SHADOWING")
     var var0 = this.toLong() and 0xFFFFFFFF
     return buildString {

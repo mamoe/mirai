@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.event.internal
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
@@ -32,8 +31,12 @@ fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L
 
 @PublishedApi
 @Suppress("FunctionName")
-internal fun <E : Event> CoroutineScope.Handler(handler: suspend (E) -> ListeningStatus): Handler<E> {
-    return Handler(coroutineContext[Job], coroutineContext, handler)
+internal fun <E : Event> CoroutineScope.Handler(
+    coroutineContext: CoroutineContext,
+    handler: suspend (E) -> ListeningStatus
+): Handler<E> {
+    val context = this.newCoroutineContext(coroutineContext)
+    return Handler(context[Job], context, handler)
 }
 
 private inline fun inline(block: () -> Unit) = block()
@@ -77,7 +80,32 @@ internal class Handler<in E : Event>
  */
 internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
 
-internal class EventListeners<E : Event> : LockFreeLinkedList<Listener<E>>()
+internal class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>>() {
+    @Suppress("UNCHECKED_CAST")
+    val supertypes: Set<KClass<out Event>> by lazy {
+        val supertypes = mutableSetOf<KClass<out Event>>()
+
+        fun addSupertypes(clazz: KClass<out Event>) {
+            clazz.supertypes.forEach {
+                val classifier = it.classifier as? KClass<out Event>
+                if (classifier != null) {
+                    supertypes.add(classifier)
+                    addSupertypes(classifier)
+                }
+            }
+        }
+        addSupertypes(clazz)
+
+        supertypes
+    }
+}
+
+internal expect class MiraiAtomicBoolean(initial: Boolean) {
+
+    fun compareAndSet(expect: Boolean, update: Boolean): Boolean
+
+    var value: Boolean
+}
 
 /**
  * 管理每个事件 class 的 [EventListeners].
@@ -88,16 +116,8 @@ internal object EventListenerManager {
 
     private val registries = LockFreeLinkedList<Registry<*>>()
 
-    private val lock = atomic(false)
-
-    private fun setLockValue(value: Boolean) {
-        lock.value = value
-    }
-
-    @Suppress("BooleanLiteralArgument")
-    private fun trySetLockTrue(): Boolean {
-        return lock.compareAndSet(false, true)
-    }
+    // 不要用 atomicfu. 在 publish 后会出现 VerifyError
+    private val lock: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
     internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
@@ -106,11 +126,11 @@ internal object EventListenerManager {
                 return it.listeners as EventListeners<E>
             }
         }
-        if (trySetLockTrue()) {
-            val registry = Registry(clazz, EventListeners())
+        if (lock.compareAndSet(false, true)) {
+            val registry = Registry(clazz as KClass<E>, EventListeners(clazz))
             registries.addLast(registry)
-            setLockValue(false)
-            return registry.listeners as EventListeners<E>
+            lock.value = false
+            return registry.listeners
         }
         return get(clazz)
     }
@@ -123,19 +143,10 @@ internal suspend inline fun Event.broadcastInternal() {
 
     EventLogger.info { "Event broadcast: $this" }
 
-    callAndRemoveIfRequired(this::class.listeners())
-
-    var supertypes = this::class.supertypes
-    while (true) {
-        val superSubscribableType = supertypes.firstOrNull {
-            it.classifier as? KClass<out Event> != null
-        }
-
-        superSubscribableType?.let {
-            callAndRemoveIfRequired((it.classifier as KClass<out Event>).listeners())
-        }
-
-        supertypes = (superSubscribableType?.classifier as? KClass<*>)?.supertypes ?: return
+    val listeners = this::class.listeners()
+    callAndRemoveIfRequired(listeners)
+    listeners.supertypes.forEach {
+        callAndRemoveIfRequired(it.listeners())
     }
 }
 

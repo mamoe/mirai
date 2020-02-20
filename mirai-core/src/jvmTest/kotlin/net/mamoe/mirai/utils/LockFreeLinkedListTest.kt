@@ -63,9 +63,6 @@ internal class LockFreeLinkedListTest {
         val addJob = async { list.concurrentDo(2, 30000) { addLast(1) } }
 
         //delay(1) // let addJob fly
-        if (addJob.isCompleted) {
-            println("Number of elements are not enough")
-        }
         val foreachJob = async {
             list.concurrentDo(1, 10000) {
                 forEach { it + it }

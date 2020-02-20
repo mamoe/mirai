@@ -162,16 +162,11 @@ internal class QQImpl(
         TODO("not implemented")
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is QQ && other.id == this.id
-    }
-
-    override fun hashCode(): Int = super.hashCode()
+    override fun toString(): String = "QQ($id)"
 }
 
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
 internal class MemberImpl(
     qq: QQImpl,
     group: GroupImpl,
@@ -182,8 +177,20 @@ internal class MemberImpl(
     val qq: QQImpl by qq.unsafeWeakRef()
 
     override var permission: MemberPermission = memberInfo.permission
+    @Suppress("PropertyName")
     internal var _nameCard: String = memberInfo.nameCard
+    @Suppress("PropertyName")
     internal var _specialTitle: String = memberInfo.specialTitle
+
+    @Suppress("PropertyName")
+    var _muteTimestamp: Int = memberInfo.muteTimestamp
+
+    override val muteTimeRemaining: Int =
+        if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
+            0
+        } else {
+            _muteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+        }
 
     override var nameCard: String
         get() = _nameCard
@@ -220,7 +227,7 @@ internal class MemberImpl(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl).broadcast()
+                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl, null).broadcast()
                 }
             }
         }
@@ -279,12 +286,9 @@ internal class MemberImpl(
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is Member && other.id == this.id
+    override fun toString(): String {
+        return "Member($id)"
     }
-
-    override fun hashCode(): Int = super.hashCode()
 }
 
 internal class MemberInfoImpl(
@@ -301,6 +305,7 @@ internal class MemberInfoImpl(
             else -> MemberPermission.MEMBER
         }
     override val specialTitle: String get() = jceInfo.sSpecialTitle ?: ""
+    override val muteTimestamp: Int get() = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
 /**
@@ -323,13 +328,13 @@ internal class GroupImpl(
     @UseExperimental(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
-    var _botMuteRemaining: Int = groupInfo.botMuteRemaining
+    var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
 
     override val botMuteRemaining: Int =
-        if (_botMuteRemaining == 0 || _botMuteRemaining == 0xFFFFFFFF.toInt()) {
+        if (_botMuteTimestamp == 0 || _botMuteTimestamp == 0xFFFFFFFF.toInt()) {
             0
         } else {
-            _botMuteRemaining - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+            _botMuteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
         }
 
     override val members: ContactList<Member> = ContactList(members.mapNotNull {
@@ -600,10 +605,7 @@ internal class GroupImpl(
         image.input.close()
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is Group && other.id == this.id
+    override fun toString(): String {
+        return "Group($id)"
     }
-
-    override fun hashCode(): Int = super.hashCode()
 }

@@ -20,7 +20,6 @@ import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -114,10 +113,6 @@ internal abstract class QQAndroidBotBase constructor(
             }
         }
         return sequence
-    }
-
-    override fun onEvent(event: BotEvent): Boolean {
-        return firstLoginSucceed
     }
 
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {

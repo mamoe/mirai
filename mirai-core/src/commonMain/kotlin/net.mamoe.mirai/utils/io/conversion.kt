@@ -22,6 +22,16 @@ import kotlin.random.nextInt
  */
 
 /**
+ * 255 -> 00 FF
+ */
+fun Short.toByteArray(): ByteArray = with(toInt()) {
+    byteArrayOf(
+        (shr(8) and 0xFF).toByte(),
+        (shr(0) and 0xFF).toByte()
+    )
+}
+
+/**
  * 255 -> 00 00 00 FF
  */
 fun Int.toByteArray(): ByteArray = byteArrayOf(

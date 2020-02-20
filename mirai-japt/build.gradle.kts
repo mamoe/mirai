@@ -59,7 +59,7 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 dependencies {
-    api(project(":mirai-core"))
+    implementation(project(":mirai-core"))
     runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main")) // classpath is not added correctly by IDE
 
     api(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-javafx", version = "1.3.2")

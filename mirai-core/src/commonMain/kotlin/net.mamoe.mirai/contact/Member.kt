@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
@@ -29,33 +29,50 @@ interface Member : QQ, Contact {
 
     /**
      * 成员的权限, 动态更新.
+     *
+     * @see MemberPermissionChangeEvent 权限变更事件. 由群主或机器人的操作触发.
      */
     val permission: MemberPermission
 
     /**
-     * 群名片. 可能为空. 修改时将会触发事件
+     * 群名片. 可能为空.
+     *
+     * 管理员和群主都可修改任何人（包括群主）的群名片.
      *
      * 在修改时将会异步上传至服务器.
      *
-     * @see [groupCardOrNick] 获取非空群名片或昵称
+     * @see [nameCardOrNick] 获取非空群名片或昵称
      *
-     * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
+     * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
      * @throws PermissionDeniedException 无权限修改时
      */
     var nameCard: String
 
     /**
-     * 群头衔
+     * 群头衔.
+     *
+     * 仅群主可以修改群头衔.
      *
      * 在修改时将会异步上传至服务器.
      *
-     * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件
+     * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
      * @throws PermissionDeniedException 无权限修改时
      */
     var specialTitle: String
 
     /**
-     * 禁言
+     * 被禁言剩余时长. 单位为秒.
+     *
+     * @see isMuted 判断改成员是否处于禁言状态
+     * @see mute 设置禁言
+     * @see unmute 取消禁言
+     */
+    val muteTimeRemaining: Int
+
+    /**
+     * 禁言.
+     *
+     * 管理员可禁言成员, 群主可禁言管理员和群员.
      *
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
@@ -72,6 +89,8 @@ interface Member : QQ, Contact {
     /**
      * 解除禁言.
      *
+     * 管理员可解除成员的禁言, 群主可解除管理员和群员的禁言.
+     *
      * @see MemberUnmuteEvent 成员被取消禁言事件.
      * @throws PermissionDeniedException 无权限修改时
      */
@@ -79,6 +98,8 @@ interface Member : QQ, Contact {
 
     /**
      * 踢出该成员.
+     *
+     * 管理员可踢出成员, 群主可踢出管理员和群员.
      *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
@@ -96,7 +117,14 @@ interface Member : QQ, Contact {
  *
  * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [QQ.nick]
  */
-val Member.groupCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
+val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
+
+/**
+ * 判断改成员是否处于禁言状态.
+ */
+fun Member.isMuted(): Boolean {
+    return muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
+}
 
 @ExperimentalTime
 suspend inline fun Member.mute(duration: Duration) {

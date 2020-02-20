@@ -11,8 +11,6 @@
 
 package net.mamoe.mirai.event
 
-import net.mamoe.mirai.BotImpl
-import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
@@ -22,7 +20,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  * 若监听这个类, 监听器将会接收所有事件的广播.
  *
  * @see subscribeAlways
- * @see subscribeWhile
+ * @see subscribeOnce
  *
  * @see subscribeMessages
  *
@@ -71,9 +69,6 @@ abstract class AbstractCancellableEvent : Event, CancellableEvent {
 @UseExperimental(MiraiInternalAPI::class)
 suspend fun <E : Event> E.broadcast(): E = apply {
     if (this is BroadcastControllable && !this.shouldBroadcast) {
-        return@apply
-    }
-    if (this is BotEvent && !(this.bot as BotImpl<*>).onEvent(this)) {
         return@apply
     }
     this@broadcast.broadcastInternal() // inline, no extra cost

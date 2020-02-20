@@ -2,6 +2,53 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.17.0` 2020/2/20
+
+### mirai-core
+- 支持原生表情 `Face`
+- 修正 `groupCardOrNick` 为 `nameCardOrNick`
+- 增加 `MessageChain.foreachContent(lambda)` 和 `Message.hasContent(): Boolean`
+
+### mirai-core-qqandroid
+- 提高重连速度
+- 修复重连后某些情况不会心跳
+- 修复收包时可能产生异常
+
+## `0.16.0` 2020/2/19
+
+### mirai-core
+- 添加 `Bot.subscribe` 等筛选 Bot 实例的监听方法
+- 其他一些小问题修复
+
+### mirai-core-qqandroid
+- 优化重连处理逻辑
+- 确保好友消息和历史事件在初始化结束前同步完成
+- 同步好友消息记录时不广播
+
+## `0.15.5` 2020/2/19
+
+### mirai-core
+- 为 `MiraiLogger` 添加 common property `val isEnabled: Boolean`
+- 修复 #62: 掉线重连后无 heartbeat
+- 修复 #65: `Bot` close 后仍会重连
+- 修复 #70: ECDH is not available on Android platform
+
+### mirai-core-qqandroid
+- 从服务器收到的事件将会额外使用 `bot.logger` 记录 (verbose).
+- 降低包记录的等级: `info` -> `verbose`
+- 改善 `Bot` 的 log 记录
+- 加载好友列表失败时会重试
+- 改善 `Bot` 或 `NetworkHandler` 关闭时取消 job 的逻辑
+- 修复初始化(init)时同步历史好友消息时出错的问题
+
+## `0.15.4` 2020/2/18
+
+- 放弃使用 `atomicfu` 以解决其编译错误的问题. (#60)
+
+## `0.15.3` 2020/2/18
+
+- 修复无法引入依赖的问题.
+
 ## `0.15.2` 2020/2/18
 
 ### mirai-core

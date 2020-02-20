@@ -25,6 +25,8 @@ import net.mamoe.mirai.message.data.Message
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
@@ -33,7 +35,10 @@ import kotlin.contracts.contract
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun <R> CoroutineScope.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R): R {
+inline fun <R> CoroutineScope.subscribeMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
+): R {
     // contract 可帮助 IDE 进行类型推断. 无实际代码作用.
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
@@ -42,7 +47,7 @@ inline fun <R> CoroutineScope.subscribeMessages(crossinline listeners: MessageSu
     return MessageSubscribersBuilder { messageListener: MessageListener<MessagePacket<*, *>> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [listener]
         // listener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
-        subscribeAlways {
+        subscribeAlways(coroutineContext) {
             messageListener.invoke(this, this.message.toString())
             // this.message.toString() 即为 messageListener 中 it 接收到的值
         }
@@ -56,12 +61,15 @@ inline fun <R> CoroutineScope.subscribeMessages(crossinline listeners: MessageSu
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun <R> CoroutineScope.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R): R {
+inline fun <R> CoroutineScope.subscribeGroupMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
+): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return MessageSubscribersBuilder<GroupMessage> { listener ->
-        subscribeAlways {
+        subscribeAlways(coroutineContext) {
             listener(this, this.message.toString())
         }
     }.run(listeners)
@@ -74,12 +82,15 @@ inline fun <R> CoroutineScope.subscribeGroupMessages(crossinline listeners: Mess
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun <R> CoroutineScope.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R): R {
+inline fun <R> CoroutineScope.subscribeFriendMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
+): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return MessageSubscribersBuilder<FriendMessage> { listener ->
-        subscribeAlways {
+        subscribeAlways(coroutineContext) {
             listener(this, this.message.toString())
         }
     }.run(listeners)
@@ -92,12 +103,15 @@ inline fun <R> CoroutineScope.subscribeFriendMessages(crossinline listeners: Mes
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun <R> Bot.subscribeMessages(crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R): R {
+inline fun <R> Bot.subscribeMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
+): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
-        this.subscribeAlways {
+        this.subscribeAlways(coroutineContext) {
             listener(this, this.message.toString())
         }
     }.run(listeners)
@@ -106,16 +120,21 @@ inline fun <R> Bot.subscribeMessages(crossinline listeners: MessageSubscribersBu
 /**
  * 订阅来自这个 [Bot] 的所有群消息事件
  *
+ * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
+ *
  * @see CoroutineScope.incoming
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun <R> Bot.subscribeGroupMessages(crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R): R {
+inline fun <R> Bot.subscribeGroupMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
+): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return MessageSubscribersBuilder<GroupMessage> { listener ->
-        this.subscribeAlways {
+        this.subscribeAlways(coroutineContext) {
             listener(this, this.message.toString())
         }
     }.run(listeners)
@@ -128,12 +147,15 @@ inline fun <R> Bot.subscribeGroupMessages(crossinline listeners: MessageSubscrib
  */
 @UseExperimental(ExperimentalContracts::class)
 @MessageDsl
-inline fun <R> Bot.subscribeFriendMessages(crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R): R {
+inline fun <R> Bot.subscribeFriendMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
+): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return MessageSubscribersBuilder<FriendMessage> { listener ->
-        this.subscribeAlways {
+        this.subscribeAlways(coroutineContext) {
             listener(this, this.message.toString())
         }
     }.run(listeners)
@@ -148,9 +170,12 @@ inline fun <R> Bot.subscribeFriendMessages(crossinline listeners: MessageSubscri
  * @see subscribeMessages
  * @see subscribeGroupMessages
  */
-inline fun <reified E : Event> CoroutineScope.incoming(capacity: Int = Channel.RENDEZVOUS): ReceiveChannel<E> {
+inline fun <reified E : Event> CoroutineScope.incoming(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    capacity: Int = Channel.RENDEZVOUS
+): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
-        subscribeAlways<E> {
+        subscribeAlways<E>(coroutineContext) {
             send(this)
         }
     }
