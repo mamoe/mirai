@@ -70,7 +70,7 @@ sealed class MessagePacketDTO : DTO {
     lateinit var messageChain : MessageChainDTO
 }
 
-typealias MessageChainDTO = Array<MessageDTO>
+typealias MessageChainDTO = List<MessageDTO>
 
 @Serializable
 sealed class MessageDTO : DTO
@@ -83,7 +83,7 @@ fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
     else -> UnKnownMessagePacketDTO("UnKnown Message Packet")
-}.apply { messageChain = Array(message.size){ message[it].toDTO() }}
+}.apply { messageChain = mutableListOf<MessageDTO>().also{ ls -> message.foreachContent { ls.add(it.toDTO()) }}}
 
 fun MessageChainDTO.toMessageChain(contact: Contact) =
     MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
