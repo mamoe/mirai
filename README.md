@@ -40,7 +40,7 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 ### 开发者
 #### 以编写机器人逻辑为主
-- 需了解<b>Java</b>或<b>Kotlin</b>, 使用[mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console)机器人框架的插件系统进行[插件开发](), 直接进行逻辑编写并与其他插件开发者合作共享
+- 需了解<b>Java</b>或<b>Kotlin</b>, 使用[mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console)机器人框架的插件系统进行[插件开发(DOING)](), 直接进行逻辑编写并与其他插件开发者合作共享
 
 #### 使用Mirai为第三方库
 - 假如你倾向使用Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
@@ -54,8 +54,8 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 ### 我是其他平台的使用者
 #### 酷Q平台用户: 
-- 全部酷Q的DLL插件可以在mirai中直接加载, 需使用<b>Mirai-Native</b>([源码](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)]())
-- 全部基于酷Q HTTPAPI 的插件可以在mirai中直接加载, 需使用<b>Mirai-CQ-Adapter</b>([源码](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)]())
+- 全部酷Q的DLL插件可以在mirai中直接加载, 需使用<b>Mirai-Native</b>([源码(DOING)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(DOING)]())
+- 全部基于酷Q HTTPAPI 的插件可以在mirai中直接加载, 需使用<b>Mirai-CQ-Adapter</b>([源码(TODO)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(TODO)]())
 #### 其他平台
 - 如果你的插件是通过酷Q HTTPAPI 实现的(绝大部分), 都可以通过<b>Mirai-CQ-Adapter</b>在mirai中直接使用
 
