@@ -32,32 +32,36 @@ data class FriendMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
 @SerialName("GroupMessage")
 data class GroupMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
 
-@Serializable
-@SerialName("UnKnownMessage")
-data class UnKnownMessagePacketDTO(val msg: String) : MessagePacketDTO()
 
 // Message
 @Serializable
 @SerialName("Source")
 data class MessageSourceDTO(val uid: Long) : MessageDTO()
+
 @Serializable
 @SerialName("At")
 data class AtDTO(val target: Long, val display: String = "") : MessageDTO()
+
 @Serializable
 @SerialName("AtAll")
 data class AtAllDTO(val target: Long = 0) : MessageDTO() // target为保留字段
+
 @Serializable
 @SerialName("Face")
 data class FaceDTO(val faceId: Int) : MessageDTO()
+
 @Serializable
 @SerialName("Plain")
 data class PlainDTO(val text: String) : MessageDTO()
+
 @Serializable
 @SerialName("Image")
 data class ImageDTO(val imageId: String) : MessageDTO()
+
 @Serializable
 @SerialName("Xml")
 data class XmlDTO(val xml: String) : MessageDTO()
+
 @Serializable
 @SerialName("Unknown")
 data class UnknownMessageDTO(val text: String) : MessageDTO()
@@ -66,8 +70,8 @@ data class UnknownMessageDTO(val text: String) : MessageDTO()
 *   Abstract Class
 * */
 @Serializable
-sealed class MessagePacketDTO : DTO {
-    lateinit var messageChain : MessageChainDTO
+sealed class MessagePacketDTO : EventDTO() {
+    lateinit var messageChain: MessageChainDTO
 }
 
 typealias MessageChainDTO = List<MessageDTO>
@@ -79,11 +83,15 @@ sealed class MessageDTO : DTO
 /*
     Extend function
  */
-fun MessagePacket<*, *>.toDTO(): MessagePacketDTO = when (this) {
+fun MessagePacket<*, *>.toDTO() = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
-    else -> UnKnownMessagePacketDTO("UnKnown Message Packet")
-}.apply { messageChain = mutableListOf<MessageDTO>().also{ ls -> message.foreachContent { ls.add(it.toDTO()) }}}
+    else -> IgnoreEventDTO
+}.apply {
+    if (this is MessagePacketDTO) {
+        messageChain = mutableListOf<MessageDTO>().also { ls -> message.foreachContent { ls.add(it.toDTO()) } }
+    }
+}
 
 fun MessageChainDTO.toMessageChain(contact: Contact) =
     MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
@@ -110,6 +118,4 @@ fun MessageDTO.toMessage(contact: Contact) = when (this) {
     is XmlDTO -> XMLMessage(xml)
     is MessageSourceDTO, is UnknownMessageDTO -> PlainText("assert cannot reach")
 }
-
-
 

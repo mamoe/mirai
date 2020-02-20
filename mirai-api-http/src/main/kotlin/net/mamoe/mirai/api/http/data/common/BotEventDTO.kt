@@ -9,7 +9,7 @@ import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 @Serializable
-open class BotEventDTO : EventDTO()
+sealed class BotEventDTO : EventDTO()
 
 @UseExperimental(MiraiExperimentalAPI::class)
 fun BotEvent.toDTO() = when(this) {

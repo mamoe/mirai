@@ -9,26 +9,35 @@
 
 package net.mamoe.mirai.api.http.queue
 
+import net.mamoe.mirai.api.http.data.common.EventDTO
+import net.mamoe.mirai.api.http.data.common.IgnoreEventDTO
+import net.mamoe.mirai.api.http.data.common.toDTO
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.GroupMessage
-import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.MessageSource
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 
-class MessageQueue : ConcurrentLinkedDeque<MessagePacket<*, *>>() {
+class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
 
     val quoteCache = ConcurrentHashMap<Long, GroupMessage>()
 
-    fun fetch(size: Int): List<MessagePacket<*, *>> {
+    fun fetch(size: Int): List<EventDTO> {
         var count = size
         quoteCache.clear()
-        val ret = ArrayList<MessagePacket<*, *>>(count)
-        while (!this.isEmpty() && count-- > 0) {
-            val packet = pop()
-            ret.add(packet)
+        val ret = ArrayList<EventDTO>(count)
+        while (!this.isEmpty() && count > 0) {
+            val event = pop()
 
-            if (packet is GroupMessage) {
-                addCache(packet)
+            event.toDTO().also {
+                if (it != IgnoreEventDTO) {
+                    ret.add(it)
+                    count--
+                }
+            }
+
+            if (event is GroupMessage) {
+                addCache(event)
             }
         }
         return ret
