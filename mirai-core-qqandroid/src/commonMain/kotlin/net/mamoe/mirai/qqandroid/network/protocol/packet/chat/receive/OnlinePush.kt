@@ -15,6 +15,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.NoPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.*
@@ -141,10 +142,9 @@ internal class OnlinePush {
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
-            reqPushMsg.vMsgInfos.forEach { msgInfo: MsgInfo ->
+            val packets = reqPushMsg.vMsgInfos.mapNotNull { msgInfo: MsgInfo ->
                 msgInfo.vMsg!!.read {
 
-                    // TODO: 2020/2/13 可能会同时收到多个事件. 使用 map 而不要直接 return
                     when {
                         msgInfo.shMsgType.toInt() == 732 -> {
                             val group = bot.getGroup(this.readUInt().toLong())
@@ -154,7 +154,7 @@ internal class OnlinePush {
                                 3073 -> { // mute
                                     val operatorUin = this.readUInt().toLong()
                                     if (operatorUin == bot.uin) {
-                                        return NoPacket
+                                        return@mapNotNull null
                                     }
                                     val operator = group[operatorUin]
                                     this.readUInt().toLong() // time
@@ -162,7 +162,7 @@ internal class OnlinePush {
                                     val target = this.readUInt().toLong()
                                     val time = this.readInt()
 
-                                    return if (target == 0L) {
+                                    return@mapNotNull if (target == 0L) {
                                         if (time == 0) {
                                             GroupMuteAllEvent(
                                                 origin = group.isMuteAll.also { group._muteAll = false },
@@ -179,14 +179,16 @@ internal class OnlinePush {
                                             )
                                         }
                                     } else {
-                                        return if (target == bot.uin) {
-                                            if (time == 0) {
+                                        if (target == bot.uin) {
+                                            @Suppress("IMPLICIT_CAST_TO_ANY") // false positive
+                                            return@mapNotNull if (time == 0) {
                                                 BotUnmuteEvent(operator)
                                             } else
                                                 BotMuteEvent(durationSeconds = time, operator = operator)
                                         } else {
                                             val member = group[target]
-                                            if (time == 0) {
+                                            @Suppress("IMPLICIT_CAST_TO_ANY") // false positive
+                                            return@mapNotNull if (time == 0) {
                                                 MemberUnmuteEvent(operator = operator, member = member)
                                             } else {
                                                 MemberMuteEvent(operator = operator, member = member, durationSeconds = time)
@@ -197,7 +199,7 @@ internal class OnlinePush {
                                 3585 -> { // 匿名
                                     val operator = group[this.readUInt().toLong()]
                                     val switch = this.readInt() == 0
-                                    return GroupAllowAnonymousChatEvent(
+                                    return@mapNotNull GroupAllowAnonymousChatEvent(
                                         origin = group.isAnonymousChatEnabled.also { group._anonymousChat = switch },
                                         new = switch,
                                         operator = operator,
@@ -210,7 +212,7 @@ internal class OnlinePush {
                                     // println(dataBytes.toUHexString())
 
                                     if (dataBytes[0].toInt() != 59) {
-                                        return GroupNameChangeEvent(
+                                        return@mapNotNull GroupNameChangeEvent(
                                             origin = group.name.also { group._name = message },
                                             new = message,
                                             group = group,
@@ -220,7 +222,7 @@ internal class OnlinePush {
                                         //println(message + ":" + dataBytes.toUHexString())
                                         when (message) {
                                             "管理员已关闭群聊坦白说" -> {
-                                                return GroupAllowConfessTalkEvent(
+                                                return@mapNotNull GroupAllowConfessTalkEvent(
                                                     origin = group.isConfessTalkEnabled.also { group._confessTalk = false },
                                                     new = false,
                                                     group = group,
@@ -228,7 +230,7 @@ internal class OnlinePush {
                                                 )
                                             }
                                             "管理员已开启群聊坦白说" -> {
-                                                return GroupAllowConfessTalkEvent(
+                                                return@mapNotNull GroupAllowConfessTalkEvent(
                                                     origin = group.isConfessTalkEnabled.also { group._confessTalk = true },
                                                     new = true,
                                                     group = group,
@@ -237,7 +239,7 @@ internal class OnlinePush {
                                             }
                                             else -> {
                                                 bot.network.logger.debug { "Unknown server messages $message" }
-                                                return NoPacket
+                                                return@mapNotNull NoPacket
                                             }
                                         }
                                     }
@@ -261,9 +263,10 @@ internal class OnlinePush {
                         }
                     }
                 }
+                return@mapNotNull null
             }
 
-            return NoPacket
+            return MultiPacket(packets)
         }
 
 
