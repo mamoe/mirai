@@ -94,6 +94,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     }
                     network.relogin(event.cause)
                     logger.info("Reconnected successfully")
+                    BotReloginEvent(bot, event.cause).broadcast()
                     return@subscribeAlways
                 }?.let {
                     logger.info("Cannot reconnect")
