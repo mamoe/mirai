@@ -97,11 +97,11 @@ interface Group : Contact, CoroutineScope {
     /**
      * 机器人在这个群里的权限
      *
-     * **MiraiExperimentalAPI**: 在未来可能会被修改
+     * @see Group.checkBotPermission
+     * @see Group.checkBotPermissionOperator
      *
      * @see BotGroupPermissionChangeEvent
      */
-    @MiraiExperimentalAPI
     val botPermission: MemberPermission
 
 
@@ -129,6 +129,7 @@ interface Group : Contact, CoroutineScope {
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
      */
+    @MiraiExperimentalAPI("还未支持")
     suspend fun quit(): Boolean
 
     /**

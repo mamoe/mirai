@@ -162,16 +162,11 @@ internal class QQImpl(
         TODO("not implemented")
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is QQ && other.id == this.id
-    }
-
-    override fun hashCode(): Int = super.hashCode()
+    override fun toString(): String = "QQ($id)"
 }
 
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
 internal class MemberImpl(
     qq: QQImpl,
     group: GroupImpl,
@@ -279,12 +274,9 @@ internal class MemberImpl(
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is Member && other.id == this.id
+    override fun toString(): String {
+        return "Member($id)"
     }
-
-    override fun hashCode(): Int = super.hashCode()
 }
 
 internal class MemberInfoImpl(
@@ -600,10 +592,7 @@ internal class GroupImpl(
         image.input.close()
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is Group && other.id == this.id
+    override fun toString(): String {
+        return "Group($id)"
     }
-
-    override fun hashCode(): Int = super.hashCode()
 }
