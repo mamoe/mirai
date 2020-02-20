@@ -108,7 +108,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         if (::channel.isInitialized) {
             if (channel.isOpen) {
                 kotlin.runCatching {
-                    registerClientOnline()
+                    registerClientOnline(500)
                 }.exceptionOrNull() ?: return
                 logger.info("Cannot do fast relogin. Trying slow relogin")
             }
