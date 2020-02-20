@@ -80,7 +80,25 @@ internal class Handler<in E : Event>
  */
 internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
 
-internal class EventListeners<E : Event> : LockFreeLinkedList<Listener<E>>()
+internal class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>>() {
+    @Suppress("UNCHECKED_CAST")
+    val supertypes: Set<KClass<out Event>> by lazy {
+        val supertypes = mutableSetOf<KClass<out Event>>()
+
+        fun addSupertypes(clazz: KClass<out Event>) {
+            clazz.supertypes.forEach {
+                val classifier = it.classifier as? KClass<out Event>
+                if (classifier != null) {
+                    supertypes.add(classifier)
+                    addSupertypes(classifier)
+                }
+            }
+        }
+        addSupertypes(clazz)
+
+        supertypes
+    }
+}
 
 internal expect class MiraiAtomicBoolean(initial: Boolean) {
 
@@ -109,10 +127,10 @@ internal object EventListenerManager {
             }
         }
         if (lock.compareAndSet(false, true)) {
-            val registry = Registry(clazz, EventListeners())
+            val registry = Registry(clazz as KClass<E>, EventListeners(clazz))
             registries.addLast(registry)
             lock.value = false
-            return registry.listeners as EventListeners<E>
+            return registry.listeners
         }
         return get(clazz)
     }
@@ -125,19 +143,10 @@ internal suspend inline fun Event.broadcastInternal() {
 
     EventLogger.info { "Event broadcast: $this" }
 
-    callAndRemoveIfRequired(this::class.listeners())
-
-    var supertypes = this::class.supertypes
-    while (true) {
-        val superSubscribableType = supertypes.firstOrNull {
-            it.classifier as? KClass<out Event> != null
-        }
-
-        superSubscribableType?.let {
-            callAndRemoveIfRequired((it.classifier as KClass<out Event>).listeners())
-        }
-
-        supertypes = (superSubscribableType?.classifier as? KClass<*>)?.supertypes ?: return
+    val listeners = this::class.listeners()
+    callAndRemoveIfRequired(listeners)
+    listeners.supertypes.forEach {
+        callAndRemoveIfRequired(it.listeners())
     }
 }
 
