@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.qqandroid.message
 
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
@@ -20,13 +22,18 @@ import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toByteArray
 
-private val AT_BUF_1 = byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x00, 0x07, 0x00) // groupCard = 0x07; nick = 0x0A
-private val AT_BUF_2 = ByteArray(2)
-
 internal fun At.toJceData(): ImMsgBody.Text {
+    val text = this.toString()
     return ImMsgBody.Text(
-        str = this.toString(),
-        attr6Buf = AT_BUF_1 + this.target.toInt().toByteArray() + AT_BUF_2
+        str = text,
+        attr6Buf = buildPacket {
+            writeShort(1)
+            writeShort(0)
+            writeShort(text.length.toShort())
+            writeByte(1)
+            writeInt(target.toInt())
+            writeShort(0)
+        }.readBytes()
     )
 }
 
