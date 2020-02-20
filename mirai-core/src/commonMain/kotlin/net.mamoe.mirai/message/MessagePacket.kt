@@ -115,6 +115,8 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      */
     inline fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
 
+    inline fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error("`At.member` can only be used in GroupMessage")
+
     // endregion
 
     // region 下载图片
