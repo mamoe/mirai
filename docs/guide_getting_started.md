@@ -53,7 +53,7 @@ JDK要求6以上
   }
   ```
 
-- 添加依赖，将dependencies部分覆盖 `mirai-core` 的最新版本为: [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+- 添加依赖，将dependencies部分覆盖。 `mirai-core` 的最新版本为: [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
   ```groovy
   dependencies {
@@ -84,7 +84,7 @@ import net.mamoe.mirai.event.subscribeMessages
 suspend fun main() {
     val qqId = 10000L//Bot的QQ号，需为Long类型，在结尾处添加大写L
     val password = "your_password"//Bot的密码
-    val miraiBot = Bot(qqId, password).alsoLogin()//新建Bot并登陆
+    val miraiBot = Bot(qqId, password).alsoLogin()//新建Bot并登录
     miraiBot.subscribeMessages {
         "你好" reply "你好!"
         case("at me") {
@@ -95,7 +95,7 @@ suspend fun main() {
             "刘老板太强了".reply()
         }
     }
-    miraiBot.join()
+    miraiBot.join() // 等待 Bot 离线, 避免主线程退出
 }
 ```
 
@@ -110,7 +110,6 @@ suspend fun main() {
 ### 此外，还可以使用Maven作为包管理工具
 本项目推荐使用gradle，因此不提供详细入门指导
 
-Kotlin 在 Maven 上只支持 JVM 平台.
 ```xml
 <repositories>
     <repository>
