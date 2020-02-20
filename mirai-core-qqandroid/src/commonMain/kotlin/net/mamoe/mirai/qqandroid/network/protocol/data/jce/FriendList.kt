@@ -9,9 +9,11 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 
+import kotlinx.io.core.toByteArray
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
 internal class ModifyGroupCardReq(

@@ -410,7 +410,7 @@ internal class TroopManagement {
                                         gender = 0,
                                         dwuin = member.id,
                                         dwFlag = 31,
-                                        sName = newName.toUtf8Bytes().encodeToString(charset = CharsetGBK),
+                                        sName = newName.toByteArray(CharsetUTF8).encodeToString(CharsetGBK),
                                         sPhone = "",
                                         sEmail = "",
                                         sRemark = ""
