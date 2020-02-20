@@ -64,7 +64,7 @@ data class BotOfflineEventDroppedDTO(val qq: Long) : BotEventDTO()
 data class BotReloginEventDTO(val qq: Long) : BotEventDTO()
 @Serializable
 @SerialName("BotGroupPermissionChangeEvent")
-data class BotGroupPermissionChangeEventDTO(val origin: MemberPermission, val new: MemberPermission, val groupDTO: GroupDTO) : BotEventDTO()
+data class BotGroupPermissionChangeEventDTO(val origin: MemberPermission, val new: MemberPermission, val group: GroupDTO) : BotEventDTO()
 @Serializable
 @SerialName("BotMuteEvent")
 data class BotMuteEventDTO(val durationSeconds: Int, val operator: MemberDTO) : BotEventDTO()
