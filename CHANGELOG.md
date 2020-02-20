@@ -2,6 +2,18 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.17.0` 2020/2/20
+
+### mirai-core
+- 支持原生表情 `Face`
+- 修正 `groupCardOrNick` 为 `nameCardOrNick`
+- 增加 `MessageChain.foreachContent(lambda)` 和 `Message.hasContent(): Boolean`
+
+### mirai-core-qqandroid
+- 提高重连速度
+- 修复重连后某些情况不会心跳
+- 修复收包时可能产生异常
+
 ## `0.16.0` 2020/2/19
 
 ### mirai-core
