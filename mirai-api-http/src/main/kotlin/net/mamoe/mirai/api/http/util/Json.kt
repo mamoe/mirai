@@ -48,7 +48,6 @@ object MiraiJson {
         polymorphic(EventDTO.serializer()) {
             GroupMessagePacketDTO::class with GroupMessagePacketDTO.serializer()
             FriendMessagePacketDTO::class with FriendMessagePacketDTO.serializer()
-            UnKnownMessagePacketDTO::class with UnKnownMessagePacketDTO.serializer()
 
             BotOnlineEventDTO::class with BotOnlineEventDTO.serializer()
             BotOfflineEventActiveDTO::class with BotOfflineEventActiveDTO.serializer()
