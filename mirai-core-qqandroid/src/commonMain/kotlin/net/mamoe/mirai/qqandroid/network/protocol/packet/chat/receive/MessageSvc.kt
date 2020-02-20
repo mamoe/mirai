@@ -194,6 +194,7 @@ internal class MessageSvc {
                                         override val nameCard: String get() = ""
                                         override val permission: MemberPermission get() = MemberPermission.MEMBER
                                         override val specialTitle: String get() = ""
+                                        override val muteTimestamp: Int get() = 0
                                         override val uin: Long get() = msg.msgHead.authUin
                                         override val nick: String get() = msg.msgHead.authNick.takeIf { it.isNotEmpty() } ?: msg.msgHead.fromNick
                                     }).also { group.members.delegate.addLast(it) })

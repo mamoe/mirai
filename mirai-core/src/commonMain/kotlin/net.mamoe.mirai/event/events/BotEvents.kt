@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
@@ -194,7 +196,7 @@ data class GroupNameChangeEvent(
     override val origin: String,
     override val new: String,
     override val group: Group,
-    val isByBot: Boolean
+    val isByBot: Boolean // 无法获取 operator
 ) : GroupSettingChangeEvent<String>, Packet
 
 /**
@@ -210,6 +212,8 @@ data class GroupEntranceAnnouncementChangeEvent(
     val operator: Member?
 ) : GroupSettingChangeEvent<String>, Packet
 
+val GroupEntranceAnnouncementChangeEvent.isByBot: Boolean get() = operator != null
+
 
 /**
  * 群 "全员禁言" 功能状态改变. 此事件广播前修改就已经完成.
@@ -224,6 +228,8 @@ data class GroupMuteAllEvent(
     val operator: Member?
 ) : GroupSettingChangeEvent<Boolean>, Packet
 
+val GroupMuteAllEvent.isByBot: Boolean get() = operator != null
+
 /**
  * 群 "匿名聊天" 功能状态改变. 此事件广播前修改就已经完成.
  */
@@ -236,6 +242,8 @@ data class GroupAllowAnonymousChatEvent(
      */
     val operator: Member?
 ) : GroupSettingChangeEvent<Boolean>, Packet
+
+val GroupAllowAnonymousChatEvent.isByBot: Boolean get() = operator != null
 
 /**
  * 群 "坦白说" 功能状态改变. 此事件广播前修改就已经完成.
@@ -259,6 +267,8 @@ data class GroupAllowMemberInviteEvent(
      */
     val operator: Member?
 ) : GroupSettingChangeEvent<Boolean>, Packet
+
+val GroupAllowMemberInviteEvent.isByBot: Boolean get() = operator != null
 
 // endregion
 
@@ -293,6 +303,8 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
     data class Quit(override val member: Member) : MemberLeaveEvent()
 }
 
+val MemberLeaveEvent.Kick.isByBot: Boolean get() = operator != null
+
 // endregion
 
 // region 名片和头衔
@@ -319,6 +331,8 @@ data class MemberCardChangeEvent(
     val operator: Member?
 ) : GroupMemberEvent
 
+val MemberCardChangeEvent.isByBot: Boolean get() = operator != null
+
 /**
  * 群头衔改动. 一定为群主操作
  */
@@ -333,8 +347,17 @@ data class MemberSpecialTitleChangeEvent(
      */
     val new: String,
 
-    override val member: Member
+    override val member: Member,
+
+    /**
+     * 操作人.
+     * 不为 null 时一定为群主. 可能与 [member] 引用相同, 此时为群员自己修改.
+     * 为 null 时则是机器人操作.
+     */
+    val operator: Member?
 ) : GroupMemberEvent
+
+val MemberSpecialTitleChangeEvent.isByBot: Boolean get() = operator != null
 
 // endregion
 
@@ -367,6 +390,8 @@ data class MemberMuteEvent(
     val operator: Member?
 ) : GroupMemberEvent, Packet
 
+val MemberMuteEvent.isByBot: Boolean get() = operator != null
+
 /**
  * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
  */
@@ -377,6 +402,8 @@ data class MemberUnmuteEvent(
      */
     val operator: Member?
 ) : GroupMemberEvent, Packet
+
+val MemberUnmuteEvent.isByBot: Boolean get() = operator != null
 
 // endregion
 

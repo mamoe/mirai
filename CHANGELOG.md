@@ -2,6 +2,21 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.18.0` 2020/2/20
+
+### mirai-core
+- 添加 `MessageSource.time`
+- 添加事件监听时额外的 `coroutineContext`
+- 为一些带有 `operator` 的事件添加 `.isByBot` 的属性扩展
+- 优化事件广播逻辑, 修复可能无法触发监听的问题
+- 为所有 `Contact` 添加 `toString()` (#80)
+
+### mirai-core-qqandroid
+- 支持成员禁言状态和时间查询 `Member.muteTimeRemaining`
+- 修复 `At` 的 `display` (#73), 同时修复 `QuoteReply` 无法显示问题 (#54).
+- 广播 `BotReloginEvent` (#78)
+- 支持机器人自身禁言时间的更新和查询 (#82)
+
 ## `0.17.0` 2020/2/20
 
 ### mirai-core

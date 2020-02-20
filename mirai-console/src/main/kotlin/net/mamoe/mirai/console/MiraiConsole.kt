@@ -305,6 +305,7 @@ object MiraiConsole {
                 if (!CommandManager.runCommand(fullCommand)) {
                     logger("未知指令 $fullCommand")
                 }
+
             }
         }
     }

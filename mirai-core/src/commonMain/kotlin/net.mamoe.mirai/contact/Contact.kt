@@ -74,6 +74,16 @@ interface Contact : CoroutineScope {
      * 而 [QQ] 含义为一个独立的人, 可以是好友, 也可以是陌生人.
      */
     override fun equals(other: Any?): Boolean
+
+    /**
+     * @return `bot.hashCode() * 31 + id.hashCode()`
+     */
+    override fun hashCode(): Int
+
+    /**
+     * @return "QQ($id)" or "Group($id)" or "Member($id)"
+     */
+    override fun toString(): String
 }
 
 suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
