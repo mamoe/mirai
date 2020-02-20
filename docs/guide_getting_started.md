@@ -51,12 +51,12 @@ JDK要求8以上
   }
   ```
 
-- 添加依赖，将dependencies部分覆盖为
+- 添加依赖，将dependencies部分覆盖为:
+  `mirai-core` 的最新版本为: [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
   ```groovy
   dependencies {
-      implementation 'net.mamoe:mirai-core:0.16.0'
-      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.16.0'
+      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.17.0' // 替换成最新版本号
       implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
       testCompile group: 'junit', name: 'junit', version: '4.12'
   }
