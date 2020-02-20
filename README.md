@@ -49,7 +49,7 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 ### 使用者
 
 - [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, 在终端中启动 Mirai 并获得机器人服务，**本模块还未完善**，请耐心等待开发完成。
-- Mirai-WebPenel 支持Web控制台，以网页形式管理机器人。本模块在计划中，在其他模块稳定后即将开启开发。
+- mirai-webpanel Mirai的Web控制台，支持在网页中管理机器人与插件。本模块目前在计划中。在其他模块稳定后，将开始进行开发。
 
 
 
