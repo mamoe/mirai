@@ -46,19 +46,10 @@ object MiraiJson {
     val json = Json(context = SerializersModule {
 
         polymorphic(EventDTO.serializer()) {
-            BotEventDTO::class with BotEventDTO.serializer()
-            MessagePacketDTO::class with MessagePacketDTO.serializer()
-        }
-
-
-        polymorphic(MessagePacketDTO.serializer()) {
             GroupMessagePacketDTO::class with GroupMessagePacketDTO.serializer()
             FriendMessagePacketDTO::class with FriendMessagePacketDTO.serializer()
             UnKnownMessagePacketDTO::class with UnKnownMessagePacketDTO.serializer()
-        }
 
-        // Bot Event Polymorphic
-        polymorphic(BotEventDTO.serializer()) {
             BotOnlineEventDTO::class with BotOnlineEventDTO.serializer()
             BotOfflineEventActiveDTO::class with BotOfflineEventActiveDTO.serializer()
             BotOfflineEventForceDTO::class with BotOfflineEventForceDTO.serializer()
@@ -85,15 +76,15 @@ object MiraiJson {
         }
 
         // Message Polymorphic
-        polymorphic(MessageDTO.serializer()) {
-            MessageSourceDTO::class with MessageSourceDTO.serializer()
-            AtDTO::class with AtDTO.serializer()
-            AtAllDTO::class with AtAllDTO.serializer()
-            FaceDTO::class with FaceDTO.serializer()
-            PlainDTO::class with PlainDTO.serializer()
-            ImageDTO::class with ImageDTO.serializer()
-            XmlDTO::class with XmlDTO.serializer()
-            UnknownMessageDTO::class with UnknownMessageDTO.serializer()
-        }
+//        polymorphic(MessageDTO.serializer()) {
+//            MessageSourceDTO::class with MessageSourceDTO.serializer()
+//            AtDTO::class with AtDTO.serializer()
+//            AtAllDTO::class with AtAllDTO.serializer()
+//            FaceDTO::class with FaceDTO.serializer()
+//            PlainDTO::class with PlainDTO.serializer()
+//            ImageDTO::class with ImageDTO.serializer()
+//            XmlDTO::class with XmlDTO.serializer()
+//            UnknownMessageDTO::class with UnknownMessageDTO.serializer()
+//        }
     })
 }
