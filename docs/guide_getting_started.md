@@ -98,7 +98,7 @@ suspend fun main() {
 }
 ```
 
-- 单击编辑器内第8行(```fun main```)左侧的run按钮(绿色三角)，等待，MiraiBot成功登录。
+- 单击编辑器内第8行(```suspend fun main```)左侧的run按钮(绿色三角)，等待，MiraiBot成功登录。
 - 本例的功能中，在任意群内任意成员发送包含“舔”字或“刘老板”字样的消息，MiraiBot会回复“刘老板太强了”
 
 
