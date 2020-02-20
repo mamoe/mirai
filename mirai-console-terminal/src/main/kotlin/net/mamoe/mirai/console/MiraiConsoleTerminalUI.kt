@@ -482,7 +482,9 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                 val width = terminal.terminalSize.columns - 6
                 var x = string
                 while (true) {
-                    if (x == "") break
+                    if (x == "") {
+                        break
+                    }
                     val toWrite = if (x.actualLength() > width) {
                         val index = x.getSubStringIndexByActualLength(width)
                         x.substring(0, index).also {
