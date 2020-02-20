@@ -72,7 +72,7 @@ actual open class BotConfiguration actual constructor() {
     /**
      * 最多尝试多少次重连
      */
-    actual var reconnectionRetryTimes: Int = 10
+    actual var reconnectionRetryTimes: Int = Int.MAX_VALUE
     /**
      * 验证码处理器
      */
