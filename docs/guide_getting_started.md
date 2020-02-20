@@ -10,7 +10,7 @@
 
 使用mirai-console，以插件形式对服务器功能进行管理，启动无需任何IDE。
 
-**由于mirai-terminal还没有开发完成，暂时不提供入门**
+**由于mirai-console还没有开发完成，暂时不提供入门**
 
 ## With loader
 
