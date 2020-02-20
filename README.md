@@ -41,7 +41,7 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 ### 开发者
 
 - 假如你熟悉Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
-- 假如你不熟悉Kotlin，希望一份较详细的起步教程，请参阅[Mitai Guide - Getting Started](/docs/guide_getting_started.md)
+- 假如你不熟悉Kotlin，希望一份较详细的起步教程，请参阅[Mirai Guide - Getting Started](/docs/guide_getting_started.md)
 - 假如你使用Java作为开发语言，请参阅[mirai-japt](/mirai-japt/README.md)
 - 假如你是其他平台开发者，可以通过了解 [mirai-api-http](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入，欢迎开发不同平台的mirai-sdk
 - 此外，你还可以在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
