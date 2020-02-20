@@ -1,22 +1,18 @@
 # Mirai Guide - Getting Started
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-20```，对应版本```0.17.0```
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-20```，对应版本```0.16.0```
 
 假如仅仅使用Mirai，不需要对整个项目进行Clone，只需在项目内添加Gradle Dependency或使用即可。
 
 下面介绍详细的入门步骤。
 
-本文章使用Kotlin作为开发语言。**若你希望使用 Java 开发**, 请查看: [mirai-japt](mirai-japt/README.md)
-
-## Use Console
+## With Console
 
 使用mirai-console，以插件形式对服务器功能进行管理，启动无需任何IDE。
 
-**由于mirai-console还没有开发完成，暂时不提供入门。**
+**由于mirai-console还没有开发完成，暂时不提供入门**
 
-*假如需要体验mirai-console，请clone整个项目，自行进行编译与部署。
-
-## Use Loader
+## With Loader
 
 通过编写Kotlin程序启动mirai-core，并定义你的Mirai Bot行为。
 
@@ -59,8 +55,8 @@ JDK要求8以上
 
   ```groovy
   dependencies {
-      implementation 'net.mamoe:mirai-core:0.17.0'
-      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.17.0'
+      implementation 'net.mamoe:mirai-core:0.16.0'
+      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.16.0'
       implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
       testCompile group: 'junit', name: 'junit', version: '4.12'
   }
@@ -72,7 +68,7 @@ JDK要求8以上
 ### 4 Try Bot
 
 - 在src/main文件夹下新建文件夹，命名为```kotlin```
-- 在```kotlin```下新建包(在```kotlin```文件夹上右键-```New```-```Package```) 包名为```net.mamoe.mirai.simpleloader```
+- 在```kotlin```下新建包(在```kotlin```文件夹上右键-```New```-```Packages```) 包名为```net.mamoe.mirai.simpleloader```
 
 - 在包下新建kotlin文件```MyLoader.kt```
 
