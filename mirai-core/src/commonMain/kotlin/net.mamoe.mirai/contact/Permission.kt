@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 
@@ -68,7 +69,6 @@ inline fun Member.isAdministrator(): Boolean = this.permission.isAdministrator()
 inline fun Member.isOperator(): Boolean = this.permission.isOperator()
 
 
-
 /**
  * 权限不足
  */
@@ -77,6 +77,11 @@ expect class PermissionDeniedException : IllegalStateException {
     constructor(message: String?)
 }
 
+/**
+ * 要求 [Bot] 在这个群里的权限为 [required], 否则抛出异常 [PermissionDeniedException]
+ *
+ * @throws PermissionDeniedException
+ */
 @UseExperimental(MiraiExperimentalAPI::class)
 inline fun Group.checkBotPermission(
     required: MemberPermission,
@@ -89,6 +94,11 @@ inline fun Group.checkBotPermission(
     }
 }
 
+/**
+ * 要求 [Bot] 在这个群里的权限为 [管理员或群主][MemberPermission.isOperator], 否则抛出异常 [PermissionDeniedException]
+ *
+ * @throws PermissionDeniedException
+ */
 @UseExperimental(MiraiExperimentalAPI::class)
 inline fun Group.checkBotPermissionOperator(
     lazyMessage: () -> String = {
