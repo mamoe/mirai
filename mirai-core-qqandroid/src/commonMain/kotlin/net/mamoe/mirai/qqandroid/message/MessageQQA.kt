@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toByteArray
 
-private val AT_BUF_1 = byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x00, 0x0A, 0x00)
+private val AT_BUF_1 = byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x00, 0x07, 0x00) // groupCard = 0x07; nick = 0x0A
 private val AT_BUF_2 = ByteArray(2)
 
 internal fun At.toJceData(): ImMsgBody.Text {
@@ -328,8 +328,9 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
                 if (it.text.attr6Buf.isEmpty()) {
                     message.add(it.text.str.toMessage())
                 } else {
-                    //00 01 00 00 00 05 01 00 00 00 00 00 00 all
-                    //00 01 00 00 00 0A 00 3E 03 3F A2 00 00 one
+                    // 00 01 00 00 00 05 01 00 00 00 00 00 00 all
+                    // 00 01 00 00 00 0A 00 3E 03 3F A2 00 00 one/nick
+                    // 00 01 00 00 00 07 00 44 71 47 90 00 00 one/groupCard
                     val id: Long
                     it.text.attr6Buf.read {
                         discardExact(7)

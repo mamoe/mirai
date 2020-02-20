@@ -17,7 +17,6 @@ import kotlinx.io.core.readUInt
 import kotlinx.io.core.readULong
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.*
 import kotlin.jvm.JvmStatic
 

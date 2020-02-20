@@ -7,6 +7,9 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmName("SerializationUtils")
+@file:JvmMultifileClass
+
 package net.mamoe.mirai.qqandroid.io.serialization
 
 import kotlinx.io.core.*
@@ -20,7 +23,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.toUHexString
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {

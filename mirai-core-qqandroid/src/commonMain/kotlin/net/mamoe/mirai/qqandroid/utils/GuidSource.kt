@@ -7,9 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmName("Utils")
+@file:JvmMultifileClass
+
 package net.mamoe.mirai.qqandroid.utils
 
-import net.mamoe.mirai.utils.md5
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 
 /**
