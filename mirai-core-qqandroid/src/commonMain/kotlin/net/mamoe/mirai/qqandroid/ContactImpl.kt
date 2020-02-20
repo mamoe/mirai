@@ -180,6 +180,15 @@ internal class MemberImpl(
     internal var _nameCard: String = memberInfo.nameCard
     internal var _specialTitle: String = memberInfo.specialTitle
 
+    var _muteTimestamp: Int = memberInfo.muteTimestamp
+
+    override val muteTimeRemaining: Int =
+        if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
+            0
+        } else {
+            _muteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+        }
+
     override var nameCard: String
         get() = _nameCard
         set(newValue) {
@@ -215,7 +224,7 @@ internal class MemberImpl(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl).broadcast()
+                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl, null).broadcast()
                 }
             }
         }
@@ -293,6 +302,7 @@ internal class MemberInfoImpl(
             else -> MemberPermission.MEMBER
         }
     override val specialTitle: String get() = jceInfo.sSpecialTitle ?: ""
+    override val muteTimestamp: Int get() = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
 /**
@@ -315,13 +325,13 @@ internal class GroupImpl(
     @UseExperimental(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
-    var _botMuteRemaining: Int = groupInfo.botMuteRemaining
+    var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
 
     override val botMuteRemaining: Int =
-        if (_botMuteRemaining == 0 || _botMuteRemaining == 0xFFFFFFFF.toInt()) {
+        if (_botMuteTimestamp == 0 || _botMuteTimestamp == 0xFFFFFFFF.toInt()) {
             0
         } else {
-            _botMuteRemaining - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+            _botMuteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
         }
 
     override val members: ContactList<Member> = ContactList(members.mapNotNull {

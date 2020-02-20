@@ -333,7 +333,14 @@ data class MemberSpecialTitleChangeEvent(
      */
     val new: String,
 
-    override val member: Member
+    override val member: Member,
+
+    /**
+     * 操作人.
+     * 不为 null 时一定为群主. 可能与 [member] 引用相同, 此时为群员自己修改.
+     * 为 null 时则是机器人操作.
+     */
+    val operator: Member?
 ) : GroupMemberEvent
 
 // endregion

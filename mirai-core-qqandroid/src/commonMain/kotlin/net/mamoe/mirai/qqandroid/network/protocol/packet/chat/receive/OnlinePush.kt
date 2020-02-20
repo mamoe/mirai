@@ -181,12 +181,12 @@ internal class OnlinePush {
                                         }
                                     } else {
                                         if (target == bot.uin) {
-                                            if (group._botMuteRemaining != time) {
+                                            if (group._botMuteTimestamp != time) {
                                                 if (time == 0) {
-                                                    group._botMuteRemaining = 0
+                                                    group._botMuteTimestamp = 0
                                                     return@mapNotNull BotUnmuteEvent(operator) as Packet
                                                 } else {
-                                                    group._botMuteRemaining = time
+                                                    group._botMuteTimestamp = time
                                                     return@mapNotNull BotMuteEvent(durationSeconds = time, operator = operator) as Packet
                                                 }
                                             } else {
@@ -194,11 +194,17 @@ internal class OnlinePush {
                                             }
                                         } else {
                                             val member = group[target]
-                                            // TODO: 2020/2/20 检查是否重复
-                                            return@mapNotNull if (time == 0) {
-                                                MemberUnmuteEvent(operator = operator, member = member)
+                                            member as MemberImpl
+                                            if (member._muteTimestamp != time) {
+                                                if (time == 0) {
+                                                    member._muteTimestamp = 0
+                                                    return@mapNotNull MemberUnmuteEvent(member, operator) as Packet
+                                                } else {
+                                                    member._muteTimestamp = time
+                                                    return@mapNotNull MemberMuteEvent(member, time, operator) as Packet
+                                                }
                                             } else {
-                                                MemberMuteEvent(operator = operator, member = member, durationSeconds = time) as Packet
+                                                return@mapNotNull null
                                             }
                                         }
                                     }
@@ -261,7 +267,6 @@ internal class OnlinePush {
                                     return@mapNotNull null
                                 }
                             }
-                            return@mapNotNull null
                         }
                         msgInfo.shMsgType.toInt() == 528 -> {
                             bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
@@ -274,7 +279,6 @@ internal class OnlinePush {
                             return@mapNotNull null
                         }
                     }
-                    return@mapNotNull null
                 }
             }
             return MultiPacket(packets)

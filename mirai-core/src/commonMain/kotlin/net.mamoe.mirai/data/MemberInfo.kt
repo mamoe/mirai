@@ -17,4 +17,6 @@ interface MemberInfo : FriendInfo {
     val permission: MemberPermission
 
     val specialTitle: String
+
+    val muteTimestamp: Int
 }
