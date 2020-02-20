@@ -38,7 +38,7 @@ fun BotEvent.toDTO() = when(this) {
         is MemberJoinEvent -> MemberJoinEventDTO(MemberDTO(member))
         is MemberLeaveEvent.Kick -> MemberLeaveEventKickDTO(MemberDTO(member), operator?.let(::MemberDTO))
         is MemberLeaveEvent.Quit -> MemberLeaveEventQuitDTO(MemberDTO(member))
-        is MemberCardChangeEvent -> MemberCardChangeEventDTO(origin, new, GroupDTO(group), operator?.let(::MemberDTO))
+        is MemberCardChangeEvent -> MemberCardChangeEventDTO(origin, new, MemberDTO(member), operator?.let(::MemberDTO))
         is MemberSpecialTitleChangeEvent -> MemberSpecialTitleChangeEventDTO(origin, new, MemberDTO(member))
         is MemberPermissionChangeEvent -> MemberPermissionChangeEventDTO(origin, new, MemberDTO(member))
         is MemberMuteEvent -> MemberMuteEventDTO(durationSeconds, MemberDTO(member), operator?.let(::MemberDTO))
@@ -103,7 +103,7 @@ data class MemberLeaveEventKickDTO(val member: MemberDTO, val operator: MemberDT
 data class MemberLeaveEventQuitDTO(val member: MemberDTO) : BotEventDTO()
 @Serializable
 @SerialName("MemberCardChangeEvent")
-data class MemberCardChangeEventDTO(val origin: String, val new: String, val group: GroupDTO, val operator: MemberDTO?) : BotEventDTO()
+data class MemberCardChangeEventDTO(val origin: String, val new: String, val member: MemberDTO, val operator: MemberDTO?) : BotEventDTO()
 @Serializable
 @SerialName("MemberSpecialTitleChangeEvent")
 data class MemberSpecialTitleChangeEventDTO(val origin: String, val new: String, val member: MemberDTO) : BotEventDTO()

@@ -331,24 +331,26 @@ Content-Type：multipart/form-data
 
 
 
-### 获取Bot收到的消息
+### 获取Bot收到的消息和事件
 
 ```
 [GET] /fetchMessage?sessionKey=YourSessionKey&count=10
 ```
 
+使用此方法获取bot接收到的消息和各类事件
+
 #### 请求:
 
-| 名字       | 可选  | 举例           | 说明            |
-| ---------- | ----- | -------------- | --------------- |
-| sessionKey | false | YourSessionKey | 你的session key |
-| count      | false | 10             | 获取消息的数量  |
+| 名字       | 可选  | 举例           | 说明                 |
+| ---------- | ----- | -------------- | -------------------- |
+| sessionKey | false | YourSessionKey | 你的session key      |
+| count      | false | 10             | 获取消息和事件的数量 |
 
 #### 响应: 返回JSON对象
 
 ```json5
 [{
-    "type": "GroupMessage",        // 消息类型：GroupMessage或FriendMessage
+    "type": "GroupMessage",        // 消息类型：GroupMessage或FriendMessage或各类Event
 	"messageChain": [{             // 消息链，是一个消息对象构成的数组
 	    "type": "Source",
 	    "uid": 123456
@@ -366,9 +368,8 @@ Content-Type：multipart/form-data
             "permission": "MEMBER"      // 发送群中，Bot的群限权
         }
     }
- },
- {
-    "type": "FriendMessage",         // 消息类型：GroupMessage或FriendMessage
+ },{
+    "type": "FriendMessage",         // 消息类型：GroupMessage或FriendMessage或各类Event
         "messageChain": [{           // 消息链，是一个消息对象构成的数组
         "type": "Plain",
         "text": "Miral牛逼"
@@ -378,9 +379,38 @@ Content-Type：multipart/form-data
         "nickName": "",              // 发送者的昵称
         "remark": ""                 // 发送者的备注
     }
+ },{
+    "type": "MemberMuteEvent",       // 消息类型：GroupMessage或FriendMessage或各类Event
+    "durationSeconds": 600,
+    "member":{
+        "id": 123456789,
+        "memberName": "禁言对象",
+        "permission": "MEMBER",
+        "group": {
+            "id": 123456789,
+            "name": "Miral Technology",
+            "permission": "MEMBER"
+        }
+    },
+    "operator":{
+        "id": 987654321, 
+        "memberName": "群主大人", 
+        "permission": "OWNER",
+        "group": {
+            "id": 123456789,
+            "name": "Miral Technology",
+            "permission": "MEMBER"
+        }
+    }
 }]
 ```
 
+
+
+### 事件类型一览
+[事件类型一览](./EventType_CN.md)
+
+> 事件为Bot被动接收的信息，无法主动构建
 
 
 ### 消息类型一览
