@@ -31,8 +31,12 @@ fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L
 
 @PublishedApi
 @Suppress("FunctionName")
-internal fun <E : Event> CoroutineScope.Handler(handler: suspend (E) -> ListeningStatus): Handler<E> {
-    return Handler(coroutineContext[Job], coroutineContext, handler)
+internal fun <E : Event> CoroutineScope.Handler(
+    coroutineContext: CoroutineContext,
+    handler: suspend (E) -> ListeningStatus
+): Handler<E> {
+    val context = this.newCoroutineContext(coroutineContext)
+    return Handler(context[Job], context, handler)
 }
 
 private inline fun inline(block: () -> Unit) = block()
