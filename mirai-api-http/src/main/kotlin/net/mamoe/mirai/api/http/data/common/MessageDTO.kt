@@ -66,7 +66,7 @@ data class UnknownMessageDTO(val text: String) : MessageDTO()
 *   Abstract Class
 * */
 @Serializable
-sealed class MessagePacketDTO : DTO {
+sealed class MessagePacketDTO : EventDTO() {
     lateinit var messageChain : MessageChainDTO
 }
 

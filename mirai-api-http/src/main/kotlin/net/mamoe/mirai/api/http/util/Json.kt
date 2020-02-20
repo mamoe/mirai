@@ -13,7 +13,6 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import net.mamoe.mirai.api.http.data.common.*
-import net.mamoe.mirai.message.data.MessageSource
 
 // 解析失败时直接返回null，由路由判断响应400状态
 @UseExperimental(ImplicitReflectionSerializer::class)
@@ -45,11 +44,47 @@ else MiraiJson.json.stringify(serializer, this)
  */
 object MiraiJson {
     val json = Json(context = SerializersModule {
+
+        polymorphic(EventDTO.serializer()) {
+            BotEventDTO::class with BotEventDTO.serializer()
+            MessagePacketDTO::class with MessagePacketDTO.serializer()
+        }
+
+
         polymorphic(MessagePacketDTO.serializer()) {
             GroupMessagePacketDTO::class with GroupMessagePacketDTO.serializer()
             FriendMessagePacketDTO::class with FriendMessagePacketDTO.serializer()
             UnKnownMessagePacketDTO::class with UnKnownMessagePacketDTO.serializer()
         }
+
+        // Bot Event Polymorphic
+        polymorphic(BotEventDTO.serializer()) {
+            BotOnlineEventDTO::class with BotOnlineEventDTO.serializer()
+            BotOfflineEventActiveDTO::class with BotOfflineEventActiveDTO.serializer()
+            BotOfflineEventForceDTO::class with BotOfflineEventForceDTO.serializer()
+            BotOfflineEventDroppedDTO::class with BotOfflineEventDroppedDTO.serializer()
+            BotReloginEventDTO::class with BotReloginEventDTO.serializer()
+            BotGroupPermissionChangeEventDTO::class with BotGroupPermissionChangeEventDTO.serializer()
+            BotMuteEventDTO::class with BotMuteEventDTO.serializer()
+            BotUnmuteEventDTO::class with BotUnmuteEventDTO.serializer()
+            BotJoinGroupEventDTO::class with BotJoinGroupEventDTO.serializer()
+            GroupNameChangeEventDTO::class with GroupNameChangeEventDTO.serializer()
+            GroupEntranceAnnouncementChangeEventDTO::class with GroupEntranceAnnouncementChangeEventDTO.serializer()
+            GroupMuteAllEventDTO::class with GroupMuteAllEventDTO.serializer()
+            GroupAllowAnonymousChatEventDTO::class with GroupAllowAnonymousChatEventDTO.serializer()
+            GroupAllowConfessTalkEventDTO::class with GroupAllowConfessTalkEventDTO.serializer()
+            GroupAllowMemberInviteEventDTO::class with GroupAllowMemberInviteEventDTO.serializer()
+            MemberJoinEventDTO::class with MemberJoinEventDTO.serializer()
+            MemberLeaveEventKickDTO::class with MemberLeaveEventKickDTO.serializer()
+            MemberLeaveEventQuitDTO::class with MemberLeaveEventQuitDTO.serializer()
+            MemberCardChangeEventDTO::class with MemberCardChangeEventDTO.serializer()
+            MemberSpecialTitleChangeEventDTO::class with MemberSpecialTitleChangeEventDTO.serializer()
+            MemberPermissionChangeEventDTO::class with MemberPermissionChangeEventDTO.serializer()
+            MemberMuteEventDTO::class with MemberMuteEventDTO.serializer()
+            MemberUnmuteEventDTO::class with MemberUnmuteEventDTO.serializer()
+        }
+
+        // Message Polymorphic
         polymorphic(MessageDTO.serializer()) {
             MessageSourceDTO::class with MessageSourceDTO.serializer()
             AtDTO::class with AtDTO.serializer()
