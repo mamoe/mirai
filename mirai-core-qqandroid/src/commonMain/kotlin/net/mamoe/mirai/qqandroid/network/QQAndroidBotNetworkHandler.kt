@@ -76,7 +76,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     return@launch
                 } catch (e: Throwable) {
                     if (this@QQAndroidBotNetworkHandler.isActive) {
-                        BotOfflineEvent.Dropped(bot).broadcast()
+                        BotOfflineEvent.Dropped(bot, e).broadcast()
                     }
                     return@launch
                 }
@@ -96,15 +96,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 val failException = doHeartBeat()
                 if (failException != null) {
                     delay(bot.configuration.firstReconnectDelayMillis)
-                    close()
-                    BotOfflineEvent.Dropped(bot).broadcast()
+                    close(failException)
+                    BotOfflineEvent.Dropped(bot, failException).broadcast()
                 }
             }
         }.also { heartbeatJob = it }
     }
 
-    override suspend fun relogin() {
-        heartbeatJob?.cancel(CancellationException("relogin"))
+    override suspend fun relogin(cause: Throwable?) {
+        heartbeatJob?.cancel(CancellationException("relogin", cause))
         if (::channel.isInitialized) {
             if (channel.isOpen) {
                 kotlin.runCatching {
@@ -119,7 +119,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         withTimeoutOrNull(3000) {
             channel.connect("113.96.13.208", 8080)
         } ?: error("timeout connecting server")
-        startPacketReceiverJobOrKill(CancellationException("reconnect"))
+        startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
         mainloop@ while (true) {

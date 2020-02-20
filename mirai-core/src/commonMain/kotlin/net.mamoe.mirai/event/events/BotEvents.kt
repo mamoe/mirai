@@ -57,7 +57,7 @@ sealed class BotOfflineEvent : BotEvent {
     /**
      * 被服务器断开或因网络问题而掉线
      */
-    data class Dropped(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
+    data class Dropped(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
 
 /**

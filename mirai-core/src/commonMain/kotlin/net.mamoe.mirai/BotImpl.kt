@@ -92,7 +92,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     if (tryCount != 0) {
                         delay(configuration.reconnectPeriodMillis)
                     }
-                    network.relogin()
+                    network.relogin(event.cause)
                     logger.info("Reconnected successfully")
                     return@subscribeAlways
                 }?.let {
