@@ -1,4 +1,4 @@
-#Mirai Guide - Getting Started
+# Mirai Guide - Getting Started
 
 由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-20```，对应版本```0.16.0```
 
