@@ -68,7 +68,7 @@ interface MessageChain : Message, MutableList<Message> {
 /**
  * 先删除同类型的消息, 再添加 [message]
  */
-fun MessageChain.addOrRemove(message: Message) {
+fun <T : Message> MessageChain.addOrRemove(message: T) {
     val clazz = message::class
     this.removeAll { clazz.isInstance(it) }
     this.add(message)
