@@ -1,5 +1,3 @@
-package net.mamoe.mirai.console
-
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -8,6 +6,8 @@ package net.mamoe.mirai.console
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+
+package net.mamoe.mirai.console
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
