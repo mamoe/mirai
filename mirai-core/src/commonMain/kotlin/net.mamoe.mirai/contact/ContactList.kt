@@ -40,6 +40,15 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
     fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
     fun isEmpty(): Boolean = delegate.isEmpty()
     inline fun forEach(block: (C) -> Unit) = delegate.forEach(block)
+    fun first(): C {
+        forEach { return it }
+        throw NoSuchElementException()
+    }
+
+    fun firstOrNull(): C? {
+        forEach { return it }
+        return null
+    }
 
     override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
 }
