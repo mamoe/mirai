@@ -31,18 +31,17 @@ Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Ap
 
 加入 Gitter, 或加入 QQ 群: 655057127
 
-
-
 ## 开始使用Mirai
 
 Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-core，mirai-japt, mirai-api-http, mirai-console等核心模块进行特性的开发。
 
-
 ### 开发者
 #### 以编写机器人逻辑为主
+
 - 需了解<b>Java</b>或<b>Kotlin</b>, 使用[mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console)机器人框架的插件系统进行[插件开发(DOING)](), 直接进行逻辑编写并与其他插件开发者合作共享
 
 #### 使用Mirai为第三方库
+
 - 假如你倾向使用Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
 - 假如你想要试用Kotlin，希望一份较详细的起步教程，请参阅[Mirai Guide - Getting Started](/docs/guide_getting_started.md)
 - 假如你倾向Java作为开发语言，请参阅[mirai-japt](/mirai-japt/README.md)
@@ -50,27 +49,30 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 - 此外，你还可以在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
 
 ### 使用者
-- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, <b>全平台可运行(UI版, Unix版, Android版, Web版)</b> **本模块正在完善**
+
+- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, **全平台可运行(UI版, Unix版, Android版, Web版)** **本模块正在完善**
 
 ### 我是其他平台的使用者
+
 #### 酷Q平台用户: 
-- 全部酷Q的DLL插件可以在mirai中直接加载, 需使用<b>Mirai-Native</b>([源码(DOING)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(DOING)]())
-- 全部基于酷Q HTTPAPI 的插件可以在mirai中直接加载, 需使用<b>Mirai-CQ-Adapter</b>([源码(TODO)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(TODO)]())
+
+- 全部酷Q的DLL插件可以在mirai中直接加载, 需使用 `Mirai-Native` ([源码(DOING)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(DOING)]())
+- 全部基于 `酷Q HTTPAPI` 的插件可以在`mirai`中直接加载, 需使用`Mirai-CQ-Adapter`([源码(TODO)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(TODO)]())
+
 #### 其他平台
-- 如果你的插件是通过酷Q HTTPAPI 实现的(绝大部分), 都可以通过<b>Mirai-CQ-Adapter</b>在mirai中直接使用
 
-## CHANGELOG
+- 如果你的插件是通过 `酷Q HTTPAPI` 实现的(绝大部分), 都可以通过 `Mirai-CQ-Adapter` 在mirai中直接使用
 
-在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
-在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
+## 更新日志
 
+* 在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
+* 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
 
-
-## Modules
+## 模块
 
 ### mirai-core
 
-通用 API 模块，一套 API 适配两套协议。  
+通用 API 模块，一套 API 适配两套协议。
 **请参考此模块的 API**  
 
 ### mirai-core-qqandroid
@@ -90,22 +92,21 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 - 群管功能：群员列表，禁言
   （目前不再更新此协议，请关注上文的安卓协议）
 
-
-
-## Contribution
+## 加入开发
 
 我们欢迎一切形式的贡献。  
-我们也期待有更多人能加入 Mirai 的开发。  
+我们也期待有更多人能加入 `Mirai` 的开发。  
 
-若在使用过程中有任何疑问, 可提交 issue 或是邮件联系(support@mamoe.net). 我们希望 Mirai 变得更易用.
+若在使用过程中有任何疑问, 可提交 `issue` 或是[邮件联系](mailto:support@mamoe.net). 我们希望 `Mirai` 变得更易用.
 
-您的 star 是对我们最大的鼓励(点击项目右上角)
+您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
+## 鸣谢
 
+特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
+[<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
 
-## Libraries used
-
-感谢:
+### 第三方类库
 
 - [kotlin-stdlib](https://github.com/JetBrains/kotlin)
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
@@ -123,9 +124,7 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 - [toml4j](https://github.com/mwanji/toml4j)
 - [snakeyaml](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
 
-
-
-## License
+## 许可证
 
 协议原版权归属腾讯科技股份有限公司所有，本项目其他代码遵守：  
 **GNU AFFERO GENERAL PUBLIC LICENSE version 3**  
@@ -136,8 +135,17 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 - (见 LICENSE 第 4 节) 您可以免费或收费地传递这个项目的源代码或目标代码(即编译结果), **但前提是提供明显的版权声明** (您需要标注本 `GitHub` 项目地址)
 
 
+    Copyright (C) 2019-2020 mamoe and Mirai contributors
 
-## Acknowledgement
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
-特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
-[<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
