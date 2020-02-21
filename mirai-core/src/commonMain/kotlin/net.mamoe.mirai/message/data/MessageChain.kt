@@ -13,9 +13,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.NullMessageChain.toString
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -66,6 +63,15 @@ interface MessageChain : Message, MutableList<Message> {
             return false
         return this.toString() == other.toString()
     }
+}
+
+/**
+ * 先删除同类型的消息, 再添加 [message]
+ */
+fun <T : Message> MessageChain.addOrRemove(message: T) {
+    val clazz = message::class
+    this.removeAll { clazz.isInstance(it) }
+    this.add(message)
 }
 
 /**
@@ -133,6 +139,16 @@ fun MessageChain(vararg messages: Message): MessageChain =
     else MessageChainImpl(messages.toMutableList())
 
 /**
+ * 构造 [MessageChain] 的快速途径 (无 [Array] 创建)
+ * 若仅提供一个参数, 请考虑使用 [Message.toChain] 以优化性能
+ */
+@JvmName("newChain")
+@JsName("newChain")
+@Suppress("FunctionName")
+fun MessageChain(message: Message): MessageChain =
+    MessageChainImpl(mutableListOf(message))
+
+/**
  * 构造 [MessageChain]
  */
 @JvmName("newChain")
@@ -140,30 +156,6 @@ fun MessageChain(vararg messages: Message): MessageChain =
 @Suppress("FunctionName")
 fun MessageChain(messages: Iterable<Message>): MessageChain =
     MessageChainImpl(messages.toMutableList())
-
-/**
- * 构造单元素的不可修改的 [MessageChain]. 内部类实现为 [SingleMessageChain]
- *
- * 参数 [delegate] 不能为 [MessageChain] 的实例, 否则将会抛出异常.
- * 使用 [Message.toChain] 将帮助提前处理这个问题.
- *
- * @param delegate 所构造的单元素 [MessageChain] 代表的 [Message]
- * @throws IllegalArgumentException 当 [delegate] 为 [MessageChain] 的实例时
- *
- * @see Message.toChain receiver 模式
- */
-@JvmName("newSingleMessageChain")
-@JsName("newChain")
-@MiraiExperimentalAPI
-@UseExperimental(ExperimentalContracts::class)
-@Suppress("FunctionName")
-fun SingleMessageChain(delegate: Message): MessageChain {
-    contract {
-        returns() implies (delegate !is MessageChain)
-    }
-    require(delegate !is MessageChain) { "delegate for SingleMessageChain should not be any instance of MessageChain" }
-    return SingleMessageChainImpl(delegate)
-}
 
 
 /**
@@ -387,97 +379,3 @@ internal inline class MessageChainImpl constructor(
     // endregion
 }
 
-/**
- * 单个成员的不可修改的 [MessageChain].
- *
- * 在连接时将会把它当做一个普通 [Message] 看待, 但它不能被 [plusAssign]
- */
-@PublishedApi
-internal inline class SingleMessageChainImpl(
-    private val delegate: Message
-) : Message, MutableList<Message>,
-    MessageChain {
-
-    // region Message override
-    override operator fun contains(sub: String): Boolean = delegate.contains(sub)
-
-    override fun followedBy(tail: Message): MessageChain {
-        require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
-        return if (tail is MessageChain) tail.apply { followedBy(delegate) }
-        else MessageChain(delegate, tail)
-    }
-
-    override fun plusAssign(message: Message) =
-        throw UnsupportedOperationException("SingleMessageChainImpl cannot be plusAssigned")
-
-    override fun toString(): String = delegate.toString()
-    // endregion
-
-    // region MutableList override
-    override fun containsAll(elements: Collection<Message>): Boolean = elements.all { it == delegate }
-
-    override operator fun get(index: Int): Message = if (index == 0) delegate else throw NoSuchElementException()
-    override fun indexOf(element: Message): Int = if (delegate == element) 0 else -1
-    override fun isEmpty(): Boolean = false
-    override fun lastIndexOf(element: Message): Int = if (delegate == element) 0 else -1
-    override fun add(element: Message): Boolean = throw UnsupportedOperationException()
-    override fun add(index: Int, element: Message) = throw UnsupportedOperationException()
-    override fun addAll(index: Int, elements: Collection<Message>): Boolean = throw UnsupportedOperationException()
-    override fun addAll(elements: Collection<Message>): Boolean = throw UnsupportedOperationException()
-    override fun clear() = throw UnsupportedOperationException()
-    override fun listIterator(): MutableListIterator<Message> = object : MutableListIterator<Message> {
-        private var hasNext = true
-        override fun hasPrevious(): Boolean = !hasNext
-        override fun nextIndex(): Int = if (hasNext) 0 else -1
-        override fun previous(): Message =
-            if (hasPrevious()) {
-                hasNext = true
-                delegate
-            } else throw NoSuchElementException()
-
-        override fun previousIndex(): Int = if (!hasNext) 0 else -1
-        override fun add(element: Message) = throw UnsupportedOperationException()
-        override fun hasNext(): Boolean = hasNext
-        override fun next(): Message =
-            if (hasNext) {
-                hasNext = false
-                delegate
-            } else throw NoSuchElementException()
-
-        override fun remove() = throw UnsupportedOperationException()
-        override fun set(element: Message) = throw UnsupportedOperationException()
-    }
-
-    override fun listIterator(index: Int): MutableListIterator<Message> =
-        if (index == 0) listIterator() else throw UnsupportedOperationException()
-
-    override fun remove(element: Message): Boolean = throw UnsupportedOperationException()
-    override fun removeAll(elements: Collection<Message>): Boolean = throw UnsupportedOperationException()
-    override fun removeAt(index: Int): Message = throw UnsupportedOperationException()
-    override fun retainAll(elements: Collection<Message>): Boolean = throw UnsupportedOperationException()
-    override fun set(index: Int, element: Message): Message = throw UnsupportedOperationException()
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> {
-        return if (fromIndex == 0) when (toIndex) {
-            1 -> mutableListOf<Message>(this)
-            0 -> mutableListOf()
-            else -> throw UnsupportedOperationException()
-        }
-        else throw UnsupportedOperationException()
-    }
-
-    override fun iterator(): MutableIterator<Message> = object : MutableIterator<Message> {
-        private var hasNext = true
-        override fun hasNext(): Boolean = hasNext
-        override fun next(): Message =
-            if (hasNext) {
-                hasNext = false
-                delegate
-            } else throw NoSuchElementException()
-
-        override fun remove() = throw UnsupportedOperationException()
-    }
-
-    override operator fun contains(element: Message): Boolean = element == delegate
-    override val size: Int get() = 1
-    // endregion
-}

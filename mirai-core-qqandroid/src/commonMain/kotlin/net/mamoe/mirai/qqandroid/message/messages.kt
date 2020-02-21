@@ -15,6 +15,7 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact
@@ -27,12 +28,13 @@ internal fun At.toJceData(): ImMsgBody.Text {
     return ImMsgBody.Text(
         str = text,
         attr6Buf = buildPacket {
-            writeShort(1)
-            writeShort(0)
-            writeShort(text.length.toShort())
-            writeByte(1)
-            writeInt(target.toInt())
-            writeShort(0)
+            // MessageForText$AtTroopMemberInfo
+            writeShort(1) // const
+            writeShort(0) // startPos
+            writeShort(text.length.toShort()) // textLen
+            writeByte(0) // flag, may=1
+            writeInt(target.toInt()) // uin
+            writeShort(0) // const
         }.readBytes()
     )
 }
@@ -206,7 +208,15 @@ notOnlineImage=NotOnlineImage#2050019814 {
 private val atAllData = ImMsgBody.Elem(
     text = ImMsgBody.Text(
         str = "@全体成员",
-        attr6Buf = "00 01 00 00 00 05 01 00 00 00 00 00 00".hexToBytes()
+        attr6Buf = buildPacket {
+            // MessageForText$AtTroopMemberInfo
+            writeShort(1) // const
+            writeShort(0) // startPos
+            writeShort("@全体成员".length.toShort()) // textLen
+            writeByte(1) // flag, may=1
+            writeInt(0) // uin
+            writeShort(0) // const
+        }.readBytes()
     )
 )
 
@@ -224,7 +234,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
     this.forEach {
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
-            is At -> elements.add(ImMsgBody.Elem(text = it.toJceData()))
+            is At -> elements.add(ImMsgBody.Elem(text = it.toJceData())).also { elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " "))) }
             is CustomFaceFromFile -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
@@ -249,7 +259,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
 internal class CustomFaceFromServer(
     internal val delegate: ImMsgBody.CustomFace
 ) : CustomFace() {
-    override val filepath: String get() = delegate.filePath
+    override val filepath: String = delegate.filePath
     override val fileId: Int get() = delegate.fileId
     override val serverIp: Int get() = delegate.serverIp
     override val serverPort: Int get() = delegate.serverPort
@@ -265,14 +275,14 @@ internal class CustomFaceFromServer(
     override val size: Int get() = delegate.size
     override val original: Int get() = delegate.origin
     override val pbReserve: ByteArray get() = delegate.pbReserve
-    override val imageId: String get() = delegate.filePath
+    override val imageId: String = ExternalImage.generateImageId(delegate.md5, imageType)
 
     override fun equals(other: Any?): Boolean {
         return other is CustomFaceFromServer && other.filepath == this.filepath && other.md5.contentEquals(this.md5)
     }
 
     override fun hashCode(): Int {
-        return filepath.hashCode() + 31 * md5.hashCode()
+        return imageId.hashCode() + 31 * md5.hashCode()
     }
 }
 
@@ -296,7 +306,7 @@ internal class NotOnlineImageFromServer(
     }
 
     override fun hashCode(): Int {
-        return resourceId.hashCode() + 31 * md5.hashCode()
+        return imageId.hashCode() + 31 * md5.hashCode()
     }
 }
 

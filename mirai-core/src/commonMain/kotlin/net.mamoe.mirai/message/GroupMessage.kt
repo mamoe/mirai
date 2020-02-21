@@ -10,12 +10,11 @@
 package net.mamoe.mirai.message
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.jvm.JvmName
@@ -59,6 +58,11 @@ class GroupMessage(
 
     @JvmName("reply2")
     suspend inline fun MessageChain.quoteReply() = quoteReply(this)
+
+    suspend inline fun MessageChain.recall() = group.recall(this)
+    suspend inline fun MessageSource.recall() = group.recall(this)
+    inline fun MessageSource.recallIn(delay: Long) = group.recallIn(this, delay)
+    inline fun MessageChain.recallIn(delay: Long) = group.recallIn(this, delay)
 
     override fun toString(): String =
         "GroupMessage(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"

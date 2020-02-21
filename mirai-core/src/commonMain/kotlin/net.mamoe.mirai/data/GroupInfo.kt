@@ -62,4 +62,15 @@ interface GroupInfo {
      * 机器人被禁言还剩时间, 秒.
      */
     val botMuteRemaining: Int
+
+    /*
+    /**
+     * 机器人的头衔
+     */
+    val botSpecialTitle: String
+
+    /**
+     * 机器人的昵称
+     */
+    val botNameCard: String*/
 }

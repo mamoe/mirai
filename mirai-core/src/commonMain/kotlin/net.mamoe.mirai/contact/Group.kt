@@ -11,11 +11,22 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
+import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.quote
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmName
 
 /**
@@ -83,9 +94,17 @@ interface Group : Contact, CoroutineScope {
     override val id: Long
 
     /**
-     * 群主
+     * 群主.
+     *
+     * @return 若机器人是群主, 返回 [botAsMember]. 否则返回相应的成员
      */
     val owner: Member
+
+    /**
+     * [Bot] 在群内的 [Member] 实例
+     */
+    @MiraiExperimentalAPI
+    val botAsMember: Member
 
     /**
      * 机器人被禁言还剩余多少秒
@@ -134,6 +153,17 @@ interface Group : Contact, CoroutineScope {
     suspend fun quit(): Boolean
 
     /**
+     * 撤回这条消息.
+     *
+     * [Bot] 撤回自己的消息不需要权限.
+     * [Bot] 撤回群员的消息需要管理员权限.
+     *
+     * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+     * @see Group.recall (扩展函数) 接受参数 [MessageChain]
+     */
+    suspend fun recall(source: MessageSource)
+
+    /**
      * 构造一个 [Member].
      * 非特殊情况请不要使用这个函数. 优先使用 [get].
      */
@@ -141,6 +171,19 @@ interface Group : Contact, CoroutineScope {
     @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName")
     @JvmName("newMember")
     fun Member(memberInfo: MemberInfo): Member
+
+    /**
+     * 向这个对象发送消息. 发送成功后 [message] 中会添加 [MessageSource], 此后可以 [引用回复][quote] 或 [撤回][recall] 这条消息.
+     *
+     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     *
+     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
+     */
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>
 
     companion object {
 
@@ -185,6 +228,51 @@ interface Group : Contact, CoroutineScope {
 }
 
 /**
+ * 撤回这条消息.
+ *
+ * [Bot] 撤回自己的消息不需要权限.
+ * [Bot] 撤回群员的消息需要管理员权限.
+ *
+ * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+ * @see Group.recall
+ */
+suspend inline fun Group.recall(message: MessageChain) = this.recall(message[MessageSource])
+
+/**
+ * 在一段时间后撤回这条消息.
+ *
+ * @param millis 延迟的时间, 单位为毫秒
+ * @param coroutineContext 额外的 [CoroutineContext]
+ * @see recall
+ */
+fun Group.recallIn(
+    message: MessageSource,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
+    kotlinx.coroutines.delay(millis)
+    recall(message)
+}
+
+/**
+ * 在一段时间后撤回这条消息.
+ *
+ * @param millis 延迟的时间, 单位为毫秒
+ * @param coroutineContext 额外的 [CoroutineContext]
+ * @see recall
+ */
+fun Group.recallIn(
+    message: MessageChain,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
+    kotlinx.coroutines.delay(millis)
+    recall(message)
+}
+
+/**
  * 返回机器人是否正在被禁言
+ *
+ * @see Group.botMuteRemaining 剩余禁言时间
  */
 val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0

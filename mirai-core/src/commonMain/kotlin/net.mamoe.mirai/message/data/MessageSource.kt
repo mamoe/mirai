@@ -27,6 +27,18 @@ interface MessageSource : Message {
     companion object Key : Message.Key<MessageSource>
 
     /**
+     * 序列号. 若是机器人发出去的消息, 请先 [确保 sequenceId 可用][ensureSequenceIdAvailable]
+     */
+    val sequenceId: Int
+
+    /**
+     * 等待 [sequenceId] 获取, 确保其可用.
+     *
+     * 若原消息发送失败, 这个方法会等待最多 3 秒随后抛出 [IllegalStateException]
+     */
+    suspend fun ensureSequenceIdAvailable()
+
+    /**
      * 实际上是个随机数, 但服务器确实是用它当做 uid
      */
     val messageUid: Long
@@ -42,7 +54,7 @@ interface MessageSource : Message {
     val senderId: Long
 
     /**
-     * 群号码
+     * 群号码, 为 0 时则来自好友消息
      */
     val groupId: Long
 

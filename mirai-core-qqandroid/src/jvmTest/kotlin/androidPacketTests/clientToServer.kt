@@ -107,6 +107,8 @@ fun main() {
  * 顶层方法. TCP 切掉头后直接来这里
  */
 fun ByteReadPacket.decodeMultiClientToServerPackets() {
+    DebugLogger.enable()
+    PacketLogger.enable()
     println("=======================处理客户端到服务器=======================")
     var count = 0
     while (remaining != 0L) {

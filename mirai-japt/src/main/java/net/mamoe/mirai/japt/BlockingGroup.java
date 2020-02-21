@@ -3,6 +3,9 @@ package net.mamoe.mirai.japt;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.data.MemberInfo;
 import net.mamoe.mirai.event.events.*;
+import net.mamoe.mirai.message.MessageReceipt;
+import net.mamoe.mirai.message.data.Message;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiExperimentalAPI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -151,6 +154,36 @@ public interface BlockingGroup extends BlockingContact {
      */
     @Nullable
     BlockingMember getMemberOrNull(long id);
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException   发送群消息时若 [Bot] 被禁言抛出
+     * @see MessageSendEvent.FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see MessageSendEvent.GroupMessageSendEvent  发送群消息事件. cancellable
+     */
+    MessageReceipt<Group> sendMessage(@NotNull MessageChain messages) throws EventCancelledException, IllegalStateException;
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException   发送群消息时若 [Bot] 被禁言抛出
+     * @see MessageSendEvent.FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see MessageSendEvent.GroupMessageSendEvent  发送群消息事件. cancellable
+     */
+    MessageReceipt<Group> sendMessage(@NotNull String message) throws EventCancelledException, IllegalStateException;
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException   发送群消息时若 [Bot] 被禁言抛出
+     * @see MessageSendEvent.FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see MessageSendEvent.GroupMessageSendEvent  发送群消息事件. cancellable
+     */
+    MessageReceipt<Group> sendMessage(@NotNull Message message) throws EventCancelledException, IllegalStateException;
 
     /**
      * 检查此 id 的群成员是否存在

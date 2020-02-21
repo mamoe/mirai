@@ -51,8 +51,38 @@ class ExternalImage(
             filename: String
         ): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining, filename)
 
-        fun generateUUID(md5: ByteArray): String{
+        fun generateUUID(md5: ByteArray): String {
             return "${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}"
+        }
+
+        fun generateImageId(md5: ByteArray, imageType: Int): String {
+            return """{${generateUUID(md5)}}.${determineFormat(imageType)}"""
+        }
+
+        fun determineImageType(format: String): Int {
+            return when (format) {
+                "jpg" -> 1000
+                "png" -> 1001
+                "webp" -> 1002
+                "bmp" -> 1005
+                "gig" -> 2000
+                "apng" -> 2001
+                "sharpp" -> 1004
+                else -> 1000 // unsupported, just make it jpg
+            }
+        }
+
+        fun determineFormat(imageType: Int): String {
+            return when (imageType) {
+                1000 -> "jpg"
+                1001 -> "png"
+                1002 -> "webp"
+                1005 -> "bmp"
+                2000 -> "gig"
+                2001 -> "apng"
+                1004 -> "sharpp"
+                else -> "jpg" // unsupported, just make it jpg
+            }
         }
     }
 
@@ -73,16 +103,7 @@ class ExternalImage(
      *  SHARPP: 1004
      */
     val imageType: Int
-        get() = when (format) {
-            "jpg" -> 1000
-            "png" -> 1001
-            "webp" -> 1002
-            "bmp" -> 1005
-            "gig" -> 2000
-            "apng" -> 2001
-            "sharpp" -> 1004
-            else -> 1000 // unsupported, just make it jpg
-        }
+        get() = determineImageType(format)
 
     override fun toString(): String = "[ExternalImage(${width}x$height $format)]"
 

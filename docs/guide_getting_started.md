@@ -69,7 +69,7 @@ JDK要求6以上
 ### 4 Try Bot
 
 - 在src/main文件夹下新建文件夹，命名为```kotlin```
-- 在```kotlin```下新建包(在```kotlin```文件夹上右键-```New```-```Packages```) 包名为```net.mamoe.mirai.simpleloader```
+- 在```kotlin```下新建包(在```kotlin```文件夹上右键-```New```-```Package```) 包名为```net.mamoe.mirai.simpleloader```
 
 - 在包下新建kotlin文件```MyLoader.kt```
 
@@ -103,9 +103,9 @@ suspend fun main() {
 - 本例的功能中，在任意群内任意成员发送包含“舔”字或“刘老板”字样的消息，MiraiBot会回复“刘老板太强了”
 
 
-
 至此，简单的入门已经结束，下面可根据不同的需求参阅wiki进行功能的添加。
 
+下面，可以尝试对不同事件进行监听[Mirai Guide - Subscribe Events](/docs/guide_subscribe_events.md)
 
 ### 此外，还可以使用Maven作为包管理工具
 本项目推荐使用gradle，因此不提供详细入门指导
