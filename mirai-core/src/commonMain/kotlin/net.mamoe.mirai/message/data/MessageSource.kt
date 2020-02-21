@@ -27,6 +27,11 @@ interface MessageSource : Message {
     companion object Key : Message.Key<MessageSource>
 
     /**
+     * 序列号
+     */
+    val sequenceId: Int
+
+    /**
      * 实际上是个随机数, 但服务器确实是用它当做 uid
      */
     val messageUid: Long

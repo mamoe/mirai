@@ -22,6 +22,7 @@ internal inline class MessageSourceFromServer(
     val delegate: ImMsgBody.SourceMsg
 ) : MessageSource {
     override val time: Long get() = delegate.time.toLong() and 0xFFFFFFFF
+    override val sequenceId: Int get() = delegate.origSeqs?.firstOrNull() ?: error("cannot find sequenceId from ImMsgBody.SourceMsg")
     override val messageUid: Long get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!
     override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val senderId: Long get() = delegate.senderUin
@@ -34,6 +35,7 @@ internal inline class MessageSourceFromMsg(
     val delegate: MsgComm.Msg
 ) : MessageSource {
     override val time: Long get() = delegate.msgHead.msgTime.toLong() and 0xFFFFFFFF
+    override val sequenceId: Int get() = delegate.msgHead.msgSeq
     override val messageUid: Long get() = delegate.msgBody.richText.attr!!.random.toLong()
     override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val senderId: Long get() = delegate.msgHead.fromUin
