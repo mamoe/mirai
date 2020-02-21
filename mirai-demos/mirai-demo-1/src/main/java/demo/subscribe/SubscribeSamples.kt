@@ -14,16 +14,14 @@ package demo.subscribe
 import kotlinx.coroutines.CompletableJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
-import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
-import net.mamoe.mirai.message.data.AtAll
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.firstOrNull
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.qqandroid.Bot
 import net.mamoe.mirai.qqandroid.QQAndroid
@@ -207,6 +205,25 @@ fun Bot.messageDSL() {
         // sender: QQ
         // it: String (来自 MessageChain.toString)
         // group: Group
+
+        case("recall") {
+            reply("😎").recallIn(3000) // 3 秒后自动撤回这条消息
+        }
+
+        case("禁言") {
+            // 挂起当前协程, 等待下一条满足条件的消息.
+            // 发送 "禁言" 后需要再发送一条消息 at 一个人.
+            val value: At = nextMessage { message.any(At) }[At]
+            value.member().mute(10)
+        }
+
+        startsWith("群名=") {
+            if (!sender.isOperator()) {
+                sender.mute(5)
+                return@startsWith
+            }
+            group.name = it
+        }
     }
 }
 
