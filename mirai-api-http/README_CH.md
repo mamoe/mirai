@@ -408,7 +408,7 @@ Content-Type：multipart/form-data
 
 
 ### 事件类型一览
-[事件类型一览](./EventType_CN.md)
+[事件类型一览](EventType_CH.md)
 
 > 事件为Bot被动接收的信息，无法主动构建
 
