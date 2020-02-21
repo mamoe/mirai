@@ -5,6 +5,8 @@ import javafx.collections.ObservableList
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
+import javafx.scene.input.KeyCode
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.BotModel
 import net.mamoe.mirai.console.graphical.util.jfxListView
@@ -49,6 +51,17 @@ class PrimaryView : View() {
                                 text = ""
                             }
                         }
+                    }
+                }
+            }
+
+            // command input
+            textfield {
+                setOnKeyPressed {
+                    if (it.code == KeyCode.ENTER) {
+                        runAsync {
+                            runBlocking { controller.sendCommand(text) }
+                        }.ui { text = "" }
                     }
                 }
             }

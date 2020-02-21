@@ -28,6 +28,8 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         MiraiConsole.CommandListener.commandChannel.send("/login $qq $psd")
     }
 
+    suspend fun sendCommand(command: String) = MiraiConsole.CommandListener.commandChannel.send(command)
+
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         when (identity) {
             0L -> mainLog.add(message)
