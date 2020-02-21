@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
@@ -19,11 +19,10 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
-import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.subscribe
+import net.mamoe.mirai.event.subscribingGetAsync
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -279,17 +278,14 @@ internal class MessageSvc {
             override val groupId: Long,
             override val sourceMessage: MessageChain
         ) : MessageSource {
-            lateinit var sequenceIdDeferred: CompletableDeferred<Int>
+            lateinit var sequenceIdDeferred: Deferred<Int>
 
+            @UseExperimental(MiraiExperimentalAPI::class)
             fun startWaitingSequenceId(contact: Contact) {
-                sequenceIdDeferred = CompletableDeferred()
-                contact.subscribe<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt> { event ->
-                    if (event.messageRandom == messageUid.toInt()) {
-                        sequenceIdDeferred.complete(event.sequenceId)
-                        return@subscribe ListeningStatus.STOPPED
-                    }
-
-                    return@subscribe ListeningStatus.LISTENING
+                sequenceIdDeferred = contact.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int> {
+                    if (it.messageRandom == messageUid.toInt()) {
+                        it.sequenceId
+                    } else null
                 }
             }
 
