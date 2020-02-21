@@ -5,14 +5,14 @@ buildscript {
         mavenCentral()
         google()
         maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-dev/'}
+        maven { url 'https://dl.bintray.com/kotlin/kotlin-dev'}
     }
 
     dependencies {
         // Do try to waste your time.
         classpath 'com.android.tools.build:gradle:3.5.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.2.0'
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion"
     }
@@ -27,7 +27,7 @@ try {
     } else {
         project.ext.set("isAndroidSDKAvailable", false)
     }
-}catch(Exception e){}
+} catch(Exception ignored) {}
 allprojects {
     group = "net.mamoe"
     version = getProperty("mirai_version")
@@ -43,7 +43,7 @@ allprojects {
         jcenter()
         mavenCentral()
         google()
-        maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
-        maven { url "https://dl.bintray.com/kotlin/kotlin-dev" }
+        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
     }
 }

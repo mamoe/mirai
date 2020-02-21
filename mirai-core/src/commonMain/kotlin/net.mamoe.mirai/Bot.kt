@@ -119,7 +119,7 @@ abstract class Bot : CoroutineScope {
      * 在一些情况下这可能会造成歧义. 请考虑后使用.
      */
     operator fun contains(id: Long): Boolean {
-        return this.qqs.contains(id) || this.groups.contains(id)
+        return id in this.qqs || id in this.groups
     }
 
     /**
@@ -246,7 +246,7 @@ abstract class Bot : CoroutineScope {
     // region extensions
 
     final override fun toString(): String {
-        return "Bot(${uin})"
+        return "Bot($uin)"
     }
 
     /**
@@ -270,9 +270,9 @@ suspend inline fun Bot.closeAndJoin(cause: Throwable? = null) {
     coroutineContext[Job]?.join()
 }
 
-inline fun Bot.containsFriend(id: Long): Boolean = this.qqs.contains(id)
+inline fun Bot.containsFriend(id: Long): Boolean = id in this.qqs
 
-inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
+inline fun Bot.containsGroup(id: Long): Boolean = id in this.groups
 
 inline fun Bot.getFriendOrNull(id: Long): QQ? = this.qqs.getOrNull(id)
 

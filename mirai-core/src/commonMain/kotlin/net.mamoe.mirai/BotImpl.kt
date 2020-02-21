@@ -61,14 +61,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
 
         fun instanceWhose(qq: Long): Bot {
-            instances.forEach {
-                it.get()?.let { bot ->
-                    if (bot.uin == qq) {
-                        return bot
-                    }
-                }
-            }
-            throw NoSuchElementException()
+            return instances.asSequence().mapNotNull { it.get() }.first { it.uin == qq }
         }
     }
 

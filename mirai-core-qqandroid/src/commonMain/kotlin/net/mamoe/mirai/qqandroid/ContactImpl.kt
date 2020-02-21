@@ -536,15 +536,15 @@ internal class GroupImpl(
 
 
     override operator fun get(id: Long): Member {
-        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("member $id not found in group $uin")
+        return getOrNull(id) ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
-        return members.delegate.filteringGetOrNull { it.id == id } != null
+        return getOrNull(id) != null
     }
 
     override fun getOrNull(id: Long): Member? {
-        return members.delegate.filteringGetOrNull { it.id == id }
+        return members.delegate.getOrNull(id)
     }
 
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group> {

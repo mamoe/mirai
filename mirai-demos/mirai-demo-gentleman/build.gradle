@@ -20,7 +20,7 @@ dependencies {
     api 'org.jsoup:jsoup:1.12.1'
 }
 
-run{
+run {
     standardInput = System.in
     mainClassName = "demo.gentleman.MainKt"
 }

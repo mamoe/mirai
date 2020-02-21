@@ -33,6 +33,7 @@ import net.mamoe.mirai.message.data.buildXMLMessage
 import net.mamoe.mirai.message.data.getValue
 import net.mamoe.mirai.message.sendAsImageTo
 import net.mamoe.mirai.utils.ContextImpl
+import org.intellij.lang.annotations.Language
 import java.io.File
 import java.util.*
 import javax.swing.filechooser.FileSystemView
@@ -90,6 +91,7 @@ suspend fun main() {
 
         "xml" reply {
 
+            @Language("XML")
             val template =
                 """
         <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
