@@ -18,12 +18,12 @@ import io.ktor.response.respondText
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.data.*
 import net.mamoe.mirai.api.http.data.common.MessageChainDTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
-import net.mamoe.mirai.api.http.data.common.toDTO
 import net.mamoe.mirai.api.http.data.common.toMessageChain
 import net.mamoe.mirai.api.http.util.toJson
 import net.mamoe.mirai.contact.toList
@@ -119,3 +119,8 @@ private data class SendImageDTO(
     val urls: List<String>
 ) : VerifyDTO()
 
+@Serializable
+private class SendRetDTO(
+    @Transient val stateCode: StateCode = StateCode.Success,
+    val messageId: Long
+) : StateCode(stateCode.code, stateCode.msg)
