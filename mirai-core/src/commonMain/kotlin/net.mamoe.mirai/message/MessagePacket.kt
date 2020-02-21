@@ -150,7 +150,7 @@ fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Bo
 }
 
 /**
- * 获取下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 都相同且通过 [筛选][filter] 的 [MessagePacket]
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同且通过 [筛选][filter] 的 [MessagePacket]
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
