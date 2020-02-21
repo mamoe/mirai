@@ -16,14 +16,13 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
-import net.mamoe.mirai.message.data.CustomFaceFromFile
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.NotOnlineImageFromFile
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
@@ -66,7 +65,7 @@ internal class QQImpl(
     override val nick: String
         get() = friendInfo.nick
 
-    override suspend fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> {
         val event = FriendMessageSendEvent(this, message).broadcast()
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
@@ -80,6 +79,7 @@ internal class QQImpl(
                 ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
+        return MessageReceipt(message, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -326,6 +326,24 @@ internal class GroupImpl(
     override lateinit var owner: Member
 
     @UseExperimental(MiraiExperimentalAPI::class)
+    override val botAsMember: Member by lazy {
+        Member(object : MemberInfo {
+            override val nameCard: String
+                get() = bot.nick // TODO: 2020/2/21 机器人在群内的昵称获取
+            override val permission: MemberPermission
+                get() = botPermission
+            override val specialTitle: String
+                get() = "" // TODO: 2020/2/21 获取机器人在群里的头衔
+            override val muteTimestamp: Int
+                get() = botMuteRemaining
+            override val uin: Long
+                get() = bot.uin
+            override val nick: String
+                get() = bot.nick
+        })
+    }
+
+    @UseExperimental(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
     var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
@@ -340,6 +358,9 @@ internal class GroupImpl(
     override val members: ContactList<Member> = ContactList(members.mapNotNull {
         if (it.uin == bot.uin) {
             botPermission = it.permission
+            if (it.permission == MemberPermission.OWNER) {
+                owner = botAsMember
+            }
             null
         } else Member(it).also { member ->
             if (member.permission == MemberPermission.OWNER) {
@@ -475,6 +496,18 @@ internal class GroupImpl(
         TODO("not implemented")
     }
 
+    override suspend fun recall(source: MessageSource) {
+        if (source.senderId != bot.uin) {
+            checkBotPermissionOperator()
+        }
+
+        bot.network.run {
+            val response = PbMessageSvc.PbMsgWithDraw.Group(bot.client, this@GroupImpl.id, source.sequenceId, source.messageUid.toInt())
+                .sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
+        }
+    }
+
     @UseExperimental(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
@@ -498,7 +531,7 @@ internal class GroupImpl(
         return members.delegate.filteringGetOrNull { it.id == id }
     }
 
-    override suspend fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group> {
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
         val event = GroupMessageSendEvent(this, message).broadcast()
         if (event.isCancelled) {
@@ -514,6 +547,11 @@ internal class GroupImpl(
                 response is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed: $response" }
         }
+
+        ((message.last() as MessageSource) as MessageSvc.PbSendMsg.MessageSourceFromSend)
+            .startWaitingSequenceId(this)
+
+        return MessageReceipt(message, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {

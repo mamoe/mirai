@@ -14,6 +14,7 @@ import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
@@ -138,7 +139,8 @@ internal object KnownPacketFactories {
         TroopManagement.GetGroupInfo,
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,
-        Heartbeat.Alive
+        Heartbeat.Alive,
+        PbMessageSvc.PbMsgWithDraw
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

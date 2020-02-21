@@ -47,7 +47,7 @@ interface MessageSource : Message {
     val senderId: Long
 
     /**
-     * 群号码
+     * 群号码, 为 0 时则来自好友消息
      */
     val groupId: Long
 

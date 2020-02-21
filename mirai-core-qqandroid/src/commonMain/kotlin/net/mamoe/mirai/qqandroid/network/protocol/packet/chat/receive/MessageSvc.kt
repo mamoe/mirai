@@ -9,18 +9,25 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
+import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.addOrRemove
 import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
@@ -262,6 +269,36 @@ internal class MessageSvc {
             }
         }
 
+        internal class MessageSourceFromSend(
+            override val messageUid: Long,
+            override val time: Long,
+            override val senderId: Long,
+            override val groupId: Long,
+            override val sourceMessage: MessageChain
+        ) : MessageSource {
+            lateinit var sequenceIdDeferred: CompletableDeferred<Int>
+
+            fun startWaitingSequenceId(contact: Contact) {
+                sequenceIdDeferred = CompletableDeferred()
+                contact.subscribe<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt> { event ->
+                    if (event.messageRandom == messageUid.toInt()) {
+                        sequenceIdDeferred.complete(event.sequenceId)
+                        return@subscribe ListeningStatus.STOPPED
+                    }
+
+                    return@subscribe ListeningStatus.LISTENING
+                }
+            }
+
+            @UseExperimental(ExperimentalCoroutinesApi::class)
+            override val sequenceId: Int
+                get() = sequenceIdDeferred.getCompleted()
+
+            override fun toString(): String {
+                return ""
+            }
+        }
+
         /**
          * 发送好友消息
          */
@@ -271,8 +308,16 @@ internal class MessageSvc {
             toUin: Long,
             message: MessageChain
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
-
             ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
+
+            val source = MessageSourceFromSend(
+                messageUid = Random.nextInt().absoluteValue.toLong() and 0xffffffff,
+                senderId = client.uin,
+                time = currentTimeSeconds + client.timeDifference,
+                groupId = 0,
+                sourceMessage = message
+            )
+            message.addOrRemove(source)
 
             ///return@buildOutgoingUniPacket
             writeProtoBuf(
@@ -285,8 +330,8 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
-                    msgRand = Random.nextInt().absoluteValue,
-                    syncCookie = SyncCookie(time = currentTimeSeconds).toByteArray(SyncCookie.serializer())
+                    msgRand = source.messageUid.toInt(),
+                    syncCookie = SyncCookie(time = source.time).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
@@ -302,11 +347,19 @@ internal class MessageSvc {
             message: MessageChain
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
 
+            val source = MessageSourceFromSend(
+                messageUid = Random.nextInt().absoluteValue.toLong() and 0xffffffff,
+                senderId = client.uin,
+                time = currentTimeSeconds + client.timeDifference,
+                groupId = groupCode,
+                sourceMessage = message
+            )
+            message.addOrRemove(source)
+
             ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
             // DebugLogger.debug("sending group message: " + message.toRichTextElems().contentToString())
 
-            val seq = client.atomicNextMessageSequenceId()
             ///return@buildOutgoingUniPacket
             writeProtoBuf(
                 MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
@@ -317,8 +370,8 @@ internal class MessageSvc {
                             elems = message.toRichTextElems()
                         )
                     ),
-                    msgSeq = seq,
-                    msgRand = Random.nextInt().absoluteValue,
+                    msgSeq = client.atomicNextMessageSequenceId(),
+                    msgRand = source.messageUid.toInt(),
                     syncCookie = EMPTY_BYTE_ARRAY,
                     msgVia = 1
                 )

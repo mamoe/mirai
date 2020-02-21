@@ -18,6 +18,7 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.WeakRefProperty
@@ -40,19 +41,24 @@ interface Contact : CoroutineScope {
      *
      * 对于 [QQ], `uin` 与 `id` 是相同的意思.
      * 对于 [Group], `groupCode` 与 `id` 是相同的意思.
+     *
+     * @see QQ.id
+     * @see Group.id
      */
     val id: Long
 
     /**
-     * 向这个对象发送消息.
+     * 向这个对象发送消息. 发送成功后 [message] 中会添加 [MessageSource], 此后可以 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      *
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      *
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     *
+     * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    suspend fun sendMessage(message: MessageChain)
+    suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
 
     /**
      * 上传一个图片以备发送.
@@ -88,4 +94,4 @@ interface Contact : CoroutineScope {
 
 suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
 
-suspend inline fun Contact.sendMessage(plain: String) = sendMessage(plain.singleChain())
+suspend inline fun Contact.sendMessage(plain: String) = sendMessage(plain.toMessage())
