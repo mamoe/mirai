@@ -295,12 +295,20 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
          * 操作人. 为 null 则是机器人操作
          */
         val operator: Member?
-    ) : MemberLeaveEvent(), Packet
+    ) : MemberLeaveEvent(), Packet {
+        override fun toString(): String {
+            return "MemberLeaveEvent.Kick(member=$member, operator=$operator)"
+        }
+    }
 
     /**
      * 成员主动离开
      */
-    data class Quit(override val member: Member) : MemberLeaveEvent()
+    data class Quit(override val member: Member) : MemberLeaveEvent(), Packet {
+        override fun toString(): String {
+            return "MemberLeaveEvent.Quit(member=$member)"
+        }
+    }
 }
 
 val MemberLeaveEvent.Kick.isByBot: Boolean get() = operator != null

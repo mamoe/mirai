@@ -13,6 +13,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
+import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacket
@@ -111,17 +112,43 @@ internal class OnlinePush {
                         }
                     }
                     34 -> {
-                        readUInt().toLong() // uin or code ?
-                        if (readByte().toInt() == 1) {
-                            val target = readUInt().toLong()
-                            val groupUin = content.fromUin
+                        /* quit
+                        27 0B 60 E7
+                        01
+                        2F 55 7C B8
+                        82
+                        00 30 42 33 32 46 30 38 33 32 39 32 35 30 31 39 33 45 46 32 45 30 36 35 41 35 41 33 42 37 35 43 41 34 46 37 42 38 42 38 42 44 43 35 35 34 35 44 38 30
+                         */
+                        /* kick
+                        27 0B 60 E7
+                        01
+                        A8 32 51 A1
+                        83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 39 32 46 45 30 36 31 41 33 37 36 43 44 35 37 35 37 39 45 37 32 34 44 37 37 30 36 46 39 39 43 35 35 33 33 31 34 44 32 44 46 35 45 42 43 31 31 36
+                         */
+                        readUInt().toLong() // group, uin or code ?
 
-                            bot.getGroupByUin(groupUin).let { group ->
-                                val member = group.getOrNull(target) as? MemberImpl ?: return NoPacket
-                                this.discardExact(1)
-                                return MemberLeaveEvent.Kick(member.also {
-                                    group.members.delegate.remove(member)
-                                }, group.members[readUInt().toLong()])
+                        discardExact(1)
+                        val target = readUInt().toLong()
+                        val type = readUByte().toInt()
+                        val operator = readUInt().toLong()
+                        val groupUin = content.fromUin
+
+                        when (type) {
+                            0x82 -> {
+                                bot.getGroupByUin(groupUin).let { group ->
+                                    val member = group.getOrNull(target) as? MemberImpl ?: return NoPacket
+                                    return MemberLeaveEvent.Quit(member.also {
+                                        group.members.delegate.remove(member)
+                                    })
+                                }
+                            }
+                            0x83 -> {
+                                bot.getGroupByUin(groupUin).let { group ->
+                                    val member = group.getOrNull(target) as? MemberImpl ?: return NoPacket
+                                    return MemberLeaveEvent.Kick(member.also {
+                                        group.members.delegate.remove(member)
+                                    }, group.members[operator])
+                                }
                             }
                         }
                     }
