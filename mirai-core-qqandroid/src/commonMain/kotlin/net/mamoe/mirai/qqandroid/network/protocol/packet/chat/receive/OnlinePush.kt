@@ -51,7 +51,11 @@ internal class OnlinePush {
         internal class SendGroupMessageReceipt(
             val messageRandom: Int,
             val sequenceId: Int
-        ) : Packet, Event
+        ) : Packet, Event {
+            override fun toString(): String {
+                return "OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt(messageRandom=$messageRandom, sequenceId=$sequenceId)"
+            }
+        }
 
         @UseExperimental(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
