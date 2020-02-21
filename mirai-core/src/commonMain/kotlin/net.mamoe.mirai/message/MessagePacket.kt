@@ -162,10 +162,10 @@ fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Bo
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1,
     crossinline filter: P.(P) -> Boolean
-): P {
+): MessageChain {
     return subscribingGet<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
-    }
+    }.message
 }
 
 /**
@@ -179,8 +179,8 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1
-): P {
+): MessageChain {
     return subscribingGet<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }
-    }
+    }.message
 }
