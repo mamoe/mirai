@@ -263,6 +263,9 @@ internal class MessageSvc {
                 override fun toString(): String = "MessageSvc.PbSendMsg.Response.SUCCESS"
             }
 
+            /**
+             * 121: 被限制? 个别号才不能发
+             */
             data class Failed(val resultType: Int, val errorCode: Int, val errorMessage: String) : Response() {
                 override fun toString(): String =
                     "MessageSvc.PbSendMsg.Response.Failed(resultType=$resultType, errorCode=$errorCode, errorMessage=$errorMessage)"
@@ -352,13 +355,12 @@ internal class MessageSvc {
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
 
             val source = MessageSourceFromSend(
-                messageUid = Random.nextInt().absoluteValue.toLong() and 0xffffffff,
+                messageUid = Random.nextInt().absoluteValue.toLong(),
                 senderId = client.uin,
                 time = currentTimeSeconds + client.timeDifference,
                 groupId = groupCode,
                 sourceMessage = message
             )
-            message.addOrRemove(source)
 
             ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
@@ -380,6 +382,8 @@ internal class MessageSvc {
                     msgVia = 1
                 )
             )
+
+            message.addOrRemove(source)
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {

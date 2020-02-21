@@ -112,9 +112,9 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     /**
      * 创建 @ 这个账号的消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
      */
-    inline fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
+    fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
 
-    inline fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error("`At.member` can only be used in GroupMessage")
+    fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error("`At.member` can only be used in GroupMessage")
 
     // endregion
 

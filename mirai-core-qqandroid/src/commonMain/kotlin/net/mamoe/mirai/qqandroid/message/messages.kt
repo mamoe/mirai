@@ -28,12 +28,13 @@ internal fun At.toJceData(): ImMsgBody.Text {
     return ImMsgBody.Text(
         str = text,
         attr6Buf = buildPacket {
-            writeShort(1)
-            writeShort(0)
-            writeShort(text.length.toShort())
-            writeByte(1)
-            writeInt(target.toInt())
-            writeShort(0)
+            // MessageForText$AtTroopMemberInfo
+            writeShort(1) // const
+            writeShort(0) // startPos
+            writeShort(text.length.toShort()) // textLen
+            writeByte(0) // flag, may=1
+            writeInt(target.toInt()) // uin
+            writeShort(0) // const
         }.readBytes()
     )
 }
@@ -207,7 +208,15 @@ notOnlineImage=NotOnlineImage#2050019814 {
 private val atAllData = ImMsgBody.Elem(
     text = ImMsgBody.Text(
         str = "@全体成员",
-        attr6Buf = "00 01 00 00 00 05 01 00 00 00 00 00 00".hexToBytes()
+        attr6Buf = buildPacket {
+            // MessageForText$AtTroopMemberInfo
+            writeShort(1) // const
+            writeShort(0) // startPos
+            writeShort("@全体成员".length.toShort()) // textLen
+            writeByte(1) // flag, may=1
+            writeInt(0) // uin
+            writeShort(0) // const
+        }.readBytes()
     )
 )
 
@@ -225,7 +234,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
     this.forEach {
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
-            is At -> elements.add(ImMsgBody.Elem(text = it.toJceData()))
+            is At -> elements.add(ImMsgBody.Elem(text = it.toJceData())).also { elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " "))) }
             is CustomFaceFromFile -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
