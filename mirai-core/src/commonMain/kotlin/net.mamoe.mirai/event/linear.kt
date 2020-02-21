@@ -15,7 +15,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * 监听这个事件, 并尝试从这个事件中获取一个值.
+ * 挂起当前协程, 监听这个事件, 并尝试从这个事件中获取一个值.
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
@@ -34,7 +34,7 @@ suspend inline fun <reified E : Event, R : Any> subscribingGet(
 }
 
 /**
- * 监听这个事件, 并尝试从这个事件中获取一个值.
+ * 挂起当前协程, 监听这个事件, 并尝试从这个事件中获取一个值.
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
