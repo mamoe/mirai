@@ -2,6 +2,37 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.19.1` 2020/2/21
+
+### mirai-core
+- 支持机器人撤回群消息 (含自己发送的消息): `Group.recall`, `MessageReceipt.recall`
+- 支持一定时间后自动撤回: `Group.recallIn`, `MessageReceipt.recallIn`
+- `sendMessage` 返回 `MessageReceipt` 以实现撤回功能
+- 添加 `MessageChain.addOrRemove`
+- 添加 `ContactList.firstOrNull`, `ContactList.first`
+- 新的异步事件监听方式: `subscribingGetAsync` 启动一个协程并从一个事件从获取返回值到 `Deferred`.
+- 新的线性事件监听方式: `subscribingGet` 挂起当前协程并从一个事件从获取返回值.
+
+##### 新的线性消息连续处理: `nextMessage` 挂起当前协程并等待下一条消息:
+使用该示例, 发送两条消息, 一条为 "禁言", 另一条包含一个 At
+```kotlin
+case("禁言") {
+    val value: At = nextMessage { message.any(At) }[At]
+    value.member().mute(10)
+}
+```
+示例 2:
+```kotlin
+case("复读下一条") {
+    reply(nextMessage().message)
+}
+```
+
+### mirai-core-qqandroid
+- 修复一些情况下 `At` 无法发送的问题
+- 统一 ImageId: 群消息收到的 ImageId 均为 `{xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx}.jpg` 形式（固定长度 37）
+- 支持成员主动离开事件的解析 (#51)
+
 ## `0.18.0` 2020/2/20
 
 ### mirai-core
@@ -212,7 +243,7 @@ TIMPC
 ## `0.10.0`  *2019/12/23*
 **事件优化**  
 更快的监听过程  
-现在监听不再是 `suspend`, 而必须显式指定 `CoroutineScope`. 详见 [`Subscribers.kt`](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Subscribers.kt#L69)  
+现在监听不再是 `suspend`, 而必须显式指定 `CoroutineScope`. 详见 `Subscribers.kt`  
 删除原本的 bot.subscribe 等监听模式.
 
 **其他**  
