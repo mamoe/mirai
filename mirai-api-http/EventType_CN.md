@@ -105,7 +105,7 @@
 ```json5
 {
     "type": "BotMuteEvent",
-    "durationSeconds": "600",
+    "durationSeconds": 600,
     "operator": {
         "id": 123456789,
         "memberName": "我是管理员",
