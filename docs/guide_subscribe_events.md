@@ -1,4 +1,4 @@
-# Mirai Guide - Subscribe Event
+# Mirai Guide - Subscribe Events
 
 由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-21```，对应版本```0.17.0```
 
@@ -45,7 +45,7 @@ suspend fun main() {
 
 
 
-## 尝试监听事件-Try Subscribe Events
+## 尝试监听事件-Try Subscribing Events
 
 ### 监听加群事件
 
