@@ -21,6 +21,8 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.subscribingGet
+import net.mamoe.mirai.event.subscribingGetAsync
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
@@ -109,6 +111,10 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     suspend inline fun String.send() = this.toMessage().sendTo(subject)
     // endregion
 
+    operator fun <M : Message> get(at: Message.Key<M>): M {
+        return this.message[at]
+    }
+
     /**
      * 创建 @ 这个账号的消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
      */
@@ -134,4 +140,47 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      */
     suspend inline fun Image.download(): ByteReadPacket = bot.run { download() }
     // endregion
+}
+
+/**
+ * 判断两个 [MessagePacket] 的 [MessagePacket.sender] 和 [MessagePacket.subject] 是否相同
+ */
+fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Boolean {
+    return this.sender == another.sender && this.subject == another.subject
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同且通过 [筛选][filter] 的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
+ *
+ * @see subscribingGetAsync 本函数的异步版本
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
+    timeoutMillis: Long = -1,
+    crossinline filter: P.(P) -> Boolean
+): P {
+    return subscribingGet<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
+    }
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @see subscribingGetAsync 本函数的异步版本
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
+    timeoutMillis: Long = -1
+): P {
+    return subscribingGet<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessage) }
+    }
 }

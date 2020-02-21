@@ -166,7 +166,7 @@ internal class QQImpl(
 }
 
 
-@Suppress("MemberVisibilityCanBePrivate", "DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
+@Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl(
     qq: QQImpl,
     group: GroupImpl,
@@ -284,6 +284,20 @@ internal class MemberImpl(
                 MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
             }
         }
+    }
+
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
+
+    @Suppress("DuplicatedCode")
+    override fun equals(other: Any?): Boolean { // 不要删除. trust me
+        if (this === other) return true
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
     }
 
     override fun toString(): String {
