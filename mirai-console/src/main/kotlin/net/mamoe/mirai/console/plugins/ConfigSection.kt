@@ -15,7 +15,8 @@ import com.alibaba.fastjson.TypeReference
 import com.alibaba.fastjson.parser.Feature
 import com.moandjiezana.toml.Toml
 import com.moandjiezana.toml.TomlWriter
-import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UnstableDefault
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.util.*
@@ -48,6 +49,7 @@ interface Config {
     fun getLongList(key: String): List<Long>
     operator fun set(key: String, value: Any)
     operator fun get(key: String): Any?
+    operator fun contains(key: String): Boolean
     fun exist(key: String): Boolean
     fun setIfAbsent(key: String, value: Any)
     fun asMap(): Map<String, Any>
@@ -280,6 +282,11 @@ open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(),
         return super.get(key)
     }
 
+    @Suppress("RedundantOverride")
+    override fun contains(key: String): Boolean {
+        return super.contains(key)
+    }
+
     override fun exist(key: String): Boolean {
         return containsKey(key)
     }
@@ -298,14 +305,18 @@ open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(),
 }
 
 open class ConfigSectionDelegation(
-    private val delegation: MutableMap<String, Any>
-) : ConfigSection, MutableMap<String, Any> by delegation {
+    private val delegate: MutableMap<String, Any>
+) : ConfigSection, MutableMap<String, Any> by delegate {
     override fun set(key: String, value: Any) {
-        delegation.put(key, value)
+        delegate.put(key, value)
+    }
+
+    override fun contains(key: String): Boolean {
+        return delegate.containsKey(key)
     }
 
     override fun asMap(): Map<String, Any> {
-        return delegation
+        return delegate
     }
 
     override fun save() {
@@ -347,6 +358,10 @@ abstract class FileConfigImpl internal constructor(
             file.createNewFile()
         }
         file.writeText(serialize(content))
+    }
+
+    override fun contains(key: String): Boolean {
+        return content.contains(key)
     }
 
     override fun get(key: String): Any? {
