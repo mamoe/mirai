@@ -13,8 +13,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.quote
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -67,17 +66,17 @@ open class MessageReceipt<C : Contact>(
     /**
      * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
      *
-     * @param delay 延迟时间, 单位为毫秒
+     * @param millis 延迟时间, 单位为毫秒
      *
      * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
      */
     @UseExperimental(MiraiExperimentalAPI::class)
-    fun recallIn(delay: Long): Job {
+    fun recallIn(millis: Long): Job {
         @Suppress("BooleanLiteralArgument")
         if (_isRecalled.compareAndSet(false, true)) {
             when (val contact = target) {
                 is Group -> {
-                    return contact.recallIn(originalMessage, delay)
+                    return contact.recallIn(originalMessage, millis)
                 }
                 is QQ -> {
                     TODO()
@@ -94,10 +93,33 @@ open class MessageReceipt<C : Contact>(
      *
      * @throws IllegalStateException 当此消息不是群消息时
      */
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @MiraiExperimentalAPI("unstable")
     open fun quote(): MessageChain {
         val target = target
         check(target is Group) { "quote is only available for GroupMessage" }
         return this.originalMessage.quote(target.botAsMember)
     }
+
+    /**
+     * 引用这条消息并回复. 仅群消息能被引用
+     *
+     * @see MessageChain.quote 引用一条消息
+     *
+     * @throws IllegalStateException 当此消息不是群消息时
+     */
+    @MiraiExperimentalAPI("unstable")
+    suspend fun quoteReply(message: MessageChain) {
+        target.sendMessage(this.quote() + message)
+    }
 }
+
+@MiraiExperimentalAPI("unstable")
+suspend inline fun MessageReceipt<out Contact>.quoteReply(message: Message) {
+    return this.quoteReply(message.toChain())
+}
+
+@MiraiExperimentalAPI("unstable")
+suspend inline fun MessageReceipt<out Contact>.quoteReply(message: String) {
+    return this.quoteReply(message.toMessage().toChain())
+}
+

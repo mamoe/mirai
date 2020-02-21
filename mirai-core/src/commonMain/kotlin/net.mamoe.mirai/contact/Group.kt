@@ -241,32 +241,32 @@ suspend inline fun Group.recall(message: MessageChain) = this.recall(message[Mes
 /**
  * 在一段时间后撤回这条消息.
  *
- * @param delay 延迟的时间, 单位为毫秒
+ * @param millis 延迟的时间, 单位为毫秒
  * @param coroutineContext 额外的 [CoroutineContext]
  * @see recall
  */
 fun Group.recallIn(
     message: MessageSource,
-    delay: Long,
+    millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(delay)
+    kotlinx.coroutines.delay(millis)
     recall(message)
 }
 
 /**
  * 在一段时间后撤回这条消息.
  *
- * @param delay 延迟的时间, 单位为毫秒
+ * @param millis 延迟的时间, 单位为毫秒
  * @param coroutineContext 额外的 [CoroutineContext]
  * @see recall
  */
 fun Group.recallIn(
     message: MessageChain,
-    delay: Long,
+    millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(delay)
+    kotlinx.coroutines.delay(millis)
     recall(message)
 }
 
