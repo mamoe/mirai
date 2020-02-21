@@ -41,6 +41,6 @@ dependencies {
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
     api("org.bouncycastle:bcprov-jdk15on:1.64")
 
-    implementation("no.tornado:tornadofx:1.7.17")
+    implementation("no.tornado:tornadofx:1.7.19")
     // classpath is not set correctly by IDE
 }
