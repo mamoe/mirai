@@ -8,11 +8,26 @@ import net.mamoe.mirai.message.GroupMessage;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageUtils;
+import net.mamoe.mirai.utils.BotConfiguration;
+import net.mamoe.mirai.utils.SystemDeviceInfoKt;
+
+import java.io.File;
 
 class BlockingTest {
 
     public static void main(String[] args) throws InterruptedException {
-        BlockingBot bot = BlockingBot.newInstance(123456, "");
+        // 使用自定义的配置
+        BlockingBot bot = BlockingBot.newInstance(123456, "", new BotConfiguration() {
+            {
+                setDeviceInfo(context ->
+                        SystemDeviceInfoKt.loadAsDeviceInfo(new File("deviceInfo.json"), context)
+                );
+                setHeartbeatPeriodMillis(50 * 1000);
+            }
+        });
+
+        // 使用默认的配置
+        // BlockingBot bot = BlockingBot.newInstance(123456, "");
 
         bot.login();
 
