@@ -40,7 +40,11 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
                 Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
             }
             Security.addProvider(BouncyCastleProvider())
-            generateKeyPair() // try if it is working
+            ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
+                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                .genKeyPair()).let {
+                calculateShareKey(it.privateKey, it.publicKey)
+            } // try if it is working
         }.isSuccess
 
         actual val isECDHAvailable: Boolean get() = _isECDHAvailable
