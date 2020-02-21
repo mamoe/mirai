@@ -167,3 +167,20 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
         takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
     }
 }
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @see subscribingGetAsync 本函数的异步版本
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
+    timeoutMillis: Long = -1
+): P {
+    return subscribingGet<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessage) }
+    }
+}
