@@ -69,15 +69,11 @@ class PrimaryView : View() {
 
         center = jfxTabPane {
 
-            tab("Login") {
-                this += find<LoginView>().root
-            }
+            tab("Login").content = find<LoginView>().root
 
-            tab("Plugins") {
-                this += find<PluginsView>().root
-            }
+            tab("Plugins").content = find<PluginsView>().root
 
-            tab("Settings")
+            tab("Settings").content = find<SettingsView>().root
 
             logTab("Main", controller.mainLog)
         }

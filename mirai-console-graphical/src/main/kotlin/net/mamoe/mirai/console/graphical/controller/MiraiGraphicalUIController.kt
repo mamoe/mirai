@@ -23,8 +23,13 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     private val loginSolver = GraphicalLoginSolver()
     private val cache = mutableMapOf<Long, BotModel>()
     val mainLog = observableListOf<String>()
+
+
     val botList = observableListOf<BotModel>()
     val pluginList: ObservableList<PluginModel> by lazy(::getPluginsFromConsole)
+
+    val consoleConfig : Map<String, Any> by lazy(::getConfigFromConsole)
+
     val consoleInfo = ConsoleInfo()
 
     suspend fun login(qq: String, psd: String) {
@@ -78,6 +83,8 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         // TODO
         return observableListOf<PluginModel>()
     }
+
+    private fun getConfigFromConsole() = MiraiConsole.MiraiProperties.config.asMap()
 }
 
 class GraphicalLoginSolver : LoginSolver() {
