@@ -43,11 +43,6 @@ open class MessageReceipt<C : Contact>(
     private val _isRecalled = atomic(false)
 
     /**
-     * 判断消息是否已被撤回.
-     */
-    val isRecalled: Boolean get() = _isRecalled.value
-
-    /**
      * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
      *
      * @see Group.recall

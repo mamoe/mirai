@@ -294,6 +294,10 @@ internal class MessageSvc {
             override val sequenceId: Int
                 get() = sequenceIdDeferred.getCompleted()
 
+            override suspend fun ensureSequenceIdAvailable() {
+                sequenceIdDeferred.join()
+            }
+
             override fun toString(): String {
                 return ""
             }

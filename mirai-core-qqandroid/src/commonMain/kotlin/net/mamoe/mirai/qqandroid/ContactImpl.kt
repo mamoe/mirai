@@ -501,6 +501,8 @@ internal class GroupImpl(
             checkBotPermissionOperator()
         }
 
+        source.ensureSequenceIdAvailable()
+
         bot.network.run {
             val response = PbMessageSvc.PbMsgWithDraw.Group(bot.client, this@GroupImpl.id, source.sequenceId, source.messageUid.toInt())
                 .sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
