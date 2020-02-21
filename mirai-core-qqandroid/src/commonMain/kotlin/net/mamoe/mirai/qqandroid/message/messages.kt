@@ -15,6 +15,7 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.discardExact
@@ -249,7 +250,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
 internal class CustomFaceFromServer(
     internal val delegate: ImMsgBody.CustomFace
 ) : CustomFace() {
-    override val filepath: String get() = delegate.filePath
+    override val filepath: String = delegate.filePath
     override val fileId: Int get() = delegate.fileId
     override val serverIp: Int get() = delegate.serverIp
     override val serverPort: Int get() = delegate.serverPort
@@ -265,14 +266,14 @@ internal class CustomFaceFromServer(
     override val size: Int get() = delegate.size
     override val original: Int get() = delegate.origin
     override val pbReserve: ByteArray get() = delegate.pbReserve
-    override val imageId: String get() = delegate.filePath
+    override val imageId: String = ExternalImage.generateImageId(delegate.md5, imageType)
 
     override fun equals(other: Any?): Boolean {
         return other is CustomFaceFromServer && other.filepath == this.filepath && other.md5.contentEquals(this.md5)
     }
 
     override fun hashCode(): Int {
-        return filepath.hashCode() + 31 * md5.hashCode()
+        return imageId.hashCode() + 31 * md5.hashCode()
     }
 }
 
@@ -296,7 +297,7 @@ internal class NotOnlineImageFromServer(
     }
 
     override fun hashCode(): Int {
-        return resourceId.hashCode() + 31 * md5.hashCode()
+        return imageId.hashCode() + 31 * md5.hashCode()
     }
 }
 
