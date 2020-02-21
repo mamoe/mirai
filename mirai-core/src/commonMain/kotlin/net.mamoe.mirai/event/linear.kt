@@ -27,7 +27,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 @MiraiExperimentalAPI
 suspend inline fun <reified E : Event, R : Any> subscribingGet(
     timeoutMillis: Long = -1,
-    noinline filter: E.(E) -> R?
+    noinline filter: E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return subscribingGetOrNull(timeoutMillis, filter) ?: error("timeout subscribingGet")
@@ -46,7 +46,7 @@ suspend inline fun <reified E : Event, R : Any> subscribingGet(
 @MiraiExperimentalAPI
 suspend inline fun <reified E : Event, R : Any> subscribingGetOrNull(
     timeoutMillis: Long = -1,
-    noinline filter: E.(E) -> R?
+    noinline filter: E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): R? {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     var result: R? = null
@@ -106,7 +106,7 @@ suspend inline fun <reified E : Event, R : Any> subscribingGetOrNull(
 inline fun <reified E : Event, R : Any> CoroutineScope.subscribingGetAsync(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     timeoutMillis: Long = -1,
-    noinline filter: E.(E) -> R?
+    noinline filter: E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): Deferred<R> = this.async(coroutineContext) {
     subscribingGet(timeoutMillis, filter)
 }
