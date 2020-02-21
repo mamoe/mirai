@@ -14,6 +14,7 @@ package demo.subscribe
 import kotlinx.coroutines.CompletableJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.sendMessage
@@ -23,8 +24,6 @@ import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.message.sendAsImageTo
-import net.mamoe.mirai.qqandroid.Bot
-import net.mamoe.mirai.qqandroid.QQAndroid
 import net.mamoe.mirai.utils.FileBasedDeviceInfo
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.io.File
@@ -47,7 +46,7 @@ private fun readTestAccount(): BotAccount? {
 
 @Suppress("UNUSED_VARIABLE")
 suspend fun main() {
-    val bot = QQAndroid.Bot( // JVM 下也可以不写 `QQAndroid.` 引用顶层函数
+    val bot = Bot( // JVM 下也可以不写 `QQAndroid.` 引用顶层函数
         123456789,
         "123456"
     ) {
