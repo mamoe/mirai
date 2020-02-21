@@ -24,6 +24,7 @@ import net.mamoe.mirai.japt.BlockingBot
 import net.mamoe.mirai.japt.BlockingGroup
 import net.mamoe.mirai.japt.BlockingMember
 import net.mamoe.mirai.japt.BlockingQQ
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -35,9 +36,9 @@ internal class BlockingQQImpl(private val delegate: QQ) : BlockingQQ {
     override fun getId(): Long = delegate.id
     override fun getNick(): String = delegate.nick
 
-    override fun sendMessage(messages: MessageChain) = runBlocking { delegate.sendMessage(messages) }
-    override fun sendMessage(message: String) = runBlocking { delegate.sendMessage(message.toMessage().toChain()) }
-    override fun sendMessage(message: Message) = runBlocking { delegate.sendMessage(message.toChain()) }
+    override fun sendMessage(messages: MessageChain): MessageReceipt<QQ> = runBlocking { delegate.sendMessage(messages) }
+    override fun sendMessage(message: String): MessageReceipt<QQ> = runBlocking { delegate.sendMessage(message.toMessage().toChain()) }
+    override fun sendMessage(message: Message): MessageReceipt<QQ> = runBlocking { delegate.sendMessage(message.toChain()) }
     override fun uploadImage(image: ExternalImage): Image = runBlocking { delegate.uploadImage(image) }
 
     @MiraiExperimentalAPI
@@ -51,9 +52,9 @@ internal class BlockingQQImpl(private val delegate: QQ) : BlockingQQ {
 }
 
 internal class BlockingGroupImpl(private val delegate: Group) : BlockingGroup {
-    override fun sendMessage(messages: MessageChain) = runBlocking { delegate.sendMessage(messages) }
-    override fun sendMessage(message: String) = runBlocking { delegate.sendMessage(message.toMessage().toChain()) }
-    override fun sendMessage(message: Message) = runBlocking { delegate.sendMessage(message.toChain()) }
+    override fun sendMessage(messages: MessageChain): MessageReceipt<Group> = runBlocking { delegate.sendMessage(messages) }
+    override fun sendMessage(message: String): MessageReceipt<Group> = runBlocking { delegate.sendMessage(message.toMessage().toChain()) }
+    override fun sendMessage(message: Message): MessageReceipt<Group> = runBlocking { delegate.sendMessage(message.toChain()) }
     override fun getOwner(): BlockingMember = delegate.owner.blocking()
     @MiraiExperimentalAPI
     override fun newMember(memberInfo: MemberInfo): Member = delegate.Member(memberInfo)

@@ -9,6 +9,7 @@ import net.mamoe.mirai.event.events.EventCancelledException;
 import net.mamoe.mirai.event.events.ImageUploadEvent;
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent;
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent;
+import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.Message;
 import net.mamoe.mirai.message.data.MessageChain;
@@ -42,8 +43,7 @@ public interface BlockingContact {
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      */
-    // kotlin bug
-    void sendMessage(@NotNull MessageChain messages) throws EventCancelledException, IllegalStateException;
+    MessageReceipt<? extends Contact> sendMessage(@NotNull MessageChain messages) throws EventCancelledException, IllegalStateException;
 
     /**
      * 向这个对象发送消息.
@@ -53,7 +53,7 @@ public interface BlockingContact {
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      */
-    void sendMessage(@NotNull String message) throws EventCancelledException, IllegalStateException;
+    MessageReceipt<? extends Contact> sendMessage(@NotNull String message) throws EventCancelledException, IllegalStateException;
 
     /**
      * 向这个对象发送消息.
@@ -63,7 +63,7 @@ public interface BlockingContact {
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      */
-    void sendMessage(@NotNull Message message) throws EventCancelledException, IllegalStateException;
+    MessageReceipt<? extends Contact> sendMessage(@NotNull Message message) throws EventCancelledException, IllegalStateException;
 
     /**
      * 上传一个图片以备发送.

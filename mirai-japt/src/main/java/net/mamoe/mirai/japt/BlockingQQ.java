@@ -1,8 +1,14 @@
 package net.mamoe.mirai.japt;
 
+import net.mamoe.mirai.contact.QQ;
 import net.mamoe.mirai.data.FriendNameRemark;
 import net.mamoe.mirai.data.PreviousNameList;
 import net.mamoe.mirai.data.Profile;
+import net.mamoe.mirai.event.events.EventCancelledException;
+import net.mamoe.mirai.event.events.MessageSendEvent;
+import net.mamoe.mirai.message.MessageReceipt;
+import net.mamoe.mirai.message.data.Message;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiExperimentalAPI;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,4 +53,35 @@ public interface BlockingQQ extends BlockingContact {
     @MiraiExperimentalAPI(message = "还未支持")
     @NotNull
     FriendNameRemark queryRemark();
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException   发送群消息时若 [Bot] 被禁言抛出
+     * @see MessageSendEvent.FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see MessageSendEvent.GroupMessageSendEvent  发送群消息事件. cancellable
+     */
+    MessageReceipt<QQ> sendMessage(@NotNull MessageChain messages) throws EventCancelledException, IllegalStateException;
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException   发送群消息时若 [Bot] 被禁言抛出
+     * @see MessageSendEvent.FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see MessageSendEvent.GroupMessageSendEvent  发送群消息事件. cancellable
+     */
+    MessageReceipt<QQ> sendMessage(@NotNull String message) throws EventCancelledException, IllegalStateException;
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException   发送群消息时若 [Bot] 被禁言抛出
+     * @see MessageSendEvent.FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see MessageSendEvent.GroupMessageSendEvent  发送群消息事件. cancellable
+     */
+    MessageReceipt<QQ> sendMessage(@NotNull Message message) throws EventCancelledException, IllegalStateException;
+
 }
