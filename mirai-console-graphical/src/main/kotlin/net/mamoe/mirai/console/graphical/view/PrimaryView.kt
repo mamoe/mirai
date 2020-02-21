@@ -73,7 +73,9 @@ class PrimaryView : View() {
                 this += find<LoginView>().root
             }
 
-            tab("Plugin")
+            tab("Plugins") {
+                this += find<PluginsView>().root
+            }
 
             tab("Settings")
 

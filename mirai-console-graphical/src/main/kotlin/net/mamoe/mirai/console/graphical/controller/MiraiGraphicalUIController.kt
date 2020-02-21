@@ -1,6 +1,7 @@
 package net.mamoe.mirai.console.graphical.controller
 
 import javafx.application.Platform
+import javafx.collections.ObservableList
 import javafx.stage.Modality
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
@@ -8,6 +9,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleUI
 import net.mamoe.mirai.console.graphical.model.BotModel
 import net.mamoe.mirai.console.graphical.model.ConsoleInfo
+import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
 import net.mamoe.mirai.utils.LoginSolver
@@ -22,6 +24,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     private val cache = mutableMapOf<Long, BotModel>()
     val mainLog = observableListOf<String>()
     val botList = observableListOf<BotModel>()
+    val pluginList: ObservableList<PluginModel> by lazy(::getPluginsFromConsole)
     val consoleInfo = ConsoleInfo()
 
     suspend fun login(qq: String, psd: String) {
@@ -70,6 +73,11 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     }
 
     override fun createLoginSolver(): LoginSolver = loginSolver
+
+    private fun getPluginsFromConsole(): ObservableList<PluginModel> {
+        // TODO
+        return observableListOf<PluginModel>()
+    }
 }
 
 class GraphicalLoginSolver : LoginSolver() {
