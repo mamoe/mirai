@@ -97,7 +97,7 @@ open class MessageReceipt<C : Contact>(
      * @throws IllegalStateException 当此消息不是群消息时
      */
     @MiraiExperimentalAPI("unstable")
-    open fun quote(): MessageChain {
+    open fun quote(): QuoteReplyToSend {
         val target = target
         check(target is Group) { "quote is only available for GroupMessage" }
         return this.source.quote(target.botAsMember)

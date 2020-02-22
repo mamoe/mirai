@@ -124,9 +124,9 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     suspend inline fun MessageChain.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
 
     /**
-     * 引用这个消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
+     * 引用这个消息
      */
-    inline fun MessageChain.quote(): MessageChain = this.quote(sender)
+    inline fun MessageChain.quote(): QuoteReplyToSend = this.quote(sender)
 
     operator fun <M : Message> get(at: Message.Key<M>): M {
         return this.message[at]
