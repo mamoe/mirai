@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         mavenLocal()
+        maven { url "https://mirrors.huaweicloud.com/repository/maven" }
         jcenter()
         mavenCentral()
         google()
@@ -9,7 +10,6 @@ buildscript {
     }
 
     dependencies {
-        // Do try to waste your time.
         classpath 'com.android.tools.build:gradle:3.5.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
@@ -32,14 +32,10 @@ allprojects {
     group = "net.mamoe"
     version = getProperty("mirai_version")
 
-//    tasks.withType(KotlinCompile).all { task ->
-//        task.kotlinOptions{
-//            jvmTarget = '1.6'
-//        }
-//    }
 
     repositories {
         mavenLocal()
+        maven { url "https://mirrors.huaweicloud.com/repository/maven" }
         jcenter()
         mavenCentral()
         google()
