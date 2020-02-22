@@ -9,21 +9,23 @@
 
 package net.mamoe.mirai.qqandroid
 
-import kotlinx.io.core.ByteReadPacket
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.utils.io.ByteReadChannel
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
-import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.contact.filteringGetOrNull
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.qqandroid.message.CustomFaceFromServer
+import net.mamoe.mirai.qqandroid.message.NotOnlineImageFromServer
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.*
@@ -119,13 +121,50 @@ internal abstract class QQAndroidBotBase constructor(
         TODO("not implemented")
     }
 
-    override suspend fun Image.download(): ByteReadPacket {
-        TODO("not implemented")
+    override suspend fun recall(source: MessageSource) {
+        if (source.senderId != uin) {
+            getGroup(source.groupId).checkBotPermissionOperator()
+        }
+
+        source.ensureSequenceIdAvailable()
+
+        network.run {
+            val response: PbMessageSvc.PbMsgWithDraw.Response =
+                PbMessageSvc.PbMsgWithDraw.Group(bot.client, source.groupId, source.sequenceId, source.messageRandom)
+                    .sendAndExpect()
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
+        }
     }
 
-    @Suppress("OverridingDeprecatedMember")
-    override suspend fun Image.downloadAsByteArray(): ByteArray {
-        TODO("not implemented")
+    override suspend fun recall(groupId: Long, senderId: Long, messageId: Long) {
+        if (senderId != uin) {
+            getGroup(groupId).checkBotPermissionOperator()
+        }
+
+        val sequenceId = (messageId shr 32).toInt()
+
+        network.run {
+            val response: PbMessageSvc.PbMsgWithDraw.Response =
+                PbMessageSvc.PbMsgWithDraw.Group(bot.client, groupId, sequenceId, messageId.toInt())
+                    .sendAndExpect()
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #$sequenceId: $response" }
+        }
+    }
+
+    override suspend fun queryImageUrl(image: Image): String = "http://gchat.qpic.cn" + when (image) {
+        is NotOnlineImageFromServer -> image.delegate.origUrl
+        is CustomFaceFromServer -> image.delegate.origUrl
+        is CustomFaceFromFile -> {
+            TODO()
+        }
+        is NotOnlineImageFromFile -> {
+            TODO()
+        }
+        else -> error("unsupported image class: ${image::class.simpleName}")
+    }
+
+    override suspend fun openChannel(image: Image): ByteReadChannel {
+        return Http.get<HttpResponse>(queryImageUrl(image)).content
     }
 
     override suspend fun approveFriendAddRequest(id: Long, remark: String?) {

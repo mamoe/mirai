@@ -13,6 +13,7 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.Handler
@@ -51,6 +52,12 @@ enum class ListeningStatus {
  * 取消监听: [complete]
  */
 interface Listener<in E : Event> : CompletableJob {
+    /**
+     * [onEvent] 的锁
+     */
+    @MiraiInternalAPI
+    val lock: Mutex
+
     suspend fun onEvent(event: E): ListeningStatus
 }
 

@@ -11,11 +11,16 @@ package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.recall
+import net.mamoe.mirai.recallIn
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.jvm.JvmName
@@ -59,10 +64,13 @@ class GroupMessage(
     @JvmName("reply2")
     suspend inline fun MessageChain.quoteReply(): MessageReceipt<Group> = quoteReply(this)
 
-    suspend inline fun MessageChain.recall() = group.recall(this)
-    suspend inline fun MessageSource.recall() = group.recall(this)
-    inline fun MessageSource.recallIn(delay: Long): Job = group.recallIn(this, delay)
-    inline fun MessageChain.recallIn(delay: Long): Job = group.recallIn(this, delay)
+    @MiraiExperimentalAPI
+    suspend inline fun MessageChain.recall() = bot.recall(this)
+
+    suspend inline fun MessageSource.recall() = bot.recall(this)
+    inline fun MessageSource.recallIn(delay: Long): Job = bot.recallIn(this, delay)
+    @MiraiExperimentalAPI
+    inline fun MessageChain.recallIn(delay: Long): Job = bot.recallIn(this, delay)
 
     override fun toString(): String =
         "GroupMessage(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"

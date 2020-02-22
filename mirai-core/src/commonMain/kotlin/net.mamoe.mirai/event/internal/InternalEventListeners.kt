@@ -10,6 +10,8 @@
 package net.mamoe.mirai.event.internal
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
 import net.mamoe.mirai.event.Listener
@@ -73,6 +75,9 @@ internal class Handler<in E : Event>
             ListeningStatus.LISTENING
         }
     }
+
+    @MiraiInternalAPI
+    override val lock: Mutex = Mutex()
 }
 
 /**
@@ -138,23 +143,29 @@ internal object EventListenerManager {
 
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
-internal suspend inline fun Event.broadcastInternal() {
-    if (EventDisabled) return
+internal suspend inline fun Event.broadcastInternal() = coroutineScope {
+    if (EventDisabled) return@coroutineScope
 
     EventLogger.info { "Event broadcast: $this" }
 
-    val listeners = this::class.listeners()
-    callAndRemoveIfRequired(listeners)
+    val listeners = this@broadcastInternal::class.listeners()
+    callAndRemoveIfRequired(this@broadcastInternal, listeners)
     listeners.supertypes.forEach {
-        callAndRemoveIfRequired(it.listeners())
+        callAndRemoveIfRequired(this@broadcastInternal, it.listeners())
     }
 }
 
-private suspend inline fun <E : Event> E.callAndRemoveIfRequired(listeners: EventListeners<E>) {
+@UseExperimental(MiraiInternalAPI::class)
+private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(event: E, listeners: EventListeners<E>) {
     // atomic foreach
-    listeners.forEach {
-        if (it.onEvent(this) == ListeningStatus.STOPPED) {
-            listeners.remove(it) // atomic remove
+    listeners.forEachNode { node ->
+        launch {
+            val listener = node.nodeValue
+            listener.lock.withLock {
+                if (!node.isRemoved() && listener.onEvent(event) == ListeningStatus.STOPPED) {
+                    listeners.remove(listener) // atomic remove
+                }
+            }
         }
     }
 }

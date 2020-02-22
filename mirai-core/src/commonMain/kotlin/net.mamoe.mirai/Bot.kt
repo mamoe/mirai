@@ -11,22 +11,24 @@
 
 package net.mamoe.mirai
 
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.io.OutputStream
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.use
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.transferTo
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmStatic
 
 /**
@@ -208,13 +210,44 @@ abstract class Bot : CoroutineScope {
 
     // region actions
 
-    @Deprecated("内存使用效率十分低下", ReplaceWith("this.download()"), DeprecationLevel.WARNING)
-    abstract suspend fun Image.downloadAsByteArray(): ByteArray
+    /**
+     * 撤回这条消息.
+     *
+     * [Bot] 撤回自己的消息不需要权限.
+     * [Bot] 撤回群员的消息需要管理员权限.
+     *
+     * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+     * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
+     */// source.groupId, source.sequenceId, source.messageUid
+    abstract suspend fun recall(source: MessageSource)
 
     /**
-     * 将图片下载到内存中 (使用 [IoBuffer.Pool])
+     * 撤回一条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
+     *
+     * [Bot] 撤回自己的消息不需要权限.
+     * [Bot] 撤回群员的消息需要管理员权限.
+     *
+     * @param senderId 这条消息的发送人. 可以为 [Bot.uin] 或 [Member.id]
+     * @param messageId 即 [MessageSource.id]
+     *
+     * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+     * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
+     * @see recall 请优先使用这个函数
      */
-    abstract suspend fun Image.download(): ByteReadPacket
+    abstract suspend fun recall(groupId: Long, senderId: Long, messageId: Long)
+
+    /**
+     * 获取图片下载链接
+     */
+    abstract suspend fun queryImageUrl(image: Image): String
+
+    /**
+     * 获取图片下载链接并开始下载.
+     *
+     * @see ByteReadChannel.copyAndClose
+     * @see ByteReadChannel.copyTo
+     */
+    abstract suspend fun openChannel(image: Image): ByteReadChannel
 
     /**
      * 添加一个好友
@@ -222,11 +255,13 @@ abstract class Bot : CoroutineScope {
      * @param message 若需要验证请求时的验证消息.
      * @param remark 好友备注
      */
+    @MiraiExperimentalAPI("未支持")
     abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult
 
     /**
      * 同意来自陌生人的加好友请求
      */
+    @MiraiExperimentalAPI("未支持")
     abstract suspend fun approveFriendAddRequest(id: Long, remark: String?)
 
     // endregion
@@ -243,19 +278,54 @@ abstract class Bot : CoroutineScope {
      */
     abstract fun close(cause: Throwable? = null)
 
-    // region extensions
+    final override fun toString(): String = "Bot(${uin})"
+}
 
-    final override fun toString(): String {
-        return "Bot(${uin})"
-    }
+/**
+ * 撤回这条消息.
+ * 根据 [message] 内的 [MessageSource] 进行相关判断.
+ *
+ * [Bot] 撤回自己的消息不需要权限.
+ * [Bot] 撤回群员的消息需要管理员权限.
+ *
+ * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+ * @see Bot.recall
+ */
+@MiraiExperimentalAPI
+suspend inline fun Bot.recall(message: MessageChain) = this.recall(message[MessageSource])
 
-    /**
-     * 需要调用者自行 close [output]
-     */
-    suspend inline fun Image.downloadTo(output: OutputStream) =
-        download().use { input -> input.transferTo(output) }
+/**
+ * 在一段时间后撤回这条消息.
+ * 将根据 [MessageSource.groupId] 判断消息是群消息还是好友消息.
+ *
+ * @param millis 延迟的时间, 单位为毫秒
+ * @param coroutineContext 额外的 [CoroutineContext]
+ * @see recall
+ */
+fun Bot.recallIn(
+    source: MessageSource,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
+    kotlinx.coroutines.delay(millis)
+    recall(source)
+}
 
-    // endregion
+/**
+ * 在一段时间后撤回这条消息.
+ *
+ * @param millis 延迟的时间, 单位为毫秒
+ * @param coroutineContext 额外的 [CoroutineContext]
+ * @see recall
+ */
+@MiraiExperimentalAPI
+fun Bot.recallIn(
+    message: MessageChain,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
+    kotlinx.coroutines.delay(millis)
+    recall(message)
 }
 
 /**

@@ -2,6 +2,22 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.20.0` 2020/2/23
+
+### mirai-core
+- 支持图片下载: `image.channel(): ByteReadChannel`, `image.url()`
+
+- 添加 `LockFreeLinkedList<E>.iterator`
+- 添加 `LockFreeLinkedList<E>.forEachNode`
+
+- 并行处理事件监听
+- 添加 `nextMessageContaining` 和相关可空版本
+
+- '撤回' 从 `Contact` 移动到 `Bot`
+- 删除 `MessageSource.sourceMessage`
+- 让 MessageSource 拥有唯一的 long 类型 id, 删除原 `uid` 和 `sequence` 结构.
+- 修复 `Message.eq` 歧义
+
 ## `0.19.1` 2020/2/21
 
 ### mirai-core
@@ -255,16 +271,16 @@ TIMPC
 这些模块都继承自 `mirai-core`.  
 现在, 要使用 mirai, 必须依赖于特定的协议模块, 如 `mirai-core-timpc`.  
 查阅 API 时请查看 `mirai-core`.  
-每个模块只提供少量的额外方法. 我们会给出详细列表.   
+每个模块只提供少量的额外方法. 我们会给出详细列表.
 
 在目前的开发中您无需考虑多协议兼容.
 
 **Bot 构造**  
 协议抽象后构造 Bot 需指定协议的 `BotFactory`.  
-在 JVM 平台, Mirai 通过 classname 自动加载协议模块的 `BotFactory`, 因此若您只使用一套协议, 则无需修改现行源码  
+在 JVM 平台, Mirai 通过 classname 自动加载协议模块的 `BotFactory`, 因此若您只使用一套协议, 则无需修改现行源码
 
 **事件**  
-大部分事件包名修改. 
+大部分事件包名修改.
 
 **UInt -> Long**  
 修改全部 QQ ID, Group ID 的类型由 UInt 为 Long.  
@@ -314,21 +330,21 @@ TIMPC
 - 禁言的扩展函数现在会传递实际函数的返回值
 
 ## `0.7.0`  *2019/12/04*
-协议  
+协议
 - 重新分析验证码包, 解决一些无法解析的情况. (这可能会产生新的问题, 遇到后请提交 issue)
 - 重新分析提交密码包
 - *提交验证码仍可能出现问题 (已在 `0.7.5` 修复)*
 
-功能  
+功能
 - XML 消息 DSL 构造支持 (实验性) (暂不支持发送)
 - 群成员列表现在包含群主 (原本就应该包含)
-- 在消息事件处理中添加获取 `.qq()` 和 `.group()` 的扩展函数. 
+- 在消息事件处理中添加获取 `.qq()` 和 `.group()` 的扩展函数.
 - 现在处理群消息时 sender 为 Member (以前为 QQ)
 - 修改 `Message.concat` 为 `Message.followedBy`
 - 修改成员权限 `OPERATOR` 为 `ADMINISTRATOR`
 - **bot.subscribeAll<>() 等函数的 handler lambda 的 receiver 由 Bot 改变为 BotSession**; 此变动不会造成现有代码的修改, 但并不兼容旧版本编译的代码
 
-性能优化  
+性能优化
 - 内联 ContactList
 -  2 个 Contact.sendMessage 重载改为内联扩展函数 **(需要添加 import)**
 - 其他小优化

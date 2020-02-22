@@ -22,7 +22,6 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
@@ -80,7 +79,7 @@ internal class QQImpl(
                 ) { source = it }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
-        return MessageReceipt(message, source, this)
+        return MessageReceipt(source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -505,23 +504,10 @@ internal class GroupImpl(
             }
         }
 
+    @MiraiExperimentalAPI
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
         TODO("not implemented")
-    }
-
-    override suspend fun recall(source: MessageSource) {
-        if (source.senderId != bot.uin) {
-            checkBotPermissionOperator()
-        }
-
-        source.ensureSequenceIdAvailable()
-
-        bot.network.run {
-            val response = PbMessageSvc.PbMsgWithDraw.Group(bot.client, this@GroupImpl.id, source.sequenceId, source.messageUid.toInt())
-                .sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
-            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
-        }
     }
 
     @UseExperimental(MiraiExperimentalAPI::class)
@@ -567,7 +553,7 @@ internal class GroupImpl(
 
         source.startWaitingSequenceId(this)
 
-        return MessageReceipt(message, source, this)
+        return MessageReceipt(source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
