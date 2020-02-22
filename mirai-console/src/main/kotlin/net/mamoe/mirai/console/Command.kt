@@ -9,17 +9,25 @@
 
 package net.mamoe.mirai.console
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugins.PluginManager
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.sendMessage
+import net.mamoe.mirai.message.data.MessageChain
 
 object CommandManager {
-    private val registeredCommand: MutableMap<String, ICommand> = mutableMapOf()
+    private val registeredCommand: MutableMap<String, Command> = mutableMapOf()
 
-    fun getCommands(): Collection<ICommand> {
+    fun getCommands(): Collection<Command> {
         return registeredCommand.values
     }
 
 
-    fun register(command: ICommand) {
+    fun register(command: Command) {
         val allNames = mutableListOf(command.name).also { it.addAll(command.alias) }
         allNames.forEach {
             if (registeredCommand.containsKey(it)) {
@@ -31,7 +39,7 @@ object CommandManager {
         }
     }
 
-    fun unregister(command: ICommand) {
+    fun unregister(command: Command) {
         val allNames = mutableListOf<String>(command.name).also { it.addAll(command.alias) }
         allNames.forEach {
             registeredCommand.remove(it)
@@ -42,7 +50,7 @@ object CommandManager {
         registeredCommand.remove(commandName)
     }
 
-    suspend fun runCommand(fullCommand: String): Boolean {
+    suspend fun runCommand(sender: CommandSender, fullCommand: String): Boolean {
         val blocks = fullCommand.split(" ")
         val commandHead = blocks[0].replace("/", "")
         if (!registeredCommand.containsKey(commandHead)) {
@@ -51,6 +59,7 @@ object CommandManager {
         val args = blocks.subList(1, blocks.size)
         registeredCommand[commandHead]?.run {
             if (onCommand(
+                    sender,
                     blocks.subList(1, blocks.size)
                 )
             ) {
@@ -62,26 +71,60 @@ object CommandManager {
 
 }
 
-interface ICommand {
+interface CommandSender {
+    suspend fun sendMessage(messageChain: MessageChain)
+
+    suspend fun sendMessage(message: String)
+
+    fun sendMessageBlocking(messageChain: MessageChain) = runBlocking { sendMessage(messageChain) }
+    fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
+}
+
+object ConsoleCommandSender : CommandSender {
+    override suspend fun sendMessage(messageChain: MessageChain) {
+        MiraiConsole.logger(messageChain.toString())
+    }
+
+    override suspend fun sendMessage(message: String) {
+        MiraiConsole.logger(message)
+    }
+}
+
+class ContactCommandSender(val contact: Contact) : CommandSender {
+    override suspend fun sendMessage(messageChain: MessageChain) {
+        contact.sendMessage(messageChain)
+    }
+
+    override suspend fun sendMessage(message: String) {
+        contact.sendMessage(message)
+    }
+}
+
+
+interface Command {
     val name: String
     val alias: List<String>
     val description: String
-    suspend fun onCommand(args: List<String>): Boolean
+    suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean
     fun register()
 }
 
-abstract class Command(
+abstract class BlockingCommand(
     override val name: String,
     override val alias: List<String> = listOf(),
     override val description: String = ""
-) : ICommand {
+) : Command {
     /**
      * 最高优先级监听器
      * 如果 return `false` 这次指令不会被 [PluginBase] 的全局 onCommand 监听器监听
      * */
-    open override suspend fun onCommand(args: List<String>): Boolean {
-        return true
+    final override suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
+        return withContext(Dispatchers.IO) {
+            onCommandBlocking(sender, args)
+        }
     }
+
+    abstract fun onCommandBlocking(sender: CommandSender, args: List<String>): Boolean
 
     override fun register() {
         CommandManager.register(this)
@@ -92,10 +135,10 @@ class AnonymousCommand internal constructor(
     override val name: String,
     override val alias: List<String>,
     override val description: String,
-    val onCommand: suspend ICommand.(args: List<String>) -> Boolean
-) : ICommand {
-    override suspend fun onCommand(args: List<String>): Boolean {
-        return onCommand.invoke(this, args)
+    val onCommand: suspend CommandSender.(args: List<String>) -> Boolean
+) : Command {
+    override suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
+        return onCommand.invoke(sender, args)
     }
 
     override fun register() {
@@ -107,13 +150,13 @@ class CommandBuilder internal constructor() {
     var name: String? = null
     var alias: List<String>? = null
     var description: String = ""
-    var onCommand: (suspend ICommand.(args: List<String>) -> Boolean)? = null
+    var onCommand: (suspend CommandSender.(args: List<String>) -> Boolean)? = null
 
-    fun onCommand(commandProcess: suspend ICommand.(args: List<String>) -> Boolean) {
+    fun onCommand(commandProcess: suspend CommandSender.(args: List<String>) -> Boolean) {
         onCommand = commandProcess
     }
 
-    fun register(): ICommand {
+    fun register(): Command {
         if (name == null || onCommand == null) {
             error("net.mamoe.mirai.CommandBuilder not complete")
         }
@@ -124,7 +167,7 @@ class CommandBuilder internal constructor() {
     }
 }
 
-fun registerCommand(builder: CommandBuilder.() -> Unit): ICommand {
+fun registerCommand(builder: CommandBuilder.() -> Unit): Command {
     return CommandBuilder().apply(builder).register()
 }
 
