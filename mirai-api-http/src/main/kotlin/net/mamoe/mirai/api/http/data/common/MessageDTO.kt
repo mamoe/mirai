@@ -99,7 +99,7 @@ fun MessageChain.toDTOChain() = mutableListOf(this[MessageSource].toDTO()).apply
 fun MessageChainDTO.toMessageChain(contact: Contact) =
     MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
 
-internal fun MessageSource.calMessageId() = (messageUid.toLong() shl 32) or (sequenceId.toLong() and 0xFFFFFFFF)
+internal fun MessageSource.calMessageId() = (messageRandom.toLong() shl 32) or (sequenceId.toLong() and 0xFFFFFFFF)
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {

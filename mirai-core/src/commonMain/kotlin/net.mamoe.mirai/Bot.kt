@@ -231,11 +231,13 @@ abstract class Bot : CoroutineScope {
      * [Bot] 撤回自己的消息不需要权限.
      * [Bot] 撤回群员的消息需要管理员权限.
      *
+     * @param messageId 即 [MessageSource.id]
+     *
      * @throws PermissionDeniedException 当 [Bot] 无权限操作时
      * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
-     * @see 更推荐说
+     * @see recall 请优先使用这个函数
      */
-    abstract suspend fun recall(groupId: Long, messageSequenceId: Int, messageUid: Int)
+    abstract suspend fun recall(groupId: Long, senderId: Long, messageId: Long)
 
     @Deprecated("内存使用效率十分低下", ReplaceWith("this.download()"), DeprecationLevel.WARNING)
     @MiraiExperimentalAPI("未支持")

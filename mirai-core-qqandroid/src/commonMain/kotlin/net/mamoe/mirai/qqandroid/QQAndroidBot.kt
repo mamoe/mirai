@@ -19,6 +19,8 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.messageRandom
+import net.mamoe.mirai.message.data.sequenceId
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
@@ -127,9 +129,24 @@ internal abstract class QQAndroidBotBase constructor(
 
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
-                PbMessageSvc.PbMsgWithDraw.Group(bot.client, source.groupId, source.sequenceId, source.messageUid)
+                PbMessageSvc.PbMsgWithDraw.Group(bot.client, source.groupId, source.sequenceId, source.messageRandom)
                     .sendAndExpect()
             check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
+        }
+    }
+
+    override suspend fun recall(groupId: Long, senderId: Long, messageId: Long) {
+        if (senderId != uin) {
+            getGroup(groupId).checkBotPermissionOperator()
+        }
+
+        val sequenceId = (messageId shr 32).toInt()
+
+        network.run {
+            val response: PbMessageSvc.PbMsgWithDraw.Response =
+                PbMessageSvc.PbMsgWithDraw.Group(bot.client, groupId, sequenceId, messageId.toInt())
+                    .sendAndExpect()
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #$sequenceId: $response" }
         }
     }
 

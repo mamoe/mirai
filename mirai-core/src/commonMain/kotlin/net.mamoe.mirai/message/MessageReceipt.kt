@@ -12,8 +12,11 @@ package net.mamoe.mirai.message
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -27,7 +30,6 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
  */
 open class MessageReceipt<C : Contact>(
-    val originalMessage: MessageChain,
     private val source: MessageSource,
     target: C
 ) {
@@ -54,7 +56,7 @@ open class MessageReceipt<C : Contact>(
         if (_isRecalled.compareAndSet(false, true)) {
             when (val contact = target) {
                 is Group -> {
-                    contact.recall(source)
+                    contact.bot.recall(source)
                 }
                 is QQ -> {
                     TODO()
@@ -77,7 +79,7 @@ open class MessageReceipt<C : Contact>(
         if (_isRecalled.compareAndSet(false, true)) {
             when (val contact = target) {
                 is Group -> {
-                    return contact.recallIn(source, millis)
+                    return contact.bot.recallIn(source, millis)
                 }
                 is QQ -> {
                     TODO()

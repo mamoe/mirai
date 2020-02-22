@@ -12,6 +12,7 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
@@ -20,8 +21,13 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.recall
+import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
@@ -92,8 +98,44 @@ interface Contact : CoroutineScope {
     override fun toString(): String
 }
 
+/**
+ * @see Bot.recall
+ */
+@MiraiExperimentalAPI
+suspend inline fun Contact.recall(source: MessageChain) = this.bot.recall(source)
+
+/**
+ * @see Bot.recall
+ */
+suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(source)
+
+/**
+ * @see Bot.recallIn
+ */
+@MiraiExperimentalAPI
+fun Contact.recallIn(
+    message: MessageChain,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.bot.recallIn(message, millis, coroutineContext)
+
+/**
+ * @see Bot.recallIn
+ */
+fun Contact.recallIn(
+    source: MessageSource,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.bot.recallIn(source, millis, coroutineContext)
+
+/**
+ * @see Contact.sendMessage
+ */
 @Suppress("UNCHECKED_CAST")
 suspend inline fun <C : Contact> C.sendMessage(message: Message): MessageReceipt<C> =
     sendMessage(message.toChain()) as? MessageReceipt<C> ?: error("Internal class cast mistake")
 
+/**
+ * @see Contact.sendMessage
+ */
 suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> = sendMessage(plain.toMessage())

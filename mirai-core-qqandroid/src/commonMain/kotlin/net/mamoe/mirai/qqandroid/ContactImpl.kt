@@ -79,7 +79,7 @@ internal class QQImpl(
                 ) { source = it }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
-        return MessageReceipt(message, source, this)
+        return MessageReceipt(source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -553,7 +553,7 @@ internal class GroupImpl(
 
         source.startWaitingSequenceId(this)
 
-        return MessageReceipt(message, source, this)
+        return MessageReceipt(source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
