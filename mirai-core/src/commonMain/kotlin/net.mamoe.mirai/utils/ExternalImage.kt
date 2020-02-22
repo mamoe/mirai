@@ -16,6 +16,7 @@ import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.io.toUHexString
@@ -115,7 +116,7 @@ class ExternalImage(
 /**
  * 将图片发送给指定联系人
  */
-suspend fun ExternalImage.sendTo(contact: Contact) = when (contact) {
+suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
     is Group -> contact.uploadImage(this).sendTo(contact)
     is QQ -> contact.uploadImage(this).sendTo(contact)
     else -> error("unreachable")
@@ -136,7 +137,7 @@ suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
 /**
  * 将图片发送给 [this]
  */
-suspend inline fun Contact.sendImage(image: ExternalImage) = image.sendTo(this)
+suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
 
 private operator fun ByteArray.get(range: IntRange): String = buildString {
     range.forEach {
