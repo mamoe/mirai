@@ -36,7 +36,7 @@ data class GroupMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
 // Message
 @Serializable
 @SerialName("Source")
-data class MessageSourceDTO(val uid: Long) : MessageDTO()
+data class MessageSourceDTO(val id: Long) : MessageDTO()
 
 @Serializable
 @SerialName("At")
