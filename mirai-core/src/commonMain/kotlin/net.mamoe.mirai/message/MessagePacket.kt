@@ -159,6 +159,8 @@ fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Bo
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
+ *
+ * @see subscribingGet
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1,
@@ -176,8 +178,9 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
- *
  * @return 消息链. 超时时返回 `null`
+ *
+ * @see subscribingGetOrNull
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
     timeoutMillis: Long = -1,
@@ -194,6 +197,8 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @see subscribingGet
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1
@@ -209,8 +214,9 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- *
  * @return 消息链. 超时时返回 `null`
+ *
+ * @see subscribingGetOrNull
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
     timeoutMillis: Long = -1
@@ -226,6 +232,8 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @see subscribingGet
  */
 suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaining(
     timeoutMillis: Long = -1
@@ -241,8 +249,9 @@ suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaini
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- *
  * @return 指定类型的消息. 超时时返回 `null`
+ *
+ * @see subscribingGetOrNull
  */
 suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingOrNull(
     timeoutMillis: Long = -1
