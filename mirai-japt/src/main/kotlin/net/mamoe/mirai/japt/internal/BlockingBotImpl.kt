@@ -31,6 +31,7 @@ import java.io.OutputStream
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
+@UseExperimental(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     @MiraiInternalAPI
     override fun getAccount(): BotAccount = bot.account
@@ -51,7 +52,6 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     override fun getFriend(id: Long): BlockingQQ = bot.getFriend(id).blocking()
     override fun queryGroupList(): Stream<Long> = runBlocking { bot.queryGroupList() }.asStream()
 
-    @UseExperimental(MiraiInternalAPI::class)
     override fun getGroupList(): List<BlockingGroup> = bot.groups.delegate.toList().map { it.blocking() }
 
     override fun queryGroupInfo(code: Long): GroupInfo = runBlocking { bot.queryGroupInfo(code) }

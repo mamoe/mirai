@@ -92,6 +92,8 @@ interface Contact : CoroutineScope {
     override fun toString(): String
 }
 
-suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
+@Suppress("UNCHECKED_CAST")
+suspend inline fun <C : Contact> C.sendMessage(message: Message): MessageReceipt<C> =
+    sendMessage(message.toChain()) as? MessageReceipt<C> ?: error("Internal class cast mistake")
 
-suspend inline fun Contact.sendMessage(plain: String) = sendMessage(plain.toMessage())
+suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> = sendMessage(plain.toMessage())
