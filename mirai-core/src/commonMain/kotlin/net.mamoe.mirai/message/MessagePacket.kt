@@ -20,7 +20,7 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribingGet
-import net.mamoe.mirai.event.subscribingGetAsync
+import net.mamoe.mirai.event.subscribingGetOrNull
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
@@ -133,7 +133,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
      *
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
-    suspend inline fun Image.url(): String = bot.run { url() }
+    suspend inline fun Image.url(): String = bot.queryImageUrl(this@url)
 
     /**
      * 获取图片下载链接并开始下载.
@@ -141,7 +141,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
      * @see ByteReadChannel.copyAndClose
      * @see ByteReadChannel.copyTo
      */
-    suspend inline fun Image.channel(): ByteReadChannel = bot.run { channel() }
+    suspend inline fun Image.channel(): ByteReadChannel = bot.openChannel(this)
     // endregion
 }
 
@@ -153,14 +153,12 @@ fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Bo
 }
 
 /**
- * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同且通过 [筛选][filter] 的 [MessagePacket]
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessagePacket]
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
- *
- * @see subscribingGetAsync 本函数的异步版本
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1,
@@ -172,13 +170,30 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
 }
 
 /**
- * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同的 [MessagePacket]
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessagePacket]
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
  *
- * @see subscribingGetAsync 本函数的异步版本
+ * @return 消息链. 超时时返回 `null`
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
+    timeoutMillis: Long = -1,
+    crossinline filter: P.(P) -> Boolean
+): MessageChain? {
+    return subscribingGetOrNull<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }?.takeIf { filter(it, it) }
+    }?.message
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1
@@ -186,4 +201,53 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     return subscribingGet<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }
     }.message
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @return 消息链. 超时时返回 `null`
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
+    timeoutMillis: Long = -1
+): MessageChain? {
+    return subscribingGetOrNull<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }
+    }?.message
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ */
+suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaining(
+    timeoutMillis: Long = -1
+): M {
+    return subscribingGet<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageContaining) }
+    }.message.first()
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同并含有 [M] 类型的消息的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @return 指定类型的消息. 超时时返回 `null`
+ */
+suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingOrNull(
+    timeoutMillis: Long = -1
+): M? {
+    return subscribingGetOrNull<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNull) }
+    }?.message?.first()
 }
