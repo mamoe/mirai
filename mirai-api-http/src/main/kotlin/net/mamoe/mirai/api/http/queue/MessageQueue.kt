@@ -44,6 +44,6 @@ class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
     }
 
     private fun addCache(msg: GroupMessage) {
-        quoteCache[msg.message[MessageSource].messageUid] = msg
+        quoteCache[msg.message[MessageSource].messageUid.toLong() and 0xFFffFFff] = msg
     }
 }

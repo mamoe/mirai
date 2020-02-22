@@ -41,7 +41,7 @@ interface MessageSource : Message {
     /**
      * 实际上是个随机数, 但服务器确实是用它当做 uid
      */
-    val messageUid: Long
+    val messageUid: Int
 
     /**
      * 发送时间, 单位为秒

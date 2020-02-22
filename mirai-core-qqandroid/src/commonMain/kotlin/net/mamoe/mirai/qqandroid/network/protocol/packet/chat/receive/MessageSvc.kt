@@ -272,7 +272,7 @@ internal class MessageSvc {
         }
 
         internal class MessageSourceFromSend(
-            override val messageUid: Long,
+            override val messageUid: Int,
             override val time: Long,
             override val senderId: Long,
             override val groupId: Long// ,
@@ -283,7 +283,7 @@ internal class MessageSvc {
             @UseExperimental(MiraiExperimentalAPI::class)
             fun startWaitingSequenceId(contact: Contact) {
                 sequenceIdDeferred = contact.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int> {
-                    if (it.messageRandom == messageUid.toInt()) {
+                    if (it.messageRandom == messageUid) {
                         it.sequenceId
                     } else null
                 }
@@ -302,25 +302,34 @@ internal class MessageSvc {
             }
         }
 
-        /**
-         * 发送好友消息
-         */
-        @Suppress("FunctionName")
-        fun ToFriend(
+        inline fun ToFriend(
             client: QQAndroidClient,
             toUin: Long,
-            message: MessageChain
-        ): OutgoingPacket = buildOutgoingUniPacket(client) {
-            ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
-
+            message: MessageChain,
+            crossinline sourceCallback: (MessageSource) -> Unit
+        ): OutgoingPacket {
             val source = MessageSourceFromSend(
-                messageUid = Random.nextInt().absoluteValue.toLong() and 0xffffffff,
+                messageUid = Random.nextInt().absoluteValue,
                 senderId = client.uin,
                 time = currentTimeSeconds + client.timeDifference,
                 groupId = 0//
                 //   sourceMessage = message
             )
-            message.addOrRemove(source)
+            sourceCallback(source)
+            return ToFriend(client, toUin, message, source)
+        }
+
+        /**
+         * 发送好友消息
+         */
+        @Suppress("FunctionName")
+        private fun ToFriend(
+            client: QQAndroidClient,
+            toUin: Long,
+            message: MessageChain,
+            source: MessageSource
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
             ///return@buildOutgoingUniPacket
             writeProtoBuf(
@@ -333,11 +342,30 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
-                    msgRand = source.messageUid.toInt(),
+                    msgRand = source.messageUid,
                     syncCookie = SyncCookie(time = source.time).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
+        }
+
+
+        inline fun ToGroup(
+            client: QQAndroidClient,
+            groupCode: Long,
+            message: MessageChain,
+            sourceCallback: (MessageSource) -> Unit
+        ): OutgoingPacket {
+
+            val source = MessageSourceFromSend(
+                messageUid = Random.nextInt().absoluteValue,
+                senderId = client.uin,
+                time = currentTimeSeconds + client.timeDifference,
+                groupId = groupCode//,
+                //   sourceMessage = message
+            )
+            sourceCallback(source)
+            return ToGroup(client, groupCode, message, source)
         }
 
         /**
@@ -347,17 +375,9 @@ internal class MessageSvc {
         fun ToGroup(
             client: QQAndroidClient,
             groupCode: Long,
-            message: MessageChain
+            message: MessageChain,
+            source: MessageSource
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
-
-            val source = MessageSourceFromSend(
-                messageUid = Random.nextInt().absoluteValue.toLong(),
-                senderId = client.uin,
-                time = currentTimeSeconds + client.timeDifference,
-                groupId = groupCode//,
-                //   sourceMessage = message
-            )
-
             ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
             // DebugLogger.debug("sending group message: " + message.toRichTextElems().contentToString())
@@ -373,7 +393,7 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
-                    msgRand = source.messageUid.toInt(),
+                    msgRand = source.messageUid,
                     syncCookie = EMPTY_BYTE_ARRAY,
                     msgVia = 1
                 )

@@ -28,6 +28,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  */
 open class MessageReceipt<C : Contact>(
     val originalMessage: MessageChain,
+    private val source: MessageSource,
     target: C
 ) {
     init {
@@ -53,7 +54,7 @@ open class MessageReceipt<C : Contact>(
         if (_isRecalled.compareAndSet(false, true)) {
             when (val contact = target) {
                 is Group -> {
-                    contact.recall(originalMessage)
+                    contact.recall(source)
                 }
                 is QQ -> {
                     TODO()
@@ -76,7 +77,7 @@ open class MessageReceipt<C : Contact>(
         if (_isRecalled.compareAndSet(false, true)) {
             when (val contact = target) {
                 is Group -> {
-                    return contact.recallIn(originalMessage, millis)
+                    return contact.recallIn(source, millis)
                 }
                 is QQ -> {
                     TODO()
@@ -97,7 +98,7 @@ open class MessageReceipt<C : Contact>(
     open fun quote(): MessageChain {
         val target = target
         check(target is Group) { "quote is only available for GroupMessage" }
-        return this.originalMessage.quote(target.botAsMember)
+        return this.source.quote(target.botAsMember)
     }
 
     /**

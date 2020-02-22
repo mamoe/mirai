@@ -70,16 +70,17 @@ internal class QQImpl(
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSource
         bot.network.run {
             check(
                 MessageSvc.PbSendMsg.ToFriend(
                     bot.client,
                     id,
                     event.message
-                ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+                ) { source = it }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
-        return MessageReceipt(message, this)
+        return MessageReceipt(message, source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -552,12 +553,13 @@ internal class GroupImpl(
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSource
         bot.network.run {
-            val response = MessageSvc.PbSendMsg.ToGroup(
+            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,
                 id,
                 event.message
-            ).sendAndExpect<MessageSvc.PbSendMsg.Response>()
+            ) { source = it }.sendAndExpect()
             check(
                 response is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed: $response" }
@@ -566,7 +568,7 @@ internal class GroupImpl(
         ((message.last() as MessageSource) as MessageSvc.PbSendMsg.MessageSourceFromSend)
             .startWaitingSequenceId(this)
 
-        return MessageReceipt(message, this)
+        return MessageReceipt(message, source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {

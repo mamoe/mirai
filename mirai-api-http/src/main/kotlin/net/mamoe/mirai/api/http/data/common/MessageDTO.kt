@@ -98,7 +98,7 @@ fun MessageChainDTO.toMessageChain(contact: Contact) =
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {
-    is MessageSource -> MessageSourceDTO(messageUid)
+    is MessageSource -> MessageSourceDTO(messageUid.toLong() and 0xFFffFFff)
     is At -> AtDTO(target, display)
     is AtAll -> AtAllDTO(0L)
     is Face -> FaceDTO(id)
