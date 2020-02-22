@@ -11,10 +11,7 @@
 
 package net.mamoe.mirai.contact
 
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
@@ -22,10 +19,7 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmName
 
 /**
@@ -152,17 +146,6 @@ interface Group : Contact, CoroutineScope {
     suspend fun quit(): Boolean
 
     /**
-     * 撤回这条消息.
-     *
-     * [Bot] 撤回自己的消息不需要权限.
-     * [Bot] 撤回群员的消息需要管理员权限.
-     *
-     * @throws PermissionDeniedException 当 [Bot] 无权限操作时
-     * @see Group.recall (扩展函数) 接受参数 [MessageChain]
-     */
-    suspend fun recall(source: MessageSource)
-
-    /**
      * 构造一个 [Member].
      * 非特殊情况请不要使用这个函数. 优先使用 [get].
      */
@@ -224,49 +207,6 @@ interface Group : Contact, CoroutineScope {
 
     @MiraiExperimentalAPI
     fun toFullString(): String = "Group(id=${this.id}, name=$name, owner=${owner.id}, members=${members.idContentString})"
-}
-
-/**
- * 撤回这条消息.
- *
- * [Bot] 撤回自己的消息不需要权限.
- * [Bot] 撤回群员的消息需要管理员权限.
- *
- * @throws PermissionDeniedException 当 [Bot] 无权限操作时
- * @see Group.recall
- */
-suspend inline fun Group.recall(message: MessageChain) = this.recall(message[MessageSource])
-
-/**
- * 在一段时间后撤回这条消息.
- *
- * @param millis 延迟的时间, 单位为毫秒
- * @param coroutineContext 额外的 [CoroutineContext]
- * @see recall
- */
-fun Group.recallIn(
-    message: MessageSource,
-    millis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(millis)
-    recall(message)
-}
-
-/**
- * 在一段时间后撤回这条消息.
- *
- * @param millis 延迟的时间, 单位为毫秒
- * @param coroutineContext 额外的 [CoroutineContext]
- * @see recall
- */
-fun Group.recallIn(
-    message: MessageChain,
-    millis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(millis)
-    recall(message)
 }
 
 /**

@@ -12,18 +12,17 @@ package net.mamoe.mirai.qqandroid
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
-import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.contact.filteringGetOrNull
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.*
@@ -117,6 +116,21 @@ internal abstract class QQAndroidBotBase constructor(
 
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
         TODO("not implemented")
+    }
+
+    override suspend fun recall(source: MessageSource) {
+        if (source.senderId != uin) {
+            getGroup(source.groupId).checkBotPermissionOperator()
+        }
+
+        source.ensureSequenceIdAvailable()
+
+        network.run {
+            val response: PbMessageSvc.PbMsgWithDraw.Response =
+                PbMessageSvc.PbMsgWithDraw.Group(bot.client, source.groupId, source.sequenceId, source.messageUid)
+                    .sendAndExpect()
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
+        }
     }
 
     override suspend fun Image.download(): ByteReadPacket {
