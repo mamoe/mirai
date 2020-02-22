@@ -11,9 +11,11 @@ package net.mamoe.mirai.api.http.route
 
 import io.ktor.application.Application
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.readAllParts
 import io.ktor.http.content.streamProvider
 import io.ktor.request.receiveMultipart
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.post
 import io.ktor.routing.routing
@@ -45,14 +47,12 @@ fun Application.messageModule() {
             it.session.bot.getFriend(it.target).apply {
                 sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
             }
-            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
             it.session.bot.getGroup(it.target).apply {
                 sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
             }
-            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/quoteMessage") {
@@ -100,6 +100,11 @@ fun Application.messageModule() {
                 } ?: throw IllegalAccessException("图片上传错误")
             } ?: throw IllegalAccessException("未知错误")
         }
+
+        miraiVerify<RecallDTO>("recall") {
+            // TODO
+            call.respond(HttpStatusCode.NotFound, "未完成")
+        }
     }
 }
 
@@ -121,6 +126,13 @@ private data class SendImageDTO(
 
 @Serializable
 private class SendRetDTO(
-    @Transient val stateCode: StateCode = StateCode.Success,
-    val messageId: Long
+    val messageId: Long,
+    @Transient val stateCode: StateCode = Success
 ) : StateCode(stateCode.code, stateCode.msg)
+
+@Serializable
+private data class RecallDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val sender: Long
+) : VerifyDTO()
