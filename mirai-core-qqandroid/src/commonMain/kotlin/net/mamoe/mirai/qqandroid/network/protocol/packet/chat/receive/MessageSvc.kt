@@ -354,7 +354,7 @@ internal class MessageSvc {
             client: QQAndroidClient,
             groupCode: Long,
             message: MessageChain,
-            sourceCallback: (MessageSource) -> Unit
+            sourceCallback: (MessageSourceFromSend) -> Unit
         ): OutgoingPacket {
 
             val source = MessageSourceFromSend(
