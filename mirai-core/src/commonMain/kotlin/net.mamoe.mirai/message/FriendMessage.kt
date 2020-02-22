@@ -17,7 +17,6 @@ import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 class FriendMessage(
-    bot: Bot,
     sender: QQ,
     override val message: MessageChain
 ) : MessagePacket<QQ, QQ>(), BroadcastControllable {

@@ -13,6 +13,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -32,10 +33,15 @@ class QuoteReply @MiraiInternalAPI constructor(val source: MessageSource) : Mess
  * 引用这条消息.
  * 返回 `[QuoteReply] + [At] + [PlainText]`(必要的结构)
  */
-fun MessageChain.quote(sender: Member): MessageChain {
+@UseExperimental(MiraiInternalAPI::class)
+fun MessageChain.quote(sender: QQ): MessageChain {
     this.firstOrNull<MessageSource>()?.let {
-        @UseExperimental(MiraiInternalAPI::class)
-        return QuoteReply(it) + sender.at() + " " // required
+        return if (it.groupId == 0L) {
+            QuoteReply(it) + " " // required
+        } else {
+            check(sender is Member) { "sender must be Member to quote a GroupMessage" }
+            QuoteReply(it) + sender.at() + " " // required
+        }
     }
     error("cannot find MessageSource")
 }
@@ -44,7 +50,12 @@ fun MessageChain.quote(sender: Member): MessageChain {
  * 引用这条消息.
  * 返回 `[QuoteReply] + [At] + [PlainText]`(必要的结构)
  */
-fun MessageSource.quote(sender: Member): MessageChain {
-    @UseExperimental(MiraiInternalAPI::class)
-    return QuoteReply(this) + sender.at() + " " // required
+@UseExperimental(MiraiInternalAPI::class)
+fun MessageSource.quote(sender: QQ): MessageChain {
+    return if (this.groupId == 0L) {
+        QuoteReply(this) + " " // required
+    } else {
+        check(sender is Member) { "sender must be Member to quote a GroupMessage" }
+        QuoteReply(this) + sender.at() + " " // required
+    }
 }

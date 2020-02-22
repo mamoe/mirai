@@ -212,7 +212,6 @@ internal class MessageSvc {
                                 msg.msgHead.fromUin == bot.uin -> null
                                 !bot.firstLoginSucceed -> null
                                 else -> FriendMessage(
-                                    bot,
                                     bot.getFriend(msg.msgHead.fromUin),
                                     msg.toMessageChain()
                                 )

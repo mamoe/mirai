@@ -13,6 +13,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.sendMessage
+import net.mamoe.mirai.message.MessageReceipt
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -108,4 +109,4 @@ interface SingleOnly : Message
 /**
  * 将 [this] 发送给指定联系人
  */
-suspend inline fun Message.sendTo(contact: Contact) = contact.sendMessage(this)
+suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> = contact.sendMessage(this)

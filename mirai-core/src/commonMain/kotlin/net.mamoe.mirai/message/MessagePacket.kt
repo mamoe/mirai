@@ -91,26 +91,33 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     suspend inline fun MessageChain.reply(): MessageReceipt<TSubject> = reply(this)
     // endregion
 
-    // region
-
-    /**
-     * 引用这个消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
-     */
-    inline fun MessageChain.quote(): MessageChain = this.quote(sender as? Member ?: error("only group message can be quoted"))
-
-    // endregion
-
     // region 上传图片
     suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
     // endregion
 
     // region 发送图片
-    suspend inline fun ExternalImage.send() = this.sendTo(subject)
+    suspend inline fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
-    suspend inline fun Image.send() = this.sendTo(subject)
-    suspend inline fun Message.send() = this.sendTo(subject)
-    suspend inline fun String.send() = this.toMessage().sendTo(subject)
+    suspend inline fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    suspend inline fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    suspend inline fun String.send(): MessageReceipt<TSubject> = this.toMessage().sendTo(subject)
     // endregion
+
+
+    /**
+     * 给这个消息事件的主体发送引用回复消息
+     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
+     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
+     */
+    suspend inline fun quoteReply(message: MessageChain): MessageReceipt<TSubject> = reply(this.message.quote() + message)
+
+    suspend inline fun quoteReply(message: Message): MessageReceipt<TSubject> = reply(this.message.quote() + message)
+    suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
+
+    /**
+     * 引用这个消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
+     */
+    inline fun MessageChain.quote(): MessageChain = this.quote(sender)
 
     operator fun <M : Message> get(at: Message.Key<M>): M {
         return this.message[at]

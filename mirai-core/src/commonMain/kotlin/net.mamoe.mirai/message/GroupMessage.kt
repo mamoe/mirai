@@ -43,18 +43,6 @@ class GroupMessage(
 
     inline fun Long.member(): Member = group[this]
 
-
-    /**
-     * 给这个消息事件的主体发送引用回复消息
-     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
-     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
-     */
-    suspend inline fun quoteReply(message: MessageChain): MessageReceipt<Group> = reply(this.message.quote() + message)
-
-    suspend inline fun quoteReply(message: Message): MessageReceipt<Group> = reply(this.message.quote() + message)
-    suspend inline fun quoteReply(plain: String): MessageReceipt<Group> = reply(this.message.quote() + plain)
-
-
     @JvmName("reply2")
     suspend inline fun String.quoteReply(): MessageReceipt<Group> = quoteReply(this)
 
