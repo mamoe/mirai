@@ -37,14 +37,15 @@ class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
                 }
             }
 
+            // TODO: 等FriendMessage支持quote
             if (event is GroupMessage) {
-                addCache(event)
+                addQuoteCache(event)
             }
         }
         return ret
     }
 
-    private fun addCache(msg: GroupMessage) {
+    private fun addQuoteCache(msg: GroupMessage) {
         quoteCache[msg.message[MessageSource].messageUid.toLong()] = msg
         if (quoteCache.size > quoteCacheSize) {
             quoteCache.remove(quoteCache.firstKey())
