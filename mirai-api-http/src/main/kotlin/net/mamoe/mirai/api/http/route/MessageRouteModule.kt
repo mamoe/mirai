@@ -11,19 +11,21 @@ package net.mamoe.mirai.api.http.route
 
 import io.ktor.application.Application
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.readAllParts
 import io.ktor.http.content.streamProvider
 import io.ktor.request.receiveMultipart
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.data.*
 import net.mamoe.mirai.api.http.data.common.MessageChainDTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
-import net.mamoe.mirai.api.http.data.common.toDTO
 import net.mamoe.mirai.api.http.data.common.toMessageChain
 import net.mamoe.mirai.api.http.util.toJson
 import net.mamoe.mirai.contact.toList
@@ -45,14 +47,12 @@ fun Application.messageModule() {
             it.session.bot.getFriend(it.target).apply {
                 sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
             }
-            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
             it.session.bot.getGroup(it.target).apply {
                 sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
             }
-            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/quoteMessage") {
@@ -100,6 +100,11 @@ fun Application.messageModule() {
                 } ?: throw IllegalAccessException("图片上传错误")
             } ?: throw IllegalAccessException("未知错误")
         }
+
+        miraiVerify<RecallDTO>("recall") {
+            // TODO
+            call.respond(HttpStatusCode.NotFound, "未完成")
+        }
     }
 }
 
@@ -119,3 +124,15 @@ private data class SendImageDTO(
     val urls: List<String>
 ) : VerifyDTO()
 
+@Serializable
+private class SendRetDTO(
+    val messageId: Long,
+    @Transient val stateCode: StateCode = Success
+) : StateCode(stateCode.code, stateCode.msg)
+
+@Serializable
+private data class RecallDTO(
+    override val sessionKey: String,
+    val target: Long,
+    val sender: Long
+) : VerifyDTO()

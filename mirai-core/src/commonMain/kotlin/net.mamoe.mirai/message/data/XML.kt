@@ -27,10 +27,6 @@ inline class XMLMessage(val stringValue: String) : Message,
     SingleOnly {
     override fun followedBy(tail: Message): Nothing = error("XMLMessage Message cannot be followed")
     override fun toString(): String = stringValue
-
-    override fun eq(other: Message): Boolean {
-        return other is XMLMessage && other.stringValue == this.stringValue
-    }
 }
 
 /**

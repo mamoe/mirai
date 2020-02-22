@@ -16,7 +16,9 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 /**
- * "@全体成员"
+ * "@全体成员".
+ *
+ * 非会员每天只能发送 10 次 [AtAll]. 超出部分会被以普通文字看待.
  *
  * @see At at 单个群成员
  */
@@ -26,7 +28,7 @@ object AtAll : Message, Message.Key<AtAll> {
     // 自动为消息补充 " "
 
     override fun followedBy(tail: Message): MessageChain {
-        if(tail is PlainText && tail.stringValue.startsWith(' ')){
+        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }
         return super.followedBy(PlainText(" ")) + tail

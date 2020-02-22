@@ -10,7 +10,6 @@
 package net.mamoe.mirai.qqandroid.message
 
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
@@ -22,8 +21,14 @@ internal inline class MessageSourceFromServer(
     val delegate: ImMsgBody.SourceMsg
 ) : MessageSource {
     override val time: Long get() = delegate.time.toLong() and 0xFFFFFFFF
-    override val messageUid: Long get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!
-    override val sourceMessage: MessageChain get() = delegate.toMessageChain()
+    override val sequenceId: Int get() = delegate.origSeqs?.firstOrNull() ?: error("cannot find sequenceId from ImMsgBody.SourceMsg")
+
+    override suspend fun ensureSequenceIdAvailable() {
+        // nothing to do
+    }
+
+    override val messageUid: Int get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!.toInt()
+    // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val senderId: Long get() = delegate.senderUin
     override val groupId: Long get() = Group.calculateGroupCodeByGroupUin(delegate.toUin)
 
@@ -34,8 +39,13 @@ internal inline class MessageSourceFromMsg(
     val delegate: MsgComm.Msg
 ) : MessageSource {
     override val time: Long get() = delegate.msgHead.msgTime.toLong() and 0xFFFFFFFF
-    override val messageUid: Long get() = delegate.msgBody.richText.attr!!.random.toLong()
-    override val sourceMessage: MessageChain get() = delegate.toMessageChain()
+    override val sequenceId: Int get() = delegate.msgHead.msgSeq
+    override suspend fun ensureSequenceIdAvailable() {
+        // nothing to do
+    }
+
+    override val messageUid: Int get() = delegate.msgBody.richText.attr!!.random
+    // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val senderId: Long get() = delegate.msgHead.fromUin
     override val groupId: Long get() = delegate.msgHead.groupInfo!!.groupCode
 
@@ -52,7 +62,7 @@ internal inline class MessageSourceFromMsg(
             type = 0,
             time = delegate.msgHead.msgTime,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = messageUid
+                origUids = messageUid.toLong() and 0xffFFffFF
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -62,7 +72,8 @@ internal inline class MessageSourceFromMsg(
                     c2cCmd = delegate.msgHead.c2cCmd,
                     msgSeq = delegate.msgHead.msgSeq,
                     msgTime = delegate.msgHead.msgTime,
-                    msgUid = messageUid, // ok
+                    msgUid = messageUid.toLong() and 0xffFFffFF
+                    , // ok
                     groupInfo = MsgComm.GroupInfo(groupCode = delegate.msgHead.groupInfo.groupCode),
                     isSrcMsg = true
                 ),

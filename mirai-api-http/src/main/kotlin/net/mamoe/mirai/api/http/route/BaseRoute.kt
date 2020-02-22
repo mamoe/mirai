@@ -21,6 +21,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.request.receive
 import io.ktor.response.defaultTextContentType
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.route
@@ -141,6 +142,9 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
         call.respondStateCode(StateCode.PermissionDenied)
     } catch (e: IllegalAccessException) {
         call.respondStateCode(StateCode(400, e.message), HttpStatusCode.BadRequest)
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        call.respond(HttpStatusCode.InternalServerError, e.message!!)
     }
 }
 

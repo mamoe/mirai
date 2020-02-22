@@ -21,6 +21,8 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.subscribingGet
+import net.mamoe.mirai.event.subscribingGetAsync
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
@@ -30,18 +32,19 @@ import kotlin.jvm.JvmName
  * 请查看各平台的 `actual` 实现的说明.
  */
 @UseExperimental(MiraiInternalAPI::class)
-expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>(bot: Bot) : MessagePacketBase<TSender, TSubject>
+expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
 
 /**
  * 仅内部使用, 请使用 [MessagePacket]
  */ // Tips: 在 IntelliJ 中 (左侧边栏) 打开 `Structure`, 可查看类结构
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 @MiraiInternalAPI
-abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : Packet, BotEvent {
+abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, BotEvent {
     /**
      * 接受到这条消息的
      */
-    override val bot: Bot by _bot.unsafeWeakRef()
+    @WeakRefProperty
+    abstract override val bot: Bot
 
     /**
      * 消息事件主体.
@@ -51,6 +54,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
+    @WeakRefProperty
     abstract val subject: TSubject
 
     /**
@@ -58,6 +62,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      *
      * 在好友消息时为 [QQ] 的实例, 在群消息时为 [Member] 的实例
      */
+    @WeakRefProperty
     abstract val sender: TSender
 
     /**
@@ -73,20 +78,19 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    suspend inline fun reply(message: MessageChain) = subject.sendMessage(message)
+    suspend inline fun reply(message: MessageChain): MessageReceipt<TSubject> = subject.sendMessage(message) as MessageReceipt<TSubject>
 
-    suspend inline fun reply(message: Message) = subject.sendMessage(message.toChain())
-    suspend inline fun reply(plain: String) = subject.sendMessage(plain.singleChain())
-
-    @JvmName("reply1")
-    suspend inline fun String.reply() = reply(this)
+    suspend inline fun reply(message: Message): MessageReceipt<TSubject> = subject.sendMessage(message.toChain()) as MessageReceipt<TSubject>
+    suspend inline fun reply(plain: String): MessageReceipt<TSubject> = subject.sendMessage(plain.toMessage().toChain()) as MessageReceipt<TSubject>
 
     @JvmName("reply1")
-    suspend inline fun Message.reply() = reply(this)
+    suspend inline fun String.reply(): MessageReceipt<TSubject> = reply(this)
 
     @JvmName("reply1")
-    suspend inline fun MessageChain.reply() = reply(this)
+    suspend inline fun Message.reply(): MessageReceipt<TSubject> = reply(this)
 
+    @JvmName("reply1")
+    suspend inline fun MessageChain.reply(): MessageReceipt<TSubject> = reply(this)
     // endregion
 
     // region
@@ -110,12 +114,16 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     suspend inline fun String.send() = this.toMessage().sendTo(subject)
     // endregion
 
+    operator fun <M : Message> get(at: Message.Key<M>): M {
+        return this.message[at]
+    }
+
     /**
      * 创建 @ 这个账号的消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
      */
-    inline fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
+    fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
 
-    inline fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error("`At.member` can only be used in GroupMessage")
+    fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error("`At.member` can only be used in GroupMessage")
 
     // endregion
 
@@ -135,16 +143,47 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      */
     suspend inline fun Image.download(): ByteReadPacket = bot.run { download() }
     // endregion
+}
 
-    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getFriend(this.target)"))
-    fun At.qq(): QQ = bot.getFriend(this.target)
+/**
+ * 判断两个 [MessagePacket] 的 [MessagePacket.sender] 和 [MessagePacket.subject] 是否相同
+ */
+fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Boolean {
+    return this.sender == another.sender && this.subject == another.subject
+}
 
-    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getFriend(this.toLong())"))
-    fun Int.qq(): QQ = bot.getFriend(this.coerceAtLeastOrFail(0).toLong())
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同且通过 [筛选][filter] 的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
+ *
+ * @see subscribingGetAsync 本函数的异步版本
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
+    timeoutMillis: Long = -1,
+    crossinline filter: P.(P) -> Boolean
+): MessageChain {
+    return subscribingGet<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
+    }.message
+}
 
-    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getFriend(this)"))
-    fun Long.qq(): QQ = bot.getFriend(this.coerceAtLeastOrFail(0))
-
-    @Deprecated(message = "这个函数有歧义, 将在不久后删除", replaceWith = ReplaceWith("bot.getGroup(this)"))
-    fun Long.group(): Group = bot.getGroup(this)
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @see subscribingGetAsync 本函数的异步版本
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
+    timeoutMillis: Long = -1
+): MessageChain {
+    return subscribingGet<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessage) }
+    }.message
 }

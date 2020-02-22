@@ -34,10 +34,6 @@ class At @MiraiInternalAPI constructor(val target: Long, val display: String) : 
 
     companion object Key : Message.Key<At>
 
-    override fun eq(other: Message): Boolean {
-        return other is At && other.target == this.target
-    }
-
     // 自动为消息补充 " "
 
     override fun followedBy(tail: Message): MessageChain {

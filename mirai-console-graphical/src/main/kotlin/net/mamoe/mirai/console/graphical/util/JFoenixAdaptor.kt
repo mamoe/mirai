@@ -1,6 +1,7 @@
 package net.mamoe.mirai.console.graphical.util
 
 import com.jfoenix.controls.*
+import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
@@ -42,3 +43,6 @@ internal fun <T> EventTarget.jfxListView(values: ObservableList<T>? = null, op: 
             else it.items = values
         }
     }
+
+fun <T : RecursiveTreeObject<T>?> EventTarget.jfxTreeTableView(items: ObservableList<T>? = null, op: JFXTreeTableView<T>.() -> Unit = {})
+        = JFXTreeTableView<T>(RecursiveTreeItem(items, RecursiveTreeObject<T>::getChildren)).attachTo(this, op)

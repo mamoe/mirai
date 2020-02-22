@@ -25,7 +25,7 @@ fun main() {
     println(
         File(
             """
-            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\statsvc\getonline
+            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\msgrevoke
         """.trimIndent()
         )
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")

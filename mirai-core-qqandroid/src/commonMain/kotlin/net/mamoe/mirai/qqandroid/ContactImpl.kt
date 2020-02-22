@@ -16,14 +16,13 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
-import net.mamoe.mirai.message.data.CustomFaceFromFile
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.NotOnlineImageFromFile
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
@@ -66,20 +65,22 @@ internal class QQImpl(
     override val nick: String
         get() = friendInfo.nick
 
-    override suspend fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> {
         val event = FriendMessageSendEvent(this, message).broadcast()
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSource
         bot.network.run {
             check(
                 MessageSvc.PbSendMsg.ToFriend(
                     bot.client,
                     id,
                     event.message
-                ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+                ) { source = it }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
+        return MessageReceipt(message, source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -166,7 +167,7 @@ internal class QQImpl(
 }
 
 
-@Suppress("MemberVisibilityCanBePrivate", "DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
+@Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl(
     qq: QQImpl,
     group: GroupImpl,
@@ -286,26 +287,39 @@ internal class MemberImpl(
         }
     }
 
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
+
+    @Suppress("DuplicatedCode")
+    override fun equals(other: Any?): Boolean { // 不要删除. trust me
+        if (this === other) return true
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
+    }
+
     override fun toString(): String {
         return "Member($id)"
     }
 }
 
 internal class MemberInfoImpl(
-    private val jceInfo: StTroopMemberInfo,
-    private val groupOwnerId: Long
+    jceInfo: StTroopMemberInfo,
+    groupOwnerId: Long
 ) : MemberInfo {
-    override val uin: Long get() = jceInfo.memberUin
-    override val nameCard: String get() = jceInfo.sName ?: ""
-    override val nick: String get() = jceInfo.nick
-    override val permission: MemberPermission
-        get() = when {
-            jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
-            jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
-            else -> MemberPermission.MEMBER
-        }
-    override val specialTitle: String get() = jceInfo.sSpecialTitle ?: ""
-    override val muteTimestamp: Int get() = jceInfo.dwShutupTimestap?.toInt() ?: 0
+    override val uin: Long = jceInfo.memberUin
+    override val nameCard: String = jceInfo.sName ?: ""
+    override val nick: String = jceInfo.nick
+    override val permission: MemberPermission = when {
+        jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
+        jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+        else -> MemberPermission.MEMBER
+    }
+    override val specialTitle: String = jceInfo.sSpecialTitle ?: ""
+    override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
 /**
@@ -326,6 +340,24 @@ internal class GroupImpl(
     override lateinit var owner: Member
 
     @UseExperimental(MiraiExperimentalAPI::class)
+    override val botAsMember: Member by lazy {
+        Member(object : MemberInfo {
+            override val nameCard: String
+                get() = bot.nick // TODO: 2020/2/21 机器人在群内的昵称获取
+            override val permission: MemberPermission
+                get() = botPermission
+            override val specialTitle: String
+                get() = "" // TODO: 2020/2/21 获取机器人在群里的头衔
+            override val muteTimestamp: Int
+                get() = botMuteRemaining
+            override val uin: Long
+                get() = bot.uin
+            override val nick: String
+                get() = bot.nick
+        })
+    }
+
+    @UseExperimental(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
     var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
@@ -340,6 +372,9 @@ internal class GroupImpl(
     override val members: ContactList<Member> = ContactList(members.mapNotNull {
         if (it.uin == bot.uin) {
             botPermission = it.permission
+            if (it.permission == MemberPermission.OWNER) {
+                owner = botAsMember
+            }
             null
         } else Member(it).also { member ->
             if (member.permission == MemberPermission.OWNER) {
@@ -475,6 +510,20 @@ internal class GroupImpl(
         TODO("not implemented")
     }
 
+    override suspend fun recall(source: MessageSource) {
+        if (source.senderId != bot.uin) {
+            checkBotPermissionOperator()
+        }
+
+        source.ensureSequenceIdAvailable()
+
+        bot.network.run {
+            val response = PbMessageSvc.PbMsgWithDraw.Group(bot.client, this@GroupImpl.id, source.sequenceId, source.messageUid.toInt())
+                .sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
+        }
+    }
+
     @UseExperimental(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
@@ -498,22 +547,27 @@ internal class GroupImpl(
         return members.delegate.filteringGetOrNull { it.id == id }
     }
 
-    override suspend fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group> {
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
         val event = GroupMessageSendEvent(this, message).broadcast()
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSvc.PbSendMsg.MessageSourceFromSend
         bot.network.run {
-            val response = MessageSvc.PbSendMsg.ToGroup(
+            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,
                 id,
                 event.message
-            ).sendAndExpect<MessageSvc.PbSendMsg.Response>()
+            ) { source = it }.sendAndExpect()
             check(
                 response is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed: $response" }
         }
+
+        source.startWaitingSequenceId(this)
+
+        return MessageReceipt(message, source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {

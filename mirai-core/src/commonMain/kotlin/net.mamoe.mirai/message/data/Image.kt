@@ -49,11 +49,6 @@ sealed class Image : Message {
     final override fun toString(): String {
         return "[mirai:$imageId]"
     }
-
-    final override fun eq(other: Message): Boolean {
-        return if (other is Image) return other.imageId == this.imageId
-        else this.toString() == other.toString()
-    }
 }
 
 abstract class CustomFace : Image() {

@@ -84,7 +84,7 @@ abstract class Bot : CoroutineScope {
      */
     @MiraiExperimentalAPI("还未支持")
     val nick: String
-        get() = TODO("bot 昵称获取")
+        get() = ""// TODO("bot 昵称获取")
 
     /**
      * 日志记录器
@@ -174,8 +174,6 @@ abstract class Bot : CoroutineScope {
      * @see Group.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
      */
     abstract suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo>
-
-    // TODO 目前还不能构造群对象. 这将在以后支持
 
     // endregion
 

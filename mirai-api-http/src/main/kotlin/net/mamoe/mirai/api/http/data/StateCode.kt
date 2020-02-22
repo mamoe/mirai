@@ -1,9 +1,10 @@
 package net.mamoe.mirai.api.http.data
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.api.http.data.common.DTO
 
 @Serializable
-open class StateCode(val code: Int, var msg: String) {
+open class StateCode(val code: Int, var msg: String) : DTO {
     object Success : StateCode(0, "success") // 成功
     object NoBot : StateCode(2, "指定Bot不存在")
     object IllegalSession : StateCode(3, "Session失效或不存在")

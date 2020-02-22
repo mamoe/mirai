@@ -101,6 +101,9 @@ interface Listener<in E : Event> : CompletableJob {
  *
  * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
  *
+ * @see subscribingGet 监听一个事件, 并尝试从这个事件中获取一个值.
+ * @see subscribingGetAsync 异步监听一个事件, 并尝试从这个事件中获取一个值.
+ *
  * @see subscribeAlways 一直监听
  * @see subscribeOnce   只监听一次
  *

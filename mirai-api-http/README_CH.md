@@ -408,7 +408,7 @@ Content-Type：multipart/form-data
 
 
 ### 事件类型一览
-[事件类型一览](./EventType_CN.md)
+[事件类型一览](EventType_CH.md)
 
 > 事件为Bot被动接收的信息，无法主动构建
 
@@ -430,13 +430,13 @@ Content-Type：multipart/form-data
 ```json5
 {
     "type": "Source",
-    "uid": 123456
+    "id": 123456
 }
 ```
 
 | 名字 | 类型 | 说明                                                         |
 | ---- | ---- | ------------------------------------------------------------ |
-| uid  | Long | 消息的识别号，用于引用回复（Source类型只在群消息中返回，且永远为chain的第一个元素） |
+| id   | Long | 消息的识别号，用于引用回复（Source类型只在群消息中返回，且永远为chain的第一个元素） |
 
 #### At
 
