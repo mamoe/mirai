@@ -68,6 +68,10 @@ fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
     }
 }
 
+operator fun <E> LockFreeLinkedList<E>.iterator(): Iterator<E> {
+    return asSequence().iterator()
+}
+
 /**
  * 构建链表结构然后转为 [LockFreeLinkedList]
  */
