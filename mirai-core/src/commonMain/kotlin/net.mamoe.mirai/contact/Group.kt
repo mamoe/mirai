@@ -23,7 +23,6 @@ import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.quote
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -173,7 +172,7 @@ interface Group : Contact, CoroutineScope {
     fun Member(memberInfo: MemberInfo): Member
 
     /**
-     * 向这个对象发送消息. 发送成功后 [message] 中会添加 [MessageSource], 此后可以 [引用回复][quote] 或 [撤回][recall] 这条消息.
+     * 向这个对象发送消息.
      *
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable

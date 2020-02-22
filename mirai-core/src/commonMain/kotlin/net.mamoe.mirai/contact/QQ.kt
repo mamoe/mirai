@@ -21,7 +21,6 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
@@ -76,7 +75,7 @@ interface QQ : Contact, CoroutineScope {
     suspend fun queryRemark(): FriendNameRemark
 
     /**
-     * 向这个对象发送消息. 发送成功后 [message] 中会添加 [MessageSource], 此后可以 [撤回][recall] 这条消息.
+     * 向这个对象发送消息.
      *
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
