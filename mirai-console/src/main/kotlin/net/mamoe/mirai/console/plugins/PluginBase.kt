@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.plugins
 
-import net.mamoe.mirai.console.ICommand
+import net.mamoe.mirai.console.Command
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.utils.DefaultLogger
@@ -58,7 +58,7 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     /**
      * 当任意指令被使用
      */
-    open fun onCommand(command: ICommand, args: List<String>) {
+    open fun onCommand(command: Command, args: List<String>) {
 
     }
 
@@ -173,7 +173,7 @@ object PluginManager {
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
     private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
 
-    fun onCommand(command: ICommand, args: List<String>) {
+    fun onCommand(command: Command, args: List<String>) {
         nameToPluginBaseMap.values.forEach {
             it.onCommand(command, args)
         }

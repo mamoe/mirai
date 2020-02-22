@@ -50,11 +50,11 @@ object MiraiConsole {
 
     var path: String = System.getProperty("user.dir")
 
-    val version = "v0.01"
-    var coreVersion = "v0.18.0"
-    val build = "Zeta"
+    private val version = "v0.01"
+    private var coreVersion = "v0.18.0"
+    private val build = "Zeta"
 
-    var allDown = false
+    private var allDown = false
 
     lateinit var frontEnd: MiraiConsoleUI
     fun start(
@@ -314,7 +314,7 @@ object MiraiConsole {
                 if (!fullCommand.startsWith("/")) {
                     fullCommand = "/$fullCommand"
                 }
-                if (!CommandManager.runCommand(fullCommand)) {
+                if (!CommandManager.runCommand(ConsoleCommandSender, fullCommand)) {
                     logger("未知指令 $fullCommand")
                 }
             }
