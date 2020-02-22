@@ -112,3 +112,5 @@ suspend fun main() {
 }
 ```
 
+下面可以参阅[Mirai Guide - Build For Mirai](/docs/guide_build_for_mirai.md)，对你的Mirai应用进行打包
+
