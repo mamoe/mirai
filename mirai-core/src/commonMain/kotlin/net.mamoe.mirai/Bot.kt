@@ -11,14 +11,11 @@
 
 package net.mamoe.mirai
 
+import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.io.OutputStream
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.use
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
@@ -30,7 +27,6 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.transferTo
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmStatic
@@ -226,11 +222,12 @@ abstract class Bot : CoroutineScope {
     abstract suspend fun recall(source: MessageSource)
 
     /**
-     * 撤回这条消息.
+     * 撤回一条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
      *
      * [Bot] 撤回自己的消息不需要权限.
      * [Bot] 撤回群员的消息需要管理员权限.
      *
+     * @param senderId 这条消息的发送人. 可以为 [Bot.uin] 或 [Member.id]
      * @param messageId 即 [MessageSource.id]
      *
      * @throws PermissionDeniedException 当 [Bot] 无权限操作时
@@ -239,15 +236,18 @@ abstract class Bot : CoroutineScope {
      */
     abstract suspend fun recall(groupId: Long, senderId: Long, messageId: Long)
 
-    @Deprecated("内存使用效率十分低下", ReplaceWith("this.download()"), DeprecationLevel.WARNING)
-    @MiraiExperimentalAPI("未支持")
-    abstract suspend fun Image.downloadAsByteArray(): ByteArray
+    /**
+     * 获取图片下载链接
+     */
+    abstract suspend fun Image.url(): String
 
     /**
-     * 将图片下载到内存中 (使用 [IoBuffer.Pool])
+     * 获取图片下载链接并开始下载.
+     *
+     * @see ByteReadChannel.copyAndClose
+     * @see ByteReadChannel.copyTo
      */
-    @MiraiExperimentalAPI("未支持")
-    abstract suspend fun Image.download(): ByteReadPacket
+    abstract suspend fun Image.channel(): ByteReadChannel
 
     /**
      * 添加一个好友
@@ -278,20 +278,7 @@ abstract class Bot : CoroutineScope {
      */
     abstract fun close(cause: Throwable? = null)
 
-    // region extensions
-
-    final override fun toString(): String {
-        return "Bot(${uin})"
-    }
-
-    /**
-     * 需要调用者自行 close [output]
-     */
-    @MiraiExperimentalAPI("未支持")
-    suspend inline fun Image.downloadTo(output: OutputStream) =
-        download().use { input -> input.transferTo(output) }
-
-    // endregion
+    final override fun toString(): String = "Bot(${uin})"
 }
 
 /**

@@ -10,8 +10,6 @@
 package net.mamoe.mirai.japt.internal
 
 import kotlinx.coroutines.runBlocking
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.contact.QQ
@@ -23,10 +21,7 @@ import net.mamoe.mirai.japt.BlockingGroup
 import net.mamoe.mirai.japt.BlockingQQ
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.network.BotNetworkHandler
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.toList
+import net.mamoe.mirai.utils.*
 import java.io.OutputStream
 import java.util.stream.Stream
 import kotlin.streams.asStream
@@ -59,10 +54,8 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     override fun getGroup(id: Long): BlockingGroup = runBlocking { bot.getGroup(id).blocking() }
     override fun getNetwork(): BotNetworkHandler = bot.network
     override fun login() = runBlocking { bot.login() }
-    override fun downloadAsByteArray(image: Image): ByteArray = bot.run { runBlocking { image.download().readBytes() } }
-    override fun download(image: Image): ByteReadPacket = bot.run { runBlocking { image.download() } }
-    override fun download(image: Image, outputStream: OutputStream) = bot.run { runBlocking { image.downloadTo(outputStream) } }
-
+    override fun downloadTo(image: Image, outputStream: OutputStream) = bot.run { runBlocking { image.channel().copyTo(outputStream) } }
+    override fun downloadAndClose(image: Image, outputStream: OutputStream) = bot.run { runBlocking { image.channel().copyAndClose(outputStream) } }
     override fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult = runBlocking { bot.addFriend(id, message, remark) }
     override fun approveFriendAddRequest(id: Long, remark: String?) = runBlocking { bot.approveFriendAddRequest(id, remark) }
     override fun close(throwable: Throwable?) = bot.close(throwable)

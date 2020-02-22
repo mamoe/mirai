@@ -16,7 +16,6 @@ package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.readAvailable
-import kotlinx.coroutines.io.close
 import kotlinx.io.OutputStream
 import kotlinx.io.core.Output
 import kotlinx.io.pool.useInstance
@@ -24,6 +23,7 @@ import net.mamoe.mirai.utils.io.ByteArrayPool
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
+// copyTo
 
 /**
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
@@ -49,6 +49,8 @@ suspend fun ByteReadChannel.copyTo(dst: Output) {
     }
 }
 
+
+/* // 垃圾 kotlin, Unresolved reference: ByteWriteChannel
 /**
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
@@ -60,7 +62,7 @@ suspend fun ByteReadChannel.copyTo(dst: kotlinx.coroutines.io.ByteWriteChannel) 
         } while (size != 0)
     }
 }
-
+*/
 
 // copyAndClose
 
@@ -97,18 +99,19 @@ suspend fun ByteReadChannel.copyAndClose(dst: Output) {
     }
 }
 
+/*// 垃圾 kotlin, Unresolved reference: ByteWriteChannel
 /**
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
 suspend fun ByteReadChannel.copyAndClose(dst: kotlinx.coroutines.io.ByteWriteChannel) {
-    try {
+    dst.close(kotlin.runCatching {
         ByteArrayPool.useInstance {
             do {
                 val size = this.readAvailable(it)
                 dst.writeFully(it, 0, size)
             } while (size != 0)
         }
-    } finally {
-        dst.close()
-    }
+    }.exceptionOrNull())
 }
+
+ */

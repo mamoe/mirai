@@ -11,9 +11,7 @@
 
 package net.mamoe.mirai.message
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.readBytes
+import io.ktor.utils.io.ByteReadChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -128,20 +126,22 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     // endregion
 
     // region 下载图片
+
+
     /**
-     * 将图片下载到内存.
+     * 获取图片下载链接
      *
-     * 非常不推荐这样做.
+     * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
-    @Deprecated("内存使用效率十分低下", ReplaceWith("this.download()"), DeprecationLevel.WARNING)
-    suspend inline fun Image.downloadAsByteArray(): ByteArray = bot.run { download().readBytes() }
-
-    // TODO: 2020/2/5 为下载图片添加文件系统的存储方式
+    suspend inline fun Image.url(): String = bot.run { url() }
 
     /**
-     * 将图片下载到内存缓存中 (使用 [IoBuffer.Pool])
+     * 获取图片下载链接并开始下载.
+     *
+     * @see ByteReadChannel.copyAndClose
+     * @see ByteReadChannel.copyTo
      */
-    suspend inline fun Image.download(): ByteReadPacket = bot.run { download() }
+    suspend inline fun Image.channel(): ByteReadChannel = bot.run { channel() }
     // endregion
 }
 

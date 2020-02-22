@@ -9,7 +9,9 @@
 
 package net.mamoe.mirai.qqandroid
 
-import kotlinx.io.core.ByteReadPacket
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.utils.io.ByteReadChannel
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.*
@@ -17,10 +19,9 @@ import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.messageRandom
-import net.mamoe.mirai.message.data.sequenceId
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.qqandroid.message.CustomFaceFromServer
+import net.mamoe.mirai.qqandroid.message.NotOnlineImageFromServer
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
@@ -150,13 +151,20 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    override suspend fun Image.download(): ByteReadPacket {
-        TODO("not implemented")
+    override suspend fun Image.url(): String = "http://gchat.qpic.cn" + when (this) {
+        is NotOnlineImageFromServer -> this.delegate.origUrl
+        is CustomFaceFromServer -> this.delegate.origUrl
+        is CustomFaceFromFile -> {
+            TODO()
+        }
+        is NotOnlineImageFromFile -> {
+            TODO()
+        }
+        else -> error("unsupported image class: ${this::class.simpleName}")
     }
 
-    @Suppress("OverridingDeprecatedMember")
-    override suspend fun Image.downloadAsByteArray(): ByteArray {
-        TODO("not implemented")
+    override suspend fun Image.channel(): ByteReadChannel {
+        return Http.get<HttpResponse>(url()).content
     }
 
     override suspend fun approveFriendAddRequest(id: Long, remark: String?) {
