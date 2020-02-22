@@ -63,3 +63,13 @@ interface MessageSource : Message {
      */
     override fun toString(): String
 }
+
+/**
+ * 消息唯一标识符. 实际上是个随机数, 但服务器确实是用它当做 uid
+ */
+val MessageChain.messageUid get() = this[MessageSource].messageUid
+
+/**
+ * 消息序列号, 可能来自服务器也可以发送时赋值, 不唯一.
+ */
+val MessageChain.sequenceId get() = this[MessageSource].sequenceId

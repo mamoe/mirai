@@ -48,7 +48,7 @@ interface Contact : CoroutineScope {
     val id: Long
 
     /**
-     * 向这个对象发送消息. 发送成功后 [message] 中会添加 [MessageSource], 此后可以 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
+     * 向这个对象发送消息.
      *
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable

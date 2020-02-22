@@ -209,7 +209,7 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
 @Suppress("UNCHECKED_CAST")
-fun <M : Message> MessageChain.first(key: Message.Key<M>): M = firstOrNull(key) ?: error("unknown key: $key")
+fun <M : Message> MessageChain.first(key: Message.Key<M>): M = firstOrNull(key) ?: throw NoSuchElementException("no such element: $key")
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
