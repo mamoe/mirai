@@ -374,12 +374,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     // with generic type, less mistakes
     private suspend fun <P : Packet?> generifiedParsePacket(input: Input) {
         KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
-            handlePacket(packetFactory, packet, commandName, sequenceId)
             if (packet is MultiPacket<*>) {
                 packet.forEach {
                     handlePacket(null, it, commandName, sequenceId)
                 }
             }
+            handlePacket(packetFactory, packet, commandName, sequenceId)
         }
     }
 
@@ -388,29 +388,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      */
     suspend fun <P : Packet?> handlePacket(packetFactory: PacketFactory<P>?, packet: P, commandName: String, sequenceId: Int) {
         // highest priority: pass to listeners (attached by sendAndExpect).
-        packetListeners.forEach { listener ->
-            if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
-                listener.complete(packet)
-            }
-        }
-
-        // check top-level cancelling
-        if (packet != null && PacketReceivedEvent(packet).broadcast().isCancelled) {
-            return
-        }
-
-
-        // broadcast
-        if (packet is Event) {
-            if (packet is BroadcastControllable) {
-                if (packet.shouldBroadcast) packet.broadcast()
-            } else {
-                packet.broadcast()
-            }
-
-            if (packet is CancellableEvent && packet.isCancelled) return
-        }
-
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
             val logMessage = "Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}"
 
@@ -419,11 +396,31 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             } else logger.verbose(logMessage)
         }
 
+        packetListeners.forEach { listener ->
+            if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
+                listener.complete(packet)
+            }
+        }
+
         packetFactory?.run {
             when (this) {
                 is OutgoingPacketFactory<P> -> bot.handle(packet)
                 is IncomingPacketFactory<P> -> bot.handle(packet, sequenceId)?.sendWithoutExpect()
             }
+        }
+
+        if (packet != null && PacketReceivedEvent(packet).broadcast().isCancelled) {
+            return
+        }
+
+        if (packet is Event) {
+            if (packet is BroadcastControllable) {
+                if (packet.shouldBroadcast) packet.broadcast()
+            } else {
+                packet.broadcast()
+            }
+
+            if (packet is CancellableEvent && packet.isCancelled) return
         }
     }
 
