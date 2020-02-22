@@ -59,11 +59,6 @@ interface MessageSource : Message {
     val groupId: Long
 
     /**
-     * 原消息内容
-     */
-    val sourceMessage: MessageChain
-
-    /**
      * 固定返回空字符串 ("")
      */
     override fun toString(): String
