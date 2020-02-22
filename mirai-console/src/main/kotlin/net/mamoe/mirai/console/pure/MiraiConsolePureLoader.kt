@@ -1,5 +1,6 @@
-package net.mamoe.mirai.console
+package net.mamoe.mirai.console.pure
 
+import net.mamoe.mirai.console.MiraiConsole
 import kotlin.concurrent.thread
 
 class MiraiConsolePureLoader {

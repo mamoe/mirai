@@ -7,11 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console
+package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.LoginSolverInputReader
@@ -29,9 +30,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
                     requestStr = input
                     requesting = false
                 } else {
-                    runBlocking {
-                        MiraiConsole.CommandListener.commandChannel.send(input)
-                    }
+                    MiraiConsole.CommandProcessor.runConsoleCommandBlocking(input)
                 }
             }
         }
