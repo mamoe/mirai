@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import kotlinx.io.core.use
 import kotlinx.io.streams.inputStream
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.data.Image
@@ -35,7 +34,7 @@ import javax.imageio.ImageIO
  * JVM 平台相关扩展
  */
 @UseExperimental(MiraiInternalAPI::class)
-actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor(bot: Bot) : MessagePacketBase<TSender, TSubject>(bot) {
+actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() : MessagePacketBase<TSender, TSubject>() {
     // region 上传图片
     suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
 

@@ -74,8 +74,6 @@ internal class OnlinePush {
             // println(pbPushMsg.msg.msgBody.richText.contentToString())
             val flags = extraInfo?.flags ?: 0
             return GroupMessage(
-                bot = bot,
-                group = group,
                 senderName = pbPushMsg.msg.msgHead.groupInfo.groupCard,
                 sender = group[pbPushMsg.msg.msgHead.fromUin],
                 message = pbPushMsg.msg.toMessageChain(),

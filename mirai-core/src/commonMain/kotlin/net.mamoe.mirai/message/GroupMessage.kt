@@ -22,8 +22,6 @@ import kotlin.jvm.JvmName
 
 @Suppress("unused", "NOTHING_TO_INLINE")
 class GroupMessage(
-    bot: Bot,
-    group: Group,
     val senderName: String,
     /**
      * 发送方权限.
@@ -31,9 +29,10 @@ class GroupMessage(
     val permission: MemberPermission,
     sender: Member,
     override val message: MessageChain
-) : MessagePacket<Member, Group>(bot), Event {
-    val group: Group by group.unsafeWeakRef()
+) : MessagePacket<Member, Group>(), Event {
     override val sender: Member by sender.unsafeWeakRef()
+    val group: Group get() = sender.group
+    override val bot: Bot get() = sender.bot
 
     override val subject: Group get() = group
 

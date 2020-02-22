@@ -32,18 +32,19 @@ import kotlin.jvm.JvmName
  * 请查看各平台的 `actual` 实现的说明.
  */
 @UseExperimental(MiraiInternalAPI::class)
-expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>(bot: Bot) : MessagePacketBase<TSender, TSubject>
+expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
 
 /**
  * 仅内部使用, 请使用 [MessagePacket]
  */ // Tips: 在 IntelliJ 中 (左侧边栏) 打开 `Structure`, 可查看类结构
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 @MiraiInternalAPI
-abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : Packet, BotEvent {
+abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, BotEvent {
     /**
      * 接受到这条消息的
      */
-    override val bot: Bot by _bot.unsafeWeakRef()
+    @WeakRefProperty
+    abstract override val bot: Bot
 
     /**
      * 消息事件主体.
@@ -53,6 +54,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
+    @WeakRefProperty
     abstract val subject: TSubject
 
     /**
@@ -60,6 +62,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      *
      * 在好友消息时为 [QQ] 的实例, 在群消息时为 [Member] 的实例
      */
+    @WeakRefProperty
     abstract val sender: TSender
 
     /**

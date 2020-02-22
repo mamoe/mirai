@@ -306,20 +306,19 @@ internal class MemberImpl(
 }
 
 internal class MemberInfoImpl(
-    private val jceInfo: StTroopMemberInfo,
-    private val groupOwnerId: Long
+    jceInfo: StTroopMemberInfo,
+    groupOwnerId: Long
 ) : MemberInfo {
-    override val uin: Long get() = jceInfo.memberUin
-    override val nameCard: String get() = jceInfo.sName ?: ""
-    override val nick: String get() = jceInfo.nick
-    override val permission: MemberPermission
-        get() = when {
-            jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
-            jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
-            else -> MemberPermission.MEMBER
-        }
-    override val specialTitle: String get() = jceInfo.sSpecialTitle ?: ""
-    override val muteTimestamp: Int get() = jceInfo.dwShutupTimestap?.toInt() ?: 0
+    override val uin: Long = jceInfo.memberUin
+    override val nameCard: String = jceInfo.sName ?: ""
+    override val nick: String = jceInfo.nick
+    override val permission: MemberPermission = when {
+        jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
+        jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+        else -> MemberPermission.MEMBER
+    }
+    override val specialTitle: String = jceInfo.sSpecialTitle ?: ""
+    override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
 /**
