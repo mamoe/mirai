@@ -239,7 +239,7 @@ abstract class Bot : CoroutineScope {
     /**
      * 获取图片下载链接
      */
-    abstract suspend fun Image.url(): String
+    abstract suspend fun queryImageUrl(image: Image): String
 
     /**
      * 获取图片下载链接并开始下载.
@@ -247,7 +247,7 @@ abstract class Bot : CoroutineScope {
      * @see ByteReadChannel.copyAndClose
      * @see ByteReadChannel.copyTo
      */
-    abstract suspend fun Image.channel(): ByteReadChannel
+    abstract suspend fun openChannel(image: Image): ByteReadChannel
 
     /**
      * 添加一个好友

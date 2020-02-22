@@ -54,8 +54,8 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
     override fun getGroup(id: Long): BlockingGroup = runBlocking { bot.getGroup(id).blocking() }
     override fun getNetwork(): BotNetworkHandler = bot.network
     override fun login() = runBlocking { bot.login() }
-    override fun downloadTo(image: Image, outputStream: OutputStream) = bot.run { runBlocking { image.channel().copyTo(outputStream) } }
-    override fun downloadAndClose(image: Image, outputStream: OutputStream) = bot.run { runBlocking { image.channel().copyAndClose(outputStream) } }
+    override fun downloadTo(image: Image, outputStream: OutputStream) = bot.run { runBlocking { openChannel(image).copyTo(outputStream) } }
+    override fun downloadAndClose(image: Image, outputStream: OutputStream) = bot.run { runBlocking { openChannel(image).copyAndClose(outputStream) } }
     override fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult = runBlocking { bot.addFriend(id, message, remark) }
     override fun approveFriendAddRequest(id: Long, remark: String?) = runBlocking { bot.approveFriendAddRequest(id, remark) }
     override fun close(throwable: Throwable?) = bot.close(throwable)

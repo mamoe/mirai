@@ -151,20 +151,20 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    override suspend fun Image.url(): String = "http://gchat.qpic.cn" + when (this) {
-        is NotOnlineImageFromServer -> this.delegate.origUrl
-        is CustomFaceFromServer -> this.delegate.origUrl
+    override suspend fun queryImageUrl(image: Image): String = "http://gchat.qpic.cn" + when (image) {
+        is NotOnlineImageFromServer -> image.delegate.origUrl
+        is CustomFaceFromServer -> image.delegate.origUrl
         is CustomFaceFromFile -> {
             TODO()
         }
         is NotOnlineImageFromFile -> {
             TODO()
         }
-        else -> error("unsupported image class: ${this::class.simpleName}")
+        else -> error("unsupported image class: ${image::class.simpleName}")
     }
 
-    override suspend fun Image.channel(): ByteReadChannel {
-        return Http.get<HttpResponse>(url()).content
+    override suspend fun openChannel(image: Image): ByteReadChannel {
+        return Http.get<HttpResponse>(queryImageUrl(image)).content
     }
 
     override suspend fun approveFriendAddRequest(id: Long, remark: String?) {
