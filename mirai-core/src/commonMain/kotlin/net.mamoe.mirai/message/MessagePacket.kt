@@ -114,6 +114,15 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     suspend inline fun quoteReply(message: Message): MessageReceipt<TSubject> = reply(this.message.quote() + message)
     suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
 
+    @JvmName("reply2")
+    suspend inline fun String.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
+
+    @JvmName("reply2")
+    suspend inline fun Message.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
+
+    @JvmName("reply2")
+    suspend inline fun MessageChain.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
+
     /**
      * 引用这个消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
      */

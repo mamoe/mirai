@@ -15,7 +15,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.recall
@@ -23,7 +22,6 @@ import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
-import kotlin.jvm.JvmName
 
 @Suppress("unused", "NOTHING_TO_INLINE")
 class GroupMessage(
@@ -42,15 +40,6 @@ class GroupMessage(
     override val subject: Group get() = group
 
     inline fun Long.member(): Member = group[this]
-
-    @JvmName("reply2")
-    suspend inline fun String.quoteReply(): MessageReceipt<Group> = quoteReply(this)
-
-    @JvmName("reply2")
-    suspend inline fun Message.quoteReply(): MessageReceipt<Group> = quoteReply(this)
-
-    @JvmName("reply2")
-    suspend inline fun MessageChain.quoteReply(): MessageReceipt<Group> = quoteReply(this)
 
     @MiraiExperimentalAPI
     suspend inline fun MessageChain.recall() = bot.recall(this)

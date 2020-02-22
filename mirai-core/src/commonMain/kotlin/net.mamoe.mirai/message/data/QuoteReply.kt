@@ -37,7 +37,7 @@ class QuoteReply @MiraiInternalAPI constructor(val source: MessageSource) : Mess
 fun MessageChain.quote(sender: QQ): MessageChain {
     this.firstOrNull<MessageSource>()?.let {
         return if (it.groupId == 0L) {
-            QuoteReply(it) + " " // required
+            QuoteReply(it).toChain() // required
         } else {
             check(sender is Member) { "sender must be Member to quote a GroupMessage" }
             QuoteReply(it) + sender.at() + " " // required
