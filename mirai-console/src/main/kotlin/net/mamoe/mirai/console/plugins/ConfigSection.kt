@@ -21,6 +21,7 @@ import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.LinkedHashMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -211,7 +212,15 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
 
 interface ConfigSection : Config, MutableMap<String, Any> {
     override fun getConfigSection(key: String): ConfigSection {
-        return (get(key) ?: error("ConfigSection does not contain $key ")) as ConfigSection
+        val content = get(key) ?: error("ConfigSection does not contain $key ")
+        if (content is ConfigSection) {
+            return content
+        }
+        return ConfigSectionDelegation(
+            Collections.synchronizedMap(
+                (get(key) ?: error("ConfigSection does not contain $key ")) as LinkedHashMap<String, Any>
+            )
+        )
     }
 
     override fun getString(key: String): String {

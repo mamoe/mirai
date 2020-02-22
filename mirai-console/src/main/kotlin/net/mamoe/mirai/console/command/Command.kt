@@ -7,17 +7,23 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console
+package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.sendMessage
+import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.quote
+import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import java.lang.StringBuilder
 
 object CommandManager {
     private val registeredCommand: MutableMap<String, Command> = mutableMapOf()
@@ -50,7 +56,10 @@ object CommandManager {
         registeredCommand.remove(commandName)
     }
 
-    suspend fun runCommand(sender: CommandSender, fullCommand: String): Boolean {
+    /*
+    * Index: MiraiConsole
+    * */
+    internal suspend fun runCommand(sender: CommandSender, fullCommand: String): Boolean {
         val blocks = fullCommand.split(" ")
         val commandHead = blocks[0].replace("/", "")
         if (!registeredCommand.containsKey(commandHead)) {
@@ -58,12 +67,19 @@ object CommandManager {
         }
         val args = blocks.subList(1, blocks.size)
         registeredCommand[commandHead]?.run {
-            if (onCommand(
-                    sender,
-                    blocks.subList(1, blocks.size)
-                )
-            ) {
-                PluginManager.onCommand(this, args)
+            try {
+                if (onCommand(
+                        sender,
+                        blocks.subList(1, blocks.size)
+                    )
+                ) {
+                    PluginManager.onCommand(this, args)
+                }
+            } catch (e: Exception) {
+                sender.sendMessage("在运行指令时出现了未知错误")
+                e.printStackTrace()
+            } finally {
+                (sender as CommandSenderImpl).flushMessage()
             }
         }
         return true
@@ -72,25 +88,46 @@ object CommandManager {
 }
 
 interface CommandSender {
+    /**
+     * 立刻发送一条Message
+     */
     suspend fun sendMessage(messageChain: MessageChain)
 
     suspend fun sendMessage(message: String)
+    /**
+     * 写入要发送的内容 所有内容最后会被以一条发出, 不管成功与否
+     */
+    fun appendMessage(message: String)
 
     fun sendMessageBlocking(messageChain: MessageChain) = runBlocking { sendMessage(messageChain) }
     fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
 }
 
-object ConsoleCommandSender : CommandSender {
-    override suspend fun sendMessage(messageChain: MessageChain) {
-        MiraiConsole.logger(messageChain.toString())
+abstract class CommandSenderImpl : CommandSender {
+    private val builder = StringBuilder()
+
+    override fun appendMessage(message: String) {
+        builder.append(message).append("\n")
     }
 
-    override suspend fun sendMessage(message: String) {
-        MiraiConsole.logger(message)
+    internal suspend fun flushMessage() {
+        if (!builder.isEmpty()) {
+            sendMessage(builder.toString().removeSuffix("\n"))
+        }
     }
 }
 
-class ContactCommandSender(val contact: Contact) : CommandSender {
+object ConsoleCommandSender : CommandSenderImpl() {
+    override suspend fun sendMessage(messageChain: MessageChain) {
+        MiraiConsole.logger("[Command]", 0, messageChain.toString())
+    }
+
+    override suspend fun sendMessage(message: String) {
+        MiraiConsole.logger("[Command]", 0, message)
+    }
+}
+
+open class ContactCommandSender(val contact: Contact) : CommandSenderImpl() {
     override suspend fun sendMessage(messageChain: MessageChain) {
         contact.sendMessage(messageChain)
     }
@@ -100,6 +137,20 @@ class ContactCommandSender(val contact: Contact) : CommandSender {
     }
 }
 
+/**
+ * 弃用中
+ * */
+class GroupCommandSender(val toQuote: GroupMessage, contact: Contact) : ContactCommandSender(contact) {
+    @MiraiExperimentalAPI
+    override suspend fun sendMessage(message: String) {
+        toQuote.quoteReply(message)
+    }
+
+    @MiraiExperimentalAPI
+    override suspend fun sendMessage(messageChain: MessageChain) {
+        toQuote.quoteReply(messageChain)
+    }
+}
 
 interface Command {
     val name: String
@@ -163,7 +214,12 @@ class CommandBuilder internal constructor() {
         if (alias == null) {
             alias = listOf()
         }
-        return AnonymousCommand(name!!, alias!!, description, onCommand!!).also { it.register() }
+        return AnonymousCommand(
+            name!!,
+            alias!!,
+            description,
+            onCommand!!
+        ).also { it.register() }
     }
 }
 

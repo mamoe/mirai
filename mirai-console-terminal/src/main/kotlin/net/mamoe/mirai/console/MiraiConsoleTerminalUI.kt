@@ -19,6 +19,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.createCharImg
 import net.mamoe.mirai.utils.writeChannel
@@ -129,9 +130,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             requestResult = input
             requesting = false
         } else {
-            MiraiConsole.CommandListener.commandChannel.send(
-                commandBuilder.toString()
-            )
+            MiraiConsole.CommandProcessor.runConsoleCommand(commandBuilder.toString())
         }
     }
 

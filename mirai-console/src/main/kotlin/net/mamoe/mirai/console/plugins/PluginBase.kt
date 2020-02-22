@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.plugins
 
-import net.mamoe.mirai.console.Command
+import net.mamoe.mirai.console.command.Command
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.utils.DefaultLogger
