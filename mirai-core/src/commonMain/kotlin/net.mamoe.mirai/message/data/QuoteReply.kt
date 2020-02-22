@@ -45,8 +45,6 @@ class QuoteReplyToSend @MiraiInternalAPI constructor(source: MessageSource, val 
 
 /**
  * 引用这条消息.
- * 好友消息: 返回 `[QuoteReply]`
- * 群消息: 返回 `[QuoteReply] + [At] + [PlainText]`(必要的结构)
  */
 @UseExperimental(MiraiInternalAPI::class)
 fun MessageChain.quote(sender: QQ): QuoteReplyToSend {
@@ -58,8 +56,6 @@ fun MessageChain.quote(sender: QQ): QuoteReplyToSend {
 
 /**
  * 引用这条消息.
- * 好友消息: 返回 `[QuoteReply]`
- * 群消息: 返回 `[QuoteReply] + [At] + [PlainText]`(必要的结构)
  */
 @UseExperimental(MiraiInternalAPI::class)
 fun MessageSource.quote(sender: QQ): QuoteReplyToSend {
