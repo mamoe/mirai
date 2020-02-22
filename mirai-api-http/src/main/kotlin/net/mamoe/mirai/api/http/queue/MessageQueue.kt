@@ -15,16 +15,17 @@ import net.mamoe.mirai.api.http.data.common.toDTO
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.data.MessageSource
-import java.util.concurrent.ConcurrentHashMap
+import net.mamoe.mirai.utils.firstKey
 import java.util.concurrent.ConcurrentLinkedDeque
 
 class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
 
-    val quoteCache = ConcurrentHashMap<Long, GroupMessage>()
+    val quoteCacheSize = 4096
+    val quoteCache = LinkedHashMap<Long, GroupMessage>()
 
     fun fetch(size: Int): List<EventDTO> {
         var count = size
-        quoteCache.clear()
+
         val ret = ArrayList<EventDTO>(count)
         while (!this.isEmpty() && count > 0) {
             val event = pop()
@@ -44,6 +45,9 @@ class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
     }
 
     private fun addCache(msg: GroupMessage) {
-        quoteCache[msg.message[MessageSource].messageUid.toLong() and 0xFFffFFff] = msg
+        quoteCache[msg.message[MessageSource].messageUid.toLong()] = msg
+        if (quoteCache.size > quoteCacheSize) {
+            quoteCache.remove(quoteCache.firstKey())
+        }
     }
 }
