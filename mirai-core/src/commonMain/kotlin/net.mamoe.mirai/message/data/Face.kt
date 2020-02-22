@@ -167,8 +167,4 @@ class Face(val id: Int) : Message {
         const val shouqiang: Int = 169
         const val qingwa: Int = 170
     }
-
-    override fun eq(other: Message): Boolean {
-        return other is Face && other.id == this.id
-    }
 }

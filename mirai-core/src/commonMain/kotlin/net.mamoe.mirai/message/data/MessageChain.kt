@@ -57,12 +57,6 @@ interface MessageChain : Message, MutableList<Message> {
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
-
-    override fun eq(other: Message): Boolean {
-        if (other is MessageChain && other.size != this.size)
-            return false
-        return this.toString() == other.toString()
-    }
 }
 
 /**
