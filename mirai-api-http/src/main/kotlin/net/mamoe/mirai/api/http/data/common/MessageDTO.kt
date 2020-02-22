@@ -64,7 +64,7 @@ data class XmlDTO(val xml: String) : MessageDTO()
 
 @Serializable
 @SerialName("Unknown")
-data class UnknownMessageDTO(val text: String) : MessageDTO()
+object UnknownMessageDTO : MessageDTO()
 
 /*
 *   Abstract Class
@@ -88,9 +88,12 @@ fun MessagePacket<*, *>.toDTO() = when (this) {
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
     else -> IgnoreEventDTO
 }.apply {
-    if (this is MessagePacketDTO) {
-        messageChain = mutableListOf<MessageDTO>().also { ls -> message.foreachContent { ls.add(it.toDTO()) } }
-    }
+    if (this is MessagePacketDTO) { messageChain = message.toDTOChain() }
+    // else: `this` is bot event
+}
+
+fun MessageChain.toDTOChain() = mutableListOf(this[MessageSource].toDTO()).apply {
+    foreachContent { content -> content.toDTO().takeUnless { it == UnknownMessageDTO }?.let(::add) }
 }
 
 fun MessageChainDTO.toMessageChain(contact: Contact) =
@@ -105,7 +108,7 @@ fun Message.toDTO() = when (this) {
     is PlainText -> PlainDTO(stringValue)
     is Image -> ImageDTO(imageId)
     is XMLMessage -> XmlDTO(stringValue)
-    else -> UnknownMessageDTO("未知消息类型")
+    else -> UnknownMessageDTO
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
