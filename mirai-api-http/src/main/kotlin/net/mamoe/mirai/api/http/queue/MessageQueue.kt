@@ -11,7 +11,6 @@ package net.mamoe.mirai.api.http.queue
 
 import net.mamoe.mirai.api.http.data.common.EventDTO
 import net.mamoe.mirai.api.http.data.common.IgnoreEventDTO
-import net.mamoe.mirai.api.http.data.common.calMessageId
 import net.mamoe.mirai.api.http.data.common.toDTO
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.GroupMessage
@@ -47,7 +46,7 @@ class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
     }
 
     private fun addQuoteCache(msg: GroupMessage) {
-        quoteCache[msg.message[MessageSource].calMessageId()] = msg
+        quoteCache[msg.message[MessageSource].id] = msg
         if (quoteCache.size > quoteCacheSize) {
             quoteCache.remove(quoteCache.firstKey())
         }
