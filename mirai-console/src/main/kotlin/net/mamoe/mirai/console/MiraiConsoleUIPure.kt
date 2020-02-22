@@ -80,14 +80,3 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
 }
 
 
-class MiraiConsolePureLoader {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            MiraiConsole.start(MiraiConsoleUIPure())
-            Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                MiraiConsole.stop()
-            })
-        }
-    }
-}
