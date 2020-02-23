@@ -48,6 +48,7 @@ interface Config {
     fun getFloatList(key: String): List<Float>
     fun getDoubleList(key: String): List<Double>
     fun getLongList(key: String): List<Long>
+    fun getConfigSectionList(key: String): List<ConfigSection>
     operator fun set(key: String, value: Any)
     operator fun get(key: String): Any?
     operator fun contains(key: String): Boolean
@@ -269,6 +270,16 @@ interface ConfigSection : Config, MutableMap<String, Any> {
 
     override fun getLongList(key: String): List<Long> {
         return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toLong() }
+    }
+
+    override fun getConfigSectionList(key: String): List<ConfigSection> {
+        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map {
+            if (it is ConfigSection) {
+                it
+            } else {
+                ConfigSectionDelegation(it as MutableMap<String, Any>)
+            }
+        }
     }
 
     override fun exist(key: String): Boolean {
