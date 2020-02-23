@@ -25,8 +25,6 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     val botList = observableListOf<BotModel>()
     val pluginList: ObservableList<PluginModel> by lazy(::getPluginsFromConsole)
 
-//    val consoleConfig : Map<String, Any> by lazy(::getConfigFromConsole)
-
     val consoleInfo = ConsoleInfo()
 
     fun login(qq: String, psd: String) {
