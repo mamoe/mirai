@@ -32,11 +32,11 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     val consoleInfo = ConsoleInfo()
 
-    suspend fun login(qq: String, psd: String) {
-//        MiraiConsole
+    fun login(qq: String, psd: String) {
+        MiraiConsole.CommandProcessor.runConsoleCommandBlocking("/login $qq $psd")
     }
 
-    suspend fun sendCommand(command: String) = Unit
+    fun sendCommand(command: String) = MiraiConsole.CommandProcessor.runConsoleCommandBlocking(command)
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         when (identity) {
