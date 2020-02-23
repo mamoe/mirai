@@ -22,7 +22,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 
 **[English](README-eng.md)**  
 
-多平台 **QQ Android 和 TimPC** 协议支持库与高效率的机器人框架.   
+多平台 **QQ Android** 和 **TIM PC** 协议支持库与高效率的机器人框架.   
 纯 Kotlin 实现协议和支持框架，模块<b>全部免费开源</b>。  
 目前可运行在 JVM 或 Android。
 Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Application与插件承载QQ机器人
@@ -38,7 +38,7 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 ### 开发者
 #### 以编写机器人逻辑为主
 
-- 需了解<b>Java</b>或<b>Kotlin</b>, 使用[mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console)机器人框架的插件系统进行[插件开发(DOING)](), 直接进行逻辑编写并与其他插件开发者合作共享
+- 需了解 `Java` 或 `Kotlin`, 使用 [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 直接进行插件逻辑编写并与其他插件开发者合作共享
 
 #### 使用Mirai为第三方库
 
@@ -56,12 +56,8 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 #### 酷Q平台用户: 
 
-- 全部酷Q的DLL插件可以在mirai中直接加载, 需使用 `Mirai-Native` ([源码(DOING)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(DOING)]())
-- 全部基于 `酷Q HTTPAPI` 的插件可以在`mirai`中直接加载, 需使用`Mirai-CQ-Adapter`([源码(TODO)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(TODO)]())
-
-#### 其他平台
-
-- 如果你的插件是通过 `酷Q HTTPAPI` 实现的(绝大部分), 都可以通过 `Mirai-CQ-Adapter` 在mirai中直接使用
+- 酷Q的插件可以在 `Mirai` 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
+- 使用 `酷Q HTTPAPI` 的插件将可以在`mirai`中加载，`Mirai-CQ-Adapter` 正在计划中
 
 ## 更新日志
 

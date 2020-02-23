@@ -28,7 +28,6 @@ import net.mamoe.mirai.api.http.data.common.MessageChainDTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.data.common.toMessageChain
 import net.mamoe.mirai.api.http.util.toJson
-import net.mamoe.mirai.contact.toList
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.uploadImage
 import java.net.URL
@@ -90,8 +89,8 @@ fun Application.messageModule() {
             parts.file("img")?.apply {
                 val image = streamProvider().use {
                     when (type) {
-                        "group" -> session.bot.groups.toList().random().uploadImage(it)
-                        "friend" -> session.bot.qqs.toList().random().uploadImage(it)
+                        "group" -> session.bot.groups.firstOrNull()?.uploadImage(it)
+                        "friend" -> session.bot.qqs.firstOrNull()?.uploadImage(it)
                         else -> null
                     }
                 }
