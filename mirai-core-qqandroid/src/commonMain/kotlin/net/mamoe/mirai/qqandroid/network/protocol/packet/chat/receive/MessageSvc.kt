@@ -285,7 +285,7 @@ internal class MessageSvc {
 
             @UseExperimental(MiraiExperimentalAPI::class)
             fun startWaitingSequenceId(contact: Contact) {
-                sequenceIdDeferred = contact.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int> {
+                sequenceIdDeferred = contact.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(timeoutMillis = 3000) {
                     if (it.messageRandom == this@MessageSourceFromSend.messageRandom) {
                         it.sequenceId
                     } else null
