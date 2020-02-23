@@ -173,6 +173,7 @@ fun main() {
 | ------------ | ------ | ----- | ----------- | -------------------------------- |
 | sessionKey   | String | false | YourSession | 已经激活的Session                |
 | target       | Long   | false | 987654321   | 发送消息目标好友的QQ号           |
+| quote        | Long   | true  | 135798642   | 引用一条消息的messageId进行回复  |
 | messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
 
 #### 响应: 返回统一状态码（并携带messageId）
@@ -212,45 +213,7 @@ fun main() {
 | ------------ | ------ | ----- | ----------- | -------------------------------- |
 | sessionKey   | String | false | YourSession | 已经激活的Session                |
 | target       | Long   | false | 987654321   | 发送消息目标群的群号             |
-| messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
-
-#### 响应: 返回统一状态码（并携带messageId）
-
-```json5
-{
-    "code": 0,
-    "msg": "success",
-    "messageId": 1234567890 // 一个Long类型属性，标识本条消息，用于撤回和引用回复
-}
-```
-
-
-
-### 发送引用回复消息（仅支持群消息）
-
-```
-[POST] /sendQuoteMessage
-```
-
-使用此方法向指定的消息进行引用回复
-
-#### 请求
-
-```json5
-{
-    "sessionKey": "YourSession",
-    "target": 987654321,
-    "messageChain": [
-        { "type": "Plain", "text":"hello\n" },
-        { "type": "Plain", "text":"world" }
-    ]
-}
-```
-
-| 名字         | 类型   | 可选  | 举例        | 说明                             |
-| ------------ | ------ | ----- | ----------- | -------------------------------- |
-| sessionKey   | String | false | YourSession | 已经激活的Session                |
-| target       | Long   | false | 987654321   | 引用消息的Message Source的Uid    |
+| quote        | Long   | true  | 135798642   | 引用一条消息的messageId进行回复  |
 | messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
 
 #### 响应: 返回统一状态码（并携带messageId）
