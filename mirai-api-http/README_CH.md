@@ -175,12 +175,13 @@ fun main() {
 | target       | Long   | false | 987654321   | 发送消息目标好友的QQ号           |
 | messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
 
-#### 响应: 返回统一状态码
+#### 响应: 返回统一状态码（并携带messageId）
 
 ```json5
 {
     "code": 0,
-    "msg": "success"
+    "msg": "success",
+    "messageId": 1234567890 // 一个Long类型属性，标识本条消息，用于撤回和引用回复
 }
 ```
 
@@ -213,12 +214,13 @@ fun main() {
 | target       | Long   | false | 987654321   | 发送消息目标群的群号             |
 | messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
 
-#### 响应: 返回统一状态码
+#### 响应: 返回统一状态码（并携带messageId）
 
 ```json5
 {
     "code": 0,
-    "msg": "success"
+    "msg": "success",
+    "messageId": 1234567890 // 一个Long类型属性，标识本条消息，用于撤回和引用回复
 }
 ```
 
@@ -251,12 +253,13 @@ fun main() {
 | target       | Long   | false | 987654321   | 引用消息的Message Source的Uid    |
 | messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
 
-#### 响应: 返回统一状态码
+#### 响应: 返回统一状态码（并携带messageId）
 
 ```json5
 {
     "code": 0,
-    "msg": "success"
+    "msg": "success",
+    "messageId": 1234567890 // 一个Long类型属性，标识本条消息，用于撤回和引用回复
 }
 ```
 
@@ -370,7 +373,10 @@ Content-Type：multipart/form-data
     }
  },{
     "type": "FriendMessage",         // 消息类型：GroupMessage或FriendMessage或各类Event
-        "messageChain": [{           // 消息链，是一个消息对象构成的数组
+    "messageChain": [{             // 消息链，是一个消息对象构成的数组
+        "type": "Source",
+        "uid": 123456
+    },{
         "type": "Plain",
         "text": "Miral牛逼"
     }],

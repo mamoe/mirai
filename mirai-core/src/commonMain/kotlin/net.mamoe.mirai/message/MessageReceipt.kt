@@ -31,7 +31,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
  */
 open class MessageReceipt<C : Contact>(
-    private val source: MessageSource,
+    val source: MessageSource,
     target: C
 ) {
     init {

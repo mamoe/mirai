@@ -20,10 +20,10 @@ import io.ktor.response.respondText
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.MessageChainDTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.data.common.toMessageChain
@@ -44,23 +44,26 @@ fun Application.messageModule() {
 
         miraiVerify<SendDTO>("/sendFriendMessage") {
             it.session.bot.getFriend(it.target).apply {
-                sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
+                val receipt = sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
+                receipt.source.ensureSequenceIdAvailable()
+                call.respondDTO(SendRetDTO(messageId = receipt.source.id))
             }
-            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
             it.session.bot.getGroup(it.target).apply {
-                sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
+                val receipt = sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
+                receipt.source.ensureSequenceIdAvailable()
+                call.respondDTO(SendRetDTO(messageId = receipt.source.id))
             }
-            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendQuoteMessage") {
             it.session.messageQueue.quoteCache[it.target]?.apply {
-                quoteReply(it.messageChain.toMessageChain(group))
+                val receipt = quoteReply(it.messageChain.toMessageChain(group))
+                receipt.source.ensureSequenceIdAvailable()
+                call.respondDTO(SendRetDTO(messageId = receipt.source.id))
             } ?: throw NoSuchElementException()
-            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendImageDTO>("sendImageMessage") {
@@ -127,9 +130,10 @@ private data class SendImageDTO(
 
 @Serializable
 private class SendRetDTO(
-    val messageId: Long,
-    @Transient val stateCode: StateCode = Success
-) : StateCode(stateCode.code, stateCode.msg)
+    val code: Int = 0,
+    val msg: String = "success",
+    val messageId: Long
+) : DTO
 
 @Serializable
 private data class RecallDTO(
