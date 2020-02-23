@@ -12,12 +12,12 @@ class SettingsView : View() {
     private val controller = find<MiraiGraphicalUIController>()
 
     override val root = form {
-        controller.consoleConfig.forEach {
-            fieldset {
-                field(it.key) {
-                    jfxTextfield(it.value.toString()) { isEditable = false }
-                }
-            }
-        }
+//        controller.consoleConfig.forEach {
+//            fieldset {
+//                field(it.key) {
+//                    jfxTextfield(it.value.toString()) { isEditable = false }
+//                }
+//            }
+//        }
     }
 }

@@ -6,7 +6,6 @@ import javafx.stage.Modality
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.MiraiConsoleUI
 import net.mamoe.mirai.console.graphical.model.BotModel
 import net.mamoe.mirai.console.graphical.model.ConsoleInfo
 import net.mamoe.mirai.console.graphical.model.PluginModel
@@ -29,15 +28,15 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     val botList = observableListOf<BotModel>()
     val pluginList: ObservableList<PluginModel> by lazy(::getPluginsFromConsole)
 
-    val consoleConfig : Map<String, Any> by lazy(::getConfigFromConsole)
+//    val consoleConfig : Map<String, Any> by lazy(::getConfigFromConsole)
 
     val consoleInfo = ConsoleInfo()
 
     suspend fun login(qq: String, psd: String) {
-        MiraiConsole.CommandListener.commandChannel.send("/login $qq $psd")
+//        MiraiConsole
     }
 
-    suspend fun sendCommand(command: String) = MiraiConsole.CommandListener.commandChannel.send(command)
+    suspend fun sendCommand(command: String) = Unit
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         when (identity) {
@@ -84,8 +83,6 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         // TODO
         return observableListOf<PluginModel>()
     }
-
-    private fun getConfigFromConsole() = MiraiConsole.MiraiProperties.config.asMap()
 }
 
 class GraphicalLoginSolver : LoginSolver() {
