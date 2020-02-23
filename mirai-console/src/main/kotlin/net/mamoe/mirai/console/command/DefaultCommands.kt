@@ -131,13 +131,6 @@ object DefaultCommands {
                     }
                     bot.login()
                     bot.subscribeMessages {
-                        contains("test") {
-                            if (this is GroupMessage) {
-                                quoteReply("Hello $senderName")
-                            } else {
-                                reply("Hello!")
-                            }
-                        }
                         this.startsWith("/") {
                             if (bot.checkManager(this.sender.id)) {
                                 val sender = ContactCommandSender(this.subject)
@@ -149,7 +142,6 @@ object DefaultCommands {
                     }
                     sendMessage("$qqNumber login successes")
                     MiraiConsole.frontEnd.pushBot(bot)
-
                 } catch (e: Exception) {
                     sendMessage("$qqNumber login failed -> " + e.message)
                 }

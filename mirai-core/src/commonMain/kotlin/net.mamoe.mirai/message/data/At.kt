@@ -36,8 +36,8 @@ class At @MiraiInternalAPI constructor(val target: Long, val display: String) : 
 
     // 自动为消息补充 " "
 
-    override fun followedBy(tail: Message): MessageChain {
-        if(tail is PlainText && tail.stringValue.startsWith(' ')){
+    override fun followedBy(tail: Message): CombinedMessage {
+        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }
         return super.followedBy(PlainText(" ")) + tail

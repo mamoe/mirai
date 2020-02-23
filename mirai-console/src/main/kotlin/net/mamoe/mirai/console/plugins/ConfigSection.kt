@@ -48,6 +48,7 @@ interface Config {
     fun getFloatList(key: String): List<Float>
     fun getDoubleList(key: String): List<Double>
     fun getLongList(key: String): List<Long>
+    fun getConfigSectionList(key: String): List<ConfigSection>
     operator fun set(key: String, value: Any)
     operator fun get(key: String): Any?
     operator fun contains(key: String): Boolean
@@ -196,8 +197,14 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
                         Float::class -> getFloatList(propertyName)
                         Double::class -> getDoubleList(propertyName)
                         Long::class -> getLongList(propertyName)
+                        //不去支持getConfigSectionList(propertyName)
+                        // LinkedHashMap::class -> getConfigSectionList(propertyName)//faster approach
                         else -> {
-                            error("unsupported type")
+                            //if(list[0]!! is ConfigSection || list[0]!! is Map<*,*>){
+                            // getConfigSectionList(propertyName)
+                            //}else {
+                            error("unsupported type" + list[0]!!::class)
+                            //}
                         }
                     }
                 } as T
@@ -269,6 +276,20 @@ interface ConfigSection : Config, MutableMap<String, Any> {
 
     override fun getLongList(key: String): List<Long> {
         return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toLong() }
+    }
+
+    override fun getConfigSectionList(key: String): List<ConfigSection> {
+        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map {
+            if (it is ConfigSection) {
+                it
+            } else {
+                ConfigSectionDelegation(
+                    Collections.synchronizedMap(
+                        it as MutableMap<String, Any>
+                    )
+                )
+            }
+        }
     }
 
     override fun exist(key: String): Boolean {

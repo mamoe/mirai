@@ -16,8 +16,6 @@ import net.mamoe.mirai.message.data.NullMessageChain.toString
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
-import kotlin.jvm.Volatile
 import kotlin.reflect.KProperty
 
 /**
@@ -31,23 +29,13 @@ import kotlin.reflect.KProperty
  * - 若一个 [Message] 与一个 [MessageChain] 连接, [Message] 将会被添加入 [MessageChain].
  *
  * 要获取更多信息, 请查看 [Message]
+ *
+ * @see buildMessageChain
  */
-interface MessageChain : Message, MutableList<Message> {
+interface MessageChain : Message, List<Message> {
     // region Message override
     override operator fun contains(sub: String): Boolean
-
-    override fun followedBy(tail: Message): MessageChain
     // endregion
-
-    @JvmSynthetic
-    operator fun plusAssign(message: Message) {
-        this.followedBy(message)
-    }
-
-    @JvmSynthetic // make java user happier
-    operator fun plusAssign(plain: String) {
-        this.plusAssign(plain.toMessage())
-    }
 
     override fun toString(): String
 
@@ -57,15 +45,6 @@ interface MessageChain : Message, MutableList<Message> {
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
-}
-
-/**
- * 先删除同类型的消息, 再添加 [message]
- */
-fun <T : Message> MessageChain.addOrRemove(message: T) {
-    val clazz = message::class
-    this.removeAll { clazz.isInstance(it) }
-    this.add(message)
 }
 
 /**
@@ -109,17 +88,7 @@ inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, p
 @JvmName("newChain")
 @JsName("newChain")
 @Suppress("FunctionName")
-fun MessageChain(): MessageChain = EmptyMessageChain()
-
-/**
- * 构造无初始元素的可修改的 [MessageChain]. 初始大小将会被设定为 [initialCapacity]
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("FunctionName")
-fun MessageChain(initialCapacity: Int): MessageChain =
-    if (initialCapacity == 0) EmptyMessageChain()
-    else MessageChainImpl(ArrayList(initialCapacity))
+fun MessageChain(): MessageChain = EmptyMessageChain
 
 /**
  * 构造 [MessageChain]
@@ -129,7 +98,7 @@ fun MessageChain(initialCapacity: Int): MessageChain =
 @JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(vararg messages: Message): MessageChain =
-    if (messages.isEmpty()) EmptyMessageChain()
+    if (messages.isEmpty()) EmptyMessageChain
     else MessageChainImpl(messages.toMutableList())
 
 /**
@@ -140,7 +109,7 @@ fun MessageChain(vararg messages: Message): MessageChain =
 @JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(message: Message): MessageChain =
-    MessageChainImpl(mutableListOf(message))
+    MessageChainImpl(listOf(message))
 
 /**
  * 构造 [MessageChain]
@@ -149,7 +118,16 @@ fun MessageChain(message: Message): MessageChain =
 @JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(messages: Iterable<Message>): MessageChain =
-    MessageChainImpl(messages.toMutableList())
+    MessageChainImpl(messages.toList())
+
+/**
+ * 构造 [MessageChain]
+ */
+@JvmName("newChain")
+@JsName("newChain")
+@Suppress("FunctionName")
+fun MessageChain(messages: List<Message>): MessageChain =
+    MessageChainImpl(messages)
 
 
 /**
@@ -164,7 +142,7 @@ inline fun Message.toChain(): MessageChain = if (this is MessageChain) this else
  * 构造 [MessageChain]
  */
 @Suppress("unused", "NOTHING_TO_INLINE")
-inline fun List<Message>.toMessageChain(): MessageChain = MessageChain(this)
+inline fun List<Message>.asMessageChain(): MessageChain = MessageChain(this)
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -211,71 +189,9 @@ fun <M : Message> MessageChain.first(key: Message.Key<M>): M = firstOrNull(key) 
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(key) != null
 
-/**
- * 空的 [Message].
- *
- * 它不包含任何元素, 但维护一个 'lazy' 的 [MessageChainImpl].
- *
- * 只有在必要的时候(如迭代([iterator]), 插入([add]), 连接([followedBy], [plus], [plusAssign]))才会创建这个对象代表的 list
- *
- * 它是一个正常的 [Message] 和 [MessageChain]. 可以做所有 [Message] 能做的事.
- */
-class EmptyMessageChain : MessageChain {
-    private val delegate: MessageChain by lazy {
-        MessageChainImpl().also { initialized = true }
-    }
-
-    @Volatile
-    private var initialized: Boolean = false
-
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> =
-        if (initialized) delegate.subList(
-            fromIndex,
-            toIndex
-        ) else throw IndexOutOfBoundsException("given args that from $fromIndex to $toIndex, but the list is empty")
-
-    override fun toString(): String = if (initialized) delegate.toString() else ""
-
-    override fun contains(sub: String): Boolean = if (initialized) delegate.contains(sub) else false
-    override fun contains(element: Message): Boolean = if (initialized) delegate.contains(element) else false
-    override fun followedBy(tail: Message): MessageChain = delegate.followedBy(tail)
-
-    override val size: Int = if (initialized) delegate.size else 0
-    override fun containsAll(elements: Collection<Message>): Boolean =
-        if (initialized) delegate.containsAll(elements) else false
-
-    override fun get(index: Int): Message =
-        if (initialized) delegate[index] else throw IndexOutOfBoundsException(index.toString())
-
-    override fun indexOf(element: Message): Int = if (initialized) delegate.indexOf(element) else -1
-    override fun isEmpty(): Boolean = if (initialized) delegate.isEmpty() else true
-    override fun iterator(): MutableIterator<Message> = delegate.iterator()
-
-    override fun lastIndexOf(element: Message): Int = if (initialized) delegate.lastIndexOf(element) else -1
-    override fun add(element: Message): Boolean = delegate.add(element)
-    override fun add(index: Int, element: Message) = delegate.add(index, element)
-    override fun addAll(index: Int, elements: Collection<Message>): Boolean = delegate.addAll(elements)
-    override fun addAll(elements: Collection<Message>): Boolean = delegate.addAll(elements)
-    override fun clear() {
-        if (initialized) delegate.clear()
-    }
-
-    override fun listIterator(): MutableListIterator<Message> = delegate.listIterator()
-
-    override fun listIterator(index: Int): MutableListIterator<Message> = delegate.listIterator()
-    override fun remove(element: Message): Boolean = if (initialized) delegate.remove(element) else false
-    override fun removeAll(elements: Collection<Message>): Boolean =
-        if (initialized) delegate.removeAll(elements) else false
-
-    override fun removeAt(index: Int): Message =
-        if (initialized) delegate.removeAt(index) else throw IndexOutOfBoundsException(index.toString())
-
-    override fun retainAll(elements: Collection<Message>): Boolean =
-        if (initialized) delegate.retainAll(elements) else false
-
-    override fun set(index: Int, element: Message): Message =
-        if (initialized) delegate.set(index, element) else throw IndexOutOfBoundsException(index.toString())
-}
+object EmptyMessageChain : MessageChain by {
+    MessageChainImpl(emptyList())
+}()
 
 /**
  * Null 的 [MessageChain].
@@ -290,7 +206,7 @@ object NullMessageChain : MessageChain {
 
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
     override fun contains(element: Message): Boolean = error("accessing NullMessageChain")
-    override fun followedBy(tail: Message): MessageChain = tail.toChain()
+    override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, element = tail)
 
     override val size: Int get() = error("accessing NullMessageChain")
     override fun containsAll(elements: Collection<Message>): Boolean = error("accessing NullMessageChain")
@@ -300,76 +216,29 @@ object NullMessageChain : MessageChain {
     override fun iterator(): MutableIterator<Message> = error("accessing NullMessageChain")
 
     override fun lastIndexOf(element: Message): Int = error("accessing NullMessageChain")
-    override fun add(element: Message): Boolean = error("accessing NullMessageChain")
-    override fun add(index: Int, element: Message) = error("accessing NullMessageChain")
-    override fun addAll(index: Int, elements: Collection<Message>): Boolean = error("accessing NullMessageChain")
-
-    override fun addAll(elements: Collection<Message>): Boolean = error("accessing NullMessageChain")
-    override fun clear() {
-        error("accessing NullMessageChain")
-    }
-
     override fun listIterator(): MutableListIterator<Message> = error("accessing NullMessageChain")
 
     override fun listIterator(index: Int): MutableListIterator<Message> = error("accessing NullMessageChain")
-
-    override fun remove(element: Message): Boolean = error("accessing NullMessageChain")
-    override fun removeAll(elements: Collection<Message>): Boolean = error("accessing NullMessageChain")
-    override fun removeAt(index: Int): Message = error("accessing NullMessageChain")
-    override fun retainAll(elements: Collection<Message>): Boolean = error("accessing NullMessageChain")
-    override fun set(index: Int, element: Message): Message = error("accessing NullMessageChain")
 }
 
 /**
  * [MessageChain] 实现
  * 它是一个特殊的 [Message], 实现 [MutableList] 接口, 但将所有的接口调用都转到内部维护的另一个 [MutableList].
  */
-internal inline class MessageChainImpl constructor(
+internal class MessageChainImpl constructor(
     /**
      * Elements will not be instances of [MessageChain]
      */
-    private val delegate: MutableList<Message>
-) : Message, MutableList<Message>, // do not `by delegate`, bcz Inline class cannot implement an interface by delegation
-    MessageChain {
-
-    constructor(vararg messages: Message) : this(messages.toMutableList())
-
-    // region Message override
+    private val delegate: List<Message>
+) : Message, List<Message> by delegate, MessageChain {
     override fun toString(): String = this.delegate.joinToString("") { it.toString() }
 
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
-    override fun followedBy(tail: Message): MessageChain {
+    override fun followedBy(tail: Message): CombinedMessage {
         require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
-        if (tail is MessageChain) tail.forEach { child -> this.followedBy(child) }
-        else this.delegate.add(tail)
-        return this
+        // if (tail is MessageChain) tail.forEach { child -> this.followedBy(child) }
+        // else this.delegate.add(tail)
+        return CombinedMessage(tail, this)
     }
-
-    // endregion
-
-    // region MutableList override
-    override fun containsAll(elements: Collection<Message>): Boolean = delegate.containsAll(elements)
-
-    override operator fun get(index: Int): Message = delegate[index]
-    override fun indexOf(element: Message): Int = delegate.indexOf(element)
-    override fun isEmpty(): Boolean = delegate.isEmpty()
-    override fun lastIndexOf(element: Message): Int = delegate.lastIndexOf(element)
-    override fun add(element: Message): Boolean = delegate.add(element)
-    override fun add(index: Int, element: Message) = delegate.add(index, element)
-    override fun addAll(index: Int, elements: Collection<Message>): Boolean = delegate.addAll(index, elements)
-    override fun addAll(elements: Collection<Message>): Boolean = delegate.addAll(elements)
-    override fun clear() = delegate.clear()
-    override fun listIterator(): MutableListIterator<Message> = delegate.listIterator()
-    override fun listIterator(index: Int): MutableListIterator<Message> = delegate.listIterator(index)
-    override fun remove(element: Message): Boolean = delegate.remove(element)
-    override fun removeAll(elements: Collection<Message>): Boolean = delegate.removeAll(elements)
-    override fun removeAt(index: Int): Message = delegate.removeAt(index)
-    override fun retainAll(elements: Collection<Message>): Boolean = delegate.retainAll(elements)
-    override fun set(index: Int, element: Message): Message = delegate.set(index, element)
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> = delegate.subList(fromIndex, toIndex)
-    override operator fun iterator(): MutableIterator<Message> = delegate.iterator()
-    override operator fun contains(element: Message): Boolean = delegate.contains(element)
-    override val size: Int get() = delegate.size
-    // endregion
 }
 

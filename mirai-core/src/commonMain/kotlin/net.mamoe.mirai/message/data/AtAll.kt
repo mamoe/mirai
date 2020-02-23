@@ -27,7 +27,7 @@ object AtAll : Message, Message.Key<AtAll> {
 
     // 自动为消息补充 " "
 
-    override fun followedBy(tail: Message): MessageChain {
+    override fun followedBy(tail: Message): CombinedMessage {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }

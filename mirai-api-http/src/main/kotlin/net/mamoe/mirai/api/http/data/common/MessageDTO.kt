@@ -97,7 +97,7 @@ fun MessageChain.toDTOChain() = mutableListOf(this[MessageSource].toDTO()).apply
 }
 
 fun MessageChainDTO.toMessageChain(contact: Contact) =
-    MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
+    buildMessageChain { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {
