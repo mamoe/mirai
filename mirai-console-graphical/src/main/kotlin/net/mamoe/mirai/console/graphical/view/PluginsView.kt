@@ -13,10 +13,21 @@ class PluginsView : View() {
 
     override val root = jfxTreeTableView(plugins) {
         columns.addAll(
-            JFXTreeTableColumn<PluginModel, String>("插件名").apply {  },
-            JFXTreeTableColumn<PluginModel, String>("版本").apply {  },
-            JFXTreeTableColumn<PluginModel, String>("作者").apply {  },
-            JFXTreeTableColumn<PluginModel, String>("介绍").apply {  }
+            JFXTreeTableColumn<PluginModel, String>("插件名").apply {
+                prefWidthProperty().bind(this@jfxTreeTableView.widthProperty().multiply(0.1))
+            },
+            JFXTreeTableColumn<PluginModel, String>("版本").apply {
+                prefWidthProperty().bind(this@jfxTreeTableView.widthProperty().multiply(0.1))
+            },
+            JFXTreeTableColumn<PluginModel, String>("作者").apply {
+                prefWidthProperty().bind(this@jfxTreeTableView.widthProperty().multiply(0.1))
+            },
+            JFXTreeTableColumn<PluginModel, String>("介绍").apply {
+                prefWidthProperty().bind(this@jfxTreeTableView.widthProperty().multiply(0.6))
+            },
+            JFXTreeTableColumn<PluginModel, String>("操作").apply {
+                prefWidthProperty().bind(this@jfxTreeTableView.widthProperty().multiply(0.08))
+            }
         )
     }
 }

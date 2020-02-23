@@ -13,10 +13,7 @@ import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
-import tornadofx.Controller
-import tornadofx.Scope
-import tornadofx.find
-import tornadofx.observableListOf
+import tornadofx.*
 
 class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
@@ -79,10 +76,9 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     override fun createLoginSolver(): LoginSolver = loginSolver
 
-    private fun getPluginsFromConsole(): ObservableList<PluginModel> {
-        // TODO
-        return observableListOf<PluginModel>()
-    }
+    private fun getPluginsFromConsole(): ObservableList<PluginModel> =
+        MiraiConsole.pluginManager.getAllPluginDescriptions().map(::PluginModel).toObservable()
+
 }
 
 class GraphicalLoginSolver : LoginSolver() {
