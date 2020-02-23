@@ -12,17 +12,17 @@ package net.mamoe.mirai.imageplugin
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.plugins.Config
 import net.mamoe.mirai.console.plugins.ConfigSection
+import net.mamoe.mirai.console.plugins.PluginBase
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.console.plugins.PluginBase
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.uploadAsImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import org.jsoup.Jsoup
 import java.io.File
-import kotlin.random.Random
+import java.net.URL
 
 class ImageSenderMain : PluginBase() {
 
@@ -60,7 +60,6 @@ class ImageSenderMain : PluginBase() {
                         reply(e.message ?: "unknown error")
                     }
                 }
-
             }
         }
     }
@@ -84,15 +83,20 @@ class ImageSenderMain : PluginBase() {
 
     override fun onLoad() {
         logger.info("loading local image data")
+
         try {
-            images = Config.load(this.javaClass.classLoader.getResource("data.yml")!!.path!!)
+            images = Config.load(getResources(fileName = "data.yml")!!, "yml")
         } catch (e: Exception) {
+            e.printStackTrace()
             logger.info("无法加载本地图片")
         }
         logger.info("本地图片版本" + images.getString("version"))
-        logger.info("Normal * " + images.getList("normal").size)
-        logger.info("R18    * " + images.getList("R18").size)
+        r18 = images.getConfigSectionList("R18")
+        normal = images.getConfigSectionList("normal")
+        logger.info("Normal * " + normal.size)
+        logger.info("R18    * " + r18.size)
     }
+
 
     override fun onDisable() {
 

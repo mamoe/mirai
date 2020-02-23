@@ -103,6 +103,7 @@ suspend fun MessagePacket<*, *>.toDTO() = when (this) {
 suspend fun MessageChainDTO.toMessageChain(contact: Contact) =
     buildMessageChain { this@toMessageChain.forEach { it.toMessage(contact)?.let(::add) } }
 
+
 @UseExperimental(ExperimentalUnsignedTypes::class)
 suspend fun MessagePacket<*, *>.messageDTO(message: Message) = when (message) {
     is MessageSource -> MessageSourceDTO(message.id)

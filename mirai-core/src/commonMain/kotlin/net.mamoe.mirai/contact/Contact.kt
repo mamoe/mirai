@@ -138,9 +138,5 @@ suspend inline fun <C : Contact> C.sendMessage(message: Message): MessageReceipt
 /**
  * @see Contact.sendMessage
  */
+@Suppress("UNCHECKED_CAST")
 suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> = sendMessage(plain.toMessage())
-
-/**
- * @see Contact.sendMessage
- */
-suspend inline fun <C : Contact> C.sendMessage(plain: CombinedMessage): MessageReceipt<C> = sendMessage(MessageChain(plain as Message)) as MessageReceipt<C>

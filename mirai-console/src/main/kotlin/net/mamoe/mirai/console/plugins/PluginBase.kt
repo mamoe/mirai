@@ -17,6 +17,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
+import java.io.InputStream
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.jar.JarFile
@@ -90,6 +91,13 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
 
     val logger: MiraiLogger by lazy {
         DefaultLogger(pluginDescription.name)
+    }
+
+    fun getResources(fileName: String): InputStream? {
+        return PluginManager.getFileInJarByName(
+            this.pluginDescription.name,
+            fileName
+        )
     }
 }
 
@@ -324,6 +332,47 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             it.disable(throwable)
         }
+    }
+
+    /**
+     * 根据插件名字找Jar的文件
+     * null => 没找到
+     */
+    fun getJarPath(pluginName: String): File? {
+        File(pluginsPath).listFiles()?.forEach { file ->
+            if (file != null && file.extension == "jar") {
+                val jar = JarFile(file)
+                val pluginYml =
+                    jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
+                if (pluginYml != null) {
+                    val description =
+                        PluginDescription.readFromContent(
+                            URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
+                                it.readBytes().encodeToString()
+                            })
+                    if (description.name.toLowerCase() == pluginName.toLowerCase()) {
+                        return file
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+
+    /**
+     * 根据插件名字找Jar resources中的文件
+     * null => 没找到
+     */
+    fun getFileInJarByName(pluginName: String, toFind: String): InputStream? {
+        val jarFile = getJarPath(pluginName)
+        if (jarFile == null) {
+            return null
+        }
+        val jar = JarFile(jarFile)
+        val toFindFile =
+            jar.entries().asSequence().filter { it.name == toFind }.firstOrNull() ?: return null
+        return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
 }
 

@@ -25,7 +25,7 @@ import kotlin.jvm.JvmStatic
 /**
  * 自定义表情 (收藏的表情), 图片
  */
-sealed class Image : Message {
+sealed class Image : Message, MessageContent {
     companion object Key : Message.Key<Image> {
         @JvmStatic
         @JsName("fromId")

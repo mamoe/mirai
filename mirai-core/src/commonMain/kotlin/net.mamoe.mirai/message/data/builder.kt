@@ -22,8 +22,10 @@ inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChai
 }
 
 class MessageChainBuilder @JvmOverloads constructor(
-    private val container: MutableList<Message> = mutableListOf()
-) : MutableList<Message> by container, Appendable {
+    private val container: MutableCollection<Message> = mutableListOf()
+) : MutableCollection<Message> by container, Appendable {
+    constructor(initialSize: Int) : this(ArrayList<Message>(initialSize))
+
     operator fun Message.unaryPlus() {
         add(this)
     }
