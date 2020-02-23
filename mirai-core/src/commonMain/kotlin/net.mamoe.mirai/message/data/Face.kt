@@ -18,7 +18,7 @@ import kotlin.jvm.JvmName
 /**
  * QQ 自带表情
  */
-class Face(val id: Int) : Message {
+class Face(val id: Int) : Message, MessageContent {
     override fun toString(): String = "[mirai:face$id]"
 
     /**

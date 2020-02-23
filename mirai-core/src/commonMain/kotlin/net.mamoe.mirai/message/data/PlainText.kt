@@ -21,7 +21,7 @@ import kotlin.jvm.JvmStatic
  *
  * 一般不需要主动构造 [PlainText], [Message] 可直接与 [String] 相加. Java 用户请使用 [MessageChain.plus]
  */
-inline class PlainText(val stringValue: String) : Message {
+inline class PlainText(val stringValue: String) : Message, MessageContent {
     constructor(charSequence: CharSequence) : this(charSequence.toString())
 
     override operator fun contains(sub: String): Boolean = sub in stringValue

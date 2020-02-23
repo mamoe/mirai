@@ -326,7 +326,7 @@ internal class NotOnlineImageFromServer(
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
 
-    val message = ArrayList<Message>(elements.size + 1)
+    val message = MessageChainBuilder(elements.size + 1)
     message.add(MessageSourceFromMsg(delegate = this))
     elements.joinToMessageChain(message)
     return message.asMessageChain()
@@ -338,7 +338,7 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
 internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     val elements = this.elems!!
 
-    val message = ArrayList<Message>(elements.size + 1)
+    val message = MessageChainBuilder(elements.size + 1)
     message.add(MessageSourceFromServer(delegate = this))
     elements.joinToMessageChain(message)
     return message.asMessageChain()
@@ -346,7 +346,7 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
 
 
 @UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class)
-internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MutableList<Message>) {
+internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
     this.forEach {
         when {
             it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))

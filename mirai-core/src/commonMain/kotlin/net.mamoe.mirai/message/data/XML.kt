@@ -23,8 +23,8 @@ import kotlin.jvm.JvmName
  *
  * @see buildXMLMessage
  */
-inline class XMLMessage(val stringValue: String) : Message,
-    SingleOnly {
+@MiraiExperimentalAPI
+inline class XMLMessage(val stringValue: String) : Message, MessageContent {
     override fun followedBy(tail: Message): Nothing = error("XMLMessage Message cannot be followed")
     override fun toString(): String = stringValue
 }

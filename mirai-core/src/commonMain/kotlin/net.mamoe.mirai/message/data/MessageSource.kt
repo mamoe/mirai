@@ -23,7 +23,7 @@ import kotlin.jvm.JvmName
  *
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  */
-interface MessageSource : Message {
+interface MessageSource : Message, MessageMetadata {
     companion object Key : Message.Key<MessageSource>
 
     /**

@@ -22,15 +22,15 @@ import kotlin.jvm.JvmName
  *
  * @see At at 单个群成员
  */
-object AtAll : Message, Message.Key<AtAll> {
+object AtAll : Message, Message.Key<AtAll>, MessageContent {
     override fun toString(): String = "@全体成员"
 
     // 自动为消息补充 " "
 
     override fun followedBy(tail: Message): CombinedMessage {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
-            return super.followedBy(tail)
+            return super<MessageContent>.followedBy(tail)
         }
-        return super.followedBy(PlainText(" ")) + tail
+        return super<MessageContent>.followedBy(PlainText(" ")) + tail
     }
 }

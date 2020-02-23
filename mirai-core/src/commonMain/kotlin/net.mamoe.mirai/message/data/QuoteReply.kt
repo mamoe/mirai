@@ -21,25 +21,27 @@ import kotlin.jvm.JvmName
 
 
 /**
- * 群内的或好友的引用回复.
+ * 从服务器接收的或客户端构造用来发送的群内的或好友的引用回复.
  *
  * 可以引用一条群消息并发送给一个好友, 或是引用好友消息发送给群.
  * 可以引用自己发出的消息. 详见 [MessageReceipt.quote]
  *
  * 总是使用 [quote] 来构造这个实例.
  */
-open class QuoteReply @MiraiInternalAPI constructor(val source: MessageSource) : Message {
+open class QuoteReply
+@MiraiInternalAPI constructor(val source: MessageSource) : Message, MessageContent {
     companion object Key : Message.Key<QuoteReply>
 
     override fun toString(): String = ""
 }
 
 /**
- * 群内的引用回复.
+ * 用于发送的引用回复.
  * 总是使用 [quote] 来构造实例.
  */
 @UseExperimental(MiraiInternalAPI::class)
-class QuoteReplyToSend @MiraiInternalAPI constructor(source: MessageSource, val sender: QQ) : QuoteReply(source) {
+class QuoteReplyToSend
+@MiraiInternalAPI constructor(source: MessageSource, val sender: QQ) : QuoteReply(source) {
     fun createAt(): At = At(sender as Member)
 }
 

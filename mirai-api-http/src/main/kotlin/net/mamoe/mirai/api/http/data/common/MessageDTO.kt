@@ -17,6 +17,7 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /*
@@ -99,7 +100,7 @@ fun MessageChain.toDTOChain() = mutableListOf(this[MessageSource].toDTO()).apply
 fun MessageChainDTO.toMessageChain(contact: Contact) =
     buildMessageChain { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
 
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@UseExperimental(ExperimentalUnsignedTypes::class, MiraiExperimentalAPI::class)
 fun Message.toDTO() = when (this) {
     is MessageSource -> MessageSourceDTO(id)
     is At -> AtDTO(target, display)
@@ -111,7 +112,7 @@ fun Message.toDTO() = when (this) {
     else -> UnknownMessageDTO
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 fun MessageDTO.toMessage(contact: Contact) = when (this) {
     is AtDTO -> At((contact as Group)[target])
     is AtAllDTO -> AtAll
