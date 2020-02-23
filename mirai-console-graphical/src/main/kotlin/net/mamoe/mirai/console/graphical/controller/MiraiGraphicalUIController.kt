@@ -12,6 +12,7 @@ import net.mamoe.mirai.console.graphical.model.ConsoleInfo
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
+import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
 import tornadofx.Controller
 import tornadofx.Scope
