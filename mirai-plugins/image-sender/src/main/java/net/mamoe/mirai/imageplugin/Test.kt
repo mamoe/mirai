@@ -30,6 +30,7 @@ object Data {
 }
 
 fun main() {
+
     val abstract_file = (File(System.getProperty("user.dir") + "/abstractSetu.yml")).loadAsConfig()
 
     abstract_file.setIfAbsent("R18", mutableListOf<ConfigSection>())
@@ -53,6 +54,7 @@ fun main() {
                     this["author"] = it["author"]!!
                     this["uid"] = it["uid"]!!
                     this["tags"] = it["tags"]!!
+                    this["url"] = it["url"]!!
                 }
             )
         }
@@ -73,6 +75,7 @@ fun main() {
                     this["author"] = it["author"]!!
                     this["uid"] = it["uid"]!!
                     this["tags"] = it["tags"]!!
+                    this["url"] = it["url"]!!
                 }
             )
         }
@@ -87,6 +90,7 @@ fun main() {
     Runtime.getRuntime().addShutdownHook(thread(start = false) {
     Data.save()
     })
+
     while (true){
     try {
     val val0 = JSONObject.parseObject(Jsoup
@@ -116,6 +120,7 @@ fun main() {
     configSection["tags"] = content.getJSONArray("tags").map {
     it.toString()
     }.joinToString(",")
+    configSection["url"] = content.getString("url")
     if(isR18){
     Data.R18.add(configSection)
     print("获取到了一张R18")
@@ -131,9 +136,9 @@ fun main() {
     }
     Data.save()
     println("SAVED")
-    Thread.sleep(1250)
+    Thread.sleep(1000)
     }
-     */
 
+     */
 
 }
