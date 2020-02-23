@@ -17,7 +17,9 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.uploadImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import java.net.URL
 
 /*
 *   DTO data class
@@ -97,7 +99,7 @@ fun MessageChain.toDTOChain() = mutableListOf(this[MessageSource].toDTO()).apply
 }
 
 fun MessageChainDTO.toMessageChain(contact: Contact) =
-    buildMessageChain { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
+    buildMessageChain { this@toMessageChain.forEach { it.toMessage(contact)?.let(::add) } }
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
 fun Message.toDTO() = when (this) {
@@ -119,6 +121,6 @@ fun MessageDTO.toMessage(contact: Contact) = when (this) {
     is PlainDTO -> PlainText(text)
     is ImageDTO -> Image(imageId)
     is XmlDTO -> XMLMessage(xml)
-    is MessageSourceDTO, is UnknownMessageDTO -> PlainText("assert cannot reach")
+    is MessageSourceDTO, is UnknownMessageDTO -> null
 }
 
