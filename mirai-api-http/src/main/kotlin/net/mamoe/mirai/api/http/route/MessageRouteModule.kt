@@ -54,7 +54,7 @@ fun Application.messageModule() {
             }
         }
 
-        miraiVerify<SendDTO>("/quoteMessage") {
+        miraiVerify<SendDTO>("/sendQuoteMessage") {
             it.session.messageQueue.quoteCache[it.target]?.apply {
                 quoteReply(it.messageChain.toMessageChain(group))
             } ?: throw NoSuchElementException()
