@@ -23,7 +23,7 @@ class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
     val quoteCacheSize = 4096
     val quoteCache = LinkedHashMap<Long, GroupMessage>()
 
-    fun fetch(size: Int): List<EventDTO> {
+    suspend fun fetch(size: Int): List<EventDTO> {
         var count = size
 
         val ret = ArrayList<EventDTO>(count)

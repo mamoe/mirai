@@ -58,7 +58,7 @@ data class PlainDTO(val text: String) : MessageDTO()
 
 @Serializable
 @SerialName("Image")
-data class ImageDTO(val imageId: String) : MessageDTO()
+data class ImageDTO(val imageId: String? = null, val url: String? = null) : MessageDTO()
 
 @Serializable
 @SerialName("Xml")
@@ -85,41 +85,47 @@ sealed class MessageDTO : DTO
 /*
     Extend function
  */
-fun MessagePacket<*, *>.toDTO() = when (this) {
+suspend fun MessagePacket<*, *>.toDTO() = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
     else -> IgnoreEventDTO
 }.apply {
-    if (this is MessagePacketDTO) { messageChain = message.toDTOChain() }
-    // else: `this` is bot event
+    if (this is MessagePacketDTO) {
+        // 将MessagePacket中的所有Message转为DTO对象，并添加到messageChain
+        // foreachContent会忽略MessageSource，一次主动获取
+        messageChain = mutableListOf(messageDTO(message[MessageSource])).apply {
+            message.foreachContent { content -> messageDTO(content).takeUnless { it == UnknownMessageDTO }?.let(::add) }
+        }
+        // else: `this` is bot event
+    }
 }
 
-fun MessageChain.toDTOChain() = mutableListOf(this[MessageSource].toDTO()).apply {
-    foreachContent { content -> content.toDTO().takeUnless { it == UnknownMessageDTO }?.let(::add) }
-}
-
-fun MessageChainDTO.toMessageChain(contact: Contact) =
+suspend fun MessageChainDTO.toMessageChain(contact: Contact) =
     buildMessageChain { this@toMessageChain.forEach { it.toMessage(contact)?.let(::add) } }
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
-fun Message.toDTO() = when (this) {
-    is MessageSource -> MessageSourceDTO(id)
-    is At -> AtDTO(target, display)
+suspend fun MessagePacket<*, *>.messageDTO(message: Message) = when (message) {
+    is MessageSource -> MessageSourceDTO(message.id)
+    is At -> AtDTO(message.target, message.display)
     is AtAll -> AtAllDTO(0L)
-    is Face -> FaceDTO(id)
-    is PlainText -> PlainDTO(stringValue)
-    is Image -> ImageDTO(imageId)
-    is XMLMessage -> XmlDTO(stringValue)
+    is Face -> FaceDTO(message.id)
+    is PlainText -> PlainDTO(message.stringValue)
+    is Image -> ImageDTO(message.imageId, message.url())
+    is XMLMessage -> XmlDTO(message.stringValue)
     else -> UnknownMessageDTO
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-fun MessageDTO.toMessage(contact: Contact) = when (this) {
+suspend fun MessageDTO.toMessage(contact: Contact) = when (this) {
     is AtDTO -> At((contact as Group)[target])
     is AtAllDTO -> AtAll
     is FaceDTO -> Face(faceId)
     is PlainDTO -> PlainText(text)
-    is ImageDTO -> Image(imageId)
+    is ImageDTO -> when {
+        !imageId.isNullOrBlank() -> Image(imageId)
+        !url.isNullOrBlank() -> contact.uploadImage(URL(url))
+        else -> null
+    }
     is XmlDTO -> XMLMessage(xml)
     is MessageSourceDTO, is UnknownMessageDTO -> null
 }

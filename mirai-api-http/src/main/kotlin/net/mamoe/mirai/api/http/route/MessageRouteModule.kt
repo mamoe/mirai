@@ -46,12 +46,14 @@ fun Application.messageModule() {
             it.session.bot.getFriend(it.target).apply {
                 sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
             }
+            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
             it.session.bot.getGroup(it.target).apply {
                 sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
             }
+            call.respondStateCode(StateCode.Success)
         }
 
         miraiVerify<SendDTO>("/sendQuoteMessage") {
