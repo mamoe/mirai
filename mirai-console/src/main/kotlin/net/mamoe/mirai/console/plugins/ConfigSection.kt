@@ -197,8 +197,14 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
                         Float::class -> getFloatList(propertyName)
                         Double::class -> getDoubleList(propertyName)
                         Long::class -> getLongList(propertyName)
+                        //不去支持getConfigSectionList(propertyName)
+                        // LinkedHashMap::class -> getConfigSectionList(propertyName)//faster approach
                         else -> {
-                            error("unsupported type")
+                            //if(list[0]!! is ConfigSection || list[0]!! is Map<*,*>){
+                            // getConfigSectionList(propertyName)
+                            //}else {
+                            error("unsupported type" + list[0]!!::class)
+                            //}
                         }
                     }
                 } as T
@@ -277,7 +283,11 @@ interface ConfigSection : Config, MutableMap<String, Any> {
             if (it is ConfigSection) {
                 it
             } else {
-                ConfigSectionDelegation(it as MutableMap<String, Any>)
+                ConfigSectionDelegation(
+                    Collections.synchronizedMap(
+                        it as MutableMap<String, Any>
+                    )
+                )
             }
         }
     }
