@@ -55,6 +55,7 @@ import kotlin.jvm.JvmSynthetic
  * @see QuoteReply 引用一条消息
  *
  * @see MessageChain 消息链(即 `List<Message>`)
+ * @see buildMessageChain 构造一个 [MessageChain]
  *
  * @see Contact.sendMessage 发送消息
  */
