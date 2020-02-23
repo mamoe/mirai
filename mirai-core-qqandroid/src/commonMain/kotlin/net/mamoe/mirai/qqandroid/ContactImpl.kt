@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid
 
 import kotlinx.coroutines.launch
+import kotlinx.io.core.Closeable
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
@@ -40,6 +41,7 @@ internal abstract class ContactImpl : Contact {
     }
 
     override fun equals(other: Any?): Boolean {
+        @Suppress("DuplicatedCode")
         if (this === other) return true
         if (other !is Contact) return false
         if (this::class != other::class) return false
@@ -144,7 +146,7 @@ internal class QQImpl(
             }
         }
     } finally {
-        image.input.close()
+        (image.input as? Closeable)?.close()
     }
 
     @MiraiExperimentalAPI
@@ -642,7 +644,7 @@ internal class GroupImpl(
             }
         }
     } finally {
-        image.input.close()
+        (image.input as Closeable)?.close()
     }
 
     override fun toString(): String {

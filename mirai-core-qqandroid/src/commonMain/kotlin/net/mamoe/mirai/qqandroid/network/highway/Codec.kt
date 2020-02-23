@@ -9,13 +9,17 @@
 
 package net.mamoe.mirai.qqandroid.network.highway
 
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.io.InputStream
 import kotlinx.io.core.*
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.io.ByteArrayPool
 
 object Highway {
-    fun RequestDataTrans(
+    suspend fun RequestDataTrans(
         uin: Long,
         command: String,
         sequenceId: Int,
@@ -25,10 +29,11 @@ object Highway {
         localId: Int = 2052,
         uKey: ByteArray,
 
-        data: Input,
+        data: Any,
         dataSize: Int,
         md5: ByteArray
     ): ByteReadPacket {
+        require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }
         require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
         require(data !is ByteReadPacket || data.remaining.toInt() == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
         require(data !is IoBuffer || data.readRemaining == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as IoBuffer).readRemaining}" }
@@ -58,14 +63,15 @@ object Highway {
     }
 
     private object Codec {
-        fun buildC2SData(
+        suspend fun buildC2SData(
             dataHighwayHead: CSDataHighwayHead.DataHighwayHead,
             segHead: CSDataHighwayHead.SegHead,
             extendInfo: ByteArray,
             loginSigHead: CSDataHighwayHead.LoginSigHead?,
-            body: Input,
+            body: Any,
             bodySize: Int
         ): ByteReadPacket {
+            require(body is Input || body is InputStream || body is ByteReadChannel) { "unsupported body: ${body::class.simpleName}" }
             val head = CSDataHighwayHead.ReqDataHighwayHead(
                 msgBasehead = dataHighwayHead,
                 msgSeghead = segHead,
@@ -78,7 +84,27 @@ object Highway {
                 writeInt(head.size)
                 writeInt(bodySize)
                 writeFully(head)
-                check(body.copyTo(this).toInt() == bodySize) { "bad body size" }
+                when (body) {
+                    is ByteReadPacket -> writePacket(body)
+                    is Input -> ByteArrayPool.useInstance { buffer ->
+                        var size: Int
+                        while (body.readAvailable(buffer).also { size = it } != 0) {
+                            this@buildPacket.writeFully(buffer, 0, size)
+                        }
+                    }
+                    is ByteReadChannel -> ByteArrayPool.useInstance { buffer ->
+                        var size: Int
+                        while (body.readAvailable(buffer, 0, buffer.size).also { size = it } != 0) {
+                            this@buildPacket.writeFully(buffer, 0, size)
+                        }
+                    }
+                    is InputStream -> ByteArrayPool.useInstance { buffer ->
+                        var size: Int
+                        while (body.read(buffer).also { size = it } != 0) {
+                            this@buildPacket.writeFully(buffer, 0, size)
+                        }
+                    }
+                }
                 writeByte(41)
             }
         }

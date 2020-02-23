@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.io.InputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
@@ -29,29 +31,58 @@ import net.mamoe.mirai.utils.io.toUHexString
  * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
-class ExternalImage(
+class ExternalImage private constructor(
     val width: Int,
     val height: Int,
     val md5: ByteArray,
     imageFormat: String,
-    val input: Input,
+    val input: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
     val inputSize: Long, // dont be greater than Int.MAX
     val filename: String
 ) {
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: ByteReadChannel,
+        inputSize: Long, // dont be greater than Int.MAX
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, inputSize, filename)
+
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: Input,
+        inputSize: Long, // dont be greater than Int.MAX
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, inputSize, filename)
+
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: ByteReadPacket,
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, input.remaining, filename)
+
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: InputStream,
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, input.available().toLong(), filename)
+
     init {
-        check(inputSize in 0L..Int.MAX_VALUE.toLong()) { "file is too big" }
+        require(inputSize in 0L..Int.MAX_VALUE.toLong()) { "file is too big" }
     }
 
     companion object {
-        operator fun invoke(
-            width: Int,
-            height: Int,
-            md5: ByteArray,
-            format: String,
-            data: ByteReadPacket,
-            filename: String
-        ): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining, filename)
-
         fun generateUUID(md5: ByteArray): String {
             return "${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}"
         }
