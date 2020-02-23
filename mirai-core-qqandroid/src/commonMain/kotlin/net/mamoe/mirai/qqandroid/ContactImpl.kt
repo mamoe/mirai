@@ -147,6 +147,7 @@ internal class QQImpl(
         }
     } finally {
         (image.input as? Closeable)?.close()
+        (image.input as? io.ktor.utils.io.core.Closeable)?.close()
     }
 
     @MiraiExperimentalAPI
@@ -644,7 +645,8 @@ internal class GroupImpl(
             }
         }
     } finally {
-        (image.input as Closeable)?.close()
+        (image.input as? Closeable)?.close()
+        (image.input as? io.ktor.utils.io.core.Closeable)?.close()
     }
 
     override fun toString(): String {

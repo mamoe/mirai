@@ -86,10 +86,12 @@ object Highway {
                 writeFully(head)
                 when (body) {
                     is ByteReadPacket -> writePacket(body)
-                    is Input -> ByteArrayPool.useInstance { buffer ->
-                        var size: Int
-                        while (body.readAvailable(buffer).also { size = it } != 0) {
-                            this@buildPacket.writeFully(buffer, 0, size)
+                    is Input -> body.use {
+                        ByteArrayPool.useInstance { buffer ->
+                            var size: Int
+                            while (body.readAvailable(buffer).also { size = it } != 0) {
+                                this@buildPacket.writeFully(buffer, 0, size)
+                            }
                         }
                     }
                     is ByteReadChannel -> ByteArrayPool.useInstance { buffer ->
@@ -98,13 +100,18 @@ object Highway {
                             this@buildPacket.writeFully(buffer, 0, size)
                         }
                     }
-                    is InputStream -> ByteArrayPool.useInstance { buffer ->
-                        var size: Int
-                        while (body.read(buffer).also { size = it } != 0) {
-                            this@buildPacket.writeFully(buffer, 0, size)
+                    is InputStream -> try {
+                        ByteArrayPool.useInstance { buffer ->
+                            var size: Int
+                            while (body.read(buffer).also { size = it } != 0) {
+                                this@buildPacket.writeFully(buffer, 0, size)
+                            }
                         }
+                    } finally {
+                        body.close()
                     }
                 }
+
                 writeByte(41)
             }
         }

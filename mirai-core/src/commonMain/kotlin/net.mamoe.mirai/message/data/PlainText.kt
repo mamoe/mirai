@@ -14,6 +14,7 @@ package net.mamoe.mirai.message.data
 
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
 /**
  * 纯文本. 可含 emoji 表情.
@@ -21,10 +22,17 @@ import kotlin.jvm.JvmName
  * 一般不需要主动构造 [PlainText], [Message] 可直接与 [String] 相加. Java 用户请使用 [MessageChain.plus]
  */
 inline class PlainText(val stringValue: String) : Message {
+    constructor(charSequence: CharSequence) : this(charSequence.toString())
+
     override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
 
-    companion object Key : Message.Key<PlainText>
+    companion object Key : Message.Key<PlainText> {
+        @JvmStatic
+        val Empty = PlainText("")
+        @JvmStatic
+        val Null = PlainText("null")
+    }
 }
 
 /**

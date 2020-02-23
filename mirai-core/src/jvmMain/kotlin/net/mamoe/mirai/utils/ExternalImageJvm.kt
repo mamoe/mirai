@@ -68,14 +68,12 @@ fun File.toExternalImage(): ExternalImage {
         ?: error("Unable to read file(path=${this.path}), no ImageReader found")
     image.input = input
 
-    val inputStream = this.inputStream()
     return ExternalImage(
         width = image.getWidth(0),
         height = image.getHeight(0),
         md5 = this.inputStream().md5(), // dont change
         imageFormat = image.formatName,
-        input = inputStream.asInput(),
-        inputSize = inputStream.available().toLong(),
+        input = this.inputStream(),
         filename = this.name
     )
 }
