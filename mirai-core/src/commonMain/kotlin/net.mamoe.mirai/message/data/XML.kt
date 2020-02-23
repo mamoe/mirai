@@ -32,7 +32,6 @@ inline class XMLMessage(val stringValue: String) : Message,
 /**
  * 构造一条 XML 消息
  */
-@XMLDsl
 @MiraiExperimentalAPI("还未支持")
 inline fun buildXMLMessage(block: @XMLDsl XMLMessageBuilder.() -> Unit): XMLMessage =
     XMLMessage(XMLMessageBuilder().apply(block).text)
