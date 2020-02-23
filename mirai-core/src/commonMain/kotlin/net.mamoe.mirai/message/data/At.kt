@@ -26,7 +26,8 @@ import kotlin.jvm.JvmName
  *
  * @see AtAll 全体成员
  */
-class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
+class At
+@MiraiInternalAPI constructor(val target: Long, val display: String) : Message, MessageContent {
     @UseExperimental(MiraiInternalAPI::class)
     constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
 
@@ -38,9 +39,9 @@ class At @MiraiInternalAPI constructor(val target: Long, val display: String) : 
 
     override fun followedBy(tail: Message): CombinedMessage {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
-            return super.followedBy(tail)
+            return super<MessageContent>.followedBy(tail)
         }
-        return super.followedBy(PlainText(" ")) + tail
+        return super<MessageContent>.followedBy(PlainText(" ")) + tail
     }
 }
 

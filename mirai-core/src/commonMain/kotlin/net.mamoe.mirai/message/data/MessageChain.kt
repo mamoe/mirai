@@ -16,27 +16,19 @@ import net.mamoe.mirai.message.data.NullMessageChain.toString
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KProperty
 
 /**
- * 消息链. 即 MutableList<Message>.
+ * 消息链.
  * 它的一般实现为 [MessageChainImpl], `null` 实现为 [NullMessageChain]
- *
- * 有关 [MessageChain] 的创建和连接:
- * - 当任意两个不是 [MessageChain] 的 [Message] 相连接后, 将会产生一个 [MessageChain].
- * - 若两个 [MessageChain] 连接, 后一个将会被合并到第一个内.
- * - 若一个 [MessageChain] 与一个其他 [Message] 连接, [Message] 将会被添加入 [MessageChain].
- * - 若一个 [Message] 与一个 [MessageChain] 连接, [Message] 将会被添加入 [MessageChain].
  *
  * 要获取更多信息, 请查看 [Message]
  *
- * @see buildMessageChain
+ * @see buildMessageChain 构造一个 [MessageChain]
  */
-interface MessageChain : Message, List<Message> {
-    // region Message override
+interface MessageChain : Message, Iterable<Message> {
     override operator fun contains(sub: String): Boolean
-    // endregion
-
     override fun toString(): String
 
     /**
@@ -51,29 +43,16 @@ interface MessageChain : Message, List<Message> {
  * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage]
  */
 inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
-    this.forEachIndexed { index: Int, message: Message ->
+    var last: Message? = null
+    this.forEach { message: Message ->
         if (message is At) {
-            if (index == 0 || this[index - 1] !is QuoteReply) {
+            if (last != null || last !is QuoteReply) {
                 block(message)
             }
-        } else if (message.hasContent()) {
+        } else if (message is MessageContent) {
             block(message)
         }
-    }
-}
-
-/**
- * 判断这个 [Message] 是否含有内容, 即是否为 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage]
- */
-fun Message.hasContent(): Boolean {
-    return when (this) {
-        is At,
-        is AtAll,
-        is PlainText,
-        is Image,
-        is Face,
-        is XMLMessage -> true
-        else -> false
+        last = message
     }
 }
 
@@ -109,7 +88,7 @@ fun MessageChain(vararg messages: Message): MessageChain =
 @JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(message: Message): MessageChain =
-    MessageChainImpl(listOf(message))
+    SingleMessageChainImpl(message)
 
 /**
  * 构造 [MessageChain]
@@ -136,13 +115,19 @@ fun MessageChain(messages: List<Message>): MessageChain =
  * 否则将调用 [MessageChain] 构造一个 [MessageChainImpl]
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun Message.toChain(): MessageChain = if (this is MessageChain) this else MessageChain(this)
+@JvmSynthetic
+fun Message.toChain(): MessageChain = when (this) {
+    is MessageChain -> this
+    is CombinedMessage -> MessageChainImpl(this)
+    else -> SingleMessageChainImpl(this)
+}
 
 /**
  * 构造 [MessageChain]
  */
+@JvmSynthetic
 @Suppress("unused", "NOTHING_TO_INLINE")
-inline fun List<Message>.asMessageChain(): MessageChain = MessageChain(this)
+fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImpl(this)
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -200,45 +185,25 @@ object EmptyMessageChain : MessageChain by {
  * 除 [toString] 外, 其他方法均 [error]
  */
 object NullMessageChain : MessageChain {
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Message> = error("accessing NullMessageChain")
-
     override fun toString(): String = "null"
-
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
-    override fun contains(element: Message): Boolean = error("accessing NullMessageChain")
     override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, element = tail)
-
-    override val size: Int get() = error("accessing NullMessageChain")
-    override fun containsAll(elements: Collection<Message>): Boolean = error("accessing NullMessageChain")
-    override fun get(index: Int): Message = error("accessing NullMessageChain")
-    override fun indexOf(element: Message): Int = error("accessing NullMessageChain")
-    override fun isEmpty(): Boolean = error("accessing NullMessageChain")
     override fun iterator(): MutableIterator<Message> = error("accessing NullMessageChain")
-
-    override fun lastIndexOf(element: Message): Int = error("accessing NullMessageChain")
-    override fun listIterator(): MutableListIterator<Message> = error("accessing NullMessageChain")
-
-    override fun listIterator(index: Int): MutableListIterator<Message> = error("accessing NullMessageChain")
 }
 
-/**
- * [MessageChain] 实现
- * 它是一个特殊的 [Message], 实现 [MutableList] 接口, 但将所有的接口调用都转到内部维护的另一个 [MutableList].
- */
+@PublishedApi
 internal class MessageChainImpl constructor(
-    /**
-     * Elements will not be instances of [MessageChain]
-     */
-    private val delegate: List<Message>
-) : Message, List<Message> by delegate, MessageChain {
+    private val delegate: Iterable<Message>
+) : Message, Iterable<Message> by delegate, MessageChain {
     override fun toString(): String = this.delegate.joinToString("") { it.toString() }
-
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
-    override fun followedBy(tail: Message): CombinedMessage {
-        require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
-        // if (tail is MessageChain) tail.forEach { child -> this.followedBy(child) }
-        // else this.delegate.add(tail)
-        return CombinedMessage(tail, this)
-    }
 }
 
+@PublishedApi
+internal class SingleMessageChainImpl constructor(
+    private val delegate: Message
+) : Message, Iterable<Message> by listOf(delegate), MessageChain {
+    override fun toString(): String = this.delegate.toString()
+
+    override operator fun contains(sub: String): Boolean = sub in delegate
+}

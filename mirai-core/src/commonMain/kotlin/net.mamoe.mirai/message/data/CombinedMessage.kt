@@ -7,7 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 package net.mamoe.mirai.message.data
+
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * Left-biased list
@@ -16,6 +22,8 @@ class CombinedMessage(
     val left: Message,
     val element: Message
 ) : Iterable<Message>, Message {
+
+    // 不要把它用作 local function, 会编译错误
     private suspend fun SequenceScope<Message>.yieldCombinedOrElements(message: Message) {
         when (message) {
             is CombinedMessage -> {
@@ -36,6 +44,6 @@ class CombinedMessage(
     }
 
     override fun toString(): String {
-        return left.toString() + element.toString()
+        return element.toString() + left.toString()
     }
 }

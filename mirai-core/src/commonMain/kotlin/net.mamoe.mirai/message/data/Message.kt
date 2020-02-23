@@ -20,6 +20,12 @@ import kotlin.jvm.JvmSynthetic
  * 可发送的或从服务器接收的消息.
  * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
+ * [消息][Message] 分为
+ * - [MessageMetadata] 消息元数据, 包括: [消息来源][MessageSource]
+ * - [MessageContent] 单个消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
+ * - [CombinedMessage] 通过 [plus] 连接的两个消息. 可通过 [asMessageChain] 转换为 [MessageChain]
+ * - [MessageChain] 不可变消息链, 即 [List] 形式链接的多个 [Message] 实例.
+ *
  * **在 Kotlin 使用 [Message]**
  * 这与使用 [String] 的使用非常类似.
  *
@@ -44,6 +50,10 @@ import kotlin.jvm.JvmSynthetic
  * @see PlainText 纯文本
  * @see Image 图片
  * @see Face 表情
+ * @see At 引用一个群成员
+ * @see AtAll 引用全体成员
+ * @see QuoteReply 引用一条消息
+ *
  * @see MessageChain 消息链(即 `List<Message>`)
  *
  * @see Contact.sendMessage 发送消息
@@ -86,8 +96,6 @@ interface Message {
      */
     @JvmSynthetic // in java they should use `plus` instead
     fun followedBy(tail: Message): CombinedMessage {
-        require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
-        require(this !is SingleOnly) { "SingleOnly Message cannot be followed" }
         return CombinedMessage(tail, this)
     }
 
@@ -100,12 +108,35 @@ interface Message {
     operator fun plus(another: CharSequence): CombinedMessage = this.followedBy(another.toString().toMessage())
 }
 
+suspend fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
+    return contact.sendMessage(this)
+}
+
 /**
- * 表示这个 [Message] 仅能单个存在, 无法被连接.
+ * 消息元数据, 即不含内容的元素.
+ * 包括: [MessageSource]
  */
-interface SingleOnly : Message
+interface MessageMetadata : Message {
+    /*
+    fun iterator(): Iterator<Message> {
+        return object : Iterator<Message> {
+            var visited: Boolean = false
+            override fun hasNext(): Boolean = !visited
+            override fun next(): Message {
+                if (visited) throw NoSuchElementException()
+                return this@MessageMetadata.also { visited = true }
+            }
+        }
+    }*/
+}
+
+/**
+ * 消息内容
+ */
+interface MessageContent : Message
 
 /**
  * 将 [this] 发送给指定联系人
  */
-suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> = contact.sendMessage(this)
+@Suppress("UNCHECKED_CAST")
+suspend inline fun <C : Contact> MessageChain.sendTo(contact: C): MessageReceipt<C> = contact.sendMessage(this) as MessageReceipt<C>
