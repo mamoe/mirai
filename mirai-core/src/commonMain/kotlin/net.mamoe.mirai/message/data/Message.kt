@@ -85,20 +85,19 @@ interface Message {
      * ```
      */
     @JvmSynthetic // in java they should use `plus` instead
-    fun followedBy(tail: Message): MessageChain {
+    fun followedBy(tail: Message): CombinedMessage {
         require(tail !is SingleOnly) { "SingleOnly Message cannot follow another message" }
         require(this !is SingleOnly) { "SingleOnly Message cannot be followed" }
-        return if (tail is MessageChain) tail.followedBy(this)/*MessageChainImpl(this).also { tail.forEach { child -> it.concat(child) } }*/
-        else MessageChainImpl(this, tail)
+        return CombinedMessage(tail, this)
     }
 
     override fun toString(): String
 
-    operator fun plus(another: Message): MessageChain = this.followedBy(another)
+    operator fun plus(another: Message): CombinedMessage = this.followedBy(another)
 
-    operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+    operator fun plus(another: String): CombinedMessage = this.followedBy(another.toMessage())
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
-    operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: CharSequence): CombinedMessage = this.followedBy(another.toString().toMessage())
 }
 
 /**
