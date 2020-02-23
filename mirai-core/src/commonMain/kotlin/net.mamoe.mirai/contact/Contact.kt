@@ -139,4 +139,4 @@ suspend inline fun <C : Contact> C.sendMessage(message: Message): MessageReceipt
  * @see Contact.sendMessage
  */
 @Suppress("UNCHECKED_CAST")
-suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> = sendMessage(plain.toMessage()) as MessageReceipt<C>
+suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> = sendMessage(plain.toMessage())

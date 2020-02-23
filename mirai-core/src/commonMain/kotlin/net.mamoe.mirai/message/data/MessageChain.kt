@@ -27,7 +27,7 @@ import kotlin.reflect.KProperty
  *
  * @see buildMessageChain 构造一个 [MessageChain]
  */
-interface MessageChain : Message, Iterable<Message> {
+interface MessageChain : Message, Iterable<SingleMessage> {
     override operator fun contains(sub: String): Boolean
     override fun toString(): String
 
@@ -78,7 +78,7 @@ fun MessageChain(): MessageChain = EmptyMessageChain
 @Suppress("FunctionName")
 fun MessageChain(vararg messages: Message): MessageChain =
     if (messages.isEmpty()) EmptyMessageChain
-    else MessageChainImpl(messages.toMutableList())
+    else MessageChainImpl(messages.asSequence().flatten())
 
 /**
  * 构造 [MessageChain] 的快速途径 (无 [Array] 创建)
@@ -88,7 +88,10 @@ fun MessageChain(vararg messages: Message): MessageChain =
 @JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(message: Message): MessageChain =
-    SingleMessageChainImpl(message)
+    when (message) {
+        is SingleMessage -> SingleMessageChainImpl(message)
+        else -> MessageChainImpl(message.flatten().asIterable())
+    }
 
 /**
  * 构造 [MessageChain]
@@ -97,7 +100,7 @@ fun MessageChain(message: Message): MessageChain =
 @JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(messages: Iterable<Message>): MessageChain =
-    MessageChainImpl(messages.toList())
+    MessageChainImpl(messages.flatten().asIterable())
 
 /**
  * 构造 [MessageChain]
@@ -106,7 +109,7 @@ fun MessageChain(messages: Iterable<Message>): MessageChain =
 @JsName("newChain")
 @Suppress("FunctionName")
 fun MessageChain(messages: List<Message>): MessageChain =
-    MessageChainImpl(messages)
+    MessageChainImpl(messages.flatten().asIterable())
 
 
 /**
@@ -114,20 +117,34 @@ fun MessageChain(messages: List<Message>): MessageChain =
  * 若 [this] 为 [MessageChain] 将直接返回 this
  * 否则将调用 [MessageChain] 构造一个 [MessageChainImpl]
  */
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 @JvmSynthetic
 fun Message.toChain(): MessageChain = when (this) {
     is MessageChain -> this
-    is CombinedMessage -> MessageChainImpl(this)
-    else -> SingleMessageChainImpl(this)
+    is CombinedMessage -> MessageChainImpl((this as Iterable<Message>).flatten().asIterable())
+    else -> SingleMessageChainImpl(this as SingleMessage)
 }
 
-/**
- * 构造 [MessageChain]
- */
+@JvmName("asMessageChain1")
 @JvmSynthetic
 @Suppress("unused", "NOTHING_TO_INLINE")
-fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImpl(this)
+fun Iterable<SingleMessage>.asMessageChain(): MessageChain = MessageChainImpl(this)
+
+@JvmSynthetic
+@Suppress("unused", "NOTHING_TO_INLINE")
+fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImpl(this.flatten())
+
+fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
+
+fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.flatten() }
+
+fun Message.flatten(): Sequence<SingleMessage> {
+    return when (this) {
+        is MessageChain -> this.asSequence()
+        is CombinedMessage -> this.asSequence().flatten()
+        else -> sequenceOf(this as SingleMessage)
+    }
+}
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -174,9 +191,7 @@ fun <M : Message> MessageChain.first(key: Message.Key<M>): M = firstOrNull(key) 
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(key) != null
 
-object EmptyMessageChain : MessageChain by {
-    MessageChainImpl(emptyList())
-}()
+object EmptyMessageChain : MessageChain by MessageChainImpl(emptyList())
 
 /**
  * Null 的 [MessageChain].
@@ -188,21 +203,23 @@ object NullMessageChain : MessageChain {
     override fun toString(): String = "null"
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
     override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, element = tail)
-    override fun iterator(): MutableIterator<Message> = error("accessing NullMessageChain")
+    override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
 
 @PublishedApi
 internal class MessageChainImpl constructor(
-    private val delegate: Iterable<Message>
-) : Message, Iterable<Message> by delegate, MessageChain {
+    private val delegate: Iterable<SingleMessage>
+) : Message, Iterable<SingleMessage> by delegate, MessageChain {
+    constructor(delegate: Sequence<SingleMessage>) : this(delegate.asIterable())
+
     override fun toString(): String = this.delegate.joinToString("") { it.toString() }
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
 }
 
 @PublishedApi
 internal class SingleMessageChainImpl constructor(
-    private val delegate: Message
-) : Message, Iterable<Message> by listOf(delegate), MessageChain {
+    private val delegate: SingleMessage
+) : Message, Iterable<SingleMessage> by listOf(delegate), MessageChain {
     override fun toString(): String = this.delegate.toString()
 
     override operator fun contains(sub: String): Boolean = sub in delegate

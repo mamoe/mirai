@@ -113,11 +113,13 @@ suspend fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
     return contact.sendMessage(this)
 }
 
+interface SingleMessage : Message
+
 /**
  * 消息元数据, 即不含内容的元素.
  * 包括: [MessageSource]
  */
-interface MessageMetadata : Message {
+interface MessageMetadata : SingleMessage {
     /*
     fun iterator(): Iterator<Message> {
         return object : Iterator<Message> {
@@ -134,7 +136,7 @@ interface MessageMetadata : Message {
 /**
  * 消息内容
  */
-interface MessageContent : Message
+interface MessageContent : SingleMessage
 
 /**
  * 将 [this] 发送给指定联系人

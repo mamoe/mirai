@@ -56,6 +56,7 @@ internal class LockFreeLinkedListTest {
         //}
     }
 
+    @Suppress("UNREACHABLE_CODE", "DeferredResultUnused")
     @Test
     fun `so many concurrent add remove and foreach`() = runBlocking {
         return@runBlocking // 测试通过了, 加快速度. 因为 kotlin 一些其他 bug
