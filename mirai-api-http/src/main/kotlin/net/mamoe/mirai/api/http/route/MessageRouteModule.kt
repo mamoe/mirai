@@ -29,6 +29,8 @@ import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.data.common.toMessageChain
 import net.mamoe.mirai.api.http.util.toJson
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadImage
@@ -59,26 +61,30 @@ fun Application.messageModule() {
 
         miraiVerify<SendDTO>("/sendFriendMessage") {
             val quote = it.quote?.let { q ->
-                it.session.messageQueue.cacheQuote(q).run {
+                it.session.messageQueue.cache(q).run {
                     this[MessageSource].quote(sender)
                 }}
 
             it.session.bot.getFriend(it.target).apply {
                 val receipt = sendMessage(quote, it.messageChain.toMessageChain(this), this)
                 receipt.source.ensureSequenceIdAvailable()
+
+                it.session.messageQueue.addQuoteCache(FriendMessage(bot.selfQQ, receipt.source.toChain()))
                 call.respondDTO(SendRetDTO(messageId = receipt.source.id))
             }
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
             val quote = it.quote?.let { q ->
-                it.session.messageQueue.cacheQuote(q).run {
+                it.session.messageQueue.cache(q).run {
                     this[MessageSource].quote(sender)
                 }}
 
             it.session.bot.getGroup(it.target).apply {
                 val receipt = sendMessage(quote, it.messageChain.toMessageChain(this), this)
                 receipt.source.ensureSequenceIdAvailable()
+
+                it.session.messageQueue.addQuoteCache(GroupMessage("", botPermission, botAsMember, receipt.source.toChain()))
                 call.respondDTO(SendRetDTO(messageId = receipt.source.id))
             }
         }
@@ -123,8 +129,10 @@ fun Application.messageModule() {
         }
 
         miraiVerify<RecallDTO>("recall") {
-            // TODO
-            call.respond(HttpStatusCode.NotFound, "未完成")
+            it.session.messageQueue.cache(it.target).apply {
+                it.session.bot.recall(get(MessageSource))
+            }
+            call.respondStateCode(StateCode.Success)
         }
     }
 }
@@ -156,6 +164,5 @@ private class SendRetDTO(
 @Serializable
 private data class RecallDTO(
     override val sessionKey: String,
-    val target: Long,
-    val sender: Long
+    val target: Long
 ) : VerifyDTO()
