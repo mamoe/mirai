@@ -48,7 +48,7 @@ open class MessageReceipt<C : Contact>(
     /**
      * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
      *
-     * @see Group.recall
+     * @see Bot.recall
      * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
      */
     @UseExperimental(MiraiExperimentalAPI::class)
