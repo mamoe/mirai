@@ -542,7 +542,7 @@ internal class GroupImpl(
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
-        lateinit var source: MessageSvc.PbSendMsg.MessageSourceFromSend
+        lateinit var source: MessageSvc.PbSendMsg.MessageSourceFromSendGroup
         bot.network.run {
             val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,

@@ -78,13 +78,9 @@ open class MessageReceipt<C : Contact>(
     fun recallIn(millis: Long): Job {
         @Suppress("BooleanLiteralArgument")
         if (_isRecalled.compareAndSet(false, true)) {
-            when (val contact = target) {
-                is Group -> {
-                    return contact.bot.recallIn(source, millis)
-                }
-                is QQ -> {
-                    TODO()
-                }
+            return when (val contact = target) {
+                is QQ,
+                is Group -> contact.bot.recallIn(source, millis)
                 else -> error("Unknown contact type")
             }
         } else error("message is already or planned to be recalled")
