@@ -173,14 +173,16 @@ fun main() {
 | ------------ | ------ | ----- | ----------- | -------------------------------- |
 | sessionKey   | String | false | YourSession | 已经激活的Session                |
 | target       | Long   | false | 987654321   | 发送消息目标好友的QQ号           |
+| quote        | Long   | true  | 135798642   | 引用一条消息的messageId进行回复  |
 | messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
 
-#### 响应: 返回统一状态码
+#### 响应: 返回统一状态码（并携带messageId）
 
 ```json5
 {
     "code": 0,
-    "msg": "success"
+    "msg": "success",
+    "messageId": 1234567890 // 一个Long类型属性，标识本条消息，用于撤回和引用回复
 }
 ```
 
@@ -211,52 +213,16 @@ fun main() {
 | ------------ | ------ | ----- | ----------- | -------------------------------- |
 | sessionKey   | String | false | YourSession | 已经激活的Session                |
 | target       | Long   | false | 987654321   | 发送消息目标群的群号             |
+| quote        | Long   | true  | 135798642   | 引用一条消息的messageId进行回复  |
 | messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
 
-#### 响应: 返回统一状态码
+#### 响应: 返回统一状态码（并携带messageId）
 
 ```json5
 {
     "code": 0,
-    "msg": "success"
-}
-```
-
-
-
-### 发送引用回复消息（仅支持群消息）
-
-```
-[POST] /sendQuoteMessage
-```
-
-使用此方法向指定的消息进行引用回复
-
-#### 请求
-
-```json5
-{
-    "sessionKey": "YourSession",
-    "target": 987654321,
-    "messageChain": [
-        { "type": "Plain", "text":"hello\n" },
-        { "type": "Plain", "text":"world" }
-    ]
-}
-```
-
-| 名字         | 类型   | 可选  | 举例        | 说明                             |
-| ------------ | ------ | ----- | ----------- | -------------------------------- |
-| sessionKey   | String | false | YourSession | 已经激活的Session                |
-| target       | Long   | false | 987654321   | 引用消息的Message Source的Uid    |
-| messageChain | Array  | false | []          | 消息链，是一个消息对象构成的数组 |
-
-#### 响应: 返回统一状态码
-
-```json5
-{
-    "code": 0,
-    "msg": "success"
+    "msg": "success",
+    "messageId": 1234567890 // 一个Long类型属性，标识本条消息，用于撤回和引用回复
 }
 ```
 
@@ -331,6 +297,39 @@ Content-Type：multipart/form-data
 
 
 
+### 撤回消息
+
+```
+[POST] /recall
+```
+
+使用此方法撤回指定消息。对于bot发送的消息，又2分钟时间限制。对于撤回群聊中群员的消息，需要有相应权限
+
+#### 请求
+
+```json5
+{
+    "sessionKey": "YourSession",
+    "target": 987654321
+}
+```
+
+| 名字         | 类型   | 可选  | 举例        | 说明                             |
+| ------------ | ------ | ----- | ----------- | -------------------------------- |
+| sessionKey   | String | false | YourSession | 已经激活的Session                |
+| target       | Long   | false | 987654321   | 需要撤回的消息的messageId        |
+
+#### 响应: 返回统一状态码
+
+```json5
+{
+    "code": 0,
+    "msg": "success"
+}
+```
+
+
+
 ### 获取Bot收到的消息和事件
 
 ```
@@ -370,7 +369,10 @@ Content-Type：multipart/form-data
     }
  },{
     "type": "FriendMessage",         // 消息类型：GroupMessage或FriendMessage或各类Event
-        "messageChain": [{           // 消息链，是一个消息对象构成的数组
+    "messageChain": [{             // 消息链，是一个消息对象构成的数组
+        "type": "Source",
+        "uid": 123456
+    },{
         "type": "Plain",
         "text": "Miral牛逼"
     }],

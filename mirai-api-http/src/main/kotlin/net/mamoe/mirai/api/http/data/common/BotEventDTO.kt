@@ -12,7 +12,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 sealed class BotEventDTO : EventDTO()
 
 @UseExperimental(MiraiExperimentalAPI::class)
-fun BotEvent.toDTO() = when(this) {
+suspend fun BotEvent.toDTO() = when(this) {
     is MessagePacket<*, *> -> toDTO()
     else -> when(this) {
         is BotOnlineEvent -> BotOnlineEventDTO(bot.uin)

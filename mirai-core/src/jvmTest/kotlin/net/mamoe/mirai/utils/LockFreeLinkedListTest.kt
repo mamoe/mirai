@@ -161,7 +161,7 @@ internal class LockFreeLinkedListTest {
         println("Check value")
         value shouldBeEqualTo 6
         println("Check size")
-        println(list.getLinkStructure())
+//        println(list.getLinkStructure())
         list.size shouldBeEqualTo 6
     }
 
@@ -174,7 +174,7 @@ internal class LockFreeLinkedListTest {
         println("Check value")
         value shouldBeEqualTo 2
         println("Check size")
-        println(list.getLinkStructure())
+//        println(list.getLinkStructure())
         list.size shouldBeEqualTo 5
     }
 
@@ -198,7 +198,7 @@ internal class LockFreeLinkedListTest {
         println("Check value")
         value shouldBeEqualTo 2
         println("Check size")
-        println(list.getLinkStructure())
+//        println(list.getLinkStructure())
         list.size shouldBeEqualTo 1
     }
     /*
