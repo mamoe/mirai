@@ -2,6 +2,15 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.22.0` 2020/2/24
+### mirai-core
+- 重构 `MessageChain`, 引入 `CombinedMessage`. (兼容大部分原 API)
+- 新增 `MessageChainBuilder`, `buildMessageChain`
+- `ExternalImage` 现在接收多种输入参数
+
+### mirai-core-qqandroid
+- 修复访问好友消息回执 `.sequenceId` 时抛出异常的问题
+
 ## `0.21.0` 2020/2/23
 - 支持好友消息的引用回复
 - 更加结构化的 `QuoteReply` 架构, 支持引用任意群/好友消息回复给任意群/好友.
