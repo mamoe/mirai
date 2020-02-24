@@ -12,32 +12,26 @@ package net.mamoe.mirai.console
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.api.http.MiraiHttpAPIServer
-import net.mamoe.mirai.api.http.generateSessionKey
 import net.mamoe.mirai.console.MiraiConsole.CommandProcessor.processNextCommandLine
-import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
-import net.mamoe.mirai.console.plugins.withDefaultWriteSave
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
-import net.mamoe.mirai.console.utils.checkManager
-import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.cryptor.ECDH
 import java.io.File
-import java.security.Security
-import java.util.*
 
 
 object MiraiConsole {
     /**
      * 发布的版本号 统一修改位置
      */
-    val version = "v0.01"
-    var coreVersion = "v0.18.0"
-    val build = "Alpha"
+    const val version = "0.1.0"
+    const val coreVersion = "v0.18.0"
+    const val build = "Alpha"
 
 
     /**
@@ -194,13 +188,15 @@ object MiraiProperties {
 
     var HTTP_API_ENABLE: Boolean by config.withDefaultWrite { true }
     var HTTP_API_PORT: Int by config.withDefaultWrite { 8080 }
+    /*
     var HTTP_API_AUTH_KEY: String by config.withDefaultWriteSave {
         "InitKey" + generateSessionKey()
-    }
+    }*/
 }
 
 object HTTPAPIAdaptar {
     operator fun invoke() {
+        /*
         if (MiraiProperties.HTTP_API_ENABLE) {
             if (MiraiProperties.HTTP_API_AUTH_KEY.startsWith("InitKey")) {
                 MiraiConsole.logger("请尽快更改初始生成的HTTP API AUTHKEY")
@@ -214,7 +210,7 @@ object HTTPAPIAdaptar {
                 MiraiProperties.HTTP_API_AUTH_KEY
             )
             MiraiConsole.logger("HTTPAPI启动完成; 端口= " + MiraiProperties.HTTP_API_PORT)
-        }
+        }*/
     }
 }
 
