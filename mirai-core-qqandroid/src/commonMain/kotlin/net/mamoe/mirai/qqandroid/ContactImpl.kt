@@ -579,6 +579,7 @@ internal class GroupImpl(
             when (response) {
                 is ImgStore.GroupPicUp.Response.Failed -> {
                     ImageUploadEvent.Failed(this@GroupImpl, image, response.resultCode, response.message).broadcast()
+                    if (response.message == "over file size max") throw OverFileSizeMaxException()
                     error("upload group image failed with reason ${response.message}")
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
