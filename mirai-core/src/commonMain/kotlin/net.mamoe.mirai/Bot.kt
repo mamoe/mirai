@@ -59,7 +59,7 @@ abstract class Bot : CoroutineScope {
          * 获取一个 [Bot] 实例, 找不到则 [NoSuchElementException]
          */
         @JvmStatic
-        fun getInstance(qq: Long): Bot = BotImpl.instanceWhose(qq = qq)
+        fun getInstance(qq: Long): Bot = BotImpl.getInstance(qq = qq)
     }
 
     /**

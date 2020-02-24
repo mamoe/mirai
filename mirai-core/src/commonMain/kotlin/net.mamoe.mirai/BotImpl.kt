@@ -60,7 +60,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             it.get()?.let(block)
         }
 
-        fun instanceWhose(qq: Long): Bot {
+        fun getInstance(qq: Long): Bot {
             instances.forEach {
                 it.get()?.let { bot ->
                     if (bot.uin == qq) {
