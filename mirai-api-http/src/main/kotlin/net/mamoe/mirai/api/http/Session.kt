@@ -15,8 +15,7 @@ import net.mamoe.mirai.api.http.queue.MessageQueue
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.message.MessagePacket
+import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -57,7 +56,13 @@ internal object SessionManager {
         }
     }
 
-    operator fun get(sessionKey: String) = allSession[sessionKey]
+    fun createAuthedSession(bot: Bot, originKey: String): AuthedSession = AuthedSession(bot, originKey, EmptyCoroutineContext).also { session ->
+        closeSession(originKey)
+        allSession[originKey] = session
+    }
+
+    operator fun get(sessionKey: String) = allSession[sessionKey]?.also {
+        if (it is AuthedSession) it.latestUsed = currentTimeSeconds }
 
     fun containSession(sessionKey: String): Boolean = allSession.containsKey(sessionKey)
 
@@ -76,13 +81,11 @@ internal object SessionManager {
  * 需使用[SessionManager]
  */
 abstract class Session internal constructor(
-    coroutineContext: CoroutineContext
+    coroutineContext: CoroutineContext,
+    val key: String = generateSessionKey()
 ) : CoroutineScope {
     val supervisorJob = SupervisorJob(coroutineContext[Job])
     final override val coroutineContext: CoroutineContext = supervisorJob + coroutineContext
-
-    val key: String = generateSessionKey()
-
 
     internal open fun close() {
         supervisorJob.complete()
@@ -101,16 +104,33 @@ class TempSession internal constructor(coroutineContext: CoroutineContext) : Ses
  * 任何[TempSession]认证后转化为一个[AuthedSession]
  * 在这一步[AuthedSession]应该已经有assigned的bot
  */
-class AuthedSession internal constructor(val bot: Bot, coroutineContext: CoroutineContext) : Session(coroutineContext) {
+class AuthedSession internal constructor(val bot: Bot, originKey: String, coroutineContext: CoroutineContext) : Session(coroutineContext, originKey) {
+
+    companion object {
+        const val CHECK_TIME = 1800L // 1800s aka 30min
+    }
 
     val messageQueue = MessageQueue()
     private val _listener: Listener<BotEvent>
+    private val releaseJob: Job //手动释放将会在下一次检查时回收Session
+
+    internal var latestUsed = currentTimeSeconds
 
     init {
         _listener = bot.subscribeAlways{ this.run(messageQueue::add) }
+        releaseJob = launch {
+            while (true) {
+                delay(CHECK_TIME * 1000)
+                if (currentTimeSeconds - latestUsed >= CHECK_TIME) {
+                    SessionManager.closeSession(this@AuthedSession)
+                    break
+                }
+            }
+        }
     }
 
     override fun close() {
+        messageQueue.clear()
         _listener.complete()
         super.close()
     }
