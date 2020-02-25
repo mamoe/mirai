@@ -106,13 +106,13 @@ interface CommandSender {
 }
 
 abstract class CommandSenderImpl : CommandSender {
-    private val builder = StringBuilder()
+    internal val builder = StringBuilder()
 
     override fun appendMessage(message: String) {
         builder.append(message).append("\n")
     }
 
-    internal suspend fun flushMessage() {
+    internal open suspend fun flushMessage() {
         if (!builder.isEmpty()) {
             sendMessage(builder.toString().removeSuffix("\n"))
         }
@@ -126,6 +126,11 @@ object ConsoleCommandSender : CommandSenderImpl() {
 
     override suspend fun sendMessage(message: String) {
         MiraiConsole.logger("[Command]", 0, message)
+    }
+
+    override suspend fun flushMessage() {
+        super.flushMessage()
+        builder.clear()
     }
 }
 

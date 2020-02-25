@@ -237,6 +237,7 @@ object DefaultCommands {
             onCommand {
                 CommandManager.getCommands().let {
                     var size = 0
+                    appendMessage("")//\n
                     it.toSet().forEach {
                         ++size
                         appendMessage("-> " + it.name + " :" + it.description)
