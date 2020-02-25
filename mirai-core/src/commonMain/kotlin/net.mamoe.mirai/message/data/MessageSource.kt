@@ -12,15 +12,18 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.Bot
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 /**
- * 消息源, 用于被引用. 它将由协议模块实现.
- * 消息源只用于 [QuoteReply]
+ * 消息源, 它存在于 [MessageChain] 中, 用于表示这个消息的来源.
+ *
+ * 消息源只用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
  *
  * `mirai-core-qqandroid`: `net.mamoe.mirai.qqandroid.message.MessageSourceFromMsg`
  *
+ * @see Bot.recall 撤回一条消息
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  */
 interface MessageSource : Message, MessageMetadata {

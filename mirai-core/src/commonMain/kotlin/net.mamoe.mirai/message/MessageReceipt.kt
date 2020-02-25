@@ -31,7 +31,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
  */
 open class MessageReceipt<C : Contact>(
-    private val source: MessageSource,
+    val source: MessageSource,
     target: C
 ) {
     init {
@@ -48,7 +48,7 @@ open class MessageReceipt<C : Contact>(
     /**
      * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
      *
-     * @see Group.recall
+     * @see Bot.recall
      * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
      */
     @UseExperimental(MiraiExperimentalAPI::class)
@@ -78,13 +78,9 @@ open class MessageReceipt<C : Contact>(
     fun recallIn(millis: Long): Job {
         @Suppress("BooleanLiteralArgument")
         if (_isRecalled.compareAndSet(false, true)) {
-            when (val contact = target) {
-                is Group -> {
-                    return contact.bot.recallIn(source, millis)
-                }
-                is QQ -> {
-                    TODO()
-                }
+            return when (val contact = target) {
+                is QQ,
+                is Group -> contact.bot.recallIn(source, millis)
                 else -> error("Unknown contact type")
             }
         } else error("message is already or planned to be recalled")

@@ -129,9 +129,15 @@ internal abstract class QQAndroidBotBase constructor(
         source.ensureSequenceIdAvailable()
 
         network.run {
-            val response: PbMessageSvc.PbMsgWithDraw.Response =
+            val response: PbMessageSvc.PbMsgWithDraw.Response = if (source.groupId == 0L) {
+                PbMessageSvc.PbMsgWithDraw.Friend(bot.client, source.senderId, source.sequenceId, source.messageRandom, source.time)
+                    .sendAndExpect()
+            } else {
+
                 PbMessageSvc.PbMsgWithDraw.Group(bot.client, source.groupId, source.sequenceId, source.messageRandom)
                     .sendAndExpect()
+            }
+
             check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
         }
     }

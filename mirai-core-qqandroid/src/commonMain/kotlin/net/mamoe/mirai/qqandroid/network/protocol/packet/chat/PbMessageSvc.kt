@@ -71,6 +71,35 @@ internal class PbMessageSvc {
             )
         }
 
+        fun Friend(
+            client: QQAndroidClient,
+            toUin: Long,
+            messageSequenceId: Int, // 56639
+            messageRandom: Int, // 921878719
+            time: Long,
+            messageType: Int = 0
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                MsgSvc.PbMsgWithDrawReq.serializer(),
+                MsgSvc.PbMsgWithDrawReq(
+                    c2cWithDraw = listOf(
+                        MsgSvc.PbC2CMsgWithDrawReq(
+                            subCmd = 1,
+                            msgInfo = listOf(
+                                MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
+                                    fromUin = client.bot.uin,
+                                    toUin = toUin,
+                                    msgSeq = messageSequenceId,
+                                    msgUid = messageRandom.toLong() and 0xffffffff,
+                                    msgTime = time and 0xffffffff
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        }
+
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp = readProtoBuf(MsgSvc.PbMsgWithDrawResp.serializer())
             resp.groupWithDraw?.firstOrNull()?.let {

@@ -25,6 +25,7 @@ import net.mamoe.mirai.recall
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -74,6 +75,7 @@ interface Contact : CoroutineScope {
      * @see ImageUploadEvent 图片发送完成事件
      *
      * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     suspend fun uploadImage(image: ExternalImage): Image
 

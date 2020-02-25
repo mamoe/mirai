@@ -13,17 +13,17 @@ import net.mamoe.mirai.api.http.data.common.EventDTO
 import net.mamoe.mirai.api.http.data.common.IgnoreEventDTO
 import net.mamoe.mirai.api.http.data.common.toDTO
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.firstKey
 import java.util.concurrent.ConcurrentLinkedDeque
 
 class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
 
-    val quoteCacheSize = 4096
-    val quoteCache = LinkedHashMap<Long, GroupMessage>()
+    val cacheSize = 4096
+    val cache = LinkedHashMap<Long, MessagePacket<*, *>>()
 
-    fun fetch(size: Int): List<EventDTO> {
+    suspend fun fetch(size: Int): List<EventDTO> {
         var count = size
 
         val ret = ArrayList<EventDTO>(count)
@@ -37,18 +37,20 @@ class MessageQueue : ConcurrentLinkedDeque<BotEvent>() {
                 }
             }
 
-            // TODO: 等FriendMessage支持quote
-            if (event is GroupMessage) {
+            if (event is MessagePacket<*, *>) {
                 addQuoteCache(event)
             }
         }
         return ret
     }
 
-    private fun addQuoteCache(msg: GroupMessage) {
-        quoteCache[msg.message[MessageSource].id] = msg
-        if (quoteCache.size > quoteCacheSize) {
-            quoteCache.remove(quoteCache.firstKey())
+    fun cache(messageId: Long) =
+        cache[messageId] ?: throw NoSuchElementException()
+
+    fun addQuoteCache(msg: MessagePacket<*, *>) {
+        cache[msg.message[MessageSource].id] = msg
+        if (cache.size > cacheSize) {
+            cache.remove(cache.firstKey())
         }
     }
 }

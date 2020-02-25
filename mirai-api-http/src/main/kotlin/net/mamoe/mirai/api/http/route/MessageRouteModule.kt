@@ -20,15 +20,19 @@ import io.ktor.response.respondText
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.MessageChainDTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.data.common.toMessageChain
 import net.mamoe.mirai.api.http.util.toJson
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadImage
 import java.net.URL
 
@@ -42,23 +46,47 @@ fun Application.messageModule() {
             call.respondJson(fetch.toJson())
         }
 
+        suspend fun <C : Contact> sendMessage(
+            quote: QuoteReplyToSend?,
+            messageChain: MessageChain,
+            target: C
+        ): MessageReceipt<out Contact> {
+            val send = if (quote == null) {
+                messageChain
+            } else {
+                (quote + messageChain).toChain()
+            }
+            return target.sendMessage(send)
+        }
+
         miraiVerify<SendDTO>("/sendFriendMessage") {
+            val quote = it.quote?.let { q ->
+                it.session.messageQueue.cache(q).run {
+                    this[MessageSource].quote(sender)
+                }}
+
             it.session.bot.getFriend(it.target).apply {
-                sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
+                val receipt = sendMessage(quote, it.messageChain.toMessageChain(this), this)
+                receipt.source.ensureSequenceIdAvailable()
+
+                it.session.messageQueue.addQuoteCache(FriendMessage(bot.selfQQ, receipt.source.toChain()))
+                call.respondDTO(SendRetDTO(messageId = receipt.source.id))
             }
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
-            it.session.bot.getGroup(it.target).apply {
-                sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
-            }
-        }
+            val quote = it.quote?.let { q ->
+                it.session.messageQueue.cache(q).run {
+                    this[MessageSource].quote(sender)
+                }}
 
-        miraiVerify<SendDTO>("/sendQuoteMessage") {
-            it.session.messageQueue.quoteCache[it.target]?.apply {
-                quoteReply(it.messageChain.toMessageChain(group))
-            } ?: throw NoSuchElementException()
-            call.respondStateCode(StateCode.Success)
+            it.session.bot.getGroup(it.target).apply {
+                val receipt = sendMessage(quote, it.messageChain.toMessageChain(this), this)
+                receipt.source.ensureSequenceIdAvailable()
+
+                it.session.messageQueue.addQuoteCache(GroupMessage("", botPermission, botAsMember, receipt.source.toChain()))
+                call.respondDTO(SendRetDTO(messageId = receipt.source.id))
+            }
         }
 
         miraiVerify<SendImageDTO>("sendImageMessage") {
@@ -101,8 +129,10 @@ fun Application.messageModule() {
         }
 
         miraiVerify<RecallDTO>("recall") {
-            // TODO
-            call.respond(HttpStatusCode.NotFound, "未完成")
+            it.session.messageQueue.cache(it.target).apply {
+                it.session.bot.recall(get(MessageSource))
+            }
+            call.respondStateCode(StateCode.Success)
         }
     }
 }
@@ -110,6 +140,7 @@ fun Application.messageModule() {
 @Serializable
 private data class SendDTO(
     override val sessionKey: String,
+    val quote: Long? = null,
     val target: Long,
     val messageChain: MessageChainDTO
 ) : VerifyDTO()
@@ -125,13 +156,13 @@ private data class SendImageDTO(
 
 @Serializable
 private class SendRetDTO(
-    val messageId: Long,
-    @Transient val stateCode: StateCode = Success
-) : StateCode(stateCode.code, stateCode.msg)
+    val code: Int = 0,
+    val msg: String = "success",
+    val messageId: Long
+) : DTO
 
 @Serializable
 private data class RecallDTO(
     override val sessionKey: String,
-    val target: Long,
-    val sender: Long
+    val target: Long
 ) : VerifyDTO()

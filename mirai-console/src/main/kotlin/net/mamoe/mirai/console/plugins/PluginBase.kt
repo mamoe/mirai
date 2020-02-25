@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.console.plugins
 
-import net.mamoe.mirai.console.command.Command
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
@@ -303,7 +303,7 @@ object PluginManager {
                 }
                 return try {
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
-                    val plugin: PluginBase = subClass.getDeclaredConstructor().newInstance()
+                    val plugin: PluginBase = subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
                     description.loaded = true
                     logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
                     logger.info(description.info)
