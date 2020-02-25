@@ -37,7 +37,7 @@ object CommandManager {
         val allNames = mutableListOf(command.name).also { it.addAll(command.alias) }
         allNames.forEach {
             if (registeredCommand.containsKey(it)) {
-                error("net.mamoe.mirai.Command Name(or Alias) $it is already registered, consider if same function plugin was installed")
+                error("Command Name(or Alias) $it is already registered, consider if same functional plugin was installed")
             }
         }
         allNames.forEach {
@@ -214,7 +214,7 @@ class CommandBuilder internal constructor() {
 
     fun register(): Command {
         if (name == null || onCommand == null) {
-            error("net.mamoe.mirai.CommandBuilder not complete")
+            error("CommandBuilder not complete")
         }
         if (alias == null) {
             alias = listOf()
