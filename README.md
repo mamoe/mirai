@@ -89,6 +89,8 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
   （目前不再更新此协议，请关注上文的安卓协议）
 
 ## 加入开发
+### 基于mirai的项目-如其他语言的SDK, 功能的拓展(无排名)
+- [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 `Mirai` 的开发。  
@@ -102,8 +104,7 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
 
-### 第三方类库
-
+### 第三方类库(无排名)
 - [kotlin-stdlib](https://github.com/JetBrains/kotlin)
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
