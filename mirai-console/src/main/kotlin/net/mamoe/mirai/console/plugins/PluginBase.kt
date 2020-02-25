@@ -31,6 +31,9 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     private val supervisorJob = SupervisorJob()
     final override val coroutineContext: CoroutineContext = coroutineContext + supervisorJob
 
+    /**
+     * 插件被分配的data folder， 如果插件改名了 data folder 也会变 请注意
+     */
     val dataFolder: File by lazy {
         File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
     }
@@ -68,11 +71,13 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onEnable()
     }
 
-
+    /**
+     * 加载一个data folder中的Config
+     * 这个config是read-write的
+     */
     fun loadConfig(fileName: String): Config {
-        return Config.load(File(fileName))
+        return Config.load(dataFolder.absolutePath + fileName)
     }
-
 
     @JvmOverloads
     internal fun disable(throwable: CancellationException? = null) {
@@ -87,7 +92,7 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onLoad()
     }
 
-    fun getPluginManager() = PluginManager
+    val pluginManager = PluginManager
 
     val logger: MiraiLogger by lazy {
         SimpleLogger("Plugin ${pluginDescription.name}") { _, message, e ->
@@ -99,15 +104,31 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         }
     }
 
-
+    /**
+     * 加载一个插件jar, resources中的东西
+     */
     fun getResources(fileName: String): InputStream? {
-        return PluginManager.getFileInJarByName(
-            this.pluginDescription.name,
-            fileName
-        )
+        return try {
+            this.javaClass.classLoader.getResourceAsStream(fileName)
+        } catch (e: Exception) {
+            PluginManager.getFileInJarByName(
+                this.pluginDescription.name,
+                fileName
+            )
+        }
     }
 
-    //fun getResourcesConfig()
+    /**
+     * 加载一个插件jar, resources中的Config
+     * 这个Config是read-only的
+     */
+    fun getResourcesConfig(fileName: String): Config {
+        if (fileName.contains(".")) {
+            error("Unknown Config Type")
+        }
+        return Config.load(getResources(fileName) ?: error("Config Not Found"), fileName.split(".")[1])
+    }
+
 }
 
 class PluginDescription(
@@ -370,7 +391,7 @@ object PluginManager {
 
 
     /**
-     * 根据插件名字找Jar resources中的文件
+     * 根据插件名字找Jar中的文件
      * null => 没找到
      */
     fun getFileInJarByName(pluginName: String, toFind: String): InputStream? {

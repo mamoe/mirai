@@ -134,7 +134,7 @@ class ImageSenderMain : PluginBase() {
         logger.info("loading local image data")
 
         try {
-            images = Config.load(getResources(fileName = "data.yml")!!, "yml")
+            images = getResourcesConfig("data.yml")
         } catch (e: Exception) {
             e.printStackTrace()
             logger.info("无法加载本地图片")

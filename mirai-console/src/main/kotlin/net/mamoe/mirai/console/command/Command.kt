@@ -156,6 +156,8 @@ interface Command {
     val name: String
     val alias: List<String>
     val description: String
+    val usage: String
+
     suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean
     fun register()
 }
@@ -163,7 +165,8 @@ interface Command {
 abstract class BlockingCommand(
     override val name: String,
     override val alias: List<String> = listOf(),
-    override val description: String = ""
+    override val description: String = "",
+    override val usage: String = ""
 ) : Command {
     /**
      * 最高优先级监听器
@@ -186,6 +189,7 @@ class AnonymousCommand internal constructor(
     override val name: String,
     override val alias: List<String>,
     override val description: String,
+    override val usage: String = "",
     val onCommand: suspend CommandSender.(args: List<String>) -> Boolean
 ) : Command {
     override suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
@@ -201,6 +205,7 @@ class CommandBuilder internal constructor() {
     var name: String? = null
     var alias: List<String>? = null
     var description: String = ""
+    var usage: String = "use /help for help"
     var onCommand: (suspend CommandSender.(args: List<String>) -> Boolean)? = null
 
     fun onCommand(commandProcess: suspend CommandSender.(args: List<String>) -> Boolean) {
@@ -218,6 +223,7 @@ class CommandBuilder internal constructor() {
             name!!,
             alias!!,
             description,
+            usage,
             onCommand!!
         ).also { it.register() }
     }
