@@ -74,6 +74,8 @@ object CommandManager {
                     )
                 ) {
                     PluginManager.onCommand(this, args)
+                } else {
+                    sender.sendMessage(this.usage)
                 }
             } catch (e: Exception) {
                 sender.sendMessage("在运行指令时出现了未知错误")
