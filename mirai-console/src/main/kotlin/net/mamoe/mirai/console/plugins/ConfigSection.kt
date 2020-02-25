@@ -184,9 +184,11 @@ class WithDefaultWriteLoader<T : Any>(
         prop: KProperty<*>
     ): ReadWriteProperty<Any, T> {
         val defaultValue by lazy { defaultValue.invoke() }
-        config.setIfAbsent(prop.name, defaultValue)
-        if (save) {
-            config.save()
+        if (!config.contains(prop.name)) {
+            config[prop.name] = defaultValue
+            if (save) {
+                config.save()
+            }
         }
         return object : ReadWriteProperty<Any, T> {
             override fun getValue(thisRef: Any, property: KProperty<*>): T {

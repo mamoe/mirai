@@ -90,8 +90,15 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     fun getPluginManager() = PluginManager
 
     val logger: MiraiLogger by lazy {
-        DefaultLogger(pluginDescription.name)
+        SimpleLogger("Plugin ${pluginDescription.name}") { _, message, e ->
+            MiraiConsole.logger("[${pluginDescription.name}]", 0, message)
+            if (e != null) {
+                MiraiConsole.logger("[${pluginDescription.name}]", 0, e.toString())
+                e.printStackTrace()
+            }
+        }
     }
+
 
     fun getResources(fileName: String): InputStream? {
         return PluginManager.getFileInJarByName(
@@ -99,6 +106,8 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
             fileName
         )
     }
+
+    //fun getResourcesConfig()
 }
 
 class PluginDescription(
