@@ -2,8 +2,7 @@
    <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
 
    <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
-   
-   
+
 ----
 
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -90,7 +89,10 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 
 ## 加入开发
 ### 基于mirai的项目-如其他语言的SDK, 功能的拓展(无排名)
+
 - [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
+- [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
+- [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 `Mirai` 的开发。  
@@ -134,16 +136,16 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 ------
 
     Copyright (C) 2019-2020 mamoe and Mirai contributors
-
+    
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
     published by the Free Software Foundation, either version 3 of the
     License, or (at your option) any later version.
-
+    
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-
+    
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
