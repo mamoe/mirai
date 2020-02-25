@@ -249,6 +249,21 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         operator fun invoke(onEvent: MessageListener<T>): Listener<T> {
             return content(filter, onEvent)
         }
+
+        infix fun reply(toReply: String): Listener<T> {
+            return content(filter) { reply(toReply) }
+        }
+
+        infix fun reply(message: Message): Listener<T> {
+            return content(filter) { reply(message) }
+        }
+
+        infix fun reply(replier: (@MessageDsl suspend T.(String) -> Any?)): Listener<T> {
+            return content(filter) {
+                @Suppress("DSL_SCOPE_VIOLATION_WARNING")
+                executeAndReply(replier)
+            }
+        }
     }
 
     /**
