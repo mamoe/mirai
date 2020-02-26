@@ -25,7 +25,7 @@ import kotlin.jvm.JvmStatic
 /**
  * 自定义表情 (收藏的表情), 图片
  */
-sealed class Image : Message {
+sealed class Image : Message, MessageContent {
     companion object Key : Message.Key<Image> {
         @JvmStatic
         @JsName("fromId")
@@ -48,11 +48,6 @@ sealed class Image : Message {
 
     final override fun toString(): String {
         return "[mirai:$imageId]"
-    }
-
-    final override fun eq(other: Message): Boolean {
-        return if (other is Image) return other.imageId == this.imageId
-        else this.toString() == other.toString()
     }
 }
 

@@ -2,8 +2,7 @@
    <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
 
    <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
-   
-   
+
 ----
 
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -22,7 +21,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 
 **[English](README-eng.md)**  
 
-多平台 **QQ Android 和 TimPC** 协议支持库与高效率的机器人框架.   
+多平台 **QQ Android** 和 **TIM PC** 协议支持库与高效率的机器人框架.   
 纯 Kotlin 实现协议和支持框架，模块<b>全部免费开源</b>。  
 目前可运行在 JVM 或 Android。
 Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Application与插件承载QQ机器人
@@ -38,7 +37,7 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 ### 开发者
 #### 以编写机器人逻辑为主
 
-- 需了解<b>Java</b>或<b>Kotlin</b>, 使用[mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console)机器人框架的插件系统进行[插件开发(DOING)](), 直接进行逻辑编写并与其他插件开发者合作共享
+- 需了解 `Java` 或 `Kotlin`, 使用 [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 直接进行插件逻辑编写并与其他插件开发者合作共享
 
 #### 使用Mirai为第三方库
 
@@ -56,12 +55,8 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 #### 酷Q平台用户: 
 
-- 全部酷Q的DLL插件可以在mirai中直接加载, 需使用 `Mirai-Native` ([源码(DOING)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(DOING)]())
-- 全部基于 `酷Q HTTPAPI` 的插件可以在`mirai`中直接加载, 需使用`Mirai-CQ-Adapter`([源码(TODO)](https://github.com/iTXTech/mirai-native),[插件版(mirai-console插件)(TODO)]())
-
-#### 其他平台
-
-- 如果你的插件是通过 `酷Q HTTPAPI` 实现的(绝大部分), 都可以通过 `Mirai-CQ-Adapter` 在mirai中直接使用
+- 酷Q的插件可以在 `Mirai` 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
+- 使用 `酷Q HTTPAPI` 的插件将可以在`mirai`中加载，`Mirai-CQ-Adapter` 正在计划中
 
 ## 更新日志
 
@@ -93,6 +88,11 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
   （目前不再更新此协议，请关注上文的安卓协议）
 
 ## 加入开发
+### 基于mirai的项目-如其他语言的SDK, 功能的拓展(无排名)
+
+- [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
+- [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
+- [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 `Mirai` 的开发。  
@@ -106,8 +106,7 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
 
-### 第三方类库
-
+### 第三方类库(无排名)
 - [kotlin-stdlib](https://github.com/JetBrains/kotlin)
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
@@ -137,16 +136,16 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 ------
 
     Copyright (C) 2019-2020 mamoe and Mirai contributors
-
+    
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
     published by the Free Software Foundation, either version 3 of the
     License, or (at your option) any later version.
-
+    
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-
+    
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.

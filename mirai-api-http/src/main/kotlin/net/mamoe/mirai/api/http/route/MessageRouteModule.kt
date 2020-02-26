@@ -11,23 +11,28 @@ package net.mamoe.mirai.api.http.route
 
 import io.ktor.application.Application
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.readAllParts
 import io.ktor.http.content.streamProvider
 import io.ktor.request.receiveMultipart
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import net.mamoe.mirai.api.http.AuthedSession
 import net.mamoe.mirai.api.http.SessionManager
 import net.mamoe.mirai.api.http.data.*
+import net.mamoe.mirai.api.http.data.common.DTO
 import net.mamoe.mirai.api.http.data.common.MessageChainDTO
 import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.data.common.toMessageChain
 import net.mamoe.mirai.api.http.util.toJson
-import net.mamoe.mirai.contact.toList
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadImage
 import java.net.URL
 
@@ -41,25 +46,47 @@ fun Application.messageModule() {
             call.respondJson(fetch.toJson())
         }
 
-        miraiVerify<SendDTO>("/sendFriendMessage") {
-            it.session.bot.getFriend(it.target).apply {
-                sendMessage(it.messageChain.toMessageChain(this)) // this aka QQ
+        suspend fun <C : Contact> sendMessage(
+            quote: QuoteReplyToSend?,
+            messageChain: MessageChain,
+            target: C
+        ): MessageReceipt<out Contact> {
+            val send = if (quote == null) {
+                messageChain
+            } else {
+                (quote + messageChain).toChain()
             }
-            call.respondStateCode(StateCode.Success)
+            return target.sendMessage(send)
+        }
+
+        miraiVerify<SendDTO>("/sendFriendMessage") {
+            val quote = it.quote?.let { q ->
+                it.session.messageQueue.cache(q).run {
+                    this[MessageSource].quote(sender)
+                }}
+
+            it.session.bot.getFriend(it.target).apply {
+                val receipt = sendMessage(quote, it.messageChain.toMessageChain(this), this)
+                receipt.source.ensureSequenceIdAvailable()
+
+                it.session.messageQueue.addQuoteCache(FriendMessage(bot.selfQQ, receipt.source.toChain()))
+                call.respondDTO(SendRetDTO(messageId = receipt.source.id))
+            }
         }
 
         miraiVerify<SendDTO>("/sendGroupMessage") {
-            it.session.bot.getGroup(it.target).apply {
-                sendMessage(it.messageChain.toMessageChain(this)) // this aka Group
-            }
-            call.respondStateCode(StateCode.Success)
-        }
+            val quote = it.quote?.let { q ->
+                it.session.messageQueue.cache(q).run {
+                    this[MessageSource].quote(sender)
+                }}
 
-        miraiVerify<SendDTO>("/quoteMessage") {
-            it.session.messageQueue.quoteCache[it.target]?.apply {
-                quoteReply(it.messageChain.toMessageChain(group))
-            } ?: throw NoSuchElementException()
-            call.respondStateCode(StateCode.Success)
+            it.session.bot.getGroup(it.target).apply {
+                val receipt = sendMessage(quote, it.messageChain.toMessageChain(this), this)
+                receipt.source.ensureSequenceIdAvailable()
+
+                it.session.messageQueue.addQuoteCache(GroupMessage("", botPermission, botAsMember, receipt.source.toChain()))
+                call.respondDTO(SendRetDTO(messageId = receipt.source.id))
+            }
         }
 
         miraiVerify<SendImageDTO>("sendImageMessage") {
@@ -90,8 +117,8 @@ fun Application.messageModule() {
             parts.file("img")?.apply {
                 val image = streamProvider().use {
                     when (type) {
-                        "group" -> session.bot.groups.toList().random().uploadImage(it)
-                        "friend" -> session.bot.qqs.toList().random().uploadImage(it)
+                        "group" -> session.bot.groups.firstOrNull()?.uploadImage(it)
+                        "friend" -> session.bot.qqs.firstOrNull()?.uploadImage(it)
                         else -> null
                     }
                 }
@@ -100,12 +127,20 @@ fun Application.messageModule() {
                 } ?: throw IllegalAccessException("图片上传错误")
             } ?: throw IllegalAccessException("未知错误")
         }
+
+        miraiVerify<RecallDTO>("recall") {
+            it.session.messageQueue.cache(it.target).apply {
+                it.session.bot.recall(get(MessageSource))
+            }
+            call.respondStateCode(StateCode.Success)
+        }
     }
 }
 
 @Serializable
 private data class SendDTO(
     override val sessionKey: String,
+    val quote: Long? = null,
     val target: Long,
     val messageChain: MessageChainDTO
 ) : VerifyDTO()
@@ -121,6 +156,13 @@ private data class SendImageDTO(
 
 @Serializable
 private class SendRetDTO(
-    @Transient val stateCode: StateCode = StateCode.Success,
+    val code: Int = 0,
+    val msg: String = "success",
     val messageId: Long
-) : StateCode(stateCode.code, stateCode.msg)
+) : DTO
+
+@Serializable
+private data class RecallDTO(
+    override val sessionKey: String,
+    val target: Long
+) : VerifyDTO()

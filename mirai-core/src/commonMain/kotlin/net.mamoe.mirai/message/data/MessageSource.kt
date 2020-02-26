@@ -12,24 +12,29 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.Bot
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 /**
- * 消息源, 用于被引用. 它将由协议模块实现.
- * 消息源只用于 [QuoteReply]
+ * 消息源, 它存在于 [MessageChain] 中, 用于表示这个消息的来源.
+ *
+ * 消息源只用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
  *
  * `mirai-core-qqandroid`: `net.mamoe.mirai.qqandroid.message.MessageSourceFromMsg`
  *
+ * @see Bot.recall 撤回一条消息
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  */
-interface MessageSource : Message {
+interface MessageSource : Message, MessageMetadata {
     companion object Key : Message.Key<MessageSource>
 
     /**
-     * 序列号. 若是机器人发出去的消息, 请先 [确保 sequenceId 可用][ensureSequenceIdAvailable]
+     * 在 Mirai 中使用的 id.
+     * 高 32 位为 [sequenceId],
+     * 低 32 位为 [messageRandom]
      */
-    val sequenceId: Int
+    val id: Long
 
     /**
      * 等待 [sequenceId] 获取, 确保其可用.
@@ -37,11 +42,6 @@ interface MessageSource : Message {
      * 若原消息发送失败, 这个方法会等待最多 3 秒随后抛出 [IllegalStateException]
      */
     suspend fun ensureSequenceIdAvailable()
-
-    /**
-     * 实际上是个随机数, 但服务器确实是用它当做 uid
-     */
-    val messageUid: Long
 
     /**
      * 发送时间, 单位为秒
@@ -59,12 +59,39 @@ interface MessageSource : Message {
     val groupId: Long
 
     /**
-     * 原消息内容
-     */
-    val sourceMessage: MessageChain
-
-    /**
      * 固定返回空字符串 ("")
      */
     override fun toString(): String
 }
+
+/**
+ * 序列号. 若是机器人发出去的消息, 请先 [确保 sequenceId 可用][MessageSource.ensureSequenceIdAvailable]
+ * @see MessageSource.id
+ */
+val MessageSource.sequenceId: Int get() = (this.id shr 32).toInt()
+
+/**
+ * 消息随机数. 由服务器或客户端指定后不能更改. 它是消息 id 的一部分.
+ * @see MessageSource.id
+ */
+val MessageSource.messageRandom: Int get() = this.id.toInt()
+
+// For MessageChain
+
+/**
+ * 消息 id.
+ * @see MessageSource.id
+ */
+val MessageChain.id: Long get() = this[MessageSource].id
+
+/**
+ * 消息序列号, 可能来自服务器也可以发送时赋值, 不唯一.
+ * @see MessageSource.id
+ */
+val MessageChain.sequenceId: Int get() = this[MessageSource].sequenceId
+
+/**
+ * 消息随机数. 由服务器或客户端指定后不能更改. 它是消息 id 的一部分.
+ * @see MessageSource.id
+ */
+val MessageChain.messageRandom: Int get() = this[MessageSource].messageRandom

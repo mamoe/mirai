@@ -16,6 +16,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.userAgent
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.copyAndClose
+import kotlinx.io.InputStream
 import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
 import kotlinx.io.core.use
@@ -35,47 +38,55 @@ internal suspend inline fun HttpClient.postImage(
     htcmd: String,
     uin: Long,
     groupcode: Long?,
-    imageInput: Input,
+    imageInput: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
     inputSize: Long,
     uKeyHex: String
-): Boolean = try {
-    post<HttpStatusCode> {
-        url {
-            protocol = URLProtocol.HTTP
-            host = "htdata2.qq.com"
-            path("cgi-bin/httpconn")
+): Boolean = post<HttpStatusCode> {
+    url {
+        protocol = URLProtocol.HTTP
+        host = "htdata2.qq.com"
+        path("cgi-bin/httpconn")
 
-            parameters["htcmd"] = htcmd
-            parameters["uin"] = uin.toString()
+        parameters["htcmd"] = htcmd
+        parameters["uin"] = uin.toString()
 
-            if (groupcode != null) parameters["groupcode"] = groupcode.toString()
+        if (groupcode != null) parameters["groupcode"] = groupcode.toString()
 
-            parameters["term"] = "pc"
-            parameters["ver"] = "5603"
-            parameters["filesize"] = inputSize.toString()
-            parameters["range"] = 0.toString()
-            parameters["ukey"] = uKeyHex
+        parameters["term"] = "pc"
+        parameters["ver"] = "5603"
+        parameters["filesize"] = inputSize.toString()
+        parameters["range"] = 0.toString()
+        parameters["ukey"] = uKeyHex
 
-            userAgent("QQClient")
-        }
+        userAgent("QQClient")
+    }
 
-        body = object : OutgoingContent.WriteChannelContent() {
-            override val contentType: ContentType = ContentType.Image.Any
-            override val contentLength: Long = inputSize
+    body = object : OutgoingContent.WriteChannelContent() {
+        override val contentType: ContentType = ContentType.Image.Any
+        override val contentLength: Long = inputSize
 
-            override suspend fun writeTo(channel: io.ktor.utils.io.ByteWriteChannel) {
-                ByteArrayPool.useInstance { buffer: ByteArray ->
-                    var size: Int
-                    while (imageInput.readAvailable(buffer).also { size = it } != 0) {
-                        channel.writeFully(buffer, 0, size)
+        override suspend fun writeTo(channel: io.ktor.utils.io.ByteWriteChannel) {
+            ByteArrayPool.useInstance { buffer: ByteArray ->
+                when (imageInput) {
+                    is Input -> {
+                        var size: Int
+                        while (imageInput.readAvailable(buffer).also { size = it } != 0) {
+                            channel.writeFully(buffer, 0, size)
+                        }
                     }
+                    is ByteReadChannel -> imageInput.copyAndClose(channel)
+                    is InputStream -> {
+                        var size: Int
+                        while (imageInput.read(buffer).also { size = it } != 0) {
+                            channel.writeFully(buffer, 0, size)
+                        }
+                    }
+                    else -> error("unsupported imageInput: ${imageInput::class.simpleName}")
                 }
             }
         }
-    } == HttpStatusCode.OK
-} finally {
-    imageInput.close()
-}
+    }
+} == HttpStatusCode.OK
 
 @UseExperimental(MiraiInternalAPI::class)
 internal object HighwayHelper {
@@ -84,11 +95,12 @@ internal object HighwayHelper {
         serverIp: String,
         serverPort: Int,
         uKey: ByteArray,
-        imageInput: Input,
+        imageInput: Any,
         inputSize: Int,
         md5: ByteArray,
         commandId: Int  // group=2, friend=1
     ) {
+        require(imageInput is Input || imageInput is InputStream || imageInput is ByteReadChannel) { "unsupported imageInput: ${imageInput::class.simpleName}" }
         require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
         require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
         require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
@@ -96,6 +108,8 @@ internal object HighwayHelper {
         val socket = PlatformSocket()
         socket.connect(serverIp, serverPort)
         socket.use {
+
+            // TODO: 2020/2/23 使用缓存, 或使用 HTTP 发送更好 (因为无需读取到内存)
             socket.send(
                 Highway.RequestDataTrans(
                     uin = client.uin,

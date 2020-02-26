@@ -17,7 +17,9 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.uploadImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import java.net.URL
 
 /*
 *   DTO data class
@@ -36,7 +38,7 @@ data class GroupMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
 // Message
 @Serializable
 @SerialName("Source")
-data class MessageSourceDTO(val uid: Long) : MessageDTO()
+data class MessageSourceDTO(val id: Long) : MessageDTO()
 
 @Serializable
 @SerialName("At")
@@ -56,7 +58,7 @@ data class PlainDTO(val text: String) : MessageDTO()
 
 @Serializable
 @SerialName("Image")
-data class ImageDTO(val imageId: String) : MessageDTO()
+data class ImageDTO(val imageId: String? = null, val url: String? = null) : MessageDTO()
 
 @Serializable
 @SerialName("Xml")
@@ -64,7 +66,7 @@ data class XmlDTO(val xml: String) : MessageDTO()
 
 @Serializable
 @SerialName("Unknown")
-data class UnknownMessageDTO(val text: String) : MessageDTO()
+object UnknownMessageDTO : MessageDTO()
 
 /*
 *   Abstract Class
@@ -83,39 +85,49 @@ sealed class MessageDTO : DTO
 /*
     Extend function
  */
-fun MessagePacket<*, *>.toDTO() = when (this) {
+suspend fun MessagePacket<*, *>.toDTO() = when (this) {
     is FriendMessage -> FriendMessagePacketDTO(QQDTO(sender))
     is GroupMessage -> GroupMessagePacketDTO(MemberDTO(sender))
     else -> IgnoreEventDTO
 }.apply {
     if (this is MessagePacketDTO) {
-        messageChain = mutableListOf<MessageDTO>().also { ls -> message.foreachContent { ls.add(it.toDTO()) } }
+        // 将MessagePacket中的所有Message转为DTO对象，并添加到messageChain
+        // foreachContent会忽略MessageSource，一次主动获取
+        messageChain = mutableListOf(messageDTO(message[MessageSource])).apply {
+            message.foreachContent { content -> messageDTO(content).takeUnless { it == UnknownMessageDTO }?.let(::add) }
+        }
+        // else: `this` is bot event
     }
 }
 
-fun MessageChainDTO.toMessageChain(contact: Contact) =
-    MessageChain().apply { this@toMessageChain.forEach { add(it.toMessage(contact)) } }
+suspend fun MessageChainDTO.toMessageChain(contact: Contact) =
+    buildMessageChain { this@toMessageChain.forEach { it.toMessage(contact)?.let(::add) } }
+
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
-fun Message.toDTO() = when (this) {
-    is MessageSource -> MessageSourceDTO(messageUid)
-    is At -> AtDTO(target, display)
+suspend fun MessagePacket<*, *>.messageDTO(message: Message) = when (message) {
+    is MessageSource -> MessageSourceDTO(message.id)
+    is At -> AtDTO(message.target, message.display)
     is AtAll -> AtAllDTO(0L)
-    is Face -> FaceDTO(id)
-    is PlainText -> PlainDTO(stringValue)
-    is Image -> ImageDTO(imageId)
-    is XMLMessage -> XmlDTO(stringValue)
-    else -> UnknownMessageDTO("未知消息类型")
+    is Face -> FaceDTO(message.id)
+    is PlainText -> PlainDTO(message.stringValue)
+    is Image -> ImageDTO(message.imageId, message.url())
+    is XMLMessage -> XmlDTO(message.stringValue)
+    else -> UnknownMessageDTO
 }
 
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-fun MessageDTO.toMessage(contact: Contact) = when (this) {
+suspend fun MessageDTO.toMessage(contact: Contact) = when (this) {
     is AtDTO -> At((contact as Group)[target])
     is AtAllDTO -> AtAll
     is FaceDTO -> Face(faceId)
     is PlainDTO -> PlainText(text)
-    is ImageDTO -> Image(imageId)
+    is ImageDTO -> when {
+        !imageId.isNullOrBlank() -> Image(imageId)
+        !url.isNullOrBlank() -> contact.uploadImage(URL(url))
+        else -> null
+    }
     is XmlDTO -> XMLMessage(xml)
-    is MessageSourceDTO, is UnknownMessageDTO -> PlainText("assert cannot reach")
+    is MessageSourceDTO, is UnknownMessageDTO -> null
 }
 

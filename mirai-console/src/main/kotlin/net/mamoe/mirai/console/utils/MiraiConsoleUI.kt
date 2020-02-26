@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console
+package net.mamoe.mirai.console.utils
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.LoginSolver

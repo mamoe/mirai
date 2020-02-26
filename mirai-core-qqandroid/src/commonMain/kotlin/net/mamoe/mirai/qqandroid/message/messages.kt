@@ -12,6 +12,7 @@ package net.mamoe.mirai.qqandroid.message
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
@@ -220,7 +221,8 @@ private val atAllData = ImMsgBody.Elem(
     )
 )
 
-internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
+@UseExperimental(MiraiInternalAPI::class)
+internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
 
     if (this.any<QuoteReply>()) {
@@ -231,7 +233,8 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
         }
     }
 
-    this.forEach {
+
+    fun transformOneMessage(it: Message) {
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
             is At -> elements.add(ImMsgBody.Elem(text = it.toJceData())).also { elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " "))) }
@@ -241,6 +244,14 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             is NotOnlineImageFromFile -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
+            is QuoteReplyToSend -> {
+                if (forGroup) {
+                    if (it.sender is Member) {
+                        transformOneMessage(it.createAt())
+                    }
+                    transformOneMessage(" ".toMessage())
+                }
+            }
             is QuoteReply,
             is MessageSource -> {
 
@@ -248,6 +259,7 @@ internal fun MessageChain.toRichTextElems(): MutableList<ImMsgBody.Elem> {
             else -> error("unsupported message type: ${it::class.simpleName}")
         }
     }
+    this.forEach(::transformOneMessage)
 
     // if(this.any<QuoteReply>()){
     elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
@@ -314,10 +326,10 @@ internal class NotOnlineImageFromServer(
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
 
-    val message = MessageChain(initialCapacity = elements.size + 1)
+    val message = MessageChainBuilder(elements.size + 1)
     message.add(MessageSourceFromMsg(delegate = this))
     elements.joinToMessageChain(message)
-    return message
+    return message.asMessageChain()
 }
 
 // These two functions are not the same.
@@ -326,15 +338,15 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
 internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     val elements = this.elems!!
 
-    val message = MessageChain(initialCapacity = elements.size + 1)
+    val message = MessageChainBuilder(elements.size + 1)
     message.add(MessageSourceFromServer(delegate = this))
     elements.joinToMessageChain(message)
-    return message
+    return message.asMessageChain()
 }
 
 
 @UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class)
-internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChain) {
+internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
     this.forEach {
         when {
             it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))

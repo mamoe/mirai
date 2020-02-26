@@ -35,10 +35,7 @@ fun Application.authModule() {
 
         miraiVerify<BindDTO>("/verify", verifiedSessionKey = false) {
             val bot = getBotOrThrow(it.qq)
-            with(SessionManager) {
-                closeSession(it.sessionKey)
-                allSession[it.sessionKey] = AuthedSession(bot, EmptyCoroutineContext)
-            }
+            SessionManager.createAuthedSession(bot, it.sessionKey)
             call.respondStateCode(StateCode.Success)
         }
 
@@ -63,7 +60,7 @@ private data class AuthRetDTO(val code: Int, val session: String) : DTO
 private data class BindDTO(override val sessionKey: String, val qq: Long) : VerifyDTO()
 
 private fun getBotOrThrow(qq: Long) = try {
-    Bot.instanceWhose(qq)
+    Bot.getInstance(qq)
 } catch (e: NoSuchElementException) {
     throw NoSuchBotException
 }

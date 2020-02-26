@@ -24,7 +24,7 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
     manifest {
-        attributes["Main-Class"] = "net.mamoe.mirai.console.MiraiConsolePureLoader"
+        attributes["Main-Class"] = "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
     }
 }
 
@@ -32,7 +32,7 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
 dependencies {
     api(project(":mirai-core"))
     api(project(":mirai-core-qqandroid"))
-    api(project(":mirai-api-http"))
+    // api(project(":mirai-api-http"))
     runtimeOnly(files("../mirai-core-qqandroid/build/classes/kotlin/jvm/main"))
     runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main"))
     api(kotlin("serialization"))

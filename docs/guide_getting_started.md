@@ -26,6 +26,8 @@ JDK要求6以上
 
 ### 2 新建Gradle项目
 
+*使用gradle项目可能需要代理，在IDEA的```settings```->```proxy settings```中可以设置
+
 - 在```File->new project```中选择```Gradle```
 - 在面板中的```Additional Libraries and Frameworks```中勾选```Java```以及```Kotlin/JVM```
 - 点击```next```，填入```GroupId```与```ArtifactId```(对于测试项目来说，可随意填写)

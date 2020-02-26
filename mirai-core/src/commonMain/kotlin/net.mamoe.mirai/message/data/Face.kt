@@ -18,7 +18,7 @@ import kotlin.jvm.JvmName
 /**
  * QQ 自带表情
  */
-class Face(val id: Int) : Message {
+class Face(val id: Int) : Message, MessageContent {
     override fun toString(): String = "[mirai:face$id]"
 
     /**
@@ -166,9 +166,5 @@ class Face(val id: Int) : Message {
         const val yao: Int = 168
         const val shouqiang: Int = 169
         const val qingwa: Int = 170
-    }
-
-    override fun eq(other: Message): Boolean {
-        return other is Face && other.id == this.id
     }
 }

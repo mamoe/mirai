@@ -96,7 +96,7 @@ suspend inline fun <reified E : Event, R : Any> subscribingGetOrNull(
 /**
  * 异步监听这个事件, 并尝试从这个事件中获取一个值.
  *
- * 若 [filter] 抛出了一个异常, [Deferred.await] 会抛出这个异常或.
+ * 若 [filter] 抛出的异常将会被传递给 [Deferred.await] 抛出.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param coroutineContext 额外的 [CoroutineContext]

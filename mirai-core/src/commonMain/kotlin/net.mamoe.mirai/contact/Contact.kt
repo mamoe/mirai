@@ -12,6 +12,7 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
@@ -20,8 +21,14 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.recall
+import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
@@ -48,7 +55,7 @@ interface Contact : CoroutineScope {
     val id: Long
 
     /**
-     * 向这个对象发送消息. 发送成功后 [message] 中会添加 [MessageSource], 此后可以 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
+     * 向这个对象发送消息.
      *
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
@@ -68,6 +75,7 @@ interface Contact : CoroutineScope {
      * @see ImageUploadEvent 图片发送完成事件
      *
      * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     suspend fun uploadImage(image: ExternalImage): Image
 
@@ -92,6 +100,45 @@ interface Contact : CoroutineScope {
     override fun toString(): String
 }
 
-suspend inline fun Contact.sendMessage(message: Message) = sendMessage(message.toChain())
+/**
+ * @see Bot.recall
+ */
+@MiraiExperimentalAPI
+suspend inline fun Contact.recall(source: MessageChain) = this.bot.recall(source)
 
-suspend inline fun Contact.sendMessage(plain: String) = sendMessage(plain.toMessage())
+/**
+ * @see Bot.recall
+ */
+suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(source)
+
+/**
+ * @see Bot.recallIn
+ */
+@MiraiExperimentalAPI
+fun Contact.recallIn(
+    message: MessageChain,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.bot.recallIn(message, millis, coroutineContext)
+
+/**
+ * @see Bot.recallIn
+ */
+fun Contact.recallIn(
+    source: MessageSource,
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.bot.recallIn(source, millis, coroutineContext)
+
+/**
+ * @see Contact.sendMessage
+ */
+@Suppress("UNCHECKED_CAST")
+suspend inline fun <C : Contact> C.sendMessage(message: Message): MessageReceipt<C> =
+    sendMessage(message.toChain()) as? MessageReceipt<C> ?: error("Internal class cast mistake")
+
+/**
+ * @see Contact.sendMessage
+ */
+@Suppress("UNCHECKED_CAST")
+suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> = sendMessage(plain.toMessage())

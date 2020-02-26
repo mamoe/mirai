@@ -9,14 +9,15 @@
 
 package net.mamoe.mirai.console.plugins
 
-import net.mamoe.mirai.console.ICommand
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
+import java.io.InputStream
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.jar.JarFile
@@ -30,6 +31,9 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     private val supervisorJob = SupervisorJob()
     final override val coroutineContext: CoroutineContext = coroutineContext + supervisorJob
 
+    /**
+     * 插件被分配的data folder， 如果插件改名了 data folder 也会变 请注意
+     */
     val dataFolder: File by lazy {
         File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
     }
@@ -58,7 +62,7 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     /**
      * 当任意指令被使用
      */
-    open fun onCommand(command: ICommand, args: List<String>) {
+    open fun onCommand(command: Command, args: List<String>) {
 
     }
 
@@ -67,11 +71,13 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onEnable()
     }
 
-
+    /**
+     * 加载一个data folder中的Config
+     * 这个config是read-write的
+     */
     fun loadConfig(fileName: String): Config {
-        return Config.load(File(fileName))
+        return Config.load(dataFolder.absolutePath + fileName)
     }
-
 
     @JvmOverloads
     internal fun disable(throwable: CancellationException? = null) {
@@ -86,11 +92,43 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onLoad()
     }
 
-    fun getPluginManager() = PluginManager
+    val pluginManager = PluginManager
 
     val logger: MiraiLogger by lazy {
-        DefaultLogger(pluginDescription.name)
+        SimpleLogger("Plugin ${pluginDescription.name}") { _, message, e ->
+            MiraiConsole.logger("[${pluginDescription.name}]", 0, message)
+            if (e != null) {
+                MiraiConsole.logger("[${pluginDescription.name}]", 0, e.toString())
+                e.printStackTrace()
+            }
+        }
     }
+
+    /**
+     * 加载一个插件jar, resources中的东西
+     */
+    fun getResources(fileName: String): InputStream? {
+        return try {
+            this.javaClass.classLoader.getResourceAsStream(fileName)
+        } catch (e: Exception) {
+            PluginManager.getFileInJarByName(
+                this.pluginDescription.name,
+                fileName
+            )
+        }
+    }
+
+    /**
+     * 加载一个插件jar, resources中的Config
+     * 这个Config是read-only的
+     */
+    fun getResourcesConfig(fileName: String): Config {
+        if (fileName.contains(".")) {
+            error("Unknown Config Type")
+        }
+        return Config.load(getResources(fileName) ?: error("Config Not Found"), fileName.split(".")[1])
+    }
+
 }
 
 class PluginDescription(
@@ -173,7 +211,7 @@ object PluginManager {
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
     private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
 
-    fun onCommand(command: ICommand, args: List<String>) {
+    fun onCommand(command: Command, args: List<String>) {
         nameToPluginBaseMap.values.forEach {
             it.onCommand(command, args)
         }
@@ -286,7 +324,7 @@ object PluginManager {
                 }
                 return try {
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
-                    val plugin: PluginBase = subClass.getDeclaredConstructor().newInstance()
+                    val plugin: PluginBase = subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
                     description.loaded = true
                     logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
                     logger.info(description.info)
@@ -324,6 +362,47 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             it.disable(throwable)
         }
+    }
+
+    /**
+     * 根据插件名字找Jar的文件
+     * null => 没找到
+     */
+    fun getJarPath(pluginName: String): File? {
+        File(pluginsPath).listFiles()?.forEach { file ->
+            if (file != null && file.extension == "jar") {
+                val jar = JarFile(file)
+                val pluginYml =
+                    jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
+                if (pluginYml != null) {
+                    val description =
+                        PluginDescription.readFromContent(
+                            URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
+                                it.readBytes().encodeToString()
+                            })
+                    if (description.name.toLowerCase() == pluginName.toLowerCase()) {
+                        return file
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+
+    /**
+     * 根据插件名字找Jar中的文件
+     * null => 没找到
+     */
+    fun getFileInJarByName(pluginName: String, toFind: String): InputStream? {
+        val jarFile = getJarPath(pluginName)
+        if (jarFile == null) {
+            return null
+        }
+        val jar = JarFile(jarFile)
+        val toFindFile =
+            jar.entries().asSequence().filter { it.name == toFind }.firstOrNull() ?: return null
+        return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
 }
 

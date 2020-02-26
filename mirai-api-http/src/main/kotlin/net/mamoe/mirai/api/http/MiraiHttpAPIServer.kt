@@ -20,12 +20,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.api.http.route.mirai
 import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiLogger
 import org.slf4j.helpers.NOPLoggerFactory
 import kotlin.coroutines.CoroutineContext
 
 object MiraiHttpAPIServer : CoroutineScope {
 
-    var logger = DefaultLogger("Mirai HTTP API")
+    var logger: MiraiLogger = DefaultLogger("Mirai HTTP API")
+
     override val coroutineContext: CoroutineContext =
         CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
 

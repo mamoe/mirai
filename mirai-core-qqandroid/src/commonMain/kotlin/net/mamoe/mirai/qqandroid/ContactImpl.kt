@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid
 
 import kotlinx.coroutines.launch
+import kotlinx.io.core.Closeable
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
@@ -22,7 +23,6 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
@@ -41,6 +41,7 @@ internal abstract class ContactImpl : Contact {
     }
 
     override fun equals(other: Any?): Boolean {
+        @Suppress("DuplicatedCode")
         if (this === other) return true
         if (other !is Contact) return false
         if (this::class != other::class) return false
@@ -70,16 +71,17 @@ internal class QQImpl(
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSource
         bot.network.run {
             check(
                 MessageSvc.PbSendMsg.ToFriend(
                     bot.client,
                     id,
                     event.message
-                ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+                ) { source = it }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
-        return MessageReceipt(message, this)
+        return MessageReceipt(source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -144,7 +146,8 @@ internal class QQImpl(
             }
         }
     } finally {
-        image.input.close()
+        (image.input as? Closeable)?.close()
+        (image.input as? io.ktor.utils.io.core.Closeable)?.close()
     }
 
     @MiraiExperimentalAPI
@@ -306,20 +309,19 @@ internal class MemberImpl(
 }
 
 internal class MemberInfoImpl(
-    private val jceInfo: StTroopMemberInfo,
-    private val groupOwnerId: Long
+    jceInfo: StTroopMemberInfo,
+    groupOwnerId: Long
 ) : MemberInfo {
-    override val uin: Long get() = jceInfo.memberUin
-    override val nameCard: String get() = jceInfo.sName ?: ""
-    override val nick: String get() = jceInfo.nick
-    override val permission: MemberPermission
-        get() = when {
-            jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
-            jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
-            else -> MemberPermission.MEMBER
-        }
-    override val specialTitle: String get() = jceInfo.sSpecialTitle ?: ""
-    override val muteTimestamp: Int get() = jceInfo.dwShutupTimestap?.toInt() ?: 0
+    override val uin: Long = jceInfo.memberUin
+    override val nameCard: String = jceInfo.sName ?: ""
+    override val nick: String = jceInfo.nick
+    override val permission: MemberPermission = when {
+        jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
+        jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+        else -> MemberPermission.MEMBER
+    }
+    override val specialTitle: String = jceInfo.sSpecialTitle ?: ""
+    override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
 /**
@@ -505,23 +507,10 @@ internal class GroupImpl(
             }
         }
 
+    @MiraiExperimentalAPI
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
         TODO("not implemented")
-    }
-
-    override suspend fun recall(source: MessageSource) {
-        if (source.senderId != bot.uin) {
-            checkBotPermissionOperator()
-        }
-
-        source.ensureSequenceIdAvailable()
-
-        bot.network.run {
-            val response = PbMessageSvc.PbMsgWithDraw.Group(bot.client, this@GroupImpl.id, source.sequenceId, source.messageUid.toInt())
-                .sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
-            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
-        }
     }
 
     @UseExperimental(MiraiExperimentalAPI::class)
@@ -553,21 +542,21 @@ internal class GroupImpl(
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSvc.PbSendMsg.MessageSourceFromSendGroup
         bot.network.run {
-            val response = MessageSvc.PbSendMsg.ToGroup(
+            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,
                 id,
                 event.message
-            ).sendAndExpect<MessageSvc.PbSendMsg.Response>()
+            ) { source = it }.sendAndExpect()
             check(
                 response is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed: $response" }
         }
 
-        ((message.last() as MessageSource) as MessageSvc.PbSendMsg.MessageSourceFromSend)
-            .startWaitingSequenceId(this)
+        source.startWaitingSequenceId(this)
 
-        return MessageReceipt(message, this)
+        return MessageReceipt(source, this)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -590,6 +579,7 @@ internal class GroupImpl(
             when (response) {
                 is ImgStore.GroupPicUp.Response.Failed -> {
                     ImageUploadEvent.Failed(this@GroupImpl, image, response.resultCode, response.message).broadcast()
+                    if (response.message == "over file size max") throw OverFileSizeMaxException()
                     error("upload group image failed with reason ${response.message}")
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
@@ -656,7 +646,8 @@ internal class GroupImpl(
             }
         }
     } finally {
-        image.input.close()
+        (image.input as? Closeable)?.close()
+        (image.input as? io.ktor.utils.io.core.Closeable)?.close()
     }
 
     override fun toString(): String {

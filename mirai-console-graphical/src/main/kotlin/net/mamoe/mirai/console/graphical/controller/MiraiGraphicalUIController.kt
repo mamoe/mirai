@@ -6,17 +6,14 @@ import javafx.stage.Modality
 import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.MiraiConsoleUI
 import net.mamoe.mirai.console.graphical.model.BotModel
 import net.mamoe.mirai.console.graphical.model.ConsoleInfo
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
+import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
-import tornadofx.Controller
-import tornadofx.Scope
-import tornadofx.find
-import tornadofx.observableListOf
+import tornadofx.*
 
 class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
@@ -28,15 +25,13 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     val botList = observableListOf<BotModel>()
     val pluginList: ObservableList<PluginModel> by lazy(::getPluginsFromConsole)
 
-    val consoleConfig : Map<String, Any> by lazy(::getConfigFromConsole)
-
     val consoleInfo = ConsoleInfo()
 
-    suspend fun login(qq: String, psd: String) {
-        MiraiConsole.CommandListener.commandChannel.send("/login $qq $psd")
+    fun login(qq: String, psd: String) {
+        MiraiConsole.CommandProcessor.runConsoleCommandBlocking("/login $qq $psd")
     }
 
-    suspend fun sendCommand(command: String) = MiraiConsole.CommandListener.commandChannel.send(command)
+    fun sendCommand(command: String) = MiraiConsole.CommandProcessor.runConsoleCommandBlocking(command)
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         when (identity) {
@@ -79,12 +74,9 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     override fun createLoginSolver(): LoginSolver = loginSolver
 
-    private fun getPluginsFromConsole(): ObservableList<PluginModel> {
-        // TODO
-        return observableListOf<PluginModel>()
-    }
+    private fun getPluginsFromConsole(): ObservableList<PluginModel> =
+        MiraiConsole.pluginManager.getAllPluginDescriptions().map(::PluginModel).toObservable()
 
-    private fun getConfigFromConsole() = MiraiConsole.MiraiProperties.config.asMap()
 }
 
 class GraphicalLoginSolver : LoginSolver() {

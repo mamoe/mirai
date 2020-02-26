@@ -26,7 +26,8 @@ import kotlin.jvm.JvmName
  *
  * @see AtAll 全体成员
  */
-class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
+class At
+@MiraiInternalAPI constructor(val target: Long, val display: String) : Message, MessageContent {
     @UseExperimental(MiraiInternalAPI::class)
     constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
 
@@ -34,17 +35,13 @@ class At @MiraiInternalAPI constructor(val target: Long, val display: String) : 
 
     companion object Key : Message.Key<At>
 
-    override fun eq(other: Message): Boolean {
-        return other is At && other.target == this.target
-    }
-
     // 自动为消息补充 " "
 
-    override fun followedBy(tail: Message): MessageChain {
-        if(tail is PlainText && tail.stringValue.startsWith(' ')){
-            return super.followedBy(tail)
+    override fun followedBy(tail: Message): CombinedMessage {
+        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
+            return super<MessageContent>.followedBy(tail)
         }
-        return super.followedBy(PlainText(" ")) + tail
+        return super<MessageContent>.followedBy(PlainText(" ")) + tail
     }
 }
 

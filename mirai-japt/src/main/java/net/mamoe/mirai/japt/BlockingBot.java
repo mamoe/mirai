@@ -1,6 +1,5 @@
 package net.mamoe.mirai.japt;
 
-import kotlinx.io.core.ByteReadPacket;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotAccount;
 import net.mamoe.mirai.BotFactoryJvmKt;
@@ -153,18 +152,16 @@ public interface BlockingBot {
 
     // region actions
 
-    @NotNull
-    byte[] downloadAsByteArray(@NotNull Image image);
-
-    @NotNull
-    ByteReadPacket download(@NotNull Image image);
-
     /**
      * 下载图片到 {@code outputStream}.
-     * <p>
      * 不会自动关闭 {@code outputStream}
      */
-    void download(@NotNull Image image, @NotNull OutputStream outputStream);
+    void downloadTo(@NotNull Image image, @NotNull OutputStream outputStream);
+
+    /**
+     * 下载图片到 {@code outputStream} 并关闭 stream
+     */
+    void downloadAndClose(@NotNull Image image, @NotNull OutputStream outputStream);
 
     /**
      * 添加一个好友

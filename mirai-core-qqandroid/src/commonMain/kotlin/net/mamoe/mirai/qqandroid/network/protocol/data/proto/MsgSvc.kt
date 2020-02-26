@@ -26,7 +26,7 @@ internal class MsgSvc : ProtoBuf {
     internal class PbGetMsgResp(
         @SerialId(1) val result: Int = 0,
         @SerialId(2) val errmsg: String = "",
-        @SerialId(3) val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
+        @SerialId(3) val syncCookie: ByteArray? = EMPTY_BYTE_ARRAY,
         @SerialId(4) val syncFlag: SyncFlag,
         @SerialId(5) val uinPairMsgs: List<MsgComm.UinPairMsg>? = null,
         @SerialId(6) val bindUin: Long = 0L,

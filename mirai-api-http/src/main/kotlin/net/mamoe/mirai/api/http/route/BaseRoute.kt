@@ -21,6 +21,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.request.receive
 import io.ktor.response.defaultTextContentType
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.route
@@ -36,11 +37,7 @@ import net.mamoe.mirai.api.http.data.common.VerifyDTO
 import net.mamoe.mirai.api.http.util.jsonParseOrNull
 import net.mamoe.mirai.api.http.util.toJson
 import net.mamoe.mirai.contact.PermissionDeniedException
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger
 import org.slf4j.helpers.NOPLoggerFactory
-import org.slf4j.impl.SimpleLogger
-import org.slf4j.impl.SimpleLoggerFactory
 
 fun Application.mirai() {
     install(DefaultHeaders)
@@ -85,7 +82,7 @@ internal fun Route.miraiGet(
             val sessionKey = call.parameters["sessionKey"] ?: throw IllegalParamException("参数格式错误")
             if (!SessionManager.containSession(sessionKey)) throw IllegalSessionException
 
-            when(val session = SessionManager[sessionKey]) {
+            when (val session = SessionManager[sessionKey]) {
                 is TempSession -> throw NotVerifiedSessionException
                 is AuthedSession -> this.body(session)
             }
@@ -141,15 +138,20 @@ internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Uni
         call.respondStateCode(StateCode.PermissionDenied)
     } catch (e: IllegalAccessException) {
         call.respondStateCode(StateCode(400, e.message), HttpStatusCode.BadRequest)
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        call.respond(HttpStatusCode.InternalServerError, e.message!!)
     }
 }
 
 /*
     extend function
  */
-internal suspend inline fun <reified T : StateCode> ApplicationCall.respondStateCode(code: T, status: HttpStatusCode = HttpStatusCode.OK) = respondJson(code.toJson(StateCode.serializer()), status)
+internal suspend inline fun <reified T : StateCode> ApplicationCall.respondStateCode(code: T, status: HttpStatusCode = HttpStatusCode.OK) =
+    respondJson(code.toJson(StateCode.serializer()), status)
 
-internal suspend inline fun <reified T : DTO> ApplicationCall.respondDTO(dto: T, status: HttpStatusCode = HttpStatusCode.OK) = respondJson(dto.toJson(), status)
+internal suspend inline fun <reified T : DTO> ApplicationCall.respondDTO(dto: T, status: HttpStatusCode = HttpStatusCode.OK) =
+    respondJson(dto.toJson(), status)
 
 internal suspend fun ApplicationCall.respondJson(json: String, status: HttpStatusCode = HttpStatusCode.OK) =
     respondText(json, defaultTextContentType(ContentType("application", "json")), status)

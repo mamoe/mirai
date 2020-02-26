@@ -11,9 +11,7 @@
 
 package net.mamoe.mirai.message
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.readBytes
+import io.ktor.utils.io.ByteReadChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -22,7 +20,7 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribingGet
-import net.mamoe.mirai.event.subscribingGetAsync
+import net.mamoe.mirai.event.subscribingGetOrNull
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
@@ -32,18 +30,19 @@ import kotlin.jvm.JvmName
  * 请查看各平台的 `actual` 实现的说明.
  */
 @UseExperimental(MiraiInternalAPI::class)
-expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>(bot: Bot) : MessagePacketBase<TSender, TSubject>
+expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
 
 /**
  * 仅内部使用, 请使用 [MessagePacket]
  */ // Tips: 在 IntelliJ 中 (左侧边栏) 打开 `Structure`, 可查看类结构
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 @MiraiInternalAPI
-abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : Packet, BotEvent {
+abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, BotEvent {
     /**
      * 接受到这条消息的
      */
-    override val bot: Bot by _bot.unsafeWeakRef()
+    @WeakRefProperty
+    abstract override val bot: Bot
 
     /**
      * 消息事件主体.
@@ -53,6 +52,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
+    @WeakRefProperty
     abstract val subject: TSubject
 
     /**
@@ -60,6 +60,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
      *
      * 在好友消息时为 [QQ] 的实例, 在群消息时为 [Member] 的实例
      */
+    @WeakRefProperty
     abstract val sender: TSender
 
     /**
@@ -90,26 +91,42 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     suspend inline fun MessageChain.reply(): MessageReceipt<TSubject> = reply(this)
     // endregion
 
-    // region
-
-    /**
-     * 引用这个消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
-     */
-    inline fun MessageChain.quote(): MessageChain = this.quote(sender as? Member ?: error("only group message can be quoted"))
-
-    // endregion
-
     // region 上传图片
     suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
     // endregion
 
     // region 发送图片
-    suspend inline fun ExternalImage.send() = this.sendTo(subject)
+    suspend inline fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
-    suspend inline fun Image.send() = this.sendTo(subject)
-    suspend inline fun Message.send() = this.sendTo(subject)
-    suspend inline fun String.send() = this.toMessage().sendTo(subject)
+    suspend inline fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    suspend inline fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    suspend inline fun String.send(): MessageReceipt<TSubject> = this.toMessage().sendTo(subject)
     // endregion
+
+
+    /**
+     * 给这个消息事件的主体发送引用回复消息
+     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
+     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
+     */
+    suspend inline fun quoteReply(message: MessageChain): MessageReceipt<TSubject> = reply(this.message.quote() + message)
+
+    suspend inline fun quoteReply(message: Message): MessageReceipt<TSubject> = reply(this.message.quote() + message)
+    suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
+
+    @JvmName("reply2")
+    suspend inline fun String.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
+
+    @JvmName("reply2")
+    suspend inline fun Message.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
+
+    @JvmName("reply2")
+    suspend inline fun MessageChain.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
+
+    /**
+     * 引用这个消息
+     */
+    inline fun MessageChain.quote(): QuoteReplyToSend = this.quote(sender)
 
     operator fun <M : Message> get(at: Message.Key<M>): M {
         return this.message[at]
@@ -125,20 +142,22 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact>(_bot: Bot) : 
     // endregion
 
     // region 下载图片
+
+
     /**
-     * 将图片下载到内存.
+     * 获取图片下载链接
      *
-     * 非常不推荐这样做.
+     * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
-    @Deprecated("内存使用效率十分低下", ReplaceWith("this.download()"), DeprecationLevel.WARNING)
-    suspend inline fun Image.downloadAsByteArray(): ByteArray = bot.run { download().readBytes() }
-
-    // TODO: 2020/2/5 为下载图片添加文件系统的存储方式
+    suspend inline fun Image.url(): String = bot.queryImageUrl(this@url)
 
     /**
-     * 将图片下载到内存缓存中 (使用 [IoBuffer.Pool])
+     * 获取图片下载链接并开始下载.
+     *
+     * @see ByteReadChannel.copyAndClose
+     * @see ByteReadChannel.copyTo
      */
-    suspend inline fun Image.download(): ByteReadPacket = bot.run { download() }
+    suspend inline fun Image.channel(): ByteReadChannel = bot.openChannel(this)
     // endregion
 }
 
@@ -150,14 +169,14 @@ fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Bo
 }
 
 /**
- * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同且通过 [筛选][filter] 的 [MessagePacket]
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessagePacket]
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
  *
- * @see subscribingGetAsync 本函数的异步版本
+ * @see subscribingGet
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1,
@@ -169,13 +188,33 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
 }
 
 /**
- * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [P] 相同的 [MessagePacket]
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
+ * @return 消息链. 超时时返回 `null`
+ *
+ * @see subscribingGetOrNull
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
+    timeoutMillis: Long = -1,
+    crossinline filter: P.(P) -> Boolean
+): MessageChain? {
+    return subscribingGetOrNull<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }?.takeIf { filter(it, it) }
+    }?.message
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  *
- * @see subscribingGetAsync 本函数的异步版本
+ * @see subscribingGet
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1
@@ -183,4 +222,57 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     return subscribingGet<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }
     }.message
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @return 消息链. 超时时返回 `null`
+ *
+ * @see subscribingGetOrNull
+ */
+suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
+    timeoutMillis: Long = -1
+): MessageChain? {
+    return subscribingGetOrNull<P, P>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }
+    }?.message
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @see subscribingGet
+ */
+suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaining(
+    timeoutMillis: Long = -1
+): M {
+    return subscribingGet<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageContaining) }
+    }.message.first()
+}
+
+/**
+ * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同并含有 [M] 类型的消息的 [MessagePacket]
+ *
+ * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @return 指定类型的消息. 超时时返回 `null`
+ *
+ * @see subscribingGetOrNull
+ */
+suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingOrNull(
+    timeoutMillis: Long = -1
+): M? {
+    return subscribingGetOrNull<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+        takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNull) }
+    }?.message?.first()
 }

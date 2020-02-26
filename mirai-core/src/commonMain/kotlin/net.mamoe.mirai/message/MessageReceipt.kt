@@ -12,8 +12,12 @@ package net.mamoe.mirai.message
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -27,7 +31,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
  */
 open class MessageReceipt<C : Contact>(
-    val originalMessage: MessageChain,
+    val source: MessageSource,
     target: C
 ) {
     init {
@@ -44,7 +48,7 @@ open class MessageReceipt<C : Contact>(
     /**
      * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
      *
-     * @see Group.recall
+     * @see Bot.recall
      * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
      */
     @UseExperimental(MiraiExperimentalAPI::class)
@@ -53,7 +57,7 @@ open class MessageReceipt<C : Contact>(
         if (_isRecalled.compareAndSet(false, true)) {
             when (val contact = target) {
                 is Group -> {
-                    contact.recall(originalMessage)
+                    contact.bot.recall(source)
                 }
                 is QQ -> {
                     TODO()
@@ -74,13 +78,9 @@ open class MessageReceipt<C : Contact>(
     fun recallIn(millis: Long): Job {
         @Suppress("BooleanLiteralArgument")
         if (_isRecalled.compareAndSet(false, true)) {
-            when (val contact = target) {
-                is Group -> {
-                    return contact.recallIn(originalMessage, millis)
-                }
-                is QQ -> {
-                    TODO()
-                }
+            return when (val contact = target) {
+                is QQ,
+                is Group -> contact.bot.recallIn(source, millis)
                 else -> error("Unknown contact type")
             }
         } else error("message is already or planned to be recalled")
@@ -94,10 +94,10 @@ open class MessageReceipt<C : Contact>(
      * @throws IllegalStateException 当此消息不是群消息时
      */
     @MiraiExperimentalAPI("unstable")
-    open fun quote(): MessageChain {
+    open fun quote(): QuoteReplyToSend {
         val target = target
         check(target is Group) { "quote is only available for GroupMessage" }
-        return this.originalMessage.quote(target.botAsMember)
+        return this.source.quote(target.botAsMember)
     }
 
     /**

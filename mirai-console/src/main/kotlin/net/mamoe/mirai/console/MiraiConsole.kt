@@ -12,27 +12,32 @@ package net.mamoe.mirai.console
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.api.http.MiraiHttpAPIServer
-import net.mamoe.mirai.api.http.generateSessionKey
-import net.mamoe.mirai.console.MiraiConsole.CommandListener.processNextCommandLine
+import net.mamoe.mirai.console.MiraiConsole.CommandProcessor.processNextCommandLine
+import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
-import net.mamoe.mirai.console.plugins.withDefaultWriteSave
-import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.utils.DeviceInfo
-import net.mamoe.mirai.utils.FileBasedDeviceInfo
-import net.mamoe.mirai.utils.SimpleLogger
-import net.mamoe.mirai.utils.SystemDeviceInfo
+import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.cryptor.ECDH
 import java.io.File
-import java.security.Security
-import java.util.*
 
 
 object MiraiConsole {
-    val bots
-        get() = Bot.instances
+    /**
+     * 发布的版本号 统一修改位置
+     */
+    const val version = "0.1.0"
+    const val coreVersion = "v0.18.0"
+    const val build = "Alpha"
+
+
+    /**
+     * 获取从Console登陆上的Bot, Bots
+     * */
+    val bots get() = Bot.instances
 
     fun getBotByUIN(uin: Long): Bot? {
         bots.forEach {
@@ -43,50 +48,64 @@ object MiraiConsole {
         return null
     }
 
-    val pluginManager: PluginManager
-        get() = PluginManager
+    /**
+     * PluginManager
+     */
+    val pluginManager: PluginManager get() = PluginManager
 
+    /**
+     * 与前端交互所使用的Logger
+     */
     var logger = UIPushLogger
 
+    /**
+     * Console运行路径
+     */
     var path: String = System.getProperty("user.dir")
 
-    val version = "v0.01"
-    var coreVersion = "v0.18.0"
-    val build = "Zeta"
-
-    var allDown = false
-
+    /**
+     * Console前端接口
+     */
     lateinit var frontEnd: MiraiConsoleUI
+
+
+    /**
+     * 启动Console
+     */
+    var start = false
+
     fun start(
         frontEnd: MiraiConsoleUI
     ) {
+        if (start) {
+            return
+        }
+        start = true
+
+        /* 加载ECDH */
         try {
             ECDH()
         } catch (ignored: Exception) {
-
         }
-        Security.removeProvider("BC")
+        //Security.removeProvider("BC")
 
+
+        /* 初始化前端 */
         this.frontEnd = frontEnd
-        frontEnd.pushVersion(
-            version, build, coreVersion
-        )
-        logger("Mirai-console [$version $build | core version $coreVersion] is still in testing stage, majority feature is available")
-        logger(
-            "Mirai-console now running under " + System.getProperty(
-                "user.dir"
-            )
-        )
+        frontEnd.pushVersion(version, build, coreVersion)
+        logger("Mirai-console [$version $build | core version $coreVersion] is still in testing stage, major features are available")
+        logger("Mirai-console now running under $path")
         logger("Get news in github: https://github.com/mamoe/mirai")
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
 
-
+        /* 依次启用功能 */
         DefaultCommands()
         HTTPAPIAdaptar()
         pluginManager.loadPlugins()
-        CommandListener.start()
+        CommandProcessor.start()
 
+        /* 通知启动完成 */
         logger("Mirai-console 启动完成")
         logger("\"/login qqnumber qqpassword \" to login a bot")
         logger("\"/login qq号 qq密码 \" 来登录一个BOT")
@@ -94,7 +113,6 @@ object MiraiConsole {
 
     fun stop() {
         PluginManager.disableAllPlugins()
-        allDown = true
         try {
             bots.forEach {
                 it.get()?.close()
@@ -104,218 +122,44 @@ object MiraiConsole {
         }
     }
 
-    object HTTPAPIAdaptar {
-        operator fun invoke() {
-            if (MiraiProperties.HTTP_API_ENABLE) {
-                if (MiraiProperties.HTTP_API_AUTH_KEY.startsWith("InitKey")) {
-                    logger("请尽快更改初始生成的HTTP API AUTHKEY")
-                }
-                logger("正在启动HTTPAPI; 端口=" + MiraiProperties.HTTP_API_PORT)
-                MiraiHttpAPIServer.logger = SimpleLogger("HTTP API") { _, message, e ->
-                    logger("[Mirai HTTP API]", 0, message)
-                }
-                MiraiHttpAPIServer.start(
-                    MiraiProperties.HTTP_API_PORT,
-                    MiraiProperties.HTTP_API_AUTH_KEY
-                )
-                logger("HTTPAPI启动完成; 端口= " + MiraiProperties.HTTP_API_PORT)
 
-            }
-        }
-    }
-
-    /**
-     * Defaults Commands are recommend to be replaced by plugin provided commands
-     */
-    object DefaultCommands {
-        operator fun invoke() {
-            registerCommand {
-                name = "login"
-                description = "Mirai-Console default bot login command"
-                onCommand {
-                    if (it.size < 2) {
-                        logger("\"/login qqnumber qqpassword \" to login a bot")
-                        logger("\"/login qq号 qq密码 \" 来登录一个BOT")
-                        return@onCommand false
-                    }
-                    val qqNumber = it[0].toLong()
-                    val qqPassword = it[1]
-                    logger("[Bot Login]", 0, "login...")
-                    try {
-                        frontEnd.prePushBot(qqNumber)
-                        val bot = Bot(qqNumber, qqPassword) {
-                            this.loginSolver = frontEnd.createLoginSolver()
-                            this.botLoggerSupplier = {
-                                SimpleLogger("BOT $qqNumber]") { _, message, e ->
-                                    logger("[BOT $qqNumber]", qqNumber, message)
-                                    if (e != null) {
-                                        logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
-                                        e.printStackTrace()
-                                    }
-                                }
-                            }
-                            this.networkLoggerSupplier = {
-                                SimpleLogger("BOT $qqNumber") { _, message, e ->
-                                    logger("[NETWORK]", qqNumber, message)//因为在一页 所以可以不打QQ
-                                    if (e != null) {
-                                        logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
-                                        e.printStackTrace()
-                                    }
-                                }
-                            }
-                        }
-                        bot.login()
-                        logger(
-                            "[Bot Login]",
-                            0,
-                            "$qqNumber login successes"
-                        )
-                        frontEnd.pushBot(bot)
-                    } catch (e: Exception) {
-                        logger(
-                            "[Bot Login]",
-                            0,
-                            "$qqNumber login failed -> " + e.message
-                        )
-                    }
-                    true
-                }
-            }
-
-            registerCommand {
-                name = "status"
-                description = "Mirai-Console default status command"
-                onCommand {
-                    when (it.size) {
-                        0 -> {
-                            logger("当前有" + bots.size + "个BOT在线")
-                        }
-                        1 -> {
-                            val bot = it[0]
-                            var find = false
-                            bots.forEach {
-                                if (it.get()?.uin.toString().contains(bot)) {
-                                    find = true
-                                    logger("" + it.get()?.uin + ": 在线中; 好友数量:" + it.get()?.qqs?.size + "; 群组数量:" + it.get()?.groups?.size)
-                                }
-                            }
-                            if (!find) {
-                                logger("没有找到BOT$bot")
-                            }
-                        }
-                    }
-                    true
-                }
-            }
-
-
-            registerCommand {
-                name = "say"
-                description = "Mirai-Console default say command"
-                onCommand {
-                    if (it.size < 2) {
-                        logger("say [好友qq号或者群号] [文本消息]     //将默认使用第一个BOT")
-                        logger("say [bot号] [好友qq号或者群号] [文本消息]")
-                        return@onCommand false
-                    }
-                    val bot: Bot? = if (it.size == 2) {
-                        if (bots.size == 0) {
-                            logger("还没有BOT登录")
-                            return@onCommand false
-                        }
-                        bots[0].get()
-                    } else {
-                        getBotByUIN(it[0].toLong())
-                    }
-                    if (bot == null) {
-                        logger("没有找到BOT")
-                        return@onCommand false
-                    }
-                    val target = it[it.size - 2].toLong()
-                    val message = it[it.size - 1]
-                    try {
-                        val contact = bot[target]
-                        runBlocking {
-                            contact.sendMessage(message)
-                            logger("消息已推送")
-                        }
-                    } catch (e: NoSuchElementException) {
-                        logger("没有找到群或好友 号码为${target}")
-                        return@onCommand false
-                    }
-                    true
-                }
-            }
-
-
-            registerCommand {
-                name = "plugins"
-                alias = listOf("plugin")
-                description = "show all plugins"
-                onCommand {
-                    PluginManager.getAllPluginDescriptions().let {
-                        println("loaded " + it.size + " plugins")
-                        it.forEach {
-                            logger("\t" + it.name + " v" + it.version + " by" + it.author + " " + it.info)
-                        }
-                        true
-                    }
-                }
-            }
-
-            registerCommand {
-                name = "command"
-                alias = listOf("commands", "help", "helps")
-                description = "show all commands"
-                onCommand {
-                    CommandManager.getCommands().let {
-                        println("currently have " + it.size + " commands")
-                        it.toSet().forEach {
-                            logger("\t" + it.name + " :" + it.description)
-                        }
-                    }
-                    true
-                }
-            }
-
-            registerCommand {
-                name = "about"
-                description = "About Mirai-Console"
-                onCommand {
-                    logger("v$version $build is still in testing stage, majority feature is available")
-                    logger(
-                        "now running under " + System.getProperty(
-                            "user.dir"
-                        )
-                    )
-                    logger("在Github中获取项目最新进展: https://github.com/mamoe/mirai")
-                    logger("Mirai为开源项目，请自觉遵守开源项目协议")
-                    logger("Powered by Mamoe Technologies and contributors")
-                    true
-                }
-            }
-
-        }
-    }
-
-    object CommandListener : Job by {
+    object CommandProcessor : Job by {
         GlobalScope.launch(start = CoroutineStart.LAZY) {
             processNextCommandLine()
         }
     }() {
-        val commandChannel: Channel<String> = Channel()
 
-        suspend fun processNextCommandLine() {
-            if (allDown) {
-                return
-            }
+        internal class FullCommand(
+            val sender: CommandSender,
+            val commandStr: String
+        )
+
+        private val commandChannel: Channel<FullCommand> = Channel()
+
+        suspend fun runConsoleCommand(command: String) {
+            commandChannel.send(
+                FullCommand(ConsoleCommandSender, command)
+            )
+        }
+
+        suspend fun runCommand(sender: CommandSender, command: String) {
+            commandChannel.send(
+                FullCommand(sender, command)
+            )
+        }
+
+        fun runConsoleCommandBlocking(command: String) = runBlocking { runConsoleCommand(command) }
+
+        fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking { runCommand(sender, command) }
+
+        private suspend fun processNextCommandLine() {
             for (command in commandChannel) {
-                var fullCommand = command
-                if (!fullCommand.startsWith("/")) {
-                    fullCommand = "/$fullCommand"
+                var commandStr = command.commandStr
+                if (!commandStr.startsWith("/")) {
+                    commandStr = "/$commandStr"
                 }
-                if (!CommandManager.runCommand(fullCommand)) {
-                    logger("未知指令 $fullCommand")
+                if (!CommandManager.runCommand(command.sender, commandStr)) {
+                    command.sender.sendMessage("未知指令 $commandStr")
                 }
             }
         }
@@ -337,16 +181,37 @@ object MiraiConsole {
         }
     }
 
-    object MiraiProperties {
-        var config = File("$path/mirai.properties").loadAsConfig()
+}
 
-        var HTTP_API_ENABLE: Boolean by config.withDefaultWrite { true }
-        var HTTP_API_PORT: Int by config.withDefaultWrite { 8080 }
-        var HTTP_API_AUTH_KEY: String by config.withDefaultWriteSave {
-            "InitKey" + generateSessionKey()
-        }
+object MiraiProperties {
+    var config = File("${MiraiConsole.path}/mirai.properties").loadAsConfig()
+
+    var HTTP_API_ENABLE: Boolean by config.withDefaultWrite { true }
+    var HTTP_API_PORT: Int by config.withDefaultWrite { 8080 }
+    /*
+    var HTTP_API_AUTH_KEY: String by config.withDefaultWriteSave {
+        "InitKey" + generateSessionKey()
+    }*/
+}
+
+object HTTPAPIAdaptar {
+    operator fun invoke() {
+        /*
+        if (MiraiProperties.HTTP_API_ENABLE) {
+            if (MiraiProperties.HTTP_API_AUTH_KEY.startsWith("InitKey")) {
+                MiraiConsole.logger("请尽快更改初始生成的HTTP API AUTHKEY")
+            }
+            MiraiConsole.logger("正在启动HTTPAPI; 端口=" + MiraiProperties.HTTP_API_PORT)
+            MiraiHttpAPIServer.logger = SimpleLogger("HTTP API") { _, message, e ->
+                MiraiConsole.logger("[Mirai HTTP API]", 0, message)
+            }
+            MiraiHttpAPIServer.start(
+                MiraiProperties.HTTP_API_PORT,
+                MiraiProperties.HTTP_API_AUTH_KEY
+            )
+            MiraiConsole.logger("HTTPAPI启动完成; 端口= " + MiraiProperties.HTTP_API_PORT)
+        }*/
     }
-
 }
 
 

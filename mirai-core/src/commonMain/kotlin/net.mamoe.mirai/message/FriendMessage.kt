@@ -13,12 +13,15 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
 
 class FriendMessage(
-    bot: Bot,
-    override val sender: QQ,
+    sender: QQ,
     override val message: MessageChain
-) : MessagePacket<QQ, QQ>(bot), BroadcastControllable {
+) : MessagePacket<QQ, QQ>(), BroadcastControllable {
+    override val sender: QQ by sender.unsafeWeakRef()
+    override val bot: Bot get() = sender.bot
     override val subject: QQ get() = sender
 
     override fun toString(): String = "FriendMessage(sender=${sender.id}, message=$message)"

@@ -17,10 +17,14 @@ import com.moandjiezana.toml.Toml
 import com.moandjiezana.toml.TomlWriter
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
+import net.mamoe.mirai.utils.io.encodeToString
 import org.yaml.snakeyaml.Yaml
+import tornadofx.c
 import java.io.File
+import java.io.InputStream
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.LinkedHashMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -47,6 +51,7 @@ interface Config {
     fun getFloatList(key: String): List<Float>
     fun getDoubleList(key: String): List<Double>
     fun getLongList(key: String): List<Long>
+    fun getConfigSectionList(key: String): List<ConfigSection>
     operator fun set(key: String, value: Any)
     operator fun get(key: String): Any?
     operator fun contains(key: String): Boolean
@@ -67,6 +72,9 @@ interface Config {
             )
         }
 
+        /**
+         * create a read-write config
+         * */
         fun load(file: File): Config {
             if (!file.exists()) {
                 file.createNewFile()
@@ -84,6 +92,32 @@ interface Config {
                 else -> error("Unsupported file config type ${file.extension.toLowerCase()}")
             }
         }
+
+        /**
+         * create a read-only config
+         */
+        fun load(content: String, type: String): Config {
+            return when (type.toLowerCase()) {
+                "json" -> JsonConfig(content)
+                "yml" -> YamlConfig(content)
+                "yaml" -> YamlConfig(content)
+                "mirai" -> YamlConfig(content)
+                "ini" -> TomlConfig(content)
+                "toml" -> TomlConfig(content)
+                "properties" -> TomlConfig(content)
+                "property" -> TomlConfig(content)
+                "data" -> TomlConfig(content)
+                else -> error("Unsupported file config type $content")
+            }
+        }
+
+        /**
+         * create a read-only config
+         */
+        fun load(inputStream: InputStream, type: String): Config {
+            return load(inputStream.readBytes().encodeToString(), type)
+        }
+
     }
 }
 
@@ -150,9 +184,11 @@ class WithDefaultWriteLoader<T : Any>(
         prop: KProperty<*>
     ): ReadWriteProperty<Any, T> {
         val defaultValue by lazy { defaultValue.invoke() }
-        config.setIfAbsent(prop.name, defaultValue)
-        if (save) {
-            config.save()
+        if (!config.contains(prop.name)) {
+            config[prop.name] = defaultValue
+            if (save) {
+                config.save()
+            }
         }
         return object : ReadWriteProperty<Any, T> {
             override fun getValue(thisRef: Any, property: KProperty<*>): T {
@@ -195,8 +231,14 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
                         Float::class -> getFloatList(propertyName)
                         Double::class -> getDoubleList(propertyName)
                         Long::class -> getLongList(propertyName)
+                        //不去支持getConfigSectionList(propertyName)
+                        // LinkedHashMap::class -> getConfigSectionList(propertyName)//faster approach
                         else -> {
-                            error("unsupported type")
+                            //if(list[0]!! is ConfigSection || list[0]!! is Map<*,*>){
+                            // getConfigSectionList(propertyName)
+                            //}else {
+                            error("unsupported type" + list[0]!!::class)
+                            //}
                         }
                     }
                 } as T
@@ -211,7 +253,15 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
 
 interface ConfigSection : Config, MutableMap<String, Any> {
     override fun getConfigSection(key: String): ConfigSection {
-        return (get(key) ?: error("ConfigSection does not contain $key ")) as ConfigSection
+        val content = get(key) ?: error("ConfigSection does not contain $key ")
+        if (content is ConfigSection) {
+            return content
+        }
+        return ConfigSectionDelegation(
+            Collections.synchronizedMap(
+                (get(key) ?: error("ConfigSection does not contain $key ")) as LinkedHashMap<String, Any>
+            )
+        )
     }
 
     override fun getString(key: String): String {
@@ -260,6 +310,20 @@ interface ConfigSection : Config, MutableMap<String, Any> {
 
     override fun getLongList(key: String): List<Long> {
         return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toLong() }
+    }
+
+    override fun getConfigSectionList(key: String): List<ConfigSection> {
+        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map {
+            if (it is ConfigSection) {
+                it
+            } else {
+                ConfigSectionDelegation(
+                    Collections.synchronizedMap(
+                        it as MutableMap<String, Any>
+                    )
+                )
+            }
+        }
     }
 
     override fun exist(key: String): Boolean {
@@ -333,13 +397,22 @@ interface FileConfig : Config {
 
 
 abstract class FileConfigImpl internal constructor(
-    private val file: File
+    private val rawContent: String
 ) : FileConfig,
     ConfigSection {
 
-    private val content by lazy {
-        deserialize(file.readText())
+    internal var file: File? = null
+
+
+    constructor(file: File) : this(file.readText()) {
+        this.file = file
     }
+
+
+    private val content by lazy {
+        deserialize(rawContent)
+    }
+
 
     override val size: Int get() = content.size
     override val entries: MutableSet<MutableMap.MutableEntry<String, Any>> get() = content.entries
@@ -354,11 +427,16 @@ abstract class FileConfigImpl internal constructor(
     override fun remove(key: String): Any? = content.remove(key)
 
     override fun save() {
-        if (!file.exists()) {
-            file.createNewFile()
+        if (isReadOnly()) {
+            error("Config is readonly")
         }
-        file.writeText(serialize(content))
+        if (!((file?.exists())!!)) {
+            file?.createNewFile()
+        }
+        file?.writeText(serialize(content))
     }
+
+    fun isReadOnly() = file == null
 
     override fun contains(key: String): Boolean {
         return content.contains(key)
@@ -379,8 +457,12 @@ abstract class FileConfigImpl internal constructor(
 }
 
 class JsonConfig internal constructor(
-    file: File
-) : FileConfigImpl(file) {
+    content: String
+) : FileConfigImpl(content) {
+    constructor(file: File) : this(file.readText()) {
+        this.file = file
+    }
+
     @UnstableDefault
     override fun deserialize(content: String): ConfigSection {
         if (content.isEmpty() || content.isBlank() || content == "{}") {
@@ -399,7 +481,11 @@ class JsonConfig internal constructor(
     }
 }
 
-class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
+class YamlConfig internal constructor(content: String) : FileConfigImpl(content) {
+    constructor(file: File) : this(file.readText()) {
+        this.file = file
+    }
+
     override fun deserialize(content: String): ConfigSection {
         if (content.isEmpty() || content.isBlank()) {
             return ConfigSectionImpl()
@@ -417,7 +503,11 @@ class YamlConfig internal constructor(file: File) : FileConfigImpl(file) {
 
 }
 
-class TomlConfig internal constructor(file: File) : FileConfigImpl(file) {
+class TomlConfig internal constructor(content: String) : FileConfigImpl(content) {
+    constructor(file: File) : this(file.readText()) {
+        this.file = file
+    }
+
     override fun deserialize(content: String): ConfigSection {
         if (content.isEmpty() || content.isBlank()) {
             return ConfigSectionImpl()
