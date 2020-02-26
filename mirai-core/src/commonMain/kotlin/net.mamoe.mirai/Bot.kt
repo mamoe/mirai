@@ -103,12 +103,6 @@ abstract class Bot : CoroutineScope {
     abstract val qqs: ContactList<QQ>
 
     /**
-     * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
-     */
-    @Deprecated(message = "这个函数有歧义. 它获取的是好友, 却名为 getQQ", replaceWith = ReplaceWith("getFriend(id)"))
-    fun getQQ(id: Long): QQ = getFriend(id)
-
-    /**
      * 获取一个好友或一个群.
      * 在一些情况下这可能会造成歧义. 请考虑后使用.
      */
