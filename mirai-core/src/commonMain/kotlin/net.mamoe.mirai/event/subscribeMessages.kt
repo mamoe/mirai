@@ -249,6 +249,36 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         operator fun invoke(onEvent: MessageListener<T>): Listener<T> {
             return content(filter, onEvent)
         }
+
+        infix fun reply(toReply: String): Listener<T> {
+            return content(filter) { reply(toReply) }
+        }
+
+        infix fun reply(message: Message): Listener<T> {
+            return content(filter) { reply(message) }
+        }
+
+        infix fun reply(replier: (@MessageDsl suspend T.(String) -> Any?)): Listener<T> {
+            return content(filter) {
+                @Suppress("DSL_SCOPE_VIOLATION_WARNING")
+                executeAndReply(replier)
+            }
+        }
+
+        infix fun quoteReply(toReply: String): Listener<T> {
+            return content(filter) { quoteReply(toReply) }
+        }
+
+        infix fun quoteReply(message: Message): Listener<T> {
+            return content(filter) { quoteReply(message) }
+        }
+
+        infix fun quoteReply(replier: (@MessageDsl suspend T.(String) -> Any?)): Listener<T> {
+            return content(filter) {
+                @Suppress("DSL_SCOPE_VIOLATION_WARNING")
+                executeAndQuoteReply(replier)
+            }
+        }
     }
 
     /**
@@ -698,6 +728,17 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         }
     }
 
+    @PublishedApi
+    @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE") // false positive
+    internal suspend inline fun T.executeAndQuoteReply(replier: suspend T.(String) -> Any?) {
+        when (val message = replier(this, this.message.toString())) {
+            is Message -> this.quoteReply(message)
+            is Unit -> {
+
+            }
+            else -> this.quoteReply(message.toString())
+        }
+    }
 /* 易产生迷惑感
  fun replyCase(equals: String, trim: Boolean = true, replier: MessageReplier<T>) = case(equals, trim) { reply(replier(this)) }
  fun replyContains(value: String, replier: MessageReplier<T>) = content({ value in it }) { replier(this) }
