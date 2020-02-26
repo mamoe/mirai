@@ -56,7 +56,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         @PublishedApi
         internal val instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
 
-        inline fun forEachInstance(block: (Bot) -> Unit) = instances.forEach {
+        inline fun forEachInstance(block: (Bot) -> Unit) = instances.forEach { it: WeakRef<Bot> ->
             it.get()?.let(block)
         }
 

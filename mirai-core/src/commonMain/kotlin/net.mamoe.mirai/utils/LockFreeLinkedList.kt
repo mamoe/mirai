@@ -19,13 +19,8 @@ inline fun <E> LockFreeLinkedList<E>.joinToString(
     separator: CharSequence = ", ",
     prefix: CharSequence = "[",
     postfix: CharSequence = "]",
-    transform: ((E) -> CharSequence) = { it.toString() }
-): String = prefix.toString() + buildString {
-    this@joinToString.forEach {
-        append(transform(it))
-        append(separator)
-    }
-}.dropLast(separator.length) + postfix
+    noinline transform: ((E) -> CharSequence) = { it.toString() }
+): String = asSequence().joinToString(separator, prefix, postfix, transform = transform)
 
 /**
  * Collect all the elements into a [MutableList] then cast it as a [List]
@@ -35,11 +30,7 @@ fun <E> LockFreeLinkedList<E>.toList(): List<E> = toMutableList()
 /**
  * Collect all the elements into a [MutableList].
  */
-fun <E> LockFreeLinkedList<E>.toMutableList(): MutableList<E> {
-    val list = mutableListOf<E>()
-    this.forEach { list.add(it) }
-    return list
-}
+fun <E> LockFreeLinkedList<E>.toMutableList() = asSequence().toMutableList()
 
 /**
  * Collect all the elements into a [MutableSet] then cast it as a [Set]
@@ -49,24 +40,7 @@ fun <E> LockFreeLinkedList<E>.toSet(): Set<E> = toMutableSet()
 /**
  * Collect all the elements into a [MutableSet].
  */
-fun <E> LockFreeLinkedList<E>.toMutableSet(): MutableSet<E> {
-    val list = mutableSetOf<E>()
-    this.forEach { list.add(it) }
-    return list
-}
-
-/**
- * Builds a [Sequence] containing all the elements in [this] in the same order.
- *
- * Note that the sequence is dynamic, that is, elements are yielded atomically only when it is required
- */
-fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
-    return sequence {
-        forEach {
-            yield(it)
-        }
-    }
-}
+fun <E> LockFreeLinkedList<E>.toMutableSet() = asSequence().toMutableSet()
 
 operator fun <E> LockFreeLinkedList<E>.iterator(): Iterator<E> {
     return asSequence().iterator()
@@ -285,21 +259,16 @@ open class LockFreeLinkedList<E> {
      */
     val size: Int get() = head.countChildIterate<LockFreeLinkedListNode<E>>({ it.nextNode }, { it !is Tail }) - 1 // empty head is always included
 
-    open operator fun contains(element: E): Boolean {
-        forEach { if (it == element) return true }
-        return false
-    }
-
     @Suppress("unused")
-    open fun containsAll(elements: Collection<E>): Boolean = elements.all { contains(it) }
+    open fun containsAll(elements: Collection<E>): Boolean = elements.all { it in asSequence() }
 
     open fun isEmpty(): Boolean = head.allMatching { it.isValidElementNode().not() }
 
-    inline fun forEach(block: (E) -> Unit) {
+    fun asSequence() = sequence {
         var node: LockFreeLinkedListNode<E> = head
         while (true) {
-            if (node === tail) return
-            node.letValueIfValid(block)
+            node.letValueIfValid { yield(it) }
+            if (node === tail) return@sequence
             node = node.nextNode
         }
     }

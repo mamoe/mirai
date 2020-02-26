@@ -18,6 +18,7 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.readAvailable
 import kotlinx.io.OutputStream
 import kotlinx.io.core.Output
+import kotlinx.io.core.use
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import kotlin.jvm.JvmMultifileClass
@@ -87,15 +88,13 @@ suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
 suspend fun ByteReadChannel.copyAndClose(dst: Output) {
-    try {
+    dst.use {
         ByteArrayPool.useInstance {
             do {
                 val size = this.readAvailable(it)
                 dst.writeFully(it, 0, size)
             } while (size != 0)
         }
-    } finally {
-        dst.close()
     }
 }
 

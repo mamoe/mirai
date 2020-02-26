@@ -67,7 +67,7 @@ internal class LockFreeLinkedListTest {
         //delay(1) // let addJob fly
         val foreachJob = async {
             list.concurrentDo(1, 10000) {
-                forEach { it + it }
+                forEach { it: Int -> it + it }
             }
         }
         val removeLastJob = async {
@@ -104,7 +104,7 @@ internal class LockFreeLinkedListTest {
     fun removeWhileForeach() {
         val list = LockFreeLinkedList<Int>()
         repeat(10) { list.addLast(it) }
-        list.forEach {
+        list.forEach { it: Int ->
             list.remove(it + 1)
         }
         list.peekFirst() shouldBeEqualTo 0
@@ -183,7 +183,7 @@ internal class LockFreeLinkedListTest {
         val list = LockFreeLinkedList<Int>()
         list.addAll(listOf(1, 2, 3, 4, 5))
 
-        list.forEach {
+        list.forEach { it: Int ->
             list.remove(3)
         }
 

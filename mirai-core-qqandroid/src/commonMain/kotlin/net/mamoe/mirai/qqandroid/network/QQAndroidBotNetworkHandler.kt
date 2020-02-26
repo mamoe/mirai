@@ -307,7 +307,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         bot.firstLoginSucceed = true
 
         _pendingEnabled.value = false
-        pendingIncomingPackets?.forEach {
+        pendingIncomingPackets?.forEach { it: KnownPacketFactories.IncomingPacket<*> ->
             @Suppress("UNCHECKED_CAST")
             KnownPacketFactories.handleIncomingPacket(it as KnownPacketFactories.IncomingPacket<Packet>, bot, it.flag2, it.consumer)
         }
@@ -396,7 +396,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             } else logger.verbose(logMessage)
         }
 
-        packetListeners.forEach { listener ->
+        packetListeners.forEach { listener: PacketListener ->
             if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
                 listener.complete(packet)
             }

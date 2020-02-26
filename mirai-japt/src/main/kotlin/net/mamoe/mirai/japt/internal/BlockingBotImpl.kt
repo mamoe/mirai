@@ -42,12 +42,12 @@ internal class BlockingBotImpl(private val bot: Bot) : BlockingBot {
         runBlocking { bot.queryGroupMemberList(groupUin, groupCode, ownerId) }.asStream()
 
     @UseExperimental(MiraiInternalAPI::class)
-    override fun getFriendList(): List<BlockingQQ> = bot.qqs.delegate.toList().map { it.blocking() }
+    override fun getFriendList(): List<BlockingQQ> = bot.qqs.delegate.asSequence().map { it.blocking() }.toList()
 
     override fun getFriend(id: Long): BlockingQQ = bot.getFriend(id).blocking()
     override fun queryGroupList(): Stream<Long> = runBlocking { bot.queryGroupList() }.asStream()
 
-    override fun getGroupList(): List<BlockingGroup> = bot.groups.delegate.toList().map { it.blocking() }
+    override fun getGroupList(): List<BlockingGroup> = bot.groups.delegate.asSequence().map { it.blocking() }.toList()
 
     override fun queryGroupInfo(code: Long): GroupInfo = runBlocking { bot.queryGroupInfo(code) }
 

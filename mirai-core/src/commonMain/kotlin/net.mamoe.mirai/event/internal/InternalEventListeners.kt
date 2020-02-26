@@ -126,7 +126,7 @@ internal object EventListenerManager {
 
     @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
     internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
-        registries.forEach {
+        registries.forEach { it: Registry<*> ->
             if (it.clazz == clazz) {
                 return it.listeners as EventListeners<E>
             }

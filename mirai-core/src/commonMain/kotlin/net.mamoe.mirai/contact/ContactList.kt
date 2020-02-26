@@ -27,7 +27,7 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
      * [123456, 321654, 123654]
      * ```
      */
-    val idContentString: String get() = "[" + buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(2) + "]"
+    val idContentString: String get() = "[" + buildString { delegate.forEach { it: C -> append(it.id).append(", ") } }.dropLast(2) + "]"
 
     operator fun get(id: Long): C = delegate[id]
     fun getOrNull(id: Long): C? = delegate.getOrNull(id)
@@ -35,20 +35,15 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
     fun containsId(id: Long): Boolean = contains(id)
 
     val size: Int get() = delegate.size
-    operator fun contains(element: C): Boolean = delegate.contains(element)
+    operator fun contains(element: C): Boolean = element in delegate.asSequence()
     operator fun contains(id: Long): Boolean = delegate.getOrNull(id) != null
     fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
     fun isEmpty(): Boolean = delegate.isEmpty()
-    inline fun forEach(block: (C) -> Unit) = delegate.forEach(block)
-    fun first(): C {
-        forEach { return it }
-        throw NoSuchElementException()
+    inline fun forEach(block: (C) -> Unit) {
+        delegate.asSequence().forEach(block)
     }
-
-    fun firstOrNull(): C? {
-        forEach { return it }
-        return null
-    }
+    fun first() = delegate.asSequence().first()
+    fun firstOrNull() = delegate.asSequence().firstOrNull()
 
     override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
 }
