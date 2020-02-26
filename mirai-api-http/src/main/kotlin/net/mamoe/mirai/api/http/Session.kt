@@ -74,17 +74,17 @@ internal object SessionManager {
 
 
 /**
- * @author NaturalHG
- * 这个用于管理不同Client与Mirai HTTP的会话
+ * 管理不同 Client 与 Mirai HTTP 的会话
  *
- * [Session]均为内部操作用类
- * 需使用[SessionManager]
+ * [Session] 均为内部操作用类
+ * @see [SessionManager]
+ * @author NaturalHG
  */
-abstract class Session internal constructor(
+internal abstract class Session internal constructor(
     coroutineContext: CoroutineContext,
     val key: String = generateSessionKey()
 ) : CoroutineScope {
-    val supervisorJob = SupervisorJob(coroutineContext[Job])
+    private val supervisorJob = SupervisorJob(coroutineContext[Job])
     final override val coroutineContext: CoroutineContext = supervisorJob + coroutineContext
 
     internal open fun close() {
@@ -98,13 +98,13 @@ abstract class Session internal constructor(
  *
  * TempSession在建立180s内没有转变为[AuthedSession]应被清除
  */
-class TempSession internal constructor(coroutineContext: CoroutineContext) : Session(coroutineContext)
+internal class TempSession internal constructor(coroutineContext: CoroutineContext) : Session(coroutineContext)
 
 /**
  * 任何[TempSession]认证后转化为一个[AuthedSession]
  * 在这一步[AuthedSession]应该已经有assigned的bot
  */
-class AuthedSession internal constructor(val bot: Bot, originKey: String, coroutineContext: CoroutineContext) : Session(coroutineContext, originKey) {
+internal class AuthedSession internal constructor(val bot: Bot, originKey: String, coroutineContext: CoroutineContext) : Session(coroutineContext, originKey) {
 
     companion object {
         const val CHECK_TIME = 1800L // 1800s aka 30min
