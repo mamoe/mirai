@@ -126,17 +126,19 @@ internal inline fun <reified T : VerifyDTO> Route.miraiVerify(
 internal inline fun Route.intercept(crossinline blk: suspend PipelineContext<Unit, ApplicationCall>.() -> Unit) = handle {
     try {
         blk(this)
-    } catch (e: IllegalSessionException) {
-        call.respondStateCode(StateCode.IllegalSession)
-    } catch (e: NotVerifiedSessionException) {
-        call.respondStateCode(StateCode.NotVerifySession)
-    } catch (e: NoSuchBotException) {
+    } catch (e: NoSuchBotException) { // Bot不存在
         call.respondStateCode(StateCode.NoBot)
-    } catch (e: NoSuchElementException) {
+    } catch (e: IllegalSessionException) { // Session过期
+        call.respondStateCode(StateCode.IllegalSession)
+    } catch (e: NotVerifiedSessionException) { // Session未认证
+        call.respondStateCode(StateCode.NotVerifySession)
+    } catch (e: NoSuchElementException) { // 指定对象不存在
         call.respondStateCode(StateCode.NoElement)
-    } catch (e: PermissionDeniedException) {
+    } catch (e: PermissionDeniedException) { // 缺少权限
         call.respondStateCode(StateCode.PermissionDenied)
-    } catch (e: IllegalAccessException) {
+    } catch (e: IllegalStateException) { // Bot被禁言
+        call.respondStateCode(StateCode.BotMuted)
+    } catch (e: IllegalAccessException) { // 错误访问
         call.respondStateCode(StateCode(400, e.message), HttpStatusCode.BadRequest)
     } catch (e: Throwable) {
         e.printStackTrace()
