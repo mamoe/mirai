@@ -159,7 +159,7 @@ object MiraiConsole {
                     commandStr = "/$commandStr"
                 }
                 if (!CommandManager.runCommand(command.sender, commandStr)) {
-                    logger("未知指令 $commandStr")
+                    command.sender.sendMessage("未知指令 $commandStr")
                 }
             }
         }

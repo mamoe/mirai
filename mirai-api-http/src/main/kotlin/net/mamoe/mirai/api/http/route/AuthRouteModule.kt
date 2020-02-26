@@ -35,10 +35,7 @@ fun Application.authModule() {
 
         miraiVerify<BindDTO>("/verify", verifiedSessionKey = false) {
             val bot = getBotOrThrow(it.qq)
-            with(SessionManager) {
-                closeSession(it.sessionKey)
-                allSession[it.sessionKey] = AuthedSession(bot, EmptyCoroutineContext)
-            }
+            SessionManager.createAuthedSession(bot, it.sessionKey)
             call.respondStateCode(StateCode.Success)
         }
 

@@ -37,7 +37,7 @@ object CommandManager {
         val allNames = mutableListOf(command.name).also { it.addAll(command.alias) }
         allNames.forEach {
             if (registeredCommand.containsKey(it)) {
-                error("net.mamoe.mirai.Command Name(or Alias) $it is already registered, consider if same function plugin was installed")
+                error("Command Name(or Alias) $it is already registered, consider if same functional plugin was installed")
             }
         }
         allNames.forEach {
@@ -74,6 +74,8 @@ object CommandManager {
                     )
                 ) {
                     PluginManager.onCommand(this, args)
+                } else {
+                    sender.sendMessage(this.usage)
                 }
             } catch (e: Exception) {
                 sender.sendMessage("在运行指令时出现了未知错误")
@@ -104,13 +106,13 @@ interface CommandSender {
 }
 
 abstract class CommandSenderImpl : CommandSender {
-    private val builder = StringBuilder()
+    internal val builder = StringBuilder()
 
     override fun appendMessage(message: String) {
         builder.append(message).append("\n")
     }
 
-    internal suspend fun flushMessage() {
+    internal open suspend fun flushMessage() {
         if (!builder.isEmpty()) {
             sendMessage(builder.toString().removeSuffix("\n"))
         }
@@ -124,6 +126,11 @@ object ConsoleCommandSender : CommandSenderImpl() {
 
     override suspend fun sendMessage(message: String) {
         MiraiConsole.logger("[Command]", 0, message)
+    }
+
+    override suspend fun flushMessage() {
+        super.flushMessage()
+        builder.clear()
     }
 }
 
@@ -156,6 +163,8 @@ interface Command {
     val name: String
     val alias: List<String>
     val description: String
+    val usage: String
+
     suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean
     fun register()
 }
@@ -163,7 +172,8 @@ interface Command {
 abstract class BlockingCommand(
     override val name: String,
     override val alias: List<String> = listOf(),
-    override val description: String = ""
+    override val description: String = "",
+    override val usage: String = ""
 ) : Command {
     /**
      * 最高优先级监听器
@@ -186,6 +196,7 @@ class AnonymousCommand internal constructor(
     override val name: String,
     override val alias: List<String>,
     override val description: String,
+    override val usage: String = "",
     val onCommand: suspend CommandSender.(args: List<String>) -> Boolean
 ) : Command {
     override suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
@@ -201,6 +212,7 @@ class CommandBuilder internal constructor() {
     var name: String? = null
     var alias: List<String>? = null
     var description: String = ""
+    var usage: String = "use /help for help"
     var onCommand: (suspend CommandSender.(args: List<String>) -> Boolean)? = null
 
     fun onCommand(commandProcess: suspend CommandSender.(args: List<String>) -> Boolean) {
@@ -209,7 +221,7 @@ class CommandBuilder internal constructor() {
 
     fun register(): Command {
         if (name == null || onCommand == null) {
-            error("net.mamoe.mirai.CommandBuilder not complete")
+            error("CommandBuilder not complete")
         }
         if (alias == null) {
             alias = listOf()
@@ -218,6 +230,7 @@ class CommandBuilder internal constructor() {
             name!!,
             alias!!,
             description,
+            usage,
             onCommand!!
         ).also { it.register() }
     }
