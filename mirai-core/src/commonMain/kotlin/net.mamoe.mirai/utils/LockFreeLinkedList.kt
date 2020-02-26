@@ -111,9 +111,13 @@ open class LockFreeLinkedList<E> {
         }
     }
 
-    open fun peekFirst(): E = head.nextNode.letValueIfValid { return it } ?: throw NoSuchElementException()
-
-    open fun peekLast(): E = head.iterateBeforeFirst { it === tail }.letValueIfValid { return it } ?: throw NoSuchElementException()
+    open fun peekFirst(): E {
+        return head
+            .iterateBeforeFirst { it === tail }
+            .takeUnless { it.isTail() }
+            ?.nodeValue
+            ?: throw NoSuchElementException()
+    }
 
     open fun removeLast(): E {
         while (true) {
@@ -770,11 +774,7 @@ open class LockFreeLinkedListNode<E>(
     internal val nextNodeRef: AtomicRef<LockFreeLinkedListNode<E>> = atomic(nextNode ?: this)
 
     inline fun <R> letValueIfValid(block: (E) -> R): R? {
-        if (!this.isValidElementNode()) {
-            return null
-        }
-        val value = this.nodeValue
-        return if (value !== null) block(value) else null
+        return this.takeIf { isValidElementNode() }?.nodeValue?.let(block)
     }
 
     /**
