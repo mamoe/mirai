@@ -75,11 +75,11 @@ internal abstract class QQAndroidBotBase constructor(
 
     // internally visible only
     fun getGroupByUin(uin: Long): Group {
-        return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin } ?: throw NoSuchElementException("Can not found group with ID=${uin}")
+        return groups.delegate.getOrNull(uin) ?: throw NoSuchElementException("Can not found group with ID=${uin}")
     }
 
     fun getGroupByUinOrNull(uin: Long): Group? {
-        return groups.delegate.filteringGetOrNull { (it as GroupImpl).uin == uin }
+        return groups.delegate.getOrNull(uin)
     }
 
     override suspend fun queryGroupList(): Sequence<Long> {

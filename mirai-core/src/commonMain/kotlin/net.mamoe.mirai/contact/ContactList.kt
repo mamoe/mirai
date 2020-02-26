@@ -16,6 +16,8 @@ import net.mamoe.mirai.utils.*
 
 /**
  * 只读联系人列表, lock-free 实现
+ *
+ * @see ContactList.asSequence
  */
 @UseExperimental(MiraiInternalAPI::class)
 @Suppress("unused")
