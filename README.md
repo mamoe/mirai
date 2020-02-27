@@ -1,3 +1,3 @@
-# mirai-japt
+# mirai-console
 
-Mirai 的 Java API
+Mirai 的控制台
