@@ -15,18 +15,6 @@ import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
 
-inline fun <E> LockFreeLinkedList<E>.joinToString(
-    separator: CharSequence = ", ",
-    prefix: CharSequence = "[",
-    postfix: CharSequence = "]",
-    transform: ((E) -> CharSequence) = { it.toString() }
-): String = prefix.toString() + buildString {
-    this@joinToString.forEach {
-        append(transform(it))
-        append(separator)
-    }
-}.dropLast(separator.length) + postfix
-
 /**
  * Collect all the elements into a [MutableList] then cast it as a [List]
  */
@@ -215,7 +203,7 @@ open class LockFreeLinkedList<E> {
     internal fun <E> LockFreeLinkedListNode<E>.compareAndSetNextNodeRef(expect: LockFreeLinkedListNode<E>, update: LockFreeLinkedListNode<E>) =
         this.nextNodeRef.compareAndSet(expect, update)
 
-    override fun toString(): String = joinToString()
+    override fun toString(): String = asSequence().joinToString()
 
     @Suppress("unused")
     internal fun getLinkStructure(): String = buildString {
@@ -754,7 +742,7 @@ internal open class Tail<E> : LockFreeLinkedListNode<E>(null, null) {
 
 open class LockFreeLinkedListNode<E>(
     nextNode: LockFreeLinkedListNode<E>?,
-    private var initialNodeValue: E?
+    private val initialNodeValue: E?
 ) {
     /*
     internal val id: Int = nextId()

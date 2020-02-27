@@ -52,7 +52,7 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
         return null
     }
 
-    override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
+    override fun toString(): String = delegate.asSequence().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
 }
 
 operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
