@@ -40,9 +40,6 @@ dependencies {
     implementation("net.mamoe:mirai-core-qqandroid-jvm:$mirai_version")
 
 
-    // api(project(":mirai-api-http"))
-    runtimeOnly(files("../mirai-core-qqandroid/build/classes/kotlin/jvm/main"))
-    runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main"))
     api(kotlin("serialization"))
     api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
     api(group = "org.yaml", name = "snakeyaml", version = "1.25")

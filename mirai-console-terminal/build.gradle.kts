@@ -38,8 +38,6 @@ dependencies {
 
     // api(project(":mirai-api-http"))
     api(project(":mirai-console"))
-    runtimeOnly(files("../mirai-core-qqandroid/build/classes/kotlin/jvm/main"))
-    runtimeOnly(files("../mirai-core/build/classes/kotlin/jvm/main"))
     api(group = "com.googlecode.lanterna", name = "lanterna", version = "3.0.2")
     api("org.bouncycastle:bcprov-jdk15on:1.64")
     // classpath is not set correctly by IDE
