@@ -1,2 +1,3 @@
-# mirai-console
-mirai的高效率QQ机器人框架
+# mirai-japt
+
+Mirai 的 Java API
