@@ -1,5 +1,0 @@
-## Contact ##
-.blocking : Blocking wrap
-    net.mamoe.mirai.contact.QQ  →  net.mamoe.mirai.japt.BlockingContacts.createBlocking($expr$)
-    net.mamoe.mirai.contact.QQ [net.mamoe.mirai.japt.BlockingContacts]  →  net.mamoe.mirai.japt.BlockingContacts.createBlocking($expr$)
-    net.mamoe.mirai.timpc.network.QQImpl [net.mamoe.mirai.japt.BlockingContacts]  →  net.mamoe.mirai.japt.BlockingContacts.createBlocking($expr$)
