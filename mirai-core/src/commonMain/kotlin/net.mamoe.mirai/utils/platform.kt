@@ -46,6 +46,7 @@ expect fun localIpAddress(): String
  */
 expect val Http: HttpClient
 
+@Suppress("DuplicatedCode") // false positive. `this` is not the same for `List<Byte>` and `ByteArray`
 internal fun ByteArray.checkOffsetAndLength(offset: Int, length: Int) {
     require(offset >= 0) { "offset shouldn't be negative: $offset" }
     require(length >= 0) { "length shouldn't be negative: $length" }
