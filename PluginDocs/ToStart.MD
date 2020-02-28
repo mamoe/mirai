@@ -20,8 +20,9 @@
 需要较高悟性, 不推荐完全没有接触编程的人尝试<br> 
 ## 我需要什么?
 ### Java环境
-jdk是Java语言的软件开发工具包，开发Java软件时必须安装jdk。<br>
-推荐安装jdk 8来开发Mirai-Console插件。<br> 
+JDK是Java语言的软件开发工具包，开发Java软件时必须安装jdk。<br>
+推荐安装JDK 11, 最低推荐使用JDK 8来开发Mirai-Console插件。<br> 
+
 
 打开控制台（windows按徽标键+R，在弹出的窗口输入cmd然后回车；linux直接打开控制台），输入以下代码并回车：
 ```$xslt
@@ -31,15 +32,17 @@ javac -version
 ```$xslt
 javac 1.8.0_60-ea
 ```
-如果类似于以上的结果，恭喜你已经成功的安装了jdk 8，可以跳过这个步骤的教程。<br> 
+如果类似于以上的结果，恭喜你已经成功的安装了jdk 8并且不希望更新版本可以跳过这个步骤的教程。<br> 
 如果返回的版本是1.7.0或者更旧的版本，或者返回的类似于“'javac' 不是内部或外部命令，也不是可运行的程序或批处理文件”，说明你还没有安装最新版本的jdk。<br> 
 
-#### 安装最新版jdk
-请打开以下链接下载最新版本的jdk：http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html<br> 
+#### 安装最新版JDK
+请打开以下链接下载JDK, 推荐使用稳定的11：https://www.oracle.com/java/technologies/javase-downloads.html<br> 
 安装过程因系统而异，这里就不详细讲解了。<br> 
 另外，jdk安装包也包含相应版本的jre，所以你无需在java官网上再下载安装一次jre。<br> 
 在windows系统安装jdk后，你需要配置jdk来保证命令行正常使用。<br> 
-#### windows系统中jdk的配置
+#### windows系统中旧版JDK的配置
+大部分JDK在安装时已经可以自己配置, 请直接检查是否成功, 如不成功在阅读本块<br> 
+- 检查是否配置成功。点击windows徽标键+R，输入cmd并回车，在打开的控制台输入“javac -version”和“java -version”，如果都能正确的返回版本信息，说明配置环境变量成功了。至此，你的jdk已经安装并配置完成<br> 
 以下只写了简单流程, 如需要图文帮助可以搜索"windows系统中jdk的配置"<br> 
 - 右键“计算机”，点击“属性”，<br> 
 - 在弹出的窗口中点击“高级系统设置”，“环境变量”，<br> 
@@ -53,9 +56,11 @@ javac 1.8.0_60-ea
 ```$xslt
 .;%JAVA_HOME%\lib;%JAVA_HOME%\lib\tools.jar
 ```
-- 检查是否配置成功。点击windows徽标键+R，输入cmd并回车，在打开的控制台输入“javac -version”和“java -version”，如果都能正确的返回版本信息，说明配置环境变量成功了。至此，你的jdk已经安装并配置完成<br> 
+- 检查是否配置成功。
 #### IDE
-
+IDE，即集成开发环境，是辅助编程开发的软件。使用合适的IDE能有效地减少代码语法错误、编译麻烦等问题，加大开发效率。目前java开发者常用的IDE有Eclipse，NetBeans，IntelliJ IDEA等软件。我这里使用IntelliJ IDEA 14.1（以下简称“IDEA”）与windows 7系统为例子，来讲IDE的安装和配置。
+<br>
+打开IntelliJ IDEA的官方网站 http://www.jetbrains.com/idea/，点击“Get IntelliJ IDEA now”
 
 ### 我要如何开始
 
