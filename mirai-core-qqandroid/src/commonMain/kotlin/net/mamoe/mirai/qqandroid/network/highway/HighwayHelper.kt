@@ -123,7 +123,6 @@ internal object HighwayHelper {
                 fileMd5 = fileMd5
             ).collect {
                 socket.send(it)
-                println("sent")
                 //0A 3C 08 01 12 0A 31 39 39 34 37 30 31 30 32 31 1A 0C 50 69 63 55 70 2E 44 61 74 61 55 70 20 E9 A7 05 28 00 30 BD DB 8B 80 02 38 80 20 40 02 4A 0A 38 2E 32 2E 30 2E 31 32 39 36 50 84 10 12 3D 08 00 10 FD 08 18 00 20 FD 08 28 C6 01 38 00 42 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 4A 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 50 89 92 A2 FB 06 58 00 60 00 18 53 20 01 28 00 30 04 3A 00 40 E6 B7 F7 D9 80 2E 48 00 50 00
                 socket.read().withUse {
                     discardExact(1)
@@ -132,7 +131,6 @@ internal object HighwayHelper {
                     val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
                     check(proto.errorCode == 0) { "image upload failed: Transfer errno=${proto.errorCode}" }
                 }
-                println("read")
             }
         }
     }

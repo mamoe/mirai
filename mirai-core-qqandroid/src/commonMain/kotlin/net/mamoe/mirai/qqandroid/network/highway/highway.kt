@@ -89,7 +89,6 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
             writeInt(head.size)
             writeInt(chunkedInput.bufferSize)
             writeFully(head)
-            println(chunkedInput.bufferSize)
             writeFully(chunkedInput.buffer, 0, chunkedInput.bufferSize)
             writeByte(41)
         }
