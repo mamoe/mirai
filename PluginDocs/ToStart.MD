@@ -1,4 +1,4 @@
-## 如何开发Mirai-console插件
+# 如何开发Mirai-console插件
 
 
 #### 
@@ -7,21 +7,58 @@
 当然, 插件开发的上限也很高, Mirai-Console的插件的控制层下至简单的回复逻辑, 上至修改与QQ通讯的协议<br>
 目前, Java与Kotlin均可用来开发, 仅需了解任意一门语言, 都可以进行插件开发<br>
 
-#### 我没有学习过任何与编程相关的知识或我没有学过这两种语言
+### 我没有学习过任何与编程相关的知识或我没有学过这两种语言
 你有两个选择，学习Java或者Kotlin<br> 
-学习Java的好处: 学习速度相对较快, 学习资料多
-学习Kotlin的好处: mirai源开发语言为kotlin, 学习了kotlin可以顺便读懂mirai及其分支项目, 更容易写出更高质量的插件
+学习Java的好处: 学习速度相对较快, 学习资料多<br> 
+学习Kotlin的好处: mirai源开发语言为kotlin, 学习了kotlin可以顺便读懂mirai及其分支项目, 更容易写出更高质量的插件<br> 
 
-方法1: 认真读书
-[30分钟精通JAVA](https://www.runoob.com/java/java-tutorial.html) 最低只需要学完Java 教程, Java 面向对象两章
-[30分钟精通Kotlin](https://www.kotlincn.net/docs/reference/) 最低只需要学完类与对象
+方法1: 认真读书<br> 
+[30分钟精通JAVA](https://www.runoob.com/java/java-tutorial.html) 最低只需要学完Java 教程, Java 面向对象两章<br> 
+[30分钟精通Kotlin](https://www.kotlincn.net/docs/reference/) 最低只需要学完类与对象<br> 
 
-方法2: 通过例子边学插件边学语言
-需要较高悟性, 不推荐完全没有接触编程的人尝试
-### 我需要什么?
+方法2: 通过例子边学插件边学语言<br> 
+需要较高悟性, 不推荐完全没有接触编程的人尝试<br> 
+## 我需要什么?
+### Java环境
+jdk是Java语言的软件开发工具包，开发Java软件时必须安装jdk。<br>
+推荐安装jdk 8来开发Mirai-Console插件。<br> 
+
+打开控制台（windows按徽标键+R，在弹出的窗口输入cmd然后回车；linux直接打开控制台），输入以下代码并回车：
+```$xslt
+javac -version
+```
+返回的应该类似于以下的结果：
+```$xslt
+javac 1.8.0_60-ea
+```
+如果类似于以上的结果，恭喜你已经成功的安装了jdk 8，可以跳过这个步骤的教程。<br> 
+如果返回的版本是1.7.0或者更旧的版本，或者返回的类似于“'javac' 不是内部或外部命令，也不是可运行的程序或批处理文件”，说明你还没有安装最新版本的jdk。<br> 
+
+#### 安装最新版jdk
+请打开以下链接下载最新版本的jdk：http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html<br> 
+安装过程因系统而异，这里就不详细讲解了。<br> 
+另外，jdk安装包也包含相应版本的jre，所以你无需在java官网上再下载安装一次jre。<br> 
+在windows系统安装jdk后，你需要配置jdk来保证命令行正常使用。<br> 
+#### windows系统中jdk的配置
+以下只写了简单流程, 如需要图文帮助可以搜索"windows系统中jdk的配置"<br> 
+- 右键“计算机”，点击“属性”，<br> 
+- 在弹出的窗口中点击“高级系统设置”，“环境变量”，<br> 
+- 点击“系统变量”下面的“新建”，在弹出的窗口的“变量名”输入“JAVA_HOME”（不带引号），“变量值”输入你之前安装jdk的安装路径，我的是“C:\Program Files\Java\jdk1.8.0_60”（不带引号），这里根据你安装jdk的路径来输入。然后点击确定<br> 
+- 在“系统变量”中寻找“Path”（不带引号）变量，选中后点击“编辑”，在“变量值”的最后面（注意不是把整个替换，是添加在最后面）输入：
+```$xslt
+%JAVA_HOME%\bin;%JAVA_HOME%\jre\bin;
+```
+这里要注意原来Path的变量值末尾有没有;号，如果没有，先输入;号再输入上面的代码。<br> 
+点击“系统变量”下面的“新建”，在弹出的窗口的“变量名”输入“CLASSPATH”（不带引号），“变量值”输入以下的字符串（注意，最前面有一个点“.”不要忘了）：
+```$xslt
+.;%JAVA_HOME%\lib;%JAVA_HOME%\lib\tools.jar
+```
+- 检查是否配置成功。点击windows徽标键+R，输入cmd并回车，在打开的控制台输入“javac -version”和“java -version”，如果都能正确的返回版本信息，说明配置环境变量成功了。至此，你的jdk已经安装并配置完成<br> 
+#### IDE
 
 
 ### 我要如何开始
+
 
 
 
