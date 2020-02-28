@@ -65,7 +65,7 @@ fun File.toExternalImage(): ExternalImage {
     val input = ImageIO.createImageInputStream(this)
     checkNotNull(input) { "Unable to read file(path=${this.path}), no ImageInputStream found" }
     val image = ImageIO.getImageReaders(input).asSequence().firstOrNull()
-        ?: error("Unable to read file(path=${this.path}), no ImageReader found")
+        ?: error("Unable to read file(path=${this.path}), no ImageReader found (file type not supported)")
     image.input = input
 
     return ExternalImage(
