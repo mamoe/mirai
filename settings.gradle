@@ -22,31 +22,7 @@ pluginManagement {
 rootProject.name = 'mirai'
 
 include(':mirai-core')
-//include(':mirai-core-timpc')
 include(':mirai-core-qqandroid')
 
-//include(':mirai-api')
-include(':mirai-api-http')
-//include(':mirai-plugins')
-//include(':mirai-plugins:image-sender')
-
-try{
-    def javaVersion = System.getProperty("java.version")
-    def versionPos = javaVersion.indexOf(".")
-    if (versionPos==-1) versionPos = javaVersion.indexOf("-")
-    if (versionPos==-1){
-        println("jdk version unknown")
-    }else{
-        def javaVersionNum = javaVersion.substring(0, versionPos).toInteger()
-        if (javaVersionNum >= 11) {
-            println("jdk版本为 "+ javaVersionNum)
-            include(':mirai-console-graphical')
-        } else {
-            println("当前使用的 JDK 版本为 ${System.getProperty("java.version")}, 最低需要 JDK 11 才能引入模块 `:mirai-console-graphical`")
-        }
-    }
-}catch(Exception ignored){
-    println("无法确定 JDK 版本, 将不会引入 `:mirai-console-graphical`")
-}
-
+// include(':mirai-api-http')
 enableFeaturePreview('GRADLE_METADATA')
