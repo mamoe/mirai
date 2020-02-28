@@ -200,8 +200,9 @@ interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent, BroadcastCon
 data class GroupNameChangeEvent(
     override val origin: String,
     override val new: String,
-    override val group: Group
-) : GroupSettingChangeEvent<String>, Packet // 无法获取操作人
+    override val group: Group,
+    val isByBot: Boolean // 无法获取操作人
+) : GroupSettingChangeEvent<String>, Packet
 
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
@@ -251,8 +252,9 @@ data class GroupAllowAnonymousChatEvent(
 data class GroupAllowConfessTalkEvent(
     override val origin: Boolean,
     override val new: Boolean,
-    override val group: Group
-) : GroupSettingChangeEvent<Boolean>, Packet // 无法获取操作人
+    override val group: Group,
+    val isByBot: Boolean // 无法获取操作人
+) : GroupSettingChangeEvent<Boolean>, Packet
 
 /**
  * 群 "允许群员邀请好友加群" 功能状态改变. 此事件广播前修改就已经完成.

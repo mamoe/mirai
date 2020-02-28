@@ -13,7 +13,7 @@ package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty0
+import kotlin.reflect.KProperty1
 
 private val indent: String = " ".repeat(4)
 
@@ -125,22 +125,25 @@ fun Any?._miraiContentToString(prefix: String = ""): String = when (this) {
     }
 }
 
+internal expect fun KProperty1<*, *>.getValueAgainstPermission(receiver: Any): Any?
+
 @MiraiDebugAPI
 private fun Any.contentToStringReflectively(prefix: String, filter: ((name: String, value: Any?) -> Boolean)? = null): String {
     val newPrefix = "$prefix    "
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +
-            this.allMembersFromSuperClassesMatching { it.simpleName?.startsWith("net.mamoe.mirai") == true }
+            this.allMembersFromSuperClassesMatching { it.qualifiedName?.startsWith("net.mamoe.mirai") == true }
                 .distinctBy { it.name }
                 .filterNot { it.name.contains("$") || it.name == "Companion" || it.isConst || it.name == "serialVersionUID" }
                 .mapNotNull {
-                    val value = it.get()
+                    val value = it.getValueAgainstPermission(this)
                     if (filter != null) {
-                        kotlin.runCatching {
-                            if (!filter(it.name, value))
-                                return@mapNotNull it.name to value
+                        if (!filter(it.name, value))
+                            return@mapNotNull it.name to value
+                        else {
+                            return@mapNotNull null
                         }
                     }
-                    null
+                    it.name to value
                 }
                 .joinToStringPrefixed(
                     prefix = newPrefix
@@ -152,16 +155,18 @@ private fun Any.contentToStringReflectively(prefix: String, filter: ((name: Stri
                 } + "\n$prefix}"
 }
 
-private fun Any.thisClassAndSuperclassSequence(): Sequence<KClass<out Any>> {
-    return sequenceOf(this::class) +
-            this::class.supertypes.asSequence()
-                .mapNotNull { type -> type.classifier?.takeIf { it is KClass<*> } as? KClass<out Any> }
+private fun KClass<out Any>.thisClassAndSuperclassSequence(): Sequence<KClass<out Any>> {
+    return sequenceOf(this) +
+            this.supertypes.asSequence()
+                .mapNotNull { type -> type.classifier?.takeIf { it is KClass<*> }?.takeIf { it != Any::class } as? KClass<out Any> }.flatMap { it.thisClassAndSuperclassSequence() }
 }
 
-private fun Any.allMembersFromSuperClassesMatching(classFilter: (KClass<out Any>) -> Boolean): Sequence<KProperty0<*>> {
-    return this.thisClassAndSuperclassSequence()
+@Suppress("UNCHECKED_CAST")
+private fun Any.allMembersFromSuperClassesMatching(classFilter: (KClass<out Any>) -> Boolean): Sequence<KProperty1<Any, *>> {
+    return this::class.thisClassAndSuperclassSequence()
         .filter { classFilter(it) }
         .map { it.members }
         .flatMap { it.asSequence() }
-        .mapNotNull { it as? KProperty0<*> }
+        .filterIsInstance<KProperty1<*, *>>()
+        .mapNotNull { it as KProperty1<Any, *> }
 }
