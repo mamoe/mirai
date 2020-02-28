@@ -37,7 +37,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
     }
 
     override fun pushLog(identity: Long, message: String) {
-        println(message)
+        println("\u001b[0m$message")
     }
 
     override fun prePushBot(identity: Long) {
