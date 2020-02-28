@@ -33,21 +33,17 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
 }
 
 
-val mirai_version: String by rootProject.ext
+val miraiVersion: String by rootProject.ext
 
 dependencies {
-    implementation("net.mamoe:mirai-core-jvm:$mirai_version")
-    implementation("net.mamoe:mirai-core-qqandroid-jvm:$mirai_version")
-
+    implementation("net.mamoe:mirai-core-jvm:$miraiVersion")
+    implementation("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
 
     api(kotlin("serialization"))
     api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
     api(group = "org.yaml", name = "snakeyaml", version = "1.25")
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
-    api("org.bouncycastle:bcprov-jdk15on:1.64")
-
-    implementation("no.tornado:tornadofx:1.7.19")
-    // classpath is not set correctly by IDE
+    api("no.tornado:tornadofx:1.7.19")
 }
 
 val mirai_console_version: String by project.ext
