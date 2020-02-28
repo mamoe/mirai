@@ -42,7 +42,8 @@ actual fun localIpAddress(): String = runCatching {
  *
  * @return 16 bytes
  */
-actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
+actual fun md5(byteArray: ByteArray, offset: Int, length: Int): ByteArray =
+    MessageDigest.getInstance("MD5").apply { update(byteArray, offset, length) }.digest()
 
 fun InputStream.md5(): ByteArray {
     val digest = MessageDigest.getInstance("md5")

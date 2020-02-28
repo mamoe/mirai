@@ -32,7 +32,7 @@ expect fun ByteArray.unzip(offset: Int = 0, length: Int = this.size - offset): B
  *
  * @return 16 bytes
  */
-expect fun md5(byteArray: ByteArray): ByteArray
+expect fun md5(byteArray: ByteArray, offset: Int = 0, length: Int = byteArray.size - offset): ByteArray
 
 inline fun md5(str: String): ByteArray = md5(str.toByteArray())
 

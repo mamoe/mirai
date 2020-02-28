@@ -20,7 +20,8 @@ import java.net.InetAddress
 import java.security.MessageDigest
 import java.util.zip.Inflater
 
-actual fun md5(byteArray: ByteArray): ByteArray = MessageDigest.getInstance("MD5").digest(byteArray)
+actual fun md5(byteArray: ByteArray, offset: Int, length: Int): ByteArray =
+    MessageDigest.getInstance("MD5").apply { update(byteArray, offset, length) }.digest()
 
 fun InputStream.md5(): ByteArray = this.use {
     val digest = MessageDigest.getInstance("md5")
