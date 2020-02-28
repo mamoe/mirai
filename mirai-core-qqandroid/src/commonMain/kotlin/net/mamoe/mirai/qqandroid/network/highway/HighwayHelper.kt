@@ -34,7 +34,7 @@ import net.mamoe.mirai.utils.io.discardExact
 
 
 @Suppress("SpellCheckingInspection")
-internal suspend inline fun HttpClient.postImage(
+internal suspend fun HttpClient.postImage(
     htcmd: String,
     uin: Long,
     groupcode: Long?,
