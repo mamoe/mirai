@@ -17,7 +17,6 @@ import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.copyTo
 import kotlinx.io.errors.IOException
-import kotlinx.io.streams.asInput
 import kotlinx.io.streams.asOutput
 import net.mamoe.mirai.utils.io.getRandomString
 import java.awt.image.BufferedImage
@@ -89,8 +88,8 @@ suspend inline fun File.suspendToExternalImage(): ExternalImage = withContext(IO
 @Throws(IOException::class)
 fun URL.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().asOutput().use { output ->
-        openStream().asInput().use { input ->
+    file.outputStream().use { output ->
+        openStream().use { input ->
             input.copyTo(output)
         }
     }
