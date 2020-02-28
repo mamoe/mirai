@@ -17,7 +17,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 图标以及形象由画师<a href = "">DazeCake</a>绘制
 </div>
 
-# mirai-console 高效率插件支持机器人框架
+## mirai-console 高效率插件支持机器人框架
 
 ### 使用
 #### 下载(download)
