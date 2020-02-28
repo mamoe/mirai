@@ -17,10 +17,22 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 图标以及形象由画师<a href = "">DazeCake</a>绘制
 </div>
 
-# mirai-console
-### Mirai Console提供了6个版本以满足各种需要
-#### 所有版本的Mirai Console API相同 插件系统相同
+# mirai-console 高效率插件支持机器人框架
 
+### 使用
+#### 下载(download)
+#### 如何启动
+如果是打包好的软件, 双击
+如果是命令行运行, 请注意运行目录, 推荐cd到jar的文件夹下运行, 运行目录与Console的全部配置文件储存位置有关
+#### 如何添加插件
+如果是打包好的软件, 请根据UI操作
+如果是命令行运行, 请将插件放入** 运行目录/plugins ** 下
+#### 如何更改插件配置
+如果是打包好的软件, 请根据UI操作
+如果是命令行运行, 插件的所有配置文件将出现在** 运行目录/plugins/插件名 ** 下，推荐在mirai-console关闭时修改
+#### 如何选择版本
+Mirai Console提供了6个版本以满足各种需要
+所有版本的Mirai Console API相同 插件系统相同
 |  名字    | 介绍 |
 | --- | --- |
 | Mirai-Console-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
@@ -30,9 +42,6 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 | Mirai-Console-WebPanel  |   Web Panel操作(TODO) |
 | Mirai-Console-Ios   |  IOS APP (TODO) |
 
-
-
-### 如何选择版本
 1:  Mirai-Console-Pure 兼容性最高, 在其他都表现不佳的时候请使用</br>
 2:  以系统区分
 ```kotlin
@@ -55,22 +64,5 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
         else         -> listOf("Pure") 
     }      
 ```
-<br>
-
-#### download 下载
-#### how to get/write plugins 如何获取/写插件
-<br>
-<br>
-
-### 如何使用
-#### 如何启动
-如果是打包好的软件, 双击
-如果是命令行运行, 请注意运行目录, 推荐cd到jar的文件夹下运行, 运行目录与Console的全部配置文件储存位置有关
-#### 如何添加插件
-如果是打包好的软件, 请根据UI操作
-如果是命令行运行, 请将插件放入** 运行目录/plugins ** 下
-#### 如何更改插件配置
-如果是打包好的软件, 请根据UI操作
-如果是命令行运行, 插件的所有配置文件将出现在** 运行目录/plugins/插件名 ** 下，推荐在mirai-console关闭时修改
-
+----
 
