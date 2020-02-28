@@ -30,15 +30,12 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 
-val mirai_version: String by rootProject.ext
+val miraiVersion: String by rootProject.ext
 
 dependencies {
-    implementation("net.mamoe:mirai-core-jvm:$mirai_version")
-    implementation("net.mamoe:mirai-core-qqandroid-jvm:$mirai_version")
-
-    // api(project(":mirai-api-http"))
+    implementation("net.mamoe:mirai-core-jvm:$miraiVersion")
+    implementation("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
     api(project(":mirai-console"))
+
     api(group = "com.googlecode.lanterna", name = "lanterna", version = "3.0.2")
-    api("org.bouncycastle:bcprov-jdk15on:1.64")
-    // classpath is not set correctly by IDE
 }
