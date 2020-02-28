@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -601,16 +602,19 @@ internal class GroupImpl(
                     ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    HighwayHelper.uploadImage(
-                        client = bot.client,
-                        serverIp = response.uploadIpList.first().toIpV4AddressString(),
-                        serverPort = response.uploadPortList.first(),
-                        imageInput = image.input,
-                        inputSize = image.inputSize.toInt(),
-                        md5 = image.md5,
-                        uKey = response.uKey,
-                        commandId = 2
-                    )
+                    // 每 100KB 等 1 秒
+                    withTimeoutOrNull(image.inputSize / 1024 / 100) {
+                        HighwayHelper.uploadImage(
+                            client = bot.client,
+                            serverIp = response.uploadIpList.first().toIpV4AddressString(),
+                            serverPort = response.uploadPortList.first(),
+                            imageInput = image.input,
+                            inputSize = image.inputSize.toInt(),
+                            md5 = image.md5,
+                            uKey = response.uKey,
+                            commandId = 2
+                        )
+                    } ?: error("timeout uploading image: ${image.filename}")
                     val resourceId = image.calculateImageResourceId()
                     // return NotOnlineImageFromFile(
                     //     resourceId = resourceId,
