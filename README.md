@@ -18,5 +18,58 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 </div>
 
 # mirai-console
+### Mirai Console提供了6个版本以满足各种需要
+#### 所有版本的Mirai Console API相同 插件系统相同
 
-Mirai 的控制台
+|  名字    | 介绍 |
+| --- | --- |
+| Mirai-Console-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
+| Mirai-Console-Terminal  |  (UNIX)Terminal环境 提供简洁的富文本控制台 |
+| Mirai-Console-Android   |  安卓APP (TODO) |
+| Mirai-Console-Graphical  |  JavaFX的图形化界面 (.jar/.exe/.dmg) |
+| Mirai-Console-WebPanel  |   Web Panel操作(TODO) |
+| Mirai-Console-Ios   |  IOS APP (TODO) |
+
+
+
+### 如何选择版本
+1:  Mirai-Console-Pure 兼容性最高, 在其他都表现不佳的时候请使用</br>
+2:  以系统区分
+```kotlin
+    return when(operatingSystem){
+        WINDOWS -> listOf("Graphical","WebPanel","Pure")
+        MAC_OS  -> listOf("Graphical","Terminal","WebPanel","Pure") 
+        LINUX   -> listOf("Terminal","Pure")
+        ANDROID -> listOf("Android","Pure","WebPanel") 
+        IOS     -> listOf("Ios") 
+        else    -> listOf("Pure") 
+    }      
+```
+3: 以策略区分
+```kotlin
+    return when(task){
+        体验         -> listOf("Graphical","Terminal","WebPanel","Android","Pure")
+        测试插件      -> listOf("Pure") 
+        调试插件      -> byOperatingSystem() 
+        稳定挂机      -> listOf("Terminal","Pure") 
+        else         -> listOf("Pure") 
+    }      
+```
+<br>
+
+#### download 下载
+#### how to get/write plugins 如何获取/写插件
+<br>
+<br>
+
+### 如何使用
+如果是打包好的软件, 双击
+如果是命令行运行, 请注意运行目录, 推荐cd到jar的文件夹下运行, 运行目录与Console的全部配置文件储存位置有关
+#### 如何添加插件
+如果是打包好的软件, 请根据UI操作
+如果是命令行运行, 请将插件放入** 运行目录/plugins ** 下
+#### 如何更改插件配置
+如果是打包好的软件, 请根据UI操作
+如果是命令行运行, 插件的所有配置文件将出现在** 运行目录/plugins/插件名 ** 下，推荐在mirai-console关闭时修改
+
+
