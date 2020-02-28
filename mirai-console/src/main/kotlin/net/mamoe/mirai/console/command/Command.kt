@@ -68,7 +68,7 @@ object CommandManager {
                         blocks.subList(1, blocks.size)
                     )
                 ) {
-                    PluginManager.onCommand(this, args)
+                    PluginManager.onCommand(this, sender, args)
                 } else {
                     sender.sendMessage(this.usage)
                 }
