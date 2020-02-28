@@ -20,6 +20,10 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 # mirai-console 
 高效率插件支持机器人框架
 
+### 插件开发与获取
+[插件中心](https://github.com/mamoe/mirai-plugins) 
+[mirai-console插件开发快速上手](PluginDocs/ToStart.MD) 
+
 ### 使用
 #### 下载(download)
 #### 如何启动
