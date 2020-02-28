@@ -64,8 +64,11 @@ IDE，即集成开发环境，是辅助编程开发的软件。使用合适的ID
 <br>
 IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后，根据自己的需求点击下载使用，一般的使用免费的Community版就足够了。
 <br>
+
 ### 我要如何开始
 
 
+
+<i>本章部分章节引用自[搭建环境 - Nukkit插件从0开始](https://www.cnblogs.com/xtypr/p/nukkit_plugin_start_from_0_build_environment.html),</i>
 
 
