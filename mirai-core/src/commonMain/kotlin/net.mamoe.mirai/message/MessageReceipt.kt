@@ -29,6 +29,10 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  *
  * @see Group.sendMessage 发送群消息, 返回回执（此对象）
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
+ *
+ * @see MessageReceipt.sourceId 源 id
+ * @see MessageReceipt.sourceSequenceId 源序列号
+ * @see MessageReceipt.sourceTime 源时间
  */
 open class MessageReceipt<C : Contact>(
     val source: MessageSource,
@@ -112,6 +116,27 @@ open class MessageReceipt<C : Contact>(
         target.sendMessage(this.quote() + message)
     }
 }
+
+/**
+ * 获取源消息 [MessageSource.id]
+ *
+ * @see MessageSource.id
+ */
+inline val MessageReceipt<*>.sourceId: Long get() = this.source.id
+
+/**
+ * 获取源消息 [MessageSource.sequenceId]
+ *
+ * @see MessageSource.sequenceId
+ */
+inline val MessageReceipt<*>.sourceSequenceId: Int get() = this.source.sequenceId
+
+/**
+ * 获取源消息 [MessageSource.time]
+ *
+ * @see MessageSource.time
+ */
+inline val MessageReceipt<*>.sourceTime: Long get() = this.source.time
 
 @MiraiExperimentalAPI("unstable")
 suspend inline fun MessageReceipt<out Contact>.quoteReply(message: Message) {
