@@ -40,3 +40,4 @@ local.properties
 
 # Maven publishing credits
 keys.properties
+/plugins/

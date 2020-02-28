@@ -34,7 +34,20 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
      * 插件被分配的data folder， 如果插件改名了 data folder 也会变 请注意
      */
     val dataFolder: File by lazy {
-        File(PluginManager.pluginsPath + pluginDescription.name).also { it.mkdir() }
+        File(_getDataFolder()).also {
+            it.mkdir()
+            println(it.absolutePath)
+            println(pluginName)
+        }
+    }
+
+
+    internal fun _getDataFolder():String{
+        return if(inited){
+            PluginManager.pluginsPath + "/" + pluginName
+        }else{
+            PluginManager.pluginsPath + "/" + PluginManager.lastPluginName//for init
+        }
     }
 
     /**
@@ -75,7 +88,7 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
      * 这个config是read-write的
      */
     fun loadConfig(fileName: String): Config {
-        return Config.load(dataFolder.absolutePath + fileName)
+        return Config.load(dataFolder.absolutePath + "/" + fileName)
     }
 
     @JvmOverloads
@@ -84,20 +97,21 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onDisable()
     }
 
-    private lateinit var pluginDescription: PluginDescription
+    internal var pluginName:String = ""
 
-    internal fun init(pluginDescription: PluginDescription) {
-        this.pluginDescription = pluginDescription
+    private var inited = false
+    internal fun init() {
         this.onLoad()
+        inited = true
     }
 
     val pluginManager = PluginManager
 
     val logger: MiraiLogger by lazy {
-        SimpleLogger("Plugin ${pluginDescription.name}") { _, message, e ->
-            MiraiConsole.logger("[${pluginDescription.name}]", 0, message)
+        SimpleLogger("Plugin ${pluginName}") { _, message, e ->
+            MiraiConsole.logger("[${pluginName}]", 0, message)
             if (e != null) {
-                MiraiConsole.logger("[${pluginDescription.name}]", 0, e.toString())
+                MiraiConsole.logger("[${pluginName}]", 0, e.toString())
                 e.printStackTrace()
             }
         }
@@ -111,7 +125,7 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
             this.javaClass.classLoader.getResourceAsStream(fileName)
         } catch (e: Exception) {
             PluginManager.getFileInJarByName(
-                this.pluginDescription.name,
+                this.pluginName,
                 fileName
             )
         }
@@ -147,15 +161,35 @@ class PluginDescription(
 
     companion object {
         fun readFromContent(content_: String): PluginDescription {
-            with(Config.load(content_)){
+            with(Config.load(content_,"yml")){
                 try {
                     return PluginDescription(
-                        this.getString("name"),
-                        this.getString("author"),
-                        this.getString("path"),
-                        this.getString("version"),
-                        this.getString("info"),
-                        this.getStringList("depends")
+                        name = this.getString("name"),
+                        author = try{
+                            this.getString("author")
+                        }catch (e:Exception){
+                            "unknown"
+                        },
+                        basePath = try{
+                            this.getString("path")
+                        }catch (e:Exception){
+                            this.getString("main")
+                        },
+                        version = try{
+                            this.getString("version")
+                        }catch (e:Exception){
+                            "unknown"
+                        },
+                        info = try{
+                            this.getString("info")
+                        }catch (e:Exception){
+                            "unknown"
+                        },
+                        depends = try{
+                            this.getStringList("depends")
+                        }catch (e:Exception){
+                            listOf<String>()
+                        }
                     )
                 }catch (e:Exception){
                     error("Failed to read Plugin.YML")
@@ -169,7 +203,10 @@ internal class PluginClassLoader(file: File, parent: ClassLoader) :
     URLClassLoader(arrayOf(file.toURI().toURL()), parent)
 
 object PluginManager {
-    internal val pluginsPath = System.getProperty("user.dir") + "/plugins/".replace("//", "/").also {
+
+    internal var lastPluginName: String = ""
+
+    internal val pluginsPath = (System.getProperty("user.dir") + "/plugins/").replace("//", "/").also {
         File(it).mkdirs()
     }
 
@@ -185,6 +222,19 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             it.onCommand(command, args)
         }
+    }
+
+
+    fun getPluginDescriptions(base:PluginBase):PluginDescription{
+        nameToPluginBaseMap.forEach{ (s, pluginBase) ->
+            if(pluginBase == base){
+                return pluginDescriptions[s]!!
+            }
+        }
+        error("can not find plugin description")
+    }
+
+    fun getPluginDataFolder(){
     }
 
     fun getAllPluginDescriptions(): Collection<PluginDescription> {
@@ -297,16 +347,19 @@ object PluginManager {
                         .loadClass("${description.basePath}Kt")
                 }
                 return try {
+                    lastPluginName = description.name
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
                     val plugin: PluginBase =
                         subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
+                    println("aaaaaa")
                     description.loaded = true
                     logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
                     logger.info(description.info)
 
                     nameToPluginBaseMap[description.name] = plugin
                     pluginDescriptions[description.name] = description
-                    plugin.init(description)
+                    plugin.pluginName = description.name
+                    plugin.init()
                     true
                 } catch (e: ClassCastException) {
                     logger.error("failed to load plugin " + description.name + " , Main class does not extends PluginBase ")
