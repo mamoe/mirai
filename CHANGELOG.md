@@ -2,6 +2,17 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.23.0` 2020/2/28
+### mirai-core
+- 修复上传图片
+- 一些问题修复
+- 大量杂项优化
+
+### mirai-core-qqandroid
+- `MessageReceipt.source` 现在为 public. 可获取源消息 id
+- 修复上传好友图片失败的问题
+- 上传群图片现在分包缓存, 优化性能
+
 ## `0.22.0` 2020/2/24
 ### mirai-core
 - 重构 `MessageChain`, 引入 `CombinedMessage`. (兼容大部分原 API)
