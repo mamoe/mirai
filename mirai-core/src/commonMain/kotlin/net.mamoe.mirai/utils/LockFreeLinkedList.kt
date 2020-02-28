@@ -101,8 +101,9 @@ open class LockFreeLinkedList<E> {
 
     open fun peekFirst(): E {
         return head
-            .iterateBeforeFirst { it === tail }
+            .iterateBeforeFirst { it.isValidElementNode() }
             .takeUnless { it.isTail() }
+            ?.nextNode
             ?.nodeValue
             ?: throw NoSuchElementException()
     }
@@ -203,7 +204,7 @@ open class LockFreeLinkedList<E> {
     internal fun <E> LockFreeLinkedListNode<E>.compareAndSetNextNodeRef(expect: LockFreeLinkedListNode<E>, update: LockFreeLinkedListNode<E>) =
         this.nextNodeRef.compareAndSet(expect, update)
 
-    override fun toString(): String = asSequence().joinToString()
+    override fun toString(): String = "[" + asSequence().joinToString() + "]"
 
     @Suppress("unused")
     internal fun getLinkStructure(): String = buildString {
