@@ -36,7 +36,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
     data: Any,
     dataSize: Int,
     fileMd5: ByteArray,
-    sizePerPacket: Int = 8000
+    sizePerPacket: Int = 8192
 ): Flow<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }
@@ -52,6 +52,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
         else -> error("unreachable code")
     }
 
+    var offset = 0L
     return flow.map { chunkedInput ->
         buildPacket {
             val head = CSDataHighwayHead.ReqDataHighwayHead(
@@ -68,7 +69,9 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                     localeId = localId
                 ),
                 msgSeghead = CSDataHighwayHead.SegHead(
+                    cacheAddr = 812157193,
                     datalength = chunkedInput.bufferSize,
+                    dataoffset = offset,
                     filesize = dataSize.toLong(),
                     serviceticket = uKey,
                     md5 = net.mamoe.mirai.utils.md5(chunkedInput.buffer, 0, chunkedInput.bufferSize),
@@ -79,6 +82,8 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                 reqExtendinfo = EMPTY_BYTE_ARRAY,
                 msgLoginSigHead = null
             ).toByteArray(CSDataHighwayHead.ReqDataHighwayHead.serializer())
+
+            offset += chunkedInput.bufferSize
 
             writeByte(40)
             writeInt(head.size)

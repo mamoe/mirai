@@ -1,7 +1,5 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
-
 plugins {
     id("kotlinx-atomicfu")
     kotlin("jvm")
@@ -24,9 +22,9 @@ val ktorVersion: String by rootProject.ext
 
 val serializationVersion: String by rootProject.ext
 
-fun KotlinDependencyHandler.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
+fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
-fun KotlinDependencyHandler.ktor(id: String, version: String = ktorVersion) = "io.ktor:ktor-$id:$version"
+fun ktor(id: String, version: String = this@Build_gradle.ktorVersion) = "io.ktor:ktor-$id:$version"
 
 kotlin {
 
@@ -42,7 +40,7 @@ kotlin {
             implementation(ktor("server-cio"))
             implementation(kotlinx("io-jvm", kotlinXIoVersion))
             implementation(ktor("http-jvm"))
-            implementation("org.slf4j:slf4j-simple:1.7.26")
+            implementation("org.slf4j:slf4j-simple:1.7.30")
         }
     }
 
