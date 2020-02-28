@@ -93,6 +93,7 @@ fun URL.toExternalImage(): ExternalImage {
         openStream().use { input ->
             input.copyTo(output)
         }
+        output.flush()
     }
     return file.toExternalImage()
 }
@@ -110,6 +111,7 @@ fun InputStream.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().use {
         this.copyTo(it)
+        it.flush()
     }
     this.close()
     return file.toExternalImage()
@@ -130,6 +132,7 @@ fun Input.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().asOutput().use {
         this.copyTo(it)
+        it.flush()
     }
     return file.toExternalImage()
 }
@@ -146,6 +149,7 @@ suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().use {
         this.copyTo(it)
+        it.flush()
     }
 
     return file.suspendToExternalImage()
