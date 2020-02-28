@@ -7,18 +7,27 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.pool.DefaultPool
 import kotlinx.io.pool.ObjectPool
+import net.mamoe.mirai.utils.MiraiInternalAPI
 
-internal const val DEFAULT_BYTE_ARRAY_POOL_SIZE = 256
-internal const val DEFAULT_BYTE_ARRAY_SIZE = 81920 / 2
+/**
+ * 缓存 [ByteArray] 实例的 [ObjectPool]
+ *
+ * **注意**: 这是 Mirai 内部 API. 它可能在任何时刻被改动. 不要将它用于生产环境
+ */
+@MiraiInternalAPI
+object ByteArrayPool : DefaultPool<ByteArray>(256) {
+    /**
+     * 每一个 [ByteArray] 的大小
+     */
+    const val BUFFER_SIZE: Int = 81920 / 2
 
-val ByteArrayPool: ObjectPool<ByteArray> = ByteArrayPoolImpl
-
-private object ByteArrayPoolImpl : DefaultPool<ByteArray>(DEFAULT_BYTE_ARRAY_POOL_SIZE) {
-    override fun produceInstance(): ByteArray = ByteArray(DEFAULT_BYTE_ARRAY_SIZE)
+    override fun produceInstance(): ByteArray = ByteArray(BUFFER_SIZE)
 
     override fun clearInstance(instance: ByteArray): ByteArray = instance
 }
