@@ -279,7 +279,7 @@ internal object KnownPacketFactories {
         val commandName: String
         val ssoSequenceId: Int
         val dataCompressed: Int
-        input.readPacket(input.readInt() - 4).withUse {
+        input.readPacketExact(input.readInt() - 4).withUse {
             ssoSequenceId = readInt()
             PacketLogger.verbose { "sequenceId = $ssoSequenceId" }
             val returnCode = readInt()

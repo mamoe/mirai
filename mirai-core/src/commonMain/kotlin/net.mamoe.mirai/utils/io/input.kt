@@ -56,7 +56,7 @@ inline fun <R> ByteReadPacket.useBytes(
     block(it, n)
 }
 
-inline fun ByteReadPacket.readPacket(
+inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 

@@ -41,7 +41,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
-import net.mamoe.mirai.utils.io.readPacket
+import net.mamoe.mirai.utils.io.readPacketExact
 import net.mamoe.mirai.utils.io.useBytes
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
@@ -445,7 +445,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
             // 循环所有完整的包
             while (rawInput.remaining >= length) {
-                parsePacketAsync(rawInput.readPacket(length))
+                parsePacketAsync(rawInput.readPacketExact(length))
 
                 if (rawInput.remaining == 0L) {
                     cachedPacket.value = null // 表示包长度正好
