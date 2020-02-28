@@ -147,50 +147,20 @@ class PluginDescription(
 
     companion object {
         fun readFromContent(content_: String): PluginDescription {
-            val content = content_.split("\n")
-
-            var name = "Plugin"
-            var author = "Unknown"
-            var basePath = "net.mamoe.mirai.PluginMain"
-            var info = "Unknown"
-            var version = "1.0.0"
-            val depends = mutableListOf<String>();
-
-            content.forEach {
-                val line = it.trim()
-                val lowercaseLine = line.toLowerCase()
-                if (it.contains(":")) {
-                    when {
-                        lowercaseLine.startsWith("name") -> {
-                            name = line.substringAfter(":").trim()
-                        }
-                        lowercaseLine.startsWith("author") -> {
-                            author = line.substringAfter(":").trim()
-                        }
-                        lowercaseLine.startsWith("info") || lowercaseLine.startsWith("information") -> {
-                            info = line.substringAfter(":").trim()
-                        }
-                        lowercaseLine.startsWith("main") || lowercaseLine.startsWith("path") || lowercaseLine.startsWith(
-                            "basepath"
-                        ) -> {
-                            basePath = line.substringAfter(":").trim()
-                        }
-                        lowercaseLine.startsWith("version") || lowercaseLine.startsWith("ver") -> {
-                            version = line.substringAfter(":").trim()
-                        }
-                    }
-                } else if (line.startsWith("-")) {
-                    depends.add(line.substringAfter("-").trim())
+            with(Config.load(content_)){
+                try {
+                    return PluginDescription(
+                        this.getString("name"),
+                        this.getString("author"),
+                        this.getString("path"),
+                        this.getString("version"),
+                        this.getString("info"),
+                        this.getStringList("depends")
+                    )
+                }catch (e:Exception){
+                    error("Failed to read Plugin.YML")
                 }
             }
-            return PluginDescription(
-                name,
-                author,
-                basePath,
-                version,
-                info,
-                depends
-            )
         }
     }
 }
@@ -238,13 +208,17 @@ object PluginManager {
                 if (pluginYml == null) {
                     logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
                 } else {
-                    val description =
-                        PluginDescription.readFromContent(
-                            URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
-                                it.readBytes().encodeToString()
-                            })
-                    pluginsFound[description.name] = description
-                    pluginsLocation[description.name] = file
+                    try {
+                        val description =
+                            PluginDescription.readFromContent(
+                                URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
+                                    it.readBytes().encodeToString()
+                                })
+                        pluginsFound[description.name] = description
+                        pluginsLocation[description.name] = file
+                    }catch (e:Exception){
+                        logger.info(e.message)
+                    }
                 }
             }
         }
