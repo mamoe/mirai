@@ -69,7 +69,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                     localeId = localId
                 ),
                 msgSeghead = CSDataHighwayHead.SegHead(
-                    cacheAddr = 812157193,
+                 //   cacheAddr = 812157193,
                     datalength = chunkedInput.bufferSize,
                     dataoffset = offset,
                     filesize = dataSize.toLong(),

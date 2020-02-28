@@ -112,7 +112,7 @@ internal open class QQAndroidClient(
     private val highwayDataTransSequenceIdForGroup: AtomicInt = atomic(87017)
     internal fun nextHighwayDataTransSequenceIdForGroup(): Int = highwayDataTransSequenceIdForGroup.getAndAdd(2)
 
-    private val highwayDataTransSequenceIdForFriend: AtomicInt = atomic(40717)
+    private val highwayDataTransSequenceIdForFriend: AtomicInt = atomic(43973)
     internal fun nextHighwayDataTransSequenceIdForFriend(): Int = highwayDataTransSequenceIdForFriend.getAndAdd(2)
 
     val appClientVersion: Int = 0

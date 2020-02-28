@@ -72,15 +72,17 @@ internal suspend fun HttpClient.postImage(
                 when (imageInput) {
                     is Input -> {
                         var size: Int
-                        while (imageInput.readAvailable(buffer).also { size = it } != 0) {
+                        while (imageInput.readAvailable(buffer).also { size = it } > 0) {
                             channel.writeFully(buffer, 0, size)
+                            channel.flush()
                         }
                     }
                     is ByteReadChannel -> imageInput.copyAndClose(channel)
                     is InputStream -> {
                         var size: Int
-                        while (imageInput.read(buffer).also { size = it } != 0) {
+                        while (imageInput.read(buffer).also { size = it } > 0) {
                             channel.writeFully(buffer, 0, size)
+                            channel.flush()
                         }
                     }
                     else -> error("unsupported imageInput: ${imageInput::class.simpleName}")

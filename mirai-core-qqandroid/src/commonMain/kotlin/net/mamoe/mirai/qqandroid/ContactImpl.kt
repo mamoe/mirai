@@ -118,16 +118,17 @@ internal class QQImpl(
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     Http.postImage("0x6ff0070", bot.uin, null, imageInput = image.input, inputSize = image.inputSize, uKeyHex = response.uKey.toUHexString(""))
-//                    HighwayHelper.uploadImage(
-//                        client = bot.client,
-//                        serverIp = response.serverIp[0].toIpV4AddressString(),
-//                        serverPort = response.serverPort[0],
-//                        imageInput = image.input,
-//                        inputSize = image.inputSize.toInt(),
-//                        md5 = image.md5,
-//                        uKey = response.uKey,
-//                        commandId = 1
-//                    )
+                    //HighwayHelper.uploadImage(
+                    //    client = bot.client,
+                    //    serverIp = response.serverIp[0].toIpV4AddressString(),
+                    //    serverPort = response.serverPort[0],
+                    //    imageInput = image.input,
+                    //    inputSize = image.inputSize.toInt(),
+                    //    fileMd5 = image.md5,
+                    //    uKey = response.uKey,
+                    //    commandId = 1
+                    //)
+                    // 为什么不能 ??
 
                     return NotOnlineImageFromFile(
                         filepath = response.resourceId,

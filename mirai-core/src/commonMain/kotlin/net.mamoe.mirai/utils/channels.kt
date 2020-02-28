@@ -30,11 +30,11 @@ import kotlin.jvm.JvmName
  */
 suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
     @UseExperimental(MiraiInternalAPI::class)
-    ByteArrayPool.useInstance {
-        do {
-            val size = this.readAvailable(it)
-            dst.write(it, 0, size)
-        } while (size != 0)
+    ByteArrayPool.useInstance { buffer ->
+        var size: Int
+        while (this.readAvailable(buffer).also { size = it } > 0) {
+            dst.write(buffer, 0, size)
+        }
     }
 }
 
@@ -43,11 +43,11 @@ suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
  */
 suspend fun ByteReadChannel.copyTo(dst: Output) {
     @UseExperimental(MiraiInternalAPI::class)
-    ByteArrayPool.useInstance {
-        do {
-            val size = this.readAvailable(it)
-            dst.writeFully(it, 0, size)
-        } while (size != 0)
+    ByteArrayPool.useInstance { buffer ->
+        var size: Int
+        while (this.readAvailable(buffer).also { size = it } > 0) {
+            dst.writeFully(buffer, 0, size)
+        }
     }
 }
 
@@ -75,11 +75,11 @@ suspend fun ByteReadChannel.copyTo(dst: kotlinx.coroutines.io.ByteWriteChannel) 
 suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
     try {
         @UseExperimental(MiraiInternalAPI::class)
-        ByteArrayPool.useInstance {
-            do {
-                val size = this.readAvailable(it)
-                dst.write(it, 0, size)
-            } while (size != 0)
+        ByteArrayPool.useInstance { buffer ->
+            var size: Int
+            while (this.readAvailable(buffer).also { size = it } > 0) {
+                dst.write(buffer, 0, size)
+            }
         }
     } finally {
         dst.close()
@@ -92,11 +92,11 @@ suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
 suspend fun ByteReadChannel.copyAndClose(dst: Output) {
     try {
         @UseExperimental(MiraiInternalAPI::class)
-        ByteArrayPool.useInstance {
-            do {
-                val size = this.readAvailable(it)
-                dst.writeFully(it, 0, size)
-            } while (size != 0)
+        ByteArrayPool.useInstance { buffer ->
+            var size: Int
+            while (this.readAvailable(buffer).also { size = it } > 0) {
+                dst.writeFully(buffer, 0, size)
+            }
         }
     } finally {
         dst.close()
