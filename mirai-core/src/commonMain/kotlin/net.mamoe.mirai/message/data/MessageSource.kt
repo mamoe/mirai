@@ -39,7 +39,7 @@ interface MessageSource : Message, MessageMetadata {
     /**
      * 等待 [sequenceId] 获取, 确保其可用.
      *
-     * 若原消息发送失败, 这个方法会等待最多 3 秒随后抛出 [IllegalStateException]
+     * 这个方法 3 秒超时, 抛出 [IllegalStateException], 则表明原消息发送失败.
      */
     suspend fun ensureSequenceIdAvailable()
 
