@@ -148,7 +148,7 @@ suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(I
 suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().use {
-        this.copyTo(it)
+        withContext(IO) { copyTo(it) }
         it.flush()
     }
 
