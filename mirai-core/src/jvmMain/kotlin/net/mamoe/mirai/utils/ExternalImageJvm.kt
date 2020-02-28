@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
@@ -137,3 +138,15 @@ fun Input.toExternalImage(): ExternalImage {
  * 在 [IO] 中进行 [Input.toExternalImage]
  */
 suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+
+/**
+ * 保存为临时文件然后调用 [File.toExternalImage].
+ */
+suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
+    val file = createTempFile().apply { deleteOnExit() }
+    file.outputStream().use {
+        this.copyTo(it)
+    }
+
+    return file.suspendToExternalImage()
+}
