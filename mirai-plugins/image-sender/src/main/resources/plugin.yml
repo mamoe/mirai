@@ -1,5 +1,0 @@
-name: ImageSender
-main: net.mamoe.mirai.imageplugin.ImageSenderMain
-version: 1.0.0
-author: 不想写代码
-info: a demo[hso] plugin of mirai
