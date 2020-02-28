@@ -60,8 +60,10 @@ javac 1.8.0_60-ea
 #### IDE
 IDE，即集成开发环境，是辅助编程开发的软件。使用合适的IDE能有效地减少代码语法错误、编译麻烦等问题，加大开发效率。目前java开发者常用的IDE有Eclipse，NetBeans，IntelliJ IDEA等软件。我这里使用IntelliJ IDEA 14.1（以下简称“IDEA”）与windows 7系统为例子，来讲IDE的安装和配置。
 <br>
-打开IntelliJ IDEA的官方网站 http://www.jetbrains.com/idea/，点击“Get IntelliJ IDEA now”
-
+打开[IntelliJ IDEA的官方网站]( http://www.jetbrains.com/idea/)，点击“Get IntelliJ IDEA now”
+<br>
+IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后，根据自己的需求点击下载使用，一般的使用免费的Community版就足够了。
+<br>
 ### 我要如何开始
 
 
