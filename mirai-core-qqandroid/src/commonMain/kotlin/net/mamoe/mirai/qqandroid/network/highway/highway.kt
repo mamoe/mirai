@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.io.InputStream
 import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
+import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -24,9 +25,8 @@ import net.mamoe.mirai.utils.io.*
 
 @UseExperimental(MiraiInternalAPI::class)
 internal fun createImageDataPacketSequence( // RequestDataTrans
-    uin: Long,
+    client: QQAndroidClient,
     command: String,
-    sequenceId: Int,
     appId: Int = 537062845,
     dataFlag: Int = 4096,
     commandId: Int,
@@ -35,9 +35,10 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
 
     data: Any,
     dataSize: Int,
-    md5: ByteArray,
-    sizePerPacket: Int = 8192
+    fileMd5: ByteArray,
+    sizePerPacket: Int = 8000
 ): Flow<ByteReadPacket> {
+    ByteArrayPool.checkBufferSize(sizePerPacket)
     require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }
     require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
     require(data !is ByteReadPacket || data.remaining.toInt() == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
@@ -56,9 +57,10 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
             val head = CSDataHighwayHead.ReqDataHighwayHead(
                 msgBasehead = CSDataHighwayHead.DataHighwayHead(
                     version = 1,
-                    uin = uin.toString(),
+                    uin = client.uin.toString(),
                     command = command,
-                    seq = sequenceId,
+                    seq = if (commandId == 2) client.nextHighwayDataTransSequenceIdForGroup()
+                    else client.nextHighwayDataTransSequenceIdForFriend(),
                     retryTimes = 0,
                     appid = appId,
                     dataflag = dataFlag,
@@ -66,11 +68,11 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                     localeId = localId
                 ),
                 msgSeghead = CSDataHighwayHead.SegHead(
-                    datalength = dataSize,
+                    datalength = chunkedInput.bufferSize,
                     filesize = dataSize.toLong(),
                     serviceticket = uKey,
-                    md5 = md5,
-                    fileMd5 = md5,
+                    md5 = net.mamoe.mirai.utils.md5(chunkedInput.buffer, 0, chunkedInput.bufferSize),
+                    fileMd5 = fileMd5,
                     flag = 0,
                     rtcode = 0
                 ),
@@ -80,8 +82,9 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
 
             writeByte(40)
             writeInt(head.size)
-            writeInt(dataSize)
+            writeInt(chunkedInput.bufferSize)
             writeFully(head)
+            println(chunkedInput.bufferSize)
             writeFully(chunkedInput.buffer, 0, chunkedInput.bufferSize)
             writeByte(41)
         }

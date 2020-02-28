@@ -602,15 +602,15 @@ internal class GroupImpl(
                     ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    // 每 100KB 等 1 秒
-                    withTimeoutOrNull(image.inputSize / 1024 / 100) {
+                    // 每 10KB 等 1 秒
+                    withTimeoutOrNull(image.inputSize * 1000 / 1024 / 10) {
                         HighwayHelper.uploadImage(
                             client = bot.client,
                             serverIp = response.uploadIpList.first().toIpV4AddressString(),
                             serverPort = response.uploadPortList.first(),
                             imageInput = image.input,
                             inputSize = image.inputSize.toInt(),
-                            md5 = image.md5,
+                            fileMd5 = image.md5,
                             uKey = response.uKey,
                             commandId = 2
                         )

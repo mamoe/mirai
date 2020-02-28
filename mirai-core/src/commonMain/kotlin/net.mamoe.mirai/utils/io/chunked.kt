@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.io.InputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
-import kotlinx.io.core.readAvailable
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
@@ -55,14 +54,14 @@ fun ByteReadPacket.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.remaining <= sizePerPacket.toLong()) {
         ByteArrayPool.useInstance { buffer ->
-            return flowOf(ChunkedInput(buffer, this.readAvailable(buffer)))
+            return flowOf(ChunkedInput(buffer, this.readAvailable(buffer, 0, sizePerPacket)))
         }
     }
     return flow {
         ByteArrayPool.useInstance { buffer ->
             val chunkedInput = ChunkedInput(buffer, 0)
             do {
-                chunkedInput.size = this@chunkedFlow.readAvailable(buffer)
+                chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
                 emit(chunkedInput)
             } while (this@chunkedFlow.isNotEmpty)
         }
@@ -85,7 +84,7 @@ fun ByteReadChannel.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
         ByteArrayPool.useInstance { buffer ->
             val chunkedInput = ChunkedInput(buffer, 0)
             do {
-                chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, buffer.size)
+                chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
                 emit(chunkedInput)
             } while (!this@chunkedFlow.isClosedForRead)
         }
@@ -111,7 +110,7 @@ internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
         ByteArrayPool.useInstance { buffer ->
             val chunkedInput = ChunkedInput(buffer, 0)
             while (!this@chunkedFlow.endOfInput) {
-                chunkedInput.size = this@chunkedFlow.readAvailable(buffer)
+                chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
                 emit(chunkedInput)
             }
         }
@@ -134,7 +133,7 @@ internal fun InputStream.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
         ByteArrayPool.useInstance { buffer ->
             val chunkedInput = ChunkedInput(buffer, 0)
             while (this@chunkedFlow.available() != 0) {
-                chunkedInput.size = this@chunkedFlow.read(buffer)
+                chunkedInput.size = this@chunkedFlow.read(buffer, 0, sizePerPacket)
                 emit(chunkedInput)
             }
         }
