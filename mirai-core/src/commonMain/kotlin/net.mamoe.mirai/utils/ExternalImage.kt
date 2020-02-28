@@ -79,7 +79,7 @@ class ExternalImage private constructor(
     ) : this(width, height, md5, imageFormat, input as Any, input.available().toLong(), filename)
 
     init {
-        require(inputSize in 0L..Int.MAX_VALUE.toLong()) { "file is too big" }
+        require(inputSize < 30L * 1024 * 1024) { "file is too big. Maximum is about 20MB" }
     }
 
     companion object {
