@@ -117,6 +117,10 @@ interface Group : Contact, CoroutineScope {
      */
     val botPermission: MemberPermission
 
+    /**
+     * 群头像下载链接.
+     */
+    val avatarUrl: String get() = "https://p.qlogo.cn/gh/$id/${id}_1/640"
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.

@@ -59,6 +59,11 @@ interface QQ : Contact, CoroutineScope {
     suspend fun queryProfile(): Profile
 
     /**
+     * 头像下载链接
+     */
+    val avatarUrl: String get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
+
+    /**
      * 查询曾用名.
      *
      * 曾用名可能是:
