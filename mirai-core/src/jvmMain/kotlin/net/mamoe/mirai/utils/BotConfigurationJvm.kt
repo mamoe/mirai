@@ -31,40 +31,12 @@ import javax.imageio.ImageIO
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-/**
- * 平台默认的验证码识别器.
- *
- * 可被修改, 除覆盖配置外全局生效.
- */
-actual var defaultLoginSolver: LoginSolver = DefaultLoginSolver()
-
-
-interface LoginSolverInputReader{
-    suspend fun read(question:String):String?
-
-    suspend operator fun invoke(question: String):String?{
-        return read(question)
-    }
-}
-class DefaultLoginSolverInputReader: LoginSolverInputReader{
-    override suspend fun read(question: String): String? {
-        return readLine()
-    }
-}
-
 class DefaultLoginSolver(
-    val reader: LoginSolverInputReader = DefaultLoginSolverInputReader(),
-    val overrideLogger:MiraiLogger? = null
+    private val input: suspend () -> String,
+    private val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
-    fun getLogger(bot: Bot):MiraiLogger{
-        if(overrideLogger!=null){
-            return overrideLogger
-        }
-        return bot.logger
-    }
-
     override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? = loginSolverLock.withLock {
-        val logger = getLogger(bot)
+        val logger = overrideLogger ?: bot.logger
         val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
         withContext(Dispatchers.IO) {
             tempFile.createNewFile()
@@ -86,39 +58,38 @@ class DefaultLoginSolver(
             }
         }
         logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
-                return reader("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!.takeUnless { it.isEmpty() || it.length != 4 }.also {
+        return input().takeUnless { it.isEmpty() || it.length != 4 }.also {
             logger.info("正在提交[$it]中...")
         }
     }
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? = loginSolverLock.withLock {
-        val logger = getLogger(bot)
+        val logger = overrideLogger ?: bot.logger
         logger.info("需要滑动验证码")
         logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
         logger.info("完成后请输入任意字符 ")
         logger.info(url)
-        return reader("完成后请输入任意字符").also {
+        return input().also {
             logger.info("正在提交中...")
         }
     }
 
     override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? = loginSolverLock.withLock {
-        val logger = getLogger(bot)
+        val logger = overrideLogger ?: bot.logger
         logger.info("需要进行账户安全认证")
         logger.info("该账户有[设备锁]/[不常用登录地点]/[不常用设备登录]的问题")
         logger.info("完成以下账号认证即可成功登录|理论本认证在mirai每个账户中最多出现1次")
         logger.info("请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
         logger.info("这步操作将在后续的版本中优化")
         logger.info(url)
-        return reader("完成后请输入任意字符").also {
+        return input().also {
             logger.info("正在提交中...")
         }
     }
-
 }
 
 // Copied from Ktor CIO
-public fun File.writeChannel(
+private fun File.writeChannel(
     coroutineContext: CoroutineContext = Dispatchers.IO
 ): ByteWriteChannel = GlobalScope.reader(CoroutineName("file-writer") + coroutineContext, autoFlush = true) {
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -134,7 +105,7 @@ private val loginSolverLock = Mutex()
 /**
  * @author NaturalHG
  */
-public fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
+private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
     val newHeight = (this.height * (outputWidth.toDouble() / this.width)).toInt()
     val tmp = this.getScaledInstance(outputWidth, newHeight, Image.SCALE_SMOOTH)
     val image = BufferedImage(outputWidth, newHeight, BufferedImage.TYPE_INT_ARGB)
@@ -229,7 +200,7 @@ actual open class BotConfiguration actual constructor() {
     /**
      * 验证码处理器
      */
-    actual var loginSolver: LoginSolver = defaultLoginSolver
+    actual var loginSolver: LoginSolver = LoginSolver.Default
 
     actual companion object {
         /**
@@ -279,4 +250,18 @@ inline class FileBasedDeviceInfo @BotConfigurationDsl constructor(val filepath: 
      */
     @BotConfigurationDsl
     companion object ByDeviceDotJson
+}
+
+/**
+ * 验证码, 设备锁解决器
+ */
+actual abstract class LoginSolver {
+    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?
+    actual abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
+    actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
+
+    actual companion object {
+        actual val Default: LoginSolver
+            get() = DefaultLoginSolver(input = { withContext(Dispatchers.IO) { readLine() } ?: error("No standard input") })
+    }
 }

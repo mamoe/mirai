@@ -15,23 +15,6 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-/**
- * 在各平台实现的默认的验证码处理器.
- */
-actual var defaultLoginSolver: LoginSolver = object : LoginSolver() {
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
-        error("should be implemented manually by you")
-    }
-
-    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
-        error("should be implemented manually by you")
-    }
-
-    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
-        error("should be implemented manually by you")
-    }
-}
-
 @Suppress("ClassName", "PropertyName")
 actual open class BotConfiguration actual constructor() {
     /**
@@ -76,7 +59,7 @@ actual open class BotConfiguration actual constructor() {
     /**
      * 验证码处理器
      */
-    actual var loginSolver: LoginSolver = defaultLoginSolver
+    actual var loginSolver: LoginSolver = LoginSolver.Default
 
     actual companion object {
         /**
@@ -115,4 +98,31 @@ inline class FileBasedDeviceInfo @BotConfigurationDsl constructor(val filepath: 
      */
     @BotConfigurationDsl
     companion object ByDeviceDotJson
+}
+
+/**
+ * 验证码, 设备锁解决器
+ */
+actual abstract class LoginSolver {
+    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?
+    actual abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
+    actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
+
+    actual companion object {
+        actual val Default: LoginSolver
+            get() = object : LoginSolver() {
+                override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+                    error("should be implemented manually by you")
+                }
+
+                override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+                    error("should be implemented manually by you")
+                }
+
+                override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+                    error("should be implemented manually by you")
+                }
+            }
+    }
+
 }

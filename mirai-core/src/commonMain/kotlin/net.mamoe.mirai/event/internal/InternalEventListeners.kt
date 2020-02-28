@@ -17,7 +17,6 @@ import net.mamoe.mirai.event.EventDisabled
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
@@ -65,8 +64,8 @@ internal class Handler<in E : Event>
                     MiraiLogger.warning(
                         """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
                         either in coroutineContext from Handler job, or in subscriberContext""".trimIndent()
+                        , e
                     )
-                    e.logStacktrace("Event processing(No CoroutineExceptionHandler found)")
                 }
             // this.complete() // do not `completeExceptionally`, otherwise parentJob will fai`l.
             // ListeningStatus.STOPPED

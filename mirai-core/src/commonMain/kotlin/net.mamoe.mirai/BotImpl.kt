@@ -22,7 +22,6 @@ import net.mamoe.mirai.network.ForceOfflineException
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.closeAndJoin
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 
 /*
@@ -144,17 +143,16 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
 
         suspend fun doInit() {
-            repeat(2) {
-                try {
-                    _network.init()
-                    return
-                } catch (e: Exception) {
-                    e.logStacktrace()
+            tryNTimesOrException(2) {
+                if (it != 0) {
+                    delay(3000)
+                    logger.warning("Init failed. Retrying in 3s...")
                 }
-                logger.warning("Init failed. Retrying in 3s...")
-                delay(3000)
+                _network.init()
+            }?.let {
+                network.logger.error(it)
+                logger.error("cannot init. some features may be affected")
             }
-            logger.error("cannot init. some features may be affected")
         }
 
         logger.info("Initializing BotNetworkHandler")

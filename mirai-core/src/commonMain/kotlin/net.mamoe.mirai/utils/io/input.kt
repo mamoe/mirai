@@ -20,26 +20,12 @@ import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.cryptor.contentToString
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Input.discardExact(n: Short) = this.discardExact(n.toInt())
-
-@Suppress("NOTHING_TO_INLINE")
-@JvmSynthetic
-inline fun Input.discardExact(n: UShort) = this.discardExact(n.toInt())
-
-@Suppress("NOTHING_TO_INLINE")
-@JvmSynthetic
-inline fun Input.discardExact(n: UByte) = this.discardExact(n.toInt())
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun Input.discardExact(n: Byte) = this.discardExact(n.toInt())
-
-fun ByteReadPacket.transferTo(outputStream: OutputStream) {
+@UseExperimental(MiraiInternalAPI::class)
+fun ByteReadPacket.copyTo(outputStream: OutputStream) {
     ByteArrayPool.useInstance {
         while (this.isNotEmpty) {
             outputStream.write(it, 0, this.readAvailable(it))
@@ -56,20 +42,12 @@ inline fun <R> ByteReadPacket.useBytes(
     block(it, n)
 }
 
+@MiraiInternalAPI
 inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 
-inline fun Input.readUByteLVString(): String = String(this.readUByteLVByteArray())
-
-inline fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
-
-inline fun Input.readUByteLVByteArray(): ByteArray = this.readBytes(this.readUByte().toInt())
-
-inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
-
 private inline fun <R> inline(block: () -> R): R = block()
-
 
 typealias TlvMap = MutableMap<Int, ByteArray>
 
@@ -81,12 +59,13 @@ inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteAr
     return this[tag] ?: error(lazyMessage(tag))
 }
 
+@Suppress("FunctionName")
 @MiraiInternalAPI
-inline fun Input.readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap = readTLVMap(true, tagSize, suppressDuplication)
+inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap = _readTLVMap(true, tagSize, suppressDuplication)
 
 @MiraiDebugAPI
-@Suppress("DuplicatedCode")
-fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplication: Boolean = true): TlvMap {
+@Suppress("DuplicatedCode", "FunctionName")
+fun Input._readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplication: Boolean = true): TlvMap {
     val map = mutableMapOf<Int, ByteArray>()
     var key = 0
 
@@ -108,11 +87,14 @@ fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplica
         }.toUByte() != UByte.MAX_VALUE) {
 
         if (map.containsKey(key)) {
+            @Suppress("ControlFlowWithEmptyBody")
             if (!suppressDuplication) {
-                DebugLogger.error(
+                /*
+                @Suppress("DEPRECATION")
+                MiraiLogger.error(
                     @Suppress("IMPLICIT_CAST_TO_ANY")
                     """
-                Error readTLVMap: 
+                Error readTLVMap:
                 duplicated key ${when (tagSize) {
                         1 -> key.toByte()
                         2 -> key.toShort()
@@ -122,13 +104,13 @@ fun Input.readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplica
                 map=${map.contentToString()}
                 duplicating value=${this.readUShortLVByteArray().toUHexString()}
                 """.trimIndent()
-                )
+                )*/
             } else {
                 this.discardExact(this.readShort().toInt() and 0xffff)
             }
         } else {
             try {
-                map[key] = this.readUShortLVByteArray()
+                map[key] = this.readBytes(readUShort().toInt())
             } catch (e: Exception) { // BufferUnderflowException, java.io.EOFException
                 // if (expectingEOF) {
                 //     return map

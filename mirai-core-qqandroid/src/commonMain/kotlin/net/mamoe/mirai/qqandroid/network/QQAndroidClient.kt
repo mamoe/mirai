@@ -7,12 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.toByteArray
+import kotlinx.io.core.*
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.RawAccountIdUse
 import net.mamoe.mirai.data.OnlineStatus
@@ -20,12 +21,10 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
-import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.qqandroid.utils.NetworkType
-import net.mamoe.mirai.utils.SystemDeviceInfo
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.ECDH
-import net.mamoe.mirai.utils.cryptor.decryptBy
+import net.mamoe.mirai.utils.cryptor.TEA
 import net.mamoe.mirai.utils.io.*
 
 /*
@@ -72,7 +71,7 @@ internal open class QQAndroidClient(
     internal inline fun <R> tryDecryptOrNull(data: ByteArray, size: Int = data.size, mapper: (ByteArray) -> R): R? {
         keys.forEach { (key, value) ->
             kotlin.runCatching {
-                return mapper(data.decryptBy(value, size).also { PacketLogger.verbose { "成功使用 $key 解密" } })
+                return mapper(TEA.decrypt(data, value, size).also { PacketLogger.verbose { "成功使用 $key 解密" } })
             }
         }
         return null
@@ -313,6 +312,10 @@ internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) :
 
 internal typealias PSKeyMap = MutableMap<String, PSKey>
 internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
+
+internal inline fun Input.readUShortLVString(): String = kotlinx.io.core.String(this.readUShortLVByteArray())
+
+internal inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
 internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, expireTime: Long, outPSKeyMap: PSKeyMap, outPt4TokenMap: Pt4TokenMap) =
     data.read {

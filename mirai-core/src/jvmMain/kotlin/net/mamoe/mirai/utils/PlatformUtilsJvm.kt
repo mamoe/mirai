@@ -56,6 +56,7 @@ actual fun localIpAddress(): String = InetAddress.getLocalHost().hostAddress
 
 actual val Http: HttpClient get() = HttpClient(CIO)
 
+@UseExperimental(MiraiInternalAPI::class)
 actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
     this.checkOffsetAndLength(offset, length)
     if (length == 0) return ByteArray(0)

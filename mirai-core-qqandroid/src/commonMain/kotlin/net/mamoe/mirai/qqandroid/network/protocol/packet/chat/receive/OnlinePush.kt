@@ -11,10 +11,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUByte
-import kotlinx.io.core.readUInt
+import kotlinx.io.core.*
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.NoPacket
@@ -38,7 +35,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.io.discardExact
+
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toUHexString

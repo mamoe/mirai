@@ -29,6 +29,7 @@ import kotlin.jvm.JvmName
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
+    @UseExperimental(MiraiInternalAPI::class)
     ByteArrayPool.useInstance {
         do {
             val size = this.readAvailable(it)
@@ -41,6 +42,7 @@ suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 suspend fun ByteReadChannel.copyTo(dst: Output) {
+    @UseExperimental(MiraiInternalAPI::class)
     ByteArrayPool.useInstance {
         do {
             val size = this.readAvailable(it)
@@ -72,6 +74,7 @@ suspend fun ByteReadChannel.copyTo(dst: kotlinx.coroutines.io.ByteWriteChannel) 
  */
 suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
     try {
+        @UseExperimental(MiraiInternalAPI::class)
         ByteArrayPool.useInstance {
             do {
                 val size = this.readAvailable(it)
@@ -88,6 +91,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
  */
 suspend fun ByteReadChannel.copyAndClose(dst: Output) {
     try {
+        @UseExperimental(MiraiInternalAPI::class)
         ByteArrayPool.useInstance {
             do {
                 val size = this.readAvailable(it)

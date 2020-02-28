@@ -25,9 +25,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.qqandroid.network.readUShortLVByteArray
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.cryptor.TEA
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
-import net.mamoe.mirai.utils.cryptor.decryptBy
 import net.mamoe.mirai.utils.io.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -194,8 +195,8 @@ internal object KnownPacketFactories {
 
             kotlin.runCatching {
                 when (flag2) {
-                    2 -> data.decryptBy(DECRYPTER_16_ZERO, size).also { PacketLogger.verbose { "成功使用 16 zero 解密" } }
-                    1 -> data.decryptBy(bot.client.wLoginSigInfo.d2Key, size).also { PacketLogger.verbose { "成功使用 d2Key 解密" } }
+                    2 -> TEA.decrypt(data, DECRYPTER_16_ZERO, size).also { PacketLogger.verbose { "成功使用 16 zero 解密" } }
+                    1 -> TEA.decrypt(data, bot.client.wLoginSigInfo.d2Key, size).also { PacketLogger.verbose { "成功使用 d2Key 解密" } }
                     0 -> data
                     else -> error("")
                 }
@@ -335,6 +336,7 @@ internal object KnownPacketFactories {
         return IncomingPacket(packetFactory, ssoSequenceId, packet, commandName)
     }
 
+    @UseExperimental(MiraiInternalAPI::class)
     private suspend fun <T : Packet?> ByteReadPacket.parseOicqResponse(
         bot: QQAndroidBot,
         packetFactory: OutgoingPacketFactory<T>,
@@ -352,10 +354,10 @@ internal object KnownPacketFactories {
         this.discardExact(1) // const = 0
         val packet = when (encryptionMethod) {
             4 -> {
-                var data = this.decryptBy(bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
+                var data = TEA.decrypt(this, bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
 
                 val peerShareKey = bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
-                data = data.decryptBy(peerShareKey)
+                data = TEA.decrypt(data, peerShareKey)
 
                 packetFactory.decode(bot, data)
             }
@@ -366,13 +368,13 @@ internal object KnownPacketFactories {
                         this.readFully(byteArrayBuffer, 0, size)
 
                         runCatching {
-                            byteArrayBuffer.decryptBy(bot.client.ecdh.keyPair.initialShareKey, size)
+                            TEA.decrypt(byteArrayBuffer, bot.client.ecdh.keyPair.initialShareKey, size)
                         }.getOrElse {
-                            byteArrayBuffer.decryptBy(bot.client.randomKey, size)
+                            TEA.decrypt(byteArrayBuffer, bot.client.randomKey, size)
                         }.toReadPacket()
                     }
                 } else {
-                    this.decryptBy(bot.client.randomKey, 0, (this.remaining - 1).toInt())
+                    TEA.decrypt(this, bot.client.randomKey, 0, (this.remaining - 1).toInt())
                 }
 
                 packetFactory.decode(bot, data)

@@ -75,6 +75,7 @@ private inline fun InputStream.readInSequence(block: (Int) -> Unit) {
     }
 }
 
+@UseExperimental(MiraiInternalAPI::class)
 actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
     this.checkOffsetAndLength(offset, length)
     if (length == 0) return ByteArray(0)

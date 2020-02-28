@@ -14,8 +14,9 @@
 package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.coerceAtMostOrFail
-import net.mamoe.mirai.utils.cryptor.encryptBy
+import net.mamoe.mirai.utils.cryptor.TEA
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -67,5 +68,6 @@ fun BytePacketBuilder.writeHex(uHex: String) {
 /**
  * 会使用 [ByteArrayPool] 缓存
  */
+@UseExperimental(MiraiInternalAPI::class)
 inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
-    BytePacketBuilder().apply(encoder).build().encryptBy(key) { decrypted -> writeFully(decrypted) }
+    TEA.encrypt(BytePacketBuilder().apply(encoder).build(), key) { decrypted -> writeFully(decrypted) }

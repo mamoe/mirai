@@ -30,5 +30,13 @@ object ByteArrayPool : DefaultPool<ByteArray>(256) {
     override fun produceInstance(): ByteArray = ByteArray(BUFFER_SIZE)
 
     override fun clearInstance(instance: ByteArray): ByteArray = instance
+
+    fun checkBufferSize(size: Int) {
+        require(size <= BUFFER_SIZE) { "sizePerPacket is too large. Maximum buffer size=$BUFFER_SIZE" }
+    }
+
+    fun checkBufferSize(size: Long) {
+        require(size <= BUFFER_SIZE) { "sizePerPacket is too large. Maximum buffer size=$BUFFER_SIZE" }
+    }
 }
 

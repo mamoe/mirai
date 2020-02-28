@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceOutput
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.buildJcePacket
-import net.mamoe.mirai.utils.cryptor.contentToString
+import net.mamoe.mirai.utils.contentToString
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.test.Test
 import kotlin.test.assertEquals
