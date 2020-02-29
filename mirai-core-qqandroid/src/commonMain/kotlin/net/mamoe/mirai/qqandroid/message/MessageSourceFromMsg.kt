@@ -33,7 +33,7 @@ internal inline class MessageSourceFromServer(
     }
 
     // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
-    override val senderId: Long get() = delegate.senderUin
+    override val qqId: Long get() = delegate.senderUin
     override val groupId: Long get() = Group.calculateGroupCodeByGroupUin(delegate.toUin)
 
     override fun toString(): String = ""
@@ -52,7 +52,7 @@ internal inline class MessageSourceFromMsg(
     }
 
     // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
-    override val senderId: Long get() = delegate.msgHead.fromUin
+    override val qqId: Long get() = delegate.msgHead.fromUin
     override val groupId: Long get() = delegate.msgHead.groupInfo?.groupCode ?: 0
 
     fun toJceData(): ImMsgBody.SourceMsg {

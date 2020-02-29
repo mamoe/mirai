@@ -272,7 +272,7 @@ internal class MessageSvc {
         internal class MessageSourceFromSendFriend(
             val messageRandom: Int,
             override val time: Long,
-            override val senderId: Long,
+            override val qqId: Long,
             override val groupId: Long,
             val sequenceId: Int
         ) : MessageSource {
@@ -293,7 +293,7 @@ internal class MessageSvc {
         internal class MessageSourceFromSendGroup(
             val messageRandom: Int,
             override val time: Long,
-            override val senderId: Long,
+            override val qqId: Long,
             override val groupId: Long// ,
             // override val sourceMessage: MessageChain
         ) : MessageSource {
@@ -330,7 +330,7 @@ internal class MessageSvc {
         ): OutgoingPacket {
             val source = MessageSourceFromSendFriend(
                 messageRandom = Random.nextInt().absoluteValue,
-                senderId = client.uin,
+                qqId = toUin,
                 time = currentTimeSeconds + client.timeDifference,
                 groupId = 0,
                 sequenceId = client.atomicNextMessageSequenceId()
@@ -379,7 +379,7 @@ internal class MessageSvc {
 
             val source = MessageSourceFromSendGroup(
                 messageRandom = Random.nextInt().absoluteValue,
-                senderId = client.uin,
+                qqId = client.uin,
                 time = currentTimeSeconds + client.timeDifference,
                 groupId = groupCode//,
                 //   sourceMessage = message

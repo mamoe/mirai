@@ -13,6 +13,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.QQ
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -49,8 +50,14 @@ interface MessageSource : Message, MessageMetadata {
     val time: Long
 
     /**
-     * 发送人号码
+     * 与这个消息相关的 [QQ] 的 [QQ.id]
+     *
+     * 群消息时为发送人的 id. 好友消息时为消息发送目标好友的 id
      */
+    val qqId: Long
+
+    @Suppress("unused") // TODO: 2020/2/29 0.25: 删除 `MessageSource.senderId`
+    @Deprecated("使用 qqId. 此 API 将在 0.25 删除", level = DeprecationLevel.HIDDEN, replaceWith = ReplaceWith("this.qqId"))
     val senderId: Long
 
     /**

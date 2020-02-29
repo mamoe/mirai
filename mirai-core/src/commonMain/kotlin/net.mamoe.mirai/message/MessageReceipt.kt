@@ -72,7 +72,7 @@ open class MessageReceipt<C : Contact>(
     }
 
     /**
-     * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
+     * 在一段时间后撤回这条消息.. [recall] 或 [recallIn] 只能被调用一次.
      *
      * @param millis 延迟时间, 单位为毫秒
      *
@@ -91,7 +91,7 @@ open class MessageReceipt<C : Contact>(
     }
 
     /**
-     * 引用这条消息. 仅群消息能被引用
+     * 引用这条消息.
      *
      * @see MessageChain.quote 引用一条消息
      *
@@ -105,7 +105,7 @@ open class MessageReceipt<C : Contact>(
     }
 
     /**
-     * 引用这条消息并回复. 仅群消息能被引用
+     * 引用这条消息并回复.
      *
      * @see MessageChain.quote 引用一条消息
      *

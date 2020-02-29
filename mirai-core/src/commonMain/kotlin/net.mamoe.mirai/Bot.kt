@@ -21,6 +21,7 @@ import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -205,30 +206,29 @@ abstract class Bot : CoroutineScope {
     // region actions
 
     /**
-     * 撤回这条消息.
+     * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
      *
      * [Bot] 撤回自己的消息不需要权限.
      * [Bot] 撤回群员的消息需要管理员权限.
      *
+     * @param source 消息源. 可从 [MessageReceipt.source] 获得, 或从消息事件中的 [MessageChain] 获得.
+     *
      * @throws PermissionDeniedException 当 [Bot] 无权限操作时
      * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
-     */// source.groupId, source.sequenceId, source.messageUid
+     */
     abstract suspend fun recall(source: MessageSource)
 
     /**
-     * 撤回一条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
-     *
-     * [Bot] 撤回自己的消息不需要权限.
-     * [Bot] 撤回群员的消息需要管理员权限.
-     *
-     * @param senderId 这条消息的发送人. 可以为 [Bot.uin] 或 [Member.id]
-     * @param messageId 即 [MessageSource.id]
-     *
-     * @throws PermissionDeniedException 当 [Bot] 无权限操作时
-     * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
-     * @see recall 请优先使用这个函数
+     * 撤回一条由机器人发送给好友的消息
      */
-    abstract suspend fun recall(groupId: Long, senderId: Long, messageId: Long)
+    @MiraiExperimentalAPI
+    abstract suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long)
+
+    /**
+     * 撤回一条群里的消息. 可以是机器人发送也可以是其他群员发送.
+     */
+    @MiraiExperimentalAPI
+    abstract suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long)
 
     /**
      * 获取图片下载链接

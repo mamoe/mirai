@@ -122,38 +122,54 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override suspend fun recall(source: MessageSource) {
-        if (source.senderId != uin) {
+        if (source.qqId != uin && source.groupId != 0L) {
             getGroup(source.groupId).checkBotPermissionOperator()
         }
 
         source.ensureSequenceIdAvailable()
 
         network.run {
-            val response: PbMessageSvc.PbMsgWithDraw.Response = if (source.groupId == 0L) {
-                PbMessageSvc.PbMsgWithDraw.Friend(bot.client, source.senderId, source.sequenceId, source.messageRandom, source.time)
-                    .sendAndExpect()
-            } else {
+            val response: PbMessageSvc.PbMsgWithDraw.Response =
+                if (source.groupId == 0L) {
+                    PbMessageSvc.PbMsgWithDraw.Friend(
+                        bot.client,
+                        source.qqId,
+                        source.sequenceId,
+                        source.messageRandom,
+                        source.time
+                    )
+                        .sendAndExpect()
+                } else {
+                    PbMessageSvc.PbMsgWithDraw.Group(
+                        bot.client,
+                        source.groupId,
+                        source.sequenceId,
+                        source.messageRandom
+                    )
+                        .sendAndExpect()
+                }
 
-                PbMessageSvc.PbMsgWithDraw.Group(bot.client, source.groupId, source.sequenceId, source.messageRandom)
-                    .sendAndExpect()
-            }
-
-            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.sequenceId}: $response" }
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }
         }
     }
 
-    override suspend fun recall(groupId: Long, senderId: Long, messageId: Long) {
-        if (senderId != uin) {
-            getGroup(groupId).checkBotPermissionOperator()
-        }
-
-        val sequenceId = (messageId shr 32).toInt()
-
+    override suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
-                PbMessageSvc.PbMsgWithDraw.Group(bot.client, groupId, sequenceId, messageId.toInt())
+                PbMessageSvc.PbMsgWithDraw.Friend(client, friendId, (messageId shr 32).toInt(), messageId.toInt(), 0)
                     .sendAndExpect()
-            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #$sequenceId: $response" }
+
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${messageId}: $response" }
+        }
+    }
+
+    override suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long) {
+        network.run {
+            val response: PbMessageSvc.PbMsgWithDraw.Response =
+                PbMessageSvc.PbMsgWithDraw.Group(client, groupId, (messageId shr 32).toInt(), messageId.toInt())
+                    .sendAndExpect()
+
+            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${messageId}: $response" }
         }
     }
 

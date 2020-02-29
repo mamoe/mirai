@@ -76,8 +76,7 @@ internal class PbMessageSvc {
             toUin: Long,
             messageSequenceId: Int, // 56639
             messageRandom: Int, // 921878719
-            time: Long,
-            messageType: Int = 0
+            time: Long
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
             writeProtoBuf(
                 MsgSvc.PbMsgWithDrawReq.serializer(),
