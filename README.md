@@ -68,6 +68,6 @@ Mirai Console提供了6个版本以满足各种需要<br>
         稳定挂机      -> listOf("Terminal","Pure") 
         else         -> listOf("Pure") 
     }      
-```
+``` 
 ----
 
