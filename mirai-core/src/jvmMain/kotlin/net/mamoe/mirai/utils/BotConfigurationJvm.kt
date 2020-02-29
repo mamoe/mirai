@@ -16,10 +16,10 @@ import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.close
 import kotlinx.coroutines.io.jvm.nio.copyTo
 import kotlinx.coroutines.io.reader
+import kotlinx.coroutines.io.writeFully
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -35,7 +35,7 @@ class DefaultLoginSolver(
     private val input: suspend () -> String,
     private val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? = loginSolverLock.withLock {
+    override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
         val logger = overrideLogger ?: bot.logger
         val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
         withContext(Dispatchers.IO) {
@@ -256,7 +256,7 @@ inline class FileBasedDeviceInfo @BotConfigurationDsl constructor(val filepath: 
  * 验证码, 设备锁解决器
  */
 actual abstract class LoginSolver {
-    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?
+    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
     actual abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
     actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 

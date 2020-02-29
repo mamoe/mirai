@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
@@ -104,14 +103,14 @@ inline class FileBasedDeviceInfo @BotConfigurationDsl constructor(val filepath: 
  * 验证码, 设备锁解决器
  */
 actual abstract class LoginSolver {
-    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?
+    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
     actual abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
     actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 
     actual companion object {
         actual val Default: LoginSolver
             get() = object : LoginSolver() {
-                override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+                override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
                     error("should be implemented manually by you")
                 }
 
