@@ -11,10 +11,10 @@ package net.mamoe.mirai.utils.io
 
 import io.ktor.utils.io.core.ByteReadPacket
 import io.ktor.utils.io.core.Closeable
+import io.ktor.utils.io.nio.readPacketAtMost
+import io.ktor.utils.io.nio.writePacket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.io.nio.readPacketAtMost
-import kotlinx.io.nio.writePacket
 import java.net.InetSocketAddress
 import java.nio.channels.DatagramChannel
 import java.nio.channels.ReadableByteChannel
