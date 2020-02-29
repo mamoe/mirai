@@ -114,6 +114,22 @@ sealed class MessageRecallEvent : BotEvent {
      */
     abstract val messageTime: Int // seconds
 
+    /**
+     * 好友消息撤回事件, 暂不支持解析.
+     */
+    data class FriendRecall(
+        override val bot: Bot,
+        override val messageId: Long,
+        override val messageTime: Int,
+        /**
+         * 撤回操作人, 可能为 [Bot.uin] 或好友的 [QQ.id]
+         */
+        val operator: Long
+    ) : MessageRecallEvent(), Packet {
+        override val authorId: Long
+            get() = bot.uin
+    }
+
     data class GroupRecall(
         override val bot: Bot,
         override val authorId: Long,
@@ -130,6 +146,14 @@ sealed class MessageRecallEvent : BotEvent {
 @UseExperimental(MiraiExperimentalAPI::class)
 val MessageRecallEvent.GroupRecall.author: Member
     get() = if (authorId == bot.uin) group.botAsMember else group[authorId]
+
+val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.uin
+
+val MessageRecallEvent.isByBot: Boolean
+    get() = when (this) {
+        is MessageRecallEvent.FriendRecall -> this.isByBot
+        is MessageRecallEvent.GroupRecall -> (this as GroupOperableEvent).isByBot
+    }
 
 // endregion
 
