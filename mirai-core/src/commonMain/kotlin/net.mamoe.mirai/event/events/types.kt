@@ -57,7 +57,7 @@ interface GroupMemberEvent : GroupEvent {
  * @see isByBot
  * @see operatorOrBot
  */
-interface OperableEvent : GroupEvent {
+interface GroupOperableEvent : GroupEvent {
     /**
      * 操作人, 为 `null` 时为 [Bot] 操作
      */
@@ -67,14 +67,14 @@ interface OperableEvent : GroupEvent {
 /**
  * 是否由 [Bot] 操作
  */
-val OperableEvent.isByBot: Boolean get() = operator == null
+val GroupOperableEvent.isByBot: Boolean get() = operator == null
 
 /**
  * 当操作人为 [Member] 时获取这个 [Member],
  * 当操作人为 [Bot] 时获取 [Group.botAsMember]
  */
 @UseExperimental(MiraiExperimentalAPI::class)
-val OperableEvent.operatorOrBot: Member
+val GroupOperableEvent.operatorOrBot: Member
     get() = this.operator ?: this.group.botAsMember
 
 

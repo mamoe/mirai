@@ -120,7 +120,7 @@ sealed class MessageRecallEvent : BotEvent {
         override val messageId: Long,
         override val messageTime: Int,
         /**
-         * 操作人. 为 null 是
+         * 操作人. 为 null 时则为 [Bot] 操作.
          */
         override val operator: Member?,
         override val group: Group
