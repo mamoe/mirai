@@ -324,7 +324,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         content { sub in it }
 
     /**
-     * 如果消息内容包含 [sub]
+     * 如果消息内容包含 [sub] 中的任意一个元素
      */
     @MessageDsl
     inline fun contains(
@@ -340,6 +340,72 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
             })
         } else {
             content({ it.contains(sub, ignoreCase = ignoreCase) }, {
+                onEvent(this, this.message.toString())
+            })
+        }
+    }
+
+    /**
+     * 如果消息内容包含 [sub]
+     */
+    @MessageDsl
+    fun containsAny(vararg sub: String): ListeningFilter =
+        content { sub.any { item -> item in it } }
+
+    /**
+     * 如果消息内容包含 [sub] 中的任意一个元素
+     */
+    @MessageDsl
+    inline fun containsAny(
+        vararg sub: String,
+        ignoreCase: Boolean = false,
+        trim: Boolean = true,
+        crossinline onEvent: MessageListener<T>
+    ): Listener<T> {
+        return if (trim) {
+            val list = sub.map { it.trim() }
+            content({
+                list.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
+            }, {
+                onEvent(this, this.message.toString().trim())
+            })
+        } else {
+            content({
+                sub.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
+            }, {
+                onEvent(this, this.message.toString())
+            })
+        }
+    }
+
+    /**
+     * 如果消息内容包含 [sub]
+     */
+    @MessageDsl
+    fun containsAll(vararg sub: String): ListeningFilter =
+        content { sub.all { item -> item in it } }
+
+    /**
+     * 如果消息内容包含 [sub] 中的任意一个元素
+     */
+    @MessageDsl
+    inline fun containsAll(
+        vararg sub: String,
+        ignoreCase: Boolean = false,
+        trim: Boolean = true,
+        crossinline onEvent: MessageListener<T>
+    ): Listener<T> {
+        return if (trim) {
+            val list = sub.map { it.trim() }
+            content({
+                list.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
+            }, {
+                onEvent(this, this.message.toString().trim())
+            })
+        } else {
+            content({
+                sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
+            }, {
                 onEvent(this, this.message.toString())
             })
         }
@@ -538,7 +604,10 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果 [filter] 返回 `true` 就执行 `onEvent`
      */
     @MessageDsl
-    inline fun content(crossinline filter: T.(String) -> Boolean, crossinline onEvent: MessageListener<T>): Listener<T> =
+    inline fun content(
+        crossinline filter: T.(String) -> Boolean,
+        crossinline onEvent: MessageListener<T>
+    ): Listener<T> =
         subscriber {
             if (filter(this, it)) onEvent(this, it)
         }

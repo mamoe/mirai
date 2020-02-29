@@ -300,7 +300,7 @@ internal class MemberImpl(
     @Suppress("DuplicatedCode")
     override fun equals(other: Any?): Boolean { // 不要删除. trust me
         if (this === other) return true
-        if (other !is Contact) return false
+        if (other !is Member) return false
         if (this::class != other::class) return false
         return this.id == other.id && this.bot == other.bot
     }
