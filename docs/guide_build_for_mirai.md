@@ -1,8 +1,8 @@
 # Mirai Guide - Build For Mirai
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-22```，对应版本```0.19.1```
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-29```，对应版本```0.23.0```
 
-本页面采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](mirai-japt/README.md)
+本页面采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](https://github.com/mamoe/mirai-japt)
 
 本页面是[Mirai Guide - Subscribe Events](/docs/guide_subscribe_events.md)的后续Guide
 
@@ -155,7 +155,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.19.1'
+    implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.23.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
