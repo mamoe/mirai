@@ -19,6 +19,8 @@ import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.message.CustomFaceFromServer
 import net.mamoe.mirai.qqandroid.message.NotOnlineImageFromServer
@@ -140,6 +142,14 @@ internal abstract class QQAndroidBotBase constructor(
                         source.time
                     ).sendAndExpect()
                 } else {
+                    MessageRecallEvent.GroupRecall(
+                        bot,
+                        source.qqId,
+                        source.id,
+                        source.time.toInt(),
+                        null,
+                        getGroup(source.groupId)
+                    ).broadcast()
                     PbMessageSvc.PbMsgWithDraw.Group(
                         bot.client,
                         source.groupId,

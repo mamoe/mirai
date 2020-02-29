@@ -16,7 +16,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.data.MultiPacket
+import net.mamoe.mirai.data.MultiPacketByIterable
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -107,19 +107,17 @@ internal class MessageSvc {
 
         @UseExperimental(MiraiInternalAPI::class)
         open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate) {
-            override fun toString(): String {
-                return "MessageSvc.PbGetMsg.GetMsgSuccess(messages=List(size=${this.size}))"
-            }
+            override fun toString(): String = "MessageSvc.PbGetMsg.GetMsgSuccess(messages=<Iterable>))"
         }
 
         /**
          * 不要直接 expect 这个 class. 它可能还没同步完成
          */
         @MiraiInternalAPI
-        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) : MultiPacket<Packet>(delegate) {
-            override fun toString(): String {
-                return "MessageSvc.PbGetMsg.Response($syncFlagFromServer=$syncFlagFromServer, messages=List(size=${this.size}))"
-            }
+        open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) :
+            MultiPacketByIterable<Packet>(delegate) {
+            override fun toString(): String =
+                "MessageSvc.PbGetMsg.Response($syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"
         }
 
         object EmptyResponse : GetMsgSuccess(emptyList())
