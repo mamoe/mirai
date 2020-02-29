@@ -90,7 +90,12 @@ internal class PbMessageSvc {
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
                                     msgUid = messageRandom.toLong() and 0xffffffff,
-                                    msgTime = time and 0xffffffff
+                                    msgTime = time and 0xffffffff,
+                                    routingHead = MsgSvc.RoutingHead(
+                                        c2c = MsgSvc.C2C(
+                                            toUin = toUin
+                                        )
+                                    )
                                 )
                             )
                         )

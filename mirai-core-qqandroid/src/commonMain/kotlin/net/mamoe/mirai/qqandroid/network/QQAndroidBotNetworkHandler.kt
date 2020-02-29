@@ -14,10 +14,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.use
+import kotlinx.io.core.*
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
@@ -132,7 +129,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 is WtLogin.Login.LoginPacketResponse.Captcha -> when (response) {
                     is WtLogin.Login.LoginPacketResponse.Captcha.Picture -> {
                         var result = response.data.withUse {
-                            bot.configuration.loginSolver.onSolvePicCaptcha(bot, this)
+                            bot.configuration.loginSolver.onSolvePicCaptcha(bot, this.readBytes())
                         }
                         if (result == null || result.length != 4) {
                             //refresh captcha

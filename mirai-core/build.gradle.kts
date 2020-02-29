@@ -11,7 +11,6 @@ plugins {
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
-val kotlinXIoVersion: String by rootProject.ext
 val coroutinesIoVersion: String by rootProject.ext
 
 val klockVersion: String by rootProject.ext
@@ -63,7 +62,6 @@ kotlin {
                 api(kotlin("serialization", kotlinVersion))
 
                 api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-                api(kotlinx("io", kotlinXIoVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-core", coroutinesVersion))
             }
@@ -100,8 +98,6 @@ kotlin {
                 dependencies {
                     api(kotlin("reflect", kotlinVersion))
 
-                    api(kotlinx("io", kotlinXIoVersion))
-                    api(kotlinx("io-jvm", kotlinXIoVersion))
                     api(kotlinx("serialization-runtime", serializationVersion))
                     api(kotlinx("coroutines-android", coroutinesVersion))
 
@@ -126,7 +122,6 @@ kotlin {
                 api(kotlin("reflect", kotlinVersion))
 
                 api(ktor("client-core-jvm", ktorVersion))
-                api(kotlinx("io-jvm", kotlinXIoVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))

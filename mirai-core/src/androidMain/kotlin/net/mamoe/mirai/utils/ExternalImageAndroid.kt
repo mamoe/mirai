@@ -12,14 +12,13 @@
 package net.mamoe.mirai.utils
 
 import android.graphics.BitmapFactory
+import io.ktor.utils.io.core.Input
+import io.ktor.utils.io.core.copyTo
+import io.ktor.utils.io.errors.IOException
+import io.ktor.utils.io.streams.asInput
+import io.ktor.utils.io.streams.asOutput
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import kotlinx.io.core.Input
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.core.copyTo
-import kotlinx.io.errors.IOException
-import kotlinx.io.streams.asInput
-import kotlinx.io.streams.asOutput
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -41,7 +40,7 @@ fun File.toExternalImage(): ExternalImage {
         height = input.height,
         md5 = this.inputStream().use { it.md5() },
         imageFormat = this.nameWithoutExtension,
-        input = this.inputStream().asInput(IoBuffer.Pool),
+        input = this.inputStream(),
         inputSize = this.length(),
         filename = this.name
     )
@@ -59,8 +58,8 @@ suspend fun File.suspendToExternalImage(): ExternalImage = withContext(IO) { toE
 @Throws(IOException::class)
 fun URL.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().asOutput().use { output ->
-        openStream().asInput().use { input ->
+    file.outputStream().use { output ->
+        openStream().use { input ->
             input.copyTo(output)
         }
     }

@@ -9,11 +9,11 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
@@ -305,12 +305,15 @@ internal class MessageSvc {
                         messageRandom.toLong().and(0xFFFFFFFF)
 
             @UseExperimental(MiraiExperimentalAPI::class)
-            fun startWaitingSequenceId(contact: Contact) {
-                sequenceIdDeferred = contact.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(timeoutMillis = 3000) {
-                    if (it.messageRandom == this@MessageSourceFromSendGroup.messageRandom) {
-                        it.sequenceId
-                    } else null
-                }
+            fun startWaitingSequenceId(coroutineScope: CoroutineScope) {
+                sequenceIdDeferred =
+                    coroutineScope.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(
+                        timeoutMillis = 3000
+                    ) {
+                        if (it.messageRandom == this@MessageSourceFromSendGroup.messageRandom) {
+                            it.sequenceId
+                        } else null
+                    }
             }
 
             override suspend fun ensureSequenceIdAvailable() {

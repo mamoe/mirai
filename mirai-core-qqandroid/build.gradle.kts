@@ -11,7 +11,6 @@ plugins {
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
-val kotlinXIoVersion: String by rootProject.ext
 val coroutinesIoVersion: String by rootProject.ext
 
 val klockVersion: String by rootProject.ext
@@ -65,7 +64,6 @@ kotlin {
                 api(kotlin("stdlib", kotlinVersion))
 
                 api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-                api(kotlinx("io", kotlinXIoVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-core", coroutinesVersion))
             }
