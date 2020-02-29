@@ -35,10 +35,10 @@ fun Short.toByteArray(): ByteArray = with(toInt()) {
  * 255 -> 00 00 00 FF
  */
 fun Int.toByteArray(): ByteArray = byteArrayOf(
-    (shr(24) and 0xFF).toByte(),
-    (shr(16) and 0xFF).toByte(),
-    (shr(8) and 0xFF).toByte(),
-    (shr(0) and 0xFF).toByte()
+    ushr(24).toByte(),
+    ushr(16).toByte(),
+    ushr(8).toByte(),
+    ushr(0).toByte()
 )
 
 /**
@@ -114,7 +114,8 @@ fun Byte.fixToUHex(): String = this.toUByte().fixToUHex()
 /**
  * 转无符号十六进制表示, 并补充首位 `0`.
  */
-fun UByte.fixToUHex(): String = if (this.toInt() in 0..15) "0${this.toString(16).toUpperCase()}" else this.toString(16).toUpperCase()
+fun UByte.fixToUHex(): String =
+    if (this.toInt() in 0..15) "0${this.toString(16).toUpperCase()}" else this.toString(16).toUpperCase()
 
 /**
  * 将无符号 Hex 转为 [ByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
@@ -143,7 +144,9 @@ fun String.chunkedHexToBytes(): ByteArray =
  * 这个方法很累, 不建议经常使用.
  */
 fun String.autoHexToBytes(): ByteArray =
-    this.replace("\n", "").replace(" ", "").asSequence().chunked(2).map { (it[0].toString() + it[1]).toUByte(16).toByte() }.toList().toByteArray()
+    this.replace("\n", "").replace(" ", "").asSequence().chunked(2).map {
+        (it[0].toString() + it[1]).toUByte(16).toByte()
+    }.toList().toByteArray()
 
 /**
  * 将无符号 Hex 转为 [UByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
@@ -188,16 +191,24 @@ fun getRandomString(length: Int, vararg charRanges: CharRange): String =
  * 本函数将 4 个 [Byte] 的 bits 连接得到 [Int]
  */
 fun ByteArray.toUInt(): UInt =
-    (this[0].toUInt().and(255u) shl 24) + (this[1].toUInt().and(255u) shl 16) + (this[2].toUInt().and(255u) shl 8) + (this[3].toUInt().and(255u) shl 0)
+    (this[0].toUInt().and(255u) shl 24) + (this[1].toUInt().and(255u) shl 16) + (this[2].toUInt().and(255u) shl 8) + (this[3].toUInt().and(
+        255u
+    ) shl 0)
 
 fun ByteArray.toUShort(): UShort =
     ((this[0].toUInt().and(255u) shl 8) + (this[1].toUInt().and(255u) shl 0)).toUShort()
 
 fun ByteArray.toInt(): Int =
-    (this[0].toInt().and(255) shl 24) + (this[1].toInt().and(255) shl 16) + (this[2].toInt().and(255) shl 8) + (this[3].toInt().and(255) shl 0)
+    (this[0].toInt().and(255) shl 24) + (this[1].toInt().and(255) shl 16) + (this[2].toInt().and(255) shl 8) + (this[3].toInt().and(
+        255
+    ) shl 0)
 
 /**
  * 从 [IoBuffer.Pool] [borrow][ObjectPool.borrow] 一个 [IoBuffer] 然后将 [this] 写入.
  * 注意回收 ([ObjectPool.recycle])
  */
-fun ByteArray.toIoBuffer(offset: Int = 0, length: Int = this.size - offset, pool: ObjectPool<IoBuffer> = IoBuffer.Pool): IoBuffer = pool.borrow().let { it.writeFully(this, offset, length); it }
+fun ByteArray.toIoBuffer(
+    offset: Int = 0,
+    length: Int = this.size - offset,
+    pool: ObjectPool<IoBuffer> = IoBuffer.Pool
+): IoBuffer = pool.borrow().let { it.writeFully(this, offset, length); it }
