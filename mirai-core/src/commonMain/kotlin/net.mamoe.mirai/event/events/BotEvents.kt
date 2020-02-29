@@ -114,26 +114,22 @@ sealed class MessageRecallEvent : BotEvent {
      */
     abstract val messageTime: Int // seconds
 
-    data class ByBot(
+    data class GroupRecall(
         override val bot: Bot,
         override val authorId: Long,
         override val messageId: Long,
-        override val messageTime: Int
-    ) : MessageRecallEvent(), BotActiveEvent, CancellableEvent {
-        override val isCancelled: Boolean get() = cancelled
-        private var cancelled: Boolean = false // 无法多继承
-        override fun cancel() {
-            cancelled = true
-        }
-    }
-
-    data class ByOthers(
-        override val bot: Bot,
-        override val authorId: Long,
-        override val messageId: Long,
-        override val messageTime: Int
-    ) : MessageRecallEvent(), BotPassiveEvent, Packet
+        override val messageTime: Int,
+        /**
+         * 操作人. 为 null 是
+         */
+        override val operator: Member?,
+        override val group: Group
+    ) : MessageRecallEvent(), OperableEvent, Packet
 }
+
+@UseExperimental(MiraiExperimentalAPI::class)
+val MessageRecallEvent.GroupRecall.author: Member
+    get() = if (authorId == bot.uin) group.botAsMember else group[authorId]
 
 // endregion
 
