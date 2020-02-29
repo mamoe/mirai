@@ -25,7 +25,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 [mirai-console插件开发快速上手](PluginDocs/ToStart.MD) 
 
 ### 使用
-#### 下载(download)
+#### [下载(download)](https://github.com/mamoe/mirai-console/releases)
 #### 如何启动
 如果是打包好的软件, 双击<br>
 如果是命令行运行, 请注意运行目录, 推荐cd到jar的文件夹下运行, 运行目录与Console的全部配置文件储存位置有关
