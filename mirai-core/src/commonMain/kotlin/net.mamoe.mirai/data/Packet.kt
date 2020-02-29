@@ -31,17 +31,13 @@ object NoPacket : Packet {
  */
 interface MultiPacket<out P : Packet> : Packet, Iterable<P>
 
-class MultiPacketByIterable<out P : Packet>(internal val delegate: Iterable<P>) : MultiPacket<P>,
+open class MultiPacketByIterable<out P : Packet>(internal val delegate: Iterable<P>) : MultiPacket<P>,
     Iterable<P> by delegate {
-    override fun toString(): String {
-        return "MultiPacket"
-    }
+    override fun toString(): String = "MultiPacketByIterable"
 }
 
-class MultiPacketBySequence<out P : Packet>(internal val delegate: Sequence<P>) : MultiPacket<P> {
+open class MultiPacketBySequence<out P : Packet>(internal val delegate: Sequence<P>) : MultiPacket<P> {
     override operator fun iterator(): Iterator<P> = delegate.iterator()
 
-    override fun toString(): String {
-        return "MultiPacket"
-    }
+    override fun toString(): String = "MultiPacketBySequence"
 }
