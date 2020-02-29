@@ -19,8 +19,6 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
-import net.mamoe.mirai.data.GroupInfo
-import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -41,7 +39,7 @@ import kotlin.jvm.JvmStatic
  * @see Contact 联系人
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
-@UseExperimental(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class, LowLevelAPI::class)
 abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
     companion object {
         /**
@@ -151,27 +149,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
             ?: throw NoSuchElementException("No such group $id for bot ${this.uin}")
     }
 
-    /**
-     * 向服务器查询群列表. 返回值前 32 bits 为 uin, 后 32 bits 为 groupCode
-     */
-    abstract suspend fun queryGroupList(): Sequence<Long>
-
-    /**
-     * 向服务器查询群资料. 获得的仅为当前时刻的资料.
-     * 请优先使用 [getGroup] 然后查看群资料.
-     */
-    abstract suspend fun queryGroupInfo(groupCode: Long): GroupInfo
-
-    /**
-     * 向服务器查询群成员列表.
-     * 请优先使用 [getGroup], [Group.members] 查看群成员.
-     *
-     * 这个函数很慢. 请不要频繁使用.
-     *
-     * @see Group.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
-     */
-    abstract suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo>
-
     // endregion
 
     // region network
@@ -263,6 +240,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
      */
     abstract fun close(cause: Throwable? = null)
 
+    @UseExperimental(LowLevelAPI::class)
     final override fun toString(): String = "Bot(${uin})"
 }
 

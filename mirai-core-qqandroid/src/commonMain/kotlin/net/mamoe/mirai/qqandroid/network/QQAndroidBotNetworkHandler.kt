@@ -245,7 +245,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                     bot = bot,
                                     coroutineContext = bot.coroutineContext,
                                     id = troopNum.groupCode,
-                                    groupInfo = bot.queryGroupInfo(troopNum.groupCode).apply {
+                                    groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
                                         this as GroupInfoImpl
 
                                         if (this.delegate.groupName == null) {
@@ -262,7 +262,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                                         this.delegate.groupCode = troopNum.groupCode
                                     },
-                                    members = bot.queryGroupMemberList(troopNum.groupUin, troopNum.groupCode, troopNum.dwGroupOwnerUin)
+                                    members = bot._lowLevelQueryGroupMemberList(
+                                        troopNum.groupUin,
+                                        troopNum.groupCode,
+                                        troopNum.dwGroupOwnerUin
+                                    )
                                 ))
                             )
                         }?.let {

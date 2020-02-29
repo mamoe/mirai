@@ -13,7 +13,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.Group
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -50,19 +50,17 @@ interface MessageSource : Message, MessageMetadata {
     val time: Long
 
     /**
-     * 与这个消息相关的 [QQ] 的 [QQ.id]
-     *
-     * 群消息时为发送人的 id (可能为 bot 自己). 好友消息时为消息发送目标好友的 id (不可能为 bot 自己)
+     * 发送人. 可以为机器人自己
      */
-    val qqId: Long
-
-    @Suppress("unused")
-    @Deprecated("使用 qqId. 此 API 将在不久后删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("this.qqId"))
     val senderId: Long
-        get() = qqId
 
     /**
-     * 群号码, 为 0 时则来自好友消息
+     * 消息发送对象, 可以为一个群的 `uin` (非 `id`)或一个好友, 或机器人自己
+     */
+    val toUin: Long
+
+    /**
+     * 当群消息时为群 id, [Group.id], 好友消息时为 0
      */
     val groupId: Long
 
@@ -71,6 +69,8 @@ interface MessageSource : Message, MessageMetadata {
      */
     override fun toString(): String
 }
+
+interface GroupMessageSource : MessageSource
 
 /**
  * 序列号. 若是机器人发出去的消息, 请先 [确保 sequenceId 可用][MessageSource.ensureSequenceIdAvailable]

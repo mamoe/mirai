@@ -20,6 +20,7 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
@@ -79,10 +80,12 @@ internal class QQImpl(
                     bot.client,
                     id,
                     event.message
-                ) { source = it }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+                ) {
+                    source = it
+                }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
-        return MessageReceipt(source, this)
+        return MessageReceipt(source, this, null)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {
@@ -117,7 +120,14 @@ internal class QQImpl(
                     ImageUploadEvent.Succeed(this@QQImpl, image, it).broadcast()
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
-                    Http.postImage("0x6ff0070", bot.uin, null, imageInput = image.input, inputSize = image.inputSize, uKeyHex = response.uKey.toUHexString(""))
+                    Http.postImage(
+                        "0x6ff0070",
+                        bot.uin,
+                        null,
+                        imageInput = image.input,
+                        inputSize = image.inputSize,
+                        uKeyHex = response.uKey.toUHexString("")
+                    )
                     //HighwayHelper.uploadImage(
                     //    client = bot.client,
                     //    serverIp = response.serverIp[0].toIpV4AddressString(),
@@ -527,7 +537,8 @@ internal class GroupImpl(
 
 
     override operator fun get(id: Long): Member {
-        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("member $id not found in group $uin")
+        return members.delegate.filteringGetOrNull { it.id == id }
+            ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
@@ -544,21 +555,22 @@ internal class GroupImpl(
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
-        lateinit var source: MessageSvc.PbSendMsg.MessageSourceFromSendGroup
+        lateinit var source: MessageSourceFromSendGroup
         bot.network.run {
             val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,
                 id,
                 event.message
-            ) { source = it }.sendAndExpect()
+            ) {
+                source = it
+                source.startWaitingSequenceId(this)
+            }.sendAndExpect()
             check(
                 response is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed: $response" }
         }
 
-        source.startWaitingSequenceId(this)
-
-        return MessageReceipt(source, this)
+        return MessageReceipt(source, this, botAsMember)
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image = try {

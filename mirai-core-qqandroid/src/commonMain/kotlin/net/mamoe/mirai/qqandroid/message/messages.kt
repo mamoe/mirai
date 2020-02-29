@@ -226,6 +226,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
         when (val source = this[QuoteReply].source) {
             is MessageSourceFromServer -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
             is MessageSourceFromMsg -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
+            is MessageSourceFromSend -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
             else -> error("unsupported MessageSource implementation: ${source::class.simpleName}")
         }
     }
@@ -243,6 +244,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
             is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
             is QuoteReplyToSend -> {
                 if (forGroup) {
+                    check(it is QuoteReplyToSend.ToGroup) {
+                        "sending a quote to group suing QuoteReplyToSend.ToFriend"
+                    }
                     if (it.sender is Member) {
                         transformOneMessage(it.createAt())
                     }

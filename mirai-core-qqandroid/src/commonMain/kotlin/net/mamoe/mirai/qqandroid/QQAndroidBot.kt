@@ -14,6 +14,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.utils.io.ByteReadChannel
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.data.FriendInfo
@@ -84,21 +85,28 @@ internal abstract class QQAndroidBotBase constructor(
         return groups.delegate.getOrNull(uin)
     }
 
-    override suspend fun queryGroupList(): Sequence<Long> {
+    @UseExperimental(LowLevelAPI::class)
+    override suspend fun _lowLevelQueryGroupList(): Sequence<Long> {
         return network.run {
             FriendList.GetTroopListSimplify(bot.client)
                 .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
         }.groups.asSequence().map { it.groupUin.shl(32) and it.groupCode }
     }
 
-    override suspend fun queryGroupInfo(groupCode: Long): GroupInfo = network.run {
+    @UseExperimental(LowLevelAPI::class)
+    override suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo = network.run {
         TroopManagement.GetGroupInfo(
             client = bot.client,
             groupCode = groupCode
         ).sendAndExpect<GroupInfoImpl>(retry = 2)
     }
 
-    override suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo> =
+    @UseExperimental(LowLevelAPI::class)
+    override suspend fun _lowLevelQueryGroupMemberList(
+        groupUin: Long,
+        groupCode: Long,
+        ownerId: Long
+    ): Sequence<MemberInfo> =
         network.run {
             var nextUin = 0L
             var sequence = sequenceOf<MemberInfoImpl>()
@@ -125,7 +133,7 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override suspend fun recall(source: MessageSource) {
-        if (source.qqId != uin && source.groupId != 0L) {
+        if (source.senderId != uin && source.groupId != 0L) {
             getGroup(source.groupId).checkBotPermissionOperator()
         }
 
@@ -136,7 +144,7 @@ internal abstract class QQAndroidBotBase constructor(
                 if (source.groupId == 0L) {
                     PbMessageSvc.PbMsgWithDraw.Friend(
                         bot.client,
-                        source.qqId,
+                        source.senderId,
                         source.sequenceId,
                         source.messageRandom,
                         source.time
@@ -144,7 +152,7 @@ internal abstract class QQAndroidBotBase constructor(
                 } else {
                     MessageRecallEvent.GroupRecall(
                         bot,
-                        source.qqId,
+                        source.senderId,
                         source.id,
                         source.time.toInt(),
                         null,
@@ -162,6 +170,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
+    @UseExperimental(LowLevelAPI::class)
     override suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long, time: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
@@ -172,6 +181,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
+    @UseExperimental(LowLevelAPI::class)
     override suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =

@@ -10,9 +10,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import io.ktor.utils.io.core.ByteReadPacket
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
@@ -21,16 +18,16 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.subscribingGetAsync
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendFriend
+import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.message.toRichTextElems
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -45,6 +42,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils._miraiContentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -97,7 +95,7 @@ internal class MessageSvc {
                     syncFlag = syncFlag,
                     //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
                     syncCookie = client.c2cMessageSync.syncCookie
-                        ?: SyncCookie(time = msgTime + client.timeDifference).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
+                        ?: SyncCookie(time = msgTime).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
                     // syncFlag = client.c2cMessageSync.syncFlag,
                     //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
                     //pubaccountCookie = client.c2cMessageSync.pubAccountCookie
@@ -165,7 +163,7 @@ internal class MessageSvc {
                                     bot = bot,
                                     coroutineContext = bot.coroutineContext,
                                     id = Group.calculateGroupCodeByGroupUin(msg.msgHead.fromUin),
-                                    groupInfo = bot.queryGroupInfo(troopNum.groupCode).apply {
+                                    groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
 
                                         this as GroupInfoImpl
 
@@ -183,7 +181,11 @@ internal class MessageSvc {
 
                                         this.delegate.groupCode = troopNum.groupCode
                                     },
-                                    members = bot.queryGroupMemberList(troopNum.groupUin, troopNum.groupCode, troopNum.dwGroupOwnerUin)
+                                    members = bot._lowLevelQueryGroupMemberList(
+                                        troopNum.groupUin,
+                                        troopNum.groupCode,
+                                        troopNum.dwGroupOwnerUin
+                                    )
                                 )
                                 bot.groups.delegate.addLast(newGroup)
                                 return@mapNotNull BotJoinGroupEvent(newGroup)
@@ -198,12 +200,15 @@ internal class MessageSvc {
                                         override val specialTitle: String get() = ""
                                         override val muteTimestamp: Int get() = 0
                                         override val uin: Long get() = msg.msgHead.authUin
-                                        override val nick: String get() = msg.msgHead.authNick.takeIf { it.isNotEmpty() } ?: msg.msgHead.fromNick
+                                        override val nick: String
+                                            get() = msg.msgHead.authNick.takeIf { it.isNotEmpty() }
+                                                ?: msg.msgHead.fromNick
                                     }).also { group.members.delegate.addLast(it) })
                                 }
                             }
                         }
                         166 -> {
+                            println(msg._miraiContentToString())
                             return@mapNotNull when {
                                 msg.msgHead.fromUin == bot.uin -> null
                                 !bot.firstLoginSucceed -> null
@@ -227,8 +232,13 @@ internal class MessageSvc {
 
         override suspend fun QQAndroidBot.handle(packet: Response) {
             when (packet.syncFlagFromServer) {
-                MsgSvc.SyncFlag.STOP,
-                MsgSvc.SyncFlag.START -> return
+                MsgSvc.SyncFlag.STOP -> return
+                MsgSvc.SyncFlag.START -> {
+                    network.run {
+                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendWithoutExpect()
+                    }
+                    return
+                }
 
                 MsgSvc.SyncFlag.CONTINUE -> {
                     network.run {
@@ -266,62 +276,6 @@ internal class MessageSvc {
             }
         }
 
-        internal class MessageSourceFromSendFriend(
-            val messageRandom: Int,
-            override val time: Long,
-            override val qqId: Long,
-            override val groupId: Long,
-            val sequenceId: Int
-        ) : MessageSource {
-            @UseExperimental(ExperimentalCoroutinesApi::class)
-            override val id: Long
-                get() = sequenceId.toLong().shl(32) or
-                        messageRandom.toLong().and(0xFFFFFFFF)
-
-            override suspend fun ensureSequenceIdAvailable() {
-                // nothing to do
-            }
-
-            override fun toString(): String {
-                return ""
-            }
-        }
-
-        internal class MessageSourceFromSendGroup(
-            val messageRandom: Int,
-            override val time: Long,
-            override val qqId: Long,
-            override val groupId: Long// ,
-            // override val sourceMessage: MessageChain
-        ) : MessageSource {
-            private lateinit var sequenceIdDeferred: Deferred<Int>
-
-            @UseExperimental(ExperimentalCoroutinesApi::class)
-            override val id: Long
-                get() = sequenceIdDeferred.getCompleted().toLong().shl(32) or
-                        messageRandom.toLong().and(0xFFFFFFFF)
-
-            @UseExperimental(MiraiExperimentalAPI::class)
-            fun startWaitingSequenceId(coroutineScope: CoroutineScope) {
-                sequenceIdDeferred =
-                    coroutineScope.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(
-                        timeoutMillis = 3000
-                    ) {
-                        if (it.messageRandom == this@MessageSourceFromSendGroup.messageRandom) {
-                            it.sequenceId
-                        } else null
-                    }
-            }
-
-            override suspend fun ensureSequenceIdAvailable() {
-                sequenceIdDeferred.join()
-            }
-
-            override fun toString(): String {
-                return ""
-            }
-        }
-
         inline fun ToFriend(
             client: QQAndroidClient,
             toUin: Long,
@@ -330,10 +284,12 @@ internal class MessageSvc {
         ): OutgoingPacket {
             val source = MessageSourceFromSendFriend(
                 messageRandom = Random.nextInt().absoluteValue,
-                qqId = toUin,
+                senderId = client.uin,
+                toUin = toUin,
                 time = currentTimeSeconds + client.timeDifference,
                 groupId = 0,
-                sequenceId = client.atomicNextMessageSequenceId()
+                sequenceId = client.atomicNextMessageSequenceId(),
+                sourceMessage = message
             )
             sourceCallback(source)
             return ToFriend(client, toUin, message, source)
@@ -379,9 +335,11 @@ internal class MessageSvc {
 
             val source = MessageSourceFromSendGroup(
                 messageRandom = Random.nextInt().absoluteValue,
-                qqId = client.uin,
+                senderId = client.uin,
+                toUin = Group.calculateGroupUinByGroupCode(groupCode),
                 time = currentTimeSeconds + client.timeDifference,
-                groupId = groupCode//,
+                groupId = groupCode,
+                sourceMessage = message//,
                 //   sourceMessage = message
             )
             sourceCallback(source)

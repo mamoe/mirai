@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai
 
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.data.GroupInfo
+import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
@@ -18,6 +21,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  * 使用低级的 API 无法带来任何安全和便捷保障.
  * 仅在某些使用结构化 API 可能影响性能的情况下使用这些低级 API.
  */
+@Experimental
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 annotation class LowLevelAPI
@@ -29,6 +33,31 @@ annotation class LowLevelAPI
 @Suppress("FunctionName", "unused")
 @LowLevelAPI
 interface LowLevelBotAPIAccessor {
+
+    /**
+     * 向服务器查询群列表. 返回值前 32 bits 为 uin, 后 32 bits 为 groupCode
+     */
+    @LowLevelAPI
+    suspend fun _lowLevelQueryGroupList(): Sequence<Long>
+
+    /**
+     * 向服务器查询群资料. 获得的仅为当前时刻的资料.
+     * 请优先使用 [Bot.getGroup] 然后查看群资料.
+     */
+    @LowLevelAPI
+    suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo
+
+    /**
+     * 向服务器查询群成员列表.
+     * 请优先使用 [Bot.getGroup], [Group.members] 查看群成员.
+     *
+     * 这个函数很慢. 请不要频繁使用.
+     *
+     * @see Group.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
+     */
+    @LowLevelAPI
+    suspend fun _lowLevelQueryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo>
+
     /**
      * 撤回一条由机器人发送给好友的消息
      * @param messageId [MessageSource.id]

@@ -5,7 +5,7 @@ import net.mamoe.mirai.Bot
 /**
  * 群资料.
  *
- * 通过 [Bot.queryGroupInfo] 得到
+ * 通过 [Bot._lowLevelQueryGroupInfo] 得到
  */
 interface GroupInfo {
     /**
