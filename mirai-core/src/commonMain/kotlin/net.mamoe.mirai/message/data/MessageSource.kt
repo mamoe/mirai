@@ -45,20 +45,21 @@ interface MessageSource : Message, MessageMetadata {
     suspend fun ensureSequenceIdAvailable()
 
     /**
-     * 发送时间, 单位为秒
+     * 发送时间, 单位为秒. 撤回好友消息时可能需要
      */
     val time: Long
 
     /**
      * 与这个消息相关的 [QQ] 的 [QQ.id]
      *
-     * 群消息时为发送人的 id. 好友消息时为消息发送目标好友的 id
+     * 群消息时为发送人的 id (可能为 bot 自己). 好友消息时为消息发送目标好友的 id (不可能为 bot 自己)
      */
     val qqId: Long
 
-    @Suppress("unused") // TODO: 2020/2/29 0.25: 删除 `MessageSource.senderId`
-    @Deprecated("使用 qqId. 此 API 将在 0.25 删除", level = DeprecationLevel.HIDDEN, replaceWith = ReplaceWith("this.qqId"))
+    @Suppress("unused")
+    @Deprecated("使用 qqId. 此 API 将在不久后删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("this.qqId"))
     val senderId: Long
+        get() = qqId
 
     /**
      * 群号码, 为 0 时则来自好友消息
