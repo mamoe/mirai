@@ -135,7 +135,7 @@ private fun Any.contentToStringReflectively(prefix: String, filter: ((name: Stri
                 .distinctBy { it.name }
                 .filterNot { it.name.contains("$") || it.name == "Companion" || it.isConst || it.name == "serialVersionUID" }
                 .mapNotNull {
-                    val value = it.getValueAgainstPermission(this)
+                    val value = it.getValueAgainstPermission(this) ?: return@mapNotNull null
                     if (filter != null) {
                         if (!filter(it.name, value))
                             return@mapNotNull it.name to value
