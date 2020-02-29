@@ -15,10 +15,11 @@ package net.mamoe.mirai.utils
 
 
 import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.core.Output
+import io.ktor.utils.io.core.writeFully
+import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.readAvailable
 import kotlinx.io.OutputStream
-import kotlinx.io.core.Output
-import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName

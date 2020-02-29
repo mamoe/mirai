@@ -11,8 +11,6 @@
 
 package net.mamoe.mirai.utils.io
 
-import kotlinx.io.core.IoBuffer
-import kotlinx.io.pool.ObjectPool
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -202,13 +200,3 @@ fun ByteArray.toInt(): Int =
     (this[0].toInt().and(255) shl 24) + (this[1].toInt().and(255) shl 16) + (this[2].toInt().and(255) shl 8) + (this[3].toInt().and(
         255
     ) shl 0)
-
-/**
- * 从 [IoBuffer.Pool] [borrow][ObjectPool.borrow] 一个 [IoBuffer] 然后将 [this] 写入.
- * 注意回收 ([ObjectPool.recycle])
- */
-fun ByteArray.toIoBuffer(
-    offset: Int = 0,
-    length: Int = this.size - offset,
-    pool: ObjectPool<IoBuffer> = IoBuffer.Pool
-): IoBuffer = pool.borrow().let { it.writeFully(this, offset, length); it }

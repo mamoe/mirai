@@ -11,9 +11,9 @@
 
 package net.mamoe.mirai.message
 
+import io.ktor.utils.io.core.Input
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.OverFileSizeMaxException

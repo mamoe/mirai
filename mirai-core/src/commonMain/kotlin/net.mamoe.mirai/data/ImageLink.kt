@@ -10,9 +10,8 @@
 package net.mamoe.mirai.data
 
 import io.ktor.client.request.get
-import io.ktor.util.KtorExperimentalAPI
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.readBytes
+import io.ktor.utils.io.core.ByteReadPacket
+import io.ktor.utils.io.core.readBytes
 import net.mamoe.mirai.utils.Http
 
 interface ImageLink {

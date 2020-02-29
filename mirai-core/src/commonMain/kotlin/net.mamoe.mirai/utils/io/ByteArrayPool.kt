@@ -11,8 +11,7 @@
 
 package net.mamoe.mirai.utils.io
 
-import kotlinx.io.pool.DefaultPool
-import kotlinx.io.pool.ObjectPool
+import io.ktor.utils.io.pool.DefaultPool
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**

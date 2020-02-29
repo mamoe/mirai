@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.toByteArray
-import kotlinx.io.core.writeFully
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.qqandroid.network.protocol.LoginType
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.utils.currentTimeMillis

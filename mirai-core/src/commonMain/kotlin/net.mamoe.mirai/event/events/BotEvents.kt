@@ -21,6 +21,7 @@ import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
@@ -56,7 +57,8 @@ sealed class BotOfflineEvent : BotEvent {
     /**
      * 被挤下线
      */
-    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet, BotPassiveEvent
+    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet,
+        BotPassiveEvent
 
     /**
      * 被服务器断开或因网络问题而掉线
@@ -90,6 +92,47 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
         override val target: QQ,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
+}
+
+/**
+ * 消息撤回事件. 可是任意消息被任意人撤回.
+ */
+sealed class MessageRecallEvent : BotEvent {
+    /**
+     * 消息原发送人
+     */
+    abstract val authorId: Long
+
+    /**
+     * 消息 id.
+     * @see MessageSource.id
+     */
+    abstract val messageId: Long
+
+    /**
+     * 原发送时间
+     */
+    abstract val messageTime: Int // seconds
+
+    data class ByBot(
+        override val bot: Bot,
+        override val authorId: Long,
+        override val messageId: Long,
+        override val messageTime: Int
+    ) : MessageRecallEvent(), BotActiveEvent, CancellableEvent {
+        override val isCancelled: Boolean get() = cancelled
+        private var cancelled: Boolean = false // 无法多继承
+        override fun cancel() {
+            cancelled = true
+        }
+    }
+
+    data class ByOthers(
+        override val bot: Bot,
+        override val authorId: Long,
+        override val messageId: Long,
+        override val messageTime: Int
+    ) : MessageRecallEvent(), BotPassiveEvent, Packet
 }
 
 // endregion

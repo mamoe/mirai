@@ -12,7 +12,10 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.BytePacketBuilder
+import io.ktor.utils.io.core.ByteReadPacket
+import io.ktor.utils.io.core.readBytes
+import io.ktor.utils.io.core.writeFully
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy

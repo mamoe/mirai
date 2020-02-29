@@ -11,11 +11,11 @@
 
 package test
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
-import kotlinx.io.core.readAvailable
-import kotlinx.io.core.use
-import kotlinx.io.pool.useInstance
+import io.ktor.utils.io.core.ByteReadPacket
+import io.ktor.utils.io.core.Input
+import io.ktor.utils.io.core.readAvailable
+import io.ktor.utils.io.core.use
+import io.ktor.utils.io.pool.useInstance
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch

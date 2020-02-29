@@ -13,7 +13,7 @@ import android.annotation.SuppressLint
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault

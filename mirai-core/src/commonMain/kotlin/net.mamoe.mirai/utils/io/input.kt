@@ -13,11 +13,11 @@
 
 package net.mamoe.mirai.utils.io
 
+import io.ktor.utils.io.charsets.Charset
+import io.ktor.utils.io.charsets.Charsets
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.pool.useInstance
 import kotlinx.io.OutputStream
-import kotlinx.io.charsets.Charset
-import kotlinx.io.charsets.Charsets
-import kotlinx.io.core.*
-import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass

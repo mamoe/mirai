@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
-import kotlinx.io.core.BytePacketBuilder
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.writeFully
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.cryptor.ECDHKeyPair

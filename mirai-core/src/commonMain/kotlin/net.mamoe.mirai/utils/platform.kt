@@ -12,7 +12,7 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.toByteArray
 
 /**
  * 时间戳

@@ -9,11 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.toByteArray
-import kotlinx.serialization.toUtf8Bytes
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.Packet
@@ -379,7 +375,7 @@ internal class TroopManagement {
         OutgoingPacketFactory<EditGroupNametag.Response>("friendlist.ModifyGroupCardReq") {
         object Response : Packet
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): EditGroupNametag.Response {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             return Response
         }
 

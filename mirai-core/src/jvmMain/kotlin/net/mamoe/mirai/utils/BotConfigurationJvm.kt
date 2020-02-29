@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.core.use
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -20,7 +21,6 @@ import kotlinx.coroutines.io.writeFully
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import java.awt.Image

@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.utils.io
 
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Closeable
+import io.ktor.utils.io.core.ByteReadPacket
+import io.ktor.utils.io.core.Closeable
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**

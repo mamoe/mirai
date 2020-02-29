@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.message
 
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody

@@ -12,9 +12,9 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.core.ByteReadPacket
+import io.ktor.utils.io.core.Input
 import kotlinx.io.InputStream
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ

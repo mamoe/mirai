@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai
 
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.toByteArray
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.md5
 import kotlin.annotation.AnnotationTarget.*

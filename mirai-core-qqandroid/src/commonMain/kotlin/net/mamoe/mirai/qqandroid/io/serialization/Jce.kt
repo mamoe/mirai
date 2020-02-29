@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
-import kotlinx.io.charsets.Charset
-import kotlinx.io.core.*
+import io.ktor.utils.io.charsets.Charset
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.EmptyModule

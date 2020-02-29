@@ -10,14 +10,16 @@
 package net.mamoe.mirai.utils.io
 
 import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.core.ByteReadPacket
+import io.ktor.utils.io.core.Input
+import io.ktor.utils.io.core.isNotEmpty
+import io.ktor.utils.io.core.readAvailable
+import io.ktor.utils.io.pool.useInstance
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.io.InputStream
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
-import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 

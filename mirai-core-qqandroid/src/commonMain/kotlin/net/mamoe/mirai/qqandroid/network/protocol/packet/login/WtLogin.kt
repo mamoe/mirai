@@ -11,7 +11,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 
 import io.ktor.util.InternalAPI
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.*
@@ -282,7 +282,7 @@ internal class WtLogin {
                 }
 
                 class Picture(
-                    val data: IoBuffer,
+                    val data: ByteArray,
                     val sign: ByteArray
                 ) : Captcha() {
                     override fun toString(): String = "LoginPacketResponse.Captcha.Picture"
@@ -378,11 +378,8 @@ internal class WtLogin {
                 imageData.discardExact(2)//image Length
                 val sign = imageData.readBytes(signInfoLength.toInt())
 
-
-                val buffer = IoBuffer.Pool.borrow()
-                imageData.readAvailable(buffer)
                 return LoginPacketResponse.Captcha.Picture(
-                    data = buffer,
+                    data = imageData.readBytes(),
                     sign = sign
                 )
                 // } else error("UNKNOWN CAPTCHA QUESTION: ${question.toUHexString()}, tlvMap=" + tlvMap.contentToString())
