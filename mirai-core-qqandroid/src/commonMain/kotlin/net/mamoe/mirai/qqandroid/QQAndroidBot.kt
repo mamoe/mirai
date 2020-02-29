@@ -96,26 +96,27 @@ internal abstract class QQAndroidBotBase constructor(
         ).sendAndExpect<GroupInfoImpl>(retry = 2)
     }
 
-    override suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo> = network.run {
-        var nextUin = 0L
-        var sequence = sequenceOf<MemberInfoImpl>()
-        while (true) {
-            val data = FriendList.GetTroopMemberList(
-                client = bot.client,
-                targetGroupUin = groupUin,
-                targetGroupCode = groupCode,
-                nextUin = nextUin
-            ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
-            sequence += data.members.asSequence().map { troopMemberInfo ->
-                MemberInfoImpl(troopMemberInfo, ownerId)
+    override suspend fun queryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo> =
+        network.run {
+            var nextUin = 0L
+            var sequence = sequenceOf<MemberInfoImpl>()
+            while (true) {
+                val data = FriendList.GetTroopMemberList(
+                    client = bot.client,
+                    targetGroupUin = groupUin,
+                    targetGroupCode = groupCode,
+                    nextUin = nextUin
+                ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
+                sequence += data.members.asSequence().map { troopMemberInfo ->
+                    MemberInfoImpl(troopMemberInfo, ownerId)
+                }
+                nextUin = data.nextUin
+                if (nextUin == 0L) {
+                    break
+                }
             }
-            nextUin = data.nextUin
-            if (nextUin == 0L) {
-                break
-            }
+            return sequence
         }
-        return sequence
-    }
 
     override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
         TODO("not implemented")
@@ -137,26 +138,24 @@ internal abstract class QQAndroidBotBase constructor(
                         source.sequenceId,
                         source.messageRandom,
                         source.time
-                    )
-                        .sendAndExpect()
+                    ).sendAndExpect()
                 } else {
                     PbMessageSvc.PbMsgWithDraw.Group(
                         bot.client,
                         source.groupId,
                         source.sequenceId,
                         source.messageRandom
-                    )
-                        .sendAndExpect()
+                    ).sendAndExpect()
                 }
 
             check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }
         }
     }
 
-    override suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long) {
+    override suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long, time: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
-                PbMessageSvc.PbMsgWithDraw.Friend(client, friendId, (messageId shr 32).toInt(), messageId.toInt(), 0)
+                PbMessageSvc.PbMsgWithDraw.Friend(client, friendId, (messageId shr 32).toInt(), messageId.toInt(), time)
                     .sendAndExpect()
 
             check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${messageId}: $response" }

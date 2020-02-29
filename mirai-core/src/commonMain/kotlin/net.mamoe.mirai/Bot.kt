@@ -42,7 +42,7 @@ import kotlin.jvm.JvmStatic
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
 @UseExperimental(MiraiInternalAPI::class)
-abstract class Bot : CoroutineScope {
+abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
     companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.
@@ -214,21 +214,12 @@ abstract class Bot : CoroutineScope {
      * @param source 消息源. 可从 [MessageReceipt.source] 获得, 或从消息事件中的 [MessageChain] 获得.
      *
      * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+     *
      * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
+     * @see _lowLevelRecallFriendMessage 低级 API
+     * @see _lowLevelRecallGroupMessage 低级 API
      */
     abstract suspend fun recall(source: MessageSource)
-
-    /**
-     * 撤回一条由机器人发送给好友的消息
-     */
-    @MiraiExperimentalAPI
-    abstract suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long)
-
-    /**
-     * 撤回一条群里的消息. 可以是机器人发送也可以是其他群员发送.
-     */
-    @MiraiExperimentalAPI
-    abstract suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long)
 
     /**
      * 获取图片下载链接
