@@ -12,7 +12,10 @@ import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
 import kotlinx.coroutines.*
+import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.close
+import kotlinx.coroutines.io.jvm.nio.copyTo
+import kotlinx.coroutines.io.reader
 import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
@@ -21,17 +24,19 @@ import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.createCharImg
-import net.mamoe.mirai.utils.writeChannel
+import java.awt.Image
+import java.awt.image.BufferedImage
 import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
+import java.io.RandomAccessFile
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 import javax.imageio.ImageIO
 import kotlin.concurrent.thread
+import kotlin.coroutines.CoroutineContext
 import kotlin.system.exitProcess
 
 /**
@@ -114,9 +119,10 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         }
     }
 
+    @Volatile
     var requesting = false
     var requestResult: String? = null
-    override suspend fun requestInput(question: String): String {
+    override suspend fun requestInput(): String {
         requesting = true
         while (requesting) {
             delay(100)//不然会卡死 迷惑吧
@@ -167,7 +173,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     }
                 }
                 pushLog(0, "$toLog[Login Solver]请输验证码. ${tempFile.absolutePath}")
-                return requestInput("[Login Solver]请输入 4 位字母验证码. 若要更换验证码, 请直接回车")!!
+                return requestInput()!!
                     .takeUnless { it.isEmpty() || it.length != 4 }
                     .also {
                         pushLog(0, "[Login Solver]正在提交[$it]中...")
@@ -179,7 +185,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                 pushLog(0, "[Login Solver]请在任意浏览器中打开以下链接并完成验证码. ")
                 pushLog(0, "[Login Solver]完成后请输入任意字符 ")
                 pushLog(0, url)
-                return requestInput("[Login Solver]完成后请输入任意字符").also {
+                return requestInput().also {
                     pushLog(0, "[Login Solver]正在提交中")
                 }
             }
@@ -191,7 +197,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                 pushLog(0, "[Login Solver]请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
                 pushLog(0, "[Login Solver]这步操作将在后续的版本中优化")
                 pushLog(0, url)
-                return requestInput("[Login Solver]完成后请输入任意字符").also {
+                return requestInput().also {
                     pushLog(0, "[Login Solver]正在提交中...")
                 }
             }
@@ -660,3 +666,69 @@ class LimitLinkedQueue<T>(
         return super.push(e)
     }
 }
+
+/**
+ * @author NaturalHG
+ */
+private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Double = 0.95): String {
+    val newHeight = (this.height * (outputWidth.toDouble() / this.width)).toInt()
+    val tmp = this.getScaledInstance(outputWidth, newHeight, Image.SCALE_SMOOTH)
+    val image = BufferedImage(outputWidth, newHeight, BufferedImage.TYPE_INT_ARGB)
+    val g2d = image.createGraphics()
+    g2d.drawImage(tmp, 0, 0, null)
+    fun gray(rgb: Int): Int {
+        val r = rgb and 0xff0000 shr 16
+        val g = rgb and 0x00ff00 shr 8
+        val b = rgb and 0x0000ff
+        return (r * 30 + g * 59 + b * 11 + 50) / 100
+    }
+
+    fun grayCompare(g1: Int, g2: Int): Boolean =
+        kotlin.math.min(g1, g2).toDouble() / kotlin.math.max(g1, g2) >= ignoreRate
+
+    val background = gray(image.getRGB(0, 0))
+
+    return buildString(capacity = height) {
+
+        val lines = mutableListOf<StringBuilder>()
+
+        var minXPos = outputWidth
+        var maxXPos = 0
+
+        for (y in 0 until image.height) {
+            val builderLine = StringBuilder()
+            for (x in 0 until image.width) {
+                val gray = gray(image.getRGB(x, y))
+                if (grayCompare(gray, background)) {
+                    builderLine.append(" ")
+                } else {
+                    builderLine.append("#")
+                    if (x < minXPos) {
+                        minXPos = x
+                    }
+                    if (x > maxXPos) {
+                        maxXPos = x
+                    }
+                }
+            }
+            if (builderLine.toString().isBlank()) {
+                continue
+            }
+            lines.add(builderLine)
+        }
+        for (line in lines) {
+            append(line.substring(minXPos, maxXPos)).append("\n")
+        }
+    }
+}
+
+// Copied from Ktor CIO
+private fun File.writeChannel(
+    coroutineContext: CoroutineContext = Dispatchers.IO
+): ByteWriteChannel = GlobalScope.reader(CoroutineName("file-writer") + coroutineContext, autoFlush = true) {
+    @Suppress("BlockingMethodInNonBlockingContext")
+    RandomAccessFile(this@writeChannel, "rw").use { file ->
+        val copied = channel.copyTo(file.channel)
+        file.setLength(copied) // truncate tail that could remain from the previously written data
+    }
+}.channel

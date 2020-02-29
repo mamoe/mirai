@@ -54,9 +54,7 @@ interface MiraiConsoleUI {
      * 这个Input 不 等于 Command
      *
      */
-    suspend fun requestInput(
-        question: String
-    ): String
+    suspend fun requestInput(): String
 
 
     /**
