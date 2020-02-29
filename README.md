@@ -1,6 +1,7 @@
 <div align="center">
    <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
 
+
    <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
 
 ----
@@ -30,26 +31,36 @@ Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Ap
 
 加入 Gitter, 或加入 QQ 群: 655057127
 
+
+
 ## 开始使用Mirai
 
 Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-core，mirai-japt, mirai-api-http, mirai-console等核心模块进行特性的开发。
 
 ### 开发者
+
 #### 以编写机器人逻辑为主
 
 - 需了解 `Java` 或 `Kotlin`, 使用 [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 直接进行插件逻辑编写并与其他插件开发者合作共享
+
+- 假如你倾向其他语言开发，可以通过了解 [mirai-api-http](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入，欢迎开发不同平台的mirai-sdk
+
+  
 
 #### 使用Mirai为第三方库
 
 - 假如你倾向使用Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
 - 假如你想要试用Kotlin，希望一份较详细的起步教程，请参阅[Mirai Guide - Getting Started](/docs/guide_getting_started.md)
-- 假如你倾向Java作为开发语言，请参阅[mirai-japt](/mirai-japt/README.md)
-- 假如你倾向其他语言开发，可以通过了解 [mirai-api-http](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入，欢迎开发不同平台的mirai-sdk
+- 假如你倾向Java作为开发语言，请参阅[mirai-japt](https://github.com/mamoe/mirai-japt)
 - 此外，你还可以在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
+
+
 
 ### 使用者
 
 - [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, **全平台可运行(UI版, Unix版, Android版, Web版)** **本模块正在完善**
+
+
 
 ### 我是其他平台的使用者
 
@@ -58,10 +69,14 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 - 酷Q的插件可以在 `Mirai` 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
 - 使用 `酷Q HTTPAPI` 的插件将可以在`mirai`中加载，`Mirai-CQ-Adapter` 正在计划中
 
+
+
 ## 更新日志
 
 * 在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
 * 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
+
+
 
 ## 模块
 
@@ -87,7 +102,10 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 - 群管功能：群员列表，禁言
   （目前不再更新此协议，请关注上文的安卓协议）
 
+
+
 ## 加入开发
+
 ### 基于mirai的项目-如其他语言的SDK, 功能的拓展(无排名)
 
 - [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
@@ -101,12 +119,15 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
+
+
 ## 鸣谢
 
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
 
 ### 第三方类库(无排名)
+
 - [kotlin-stdlib](https://github.com/JetBrains/kotlin)
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
@@ -122,6 +143,8 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 - [fastjson](https://github.com/alibaba/fastjson)
 - [toml4j](https://github.com/mwanji/toml4j)
 - [snakeyaml](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
+
+
 
 ## 许可证
 

@@ -1,8 +1,8 @@
 # Mirai Guide - Subscribe Events
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-21```，对应版本```0.17.0```
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-29```，对应版本```0.23.0```
 
-本页面采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](mirai-japt/README.md)
+本页面采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](https://github.com/mamoe/mirai-japt)
 
 本页面是[Mirai Guide - Getting Started](/docs/guide_getting_started.md)的后续Guide
 

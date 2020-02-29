@@ -1,12 +1,12 @@
 # Mirai Guide - Quick Start
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-20```，对应版本```0.17.0```
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-29```，对应版本```0.23.0```
 
 本文适用于对kotlin较熟悉的开发者
 
 **若你希望一份更为基础且详细的guide**, 请参阅: [mirai-guide-getting-started](guide_getting_started.md)
 
-**若你希望使用 Java 开发**, 请参阅: [mirai-japt](/mirai-japt/README.md)
+**若你希望使用 Java 开发**, 请参阅: [mirai-japt](https://github.com/mamoe/mirai-japt)
 
 ## Build Requirements
 
@@ -25,7 +25,7 @@
 
 **mirai-core 为独立设计, 可以作为库内置于任意 Java(JVM)/Android 项目中使用.**
 
-请将 `VERSION` 替换为最新的版本(如 `0.15.0`):
+请将 `VERSION` 替换为最新的版本(如 `0.23.0`):
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 **Mirai 目前还处于实验性阶段, 我们无法保证任何稳定性, API 也可能会随时修改.**
 
@@ -47,7 +47,7 @@ Kotlin 在 Maven 上只支持 JVM 平台.
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-qqandroid-jvm</artifactId>
-        <version>0.15.1</version> <!-- 替换版本为最新版本 -->
+        <version>0.23.0</version> <!-- 替换版本为最新版本 -->
     </dependency>
 </dependencies>
 ```

@@ -1,22 +1,17 @@
 # Mirai Guide - Getting Started
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-20```，对应版本```0.17.0```
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-29```，对应版本```0.23.0```
 
 假如仅仅使用Mirai，不需要对整个项目进行Clone，只需在项目内添加Gradle Dependency或使用即可。
 
 下面介绍详细的入门步骤。
 
-本页采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](mirai-japt/README.md)
+本页采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](https://github.com/mamoe/mirai-japt)
 
-## Use Console
 
-使用mirai-console，以插件形式对服务器功能进行管理，启动无需任何IDE。
 
-**由于mirai-console还没有开发完成，暂时不提供入门**
-
-## Use Loader
-
-通过编写Kotlin程序启动mirai-core，并定义你的Mirai Bot行为。
+## 起步步骤
+通过编写Kotlin程序，以第三方库的形式调用```mirai-core```，并定义你的Mirai Bot行为。
 
 假如已经对Gradle有一定了解，可跳过1，2
 
@@ -59,7 +54,7 @@ JDK要求6以上
 
   ```groovy
   dependencies {
-      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.17.0'//此处版本应替换为当前最新
+      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.23.0'//此处版本应替换为当前最新
       implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
       testCompile group: 'junit', name: 'junit', version: '4.12'
   }
@@ -125,7 +120,7 @@ suspend fun main() {
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-qqandroid-jvm</artifactId>
-        <version>0.17.0</version> <!-- 替换版本为最新版本 -->
+        <version>0.23.0</version> <!-- 替换版本为最新版本 -->
     </dependency>
 </dependencies>
 ```
