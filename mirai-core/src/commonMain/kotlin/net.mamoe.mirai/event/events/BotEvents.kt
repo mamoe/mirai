@@ -124,7 +124,7 @@ sealed class MessageRecallEvent : BotEvent {
          */
         override val operator: Member?,
         override val group: Group
-    ) : MessageRecallEvent(), OperableEvent, Packet
+    ) : MessageRecallEvent(), GroupOperableEvent, Packet
 }
 
 @UseExperimental(MiraiExperimentalAPI::class)
@@ -254,7 +254,7 @@ data class GroupEntranceAnnouncementChangeEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<String>, Packet, OperableEvent
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent
 
 
 /**
@@ -268,7 +268,7 @@ data class GroupMuteAllEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet, OperableEvent
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
 
 
 /**
@@ -282,7 +282,7 @@ data class GroupAllowAnonymousChatEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet, OperableEvent
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
 
 
 /**
@@ -306,7 +306,7 @@ data class GroupAllowMemberInviteEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet, OperableEvent
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
 
 
 // endregion
@@ -334,7 +334,7 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
          * 操作人. 为 null 则是机器人操作
          */
         override val operator: Member?
-    ) : MemberLeaveEvent(), Packet, OperableEvent {
+    ) : MemberLeaveEvent(), Packet, GroupOperableEvent {
         override fun toString(): String {
             return "MemberLeaveEvent.Kick(member=$member, operator=$operator)"
         }
@@ -374,7 +374,7 @@ data class MemberCardChangeEvent(
      * 操作人. 为 null 时则是机器人操作. 可能与 [member] 引用相同, 此时为群员自己修改.
      */
     override val operator: Member?
-) : GroupMemberEvent, OperableEvent
+) : GroupMemberEvent, GroupOperableEvent
 
 /**
  * 群头衔改动. 一定为群主操作
@@ -398,7 +398,7 @@ data class MemberSpecialTitleChangeEvent(
      * 为 null 时则是机器人操作.
      */
     override val operator: Member?
-) : GroupMemberEvent, OperableEvent
+) : GroupMemberEvent, GroupOperableEvent
 
 // endregion
 
@@ -429,7 +429,7 @@ data class MemberMuteEvent(
      * 操作人. 为 null 则为机器人操作
      */
     override val operator: Member?
-) : GroupMemberEvent, Packet, OperableEvent
+) : GroupMemberEvent, Packet, GroupOperableEvent
 
 /**
  * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
@@ -440,7 +440,7 @@ data class MemberUnmuteEvent(
      * 操作人. 为 null 则为机器人操作
      */
     override val operator: Member?
-) : GroupMemberEvent, Packet, OperableEvent
+) : GroupMemberEvent, Packet, GroupOperableEvent
 
 // endregion
 
