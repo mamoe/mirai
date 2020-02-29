@@ -29,8 +29,8 @@ object MiraiConsole {
     /**
      * 发布的版本号 统一修改位置
      */
-    const val version = "0.1.0"
-    const val coreVersion = "v0.18.0"
+    const val version = "0.3.1"
+    const val coreVersion = "v0.23.0"
     const val build = "Alpha"
 
 
