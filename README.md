@@ -39,21 +39,22 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 ### 开发者
 
-#### 以编写机器人逻辑为主
+了解 mirai 架构： [Wiki](https://github.com/mamoe/mirai/wiki/Home) 
 
-- 需了解 `Java` 或 `Kotlin`, 使用 [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 直接进行插件逻辑编写并与其他插件开发者合作共享
+#### 使用 mirai 作为服务器，为 mirai 开发插件
 
-- 假如你倾向其他语言开发，可以通过了解 [mirai-api-http](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入，欢迎开发不同平台的mirai-sdk
+- （mirai 官方）`Java` 或 `Kotlin`： 为 [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 直接编写插件并与其他插件开发者合作共享
+- （来自社区）C, C++ 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
+- （来自社区）Python: [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
+- （来自社区）JavaScript(NodeJS) [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
+- （mirai 官方）其他任意语言： [mirai HTTP 接口](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入
 
-  
 
-#### 使用Mirai为第三方库
+#### 使用 mirai 为第三方依赖库引入项目
 
-- 假如你倾向使用Kotlin及包管理工具，请参阅[Mirai Guide - Quick Start](/docs/guide_quick_start.md)
-- 假如你想要试用Kotlin，希望一份较详细的起步教程，请参阅[Mirai Guide - Getting Started](/docs/guide_getting_started.md)
-- 假如你倾向Java作为开发语言，请参阅[mirai-japt](https://github.com/mamoe/mirai-japt)
-- 此外，你还可以在 [Wiki](https://github.com/mamoe/mirai/wiki/Home) 中查看各类帮助，**如 API 示例**。
-
+- Kotlin 简略版： [Mirai Guide - Quick Start](/docs/guide_quick_start.md)
+- Kotlin 新手版： [Mirai Guide - Getting Started](/docs/guide_getting_started.md)
+- Java： [mirai-japt](https://github.com/mamoe/mirai-japt)
 
 
 ### 使用者
@@ -105,12 +106,6 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 
 
 ## 加入开发
-
-### 基于mirai的项目-如其他语言的SDK, 功能的拓展(无排名)
-
-- [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
-- [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
-- [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 `Mirai` 的开发。  
