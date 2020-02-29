@@ -9,7 +9,7 @@
 
 ### 我没有学习过任何与编程相关的知识或我没有学过这两种语言
 你有两个选择，学习Java或者Kotlin<br> 
-学习Java的好处: 学习速度相对较快, 学习资料多<br> 
+学习Java/Kotlin的好处: 学习速度相对较快, 学习资料多<br> 
 学习Kotlin的好处: mirai源开发语言为kotlin, 学习了kotlin可以顺便读懂mirai及其分支项目, 更容易写出更高质量的插件<br> 
 
 方法1: 认真读书<br> 
@@ -66,6 +66,7 @@ IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后�
 <br>
 
 ### 我要如何开始
+**此处使用IDEA作为演示IDE**
 
 
 
