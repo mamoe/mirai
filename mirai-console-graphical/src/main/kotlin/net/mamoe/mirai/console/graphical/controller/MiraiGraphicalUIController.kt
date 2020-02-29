@@ -59,7 +59,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         }
     }
 
-    override suspend fun requestInput(question: String): String {
+    override suspend fun requestInput(): String {
         val model = VerificationCodeModel()
         find<VerificationCodeFragment>(Scope(model)).openModal(
             modality = Modality.APPLICATION_MODAL,
