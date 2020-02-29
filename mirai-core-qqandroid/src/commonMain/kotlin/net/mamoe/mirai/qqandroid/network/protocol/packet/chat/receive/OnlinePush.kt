@@ -349,7 +349,9 @@ internal class OnlinePush {
                                                     } else MessageRecallEvent.GroupRecall(
                                                         bot,
                                                         meta.authorUin,
-                                                        meta.seq.toLong().shl(32) or meta.msgRandom.toLong(),
+                                                        meta.seq.toLong().shl(32) or meta.msgRandom.toLong().and(
+                                                            0xffffffff
+                                                        ),
                                                         meta.time,
                                                         group.get(recallReminder.uin),
                                                         group
@@ -387,12 +389,21 @@ internal class OnlinePush {
                                     }
                                 }
                             }
-                            528 -> {
-                                bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
-                                // val content = msgInfo.vMsg.loadAs(OnlinePushPack.MsgType0x210.serializer())
-                                // println(content.contentToString())
-                                return@flatMap sequenceOf()
-                            }
+
+                            /* 528 -> {
+                                 val notifyMsgBody = msgInfo.vMsg.loadAs(Oidb0x858.NotifyMsgBody.serializer())
+                                 notifyMsgBody.optMsgRecallReminder?.let { messageRecallReminder ->
+                                     return@flatMap messageRecallReminder.recalledMsgList.asSequence().map {
+                                         MessageRecallEvent.FriendRecall(
+                                             bot,
+                                             it.seq.toLong().shl(32) or it.msgRandom.toLong().and(0xffffffff),
+                                             it.time,
+                                             messageRecallReminder.uin
+                                         )
+                                     }
+                                 }
+                                 return@flatMap sequenceOf()
+                             }*/
                             else -> {
                                 bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
                                 return@flatMap sequenceOf()
