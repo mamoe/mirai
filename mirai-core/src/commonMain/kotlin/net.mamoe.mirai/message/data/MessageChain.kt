@@ -9,12 +9,13 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("unused")
+@file:Suppress("unused", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.NullMessageChain.equals
 import net.mamoe.mirai.message.data.NullMessageChain.toString
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -32,6 +33,8 @@ import kotlin.reflect.KProperty
  * @see buildMessageChain 构造一个 [MessageChain]
  * @see toChain 将单个 [Message] 转换为 [MessageChain]
  * @see asMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
+ *
+ * @see foreachContent 遍历内容
  *
  * @see orNull 属性委托扩展
  * @see orElse 属性委托扩展
@@ -56,6 +59,18 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
     fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
+
+    /**
+     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage].
+     * 仅供 `Java` 使用
+     */
+    @JsName("forEachContent")
+    @JvmName("forEachContent")
+    @Suppress("FunctionName")
+    @MiraiInternalAPI
+    fun `__forEachContent for Java__`(block: (Message) -> Unit) {
+        this.foreachContent(block)
+    }
 }
 
 // region accessors
@@ -64,16 +79,8 @@ interface MessageChain : Message, Iterable<SingleMessage> {
  * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage]
  */
 inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
-    var last: Message? = null
-    this.forEach { message: Message ->
-        if (message is At) { // 筛除因 QuoteReply 导致的多余的 At
-            if (last != null || last !is QuoteReply) {
-                block(message)
-            }
-        } else if (message is MessageContent) {
-            block(message)
-        }
-        last = message
+    this.forEach {
+        if (it !is MessageMetadata) block(it)
     }
 }
 
@@ -138,6 +145,7 @@ fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(k
  * val at: At by message
  * val image: Image by message
  */
+@JvmSynthetic
 inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T = this.first()
 
 /**
@@ -161,6 +169,7 @@ inline class OrNullDelegate<out R : Message?>(private val value: Any?) {
  * @see orNull 提供一个不存在则 null 的委托
  * @see orElse 提供一个不存在则使用默认值的委托
  */
+@JvmSynthetic
 inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> = OrNullDelegate(this.firstOrNull<T>())
 
 /**
@@ -175,6 +184,7 @@ inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> = OrN
  * ```
  * @see orNull 提供一个不存在则 null 的委托
  */
+@JvmSynthetic
 inline fun <reified T : Message?> MessageChain.orElse(
     lazyDefault: () -> T
 ): OrNullDelegate<T> =
@@ -184,87 +194,60 @@ inline fun <reified T : Message?> MessageChain.orElse(
 
 
 // region converters
-
-/**
- * 返回 [EmptyMessageChain]
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("FunctionName")
-fun MessageChain(): MessageChain = EmptyMessageChain
-
-/**
- * 构造 [MessageChain]
- * 若仅提供一个参数, 请考虑使用 [Message.toChain] 以优化性能
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("FunctionName")
-fun MessageChain(vararg messages: Message): MessageChain =
-    if (messages.isEmpty()) EmptyMessageChain
-    else MessageChainImplBySequence(messages.asSequence().flatten())
-
-/**
- * 构造 [MessageChain] 的快速途径 (无 [Array] 创建)
- * 若仅提供一个参数, 请考虑使用 [Message.toChain] 以优化性能
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("FunctionName")
-fun MessageChain(message: Message): MessageChain =
-    when (message) {
-        is SingleMessage -> SingleMessageChainImpl(message)
-        else -> MessageChainImplBySequence(message.flatten())
-    }
-
-/**
- * 构造 [MessageChain]
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("FunctionName")
-fun MessageChain(messages: Iterable<Message>): MessageChain =
-    MessageChainImplBySequence(messages.flatten())
-
-/**
- * [扁平化][flatten] [messages] 然后构造 [MessageChain]
- */
-@JvmName("newChain")
-@JsName("newChain")
-@Suppress("FunctionName")
-fun MessageChain(messages: List<Message>): MessageChain =
-    MessageChainImplByIterable(messages.flatten().asIterable())
-
-
 /**
  * 得到包含 [this] 的 [MessageChain].
  *
  * 若 [this] 为 [MessageChain] 将直接返回 this,
  * 若 [this] 为 [CombinedMessage] 将 [扁平化][flatten] 后委托为 [MessageChain],
- * 否则将调用 [MessageChain] 构造一个 [MessageChainImplByIterable]
+ * 否则将调用 [asMessageChain]
  */
-@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
-@JvmSynthetic
+@JvmName("newChain")
+@JsName("newChain")
+@Suppress("UNCHECKED_CAST")
 fun Message.toChain(): MessageChain = when (this) {
     is MessageChain -> this
-    is CombinedMessage -> MessageChainImplByIterable((this as Iterable<Message>).flatten().asIterable())
+    is CombinedMessage -> (this as Iterable<Message>).asMessageChain()
     else -> SingleMessageChainImpl(this as SingleMessage)
 }
 
 /**
  * 直接将 [this] 委托为一个 [MessageChain]
  */
-@JvmName("asMessageChain1")
 @JvmSynthetic
-@Suppress("unused", "NOTHING_TO_INLINE")
+fun Collection<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByCollection(this)
+
+/**
+ * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ */
+@JvmName("newChain")
+@JsName("newChain")
+fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+
+/**
+ * 直接将 [this] 委托为一个 [MessageChain]
+ */
+@JvmSynthetic
 fun Iterable<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByIterable(this)
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
-@JvmSynthetic
-@Suppress("unused", "NOTHING_TO_INLINE")
+@JvmName("newChain")
+@JsName("newChain")
 fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+
+/**
+ * 直接将 [this] 委托为一个 [MessageChain]
+ */
+@JvmSynthetic
+fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
+
+/**
+ * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ */
+@JvmName("newChain")
+@JsName("newChain")
+fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
  * 扁平化消息序列.
@@ -280,6 +263,9 @@ fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequenc
  */
 fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
 
+@JvmSynthetic
+fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
+
 /**
  * 扁平化消息序列.
  *
@@ -293,6 +279,9 @@ fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten(
  * ```
  */
 fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.flatten() }
+
+@JvmSynthetic
+fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
 
 /**
  * 扁平化 [Message]
@@ -346,15 +335,32 @@ internal inline class MessageChainImplByIterable constructor(
 }
 
 /**
- * 使用 [Iterable] 作为委托的 [MessageChain]
+ * 使用 [Collection] 作为委托的 [MessageChain]
  */
 @PublishedApi
-internal inline class MessageChainImplBySequence constructor(
-    private val delegate: Sequence<SingleMessage>
+internal inline class MessageChainImplByCollection constructor(
+    private val delegate: Collection<SingleMessage>
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
     override fun toString(): String = this.delegate.joinToString("") { it.toString() }
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
+}
+
+/**
+ * 使用 [Iterable] 作为委托的 [MessageChain]
+ */
+@PublishedApi
+internal class MessageChainImplBySequence constructor(
+    delegate: Sequence<SingleMessage>
+) : Message, Iterable<SingleMessage>, MessageChain {
+    /**
+     * [Sequence] 可能只能消耗一遍, 因此需要先转为 [List]
+     */
+    private val collected: List<SingleMessage> by lazy { delegate.toList() }
+
+    override fun iterator(): Iterator<SingleMessage> = collected.iterator()
+    override fun toString(): String = this.collected.joinToString("") { it.toString() }
+    override operator fun contains(sub: String): Boolean = collected.any { it.contains(sub) }
 }
 
 /**

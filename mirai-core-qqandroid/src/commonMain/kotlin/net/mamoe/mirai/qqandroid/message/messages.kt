@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid.message
 
 import io.ktor.utils.io.core.*
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
@@ -330,14 +331,13 @@ internal class NotOnlineImageFromServer(
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
 
-    val message = MessageChainBuilder(elements.size + 1)
-    message.add(MessageSourceFromMsg(delegate = this))
-    elements.joinToMessageChain(message)
-    return message.asMessageChain()
+    return buildMessageChain(elements.size + 1) {
+        +MessageSourceFromMsg(delegate = this@toMessageChain)
+        elements.joinToMessageChain(this)
+    }.removeAtAfterQuoteReply().asMessageChain()
 }
 
-// These two functions are not the same.
-
+// These two functions are not identical, dont combine.
 @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     val elements = this.elems!!
@@ -345,11 +345,25 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     return buildMessageChain(elements.size + 1) {
         +MessageSourceFromServer(delegate = this@toMessageChain)
         elements.joinToMessageChain(this)
+    }.removeAtAfterQuoteReply().asMessageChain()
+}
+
+private fun MessageChain.removeAtAfterQuoteReply(): List<Message> {
+    var last: Message? = null
+    return this.filterNot { message: Message ->
+        if (message is At) { // 筛除因 QuoteReply 导致的多余的 At
+            if (last != null || last !is QuoteReply) {
+                return@filterNot true
+            }
+        } else if (message is MessageContent) {
+            return@filterNot true
+        }
+        last = message
+        return@filterNot false
     }
 }
 
-
-@UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class)
+@UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class, LowLevelAPI::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
     this.forEach {
         when {
@@ -372,7 +386,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                     if (id == 0L) {
                         message.add(AtAll)
                     } else {
-                        message.add(At(id, it.text.str))
+                        message.add(At._lowLevelConstructAtInstance(id, it.text.str))
                     }
                 }
             }
