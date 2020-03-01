@@ -14,7 +14,6 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import kotlin.coroutines.CoroutineContext
 
 /**
  * [Bot] 中为了让 Java 使用者调用更方便的 API 列表.
@@ -98,7 +97,6 @@ actual abstract class BotJavaHappyAPI actual constructor() {
      * 在一段时间后撤回这条消息.
      *
      * @param millis 延迟的时间, 单位为毫秒
-     * @param coroutineContext 额外的 [CoroutineContext]
      * @see recall
      */
     @JvmName("recallIn")
