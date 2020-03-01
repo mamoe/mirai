@@ -240,7 +240,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
      */
     abstract fun close(cause: Throwable? = null)
 
-    @UseExperimental(LowLevelAPI::class)
+    @UseExperimental(LowLevelAPI::class, MiraiExperimentalAPI::class)
     final override fun toString(): String = "Bot(${uin})"
 }
 
@@ -254,7 +254,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
  * @see Bot.recall
  */
-@MiraiExperimentalAPI
 suspend inline fun Bot.recall(message: MessageChain) = this.recall(message[MessageSource])
 
 /**
@@ -281,7 +280,6 @@ fun Bot.recallIn(
  * @param coroutineContext 额外的 [CoroutineContext]
  * @see recall
  */
-@MiraiExperimentalAPI
 fun Bot.recallIn(
     message: MessageChain,
     millis: Long,
