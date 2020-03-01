@@ -11,9 +11,8 @@ package net.mamoe.mirai.message.data
 
 import kotlin.jvm.JvmOverloads
 
-
 /**
- * 构造一个 [MessageChain]
+ * 构建一个 [MessageChain]
  *
  * @see MessageChainBuilder
  */
@@ -21,7 +20,34 @@ inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChai
     return MessageChainBuilder().apply(block).asMessageChain()
 }
 
-class MessageChainBuilder @JvmOverloads constructor(
+/**
+ * 使用特定的容器大小构建一个 [MessageChain]
+ *
+ * @see MessageChainBuilder
+ */
+inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> Unit): MessageChain {
+    return MessageChainBuilder(initialSize).apply(block).asMessageChain()
+}
+
+/**
+ * 使用特定的容器构建一个 [MessageChain]
+ *
+ * @see MessageChainBuilder
+ */
+inline fun buildMessageChain(
+    container: MutableCollection<Message>,
+    block: MessageChainBuilder.() -> Unit
+): MessageChain {
+    return MessageChainBuilder(container).apply(block).asMessageChain()
+}
+
+/**
+ * [MessageChain] 构建器.
+ *
+ * @see buildMessageChain
+ */
+class MessageChainBuilder
+@JvmOverloads constructor(
     private val container: MutableCollection<Message> = mutableListOf()
 ) : MutableCollection<Message> by container, Appendable {
     constructor(initialSize: Int) : this(ArrayList<Message>(initialSize))
