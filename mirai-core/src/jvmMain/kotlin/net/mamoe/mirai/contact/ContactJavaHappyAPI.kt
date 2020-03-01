@@ -58,13 +58,13 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: Message) {
-        runBlocking { sendMessage(message) }
+    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<Contact> {
+        return runBlocking { sendMessage(message) }
     }
 
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: String) {
-        runBlocking { sendMessage(message) }
+    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<Contact> {
+        return runBlocking { sendMessage(message) }
     }
 
     /**
@@ -78,8 +78,8 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: ExternalImage) {
-        runBlocking { uploadImage(image) }
+    open fun __uploadImageBlockingForJava__(image: ExternalImage): Image {
+        return runBlocking { uploadImage(image) }
     }
 
     /**
@@ -88,8 +88,8 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: URL) {
-        runBlocking { uploadImage(image) }
+    open fun __uploadImageBlockingForJava__(image: URL): Image {
+        return runBlocking { uploadImage(image) }
     }
 
     /**
@@ -98,8 +98,8 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: InputStream) {
-        runBlocking { uploadImage(image) }
+    open fun __uploadImageBlockingForJava__(image: InputStream): Image {
+        return runBlocking { uploadImage(image) }
     }
 
     /**
@@ -108,8 +108,8 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: Input) {
-        runBlocking { uploadImage(image) }
+    open fun __uploadImageBlockingForJava__(image: Input): Image {
+        return runBlocking { uploadImage(image) }
     }
 
     /**
@@ -118,8 +118,8 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: File) {
-        runBlocking { uploadImage(image) }
+    open fun __uploadImageBlockingForJava__(image: File): Image {
+        return runBlocking { uploadImage(image) }
     }
 
     /**
@@ -128,8 +128,8 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: BufferedImage) {
-        runBlocking { uploadImage(image) }
+    open fun __uploadImageBlockingForJava__(image: BufferedImage): Image {
+        return runBlocking { uploadImage(image) }
     }
 
     /**
