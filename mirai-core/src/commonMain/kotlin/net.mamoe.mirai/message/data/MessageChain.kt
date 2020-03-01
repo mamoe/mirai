@@ -229,6 +229,8 @@ fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySeque
 @JvmSynthetic
 fun Iterable<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByIterable(this)
 
+inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
+
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */

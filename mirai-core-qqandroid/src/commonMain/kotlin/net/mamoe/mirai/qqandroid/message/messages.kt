@@ -334,7 +334,7 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     return buildMessageChain(elements.size + 1) {
         +MessageSourceFromMsg(delegate = this@toMessageChain)
         elements.joinToMessageChain(this)
-    }.removeAtAfterQuoteReply().asMessageChain()
+    }.removeAtIfHasQuoteReply()
 }
 
 // These two functions are not identical, dont combine.
@@ -345,23 +345,23 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     return buildMessageChain(elements.size + 1) {
         +MessageSourceFromServer(delegate = this@toMessageChain)
         elements.joinToMessageChain(this)
-    }.removeAtAfterQuoteReply().asMessageChain()
+    }.removeAtIfHasQuoteReply()
 }
 
-private fun MessageChain.removeAtAfterQuoteReply(): List<Message> {
-    var last: Message? = null
-    return this.filter { message: Message ->
-        if (message is At) { // 筛除因 QuoteReply 导致的多余的 At
-            if (last != null || last !is QuoteReply) {
-                return@filter true
+private fun MessageChain.removeAtIfHasQuoteReply(): MessageChain =
+    this
+/*
+    if (this.any<QuoteReply>()) {
+        var removed = false
+        this.filter {
+            if (it is At && !removed) {
+                false
+            } else {
+                removed = true
+                true
             }
-        } else if (message is MessageContent) {
-            return@filter true
-        }
-        last = message
-        return@filter false
-    }
-}
+        }.asMessageChain()
+    } else this*/
 
 @UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class, LowLevelAPI::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
