@@ -235,7 +235,10 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
     fun transformOneMessage(it: Message) {
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
-            is At -> elements.add(ImMsgBody.Elem(text = it.toJceData())).also { elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " "))) }
+            is At -> {
+                elements.add(ImMsgBody.Elem(text = it.toJceData()))
+                elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
+            }
             is CustomFaceFromFile -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
@@ -339,10 +342,10 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
 internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     val elements = this.elems!!
 
-    val message = MessageChainBuilder(elements.size + 1)
-    message.add(MessageSourceFromServer(delegate = this))
-    elements.joinToMessageChain(message)
-    return message.asMessageChain()
+    return buildMessageChain(elements.size + 1) {
+        +MessageSourceFromServer(delegate = this@toMessageChain)
+        elements.joinToMessageChain(this)
+    }
 }
 
 
