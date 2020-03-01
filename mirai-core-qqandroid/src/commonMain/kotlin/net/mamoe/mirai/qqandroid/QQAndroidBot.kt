@@ -207,8 +207,4 @@ internal abstract class QQAndroidBotBase constructor(
     override suspend fun openChannel(image: Image): ByteReadChannel {
         return Http.get<HttpResponse>(queryImageUrl(image)).content
     }
-
-    override suspend fun approveFriendAddRequest(id: Long, remark: String?) {
-        TODO("not implemented")
-    }
 }

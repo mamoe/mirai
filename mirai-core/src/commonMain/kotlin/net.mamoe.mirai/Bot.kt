@@ -168,11 +168,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaHappyAPI() {
     @JvmSynthetic
     suspend inline fun join() = network.join()
 
-    @JvmName("awaitDisconnectionSuspend")
-    @JvmSynthetic
-    @Deprecated("使用 join()", ReplaceWith("this.join()"), level = DeprecationLevel.HIDDEN)
-    suspend inline fun awaitDisconnection() = join()
-
     /**
      * 登录, 或重新登录.
      * 这个函数总是关闭一切现有网路任务, 然后重新登录并重新缓存好友列表和群列表.
@@ -237,14 +232,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaHappyAPI() {
     @MiraiExperimentalAPI("未支持")
     abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult
 
-    /**
-     * 同意来自陌生人的加好友请求
-     */
-    @JvmName("approveFriendAddRequestSuspend")
-    @JvmSynthetic
-    @MiraiExperimentalAPI("未支持")
-    abstract suspend fun approveFriendAddRequest(id: Long, remark: String?)
-
     // endregion
 
     /**
@@ -272,7 +259,16 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaHappyAPI() {
 
     @JvmName("queryImageUrl")
     @JavaHappyAPI
-    override fun __queryImageUrl__(image: Image): String = super.__queryImageUrl__(image)
+    override fun __queryImageUrlBlockingForJava__(image: Image): String = super.__queryImageUrlBlockingForJava__(image)
+
+    @JvmName("addFriend")
+    @JavaHappyAPI
+    override fun __addFriendBlockingForJava__(id: Long, message: String?, remark: String?) =
+        super.__addFriendBlockingForJava__(id, message, remark)
+
+    @JvmName("join")
+    @JavaHappyAPI
+    override fun __joinBlockingForJava__() = super.__joinBlockingForJava__()
 }
 
 /**
