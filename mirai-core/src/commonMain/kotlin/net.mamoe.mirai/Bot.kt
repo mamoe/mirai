@@ -150,7 +150,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     abstract val network: BotNetworkHandler
 
     /**
-     * 挂起直到 [Bot] 下线.
+     * 挂起协程直到 [Bot] 下线.
      */
     @JvmName("joinSuspend")
     @JvmSynthetic
