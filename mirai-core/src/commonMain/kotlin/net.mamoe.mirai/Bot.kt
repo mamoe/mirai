@@ -28,7 +28,9 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
@@ -39,8 +41,9 @@ import kotlin.jvm.JvmStatic
  * @see Contact 联系人
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
+@Suppress("INAPPLICABLE_JVM_NAME")
 @UseExperimental(MiraiInternalAPI::class, LowLevelAPI::class)
-abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
+abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaHappyAPI() {
     companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.
@@ -161,8 +164,12 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
     /**
      * 挂起直到 [Bot] 下线.
      */
+    @JvmName("joinSuspend")
+    @JvmSynthetic
     suspend inline fun join() = network.join()
 
+    @JvmName("awaitDisconnectionSuspend")
+    @JvmSynthetic
     @Deprecated("使用 join()", ReplaceWith("this.join()"), level = DeprecationLevel.HIDDEN)
     suspend inline fun awaitDisconnection() = join()
 
@@ -176,6 +183,8 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
      *
      * @throws LoginFailedException
      */
+    @JvmName("loginSuspend")
+    @JvmSynthetic
     abstract suspend fun login()
     // endregion
 
@@ -196,11 +205,15 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
      * @see _lowLevelRecallFriendMessage 低级 API
      * @see _lowLevelRecallGroupMessage 低级 API
      */
+    @JvmName("recallSuspend")
+    @JvmSynthetic
     abstract suspend fun recall(source: MessageSource)
 
     /**
      * 获取图片下载链接
      */
+    @JvmName("queryImageUrlSuspend")
+    @JvmSynthetic
     abstract suspend fun queryImageUrl(image: Image): String
 
     /**
@@ -209,6 +222,8 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
      * @see ByteReadChannel.copyAndClose
      * @see ByteReadChannel.copyTo
      */
+    @JvmName("openChannelSuspend")
+    @JvmSynthetic
     abstract suspend fun openChannel(image: Image): ByteReadChannel
 
     /**
@@ -217,12 +232,16 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
      * @param message 若需要验证请求时的验证消息.
      * @param remark 好友备注
      */
+    @JvmName("addFriendSuspend")
+    @JvmSynthetic
     @MiraiExperimentalAPI("未支持")
     abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult
 
     /**
      * 同意来自陌生人的加好友请求
      */
+    @JvmName("approveFriendAddRequestSuspend")
+    @JvmSynthetic
     @MiraiExperimentalAPI("未支持")
     abstract suspend fun approveFriendAddRequest(id: Long, remark: String?)
 
@@ -242,6 +261,18 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor {
 
     @UseExperimental(LowLevelAPI::class, MiraiExperimentalAPI::class)
     final override fun toString(): String = "Bot(${uin})"
+
+    @JvmName("login")
+    @JavaHappyAPI
+    override fun __loginBlockingForJava__() = super.__loginBlockingForJava__()
+
+    @JvmName("recall")
+    @JavaHappyAPI
+    override fun __recallBlockingForJava__(source: MessageSource) = super.__recallBlockingForJava__(source)
+
+    @JvmName("queryImageUrl")
+    @JavaHappyAPI
+    override fun __queryImageUrl__(image: Image): String = super.__queryImageUrl__(image)
 }
 
 /**
