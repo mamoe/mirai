@@ -29,7 +29,6 @@ import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -232,7 +231,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      *
      * @see closeAndJoin 取消并 [Bot.join], 以确保 [Bot] 相关的活动被完全关闭
      */
-    @JvmOverloads
     abstract fun close(cause: Throwable? = null)
 
     @UseExperimental(LowLevelAPI::class, MiraiExperimentalAPI::class)
