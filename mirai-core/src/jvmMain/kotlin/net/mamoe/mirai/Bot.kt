@@ -61,7 +61,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
     /**
      * [Bot] 运行的 [Context].
      *
-     * 在 JVM 的默认实现为 `class ContextImpl : Context`
+     * 在 JVM 的默认实现为 [net.mamoe.mirai.utils.Context]
      * 在 Android 实现为 `android.content.Context`
      */
     actual abstract val context: Context
