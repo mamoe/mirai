@@ -42,7 +42,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils._miraiContentToString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -208,7 +207,6 @@ internal class MessageSvc {
                             }
                         }
                         166 -> {
-                            println(msg._miraiContentToString())
                             return@mapNotNull when {
                                 msg.msgHead.fromUin == bot.uin -> null
                                 !bot.firstLoginSucceed -> null
