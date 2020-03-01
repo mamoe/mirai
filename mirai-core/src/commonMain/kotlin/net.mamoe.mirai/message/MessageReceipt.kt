@@ -9,15 +9,12 @@
 
 package net.mamoe.mirai.message
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recallIn
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
 
 /**
  * 发送消息后得到的回执. 可用于撤回.
@@ -31,26 +28,22 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  * @see MessageReceipt.sourceSequenceId 源序列号
  * @see MessageReceipt.sourceTime 源时间
  */
-open class MessageReceipt<C : Contact>(
-    val source: MessageSource,
+expect open class MessageReceipt<C : Contact>(
+    source: MessageSource,
     target: C,
-    private val botAsMember: Member?
+    botAsMember: Member?
 ) {
-    init {
-        require(target is Group || target is QQ) { "target must be either Group or QQ" }
-    }
+    val source: MessageSource
 
     /**
      * 发送目标, 为 [Group] 或 [QQ]
      */
-    val target: C by target.unsafeWeakRef()
+    val target: C
 
     /**
      * 是否为发送给群的消息的回执
      */
-    val isToGroup: Boolean = botAsMember != null
-
-    private val _isRecalled = atomic(false)
+    val isToGroup: Boolean
 
     /**
      * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
@@ -58,20 +51,7 @@ open class MessageReceipt<C : Contact>(
      * @see Bot.recall
      * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
      */
-    suspend fun recall() {
-        @Suppress("BooleanLiteralArgument")
-        if (_isRecalled.compareAndSet(false, true)) {
-            when (val contact = target) {
-                is Group -> {
-                    contact.bot.recall(source)
-                }
-                is QQ -> {
-                    TODO()
-                }
-                else -> error("Unknown contact type")
-            }
-        } else error("message is already or planned to be recalled")
-    }
+    suspend fun recall()
 
     /**
      * 在一段时间后撤回这条消息.. [recall] 或 [recallIn] 只能被调用一次.
@@ -79,26 +59,13 @@ open class MessageReceipt<C : Contact>(
      * @param millis 延迟时间, 单位为毫秒
      * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
      */
-    fun recallIn(millis: Long): Job {
-        @Suppress("BooleanLiteralArgument")
-        if (_isRecalled.compareAndSet(false, true)) {
-            return when (val contact = target) {
-                is QQ,
-                is Group -> contact.bot.recallIn(source, millis)
-                else -> error("Unknown contact type")
-            }
-        } else error("message is already or planned to be recalled")
-    }
+    fun recallIn(millis: Long): Job
 
     /**
      * [确保 sequenceId可用][MessageSource.ensureSequenceIdAvailable] 然后引用这条消息.
      * @see MessageChain.quote 引用一条消息
      */
-    open suspend fun quote(): QuoteReplyToSend {
-        this.source.ensureSequenceIdAvailable()
-        @UseExperimental(LowLevelAPI::class)
-        return _unsafeQuote()
-    }
+    open suspend fun quote(): QuoteReplyToSend
 
     /**
      * 引用这条消息, 但不会 [确保 sequenceId可用][MessageSource.ensureSequenceIdAvailable].
@@ -109,17 +76,13 @@ open class MessageReceipt<C : Contact>(
      */
     @LowLevelAPI
     @Suppress("FunctionName")
-    fun _unsafeQuote(): QuoteReplyToSend {
-        return this.source.quote(botAsMember as? QQ)
-    }
+    fun _unsafeQuote(): QuoteReplyToSend
 
     /**
      * 引用这条消息并回复.
      * @see MessageChain.quote 引用一条消息
      */
-    suspend fun quoteReply(message: MessageChain) {
-        target.sendMessage(this.quote() + message)
-    }
+    suspend fun quoteReply(message: MessageChain)
 }
 
 /**
