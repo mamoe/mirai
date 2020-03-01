@@ -44,7 +44,8 @@ inline fun buildMessageChain(
 /**
  * [MessageChain] 构建器.
  *
- * @see buildMessageChain
+ * @see buildMessageChain 推荐使用
+ * @see asMessageChain 完成构建
  */
 class MessageChainBuilder
 @JvmOverloads constructor(

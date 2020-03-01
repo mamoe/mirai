@@ -49,12 +49,13 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see PlainText 纯文本
  * @see Image 图片
- * @see Face 表情
- * @see At 引用一个群成员
- * @see AtAll 引用全体成员
- * @see QuoteReply 引用一条消息
+ * @see Face 原生表情
+ * @see At 一个群成员的引用
+ * @see AtAll 全体成员的引用
+ * @see QuoteReply 一条消息的引用
  *
  * @see MessageChain 消息链(即 `List<Message>`)
+ * @see CombinedMessage 链接的两个消息
  * @see buildMessageChain 构造一个 [MessageChain]
  *
  * @see Contact.sendMessage 发送消息
@@ -142,4 +143,5 @@ interface MessageContent : SingleMessage
  * 将 [this] 发送给指定联系人
  */
 @Suppress("UNCHECKED_CAST")
-suspend inline fun <C : Contact> MessageChain.sendTo(contact: C): MessageReceipt<C> = contact.sendMessage(this) as MessageReceipt<C>
+suspend inline fun <C : Contact> MessageChain.sendTo(contact: C): MessageReceipt<C> =
+    contact.sendMessage(this) as MessageReceipt<C>
