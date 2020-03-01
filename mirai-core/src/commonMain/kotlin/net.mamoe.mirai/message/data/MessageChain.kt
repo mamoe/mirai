@@ -64,9 +64,9 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage].
      * 仅供 `Java` 使用
      */
+    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
     @JsName("forEachContent")
     @JvmName("forEachContent")
-    @Suppress("FunctionName")
     @MiraiInternalAPI
     fun `__forEachContent for Java__`(block: (Message) -> Unit) {
         this.foreachContent(block)
@@ -263,6 +263,8 @@ fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequenc
  */
 fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
 
+@JsName("flatten1") // avoid platform declare clash
+@JvmName("flatten1")
 @JvmSynthetic
 fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
@@ -280,6 +282,8 @@ fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence
  */
 fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.flatten() }
 
+@JsName("flatten1") // avoid platform declare clash
+@JvmName("flatten1")
 @JvmSynthetic
 fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
 
