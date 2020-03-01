@@ -289,7 +289,7 @@ internal class MessageSvc {
                 time = currentTimeSeconds + client.timeDifference,
                 groupId = 0,
                 sequenceId = client.atomicNextMessageSequenceId(),
-                sourceMessage = message
+                originalMessage = message
             )
             sourceCallback(source)
             return ToFriend(client, toUin, message, source)
@@ -339,7 +339,7 @@ internal class MessageSvc {
                 toUin = Group.calculateGroupUinByGroupCode(groupCode),
                 time = currentTimeSeconds + client.timeDifference,
                 groupId = groupCode,
-                sourceMessage = message//,
+                originalMessage = message//,
                 //   sourceMessage = message
             )
             sourceCallback(source)

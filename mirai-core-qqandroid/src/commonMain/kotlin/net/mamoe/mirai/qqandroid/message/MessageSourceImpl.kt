@@ -26,10 +26,14 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
-internal inline class MessageSourceFromServer(
+internal class MessageSourceFromServer(
     val delegate: ImMsgBody.SourceMsg
 ) : MessageSource {
     override val time: Long get() = delegate.time.toLong() and 0xFFFFFFFF
+
+    override val originalMessage: MessageChain by lazy {
+        delegate.toMessageChain()
+    }
 
     override val id: Long
         get() = (delegate.origSeqs?.firstOrNull()
@@ -49,12 +53,12 @@ internal inline class MessageSourceFromServer(
     override fun toString(): String = ""
 }
 
-internal inline class MessageSourceFromMsg(
+internal class MessageSourceFromMsg(
     val delegate: MsgComm.Msg
 ) : MessageSource {
     override val time: Long get() = delegate.msgHead.msgTime.toLong() and 0xFFFFFFFF
-    override val id: Long
-        get() = delegate.msgHead.msgSeq.toLong().shl(32) or
+    override val id: Long =
+        delegate.msgHead.msgSeq.toLong().shl(32) or
                 delegate.msgBody.richText.attr!!.random.toLong().and(0xFFFFFFFF)
 
     override suspend fun ensureSequenceIdAvailable() {
@@ -64,11 +68,20 @@ internal inline class MessageSourceFromMsg(
     override val toUin: Long get() = delegate.msgHead.toUin
     override val senderId: Long get() = delegate.msgHead.fromUin
     override val groupId: Long get() = delegate.msgHead.groupInfo?.groupCode ?: 0
+    override val originalMessage: MessageChain by lazy {
+        delegate.toMessageChain()
+    }
 
     fun toJceData(): ImMsgBody.SourceMsg {
         return if (groupId == 0L) {
             toJceDataImplForFriend()
         } else toJceDataImplForGroup()
+    }
+
+    val elems by lazy {
+        delegate.msgBody.richText.elems.toMutableList().also {
+            if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+        }
     }
 
     private fun toJceDataImplForFriend(): ImMsgBody.SourceMsg {
@@ -97,9 +110,7 @@ internal inline class MessageSourceFromMsg(
                 ),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = delegate.msgBody.richText.elems.also {
-                            if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
-                        }
+                        elems = elems
                     )
                 )
             ).toByteArray(MsgComm.Msg.serializer())
@@ -135,9 +146,7 @@ internal inline class MessageSourceFromMsg(
                 ),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = delegate.msgBody.richText.elems.also {
-                            if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
-                        }
+                        elems = elems
                     )
                 )
             ).toByteArray(MsgComm.Msg.serializer())
@@ -149,7 +158,7 @@ internal inline class MessageSourceFromMsg(
 
 internal abstract class MessageSourceFromSend : MessageSource {
 
-    abstract val sourceMessage: MessageChain
+    abstract override val originalMessage: MessageChain
 
     fun toJceData(): ImMsgBody.SourceMsg {
         return if (groupId == 0L) {
@@ -158,7 +167,7 @@ internal abstract class MessageSourceFromSend : MessageSource {
     }
 
     private val elems by lazy {
-        sourceMessage.toRichTextElems(groupId != 0L)
+        originalMessage.toRichTextElems(groupId != 0L)
     }
 
     private fun toJceDataImplForFriend(): ImMsgBody.SourceMsg {
@@ -242,7 +251,7 @@ internal class MessageSourceFromSendFriend(
     override val toUin: Long,
     override val groupId: Long,
     val sequenceId: Int,
-    override val sourceMessage: MessageChain
+    override val originalMessage: MessageChain
 ) : MessageSourceFromSend() {
     @UseExperimental(ExperimentalCoroutinesApi::class)
     override val id: Long
@@ -264,7 +273,7 @@ internal class MessageSourceFromSendGroup(
     override val senderId: Long,
     override val toUin: Long,
     override val groupId: Long,
-    override val sourceMessage: MessageChain
+    override val originalMessage: MessageChain
 ) : MessageSourceFromSend() {
     private lateinit var sequenceIdDeferred: Deferred<Int>
 

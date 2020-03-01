@@ -14,6 +14,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.utils.LazyProperty
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -65,12 +66,16 @@ interface MessageSource : Message, MessageMetadata {
     val groupId: Long
 
     /**
+     * 原消息内容
+     */
+    @LazyProperty
+    val originalMessage: MessageChain
+
+    /**
      * 固定返回空字符串 ("")
      */
     override fun toString(): String
 }
-
-interface GroupMessageSource : MessageSource
 
 /**
  * 序列号. 若是机器人发出去的消息, 请先 [确保 sequenceId 可用][MessageSource.ensureSequenceIdAvailable]
