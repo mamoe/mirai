@@ -37,7 +37,7 @@ runCatching {
 
 allprojects {
     group = "net.mamoe"
-    version = getProperty("mirai_version")
+    version = getProperty("miraiVersion")
 
     repositories {
         mavenLocal()
