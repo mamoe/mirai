@@ -35,22 +35,6 @@ import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.coroutines.CoroutineContext
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
-internal abstract class ContactImpl : Contact {
-    override fun hashCode(): Int {
-        var result = bot.hashCode()
-        result = 31 * result + id.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        @Suppress("DuplicatedCode")
-        if (this === other) return true
-        if (other !is Contact) return false
-        if (this::class != other::class) return false
-        return this.id == other.id && this.bot == other.bot
-    }
-}
-
 internal inline class FriendInfoImpl(
     private val jceFriendInfo: JceFriendInfo
 ) : FriendInfo {
@@ -63,7 +47,7 @@ internal class QQImpl(
     override val coroutineContext: CoroutineContext,
     override val id: Long,
     private val friendInfo: FriendInfo
-) : ContactImpl(), QQ {
+) : QQ() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val nick: String
         get() = friendInfo.nick
@@ -159,7 +143,21 @@ internal class QQImpl(
         }
     } finally {
         (image.input as? Closeable)?.close()
-        (image.input as? io.ktor.utils.io.core.Closeable)?.close()
+        (image.input as? Closeable)?.close()
+    }
+
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        @Suppress("DuplicatedCode")
+        if (this === other) return true
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
     }
 
     @MiraiExperimentalAPI
@@ -187,9 +185,25 @@ internal class MemberImpl(
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
-) : ContactImpl(), Member, QQ by qq {
+) : Member() {
     override val group: GroupImpl by group.unsafeWeakRef()
     val qq: QQImpl by qq.unsafeWeakRef()
+
+    // region QQ delegate
+    override val id: Long = qq.id
+    override val nick: String = qq.nick
+    @MiraiExperimentalAPI
+    override suspend fun queryProfile(): Profile = qq.queryProfile()
+
+    @MiraiExperimentalAPI
+    override suspend fun queryPreviousNameList(): PreviousNameList = qq.queryPreviousNameList()
+
+    @MiraiExperimentalAPI
+    override suspend fun queryRemark(): FriendNameRemark = qq.queryRemark()
+
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> = qq.sendMessage(message)
+    override suspend fun uploadImage(image: ExternalImage): Image = qq.uploadImage(image)
+    // endregion
 
     override var permission: MemberPermission = memberInfo.permission
     @Suppress("PropertyName")
@@ -307,10 +321,9 @@ internal class MemberImpl(
         return result
     }
 
-    @Suppress("DuplicatedCode")
-    override fun equals(other: Any?): Boolean { // 不要删除. trust me
+    override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Member) return false
+        if (other !is Contact) return false
         if (this::class != other::class) return false
         return this.id == other.id && this.bot == other.bot
     }
@@ -347,7 +360,7 @@ internal class GroupImpl(
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
-) : ContactImpl(), Group {
+) : Group() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     val uin: Long = groupInfo.uin
 
@@ -398,11 +411,11 @@ internal class GroupImpl(
     }.toLockFreeLinkedList())
 
     internal var _name: String = groupInfo.name
-    internal var _announcement: String = groupInfo.memo
-    internal var _allowMemberInvite: Boolean = groupInfo.allowMemberInvite
+    private var _announcement: String = groupInfo.memo
+    private var _allowMemberInvite: Boolean = groupInfo.allowMemberInvite
     internal var _confessTalk: Boolean = groupInfo.confessTalk
     internal var _muteAll: Boolean = groupInfo.muteAll
-    internal var _autoApprove: Boolean = groupInfo.autoApprove
+    private var _autoApprove: Boolean = groupInfo.autoApprove
     internal var _anonymousChat: Boolean = groupInfo.allowAnonymousChat
 
     override var name: String
@@ -666,10 +679,23 @@ internal class GroupImpl(
         }
     } finally {
         (image.input as? Closeable)?.close()
-        (image.input as? io.ktor.utils.io.core.Closeable)?.close()
     }
 
     override fun toString(): String {
         return "Group($id)"
+    }
+
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        @Suppress("DuplicatedCode", "DuplicatedCode")
+        if (this === other) return true
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
     }
 }

@@ -1,13 +1,4 @@
-/*
- * Copyright 2020 Mamoe Technologies and contributors.
- *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
- *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
- */
-
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("unused")
 
 package net.mamoe.mirai.contact
 
@@ -22,8 +13,6 @@ import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * QQ 对象.
@@ -38,7 +27,7 @@ import kotlin.jvm.JvmSynthetic
  * @author Him188moe
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-expect abstract class QQ() : Contact, CoroutineScope {
+actual abstract class QQ : Contact(), CoroutineScope {
     /**
      * 请求头像下载链接
      */
@@ -47,22 +36,23 @@ expect abstract class QQ() : Contact, CoroutineScope {
     /**
      * QQ 号码
      */
-    abstract override val id: Long
+    actual abstract override val id: Long
     /**
      * 昵称
      */
-    abstract val nick: String
+    actual abstract val nick: String
 
     /**
      * 查询用户资料
      */
     @MiraiExperimentalAPI("还未支持")
-    abstract suspend fun queryProfile(): Profile
+    actual abstract suspend fun queryProfile(): Profile
 
     /**
      * 头像下载链接
      */
-    val avatarUrl: String
+    actual val avatarUrl: String
+        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
 
     /**
      * 查询曾用名.
@@ -72,13 +62,13 @@ expect abstract class QQ() : Contact, CoroutineScope {
      * - 共同群内的群名片
      */
     @MiraiExperimentalAPI("还未支持")
-    abstract suspend fun queryPreviousNameList(): PreviousNameList
+    actual abstract suspend fun queryPreviousNameList(): PreviousNameList
 
     /**
      * 查询机器人账号给这个人设置的备注
      */
     @MiraiExperimentalAPI("还未支持")
-    abstract suspend fun queryRemark(): FriendNameRemark
+    actual abstract suspend fun queryRemark(): FriendNameRemark
 
     /**
      * 向这个对象发送消息.
@@ -91,9 +81,7 @@ expect abstract class QQ() : Contact, CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmSynthetic
     @JvmName("sendMessageSuspend")
-    abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ>
-
-
+    @JvmSynthetic
+    actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ>
 }

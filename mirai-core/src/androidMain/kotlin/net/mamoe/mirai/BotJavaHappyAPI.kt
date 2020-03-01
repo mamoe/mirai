@@ -169,9 +169,9 @@ actual abstract class BotJavaHappyAPI actual constructor() {
     }
 }
 
-// !!! 不要 crossinline, 会编译失败
+// !! 不要 crossinline, 会编译失败
 @UseExperimental(ExperimentalCoroutinesApi::class)
-private fun <R> Bot.future(block: suspend Bot.() -> R): Future<R> {
+internal fun <R, C : CoroutineScope> C.future(block: suspend C.() -> R): Future<R> {
     val future = object : Future<R> {
         val value: CompletableDeferred<R> = CompletableDeferred()
 

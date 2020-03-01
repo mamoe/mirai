@@ -16,7 +16,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  */
 @MiraiInternalAPI
 @Experimental(level = Experimental.Level.ERROR)
-@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION, AnnotationTarget.TYPE, AnnotationTarget.CLASS)
 annotation class JavaHappyAPI
 
 /**

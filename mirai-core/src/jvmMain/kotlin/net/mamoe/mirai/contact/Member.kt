@@ -16,30 +16,24 @@ import net.mamoe.mirai.JavaHappyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * 群成员.
- */ // 不要删除多平台结构, kotlin bug
-@Suppress("INAPPLICABLE_JVM_NAME")
+ */
 @UseExperimental(MiraiInternalAPI::class, JavaHappyAPI::class)
-expect abstract class Member() : MemberJavaHappyAPI {
+@Suppress("INAPPLICABLE_JVM_NAME")
+actual abstract class Member : MemberJavaHappyAPI() {
     /**
      * 所在的群.
      */
     @WeakRefProperty
-    abstract val group: Group
-
+    actual abstract val group: Group
     /**
      * 成员的权限, 动态更新.
      *
      * @see MemberPermissionChangeEvent 权限变更事件. 由群主或机器人的操作触发.
      */
-    abstract val permission: MemberPermission
-
+    actual abstract val permission: MemberPermission
     /**
      * 群名片. 可能为空.
      *
@@ -52,8 +46,7 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    abstract var nameCard: String
-
+    actual abstract var nameCard: String
     /**
      * 群头衔.
      *
@@ -64,8 +57,7 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    abstract var specialTitle: String
-
+    actual abstract var specialTitle: String
     /**
      * 被禁言剩余时长. 单位为秒.
      *
@@ -73,7 +65,7 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see mute 设置禁言
      * @see unmute 取消禁言
      */
-    abstract val muteTimeRemaining: Int
+    actual abstract val muteTimeRemaining: Int
 
     /**
      * 禁言.
@@ -95,7 +87,7 @@ expect abstract class Member() : MemberJavaHappyAPI {
      */
     @JvmName("muteSuspend")
     @JvmSynthetic
-    abstract suspend fun mute(durationSeconds: Int)
+    actual abstract suspend fun mute(durationSeconds: Int)
 
     /**
      * 解除禁言.
@@ -105,9 +97,9 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see MemberUnmuteEvent 成员被取消禁言事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("unmuteSuspend")
+    @JvmName("muteSuspend")
     @JvmSynthetic
-    abstract suspend fun unmute()
+    actual abstract suspend fun unmute()
 
     /**
      * 踢出该成员.
@@ -117,40 +109,18 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("kickSuspend")
+    @JvmName("muteSuspend")
     @JvmSynthetic
-    abstract suspend fun kick(message: String = "")
+    actual abstract suspend fun kick(message: String)
 
     /**
      * 当且仅当 `[other] is [Member] && [other].id == this.id && [other].group == this.group` 时为 true
      */
-    abstract override fun equals(other: Any?): Boolean
+    actual abstract override fun equals(other: Any?): Boolean
 
     /**
      * @return `bot.hashCode() * 31 + id.hashCode()`
      */
-    abstract override fun hashCode(): Int
+    actual abstract override fun hashCode(): Int
+
 }
-
-/**
- * 获取非空群名片或昵称.
- *
- * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [QQ.nick]
- */
-val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
-
-/**
- * 判断改成员是否处于禁言状态.
- */
-fun Member.isMuted(): Boolean {
-    return muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
-}
-
-@ExperimentalTime
-suspend inline fun Member.mute(duration: Duration) {
-    require(duration.inDays <= 30) { "duration must be at most 1 month" }
-    require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
-    this.mute(duration.inSeconds.toInt())
-}
-
-suspend inline fun Member.mute(durationSeconds: Long) = this.mute(durationSeconds.toInt())
