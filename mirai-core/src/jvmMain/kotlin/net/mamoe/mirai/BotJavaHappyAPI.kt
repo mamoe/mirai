@@ -31,7 +31,7 @@ actual abstract class BotJavaHappyAPI actual constructor() {
     }
 
     private inline fun <R> future(crossinline block: suspend Bot.() -> R): Future<R> {
-        return (this as Bot).run { future(block) }
+        return (this as Bot).run { future { block() } }
     }
 
     /**
@@ -126,7 +126,6 @@ actual abstract class BotJavaHappyAPI actual constructor() {
      * @param message 若需要验证请求时的验证消息.
      * @param remark 好友备注
      */
-    @JvmOverloads
     @JvmName("addFriend")
     fun __addFriendBlockingForJava__(
         id: Long,
@@ -170,25 +169,17 @@ actual abstract class BotJavaHappyAPI actual constructor() {
     }
 }
 
-private inline fun <R> Bot.future(crossinline block: suspend Bot.() -> R): Future<R> {
-    return object : Future<R> {
+@UseExperimental(ExperimentalCoroutinesApi::class)
+private fun <R> Bot.future(block: suspend Bot.() -> R): Future<R> {
+    val future = object : Future<R> {
         val value: CompletableDeferred<R> = CompletableDeferred()
-
-        init {
-            launch {
-                @UseExperimental(ExperimentalCoroutinesApi::class)
-                value.completeWith(kotlin.runCatching { block() })
-            }
-        }
 
         override fun isDone(): Boolean {
             return value.isCompleted
         }
 
-        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
         override fun get(): R {
             if (value.isCompleted) {
-                @UseExperimental(ExperimentalCoroutinesApi::class)
                 return value.getCompleted()
             }
             return runBlocking { value.await() }
@@ -196,7 +187,6 @@ private inline fun <R> Bot.future(crossinline block: suspend Bot.() -> R): Futur
 
         override fun get(timeout: Long, unit: TimeUnit): R {
             if (value.isCompleted) {
-                @UseExperimental(ExperimentalCoroutinesApi::class)
                 return value.getCompleted()
             }
             return runBlocking {
@@ -222,4 +212,11 @@ private inline fun <R> Bot.future(crossinline block: suspend Bot.() -> R): Futur
             return value.isCancelled
         }
     }
+
+    launch {
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        future.value.completeWith(kotlin.runCatching { block() })
+    }
+
+    return future
 }
