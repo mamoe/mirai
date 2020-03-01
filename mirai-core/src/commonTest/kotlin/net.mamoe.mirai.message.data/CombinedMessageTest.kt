@@ -21,11 +21,11 @@ internal class CombinedMessageTest {
     @Test
     fun testAsSequence2() {
         var message: Message = "Hello ".toMessage()
-        message += MessageChain(
+        message += listOf(
             PlainText("W"),
             PlainText("o"),
             PlainText("r") + PlainText("ld")
-        )
+        ).asMessageChain()
 
         assertEquals(
             "Hello World",

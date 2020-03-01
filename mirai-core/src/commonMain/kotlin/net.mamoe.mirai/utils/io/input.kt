@@ -20,6 +20,9 @@ import io.ktor.utils.io.pool.useInstance
 import kotlinx.io.OutputStream
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -47,6 +50,14 @@ inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 
+@UseExperimental(ExperimentalContracts::class)
+inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return use(block)
+}
+
 private inline fun <R> inline(block: () -> R): R = block()
 
 typealias TlvMap = MutableMap<Int, ByteArray>
@@ -61,7 +72,8 @@ inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteAr
 
 @Suppress("FunctionName")
 @MiraiInternalAPI
-inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap = _readTLVMap(true, tagSize, suppressDuplication)
+inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap =
+    _readTLVMap(true, tagSize, suppressDuplication)
 
 @MiraiDebugAPI
 @Suppress("DuplicatedCode", "FunctionName")
@@ -122,10 +134,18 @@ fun Input._readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplic
     return map
 }
 
-inline fun Input.readString(length: Int, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length), charset = charset)
-inline fun Input.readString(length: Long, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
-inline fun Input.readString(length: Short, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
-@JvmSynthetic
-inline fun Input.readString(length: UShort, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
+inline fun Input.readString(length: Int, charset: Charset = Charsets.UTF_8): String =
+    String(this.readBytes(length), charset = charset)
 
-inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF_8): String = String(this.readBytes(length.toInt()), charset = charset)
+inline fun Input.readString(length: Long, charset: Charset = Charsets.UTF_8): String =
+    String(this.readBytes(length.toInt()), charset = charset)
+
+inline fun Input.readString(length: Short, charset: Charset = Charsets.UTF_8): String =
+    String(this.readBytes(length.toInt()), charset = charset)
+
+@JvmSynthetic
+inline fun Input.readString(length: UShort, charset: Charset = Charsets.UTF_8): String =
+    String(this.readBytes(length.toInt()), charset = charset)
+
+inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF_8): String =
+    String(this.readBytes(length.toInt()), charset = charset)

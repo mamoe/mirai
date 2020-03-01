@@ -30,8 +30,6 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.TEA
 import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.io.*
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 import kotlin.jvm.JvmName
 
 
@@ -386,28 +384,4 @@ internal object KnownPacketFactories {
         consumer(packetFactory, packet, packetFactory.commandName, ssoSequenceId)
     }
 
-}
-
-@UseExperimental(ExperimentalContracts::class)
-internal inline fun <R> IoBuffer.withUse(block: IoBuffer.() -> R): R {
-    contract {
-        callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
-    }
-    return try {
-        block(this)
-    } finally {
-        this.release(IoBuffer.Pool)
-    }
-}
-
-@UseExperimental(ExperimentalContracts::class)
-internal inline fun <R> ByteReadPacket.withUse(block: ByteReadPacket.() -> R): R {
-    contract {
-        callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
-    }
-    return try {
-        block(this)
-    } finally {
-        this.close()
-    }
 }

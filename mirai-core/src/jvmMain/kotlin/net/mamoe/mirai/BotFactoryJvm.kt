@@ -7,6 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmName("BotFactoryJvm")
 @file:Suppress("FunctionName", "unused")
 
 package net.mamoe.mirai
@@ -44,6 +45,7 @@ internal val factory: BotFactory = run {
 /**
  * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmName("newBot")
 @JvmOverloads
 fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
     factory.Bot(context, qq, password, configuration)
@@ -51,6 +53,7 @@ fun Bot(context: Context, qq: Long, password: String, configuration: BotConfigur
 /**
  * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmSynthetic
 inline fun Bot(context: Context, qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(context, qq, password, configuration)
 
@@ -58,6 +61,7 @@ inline fun Bot(context: Context, qq: Long, password: String, configuration: (Bot
 /**
  * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmName("newBot")
 @JvmOverloads
 fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
     factory.Bot(ContextImpl(), qq, password, configuration)
@@ -65,5 +69,6 @@ fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfigu
 /**
  * 加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmSynthetic
 inline fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(ContextImpl(), qq, password, configuration)

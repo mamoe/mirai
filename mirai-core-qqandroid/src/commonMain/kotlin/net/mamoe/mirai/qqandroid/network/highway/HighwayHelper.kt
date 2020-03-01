@@ -29,10 +29,10 @@ import kotlinx.io.InputStream
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
-import net.mamoe.mirai.qqandroid.network.protocol.packet.withUse
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
+import net.mamoe.mirai.utils.io.withUse
 
 @UseExperimental(MiraiInternalAPI::class)
 @Suppress("SpellCheckingInspection")

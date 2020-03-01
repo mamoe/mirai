@@ -42,7 +42,6 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
     require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }
     require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
     require(data !is ByteReadPacket || data.remaining.toInt() == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
-    require(data !is IoBuffer || data.readRemaining == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as IoBuffer).readRemaining}" }
 
     val flow = when (data) {
         is ByteReadPacket -> data.chunkedFlow(sizePerPacket)

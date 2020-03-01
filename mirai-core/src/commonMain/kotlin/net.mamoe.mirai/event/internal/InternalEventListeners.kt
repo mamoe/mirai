@@ -36,6 +36,7 @@ internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
     handler: suspend (E) -> ListeningStatus
 ): Handler<E> {
+    @UseExperimental(ExperimentalCoroutinesApi::class) // don't remove
     val context = this.newCoroutineContext(coroutineContext)
     return Handler(context[Job], context, handler)
 }
