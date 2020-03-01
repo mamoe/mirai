@@ -16,6 +16,10 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 /**
+ * 链接的两个消息.
+ *
+ * @see Message.plus
+ *
  * Left-biased list
  */
 class CombinedMessage(
@@ -27,11 +31,19 @@ class CombinedMessage(
     private suspend fun SequenceScope<Message>.yieldCombinedOrElements(message: Message) {
         when (message) {
             is CombinedMessage -> {
+                // fast path, 避免创建新的 iterator, 也不会挂起协程
                 yieldCombinedOrElements(message.element)
                 yieldCombinedOrElements(message.left)
             }
-            is MessageChain -> message.forEach { yieldCombinedOrElements(it) }
-            else -> yield(message)
+            is MessageChain -> {
+                // 更好的性能, 因为协程不会挂起.
+                // 这可能会导致爆栈 (十万个元素), 但作为消息序列足够了.
+                message.forEach { yieldCombinedOrElements(it) }
+            }
+            else -> {
+                check(message is SingleMessage) { "unsupported Message type. DO NOT CREATE YOUR OWN Message TYPE!" }
+                yield(message)
+            }
         }
     }
 
