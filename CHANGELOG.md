@@ -2,6 +2,17 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.24.0` 2020/3/1
+- Java 完全友好: Java 使用者可以同 Kotlin 方式直接阻塞式或异步（Future）调用 API
+- 新增 `MessegaSource.originalMessage: MessageChain` 以获取源消息内容
+- 群消息的撤回现在已稳定 (`Bot.recall`)
+- 现在可以引用回复机器人自己发送的消息: `MessageReceipt.quoteReply`
+- 新增 `MessageRecallEvent`
+
+- 整理 `MessageChain` 的构造, 优化性能
+- 整理所有网络层代码, 弃用 `kotlinx.io` 而使用 `io.ktor.utils.io`
+- 其他杂项优化
+
 ## `0.23.0` 2020/2/28
 ### mirai-core
 - 修复上传图片
