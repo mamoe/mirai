@@ -350,16 +350,16 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
 
 private fun MessageChain.removeAtAfterQuoteReply(): List<Message> {
     var last: Message? = null
-    return this.filterNot { message: Message ->
+    return this.filter { message: Message ->
         if (message is At) { // 筛除因 QuoteReply 导致的多余的 At
             if (last != null || last !is QuoteReply) {
-                return@filterNot true
+                return@filter true
             }
         } else if (message is MessageContent) {
-            return@filterNot true
+            return@filter true
         }
         last = message
-        return@filterNot false
+        return@filter false
     }
 }
 
