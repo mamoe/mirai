@@ -30,6 +30,7 @@ import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
 import java.io.RandomAccessFile
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -147,14 +148,14 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
     override fun createLoginSolver(): LoginSolver {
         return object : LoginSolver() {
-            override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+            override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
                 val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
                 withContext(Dispatchers.IO) {
                     tempFile.createNewFile()
                     pushLog(0, "[Login Solver]需要图片验证码登录, 验证码为 4 字母")
                     try {
                         tempFile.writeChannel().apply {
-                            writeFully(data)
+                            writeFully(ByteBuffer.wrap(data))
                             close()
                         }
                         pushLog(0, "请查看文件 ${tempFile.absolutePath}")
