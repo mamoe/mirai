@@ -24,9 +24,11 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 
 description = "QQ protocol library"
-version = rootProject.ext.get("miraiVersion")!!.toString()
 
 val isAndroidSDKAvailable: Boolean by project
+
+val miraiVersion: String by project
+version = miraiVersion
 
 kotlin {
     if (isAndroidSDKAvailable) {

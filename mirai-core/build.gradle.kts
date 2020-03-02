@@ -27,6 +27,9 @@ description = "QQ protocol library"
 
 val isAndroidSDKAvailable: Boolean by project
 
+val miraiVersion: String by project
+version = miraiVersion
+
 kotlin {
     if (isAndroidSDKAvailable) {
         apply(from = rootProject.file("gradle/android.gradle"))
