@@ -181,13 +181,12 @@ internal class QQImpl(
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl(
-    qq: QQImpl,
+    val qq: QQImpl,
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
 ) : Member() {
     override val group: GroupImpl by group.unsafeWeakRef()
-    val qq: QQImpl by qq.unsafeWeakRef()
 
     // region QQ delegate
     override val id: Long = qq.id
