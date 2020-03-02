@@ -181,7 +181,7 @@ internal class QQImpl(
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl(
-    val qq: QQImpl,
+    val qq: QQImpl, // 不要 WeakRef
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
