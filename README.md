@@ -43,7 +43,7 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 #### 使用 mirai 作为服务器，为 mirai 开发插件
 
-- （mirai 官方）`Java` 或 `Kotlin`： 为 [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 直接编写插件并与其他插件开发者合作共享
+- （mirai 官方）`Java` 或 `Kotlin`： 为 [mirai-console](https://github.com/mamoe/mirai-console) 直接编写插件并与其他插件开发者合作共享
 - （来自社区）C, C++ 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
 - （来自社区）Python: [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
 - （来自社区）JavaScript(NodeJS) [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
@@ -54,7 +54,7 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 - Kotlin 简略版： [Mirai Guide - Quick Start](/docs/guide_quick_start.md)
 - Kotlin 新手版： [Mirai Guide - Getting Started](/docs/guide_getting_started.md)
-- Java： [mirai-japt](https://github.com/mamoe/mirai-japt)
+- Java： 待添加
 
 
 ### 使用者
