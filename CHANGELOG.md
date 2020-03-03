@@ -2,6 +2,14 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.24.1` 2020/3/3
+- 修复 `Member` 的委托 `QQ` 弱引用被释放的问题
+- 用 `Bot.friends` 替代 `Bot.qqs`
+- 用 `Bot.containsFriend`, `Bot.containsGroup` 替代 `Bot.contains`
+- 新增 `BotFactory.Bot(String, ByteArray)` 用 md5 密码登录
+- 为 `BotFactory` 等类型的一些扩展指定 `JvmName`
+- 移动 `Bot.QQ` 到低级 API
+
 ## `0.24.0` 2020/3/1
 - Java 完全友好: Java 使用者可以同 Kotlin 方式直接阻塞式或异步（Future）调用 API
 - 新增 `MessegaSource.originalMessage: MessageChain` 以获取源消息内容
