@@ -13,6 +13,7 @@ package net.mamoe.mirai
 
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
+import kotlin.jvm.JvmName
 
 /**
  * 构造 [Bot] 的工厂.
@@ -21,10 +22,12 @@ import net.mamoe.mirai.utils.Context
  * - `mirai-core-timpc`: `TIMPC`
  * - `mirai-core-qqandroid`: `QQAndroid`
  */
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
+    @JvmName("newBot")
     fun Bot(
         context: Context,
         qq: Long,
@@ -35,6 +38,7 @@ interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
+    @JvmName("newBot")
     fun Bot(
         context: Context,
         qq: Long,
