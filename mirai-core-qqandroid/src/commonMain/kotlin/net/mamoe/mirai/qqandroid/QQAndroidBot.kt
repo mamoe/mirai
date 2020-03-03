@@ -153,7 +153,7 @@ internal abstract class QQAndroidBotBase constructor(
             getGroup(source.groupId).checkBotPermissionOperator()
         }
 
-        println(source._miraiContentToString())
+        // println(source._miraiContentToString())
         source.ensureSequenceIdAvailable()
 
         network.run {

@@ -284,7 +284,7 @@ internal class MessageSvc {
                 messageRandom = Random.nextInt().absoluteValue,
                 senderId = client.uin,
                 toUin = toUin,
-                time = currentTimeSeconds + client.timeDifference,
+                time = currentTimeSeconds,
                 groupId = 0,
                 sequenceId = client.atomicNextMessageSequenceId(),
                 originalMessage = message
@@ -335,7 +335,7 @@ internal class MessageSvc {
                 messageRandom = Random.nextInt().absoluteValue,
                 senderId = client.uin,
                 toUin = Group.calculateGroupUinByGroupCode(groupCode),
-                time = currentTimeSeconds + client.timeDifference,
+                time = currentTimeSeconds,
                 groupId = groupCode,
                 originalMessage = message//,
                 //   sourceMessage = message
