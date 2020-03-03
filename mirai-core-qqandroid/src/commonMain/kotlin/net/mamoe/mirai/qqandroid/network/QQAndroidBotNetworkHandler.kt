@@ -538,9 +538,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
         logger.verbose("Send: ${this.commandName}")
         withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
+            PacketLogger.debug { "Channel sending: $commandName" }
             channel.send(delegate)
+            PacketLogger.debug { "Channel send done: $commandName" }
         }
     }
+
+    class TimeoutException(override val message: String?) : Exception()
 
     /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
@@ -548,54 +552,59 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * @param retry 当不为 0 时将使用 [ByteArrayPool] 缓存. 因此若非必要, 请不要允许 retry
      */
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 0): E {
-        require(timeoutMillis > 0) { "timeoutMillis must > 0" }
+        require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry >= 0) { "retry must >= 0" }
 
         check(bot.isActive) { "bot is dead therefore can't send any packet" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
 
-        var lastException: Exception? = null
+        suspend fun doSendAndReceive(handler: PacketListener, data: Any, length: Int): E {
+            val result = async {
+                withTimeoutOrNull(3000) {
+                    withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
+                        PacketLogger.debug { "Channel sending: $commandName" }
+                        when (data) {
+                            is ByteArray -> channel.send(data, 0, length)
+                            is ByteReadPacket -> channel.send(data)
+                            else -> error("Internal error: unexpected data type: ${data::class.simpleName}")
+                        }
+                        PacketLogger.debug { "Channel send done: $commandName" }
+                    }
+                } ?: return@async "timeout sending packet $commandName"
+
+                logger.verbose("Send done: $commandName")
+
+                withTimeoutOrNull(timeoutMillis) {
+                    handler.await()
+                    // 不要 `withTimeout`. timeout 的报错会不正常.
+                } ?: return@async "timeout receiving response of $commandName"
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            when (val value = result.await()) {
+                is String -> throw TimeoutException(value)
+                else -> return value as E
+            }
+        }
+
         if (retry == 0) {
             val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
             packetListeners.addLast(handler)
             try {
-                withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
-                    channel.send(delegate)
-                }
-                logger.verbose("Send: ${this.commandName}")
-                return withTimeoutOrNull(timeoutMillis) {
-                    @Suppress("UNCHECKED_CAST")
-                    handler.await() as E
-                    // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
-                } ?: net.mamoe.mirai.qqandroid.utils.inline {
-                    error("timeout when receiving response of $commandName")
-                }
+                return doSendAndReceive(handler, delegate, 0) // no need
             } finally {
                 packetListeners.remove(handler)
             }
         } else this.delegate.useBytes { data, length ->
-            repeat(retry + 1) {
+            return tryNTimes(retry + 1) {
                 val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
                 packetListeners.addLast(handler)
                 try {
-                    withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
-                        channel.send(data, 0, length)
-                    }
-                    logger.verbose("Send: ${this.commandName}")
-                    return withTimeoutOrNull(timeoutMillis) {
-                        @Suppress("UNCHECKED_CAST")
-                        handler.await() as E
-                        // 不要 `withTimeout`. timeout 的异常会不知道去哪了.
-                    } ?: net.mamoe.mirai.qqandroid.utils.inline {
-                        error("timeout when receiving response of $commandName")
-                    }
-                } catch (e: Exception) {
-                    lastException = e
+                    doSendAndReceive(handler, data, length)
                 } finally {
                     packetListeners.remove(handler)
                 }
             }
-            throw lastException!!
         }
     }
 

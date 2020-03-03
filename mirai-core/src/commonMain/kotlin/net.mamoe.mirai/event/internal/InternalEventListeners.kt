@@ -86,7 +86,7 @@ internal class Handler<in E : Event>
 internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
 
 internal class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>>() {
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
     val supertypes: Set<KClass<out Event>> by lazy {
         val supertypes = mutableSetOf<KClass<out Event>>()
 

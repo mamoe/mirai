@@ -214,6 +214,7 @@ internal object KnownPacketFactories {
                     bot.network.pendingIncomingPackets?.addLast(it.also {
                         it.consumer = consumer
                         it.flag2 = flag2
+                        PacketLogger.info { "Cached ${it.commandName} #${it.sequenceId}" }
                     }) ?: handleIncomingPacket(it, bot, flag2, consumer)
                 } else {
                     handleIncomingPacket(it, bot, flag2, consumer)
@@ -234,6 +235,7 @@ internal object KnownPacketFactories {
             return
         }
 
+        PacketLogger.info { "Handle packet: ${it.commandName}" }
         it.data.withUse {
             when (flag2) {
                 0, 1 ->
