@@ -62,7 +62,7 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    @JvmName("sendMessgaeSuspend")
+    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     actual abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
 
