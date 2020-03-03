@@ -125,7 +125,8 @@ internal class MessageSvc {
             val resp = readProtoBuf(MsgSvc.PbGetMsgResp.serializer())
 
             if (resp.result != 0) {
-                bot.network.logger.warning("MessageSvc.PushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}")
+                bot.network.logger
+                    .warning("MessageSvc.PushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}")
                 return EmptyResponse
             }
 
@@ -233,14 +234,14 @@ internal class MessageSvc {
                 MsgSvc.SyncFlag.STOP -> return
                 MsgSvc.SyncFlag.START -> {
                     network.run {
-                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendWithoutExpect()
+                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendAndExpect<Packet>()
                     }
                     return
                 }
 
                 MsgSvc.SyncFlag.CONTINUE -> {
                     network.run {
-                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendWithoutExpect()
+                        PbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendAndExpect<Packet>()
                     }
                     return
                 }

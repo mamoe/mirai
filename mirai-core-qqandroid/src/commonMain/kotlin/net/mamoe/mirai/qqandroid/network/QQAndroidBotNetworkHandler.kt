@@ -62,8 +62,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     private val packetReceiveLock: Mutex = Mutex()
 
-    private fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
+    private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
         _packetReceiverJob?.cancel(cancelCause)
+        _packetReceiverJob?.join()
 
         return this.launch(CoroutineName("Incoming Packet Receiver")) {
             while (channel.isOpen) {
@@ -93,8 +94,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 val failException = doHeartBeat()
                 if (failException != null) {
                     delay(bot.configuration.firstReconnectDelayMillis)
-                    close(failException)
-                    BotOfflineEvent.Dropped(bot, failException).broadcast()
+                    bot.launch { BotOfflineEvent.Dropped(bot, failException).broadcast() }
+                    return@launch
                 }
             }
         }.also { heartbeatJob = it }
@@ -102,6 +103,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     override suspend fun relogin(cause: Throwable?) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
+        heartbeatJob?.join()
         if (::channel.isInitialized) {
             if (channel.isOpen) {
                 kotlin.runCatching {
@@ -116,6 +118,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         withTimeoutOrNull(3000) {
             channel.connect("113.96.13.208", 8080)
         } ?: error("timeout connecting server")
+        logger.info("Connected to server 113.96.13.208:8080")
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
@@ -133,7 +136,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             //refresh captcha
                             result = "ABCD"
                         }
-                        response = WtLogin.Login.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result).sendAndExpect()
+                        response = WtLogin.Login.SubCommand2.SubmitPictureCaptcha(bot.client, response.sign, result)
+                            .sendAndExpect()
                         continue@mainloop
                     }
                     is WtLogin.Login.LoginPacketResponse.Captcha.Slider -> {
@@ -176,7 +180,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     // caches
     private val _pendingEnabled = atomic(true)
     internal val pendingEnabled get() = _pendingEnabled.value
-    internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? = LockFreeLinkedList()
+    internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
+        LockFreeLinkedList()
 
     @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
@@ -315,7 +320,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         _pendingEnabled.value = false
         pendingIncomingPackets?.forEach {
             @Suppress("UNCHECKED_CAST")
-            KnownPacketFactories.handleIncomingPacket(it as KnownPacketFactories.IncomingPacket<Packet>, bot, it.flag2, it.consumer)
+            KnownPacketFactories.handleIncomingPacket(
+                it as KnownPacketFactories.IncomingPacket<Packet>,
+                bot,
+                it.flag2,
+                it.consumer
+            )
         }
         val list = pendingIncomingPackets
         pendingIncomingPackets = null // release, help gc
@@ -345,10 +355,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      */
     @Volatile
     private var cachedPacketTimeoutJob: Job? = null
+
     /**
      * 缓存的包
      */
     private val cachedPacket: AtomicRef<ByteReadPacket?> = atomic(null)
+
     /**
      * 缓存的包还差多少长度
      */
@@ -379,7 +391,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     // with generic type, less mistakes
     private suspend fun <P : Packet?> generifiedParsePacket(input: Input) {
-        KnownPacketFactories.parseIncomingPacket(bot, input) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
+        KnownPacketFactories.parseIncomingPacket(
+            bot,
+            input
+        ) { packetFactory: PacketFactory<P>, packet: P, commandName: String, sequenceId: Int ->
             if (packet is MultiPacket<*>) {
                 packet.forEach {
                     handlePacket(null, it, commandName, sequenceId)
@@ -392,7 +407,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 处理解析完成的包.
      */
-    suspend fun <P : Packet?> handlePacket(packetFactory: PacketFactory<P>?, packet: P, commandName: String, sequenceId: Int) {
+    suspend fun <P : Packet?> handlePacket(
+        packetFactory: PacketFactory<P>?,
+        packet: P,
+        commandName: String,
+        sequenceId: Int
+    ) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
             val logMessage = "Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}"
@@ -587,7 +607,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         val commandName: String,
         val sequenceId: Int
     ) : CompletableDeferred<Packet?> by CompletableDeferred(supervisor) {
-        fun filter(commandName: String, sequenceId: Int) = this.commandName == commandName && this.sequenceId == sequenceId
+        fun filter(commandName: String, sequenceId: Int) =
+            this.commandName == commandName && this.sequenceId == sequenceId
     }
 
     override fun close(cause: Throwable?) {
