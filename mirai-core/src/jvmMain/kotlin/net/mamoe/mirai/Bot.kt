@@ -4,10 +4,8 @@ package net.mamoe.mirai
 
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
-import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -136,15 +134,6 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
         return friends.delegate.getOrNull(id)
             ?: throw NoSuchElementException("No such friend $id for bot ${this.uin}")
     }
-
-    /**
-     * 构造一个 [QQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
-     *
-     * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
-     * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
-     */
-    @Suppress("FunctionName")
-    actual abstract fun QQ(friendInfo: FriendInfo): QQ
 
     /**
      * 机器人加入的群列表.

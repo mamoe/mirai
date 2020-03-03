@@ -18,7 +18,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
-import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -96,7 +95,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     // region contacts
 
     /**
-     * [QQ.id] 与 [Bot.uin] 相同的 [QQ] 实例
+     * [_lowLevelNewQQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewQQ] 实例
      */
     abstract val selfQQ: QQ
 
@@ -135,14 +134,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
      */
     fun getFriend(id: Long): QQ
-
-    /**
-     * 构造一个 [QQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
-     *
-     * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
-     * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
-     */
-    abstract fun QQ(friendInfo: FriendInfo): QQ
 
     /**
      * 机器人加入的群列表.

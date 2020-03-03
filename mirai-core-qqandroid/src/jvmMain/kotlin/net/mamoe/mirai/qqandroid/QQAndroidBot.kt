@@ -25,4 +25,3 @@ internal actual class QQAndroidBot actual constructor(
     account: BotAccount,
     configuration: BotConfiguration
 ) : QQAndroidBotBase(context, account, configuration)
-

@@ -12,6 +12,7 @@ package net.mamoe.mirai.qqandroid
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.CoroutineName
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.LowLevelAPI
@@ -67,14 +68,21 @@ internal abstract class QQAndroidBotBase constructor(
     override val friends: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     override val selfQQ: QQ by lazy {
-        QQ(object : FriendInfo {
+        @UseExperimental(LowLevelAPI::class)
+        _lowLevelNewQQ(object : FriendInfo {
             override val uin: Long get() = this@QQAndroidBotBase.uin
             override val nick: String get() = this@QQAndroidBotBase.nick
         })
     }
 
-    override fun QQ(friendInfo: FriendInfo): QQ {
-        return QQImpl(this as QQAndroidBot, coroutineContext, friendInfo.uin, friendInfo)
+    @LowLevelAPI
+    override fun _lowLevelNewQQ(friendInfo: FriendInfo): QQ {
+        return QQImpl(
+            this as QQAndroidBot,
+            coroutineContext + CoroutineName("QQ(${friendInfo.uin}"),
+            friendInfo.uin,
+            friendInfo
+        )
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {

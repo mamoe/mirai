@@ -9,11 +9,15 @@
 
 package net.mamoe.mirai
 
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.WeakRef
 
 /**
  * 标示这个 API 是低级的 API.
@@ -35,7 +39,16 @@ annotation class LowLevelAPI
 interface LowLevelBotAPIAccessor {
 
     /**
-     * 向服务器查询群列表. 返回值前 32 bits 为 uin, 后 32 bits 为 groupCode
+     * 构造一个 [_lowLevelNewQQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
+     *
+     * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
+     * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
+     */
+    @LowLevelAPI
+    fun _lowLevelNewQQ(friendInfo: FriendInfo): QQ
+
+    /**
+     * 向服务器查询群列表. 返回值高 32 bits 为 uin, 低 32 bits 为 groupCode
      */
     @LowLevelAPI
     suspend fun _lowLevelQueryGroupList(): Sequence<Long>
@@ -72,4 +85,21 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long)
+}
+
+/**
+ * 撤回一条群里的消息. 可以是机器人发送也可以是其他群员发送.
+ */
+@Suppress("FunctionName")
+@MiraiExperimentalAPI
+@LowLevelAPI
+suspend fun LowLevelBotAPIAccessor._lowLevelRecallGroupMessage(
+    groupId: Long,
+    messageSequenceId: Int,
+    messageRandom: Int
+) {
+    this._lowLevelRecallGroupMessage(
+        groupId,
+        messageSequenceId.toLong().shl(32) or messageRandom.toLong().and(0xFFFFFFFFL)
+    )
 }

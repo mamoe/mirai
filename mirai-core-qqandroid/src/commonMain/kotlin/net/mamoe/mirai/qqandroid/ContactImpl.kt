@@ -542,7 +542,7 @@ internal class GroupImpl(
     @UseExperimental(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            bot.QQ(memberInfo) as QQImpl,
+            bot._lowLevelNewQQQQ(memberInfo) as QQImpl,
             this,
             this.coroutineContext,
             memberInfo
