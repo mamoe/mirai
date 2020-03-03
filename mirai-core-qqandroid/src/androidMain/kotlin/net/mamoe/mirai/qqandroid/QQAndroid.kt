@@ -24,4 +24,15 @@ actual object QQAndroid : BotFactory {
     actual override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
         return QQAndroidBot(context, BotAccount(qq, password), configuration)
     }
+
+    /**
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     */
+    @UseExperimental(MiraiInternalAPI::class)
+    actual override fun Bot(
+        context: Context,
+        qq: Long,
+        passwordMd5: ByteArray,
+        configuration: BotConfiguration
+    ): Bot = QQAndroidBot(context, BotAccount(qq, passwordMd5), configuration)
 }

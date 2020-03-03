@@ -13,8 +13,6 @@ package net.mamoe.mirai
 
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
 
 /**
  * 构造 [Bot] 的工厂.
@@ -27,11 +25,42 @@ interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot
+    fun Bot(
+        context: Context,
+        qq: Long,
+        password: String,
+        configuration: BotConfiguration = BotConfiguration.Default
+    ): Bot
+
+    /**
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     */
+    fun Bot(
+        context: Context,
+        qq: Long,
+        passwordMd5: ByteArray,
+        configuration: BotConfiguration = BotConfiguration.Default
+    ): Bot
 }
 
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
-inline fun BotFactory.Bot(context: Context, qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
+inline fun BotFactory.Bot(
+    context: Context,
+    qq: Long,
+    password: String,
+    configuration: (BotConfiguration.() -> Unit)
+): Bot =
     this.Bot(context, qq, password, BotConfiguration().apply(configuration))
+
+/**
+ * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+ */
+inline fun BotFactory.Bot(
+    context: Context,
+    qq: Long,
+    passwordMd5: ByteArray,
+    configuration: (BotConfiguration.() -> Unit)
+): Bot =
+    this.Bot(context, qq, passwordMd5, BotConfiguration().apply(configuration))
