@@ -24,18 +24,19 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 
 多平台 **QQ Android** 和 **TIM PC** 协议支持库与高效率的机器人框架.   
 纯 Kotlin 实现协议和支持框架，模块<b>全部免费开源</b>。  
-目前可运行在 JVM 或 Android。
-Mirai既可以作为你项目中的QQ协议支持Lib, 也可以作为单独的Application与插件承载QQ机器人
+目前可运行在 JVM 或 Android 平台。
+mirai 既可以作为你项目中的 QQ 协议支持库, 也可以作为单独的应用程序与插件承载 QQ 机器人服务。
 
 **一切开发旨在学习，请勿用于非法用途**  
 
-加入 Gitter, 或加入 QQ 群: 655057127
-
+加入 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), 或加入 QQ 群: 655057127
 
 
 ## 开始使用Mirai
 
-Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-core，mirai-japt, mirai-api-http, mirai-console等核心模块进行特性的开发。
+Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。
+
+Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他框架, 但需注明来源并遵守开源协议要求 (AGPLv3)。
 
 ### 开发者
 
@@ -43,35 +44,30 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 
 #### 使用 mirai 作为服务器，为 mirai 开发插件
 
-- （mirai 官方）`Java` 或 `Kotlin`： 为 [mirai-console](https://github.com/mamoe/mirai-console) 直接编写插件并与其他插件开发者合作共享
-- （来自社区）C, C++ 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
-- （来自社区）Python: [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
-- （来自社区）JavaScript(NodeJS) [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
-- （mirai 官方）其他任意语言： [mirai HTTP 接口](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入
+- （官方）`Java` 或 `Kotlin`： 为 [mirai-console](https://github.com/mamoe/mirai-console) 直接编写插件并与其他插件开发者合作共享
+- （社区）`C`, `C++` 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
+- （社区）`Python`: [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
+- （社区）`JavaScript`(`NodeJS`) [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
+- （官方）其他任意语言： [mirai HTTP 接口](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入
 
 #### 使用 mirai 为第三方依赖库引入项目
 
 Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
-- Kotlin 简略版： [Mirai Guide - Quick Start](/docs/guide_quick_start.md)
-- Kotlin 新手版： [Mirai Guide - Getting Started](/docs/guide_getting_started.md)
-- Java： 待添加
-
+- `Kotlin` 简略版： [Mirai Guide - Quick Start](/docs/guide_quick_start.md)
+- `Kotlin` 新手版： [Mirai Guide - Getting Started](/docs/guide_getting_started.md)
+- `Java`： 查看上述 Demos
 
 ### 使用者
 
-- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件, **全平台可运行(UI版, Unix版, Android版, Web版)** **本模块正在完善**
-
-
+- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件 **本模块正在完善**
 
 ### 我是其他平台的使用者
 
 #### 酷Q平台用户: 
 
-- 酷Q的插件可以在 `Mirai` 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
-- 使用 `酷Q HTTPAPI` 的插件将可以在`mirai`中加载，`Mirai-CQ-Adapter` 正在计划中
-
-
+- 酷Q的插件可以在 mirai 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
+- 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
 
 ## 更新日志
 
@@ -89,7 +85,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ### mirai-core-qqandroid
 
-  QQ for Android （8.2.0 版本，2019 年 12 月）协议的实现，目前完成大部分。   
+  QQ for Android （8.2.7 版本，2020 年 3 月）协议的实现，目前完成大部分。
 
   - 高兼容性：协议仅含极少部分为硬编码，其余全部随官方方式动态生成
   - 高安全性：密匙随机，ECDH 动态计算
@@ -109,9 +105,9 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 ## 加入开发
 
 我们欢迎一切形式的贡献。  
-我们也期待有更多人能加入 `Mirai` 的开发。  
+我们也期待有更多人能加入 mirai 的开发。  
 
-若在使用过程中有任何疑问, 可提交 `issue` 或是[邮件联系](mailto:support@mamoe.net). 我们希望 `Mirai` 变得更易用.
+若在使用过程中有任何疑问, 可提交 `issue` 或是[邮件联系](mailto:support@mamoe.net). 我们希望 mirai 变得更易用.
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 

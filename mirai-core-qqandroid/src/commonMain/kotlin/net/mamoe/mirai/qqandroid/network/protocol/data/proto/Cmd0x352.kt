@@ -141,7 +141,7 @@ internal class Cmd0x352 : ProtoBuf {
          *  SHARPP: 1004
          */
         @SerialId(16) val imgType: Int = 1000,
-        @SerialId(17) val buildVer: String = "8.2.0.1296",//版本号
+        @SerialId(17) val buildVer: String = "8.2.7.4410",//版本号
         @SerialId(18) val fileIndex: ByteArray = EMPTY_BYTE_ARRAY,//default
         @SerialId(19) val fileStoreDays: Int = 0,//default
         @SerialId(20) val stepFlag: Int = 0,//default

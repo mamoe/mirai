@@ -35,7 +35,7 @@ internal class GetImgUrlReq(
     @SerialId(10) val innerIP: Int = 0,//确定
     @SerialId(11) val addressBook: Int = 0,//[ChatType.internalID]== 1006为1[为CONTACT时] 我觉得发0没问题
     @SerialId(12) val buType: Int = 1,//确定
-    @SerialId(13) val buildVer: String = "8.2.0.1296",//版本号
+    @SerialId(13) val buildVer: String = "8.2.7.4410",//版本号
     @SerialId(14) val timestamp: Int = currentTimeSeconds.toInt(),//(pic_up_timestamp)
     @SerialId(15) val requestTransferType: Int = 1
 ) : ImgReq

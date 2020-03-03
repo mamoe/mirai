@@ -184,11 +184,12 @@ inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> = OrN
  * ```
  * @see orNull 提供一个不存在则 null 的委托
  */
+@Suppress("RemoveExplicitTypeArguments")
 @JvmSynthetic
 inline fun <reified T : Message?> MessageChain.orElse(
     lazyDefault: () -> T
 ): OrNullDelegate<T> =
-    OrNullDelegate(this.firstOrNull<T>() ?: lazyDefault())
+    OrNullDelegate<T>(this.firstOrNull<T>() ?: lazyDefault())
 
 // endregion delegate
 

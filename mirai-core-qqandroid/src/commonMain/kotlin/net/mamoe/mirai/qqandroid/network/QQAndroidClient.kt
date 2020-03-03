@@ -100,8 +100,8 @@ internal open class QQAndroidClient(
 
     var openAppId: Long = 715019303L
 
-    val apkVersionName: ByteArray get() = "8.2.0".toByteArray()
-    val buildVer: String get() = "8.2.0.1296"
+    val apkVersionName: ByteArray get() = "8.2.7".toByteArray()
+    val buildVer: String get() = "8.2.7.4410"
 
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
@@ -122,7 +122,7 @@ internal open class QQAndroidClient(
     val apkSignatureMd5: ByteArray = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D".hexToBytes()
 
     /**
-     * 协议版本?, 8.2.0 的为 8001
+     * 协议版本?, 8.2.7 的为 8001
      */
     val protocolVersion: Short = 8001
 
@@ -164,10 +164,12 @@ internal open class QQAndroidClient(
 
     var t530: ByteArray? = null
     var t528: ByteArray? = null
+
     /**
      * t108 时更新
      */
-    var ksid: ByteArray = "|454001228437590|A8.2.0.27f6ea96".toByteArray()
+    var ksid: ByteArray = "|454001228437590|A8.2.7.27f6ea96".toByteArray()
+
     /**
      * t186
      */
