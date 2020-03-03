@@ -12,6 +12,7 @@ package net.mamoe.mirai.qqandroid
 import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
@@ -542,7 +543,8 @@ internal class GroupImpl(
     @UseExperimental(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            bot._lowLevelNewQQQQ(memberInfo) as QQImpl,
+            @UseExperimental(LowLevelAPI::class)
+            bot._lowLevelNewQQ(memberInfo) as QQImpl,
             this,
             this.coroutineContext,
             memberInfo
