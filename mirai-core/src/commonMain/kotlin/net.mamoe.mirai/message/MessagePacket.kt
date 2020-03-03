@@ -22,7 +22,11 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribingGet
 import net.mamoe.mirai.event.subscribingGetOrNull
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.recall
+import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmName
 
 /**
@@ -95,6 +99,26 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     suspend inline fun MessageChain.reply(): MessageReceipt<TSubject> = reply(this)
     // endregion
 
+    // region 撤回
+    suspend inline fun MessageChain.recall() = bot.recall(this)
+    suspend inline fun MessageSource.recall() = bot.recall(this)
+    suspend inline fun QuoteReply.recall() = bot.recall(this.source)
+    inline fun MessageChain.recallIn(
+        millis: Long,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext
+    ) = bot.recallIn(this, millis, coroutineContext)
+
+    inline fun MessageSource.recallIn(
+        millis: Long,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext
+    ) = bot.recallIn(this, millis, coroutineContext)
+
+    inline fun QuoteReply.recallIn(
+        millis: Long,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext
+    ) = bot.recallIn(this.source, millis, coroutineContext)
+    // endregion
+
     // region 上传图片
     suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
     // endregion
@@ -113,7 +137,8 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    suspend inline fun quoteReply(message: MessageChain): MessageReceipt<TSubject> = reply(this.message.quote() + message)
+    suspend inline fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
+        reply(this.message.quote() + message)
 
     suspend inline fun quoteReply(message: Message): MessageReceipt<TSubject> = reply(this.message.quote() + message)
     suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
@@ -141,7 +166,8 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
      */
     fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
 
-    fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error("`At.member` can only be used in GroupMessage")
+    fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target)
+        ?: error("`At.member` can only be used in GroupMessage")
 
     // endregion
 

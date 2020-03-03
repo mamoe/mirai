@@ -38,7 +38,7 @@ internal class MessageSourceFromServer(
     override val id: Long
         get() = (delegate.origSeqs?.firstOrNull()
             ?: error("cannot find sequenceId from ImMsgBody.SourceMsg")).toLong().shl(32) or
-                (delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!.toInt()).toLong().and(0xFFFFFFFF)
+                delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!.and(0xFFFFFFFF)
 
     override val toUin: Long get() = delegate.toUin
 
