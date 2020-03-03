@@ -140,7 +140,7 @@ fun Contact.recallIn(
  */
 @Suppress("UNCHECKED_CAST")
 suspend inline fun <C : Contact> C.sendMessage(message: Message): MessageReceipt<C> =
-    sendMessage(message.toChain()) as? MessageReceipt<C> ?: error("Internal class cast mistake")
+    sendMessage(message.asMessageChain()) as? MessageReceipt<C> ?: error("Internal class cast mistake")
 
 /**
  * @see Contact.sendMessage

@@ -31,7 +31,7 @@ import kotlin.reflect.KProperty
  * 要获取更多信息, 请查看 [Message]
  *
  * @see buildMessageChain 构造一个 [MessageChain]
- * @see toChain 将单个 [Message] 转换为 [MessageChain]
+ * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
  * @see asMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
  *
  * @see foreachContent 遍历内容
@@ -188,7 +188,7 @@ inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> = OrN
 inline fun <reified T : Message?> MessageChain.orElse(
     lazyDefault: () -> T
 ): OrNullDelegate<T> =
-    OrNullDelegate<T>(this.firstOrNull<T>() ?: lazyDefault())
+    OrNullDelegate(this.firstOrNull<T>() ?: lazyDefault())
 
 // endregion delegate
 
@@ -204,11 +204,14 @@ inline fun <reified T : Message?> MessageChain.orElse(
 @JvmName("newChain")
 @JsName("newChain")
 @Suppress("UNCHECKED_CAST")
-fun Message.toChain(): MessageChain = when (this) {
+fun Message.asMessageChain(): MessageChain = when (this) {
     is MessageChain -> this
     is CombinedMessage -> (this as Iterable<Message>).asMessageChain()
     else -> SingleMessageChainImpl(this as SingleMessage)
 }
+
+@Deprecated("use asMessageChain instead", ReplaceWith("this.asMessageChain()"), DeprecationLevel.ERROR)
+fun Message.toChain(): MessageChain = this.asMessageChain()
 
 /**
  * 直接将 [this] 委托为一个 [MessageChain]
@@ -220,7 +223,7 @@ fun Collection<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplB
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
 @JvmName("newChain")
-@JsName("newChain")
+// @JsName("newChain")
 fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
@@ -235,7 +238,7 @@ inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
 @JvmName("newChain")
-@JsName("newChain")
+// @JsName("newChain")
 fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
@@ -248,8 +251,28 @@ fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByS
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
 @JvmName("newChain")
-@JsName("newChain")
+// @JsName("newChain")
 fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+
+/**
+ * 构造一个 [MessageChain]
+ * 为提供更好的 Java API.
+ */
+@Suppress("FunctionName")
+@JvmName("newChain")
+fun _____newChain______(vararg messages: Message): MessageChain {
+    return messages.asIterable().asMessageChain()
+}
+
+/**
+ * 构造一个 [MessageChain]
+ * 为提供更好的 Java API.
+ */
+@Suppress("FunctionName")
+@JvmName("newChain")
+fun _____newChain______(messages: String): MessageChain {
+    return messages.toMessage().asMessageChain()
+}
 
 /**
  * 扁平化消息序列.
@@ -265,8 +288,8 @@ fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequenc
  */
 fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
 
-@JsName("flatten1") // avoid platform declare clash
-@JvmName("flatten1")
+// @JsName("flatten1")
+@JvmName("flatten1")// avoid platform declare clash
 @JvmSynthetic
 fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 

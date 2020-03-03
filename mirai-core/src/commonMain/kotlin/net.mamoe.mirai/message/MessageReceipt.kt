@@ -107,10 +107,10 @@ inline val MessageReceipt<*>.sourceSequenceId: Int get() = this.source.sequenceI
 inline val MessageReceipt<*>.sourceTime: Long get() = this.source.time
 
 suspend inline fun MessageReceipt<out Contact>.quoteReply(message: Message) {
-    return this.quoteReply(message.toChain())
+    return this.quoteReply(message.asMessageChain())
 }
 
 suspend inline fun MessageReceipt<out Contact>.quoteReply(message: String) {
-    return this.quoteReply(message.toMessage().toChain())
+    return this.quoteReply(message.toMessage().asMessageChain())
 }
 

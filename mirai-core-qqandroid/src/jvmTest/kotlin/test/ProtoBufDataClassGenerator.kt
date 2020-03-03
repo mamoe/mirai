@@ -7,8 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package test
 
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.cryptor.ProtoType
 import net.mamoe.mirai.utils.cryptor.protoFieldNumber
 import java.io.File
@@ -364,6 +367,7 @@ fun String.getNumericalValue(): Int? {
     return this.filter { it in '0'..'9' }.toDoubleOrNull()?.toInt()
 }
 
+@UseExperimental(MiraiDebugAPI::class)
 fun ProtoType.mapToKotlinType(): String {
     return when (this) {
         ProtoType.VAR_INT -> "Int"

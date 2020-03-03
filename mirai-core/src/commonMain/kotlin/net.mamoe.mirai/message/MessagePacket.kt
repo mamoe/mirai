@@ -76,10 +76,14 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    suspend inline fun reply(message: MessageChain): MessageReceipt<TSubject> = subject.sendMessage(message) as MessageReceipt<TSubject>
+    suspend inline fun reply(message: MessageChain): MessageReceipt<TSubject> =
+        subject.sendMessage(message) as MessageReceipt<TSubject>
 
-    suspend inline fun reply(message: Message): MessageReceipt<TSubject> = subject.sendMessage(message.toChain()) as MessageReceipt<TSubject>
-    suspend inline fun reply(plain: String): MessageReceipt<TSubject> = subject.sendMessage(plain.toMessage().toChain()) as MessageReceipt<TSubject>
+    suspend inline fun reply(message: Message): MessageReceipt<TSubject> =
+        subject.sendMessage(message.asMessageChain()) as MessageReceipt<TSubject>
+
+    suspend inline fun reply(plain: String): MessageReceipt<TSubject> =
+        subject.sendMessage(plain.toMessage().asMessageChain()) as MessageReceipt<TSubject>
 
     @JvmName("reply1")
     suspend inline fun String.reply(): MessageReceipt<TSubject> = reply(this)
