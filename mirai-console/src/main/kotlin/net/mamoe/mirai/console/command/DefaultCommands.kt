@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.PluginManager
@@ -19,6 +18,7 @@ import net.mamoe.mirai.console.utils.getManagers
 import net.mamoe.mirai.console.utils.removeManager
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
+import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.utils.SimpleLogger
 import java.util.*
 
@@ -170,7 +170,10 @@ object DefaultCommands {
                         MiraiConsole.bots.forEach {
                             if (it.get()?.uin.toString().contains(bot)) {
                                 find = true
-                                appendMessage("" + it.get()?.uin + ": 在线中; 好友数量:" + it.get()?.qqs?.size + "; 群组数量:" + it.get()?.groups?.size)
+                                appendMessage(
+                                    "" + it.get()?.uin + ": 在线中; 好友数量:" + it.get()?.friends?.size + "; 群组数量:" + it.get()
+                                        ?.groups?.size
+                                )
                             }
                         }
                         if (!find) {
@@ -208,11 +211,9 @@ object DefaultCommands {
                 val target = it[it.size - 2].toLong()
                 val message = it[it.size - 1]
                 try {
-                    val contact = bot[target]
-                    runBlocking {
-                        contact.sendMessage(message)
-                        MiraiConsole.logger("消息已推送")
-                    }
+                    val contact = bot.getFriendOrNull(target) ?: bot.getGroup(target)
+                    contact.sendMessage(message)
+                    MiraiConsole.logger("消息已推送")
                 } catch (e: NoSuchElementException) {
                     MiraiConsole.logger("没有找到群或好友 号码为${target}")
                     return@onCommand false
