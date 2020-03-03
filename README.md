@@ -49,8 +49,9 @@ Mirai支持以多种方式进行部署，但是目前，我们在集中对mirai-
 - （来自社区）JavaScript(NodeJS) [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
 - （mirai 官方）其他任意语言： [mirai HTTP 接口](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入
 
-
 #### 使用 mirai 为第三方依赖库引入项目
+
+Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 - Kotlin 简略版： [Mirai Guide - Quick Start](/docs/guide_quick_start.md)
 - Kotlin 新手版： [Mirai Guide - Getting Started](/docs/guide_getting_started.md)
