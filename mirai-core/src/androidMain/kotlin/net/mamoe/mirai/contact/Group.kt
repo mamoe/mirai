@@ -17,11 +17,15 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OfflineGroupImage
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.OverFileSizeMaxException
 
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
  */
+@Suppress("INAPPLICABLE_JVM_NAME")
 actual abstract class Group : Contact(), CoroutineScope {
     /**
      * 群名称.
@@ -33,6 +37,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     actual abstract var name: String
+
     /**
      * 入群公告, 没有时为空字符串.
      *
@@ -42,6 +47,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     actual abstract var entranceAnnouncement: String
+
     /**
      * 全体禁言状态. `true` 为开启.
      *
@@ -51,6 +57,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     actual abstract var isMuteAll: Boolean
+
     /**
      * 坦白说状态. `true` 为允许.
      *
@@ -60,6 +67,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     actual abstract var isConfessTalkEnabled: Boolean
+
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许
      *
@@ -69,29 +77,35 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     actual abstract var isAllowMemberInvite: Boolean
+
     /**
      * 自动加群审批
      */
     actual abstract val isAutoApproveEnabled: Boolean
+
     /**
      * 匿名聊天
      */
     actual abstract val isAnonymousChatEnabled: Boolean
+
     /**
      * 同为 groupCode, 用户看到的群号码.
      */
     actual abstract override val id: Long
+
     /**
      * 群主.
      *
      * @return 若机器人是群主, 返回 [botAsMember]. 否则返回相应的成员
      */
     actual abstract val owner: Member
+
     /**
      * [Bot] 在群内的 [Member] 实例
      */
     @MiraiExperimentalAPI
     actual abstract val botAsMember: Member
+
     /**
      * 机器人被禁言还剩余多少秒
      *
@@ -99,6 +113,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @see isBotMuted 判断机器人是否正在被禁言
      */
     actual abstract val botMuteRemaining: Int
+
     /**
      * 机器人在这个群里的权限
      *
@@ -108,6 +123,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
     actual abstract val botPermission: MemberPermission
+
     /**
      * 群头像下载链接.
      */
@@ -161,7 +177,22 @@ actual abstract class Group : Contact(), CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
+    @JvmName("sendMessageSuspend")
+    @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>
+
+    /**
+     * 上传一个图片以备发送.
+     *
+     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
+     * @see ImageUploadEvent 图片发送完成事件
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
+     */
+    @JvmName("uploadImageSuspend")
+    @JvmSynthetic
+    actual abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
 
     actual companion object {
         /**

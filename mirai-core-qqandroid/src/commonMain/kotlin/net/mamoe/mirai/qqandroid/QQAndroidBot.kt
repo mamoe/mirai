@@ -24,8 +24,8 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.qqandroid.message.CustomFaceFromServer
-import net.mamoe.mirai.qqandroid.message.NotOnlineImageFromServer
+import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
+import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
@@ -58,6 +58,7 @@ internal abstract class QQAndroidBotBase constructor(
         )
     internal var firstLoginSucceed: Boolean = false
     override val uin: Long get() = client.uin
+
     @Deprecated(
         "use friends instead",
         level = DeprecationLevel.ERROR,
@@ -208,14 +209,14 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    override suspend fun queryImageUrl(image: Image): String = "http://gchat.qpic.cn" + when (image) {
-        is NotOnlineImageFromServer -> image.delegate.origUrl
-        is CustomFaceFromServer -> image.delegate.origUrl
-        is CustomFaceFromFile -> {
-            TODO()
+    override suspend fun queryImageUrl(image: Image): String = when (image) {
+        is OnlineFriendImageImpl -> image.originUrl
+        is OnlineGroupImageImpl -> image.originUrl
+        is OfflineGroupImage -> {
+            TODO("暂不支持获取离线图片链接")
         }
-        is NotOnlineImageFromFile -> {
-            TODO()
+        is OfflineFriendImage -> {
+            TODO("暂不支持获取离线图片链接")
         }
         else -> error("unsupported image class: ${image::class.simpleName}")
     }

@@ -18,8 +18,8 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.id
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -32,6 +32,7 @@ import net.mamoe.mirai.utils.WeakRefProperty
  *
  * @author Him188moe
  */
+@Suppress("INAPPLICABLE_JVM_NAME")
 @UseExperimental(MiraiInternalAPI::class, JavaHappyAPI::class)
 actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
     /**
@@ -61,6 +62,8 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
+    @JvmName("sendMessgaeSuspend")
+    @JvmSynthetic
     actual abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
 
     /**
@@ -72,7 +75,9 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
-    actual abstract suspend fun uploadImage(image: ExternalImage): Image
+    @JvmName("uploadImageSuspend")
+    @JvmSynthetic
+    actual abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
 
     /**
      * 判断 `this` 和 [other] 是否是相同的类型, 并且 [id] 相同.

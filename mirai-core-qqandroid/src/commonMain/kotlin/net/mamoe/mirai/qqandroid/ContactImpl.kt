@@ -20,7 +20,10 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.OfflineFriendImage
+import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
@@ -73,7 +76,7 @@ internal class QQImpl(
         return MessageReceipt(source, this, null)
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image = try {
+    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -93,8 +96,9 @@ internal class QQImpl(
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
+            @Suppress("UNCHECKED_CAST") // bug
             return when (response) {
-                is LongConn.OffPicUp.Response.FileExists -> NotOnlineImageFromFile(
+                is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(
                     filepath = response.resourceId,
                     md5 = response.imageInfo.fileMd5,
                     fileLength = response.imageInfo.fileSize.toInt(),
@@ -125,7 +129,7 @@ internal class QQImpl(
                     //)
                     // 为什么不能 ??
 
-                    return NotOnlineImageFromFile(
+                    return OfflineFriendImage(
                         filepath = response.resourceId,
                         md5 = image.md5,
                         fileLength = image.inputSize.toInt(),
@@ -192,6 +196,7 @@ internal class MemberImpl(
     // region QQ delegate
     override val id: Long = qq.id
     override val nick: String = qq.nick
+
     @MiraiExperimentalAPI
     override suspend fun queryProfile(): Profile = qq.queryProfile()
 
@@ -202,12 +207,14 @@ internal class MemberImpl(
     override suspend fun queryRemark(): FriendNameRemark = qq.queryRemark()
 
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> = qq.sendMessage(message)
-    override suspend fun uploadImage(image: ExternalImage): Image = qq.uploadImage(image)
+    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = qq.uploadImage(image)
     // endregion
 
     override var permission: MemberPermission = memberInfo.permission
+
     @Suppress("PropertyName")
     internal var _nameCard: String = memberInfo.nameCard
+
     @Suppress("PropertyName")
     internal var _specialTitle: String = memberInfo.specialTitle
 
@@ -589,7 +596,7 @@ internal class GroupImpl(
         return MessageReceipt(source, this, botAsMember)
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image = try {
+    override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -606,6 +613,7 @@ internal class GroupImpl(
                 filename = image.filename
             ).sendAndExpect()
 
+            @Suppress("UNCHECKED_CAST") // bug
             when (response) {
                 is ImgStore.GroupPicUp.Response.Failed -> {
                     ImageUploadEvent.Failed(this@GroupImpl, image, response.resultCode, response.message).broadcast()
@@ -625,7 +633,7 @@ internal class GroupImpl(
 //                        fileId = response.fileId.toInt()
 //                    )
                     //  println("NMSL")
-                    return CustomFaceFromFile(
+                    return OfflineGroupImage(
                         md5 = image.md5,
                         filepath = resourceId
                     ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
@@ -655,7 +663,7 @@ internal class GroupImpl(
                     //     imageType = image.imageType,
                     //     fileId = response.fileId.toInt()
                     // )
-                    return CustomFaceFromFile(
+                    return OfflineGroupImage(
                         md5 = image.md5,
                         filepath = resourceId
                     ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }

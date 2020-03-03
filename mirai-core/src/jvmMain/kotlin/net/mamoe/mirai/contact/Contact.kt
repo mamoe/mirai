@@ -18,8 +18,8 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.id
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -76,7 +76,7 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
      */
     @JvmName("uploadImageSuspend")
     @JvmSynthetic
-    actual abstract suspend fun uploadImage(image: ExternalImage): Image
+    actual abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
 
     /**
      * 判断 `this` 和 [other] 是否是相同的类型, 并且 [id] 相同.

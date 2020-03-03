@@ -19,7 +19,10 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OfflineGroupImage
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.OverFileSizeMaxException
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
@@ -176,6 +179,19 @@ expect abstract class Group() : Contact, CoroutineScope {
     @JvmName("sendMessageSuspend")
     @JvmSynthetic
     abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>
+
+    /**
+     * 上传一个图片以备发送.
+     *
+     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
+     * @see ImageUploadEvent 图片发送完成事件
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
+     */
+    @JvmName("uploadImageSuspend")
+    @JvmSynthetic
+    abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
 
     companion object {
         // don't @JvmStatic: JDK 1.8 required

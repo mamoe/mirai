@@ -82,7 +82,7 @@ expect abstract class Contact() : CoroutineScope, ContactJavaHappyAPI {
      */
     @JvmName("uploadImageSuspend")
     @JvmSynthetic
-    abstract suspend fun uploadImage(image: ExternalImage): Image
+    abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
 
     /**
      * 判断 `this` 和 [other] 是否是相同的类型, 并且 [id] 相同.

@@ -7,12 +7,17 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
+import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OfflineFriendImage
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.OverFileSizeMaxException
 
 /**
  * QQ 对象.
@@ -84,4 +89,17 @@ actual abstract class QQ : Contact(), CoroutineScope {
     @JvmName("sendMessageSuspend")
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ>
+
+    /**
+     * 上传一个图片以备发送.
+     *
+     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
+     * @see ImageUploadEvent 图片发送完成事件
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
+     */
+    @JvmName("uploadImageSuspend")
+    @JvmSynthetic
+    actual abstract override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage
 }

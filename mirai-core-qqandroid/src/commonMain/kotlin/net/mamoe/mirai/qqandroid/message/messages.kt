@@ -38,7 +38,7 @@ internal fun At.toJceData(): ImMsgBody.Text {
     )
 }
 
-internal fun NotOnlineImageFromFile.toJceData(): ImMsgBody.NotOnlineImage {
+internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
     return ImMsgBody.NotOnlineImage(
         filePath = this.filepath,
         resId = this.resourceId,
@@ -104,7 +104,7 @@ internal fun Face.toJceData(): ImMsgBody.Face {
     )
 }
 
-internal fun CustomFaceFromFile.toJceData(): ImMsgBody.CustomFace {
+internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = this.filepath,
         fileId = this.fileId,
@@ -240,10 +240,10 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
                 elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
             }
-            is CustomFaceFromFile -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
-            is CustomFaceFromServer -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
-            is NotOnlineImageFromServer -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
-            is NotOnlineImageFromFile -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
+            is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
+            is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
+            is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
             is QuoteReplyToSend -> {
@@ -273,9 +273,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
     return elements
 }
 
-internal class CustomFaceFromServer(
+internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
-) : CustomFace() {
+) : OnlineGroupImage() {
     override val filepath: String = delegate.filePath
     override val fileId: Int get() = delegate.fileId
     override val serverIp: Int get() = delegate.serverIp
@@ -293,9 +293,11 @@ internal class CustomFaceFromServer(
     override val original: Int get() = delegate.origin
     override val pbReserve: ByteArray get() = delegate.pbReserve
     override val imageId: String = ExternalImage.generateImageId(delegate.md5, imageType)
+    override val originUrl: String
+        get() = "http://gchat.qpic.cn" + delegate.origUrl
 
     override fun equals(other: Any?): Boolean {
-        return other is CustomFaceFromServer && other.filepath == this.filepath && other.md5.contentEquals(this.md5)
+        return other is OnlineGroupImageImpl && other.filepath == this.filepath && other.md5.contentEquals(this.md5)
     }
 
     override fun hashCode(): Int {
@@ -303,9 +305,9 @@ internal class CustomFaceFromServer(
     }
 }
 
-internal class NotOnlineImageFromServer(
+internal class OnlineFriendImageImpl(
     internal val delegate: ImMsgBody.NotOnlineImage
-) : NotOnlineImage() {
+) : OnlineFriendImage() {
     override val resourceId: String get() = delegate.resId
     override val md5: ByteArray get() = delegate.picMd5
     override val filepath: String get() = delegate.filePath
@@ -317,9 +319,12 @@ internal class NotOnlineImageFromServer(
     override val downloadPath: String get() = delegate.downloadPath
     override val fileId: Int get() = delegate.fileId
     override val original: Int get() = delegate.original
+    override val originUrl: String
+        get() = "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
 
     override fun equals(other: Any?): Boolean {
-        return other is NotOnlineImageFromServer && other.resourceId == this.resourceId && other.md5.contentEquals(this.md5)
+        return other is OnlineFriendImageImpl && other.resourceId == this.resourceId && other.md5
+            .contentEquals(this.md5)
     }
 
     override fun hashCode(): Int {
@@ -368,8 +373,8 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
     this.forEach {
         when {
             it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))
-            it.notOnlineImage != null -> message.add(NotOnlineImageFromServer(it.notOnlineImage))
-            it.customFace != null -> message.add(CustomFaceFromServer(it.customFace))
+            it.notOnlineImage != null -> message.add(OnlineFriendImageImpl(it.notOnlineImage))
+            it.customFace != null -> message.add(OnlineGroupImageImpl(it.customFace))
             it.face != null -> message.add(Face(it.face.index))
             it.text != null -> {
                 if (it.text.attr6Buf.isEmpty()) {
