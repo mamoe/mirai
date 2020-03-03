@@ -189,7 +189,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             }
         }
         groups.delegate.clear()
-        qqs.delegate.clear()
+        friends.delegate.clear()
         instances.removeIf { it.get()?.uin == this.uin }
     }
 }

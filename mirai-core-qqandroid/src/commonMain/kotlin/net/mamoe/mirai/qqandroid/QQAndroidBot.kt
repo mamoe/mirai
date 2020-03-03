@@ -57,7 +57,14 @@ internal abstract class QQAndroidBotBase constructor(
         )
     internal var firstLoginSucceed: Boolean = false
     override val uin: Long get() = client.uin
-    override val qqs: ContactList<QQ> = ContactList(LockFreeLinkedList())
+    @Deprecated(
+        "use friends instead",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("this.friends")
+    )
+    override val qqs: ContactList<QQ>
+        get() = friends
+    override val friends: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     override val selfQQ: QQ by lazy {
         QQ(object : FriendInfo {

@@ -96,14 +96,28 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
     /**
      * 机器人的好友列表. 它将与服务器同步更新
      */
+    @Deprecated(
+        "use friends instead",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("this.friends")
+    )
     actual abstract val qqs: ContactList<QQ>
 
     /**
-     * 获取一个好友或一个群.
-     * 在一些情况下这可能会造成歧义. 请考虑后使用.
+     * 机器人的好友列表. 它将与服务器同步更新
      */
+    actual abstract val friends: ContactList<QQ>
+
+    /**
+     * 获取一个好友或一个群.
+     */
+    @Deprecated(
+        "use getFriend or getGroup instead",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("this.qqs.getOrNull(id) ?: this.groups.getOrNull(id) ?: throw NoSuchElementException(\"contact id \$id\")")
+    )
     actual operator fun get(id: Long): Contact {
-        return this.qqs.getOrNull(id) ?: this.groups.getOrNull(id) ?: throw NoSuchElementException("contact id $id")
+        return this.friends.getOrNull(id) ?: this.groups.getOrNull(id) ?: throw NoSuchElementException("contact id $id")
     }
 
     /**
@@ -111,7 +125,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * 在一些情况下这可能会造成歧义. 请考虑后使用.
      */
     actual operator fun contains(id: Long): Boolean {
-        return this.qqs.contains(id) || this.groups.contains(id)
+        return this.friends.contains(id) || this.groups.contains(id)
     }
 
     /**
@@ -119,7 +133,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      */
     actual fun getFriend(id: Long): QQ {
         if (id == uin) return selfQQ
-        return qqs.delegate.getOrNull(id)
+        return friends.delegate.getOrNull(id)
             ?: throw NoSuchElementException("No such friend $id for bot ${this.uin}")
     }
 

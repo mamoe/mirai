@@ -95,22 +95,39 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
 
     // region contacts
 
+    /**
+     * [QQ.id] 与 [Bot.uin] 相同的 [QQ] 实例
+     */
     abstract val selfQQ: QQ
 
     /**
      * 机器人的好友列表. 它将与服务器同步更新
      */
+    @Deprecated(
+        "use friends instead",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("this.friends")
+    )
     abstract val qqs: ContactList<QQ>
+
+    /**
+     * 机器人的好友列表. 它将与服务器同步更新
+     */
+    abstract val friends: ContactList<QQ>
 
     /**
      * 获取一个好友或一个群.
      * 在一些情况下这可能会造成歧义. 请考虑后使用.
      */
+    @Deprecated(
+        "use getFriend or getGroup instead",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("this.qqs.getOrNull(id) ?: this.groups.getOrNull(id) ?: throw NoSuchElementException(\"contact id \$id\")")
+    )
     operator fun get(id: Long): Contact
 
     /**
      * 判断是否有这个 id 的好友或群.
-     * 在一些情况下这可能会造成歧义. 请考虑后使用.
      */
     operator fun contains(id: Long): Boolean
 
@@ -294,10 +311,10 @@ suspend inline fun Bot.closeAndJoin(cause: Throwable? = null) {
     coroutineContext[Job]?.join()
 }
 
-inline fun Bot.containsFriend(id: Long): Boolean = this.qqs.contains(id)
+inline fun Bot.containsFriend(id: Long): Boolean = this.friends.contains(id)
 
 inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
 
-inline fun Bot.getFriendOrNull(id: Long): QQ? = this.qqs.getOrNull(id)
+inline fun Bot.getFriendOrNull(id: Long): QQ? = this.friends.getOrNull(id)
 
 inline fun Bot.getGroupOrNull(id: Long): Group? = this.groups.getOrNull(id)

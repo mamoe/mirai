@@ -183,7 +183,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         check(bot.isActive) { "bot is dead therefore network can't init" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
 
-        bot.qqs.delegate.clear()
+        bot.friends.delegate.clear()
         bot.groups.delegate.clear()
 
         val friendListJob = launch {
@@ -211,7 +211,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     totalFriendCount = data.totalFriendCount
                     data.friendList.forEach {
                         // atomic add
-                        bot.qqs.delegate.addLast(QQImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))).also {
+                        bot.friends.delegate.addLast(
+                            QQImpl(
+                                bot,
+                                bot.coroutineContext,
+                                it.friendUin,
+                                FriendInfoImpl(it)
+                            )
+                        ).also {
                             currentFriendCount++
                         }
                     }
