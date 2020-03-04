@@ -80,9 +80,10 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 }
 
 class GraphicalLoginSolver : LoginSolver() {
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? {
+    override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.

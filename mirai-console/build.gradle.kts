@@ -36,14 +36,42 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
 val miraiVersion: String by rootProject.ext
 
 dependencies {
-    implementation("net.mamoe:mirai-core-jvm:$miraiVersion")
-    implementation("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
+    compileOnly("net.mamoe:mirai-core-jvm:$miraiVersion")
+    compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
 
     api(kotlin("serialization"))
+
+
     api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
     api(group = "org.yaml", name = "snakeyaml", version = "1.25")
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
-    api("no.tornado:tornadofx:1.7.19")
+
+
+    api(kotlin("stdlib", kotlinVersion))
+    api(kotlin("serialization", kotlinVersion))
+
+    api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+    api(kotlinx("coroutines-io", coroutinesIoVersion))
+    api(kotlinx("coroutines-core", coroutinesVersion))
+    api(ktor("client-core-jvm", ktorVersion))
+    api(kotlinx("serialization-runtime", serializationVersion))
+    api(kotlinx("coroutines-io", coroutinesIoVersion))
+    api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
+    api(kotlinx("io-jvm", coroutinesIoVersion))
+
+    api("org.bouncycastle:bcprov-jdk15on:1.64")
+
+    api(kotlin("reflect", kotlinVersion))
+    api(kotlin("serialization", kotlinVersion))
+    api(kotlinx("coroutines-core-common", coroutinesVersion))
+    api(kotlinx("serialization-runtime-common", serializationVersion))
+
+    api(ktor("http-cio", ktorVersion))
+    api(ktor("http", ktorVersion))
+    api(ktor("client-core-jvm", ktorVersion))
+    api(ktor("client-cio", ktorVersion))
+    api(ktor("client-core", ktorVersion))
+    api(ktor("network", ktorVersion))
 }
 
 val mirai_console_version: String by project.ext

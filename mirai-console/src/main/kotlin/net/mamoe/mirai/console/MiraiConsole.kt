@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
+import net.mamoe.mirai.console.core.MiraiCoreLoader
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.plugins.loadAsConfig
 import net.mamoe.mirai.console.plugins.withDefaultWrite
@@ -82,6 +83,16 @@ object MiraiConsole {
         }
         start = true
 
+        /* 初始化前端 */
+        this.frontEnd = frontEnd
+        frontEnd.pushVersion(version, build, "Loading")
+        logger("Mirai-console now running under $path")
+        logger("Get news in github: https://github.com/mamoe/mirai")
+        logger("Mirai为开源项目，请自觉遵守开源项目协议")
+        logger("Powered by Mamoe Technologies and contributors")
+
+        MiraiCoreLoader()
+
         /* 加载ECDH */
         try {
             ECDH()
@@ -90,18 +101,8 @@ object MiraiConsole {
         //Security.removeProvider("BC")
 
 
-        /* 初始化前端 */
-        this.frontEnd = frontEnd
-        frontEnd.pushVersion(version, build, coreVersion)
-        logger("Mirai-console [$version $build | core version $coreVersion] is still in testing stage, major features are available")
-        logger("Mirai-console now running under $path")
-        logger("Get news in github: https://github.com/mamoe/mirai")
-        logger("Mirai为开源项目，请自觉遵守开源项目协议")
-        logger("Powered by Mamoe Technologies and contributors")
-
         /* 依次启用功能 */
         DefaultCommands()
-        HTTPAPIAdaptar()
         pluginManager.loadPlugins()
         CommandProcessor.start()
 
@@ -182,37 +183,5 @@ object MiraiConsole {
     }
 
 }
-
-object MiraiProperties {
-    var config = File("${MiraiConsole.path}/mirai.properties").loadAsConfig()
-
-    var HTTP_API_ENABLE: Boolean by config.withDefaultWrite { true }
-    var HTTP_API_PORT: Int by config.withDefaultWrite { 8080 }
-    /*
-    var HTTP_API_AUTH_KEY: String by config.withDefaultWriteSave {
-        "InitKey" + generateSessionKey()
-    }*/
-}
-
-object HTTPAPIAdaptar {
-    operator fun invoke() {
-        /*
-        if (MiraiProperties.HTTP_API_ENABLE) {
-            if (MiraiProperties.HTTP_API_AUTH_KEY.startsWith("InitKey")) {
-                MiraiConsole.logger("请尽快更改初始生成的HTTP API AUTHKEY")
-            }
-            MiraiConsole.logger("正在启动HTTPAPI; 端口=" + MiraiProperties.HTTP_API_PORT)
-            MiraiHttpAPIServer.logger = SimpleLogger("HTTP API") { _, message, e ->
-                MiraiConsole.logger("[Mirai HTTP API]", 0, message)
-            }
-            MiraiHttpAPIServer.start(
-                MiraiProperties.HTTP_API_PORT,
-                MiraiProperties.HTTP_API_AUTH_KEY
-            )
-            MiraiConsole.logger("HTTPAPI启动完成; 端口= " + MiraiProperties.HTTP_API_PORT)
-        }*/
-    }
-}
-
 
 

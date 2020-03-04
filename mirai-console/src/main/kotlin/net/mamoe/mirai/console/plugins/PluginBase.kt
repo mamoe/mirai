@@ -37,8 +37,6 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     val dataFolder: File by lazy {
         File(_getDataFolder()).also {
             it.mkdir()
-            println(it.absolutePath)
-            println(pluginName)
         }
     }
 
@@ -351,7 +349,6 @@ object PluginManager {
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
                     val plugin: PluginBase =
                         subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
-                    println("aaaaaa")
                     description.loaded = true
                     logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
                     logger.info(description.info)
