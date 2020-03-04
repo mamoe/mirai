@@ -13,7 +13,6 @@ package net.mamoe.mirai.message
 
 import io.ktor.utils.io.core.Input
 import io.ktor.utils.io.core.use
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.data.Image
@@ -30,7 +29,7 @@ import java.net.URL
  * 一条从服务器接收到的消息事件.
  * JVM 平台相关扩展
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() : MessagePacketBase<TSender, TSubject>() {
     // region 上传图片
     suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
@@ -74,13 +73,11 @@ actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual con
     /**
      * 下载图片到 [output] 但不关闭这个 [output]
      */
-    @OptIn(InternalSerializationApi::class)
     suspend inline fun Image.downloadTo(output: OutputStream) = channel().copyTo(output)
 
     /**
      * 下载图片到 [output] 并关闭这个 [output]
      */
-    @OptIn(InternalSerializationApi::class)
     suspend inline fun Image.downloadAndClose(output: OutputStream) = channel().copyAndClose(output)
 
     /*

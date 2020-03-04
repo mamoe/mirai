@@ -35,7 +35,7 @@ internal class CombinedMessageTest {
 
     private val toAdd = "1".toMessage()
 
-    @OptIn(ExperimentalTime::class)
+    @UseExperimental(ExperimentalTime::class)
     @Test
     fun speedTest() = repeat(100) {
         var count = 1L
@@ -86,7 +86,7 @@ internal class CombinedMessageTest {
         }
     }
 
-    @OptIn(ExperimentalTime::class)
+    @UseExperimental(ExperimentalTime::class)
     @Test
     fun testFastIteration() {
         println("start!")

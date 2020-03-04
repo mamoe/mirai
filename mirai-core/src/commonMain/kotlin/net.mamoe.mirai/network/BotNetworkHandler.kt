@@ -101,7 +101,7 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null) {
     this.close(cause)
     this.supervisor.join()

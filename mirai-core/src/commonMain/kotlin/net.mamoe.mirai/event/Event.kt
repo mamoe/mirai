@@ -66,7 +66,7 @@ abstract class AbstractCancellableEvent : Event, CancellableEvent {
 /**
  * 广播一个事件的唯一途径.
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 suspend fun <E : Event> E.broadcast(): E = apply {
     if (this is BroadcastControllable && !this.shouldBroadcast) {
         return@apply

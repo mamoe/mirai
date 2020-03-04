@@ -33,7 +33,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
@@ -58,7 +58,7 @@ inline fun <R> CoroutineScope.subscribeMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
@@ -78,7 +78,7 @@ inline fun <R> CoroutineScope.subscribeGroupMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
@@ -98,7 +98,7 @@ inline fun <R> CoroutineScope.subscribeFriendMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
@@ -120,7 +120,7 @@ inline fun <R> Bot.subscribeMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
@@ -140,7 +140,7 @@ inline fun <R> Bot.subscribeGroupMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
@@ -189,7 +189,7 @@ typealias MessageListener<T> = @MessageDsl suspend T.(String) -> Unit
  * 消息订阅构造器
  *
  * @see subscribeFriendMessages
- // * @sample demo.subscribe.messageDSL
+ * @sample demo.subscribe.messageDSL
  */
 // TODO: 2019/12/23 应定义为 inline, 但这会导致一个 JVM run-time VerifyError. 等待 kotlin 修复 bug (Kotlin 1.3.61)
 @Suppress("unused")

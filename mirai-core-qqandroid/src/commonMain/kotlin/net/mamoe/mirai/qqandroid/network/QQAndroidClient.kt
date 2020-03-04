@@ -40,7 +40,7 @@ import net.mamoe.mirai.utils.io.*
  DOMAINS
  Pskey: "openmobile.qq.com"
  */
-@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
+@UseExperimental(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
 @PublishedApi
 internal open class QQAndroidClient(
     context: Context,
@@ -158,7 +158,7 @@ internal open class QQAndroidClient(
      */
     val uin: Long get() = _uin
 
-    @OptIn(RawAccountIdUse::class)
+    @UseExperimental(RawAccountIdUse::class)
     @Suppress("PropertyName")
     internal var _uin: Long = bot.account.id
 

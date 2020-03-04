@@ -68,6 +68,6 @@ fun BytePacketBuilder.writeHex(uHex: String) {
 /**
  * 会使用 [ByteArrayPool] 缓存
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
     TEA.encrypt(BytePacketBuilder().apply(encoder).build(), key) { decrypted -> writeFully(decrypted) }

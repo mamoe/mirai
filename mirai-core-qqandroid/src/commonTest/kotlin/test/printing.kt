@@ -35,7 +35,7 @@ inline fun ByteArray.debugPrintThis(name: String): ByteArray {
     return this
 }
 
-@OptIn(ExperimentalContracts::class, MiraiInternalAPI::class)
+@UseExperimental(ExperimentalContracts::class, MiraiInternalAPI::class)
 inline fun <R> Input.debugIfFail(name: String = "", onFail: (ByteArray) -> ByteReadPacket = { it.toReadPacket() }, block: ByteReadPacket.() -> R): R {
 
     contract {

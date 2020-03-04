@@ -36,7 +36,7 @@ internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
     handler: suspend (E) -> ListeningStatus
 ): Handler<E> {
-    @OptIn(ExperimentalCoroutinesApi::class) // don't remove
+    @UseExperimental(ExperimentalCoroutinesApi::class) // don't remove
     val context = this.newCoroutineContext(coroutineContext)
     return Handler(context[Job], context, handler)
 }
@@ -50,7 +50,7 @@ internal class Handler<in E : Event>
 @PublishedApi internal constructor(parentJob: Job?, private val subscriberContext: CoroutineContext, @JvmField val handler: suspend (E) -> ListeningStatus) :
     Listener<E>, CompletableJob by Job(parentJob) {
 
-    @OptIn(MiraiDebugAPI::class)
+    @UseExperimental(MiraiDebugAPI::class)
     override suspend fun onEvent(event: E): ListeningStatus {
         if (isCompleted || isCancelled) return ListeningStatus.STOPPED
         if (!isActive) return ListeningStatus.LISTENING
@@ -155,7 +155,7 @@ internal suspend inline fun Event.broadcastInternal() = coroutineScope {
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(event: E, listeners: EventListeners<E>) {
     // atomic foreach
     listeners.forEachNode { node ->

@@ -39,7 +39,7 @@ open class QuoteReply
  * 用于发送的引用回复.
  * 总是使用 [quote] 来构造实例.
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 sealed class QuoteReplyToSend
 @MiraiInternalAPI constructor(source: MessageSource) : QuoteReply(source) {
     class ToGroup(source: MessageSource, val sender: QQ) : QuoteReplyToSend(source) {
@@ -53,7 +53,7 @@ sealed class QuoteReplyToSend
  * 引用这条消息.
  * @see sender 消息发送人.
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 fun MessageChain.quote(sender: QQ?): QuoteReplyToSend {
     this.firstOrNull<MessageSource>()?.let {
         return it.quote(sender)
@@ -65,7 +65,7 @@ fun MessageChain.quote(sender: QQ?): QuoteReplyToSend {
  * 引用这条消息.
  * @see from 消息来源. 若是好友发送
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 fun MessageSource.quote(from: QQ?): QuoteReplyToSend {
     return if (this.groupId != 0L) {
         check(from is Member) { "sender must be Member to quote a GroupMessage" }

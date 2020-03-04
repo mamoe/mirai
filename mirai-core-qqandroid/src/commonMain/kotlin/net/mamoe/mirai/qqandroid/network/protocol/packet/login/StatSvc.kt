@@ -16,18 +16,18 @@ import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.SvcReqRegister
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769.Oidb0x769
 import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.toReadPacket
 import net.mamoe.mirai.utils.localIpAddress
 
-@Suppress("EnumEntryName", "unused")
+@Suppress("EnumEntryName")
 internal enum class RegPushReason {
     appRegister,
     createDefaultRegInfo,
@@ -52,7 +52,6 @@ internal class StatSvc {
                 }
             }
 
-            @Suppress("MemberVisibilityCanBePrivate")
             class Failed(val errno: Int, val message: String) : Response() {
                 override fun toString(): String {
                     return "StatSvc.GetOnlineStatus.Response.Failed(errno=$errno, message=$message)"

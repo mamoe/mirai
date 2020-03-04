@@ -20,6 +20,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
@@ -47,7 +48,7 @@ internal sealed class PacketFactory<TPacket : Packet?> {
  *
  * @param TPacket 服务器回复包解析结果
  */
-@OptIn(ExperimentalUnsignedTypes::class)
+@UseExperimental(ExperimentalUnsignedTypes::class)
 internal abstract class OutgoingPacketFactory<TPacket : Packet?>(
     /**
      * 命令名. 如 `wtlogin.login`, `ConfigPushSvc.PushDomain`
@@ -116,7 +117,7 @@ internal val PacketLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet").withS
 /**
  * 已知的数据包工厂列表.
  */
-@OptIn(ExperimentalUnsignedTypes::class)
+@UseExperimental(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
         WtLogin.Login,
@@ -163,7 +164,7 @@ internal object KnownPacketFactories {
      * full packet without length
      */
     // do not inline. Exceptions thrown will not be reported correctly
-    @OptIn(MiraiInternalAPI::class)
+    @UseExperimental(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
     suspend fun <T : Packet?> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) = with(rawInput) {
         // login
@@ -225,7 +226,7 @@ internal object KnownPacketFactories {
         }
     }
 
-    @OptIn(MiraiInternalAPI::class)
+    @UseExperimental(MiraiInternalAPI::class)
     internal suspend fun <T : Packet?> handleIncomingPacket(it: IncomingPacket<T>, bot: QQAndroidBot, flag2: Int, consumer: PacketConsumer<T>) {
         if (it.packetFactory == null) {
             bot.network.logger.debug("Received commandName: ${it.commandName}")
@@ -274,7 +275,7 @@ internal object KnownPacketFactories {
     /**
      * 解析 SSO 层包装
      */
-    @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+    @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket<*> {
         val commandName: String
         val ssoSequenceId: Int
@@ -335,7 +336,7 @@ internal object KnownPacketFactories {
         return IncomingPacket(packetFactory, ssoSequenceId, packet, commandName)
     }
 
-    @OptIn(MiraiInternalAPI::class)
+    @UseExperimental(MiraiInternalAPI::class)
     private suspend fun <T : Packet?> ByteReadPacket.parseOicqResponse(
         bot: QQAndroidBot,
         packetFactory: OutgoingPacketFactory<T>,

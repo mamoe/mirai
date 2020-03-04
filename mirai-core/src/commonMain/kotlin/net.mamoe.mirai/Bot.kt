@@ -41,7 +41,7 @@ import kotlin.jvm.JvmSynthetic
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
+@UseExperimental(MiraiInternalAPI::class, LowLevelAPI::class)
 expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     companion object {
         /**
@@ -241,7 +241,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      */
     abstract fun close(cause: Throwable? = null)
 
-    @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
+    @UseExperimental(LowLevelAPI::class, MiraiExperimentalAPI::class)
     final override fun toString(): String
 }
 

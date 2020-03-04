@@ -31,6 +31,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
@@ -44,7 +45,7 @@ import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime
 
 @Suppress("MemberVisibilityCanBePrivate")
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
@@ -182,7 +183,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()
 
-    @OptIn(MiraiExperimentalAPI::class, ExperimentalTime::class)
+    @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
@@ -371,7 +372,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @UseExperimental(ExperimentalCoroutinesApi::class)
     fun parsePacketAsync(input: Input): Job {
         return this.launch(start = CoroutineStart.ATOMIC) {
             input.use { parsePacket(it) }

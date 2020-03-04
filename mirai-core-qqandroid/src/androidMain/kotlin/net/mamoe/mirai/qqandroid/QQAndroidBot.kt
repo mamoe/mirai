@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 internal actual class QQAndroidBot
 actual constructor(
     context: Context,
