@@ -343,6 +343,7 @@ internal object KnownPacketFactories {
         ssoSequenceId: Int,
         consumer: PacketConsumer<T>
     ) {
+        @Suppress("DuplicatedCode")
         check(readByte().toInt() == 2)
         this.discardExact(2) // 27 + 2 + body.size
         this.discardExact(2) // const, =8001

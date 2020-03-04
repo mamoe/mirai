@@ -13,7 +13,7 @@ val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
 val coroutinesIoVersion: String by rootProject.ext
 
-val klockVersion: String by rootProject.ext
+
 val ktorVersion: String by rootProject.ext
 
 val serializationVersion: String by rootProject.ext
