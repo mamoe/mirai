@@ -77,23 +77,23 @@ class MessageChainBuilder
         this.add(PlainText(charSequence))
     }
 
-    override fun append(c: Char): Appendable = apply {
-        this.add(PlainText(c.toString()))
+    override fun append(value: Char): Appendable = apply {
+        this.add(PlainText(value.toString()))
     }
 
-    override fun append(csq: CharSequence?): Appendable = apply {
+    override fun append(value: CharSequence?): Appendable = apply {
         when {
-            csq == null -> this.add(PlainText.Null)
-            csq.isEmpty() -> this.add(PlainText.Empty)
-            else -> this.add(PlainText(csq))
+            value == null -> this.add(PlainText.Null)
+            value.isEmpty() -> this.add(PlainText.Empty)
+            else -> this.add(PlainText(value))
         }
     }
 
-    override fun append(csq: CharSequence?, start: Int, end: Int): Appendable = apply {
+    override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): Appendable = apply {
         when {
-            csq == null -> this.add(PlainText.Null)
-            csq.isEmpty() -> this.add(PlainText.Empty)
-            else -> this.add(PlainText(csq.substring(start, end)))
+            value == null -> this.add(PlainText.Null)
+            value.isEmpty() -> this.add(PlainText.Empty)
+            else -> this.add(PlainText(value.substring(startIndex, endIndex)))
         }
     }
 }

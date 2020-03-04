@@ -19,7 +19,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.io.InputStream
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 
@@ -127,7 +127,7 @@ internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
  *
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
-@OptIn(MiraiInternalAPI::class, ExperimentalCoroutinesApi::class)
+@OptIn(MiraiInternalAPI::class, ExperimentalCoroutinesApi::class, InternalSerializationApi::class)
 internal fun InputStream.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
 

@@ -12,9 +12,14 @@ package net.mamoe.mirai.qqandroid.io.serialization
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.*
+import kotlinx.serialization.builtins.ByteArraySerializer
+import kotlinx.serialization.builtins.MapEntrySerializer
+import kotlinx.serialization.builtins.SetSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.utils.io.readString
@@ -22,6 +27,7 @@ import net.mamoe.mirai.utils.io.toReadPacket
 
 @PublishedApi
 internal val CharsetGBK = Charset.forName("GBK")
+
 @PublishedApi
 internal val CharsetUTF8 = Charset.forName("UTF8")
 
@@ -30,12 +36,14 @@ enum class JceCharset(val kotlinCharset: Charset) {
     UTF8(Charset.forName("UTF8"))
 }
 
-internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<SerialId>(index)?.id
+internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<ProtoId>(index)?.id
 
 /**
  * Jce 数据结构序列化和反序列化工具, 能将 kotlinx.serialization 通用的注解标记格式的 `class` 序列化为 [ByteArray]
  */
-class Jce private constructor(private val charset: JceCharset, context: SerialModule = EmptyModule) : AbstractSerialFormat(context), BinaryFormat {
+@OptIn(InternalSerializationApi::class)
+class Jce private constructor(private val charset: JceCharset, override val context: SerialModule = EmptyModule) :
+    SerialFormat, BinaryFormat {
 
     private inner class ListWriter(
         private val count: Int,
@@ -46,7 +54,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             return 0
         }
 
-        override fun endEncode(desc: SerialDescriptor) {
+        override fun endEncode(descriptor: SerialDescriptor) {
             parentEncoder.writeHead(LIST, this.tag)
             parentEncoder.encodeTaggedInt(0, count)
             parentEncoder.output.writePacket(this.output.build())
@@ -68,11 +76,18 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             parentEncoder.output.write(this.output.toByteArray())
         }*/
 
-        override fun beginCollection(desc: SerialDescriptor, collectionSize: Int, vararg typeParams: KSerializer<*>): CompositeEncoder {
+        override fun beginCollection(
+            descriptor: SerialDescriptor,
+            collectionSize: Int,
+            vararg typeSerializers: KSerializer<*>
+        ): CompositeEncoder {
             return this
         }
 
-        override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder {
+        override fun beginStructure(
+            descriptor: SerialDescriptor,
+            vararg typeSerializers: KSerializer<*>
+        ): CompositeEncoder {
             return this
         }
     }
@@ -94,77 +109,87 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         /**
          * 序列化最开始的时候的
          */
-        override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder = when (desc.kind) {
+        override fun beginStructure(
+            descriptor: SerialDescriptor,
+            vararg typeSerializers: KSerializer<*>
+        ): CompositeEncoder = when (descriptor.kind) {
             StructureKind.LIST -> this
             StructureKind.MAP -> this
-            StructureKind.CLASS, UnionKind.OBJECT -> this
+            StructureKind.CLASS, StructureKind.OBJECT -> this
             is PolymorphicKind -> this
             else -> throw SerializationException("Primitives are not supported at top-level")
         }
 
         @OptIn(ImplicitReflectionSerializer::class)
         @Suppress("UNCHECKED_CAST", "NAME_SHADOWING")
-        override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) = when (serializer.descriptor) {
-            is MapLikeDescriptor -> {
-                val entries = (value as Map<*, *>).entries
-                val serializer = (serializer as MapLikeSerializer<Any?, Any?, T, *>)
-                val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
+        override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) =
+            when {
+                serializer.descriptor.kind == StructureKind.MAP -> {
+                    try {
+                        val entries = (value as Map<*, *>).entries
+                        val serializer = (serializer as MapLikeSerializer<Any?, Any?, T, *>)
+                        val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
 
-                this.writeHead(MAP, currentTag)
-                this.encodeTaggedInt(0, entries.count())
-                HashSetSerializer(mapEntrySerial).serialize(JceMapWriter(this.output), entries)
-            }
-            ByteArraySerializer.descriptor -> encodeTaggedByteArray(popTag(), value as ByteArray)
-            is PrimitiveArrayDescriptor -> {
-                serializer.serialize(
-                    ListWriter(
-                        when (value) {
-                            is ShortArray -> value.size
-                            is IntArray -> value.size
-                            is LongArray -> value.size
-                            is FloatArray -> value.size
-                            is DoubleArray -> value.size
-                            is CharArray -> value.size
-                            is ByteArray -> value.size
-                            is BooleanArray -> value.size
-                            else -> error("unknown array type: ${value.getClassName()}")
-                        }, popTag(), this
-                    ),
-                    value
-                )
-            }
-            is ArrayClassDesc -> {
-                val descriptor = serializer.descriptor as ReferenceArraySerializer<Any, Any?>
-                if (descriptor.typeParams.isNotEmpty() && descriptor.typeParams[0] is ByteSerializer) {
-                    encodeTaggedByteArray(popTag(), (value as Array<Byte>).toByteArray())
-                } else
+                        this.writeHead(MAP, currentTag)
+                        this.encodeTaggedInt(0, entries.count())
+                        SetSerializer(mapEntrySerial).serialize(JceMapWriter(this.output), entries)
+                    } catch (e: Exception) {
+                        super.encodeSerializableValue(serializer, value)
+                    }
+                }
+                serializer.descriptor == ByteArraySerializer() -> encodeTaggedByteArray(popTag(), value as ByteArray)
+                serializer.descriptor.kind == StructureKind.LIST
+                        && serializer.descriptor.elementDescriptors()[0].kind is PrimitiveKind -> {
                     serializer.serialize(
-                        ListWriter((value as Array<*>).size, popTag(), this),
+                        ListWriter(
+                            when (value) {
+                                is ShortArray -> value.size
+                                is IntArray -> value.size
+                                is LongArray -> value.size
+                                is FloatArray -> value.size
+                                is DoubleArray -> value.size
+                                is CharArray -> value.size
+                                is ByteArray -> value.size
+                                is BooleanArray -> value.size
+                                else -> error("unknown array type: ${value.getClassName()}")
+                            }, popTag(), this
+                        ),
                         value
                     )
-            }
-            is ListLikeDescriptor -> {
-                serializer.serialize(
-                    ListWriter((value as Collection<*>).size, popTag(), this),
-                    value
-                )
-            }
-            else -> {
-                if (value is JceStruct) {
-                    if (currentTagOrNull == null) {
-                        serializer.serialize(this, value)
+                }
+                serializer.descriptor.kind == StructureKind.LIST -> {
+                    if (value is Array<*>) {
+                        val descriptors = serializer.descriptor.elementDescriptors()
+                        if (descriptors.isNotEmpty() && descriptors[0].kind == PrimitiveKind.BYTE) {
+                            encodeTaggedByteArray(popTag(), (value as Array<Byte>).toByteArray())
+                        } else
+                            serializer.serialize(
+                                ListWriter((value as Array<*>).size, popTag(), this),
+                                value
+                            )
+                    } else if (value is Collection<*>) {
+                        serializer.serialize(
+                            ListWriter((value as Collection<*>).size, popTag(), this),
+                            value
+                        )
+                    } else error("unknown value kind: ${value.getClassName()}")
+                }
+                else -> {
+                    if (value is JceStruct) {
+                        if (currentTagOrNull == null) {
+                            serializer.serialize(this, value)
+                        } else {
+                            this.writeHead(STRUCT_BEGIN, popTag())
+                            serializer.serialize(JceEncoder(this.output), value)
+                            this.writeHead(STRUCT_END, 0)
+                        }
+                    } else if (value is ProtoBuf) {
+                        this.encodeTaggedByteArray(popTag(), ProtoBufWithNullableSupport.dump(value))
                     } else {
-                        this.writeHead(STRUCT_BEGIN, popTag())
-                        serializer.serialize(JceEncoder(this.output), value)
-                        this.writeHead(STRUCT_END, 0)
+                        serializer.serialize(this, value)
                     }
-                } else if (value is ProtoBuf) {
-                    this.encodeTaggedByteArray(popTag(), ProtoBufWithNullableSupport.dump(value))
-                } else {
-                    serializer.serialize(this, value)
                 }
             }
-        }
 
         override fun encodeTaggedByte(tag: Int, value: Byte) {
             if (value.toInt() == 0) {
@@ -227,10 +252,6 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         override fun encodeTaggedNull(tag: Int) {
         }
 
-        override fun encodeTaggedUnit(tag: Int) {
-            encodeTaggedNull(tag)
-        }
-
         fun encodeTaggedByteArray(tag: Int, bytes: ByteArray) {
             writeHead(SIMPLE_LIST, tag)
             writeHead(BYTE, 0)
@@ -262,7 +283,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 is Double -> encodeTaggedDouble(tag, value)
                 is Boolean -> encodeTaggedBoolean(tag, value)
                 is String -> encodeTaggedString(tag, value)
-                is Unit -> encodeTaggedUnit(tag)
+                is Unit -> Unit
                 else -> error("unsupported type: ${value.getClassName()}")
             }
         }
@@ -286,7 +307,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         val size: Int,
         input: JceInput
     ) : JceDecoder(input) {
-        override fun decodeCollectionSize(desc: SerialDescriptor): Int {
+        override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
             return size
         }
 
@@ -300,7 +321,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         val size: Int,
         input: JceInput
     ) : JceDecoder(input) {
-        override fun decodeCollectionSize(desc: SerialDescriptor): Int {
+        override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
             return size
         }
 
@@ -312,7 +333,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
     private open inner class JceStructReader(
         input: JceInput
     ) : JceDecoder(input) {
-        override fun endStructure(desc: SerialDescriptor) {
+        override fun endStructure(descriptor: SerialDescriptor) {
 
         }
     }
@@ -345,16 +366,16 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         /**
          * 在 [KSerializer.serialize] 前
          */
-        override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
             //// println("beginStructure: desc=${desc.getClassName()}, typeParams: ${typeParams.contentToString()}")
-            when (desc) {
+            when {
                 // 由于 Byte 的数组有两种方式写入, 需特定读取器
-                ByteArraySerializer.descriptor -> {
+                descriptor == ByteArraySerializer().descriptor -> {
                     // ByteArray, 交给 decodeSerializableValue 进行处理
                     return this
                 }
-                is ListLikeDescriptor -> {
-                    if (typeParams.isNotEmpty() && typeParams[0] is ByteSerializer) {
+                descriptor.kind == StructureKind.LIST -> {
+                    if (typeParams.isNotEmpty() && typeParams[0] == Byte.serializer()) {
                         // Array<Byte>
                         return this // 交给 decodeSerializableValue
                     }
@@ -371,12 +392,12 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                                 MAP -> JceMapReader(input.readInt(0), this.input)
                                 else -> error("type mismatch")
                             }
-                        } == null && desc.isNullable) {
+                        } == null && descriptor.isNullable) {
                         return NullReader(this.input)
                     }
                 }
 
-                is MapLikeDescriptor -> {
+                descriptor.kind == StructureKind.MAP -> {
                     val tag = currentTagOrNull
                     if (tag != null) {
                         popTag()
@@ -391,7 +412,11 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 return NullReader(this.input)
             }
 
-            return super.beginStructure(desc, *typeParams)
+            return super.beginStructure(descriptor, *typeParams)
+        }
+
+        override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+            return 0
         }
 
         override fun decodeTaggedNull(tag: Int): Nothing? {
@@ -419,13 +444,15 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     return null
                 }
             }
-            when (deserializer.descriptor) {
-                ByteArraySerializer.descriptor -> {
+
+            @Suppress("DEPRECATION_ERROR")
+            when {
+                deserializer.descriptor == ByteArraySerializer().descriptor -> {
                     val tag = popTag()
                     return if (isTagMissing(tag)) input.readByteArrayOrNull(tag) as? T
                     else input.readByteArray(tag) as T
                 }
-                is ListLikeDescriptor -> {
+                deserializer.descriptor.kind == StructureKind.LIST -> {
                     if (deserializer is ReferenceArraySerializer<*, *>
                         && (deserializer as ListLikeSerializer<Any?, T, Any?>).typeParams.isNotEmpty()
                         && (deserializer as ListLikeSerializer<Any?, T, Any?>).typeParams[0] is ByteSerializer
@@ -453,15 +480,17 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                     }
                     error("UNREACHABLE CODE")
                 }
-                is MapLikeDescriptor -> {
+                deserializer.descriptor.kind == StructureKind.MAP -> {
                     val tag = popTag()
                     @Suppress("SENSELESS_COMPARISON")
                     if (input.skipToTagOrNull(tag) { head ->
                             check(head.type == MAP) { "type mismatch: ${head.type}" }
                             // 将 mapOf(k1 to v1, k2 to v2, ...) 转换为 listOf(k1, v1, k2, v2, ...) 以便于写入.
                             val serializer = (deserializer as MapLikeSerializer<Any?, Any?, T, *>)
-                            val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
-                            val setOfEntries = HashSetSerializer(mapEntrySerial).deserialize(JceMapReader(input.readInt(0), input))
+                            val mapEntrySerial =
+                                MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
+                            val setOfEntries =
+                                SetSerializer(mapEntrySerial).deserialize(JceMapReader(input.readInt(0), input))
                             return setOfEntries.associateBy({ it.key }, { it.value }) as T
                         } == null) {
                         if (isTagMissing(tag)) {
@@ -472,7 +501,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
                 }
             }
 
-            if (deserializer.descriptor.kind == StructureKind.CLASS || deserializer.descriptor.kind == UnionKind.OBJECT) {
+            if (deserializer.descriptor.kind == StructureKind.CLASS || deserializer.descriptor.kind == StructureKind.OBJECT) {
                 val tag = currentTagOrNull
                 if (tag != null) {
                     @Suppress("SENSELESS_COMPARISON") // 推断 bug
@@ -561,17 +590,30 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             return currentJceHead
         }
 
-        fun readBoolean(tag: Int): Boolean = readBooleanOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readByte(tag: Int): Byte = readByteOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readShort(tag: Int): Short = readShortOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readBoolean(tag: Int): Boolean =
+            readBooleanOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+
+        fun readByte(tag: Int): Byte =
+            readByteOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+
+        fun readShort(tag: Int): Short =
+            readShortOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+
         fun readInt(tag: Int): Int = readIntOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readLong(tag: Int): Long = readLongOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readFloat(tag: Int): Float = readFloatOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
-        fun readDouble(tag: Int): Double = readDoubleOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readLong(tag: Int): Long =
+            readLongOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
 
-        fun readString(tag: Int): String = readStringOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readFloat(tag: Int): Float =
+            readFloatOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
 
-        fun readByteArray(tag: Int): ByteArray = readByteArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+        fun readDouble(tag: Int): Double =
+            readDoubleOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+
+        fun readString(tag: Int): String =
+            readStringOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
+
+        fun readByteArray(tag: Int): ByteArray =
+            readByteArrayOrNull(tag) ?: error("cannot find tag $tag, currentJceHead=$currentJceHead")
 
         fun readByteArrayOrNull(tag: Int): ByteArray? = skipToTagOrNull(tag) {
             when (it.type) {
@@ -732,7 +774,8 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         internal const val ZERO_TYPE: Byte = 12
 
         private fun Any?.getClassName(): String =
-            (if (this == null) Unit::class else this::class).qualifiedName?.split(".")?.takeLast(2)?.joinToString(".") ?: "<unnamed class>"
+            (if (this == null) Unit::class else this::class).qualifiedName?.split(".")?.takeLast(2)?.joinToString(".")
+                ?: "<unnamed class>"
     }
 
     fun <T> dumpAsPacket(serializer: SerializationStrategy<T>, obj: T): ByteReadPacket {
@@ -742,14 +785,18 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
         return encoder.build()
     }
 
-    override fun <T> dump(serializer: SerializationStrategy<T>, obj: T): ByteArray {
-        return dumpAsPacket(serializer, obj).readBytes()
+    override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray {
+        return dumpAsPacket(serializer, value).readBytes()
     }
 
     /**
      * 注意 close [packet]!!
      */
-    fun <T> load(deserializer: DeserializationStrategy<T>, packet: ByteReadPacket, length: Int = packet.remaining.toInt()): T {
+    fun <T> load(
+        deserializer: DeserializationStrategy<T>,
+        packet: ByteReadPacket,
+        length: Int = packet.remaining.toInt()
+    ): T {
         return JceDecoder(JceInput(packet, length.toLong())).decode(deserializer)
     }
 

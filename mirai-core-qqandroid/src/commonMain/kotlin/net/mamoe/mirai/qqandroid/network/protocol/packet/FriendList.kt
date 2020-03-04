@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.network.protocol.packet.list
+package net.mamoe.mirai.qqandroid.network.protocol.packet
 
 import io.ktor.utils.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
@@ -19,10 +19,6 @@ import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Vec0xd50
-import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 
 
 internal class FriendList {
@@ -81,7 +77,9 @@ internal class FriendList {
         OutgoingPacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.decodeUniPacket(GetTroopListRespV2.serializer())
-            return Response(res.vecTroopList.orEmpty())
+            return Response(
+                res.vecTroopList.orEmpty()
+            )
         }
 
         class Response(

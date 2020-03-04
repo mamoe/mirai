@@ -20,6 +20,7 @@ import io.ktor.utils.io.errors.IOException
 import io.ktor.utils.io.streams.asOutput
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.InternalSerializationApi
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -30,7 +31,7 @@ import java.net.URL
 
 
 /**
- * 读取 [BufferedImage] 的属性, 然后构造 [ExternalImage]
+ * 读取 [Bitmap] 的属性, 然后构造 [ExternalImage]
  */
 @Throws(IOException::class)
 fun Bitmap.toExternalImage(formatName: String = "gif"): Nothing {
@@ -124,6 +125,7 @@ suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(I
 /**
  * 保存为临时文件然后调用 [File.toExternalImage].
  */
+@InternalSerializationApi
 suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().use {

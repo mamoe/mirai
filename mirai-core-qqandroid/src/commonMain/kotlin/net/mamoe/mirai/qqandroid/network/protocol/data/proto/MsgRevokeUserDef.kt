@@ -9,30 +9,30 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
-import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 
 class MsgRevokeUserDef : ProtoBuf {
     @Serializable
     class MsgInfoUserDef(
-        @SerialId(1) val longMessageFlag: Int = 0,
-        @SerialId(2) val longMsgInfo: List<MsgInfoDef>? = null,
-        @SerialId(3) val fileUuid: List<String> = listOf()
+        @ProtoId(1) val longMessageFlag: Int = 0,
+        @ProtoId(2) val longMsgInfo: List<MsgInfoDef>? = null,
+        @ProtoId(3) val fileUuid: List<String> = listOf()
     ) : ProtoBuf {
         @Serializable
         class MsgInfoDef(
-            @SerialId(1) val msgSeq: Int = 0,
-            @SerialId(2) val longMsgId: Int = 0,
-            @SerialId(3) val longMsgNum: Int = 0,
-            @SerialId(4) val longMsgIndex: Int = 0
+            @ProtoId(1) val msgSeq: Int = 0,
+            @ProtoId(2) val longMsgId: Int = 0,
+            @ProtoId(3) val longMsgNum: Int = 0,
+            @ProtoId(4) val longMsgIndex: Int = 0
         ) : ProtoBuf
     }
 
     @Serializable
     class UinTypeUserDef(
-        @SerialId(1) val fromUinType: Int = 0,
-        @SerialId(2) val fromGroupCode: Long = 0L,
-        @SerialId(3) val fileUuid: List<String> = listOf()
+        @ProtoId(1) val fromUinType: Int = 0,
+        @ProtoId(2) val fromGroupCode: Long = 0L,
+        @ProtoId(3) val fileUuid: List<String> = listOf()
     ) : ProtoBuf
 }
