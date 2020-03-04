@@ -106,6 +106,7 @@ kotlin {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 api(kotlinx("serialization-runtime", serializationVersion))
+                api(kotlinx("serialization-protobuf", serializationVersion))
             }
         }
 
@@ -114,7 +115,6 @@ kotlin {
                 api(kotlin("test", kotlinVersion))
                 api(kotlin("test-junit", kotlinVersion))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
-                api(kotlinx("serialization-protobuf", serializationVersion))
 
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE

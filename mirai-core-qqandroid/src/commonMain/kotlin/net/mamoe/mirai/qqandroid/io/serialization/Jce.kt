@@ -139,7 +139,9 @@ class Jce private constructor(private val charset: JceCharset, override val cont
                 }
                 serializer.descriptor == ByteArraySerializer() -> encodeTaggedByteArray(popTag(), value as ByteArray)
                 serializer.descriptor.kind == StructureKind.LIST
-                        && serializer.descriptor.elementDescriptors()[0].kind is PrimitiveKind -> {
+                        && serializer.descriptor.elementDescriptors()[0].kind is PrimitiveKind
+                        && value !is ArrayList<*>
+                        && value !is Array<*> -> {
                     serializer.serialize(
                         ListWriter(
                             when (value) {
