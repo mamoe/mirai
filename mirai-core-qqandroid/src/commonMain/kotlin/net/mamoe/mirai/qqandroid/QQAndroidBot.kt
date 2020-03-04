@@ -28,10 +28,10 @@ import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
 import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext

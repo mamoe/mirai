@@ -18,7 +18,7 @@ import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StUinInfo
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.stUinInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
@@ -402,7 +402,7 @@ internal class TroopManagement {
                                 dwGroupCode = member.group.id,
                                 dwNewSeq = 0L,
                                 vecUinInfo = listOf(
-                                    StUinInfo(
+                                    stUinInfo(
                                         gender = 0,
                                         dwuin = member.id,
                                         dwFlag = 31,
