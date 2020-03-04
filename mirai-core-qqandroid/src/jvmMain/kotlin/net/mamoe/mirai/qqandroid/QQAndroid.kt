@@ -23,7 +23,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  * QQ for Android
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 actual object QQAndroid : BotFactory {
 
     /**

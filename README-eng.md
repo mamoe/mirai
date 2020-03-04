@@ -71,7 +71,7 @@ If you meet any problem or have any questions, be free to open a issue. Our goal
 
 ## Requirements
 
-Kotlin 1.3.61  
+Kotlin 1.3.70
 
 On JVM: Java 6  
 

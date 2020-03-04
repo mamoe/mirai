@@ -81,7 +81,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
      * From: com.qq.taf.jce.JceOutputStream
      */
     @Suppress("unused", "MemberVisibilityCanBePrivate")
-    @UseExperimental(ExperimentalIoApi::class)
+    @OptIn(ExperimentalIoApi::class)
     private open inner class JceEncoder(
         internal val output: BytePacketBuilder
     ) : TaggedEncoder<Int>() {
@@ -102,7 +102,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             else -> throw SerializationException("Primitives are not supported at top-level")
         }
 
-        @UseExperimental(ImplicitReflectionSerializer::class)
+        @OptIn(ImplicitReflectionSerializer::class)
         @Suppress("UNCHECKED_CAST", "NAME_SHADOWING")
         override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) = when (serializer.descriptor) {
             is MapLikeDescriptor -> {
@@ -515,7 +515,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
     }
 
 
-    @UseExperimental(ExperimentalUnsignedTypes::class)
+    @OptIn(ExperimentalUnsignedTypes::class)
     internal inner class JceInput(
         @PublishedApi
         internal val input: ByteReadPacket,
@@ -667,7 +667,7 @@ class Jce private constructor(private val charset: JceCharset, context: SerialMo
             } while (head.type.toInt() != 11)
         }
 
-        @UseExperimental(ExperimentalUnsignedTypes::class)
+        @OptIn(ExperimentalUnsignedTypes::class)
         @PublishedApi
         internal fun skipField(type: Byte) = when (type.toInt()) {
             0 -> this.input.discardExact(1)
@@ -794,7 +794,7 @@ internal inline fun <R> Jce.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) 
     }
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 inline class JceHead(private val value: Long) {
     constructor(tag: Int, type: Byte) : this(tag.toLong().shl(32) or type.toLong())
 

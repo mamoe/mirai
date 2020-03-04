@@ -27,7 +27,7 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 fun ByteReadPacket.copyTo(outputStream: OutputStream) {
     ByteArrayPool.useInstance {
         while (this.isNotEmpty) {
@@ -50,7 +50,7 @@ inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 
-@UseExperimental(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class)
 inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)

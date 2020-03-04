@@ -23,7 +23,7 @@ import java.io.File
 /**
  * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
  */
-@UseExperimental(UnstableDefault::class)
+@OptIn(UnstableDefault::class)
 fun File.loadAsDeviceInfo(context: Context): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return SystemDeviceInfo(context).also {

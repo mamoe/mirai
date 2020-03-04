@@ -51,7 +51,7 @@ class ChunkedInput(
  *
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 fun ByteReadPacket.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.remaining <= sizePerPacket.toLong()) {
@@ -76,7 +76,7 @@ fun ByteReadPacket.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
  * 对于一个 1000 长度的 [ByteReadChannel] 和参数 [sizePerPacket] = 300, 将会产生含四个元素的 [Sequence],
  * 其长度分别为: 300, 300, 300, 100.
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 fun ByteReadChannel.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.isClosedForRead) {
@@ -100,7 +100,7 @@ fun ByteReadChannel.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
  * 对于一个 1000 长度的 [Input] 和参数 [sizePerPacket] = 300, 将会产生含四个元素的 [Sequence],
  * 其长度分别为: 300, 300, 300, 100.
  */
-@UseExperimental(MiraiInternalAPI::class, ExperimentalCoroutinesApi::class)
+@OptIn(MiraiInternalAPI::class, ExperimentalCoroutinesApi::class)
 internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
 
@@ -127,7 +127,7 @@ internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
  *
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
-@UseExperimental(MiraiInternalAPI::class, ExperimentalCoroutinesApi::class)
+@OptIn(MiraiInternalAPI::class, ExperimentalCoroutinesApi::class)
 internal fun InputStream.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
 

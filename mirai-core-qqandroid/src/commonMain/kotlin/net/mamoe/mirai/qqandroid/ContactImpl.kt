@@ -361,7 +361,7 @@ internal class MemberInfoImpl(
  * 中name/announcement的更改会直接向服务器异步汇报
  */
 @Suppress("PropertyName")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
@@ -373,7 +373,7 @@ internal class GroupImpl(
 
     override lateinit var owner: Member
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     override val botAsMember: Member by lazy {
         Member(object : MemberInfo {
             override val nameCard: String
@@ -391,7 +391,7 @@ internal class GroupImpl(
         })
     }
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
     var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
@@ -547,10 +547,10 @@ internal class GroupImpl(
         TODO("not implemented")
     }
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            @UseExperimental(LowLevelAPI::class)
+            @OptIn(LowLevelAPI::class)
             bot._lowLevelNewQQ(memberInfo) as QQImpl,
             this,
             this.coroutineContext,

@@ -21,7 +21,7 @@ import java.io.File
 /**
  * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
  */
-@UseExperimental(UnstableDefault::class)
+@OptIn(UnstableDefault::class)
 fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return SystemDeviceInfo(context).also {
@@ -35,7 +35,7 @@ fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
 
 
 @Serializable
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     actual constructor(context: Context) : this() {
         this.context = context

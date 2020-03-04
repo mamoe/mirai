@@ -24,7 +24,9 @@ import net.mamoe.mirai.utils.*
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@UseExperimental(MiraiInternalAPI::class, LowLevelAPI::class, MiraiExperimentalAPI::class, JavaHappyAPI::class)
+@OptIn(
+    MiraiInternalAPI::class, LowLevelAPI::class, MiraiExperimentalAPI::class, JavaHappyAPI::class
+)
 actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIAccessor, BotJavaHappyAPI() {
     actual companion object {
         /**
@@ -244,6 +246,6 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      */
     actual abstract fun close(cause: Throwable?)
 
-    @UseExperimental(LowLevelAPI::class, MiraiExperimentalAPI::class)
+    @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
     actual final override fun toString(): String = "Bot(${uin})"
 }

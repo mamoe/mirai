@@ -28,6 +28,7 @@ import kotlin.jvm.JvmStatic
  * @see AtAll 全体成员
  */
 class At
+@Suppress("MemberVisibilityCanBePrivate")
 private constructor(val target: Long, val display: String) : Message, MessageContent {
 
     /**
