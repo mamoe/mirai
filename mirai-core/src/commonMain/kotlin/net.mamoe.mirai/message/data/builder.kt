@@ -85,7 +85,7 @@ class MessageChainBuilder
         withCache { append(plain) }
     }
 
-    var cache: StringBuilder? = null
+    private var cache: StringBuilder? = null
     private fun flushCache() {
         cache?.let {
             container.add(it.toString().toMessage())
