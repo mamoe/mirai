@@ -358,7 +358,7 @@ internal class MemberInfoImpl(
     override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 internal fun GroupImpl.Companion.checkIsInstance(expression: Boolean) {
     contract {
         returns() implies expression
