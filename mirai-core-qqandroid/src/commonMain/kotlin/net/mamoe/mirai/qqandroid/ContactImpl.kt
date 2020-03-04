@@ -36,6 +36,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.toUHexString
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
@@ -356,10 +358,14 @@ internal class MemberInfoImpl(
     override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
-/**
- * 对GroupImpl
- * 中name/announcement的更改会直接向服务器异步汇报
- */
+@OptIn(ExperimentalContracts::class)
+internal fun GroupImpl.Companion.checkIsInstance(expression: Boolean) {
+    contract {
+        returns() implies expression
+    }
+    check(expression) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
+}
+
 @Suppress("PropertyName")
 @OptIn(MiraiInternalAPI::class)
 internal class GroupImpl(
@@ -368,6 +374,10 @@ internal class GroupImpl(
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
 ) : Group() {
+    companion object {
+
+    }
+
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     val uin: Long = groupInfo.uin
 

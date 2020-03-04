@@ -22,6 +22,7 @@ import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.MemberImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.checkIsInstance
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.message.toMessageChain
@@ -111,7 +112,9 @@ internal class OnlinePush {
                         val group = bot.getGroupByUin(content.fromUin) as GroupImpl
                         if (var5 == 0L && this.remaining == 1L) {//管理员变更
                             val newPermission =
-                                if (this.readByte().toInt() == 1) MemberPermission.ADMINISTRATOR else MemberPermission.MEMBER
+                                if (this.readByte()
+                                        .toInt() == 1
+                                ) MemberPermission.ADMINISTRATOR else MemberPermission.MEMBER
 
                             return if (target == bot.uin) {
                                 BotGroupPermissionChangeEvent(
@@ -188,22 +191,21 @@ internal class OnlinePush {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
-            @Suppress("USELESS_CAST") // 不要信任 kotlin 类型推断
             val packets: Sequence<Packet> =
                 reqPushMsg.vMsgInfos.asSequence().flatMap<MsgInfo, Packet> { msgInfo: MsgInfo ->
                     msgInfo.vMsg!!.read {
                         when (msgInfo.shMsgType.toInt()) {
                             732 -> {
                                 val group = bot.getGroup(this.readUInt().toLong())
-                                group as GroupImpl
+                                GroupImpl.checkIsInstance(group is GroupImpl)
 
                                 when (val internalType = this.readByte().toInt().also { this.discardExact(1) }) {
                                     0x0c -> { // mute
                                         val operatorUin = this.readUInt().toLong()
                                         if (operatorUin == bot.uin) {
-                                            return@flatMap sequenceOf<Packet>()
+                                            return@flatMap sequenceOf()
                                         }
-                                        val operator = group[operatorUin]
+                                        val operator = group.getOrNull(operatorUin) ?: return@flatMap sequenceOf()
                                         this.readUInt().toLong() // time
                                         this.discardExact(2)
                                         val target = this.readUInt().toLong()
@@ -217,7 +219,7 @@ internal class OnlinePush {
                                                         new = false,
                                                         operator = operator,
                                                         group = group
-                                                    ) as Packet
+                                                    )
                                                 )
                                             } else {
                                                 return@flatMap sequenceOf(
@@ -226,58 +228,58 @@ internal class OnlinePush {
                                                         new = true,
                                                         operator = operator,
                                                         group = group
-                                                    ) as Packet
+                                                    )
                                                 )
                                             }
                                         } else {
                                             if (target == bot.uin) {
-                                                if (group._botMuteTimestamp != time) {
-                                                    if (time == 0) {
-                                                        group._botMuteTimestamp = 0
-                                                        return@flatMap sequenceOf(BotUnmuteEvent(operator) as Packet)
-                                                    } else {
-                                                        group._botMuteTimestamp = time
-                                                        return@flatMap sequenceOf(
-                                                            BotMuteEvent(
-                                                                durationSeconds = time,
-                                                                operator = operator
-                                                            ) as Packet
-                                                        )
-                                                    }
-                                                } else {
+                                                if (group._botMuteTimestamp == time) {
                                                     return@flatMap sequenceOf()
                                                 }
-                                            } else {
-                                                val member = group[target]
-                                                member as MemberImpl
-                                                if (member._muteTimestamp != time) {
-                                                    if (time == 0) {
-                                                        member._muteTimestamp = 0
-                                                        return@flatMap sequenceOf(
-                                                            MemberUnmuteEvent(
-                                                                member,
-                                                                operator
-                                                            ) as Packet
-                                                        )
-                                                    } else {
-                                                        member._muteTimestamp = time
-                                                        return@flatMap sequenceOf(
-                                                            MemberMuteEvent(
-                                                                member,
-                                                                time,
-                                                                operator
-                                                            ) as Packet
-                                                        )
-                                                    }
+                                                if (time == 0) {
+                                                    group._botMuteTimestamp = 0
+                                                    return@flatMap sequenceOf(BotUnmuteEvent(operator))
                                                 } else {
+                                                    group._botMuteTimestamp = time
+                                                    return@flatMap sequenceOf(
+                                                        BotMuteEvent(
+                                                            durationSeconds = time,
+                                                            operator = operator
+                                                        )
+                                                    )
+                                                }
+                                            } else {
+                                                val member = group.getOrNull(target) ?: return@flatMap sequenceOf()
+                                                member as MemberImpl
+                                                if (member._muteTimestamp == time) {
                                                     return@flatMap sequenceOf()
+                                                }
+
+                                                if (time == 0) {
+                                                    member._muteTimestamp = 0
+                                                    return@flatMap sequenceOf(
+                                                        MemberUnmuteEvent(
+                                                            member,
+                                                            operator
+                                                        )
+                                                    )
+                                                } else {
+                                                    member._muteTimestamp = time
+                                                    return@flatMap sequenceOf(
+                                                        MemberMuteEvent(
+                                                            member,
+                                                            time,
+                                                            operator
+                                                        )
+                                                    )
                                                 }
                                             }
                                         }
                                     }
                                     0x0e -> {
                                         // 匿名
-                                        val operator = group[this.readUInt().toLong()]
+                                        val operator =
+                                            group.getOrNull(this.readUInt().toLong()) ?: return@flatMap sequenceOf()
                                         val switch = this.readInt() == 0
                                         return@flatMap sequenceOf(
                                             GroupAllowAnonymousChatEvent(
@@ -342,6 +344,9 @@ internal class OnlinePush {
                                         discard(1)
                                         val proto = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer())
                                         proto.optMsgRecall?.let { recallReminder ->
+
+                                            val memebr =
+                                                group.getOrNull(recallReminder.uin) ?: return@flatMap sequenceOf()
                                             return@flatMap recallReminder.recalledMsgList.asSequence()
                                                 .mapNotNull { meta ->
                                                     if (meta.authorUin == bot.uin) {
@@ -349,32 +354,13 @@ internal class OnlinePush {
                                                     } else MessageRecallEvent.GroupRecall(
                                                         bot,
                                                         meta.authorUin,
-                                                        meta.seq.toLong().shl(32) or meta.msgRandom.toLong().and(
-                                                            0xffffffff
-                                                        ),
+                                                        meta.seq.toLong().shl(32) or
+                                                                meta.msgRandom.toLong().and(0xffffffff),
                                                         meta.time,
-                                                        group.get(recallReminder.uin),
+                                                        memebr,
                                                         group
                                                     )
                                                 }
-                                            /*
-                                            optMsgRecall=MessageRecallReminder#1345636186 {
-                                                    groupType=0x00000000(0)
-                                                    nickname=<Empty ByteArray>
-                                                    opType=0x00000000(0)
-                                                    recalledMsgList=[MessageMeta#1828757853 {
-                                                            authorUin=0x000000003E033FA2(1040400290)
-                                                            msgFlag=0x00000000(0)
-                                                            msgRandom=0x509119DC(1351686620)
-                                                            msgType=0x00000000(0)
-                                                            seq=0x0000EB4B(60235)
-                                                            time=0x5E50C4EC(1582351596)
-                                                    }]
-                                                    reminderContent=<Empty ByteArray>
-                                                    uin=0x000000003E033FA2(1040400290)
-                                                    userdef=08 00 12 0A 08 CB D6 03 10 00 18 01 20 00
-                                            }
-                                            */
                                         }
 
                                         return@flatMap sequenceOf()
@@ -384,7 +370,10 @@ internal class OnlinePush {
                                     //     println(msgInfo.vMsg.toUHexString())
                                     // }
                                     else -> {
-                                        bot.network.logger.debug { "unknown group internal type $internalType , data: " + this.readBytes().toUHexString() + " " }
+                                        bot.network.logger.debug {
+                                            "unknown group internal type $internalType , data: " + this.readBytes()
+                                                .toUHexString() + " "
+                                        }
                                         return@flatMap sequenceOf()
                                     }
                                 }
