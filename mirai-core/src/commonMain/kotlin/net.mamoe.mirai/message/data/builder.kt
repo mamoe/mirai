@@ -53,47 +53,66 @@ class MessageChainBuilder
 ) : MutableCollection<Message> by container, Appendable {
     constructor(initialSize: Int) : this(ArrayList<Message>(initialSize))
 
+    override fun add(element: Message): Boolean {
+        flushCache()
+        return container.add(element)
+    }
+
+    override fun addAll(elements: Collection<Message>): Boolean {
+        flushCache()
+        return container.addAll(elements)
+    }
+
     operator fun Message.unaryPlus() {
+        flushCache()
         add(this)
     }
 
     operator fun String.unaryPlus() {
-        add(this.toMessage())
+        add(this)
     }
 
     operator fun plusAssign(plain: String) {
-        this.add(plain.toMessage())
+        withCache { append(plain) }
     }
 
     operator fun plusAssign(message: Message) {
+        flushCache()
         this.add(message)
     }
 
     fun add(plain: String) {
-        this.add(plain.toMessage())
+        withCache { append(plain) }
+    }
+
+    var cache: StringBuilder? = null
+    private fun flushCache() {
+        cache?.let {
+            container.add(it.toString().toMessage())
+        }
+        cache = null
+    }
+
+    private inline fun withCache(block: StringBuilder.() -> Unit): MessageChainBuilder {
+        if (cache == null) {
+            cache = StringBuilder().apply(block)
+        } else {
+            cache!!.apply(block)
+        }
+        return this
     }
 
     operator fun plusAssign(charSequence: CharSequence) {
-        this.add(PlainText(charSequence))
+        withCache { append(charSequence) }
     }
 
-    override fun append(value: Char): Appendable = apply {
-        this.add(PlainText(value.toString()))
-    }
+    override fun append(value: Char): Appendable = withCache { append(value) }
+    override fun append(value: CharSequence?): Appendable = withCache { append(value) }
+    override fun append(value: CharSequence?, startIndex: Int, endIndex: Int) =
+        withCache { append(value, startIndex, endIndex) }
 
-    override fun append(value: CharSequence?): Appendable = apply {
-        when {
-            value == null -> this.add(PlainText.Null)
-            value.isEmpty() -> this.add(PlainText.Empty)
-            else -> this.add(PlainText(value))
-        }
-    }
-
-    override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): Appendable = apply {
-        when {
-            value == null -> this.add(PlainText.Null)
-            value.isEmpty() -> this.add(PlainText.Empty)
-            else -> this.add(PlainText(value.substring(startIndex, endIndex)))
-        }
+    fun asMessageChain(): MessageChain {
+        this.flushCache()
+        return (this as MutableCollection<Message>).asMessageChain()
     }
 }
