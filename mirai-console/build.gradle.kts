@@ -37,7 +37,7 @@ val miraiVersion: String by rootProject.ext
 
 dependencies {
     compileOnly("net.mamoe:mirai-core-jvm:$miraiVersion")
-    compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
+    // compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
 
     api(kotlin("serialization"))
 
