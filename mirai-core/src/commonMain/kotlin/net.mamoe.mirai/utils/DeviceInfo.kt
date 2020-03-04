@@ -120,7 +120,7 @@ class DeviceInfoData(
     @Transient
     override lateinit var context: Context
 
-    @OptIn(ExperimentalUnsignedTypes::class)
+    @UseExperimental(ExperimentalUnsignedTypes::class)
     override val ipAddress: ByteArray
         get() = localIpAddress().split(".").map { it.toUByte().toByte() }.takeIf { it.size == 4 }?.toByteArray() ?: byteArrayOf()
     override val androidId: ByteArray get() = display

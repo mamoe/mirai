@@ -132,7 +132,7 @@ actual abstract class BotJavaHappyAPI actual constructor() {
         message: String? = null,
         remark: String? = null
     ): AddFriendResult {
-        @OptIn(MiraiExperimentalAPI::class)
+        @UseExperimental(MiraiExperimentalAPI::class)
         return runBlocking { addFriend(id, message, remark) }
     }
 
@@ -170,7 +170,7 @@ actual abstract class BotJavaHappyAPI actual constructor() {
 }
 
 // !! 不要 crossinline, 会编译失败
-@OptIn(ExperimentalCoroutinesApi::class)
+@UseExperimental(ExperimentalCoroutinesApi::class)
 internal fun <R, C : CoroutineScope> C.future(block: suspend C.() -> R): Future<R> {
     val future = object : Future<R> {
         val value: CompletableDeferred<R> = CompletableDeferred()
@@ -215,7 +215,7 @@ internal fun <R, C : CoroutineScope> C.future(block: suspend C.() -> R): Future<
     }
 
     launch {
-        @OptIn(ExperimentalCoroutinesApi::class)
+        @UseExperimental(ExperimentalCoroutinesApi::class)
         future.value.completeWith(kotlin.runCatching { block() })
     }
 

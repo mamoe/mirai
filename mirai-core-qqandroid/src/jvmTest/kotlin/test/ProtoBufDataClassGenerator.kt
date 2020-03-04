@@ -161,7 +161,7 @@ data class PBFieldInfo(
     }
 }
 
-@OptIn(ExperimentalUnsignedTypes::class)
+@UseExperimental(ExperimentalUnsignedTypes::class)
 fun String.generateProtoBufDataClass(): GeneratedClass {
     if (this.indexOf("extends") == -1) {
         val javaClassname = substringBetween("class", "{")
@@ -367,7 +367,7 @@ fun String.getNumericalValue(): Int? {
     return this.filter { it in '0'..'9' }.toDoubleOrNull()?.toInt()
 }
 
-@OptIn(MiraiDebugAPI::class)
+@UseExperimental(MiraiDebugAPI::class)
 fun ProtoType.mapToKotlinType(): String {
     return when (this) {
         ProtoType.VAR_INT -> "Int"

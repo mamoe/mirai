@@ -253,7 +253,7 @@ internal class MessageSourceFromSendFriend(
     val sequenceId: Int,
     override val originalMessage: MessageChain
 ) : MessageSourceFromSend() {
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @UseExperimental(ExperimentalCoroutinesApi::class)
     override val id: Long
         get() = sequenceId.toLong().shl(32) or
                 messageRandom.toLong().and(0xFFFFFFFF)
@@ -277,12 +277,12 @@ internal class MessageSourceFromSendGroup(
 ) : MessageSourceFromSend() {
     private lateinit var sequenceIdDeferred: Deferred<Int>
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @UseExperimental(ExperimentalCoroutinesApi::class)
     override val id: Long
         get() = sequenceIdDeferred.getCompleted().toLong().shl(32) or
                 messageRandom.toLong().and(0xFFFFFFFF)
 
-    @OptIn(MiraiExperimentalAPI::class)
+    @UseExperimental(MiraiExperimentalAPI::class)
     internal fun startWaitingSequenceId(coroutineScope: CoroutineScope) {
         sequenceIdDeferred =
             coroutineScope.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(

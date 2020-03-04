@@ -16,7 +16,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 /**
  * 平台相关扩展
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() : MessagePacketBase<TSender, TSubject>() {
     //   suspend inline fun uploadImage(image: Bitmap): Image = subject.uploadImage(image)
     //suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)

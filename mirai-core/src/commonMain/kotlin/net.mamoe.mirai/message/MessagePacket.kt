@@ -33,7 +33,7 @@ import kotlin.jvm.JvmName
  * 一条从服务器接收到的消息事件.
  * 请查看各平台的 `actual` 实现的说明.
  */
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
 
 /**

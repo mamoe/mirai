@@ -28,7 +28,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  * @see MessageReceipt.sourceTime 源时间
  */
 @Suppress("FunctionName")
-@OptIn(MiraiInternalAPI::class)
+@UseExperimental(MiraiInternalAPI::class)
 actual open class MessageReceipt<C : Contact> actual constructor(
     actual val source: MessageSource,
     target: C,
@@ -94,7 +94,7 @@ actual open class MessageReceipt<C : Contact> actual constructor(
      */
     actual open suspend fun quote(): QuoteReplyToSend {
         this.source.ensureSequenceIdAvailable()
-        @OptIn(LowLevelAPI::class)
+        @UseExperimental(LowLevelAPI::class)
         return _unsafeQuote()
     }
 

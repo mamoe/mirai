@@ -29,7 +29,7 @@ internal class WtLogin {
      * OicqRequest
      */
     @Suppress("FunctionName")
-    @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+    @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     internal object Login : OutgoingPacketFactory<Login.LoginPacketResponse>("wtlogin.login") {
         private const val subAppId = 537062845L
 
@@ -127,7 +127,7 @@ internal class WtLogin {
             private const val appId = 16L
             private const val subAppId = 537062845L
 
-            @OptIn(MiraiInternalAPI::class)
+            @UseExperimental(MiraiInternalAPI::class)
             operator fun invoke(
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
@@ -309,7 +309,7 @@ internal class WtLogin {
         }
 
         @InternalAPI
-        @OptIn(MiraiDebugAPI::class)
+        @UseExperimental(MiraiDebugAPI::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
             discardExact(2) // subCommand
@@ -368,7 +368,7 @@ internal class WtLogin {
         }
 
         @InternalAPI
-        @OptIn(MiraiDebugAPI::class)
+        @UseExperimental(MiraiDebugAPI::class)
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
             /*
             java.lang.IllegalStateException: UNKNOWN CAPTCHA QUESTION:
@@ -404,7 +404,7 @@ internal class WtLogin {
             error("UNKNOWN CAPTCHA, tlvMap=" + tlvMap._miraiContentToString())
         }
 
-        @OptIn(MiraiDebugAPI::class)
+        @UseExperimental(MiraiDebugAPI::class)
         private fun onLoginSuccess(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Success {
             val client = bot.client
             //println("TLV KEYS: " + tlvMap.keys.joinToString { it.contentToString() })

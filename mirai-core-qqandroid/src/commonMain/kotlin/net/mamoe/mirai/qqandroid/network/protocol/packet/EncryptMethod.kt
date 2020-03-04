@@ -16,7 +16,7 @@ import net.mamoe.mirai.utils.cryptor.ECDHKeyPair
 import net.mamoe.mirai.utils.io.encryptAndWrite
 import net.mamoe.mirai.utils.io.writeShortLVByteArray
 
-@OptIn(ExperimentalUnsignedTypes::class)
+@UseExperimental(ExperimentalUnsignedTypes::class)
 internal interface EncryptMethod {
     val id: Int
 

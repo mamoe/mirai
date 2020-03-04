@@ -33,7 +33,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
@@ -58,7 +58,7 @@ inline fun <R> CoroutineScope.subscribeMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
@@ -78,7 +78,7 @@ inline fun <R> CoroutineScope.subscribeGroupMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
@@ -98,7 +98,7 @@ inline fun <R> CoroutineScope.subscribeFriendMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
@@ -120,7 +120,7 @@ inline fun <R> Bot.subscribeMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
@@ -140,7 +140,7 @@ inline fun <R> Bot.subscribeGroupMessages(
  *
  * @see CoroutineScope.incoming
  */
-@OptIn(ExperimentalContracts::class)
+@UseExperimental(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
