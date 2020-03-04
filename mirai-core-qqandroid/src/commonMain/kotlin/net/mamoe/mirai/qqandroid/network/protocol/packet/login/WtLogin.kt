@@ -97,7 +97,13 @@ internal class WtLogin {
             operator fun invoke(
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-                writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId, unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00") {
+                writeSsoPacket(
+                    client,
+                    subAppId,
+                    commandName,
+                    sequenceId = sequenceId,
+                    unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00"
+                ) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(8) // subCommand
                         writeShort(6) // count of TLVs, probably ignored by server?TODO
@@ -316,11 +322,14 @@ internal class WtLogin {
             // tlvMap.printTLVMap()
             return when (type.toInt()) {
                 0 -> onLoginSuccess(tlvMap, bot)
-                1, 15 -> onErrorMessage(tlvMap)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)
                 160 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
                 204 /*-52*/ -> onSMSVerifyNeeded(tlvMap, bot)
-                else -> tlvMap[0x149]?.let { analysisTlv149(it) } ?: error("unknown login result type: $type, TLVMap = ${tlvMap._miraiContentToString()}")
+                // 1, 15 -> onErrorMessage(tlvMap) ?: error("Cannot find error message")
+                else -> {
+                    onErrorMessage(tlvMap)
+                        ?: error("Cannot find error message, unknown login result type: $type, TLVMap = ${tlvMap._miraiContentToString()}")
+                }
             }
         }
 
@@ -338,17 +347,24 @@ internal class WtLogin {
             return LoginPacketResponse.UnsafeLogin(tlvMap.getOrFail(0x204).toReadPacket().readBytes().encodeToString())
         }
 
-        private fun onErrorMessage(tlvMap: TlvMap): LoginPacketResponse.Error {
-            return tlvMap[0x146]?.toReadPacket()?.run {
-                readShort() // ver
-                readShort() // code
+        private fun onErrorMessage(tlvMap: TlvMap): LoginPacketResponse.Error? {
+            return tlvMap[0x149]?.read {
+                discardExact(2) //type
+                val title: String = readUShortLVString()
+                val content: String = readUShortLVString()
+                val otherInfo: String = readUShortLVString()
+
+                LoginPacketResponse.Error(title, content, otherInfo)
+            } ?: tlvMap[0x146]?.toReadPacket()?.run {
+                discardExact(2) // ver
+                discardExact(2)  // code
 
                 val title = readUShortLVString()
                 val message = readUShortLVString()
                 val errorInfo = readUShortLVString()
 
                 LoginPacketResponse.Error(title, message, errorInfo)
-            } ?: error("Cannot find error message")
+            }
         }
 
         @InternalAPI
@@ -552,7 +568,8 @@ internal class WtLogin {
                             imgUrl = client.reserveUinInfo?.imgUrl ?: byteArrayOf(),
                             mainDisplayName = tlvMap119[0x118] ?: error("Cannot find tlv 0x118")
                         ),
-                        appPri = tlvMap119[0x11f]?.let { it.read { discardExact(4); readUInt().toLong() } } ?: 4294967295L,
+                        appPri = tlvMap119[0x11f]?.let { it.read { discardExact(4); readUInt().toLong() } }
+                            ?: 4294967295L,
                         a2ExpiryTime = expireTime,
                         loginBitmap = 0, // from asyncContext._login_bitmap
                         tgt = tlvMap119.getOrEmpty(0x10a),
@@ -696,22 +713,6 @@ internal class WtLogin {
             tlv[0x173]?.let { analysisTlv173(it) }
             tlv[0x17f]?.let { analysisTlv17f(it) }
             tlv[0x172]?.let { rollbackSig = it }
-        }
-
-        /**
-         * 错误消息
-         */
-        private fun analysisTlv149(t149: ByteArray): LoginPacketResponse.Error {
-
-            return t149.read {
-                discardExact(2) //type
-                val title: String = readUShortLVString()
-                val content: String = readUShortLVString()
-                val otherInfo: String = readUShortLVString()
-
-                // do not write class into read{} block. CompilationException!!
-                LoginPacketResponse.Error(title = title, message = content, errorInfo = otherInfo) // nice toString
-            }
         }
 
         /**
