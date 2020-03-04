@@ -26,6 +26,7 @@ import io.ktor.utils.io.pool.useInstance
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.io.InputStream
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
@@ -34,7 +35,7 @@ import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
 import net.mamoe.mirai.utils.io.withUse
 
-@OptIn(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 @Suppress("SpellCheckingInspection")
 internal suspend fun HttpClient.postImage(
     htcmd: String,
@@ -92,7 +93,7 @@ internal suspend fun HttpClient.postImage(
     }
 } == HttpStatusCode.OK
 
-@OptIn(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal object HighwayHelper {
     @OptIn(InternalCoroutinesApi::class)
     suspend fun uploadImage(

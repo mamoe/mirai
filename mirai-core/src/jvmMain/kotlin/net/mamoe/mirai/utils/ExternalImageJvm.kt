@@ -19,6 +19,7 @@ import io.ktor.utils.io.errors.IOException
 import io.ktor.utils.io.streams.asOutput
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.utils.io.getRandomString
 import java.awt.image.BufferedImage
 import java.io.File
@@ -145,6 +146,7 @@ suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(I
 /**
  * 保存为临时文件然后调用 [File.toExternalImage].
  */
+@OptIn(InternalSerializationApi::class)
 suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().use {

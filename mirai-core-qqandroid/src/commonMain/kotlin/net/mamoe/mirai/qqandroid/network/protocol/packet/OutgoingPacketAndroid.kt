@@ -31,38 +31,6 @@ internal class OutgoingPacket constructor(
 internal val KEY_16_ZEROS = ByteArray(16)
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-/**
- * com.tencent.qphone.base.util.CodecWarpper#encodeRequest(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, byte[], int, int, java.lang.String, byte, byte, byte, byte[], byte[], boolean)
- */
-@Deprecated("危险", level = DeprecationLevel.ERROR)
-@OptIn(MiraiInternalAPI::class)
-internal inline fun OutgoingPacketFactory<*>.buildOutgoingPacket(
-    client: QQAndroidClient,
-    bodyType: Byte = 1, // 1: PB?
-    name: String? = this.commandName,
-    commandName: String = this.commandName,
-    key: ByteArray = client.wLoginSigInfo.d2Key,
-    body: BytePacketBuilder.(sequenceId: Int) -> Unit
-): OutgoingPacket {
-    val sequenceId: Int = client.nextSsoSequenceId()
-
-    return OutgoingPacket(name, commandName, sequenceId, buildPacket {
-        writeIntLVPacket(lengthOffset = { it + 4 }) {
-            writeInt(0x0B)
-            writeByte(bodyType)
-            writeInt(sequenceId)
-            writeByte(0)
-            client.uin.toString().let {
-                writeInt(it.length + 4)
-                writeText(it)
-            }
-            encryptAndWrite(key) {
-                body(sequenceId)
-            }
-        }
-    })
-}
-
 @OptIn(MiraiInternalAPI::class)
 internal inline fun OutgoingPacketFactory<*>.buildOutgoingUniPacket(
     client: QQAndroidClient,

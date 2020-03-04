@@ -18,6 +18,7 @@ import io.ktor.utils.io.charsets.Charsets
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.pool.useInstance
 import kotlinx.io.OutputStream
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.contracts.ExperimentalContracts
@@ -27,6 +28,7 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
+@InternalSerializationApi
 @OptIn(MiraiInternalAPI::class)
 fun ByteReadPacket.copyTo(outputStream: OutputStream) {
     ByteArrayPool.useInstance {

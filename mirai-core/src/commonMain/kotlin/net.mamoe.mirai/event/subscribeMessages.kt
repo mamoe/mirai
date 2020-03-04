@@ -189,7 +189,7 @@ typealias MessageListener<T> = @MessageDsl suspend T.(String) -> Unit
  * 消息订阅构造器
  *
  * @see subscribeFriendMessages
- * @sample demo.subscribe.messageDSL
+ // * @sample demo.subscribe.messageDSL
  */
 // TODO: 2019/12/23 应定义为 inline, 但这会导致一个 JVM run-time VerifyError. 等待 kotlin 修复 bug (Kotlin 1.3.61)
 @Suppress("unused")

@@ -7,12 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.network.protocol.packet
+package net.mamoe.mirai.utils.io
 
-import kotlinx.serialization.SerializationStrategy
-import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport
+import kotlinx.io.InputStream
+import kotlinx.io.OutputStream
+import kotlinx.serialization.InternalSerializationApi
 
-interface MessageMicro
+@OptIn(InternalSerializationApi::class)
+typealias OutputStream = OutputStream
 
-
-fun <T : MessageMicro> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray = ProtoBufWithNullableSupport.dump(serializer, this)
+@OptIn(InternalSerializationApi::class)
+typealias InputStream = InputStream
