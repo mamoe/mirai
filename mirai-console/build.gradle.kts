@@ -57,7 +57,6 @@ dependencies {
     api(kotlinx("serialization-runtime", serializationVersion))
     api(kotlinx("coroutines-io", coroutinesIoVersion))
     api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
-    api(kotlinx("io-jvm", coroutinesIoVersion))
 
     api("org.bouncycastle:bcprov-jdk15on:1.64")
 
