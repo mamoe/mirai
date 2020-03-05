@@ -155,14 +155,14 @@ object MiraiCoreLoader {
             }.content
         }
 
-        var stream = try {
+        var stream = kotlin.runCatching {
             MiraiConsole.logger("Downloading newest Protocol lib from Aliyun")
             downloadRequest(lib_aliyun, version)
-        } catch (ignored: Exception) {
-            try {
+        }.getOrElse {
+            kotlin.runCatching {
                 MiraiConsole.logger("Downloading newest Protocol lib from JCenter")
                 downloadRequest(lib_jcenter, version)
-            } catch (e: Exception) {
+            }.getOrElse { e ->
                 MiraiConsole.logger("Failed to download Protocol lib, please seeking for help")
                 e.printStackTrace()
                 MiraiConsole.logger("Failed to download Protocol lib, please seeking for help")
