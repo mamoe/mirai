@@ -374,8 +374,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun parsePacketAsync(input: Input): Job {
-        return this.launch(start = CoroutineStart.ATOMIC) {
-            input.use { parsePacket(it) }
+        return this.launch(
+            start = CoroutineStart.ATOMIC
+        ) {
+            try {
+                input.use { parsePacket(it) }
+            } catch (e: Exception) {
+                // 傻逼协程吞异常
+                logger.error(e)
+            }
         }
     }
 

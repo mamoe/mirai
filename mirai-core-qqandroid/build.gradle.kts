@@ -73,6 +73,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(kotlinx("serialization-runtime-common", serializationVersion))
+                api(kotlinx("serialization-protobuf-common", serializationVersion))
             }
         }
         commonTest {
@@ -86,6 +87,7 @@ kotlin {
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 dependencies {
+                    api(kotlinx("serialization-protobuf", serializationVersion))
                 }
             }
 
@@ -103,7 +105,7 @@ kotlin {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 api(kotlinx("serialization-runtime", serializationVersion))
-                //api(kotlinx("serialization-protobuf", serializationVersion))
+                api(kotlinx("serialization-protobuf", serializationVersion))
             }
         }
 

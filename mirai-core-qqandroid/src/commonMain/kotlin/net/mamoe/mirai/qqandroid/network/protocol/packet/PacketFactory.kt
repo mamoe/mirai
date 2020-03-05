@@ -97,10 +97,15 @@ internal abstract class IncomingPacketFactory<TPacket : Packet?>(
 }
 
 @JvmName("decode0")
-private suspend inline fun <P : Packet?> OutgoingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P = packet.decode(bot)
+private suspend inline fun <P : Packet?> OutgoingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket): P =
+    packet.decode(bot)
 
 @JvmName("decode1")
-private suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(bot: QQAndroidBot, packet: ByteReadPacket, sequenceId: Int): P =
+private suspend inline fun <P : Packet?> IncomingPacketFactory<P>.decode(
+    bot: QQAndroidBot,
+    packet: ByteReadPacket,
+    sequenceId: Int
+): P =
     packet.decode(bot, sequenceId)
 
 internal val DECRYPTER_16_ZERO = ByteArray(16)
@@ -166,72 +171,89 @@ internal object KnownPacketFactories {
     // do not inline. Exceptions thrown will not be reported correctly
     @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
-    suspend fun <T : Packet?> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) = with(rawInput) {
-        // login
-        val flag1 = readInt()
+    suspend fun <T : Packet?> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) =
+        with(rawInput) {
+            // login
+            val flag1 = readInt()
 
-        PacketLogger.verbose { "开始处理一个包" }
-        PacketLogger.verbose { "flag1(0A/0B) = ${flag1.toUByte().toUHexString()}" }
+            PacketLogger.verbose { "开始处理一个包" }
+            PacketLogger.verbose { "flag1(0A/0B) = ${flag1.toUByte().toUHexString()}" }
 
-        val flag2 = readByte().toInt()
-        PacketLogger.verbose {
-            "包类型(flag2) = $flag2. (可能是 ${when (flag2) {
-                2 -> "OicqRequest"
-                1 -> "Uni/ProtoBuf"
-                0 -> "Heartbeat"
-                else -> "未知"
-            }})"
-        }
+            val flag2 = readByte().toInt()
+            PacketLogger.verbose {
+                "包类型(flag2) = $flag2. (可能是 ${when (flag2) {
+                    2 -> "OicqRequest"
+                    1 -> "Uni/ProtoBuf"
+                    0 -> "Heartbeat"
+                    else -> "未知"
+                }})"
+            }
 
-        val flag3 = readByte().toInt()
-        check(flag3 == 0) { "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. Remaining=${this.readBytes().toUHexString()}" }
+            val flag3 = readByte().toInt()
+            check(flag3 == 0) {
+                "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. Remaining=${this.readBytes()
+                    .toUHexString()}"
+            }
 
-        readString(readInt() - 4)// uinAccount
+            readString(readInt() - 4)// uinAccount
 
-        ByteArrayPool.useInstance { data ->
-            val size = this.readAvailable(data)
+            ByteArrayPool.useInstance { data ->
+                val size = this.readAvailable(data)
 
-            kotlin.runCatching {
-                when (flag2) {
-                    2 -> TEA.decrypt(data, DECRYPTER_16_ZERO, size).also { PacketLogger.verbose { "成功使用 16 zero 解密" } }
-                    1 -> TEA.decrypt(data, bot.client.wLoginSigInfo.d2Key, size).also { PacketLogger.verbose { "成功使用 d2Key 解密" } }
-                    0 -> data
-                    else -> error("")
+                kotlin.runCatching {
+                    when (flag2) {
+                        2 -> TEA.decrypt(data, DECRYPTER_16_ZERO, size)
+                            .also { PacketLogger.verbose { "成功使用 16 zero 解密" } }
+                        1 -> TEA.decrypt(data, bot.client.wLoginSigInfo.d2Key, size)
+                            .also { PacketLogger.verbose { "成功使用 d2Key 解密" } }
+                        0 -> data
+                        else -> error("")
+                    }
+                }.getOrElse {
+                    PacketLogger.verbose { "失败, 尝试其他各种key" }
+                    bot.client.tryDecryptOrNull(data, size) { it }
+                }?.toReadPacket()?.let { decryptedData ->
+                    when (flag1) {
+                        0x0A -> parseSsoFrame(bot, decryptedData)
+                        0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                        else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
+                    }
+                }?.let {
+                    it as IncomingPacket<T>
+
+                    if (it.packetFactory is IncomingPacketFactory<T> && bot.network.pendingEnabled) {
+                        bot.network.pendingIncomingPackets?.addLast(it.also {
+                            it.consumer = consumer
+                            it.flag2 = flag2
+                            PacketLogger.info { "Cached ${it.commandName} #${it.sequenceId}" }
+                        }) ?: handleIncomingPacket(it, bot, flag2, consumer)
+                    } else {
+                        handleIncomingPacket(it, bot, flag2, consumer)
+                    }
+                } ?: inline {
+                    PacketLogger.error { "任何key都无法解密: ${data.take(size).toUHexString()}" }
+                    return
                 }
-            }.getOrElse {
-                PacketLogger.verbose { "失败, 尝试其他各种key" }
-                bot.client.tryDecryptOrNull(data, size) { it }
-            }?.toReadPacket()?.let { decryptedData ->
-                when (flag1) {
-                    0x0A -> parseSsoFrame(bot, decryptedData)
-                    0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
-                    else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
-                }
-            }?.let {
-                it as IncomingPacket<T>
-
-                if (it.packetFactory is IncomingPacketFactory<T> && bot.network.pendingEnabled) {
-                    bot.network.pendingIncomingPackets?.addLast(it.also {
-                        it.consumer = consumer
-                        it.flag2 = flag2
-                        PacketLogger.info { "Cached ${it.commandName} #${it.sequenceId}" }
-                    }) ?: handleIncomingPacket(it, bot, flag2, consumer)
-                } else {
-                    handleIncomingPacket(it, bot, flag2, consumer)
-                }
-            } ?: inline {
-                PacketLogger.error { "任何key都无法解密: ${data.take(size).toUHexString()}" }
-                return
             }
         }
-    }
 
     @OptIn(MiraiInternalAPI::class)
-    internal suspend fun <T : Packet?> handleIncomingPacket(it: IncomingPacket<T>, bot: QQAndroidBot, flag2: Int, consumer: PacketConsumer<T>) {
+    internal suspend fun <T : Packet?> handleIncomingPacket(
+        it: IncomingPacket<T>,
+        bot: QQAndroidBot,
+        flag2: Int,
+        consumer: PacketConsumer<T>
+    ) {
         if (it.packetFactory == null) {
             bot.network.logger.debug("Received commandName: ${it.commandName}")
             PacketLogger.warning { "找不到 PacketFactory" }
-            PacketLogger.verbose { "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length -> data.toUHexString(length = length) }}" }
+            PacketLogger.verbose {
+                "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length ->
+                    data.toUHexString(
+                        length = length
+                    )
+                }}"
+            }
             return
         }
 
@@ -254,8 +276,15 @@ internal object KnownPacketFactories {
                         )
                     }
 
-                2 -> it.data.parseOicqResponse(bot, it.packetFactory as OutgoingPacketFactory<T>, it.sequenceId, consumer)
-                else -> error("unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}")
+                2 -> it.data.parseOicqResponse(
+                    bot,
+                    it.packetFactory as OutgoingPacketFactory<T>,
+                    it.sequenceId,
+                    consumer
+                )
+                else -> error(
+                    "unknown flag2: $flag2. Body to be parsed for inner packet=${it.data.readBytes().toUHexString()}"
+                )
             }
         }
     }
@@ -357,7 +386,8 @@ internal object KnownPacketFactories {
             4 -> {
                 var data = TEA.decrypt(this, bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
 
-                val peerShareKey = bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
+                val peerShareKey =
+                    bot.client.ecdh.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
                 data = TEA.decrypt(data, peerShareKey)
 
                 packetFactory.decode(bot, data)

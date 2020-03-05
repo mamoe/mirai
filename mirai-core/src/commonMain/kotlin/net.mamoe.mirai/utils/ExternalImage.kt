@@ -15,6 +15,7 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.ByteReadPacket
 import io.ktor.utils.io.core.Input
 import kotlinx.io.InputStream
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
@@ -69,6 +70,7 @@ class ExternalImage private constructor(
         filename: String
     ) : this(width, height, md5, imageFormat, input as Any, input.remaining, filename)
 
+    @OptIn(InternalSerializationApi::class)
     constructor(
         width: Int,
         height: Int,

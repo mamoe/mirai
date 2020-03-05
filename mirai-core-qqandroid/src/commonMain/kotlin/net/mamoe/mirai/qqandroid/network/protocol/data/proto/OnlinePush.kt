@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
-import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
@@ -18,11 +18,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 internal class MsgOnlinePush {
     @Serializable
     internal class PbPushMsg(
-        @SerialId(1) val msg: MsgComm.Msg,
-        @SerialId(2) val svrip: Int = 0,
-        @SerialId(3) val pushToken: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(4) val pingFlag: Int = 0,
-        @SerialId(9) val generalFlag: Int = 0
+        @ProtoId(1) val msg: MsgComm.Msg,
+        @ProtoId(2) val svrip: Int = 0,
+        @ProtoId(3) val pushToken: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) val pingFlag: Int = 0,
+        @ProtoId(9) val generalFlag: Int = 0
     ) : ProtoBuf
 }
 
@@ -30,24 +30,24 @@ internal class MsgOnlinePush {
 class OnlinePushTrans : ProtoBuf {
     @Serializable
     class ExtGroupKeyInfo(
-        @SerialId(1) val curMaxSeq: Int = 0,
-        @SerialId(2) val curTime: Long = 0L
+        @ProtoId(1) val curMaxSeq: Int = 0,
+        @ProtoId(2) val curTime: Long = 0L
     ) : ProtoBuf
 
     @Serializable
     class PbMsgInfo(
-        @SerialId(1) val fromUin: Long = 0L,
-        @SerialId(2) val toUin: Long = 0L,
-        @SerialId(3) val msgType: Int = 0,
-        @SerialId(4) val msgSubtype: Int = 0,
-        @SerialId(5) val msgSeq: Int = 0,
-        @SerialId(6) val msgUid: Long = 0L,
-        @SerialId(7) val msgTime: Int = 0,
-        @SerialId(8) val realMsgTime: Int = 0,
-        @SerialId(9) val nickName: String = "",
-        @SerialId(10) val msgData: ByteArray = EMPTY_BYTE_ARRAY,
-        @SerialId(11) val svrIp: Int = 0,
-        @SerialId(12) val extGroupKeyInfo: OnlinePushTrans.ExtGroupKeyInfo? = null,
-        @SerialId(17) val generalFlag: Int = 0
+        @ProtoId(1) val fromUin: Long = 0L,
+        @ProtoId(2) val toUin: Long = 0L,
+        @ProtoId(3) val msgType: Int = 0,
+        @ProtoId(4) val msgSubtype: Int = 0,
+        @ProtoId(5) val msgSeq: Int = 0,
+        @ProtoId(6) val msgUid: Long = 0L,
+        @ProtoId(7) val msgTime: Int = 0,
+        @ProtoId(8) val realMsgTime: Int = 0,
+        @ProtoId(9) val nickName: String = "",
+        @ProtoId(10) val msgData: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(11) val svrIp: Int = 0,
+        @ProtoId(12) val extGroupKeyInfo: OnlinePushTrans.ExtGroupKeyInfo? = null,
+        @ProtoId(17) val generalFlag: Int = 0
     ) : ProtoBuf
 }

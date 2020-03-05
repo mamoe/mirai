@@ -75,6 +75,7 @@ kotlin {
                 api(kotlin("serialization", kotlinVersion))
                 api(kotlinx("coroutines-core-common", coroutinesVersion))
                 api(kotlinx("serialization-runtime-common", serializationVersion))
+                api(kotlinx("serialization-protobuf-common", serializationVersion))
 
                 api(ktor("http-cio", ktorVersion))
                 api(ktor("http", ktorVersion))
@@ -102,6 +103,7 @@ kotlin {
                     api(kotlin("reflect", kotlinVersion))
 
                     api(kotlinx("serialization-runtime", serializationVersion))
+                    api(kotlinx("serialization-protobuf", serializationVersion))
                     api(kotlinx("coroutines-android", coroutinesVersion))
 
                     api(ktor("client-android", ktorVersion))
@@ -126,6 +128,7 @@ kotlin {
 
                 api(ktor("client-core-jvm", ktorVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
+                api(kotlinx("serialization-protobuf", serializationVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
                 api(kotlinx("io-jvm", coroutinesIoVersion))

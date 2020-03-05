@@ -123,7 +123,8 @@ internal class FriendList {
         }
     }
 
-    internal object GetFriendGroupList : OutgoingPacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
+    internal object GetFriendGroupList :
+        OutgoingPacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
         class Response(
             val totalFriendCount: Short,

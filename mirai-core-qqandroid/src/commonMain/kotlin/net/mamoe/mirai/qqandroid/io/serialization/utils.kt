@@ -73,12 +73,13 @@ fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationS
 fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
     val request = this.readJceStruct(RequestPacket.serializer())
 
-    return block(if (name == null) when (request.iVersion.toInt()) {
+    return block(if (name == null) when (request.iVersion?.toInt() ?: 3) {
         2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue()
         3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.firstValue()
         else -> error("unsupported version ${request.iVersion}")
-    } else when (request.iVersion.toInt()) {
-        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.getOrElse(name) { error("cannot find $name") }.firstValue()
+    } else when (request.iVersion?.toInt() ?: 3) {
+        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.getOrElse(name) { error("cannot find $name") }
+            .firstValue()
         3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.getOrElse(name) { error("cannot find $name") }
         else -> error("unsupported version ${request.iVersion}")
     })

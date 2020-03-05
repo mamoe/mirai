@@ -16,6 +16,7 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.io.InputStream
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
@@ -23,7 +24,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.*
 
-@OptIn(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal fun createImageDataPacketSequence( // RequestDataTrans
     client: QQAndroidClient,
     command: String,
