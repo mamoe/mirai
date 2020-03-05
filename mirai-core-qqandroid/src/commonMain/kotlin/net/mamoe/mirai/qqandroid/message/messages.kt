@@ -219,7 +219,7 @@ private val atAllData = ImMsgBody.Elem(
     )
 )
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
 
@@ -332,7 +332,7 @@ internal class OnlineFriendImageImpl(
     }
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
 
@@ -343,7 +343,7 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
 }
 
 // These two functions are not identical, dont combine.
-@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     val elements = this.elems!!
 
@@ -368,7 +368,9 @@ private fun MessageChain.removeAtIfHasQuoteReply(): MessageChain =
         }.asMessageChain()
     } else this*/
 
-@UseExperimental(MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class, LowLevelAPI::class)
+@OptIn(
+    MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class, LowLevelAPI::class
+)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
     this.forEach {
         when {

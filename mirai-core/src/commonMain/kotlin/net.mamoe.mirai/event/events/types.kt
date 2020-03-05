@@ -73,7 +73,7 @@ val GroupOperableEvent.isByBot: Boolean get() = operator == null
  * 当操作人为 [Member] 时获取这个 [Member],
  * 当操作人为 [Bot] 时获取 [Group.botAsMember]
  */
-@UseExperimental(MiraiExperimentalAPI::class)
+@OptIn(MiraiExperimentalAPI::class)
 val GroupOperableEvent.operatorOrBot: Member
     get() = this.operator ?: this.group.botAsMember
 

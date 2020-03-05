@@ -76,7 +76,7 @@ interface OnlineImage : Image {
  * 查询原图下载链接.
  */
 suspend fun Image.queryUrl(): String {
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     return when (this) {
         is OnlineImage -> this.originUrl
         else -> BotImpl.instances.peekFirst().get()?.queryImageUrl(this)
@@ -102,7 +102,7 @@ interface OfflineImage : Image
  * 原图下载链接. 包含域名
  */
 suspend fun OfflineImage.queryOriginUrl(): String {
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     return BotImpl.instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
 }
 
@@ -115,7 +115,7 @@ suspend fun OfflineImage.queryOriginUrl(): String {
  * 群图片
  */
 // CustomFace
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 sealed class GroupImage : AbstractImage() {
     abstract val filepath: String
     abstract val fileId: Int
@@ -184,7 +184,7 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
 /**
  * 好友图片
  */ // NotOnlineImage
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {
     abstract val resourceId: String
     abstract val md5: ByteArray

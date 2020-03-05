@@ -26,7 +26,7 @@ import java.util.zip.Inflater
 /**
  * Ktor HttpClient. 不同平台使用不同引擎.
  */
-@UseExperimental(KtorExperimentalAPI::class)
+@OptIn(KtorExperimentalAPI::class)
 actual val Http: HttpClient
     get() = HttpClient(CIO)
 
@@ -76,7 +76,7 @@ private inline fun InputStream.readInSequence(block: (Int) -> Unit) {
     }
 }
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 actual fun ByteArray.unzip(offset: Int, length: Int): ByteArray {
     this.checkOffsetAndLength(offset, length)
     if (length == 0) return ByteArray(0)

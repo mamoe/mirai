@@ -35,7 +35,7 @@ import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
 import net.mamoe.mirai.utils.io.withUse
 
-@UseExperimental(MiraiInternalAPI::class, InternalSerializationApi::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 @Suppress("SpellCheckingInspection")
 internal suspend fun HttpClient.postImage(
     htcmd: String,
@@ -93,9 +93,9 @@ internal suspend fun HttpClient.postImage(
     }
 } == HttpStatusCode.OK
 
-@UseExperimental(MiraiInternalAPI::class, InternalSerializationApi::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal object HighwayHelper {
-    @UseExperimental(InternalCoroutinesApi::class)
+    @OptIn(InternalCoroutinesApi::class)
     suspend fun uploadImage(
         client: QQAndroidClient,
         serverIp: String,

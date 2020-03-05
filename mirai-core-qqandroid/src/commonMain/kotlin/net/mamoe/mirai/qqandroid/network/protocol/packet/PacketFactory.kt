@@ -47,7 +47,7 @@ internal sealed class PacketFactory<TPacket : Packet?> {
  *
  * @param TPacket 服务器回复包解析结果
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 internal abstract class OutgoingPacketFactory<TPacket : Packet?>(
     /**
      * 命令名. 如 `wtlogin.login`, `ConfigPushSvc.PushDomain`
@@ -116,7 +116,7 @@ internal val PacketLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet").withS
 /**
  * 已知的数据包工厂列表.
  */
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
         WtLogin.Login,
@@ -163,7 +163,7 @@ internal object KnownPacketFactories {
      * full packet without length
      */
     // do not inline. Exceptions thrown will not be reported correctly
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
     suspend fun <T : Packet?> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) = with(rawInput) {
         // login
@@ -225,7 +225,7 @@ internal object KnownPacketFactories {
         }
     }
 
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     internal suspend fun <T : Packet?> handleIncomingPacket(it: IncomingPacket<T>, bot: QQAndroidBot, flag2: Int, consumer: PacketConsumer<T>) {
         if (it.packetFactory == null) {
             bot.network.logger.debug("Received commandName: ${it.commandName}")
@@ -274,7 +274,7 @@ internal object KnownPacketFactories {
     /**
      * 解析 SSO 层包装
      */
-    @UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+    @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket<*> {
         val commandName: String
         val ssoSequenceId: Int
@@ -335,7 +335,7 @@ internal object KnownPacketFactories {
         return IncomingPacket(packetFactory, ssoSequenceId, packet, commandName)
     }
 
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     private suspend fun <T : Packet?> ByteReadPacket.parseOicqResponse(
         bot: QQAndroidBot,
         packetFactory: OutgoingPacketFactory<T>,

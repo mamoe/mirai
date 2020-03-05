@@ -118,7 +118,7 @@ interface Listener<in E : Event> : CompletableJob {
  * @see subscribeGroupMessages  监听群消息 DSL
  * @see subscribeFriendMessages 监听好友消息 DSL
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 inline fun <reified E : Event> CoroutineScope.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline handler: suspend E.(E) -> ListeningStatus
@@ -136,7 +136,7 @@ inline fun <reified E : Event> CoroutineScope.subscribe(
  *
  * @see subscribe 获取更多说明
  */
-@UseExperimental(MiraiInternalAPI::class, ExperimentalContracts::class)
+@OptIn(MiraiInternalAPI::class, ExperimentalContracts::class)
 inline fun <reified E : Event> CoroutineScope.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit
@@ -158,7 +158,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeAlways(
  *
  * @see subscribe 获取更多说明
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 inline fun <reified E : Event> CoroutineScope.subscribeOnce(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit
@@ -184,7 +184,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnce(
  * @see subscribe 获取更多说明
  */
 @JvmName("subscribeAlwaysForBot")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline handler: suspend E.(E) -> ListeningStatus
@@ -204,7 +204,7 @@ inline fun <reified E : BotEvent> Bot.subscribe(
  * @see subscribe 获取更多说明
  */
 @JvmName("subscribeAlwaysForBot1")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit
@@ -224,7 +224,7 @@ inline fun <reified E : BotEvent> Bot.subscribeAlways(
  * @see subscribe 获取更多说明
  */
 @JvmName("subscribeOnceForBot2")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribeOnce(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit

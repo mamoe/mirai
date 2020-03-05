@@ -30,7 +30,7 @@ import kotlin.jvm.JvmSynthetic
 
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
     require(offset >= 0) { "offset shouldn't be negative: $offset" }
     require(length >= 0) { "length shouldn't be negative: $length" }
@@ -54,7 +54,7 @@ fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, length: In
 
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 fun ByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
     this.checkOffsetAndLength(offset, length)
     if (length == 0) {
@@ -99,7 +99,7 @@ inline fun ByteArray.encodeToString(charset: Charset = Charsets.UTF_8): String =
 inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) =
     ByteReadPacket(this, offset = offset, length = length)
 
-@UseExperimental(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class)
 inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     contract {
         callsInPlace(t, InvocationKind.EXACTLY_ONCE)

@@ -15,11 +15,11 @@ import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.ContextImpl
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 @Suppress("FunctionName")
 internal fun QQAndroidBot(account: BotAccount, configuration: BotConfiguration): QQAndroidBot = QQAndroidBot(ContextImpl(), account, configuration)
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal actual class QQAndroidBot actual constructor(
     context: Context,
     account: BotAccount,

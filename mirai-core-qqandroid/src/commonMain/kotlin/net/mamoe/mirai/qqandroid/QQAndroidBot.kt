@@ -36,14 +36,14 @@ import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal expect class QQAndroidBot constructor(
     context: Context,
     account: BotAccount,
     configuration: BotConfiguration
 ) : QQAndroidBotBase
 
-@UseExperimental(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
+@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal abstract class QQAndroidBotBase constructor(
     context: Context,
     account: BotAccount,
@@ -69,7 +69,7 @@ internal abstract class QQAndroidBotBase constructor(
     override val friends: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     override val selfQQ: QQ by lazy {
-        @UseExperimental(LowLevelAPI::class)
+        @OptIn(LowLevelAPI::class)
         _lowLevelNewQQ(object : FriendInfo {
             override val uin: Long get() = this@QQAndroidBotBase.uin
             override val nick: String get() = this@QQAndroidBotBase.nick
@@ -101,7 +101,7 @@ internal abstract class QQAndroidBotBase constructor(
         return groups.delegate.getOrNull(uin)
     }
 
-    @UseExperimental(LowLevelAPI::class)
+    @OptIn(LowLevelAPI::class)
     override suspend fun _lowLevelQueryGroupList(): Sequence<Long> {
         return network.run {
             FriendList.GetTroopListSimplify(bot.client)
@@ -109,7 +109,7 @@ internal abstract class QQAndroidBotBase constructor(
         }.groups.asSequence().map { it.groupUin.shl(32) and it.groupCode }
     }
 
-    @UseExperimental(LowLevelAPI::class)
+    @OptIn(LowLevelAPI::class)
     override suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo = network.run {
         TroopManagement.GetGroupInfo(
             client = bot.client,
@@ -117,7 +117,7 @@ internal abstract class QQAndroidBotBase constructor(
         ).sendAndExpect<GroupInfoImpl>(retry = 2)
     }
 
-    @UseExperimental(LowLevelAPI::class)
+    @OptIn(LowLevelAPI::class)
     override suspend fun _lowLevelQueryGroupMemberList(
         groupUin: Long,
         groupCode: Long,
@@ -187,7 +187,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @UseExperimental(LowLevelAPI::class)
+    @OptIn(LowLevelAPI::class)
     override suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long, time: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
@@ -198,7 +198,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @UseExperimental(LowLevelAPI::class)
+    @OptIn(LowLevelAPI::class)
     override suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
