@@ -5,19 +5,11 @@
  * Some code changed by Mamoe is annotated around "MIRAI MODIFY START" and "MIRAI MODIFY END"
  */
 
-@file:Suppress("DEPRECATION_ERROR")
-
 package net.mamoe.mirai.qqandroid.io.serialization
 
-import kotlinx.io.ByteArrayOutputStream
-import kotlinx.io.ByteBuffer
-import kotlinx.io.ByteOrder
+import kotlinx.io.*
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.ByteArraySerializer
-import kotlinx.serialization.builtins.MapEntrySerializer
-import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.internal.MapLikeSerializer
-import kotlinx.serialization.internal.TaggedEncoder
+import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -41,31 +33,22 @@ internal fun extractParameters(desc: SerialDescriptor, index: Int, zeroBasedDefa
  *
  * 代码复制自 kotlinx.serialization. 修改部分已进行标注 (详见 "MIRAI MODIFY START")
  */
-@OptIn(InternalSerializationApi::class, ExperimentalStdlibApi::class)
-class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModule) : SerialFormat, BinaryFormat {
+class ProtoBufWithNullableSupport(context: SerialModule = EmptyModule) : AbstractSerialFormat(context), BinaryFormat {
 
-    internal open inner class ProtobufWriter(private val encoder: ProtobufEncoder) : TaggedEncoder<ProtoDesc>() {
-        override val context
+    internal open inner class ProtobufWriter(val encoder: ProtobufEncoder) : TaggedEncoder<ProtoDesc>() {
+        public override val context
             get() = this@ProtoBufWithNullableSupport.context
 
-        override fun beginStructure(
-            descriptor: SerialDescriptor,
-            vararg typeSerializers: KSerializer<*>
-        ): CompositeEncoder =
-            when (descriptor.kind) {
-                StructureKind.LIST -> RepeatedWriter(encoder, currentTag)
-                StructureKind.CLASS, StructureKind.OBJECT, is PolymorphicKind -> ObjectWriter(currentTagOrNull, encoder)
-                StructureKind.MAP -> MapRepeatedWriter(currentTagOrNull, encoder)
-                else -> throw SerializationException("Primitives are not supported at top-level")
-            }
+        override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder = when (desc.kind) {
+            StructureKind.LIST -> RepeatedWriter(encoder, currentTag)
+            StructureKind.CLASS, UnionKind.OBJECT, is PolymorphicKind -> ObjectWriter(currentTagOrNull, encoder)
+            StructureKind.MAP -> MapRepeatedWriter(currentTagOrNull, encoder)
+            else -> throw SerializationException("Primitives are not supported at top-level")
+        }
 
         override fun encodeTaggedInt(tag: ProtoDesc, value: Int) = encoder.writeInt(value, tag.first, tag.second)
-        override fun encodeTaggedByte(tag: ProtoDesc, value: Byte) =
-            encoder.writeInt(value.toInt(), tag.first, tag.second)
-
-        override fun encodeTaggedShort(tag: ProtoDesc, value: Short) =
-            encoder.writeInt(value.toInt(), tag.first, tag.second)
-
+        override fun encodeTaggedByte(tag: ProtoDesc, value: Byte) = encoder.writeInt(value.toInt(), tag.first, tag.second)
+        override fun encodeTaggedShort(tag: ProtoDesc, value: Short) = encoder.writeInt(value.toInt(), tag.first, tag.second)
         override fun encodeTaggedLong(tag: ProtoDesc, value: Long) = encoder.writeLong(value, tag.first, tag.second)
         override fun encodeTaggedFloat(tag: ProtoDesc, value: Float) = encoder.writeFloat(value, tag.first)
         override fun encodeTaggedDouble(tag: ProtoDesc, value: Double) = encoder.writeDouble(value, tag.first)
@@ -99,15 +82,12 @@ class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModu
         @Suppress("UNCHECKED_CAST", "NAME_SHADOWING")
         override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) = when {
             // encode maps as collection of map entries, not merged collection of key-values
-            serializer.descriptor.kind == StructureKind.MAP -> {
+            serializer.descriptor is MapLikeDescriptor -> {
                 val serializer = (serializer as MapLikeSerializer<Any?, Any?, T, *>)
                 val mapEntrySerial = MapEntrySerializer(serializer.keySerializer, serializer.valueSerializer)
-                SetSerializer(mapEntrySerial).serialize(this, (value as Map<*, *>).entries)
+                HashSetSerializer(mapEntrySerial).serialize(this, (value as Map<*, *>).entries)
             }
-            serializer.descriptor == ByteArraySerializer().descriptor -> encoder.writeBytes(
-                value as ByteArray,
-                popTag().first
-            )
+            serializer.descriptor == ByteArraySerializer.descriptor -> encoder.writeBytes(value as ByteArray, popTag().first)
             else -> serializer.serialize(this, value)
         }
     }
@@ -116,7 +96,7 @@ class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModu
         val parentTag: ProtoDesc?, private val parentEncoder: ProtobufEncoder,
         private val stream: ByteArrayOutputStream = ByteArrayOutputStream()
     ) : ProtobufWriter(ProtobufEncoder(stream)) {
-        override fun endEncode(descriptor: SerialDescriptor) {
+        override fun endEncode(desc: SerialDescriptor) {
             if (parentTag != null) {
                 parentEncoder.writeBytes(stream.toByteArray(), parentTag.first)
             } else {
@@ -131,8 +111,7 @@ class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModu
             else 2 to (parentTag?.second ?: ProtoNumberType.DEFAULT)
     }
 
-    internal inner class RepeatedWriter(encoder: ProtobufEncoder, private val curTag: ProtoDesc) :
-        ProtobufWriter(encoder) {
+    internal inner class RepeatedWriter(encoder: ProtobufEncoder, val curTag: ProtoDesc) : ProtobufWriter(encoder) {
         override fun SerialDescriptor.getTag(index: Int) = curTag
     }
 
@@ -163,7 +142,7 @@ class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModu
         }
 
         fun writeString(value: String, tag: Int) {
-            val bytes = value.encodeToByteArray()
+            val bytes = value.toUtf8Bytes()
             writeBytes(bytes, tag)
         }
 
@@ -249,17 +228,17 @@ class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModu
         internal const val SIZE_DELIMITED = 2
         internal const val i32 = 5
 
-        private val plain = ProtoBufWithNullableSupport()
+        val plain = ProtoBufWithNullableSupport()
 
-        override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray = plain.dump(serializer, value)
-        override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T =
-            plain.load(deserializer, bytes)
+        override fun <T> dump(serializer: SerializationStrategy<T>, obj: T): ByteArray = plain.dump(serializer, obj)
+        override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T = plain.load(deserializer, bytes)
+        override fun install(module: SerialModule) = throw IllegalStateException("You should not install anything to global instance")
     }
 
-    override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray {
+    override fun <T> dump(serializer: SerializationStrategy<T>, obj: T): ByteArray {
         val encoder = ByteArrayOutputStream()
         val dumper = ProtobufWriter(ProtobufEncoder(encoder))
-        dumper.encode(serializer, value)
+        dumper.encode(serializer, obj)
         return encoder.toByteArray()
     }
 
@@ -269,3 +248,20 @@ class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModu
 
 }
 
+internal fun InputStream.readExactNBytes(bytes: Int): ByteArray {
+    val array = ByteArray(bytes)
+    var read = 0
+    while (read < bytes) {
+        val i = this.read(array, read, bytes - read)
+        if (i == -1) throw IOException("Unexpected EOF")
+        read += i
+    }
+    return array
+}
+
+internal fun InputStream.readToByteBuffer(bytes: Int): ByteBuffer {
+    val arr = readExactNBytes(bytes)
+    val buf = ByteBuffer.allocate(bytes)
+    buf.put(arr).flip()
+    return buf
+}

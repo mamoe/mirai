@@ -20,7 +20,6 @@ import io.ktor.utils.io.core.writeFully
 import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.readAvailable
 import kotlinx.io.OutputStream
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -30,7 +29,6 @@ import kotlin.jvm.JvmName
 /**
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
-@InternalSerializationApi
 suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
     @OptIn(MiraiInternalAPI::class)
     ByteArrayPool.useInstance { buffer ->
@@ -75,7 +73,6 @@ suspend fun ByteReadChannel.copyTo(dst: kotlinx.coroutines.io.ByteWriteChannel) 
 /**
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
-@InternalSerializationApi
 suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
     try {
         @OptIn(MiraiInternalAPI::class)

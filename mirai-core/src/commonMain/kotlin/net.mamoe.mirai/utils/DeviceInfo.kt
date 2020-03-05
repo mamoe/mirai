@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.protobuf.ProtoBuf
-import kotlinx.serialization.protobuf.ProtoId
 
 /**
  * 设备信息. 可通过继承 [SystemDeviceInfo] 来在默认的基础上修改
@@ -60,15 +60,15 @@ abstract class DeviceInfo {
     fun generateDeviceInfoData(): ByteArray {
         @Serializable
         class DevInfo(
-            @ProtoId(1) val bootloader: ByteArray,
-            @ProtoId(2) val procVersion: ByteArray,
-            @ProtoId(3) val codename: ByteArray,
-            @ProtoId(4) val incremental: ByteArray,
-            @ProtoId(5) val fingerprint: ByteArray,
-            @ProtoId(6) val bootId: ByteArray,
-            @ProtoId(7) val androidId: ByteArray,
-            @ProtoId(8) val baseBand: ByteArray,
-            @ProtoId(9) val innerVersion: ByteArray
+            @SerialId(1) val bootloader: ByteArray,
+            @SerialId(2) val procVersion: ByteArray,
+            @SerialId(3) val codename: ByteArray,
+            @SerialId(4) val incremental: ByteArray,
+            @SerialId(5) val fingerprint: ByteArray,
+            @SerialId(6) val bootId: ByteArray,
+            @SerialId(7) val androidId: ByteArray,
+            @SerialId(8) val baseBand: ByteArray,
+            @SerialId(9) val innerVersion: ByteArray
         )
 
         return ProtoBuf.dump(

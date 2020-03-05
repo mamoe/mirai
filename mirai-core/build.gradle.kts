@@ -59,7 +59,6 @@ kotlin {
             languageSettings.enableLanguageFeature("InlineClasses")
 
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
 
             dependencies {
                 api(kotlin("stdlib", kotlinVersion))
@@ -76,7 +75,6 @@ kotlin {
                 api(kotlin("serialization", kotlinVersion))
                 api(kotlinx("coroutines-core-common", coroutinesVersion))
                 api(kotlinx("serialization-runtime-common", serializationVersion))
-                api(kotlinx("serialization-protobuf-common", serializationVersion))
 
                 api(ktor("http-cio", ktorVersion))
                 api(ktor("http", ktorVersion))
@@ -105,7 +103,6 @@ kotlin {
 
                     api(kotlinx("serialization-runtime", serializationVersion))
                     api(kotlinx("coroutines-android", coroutinesVersion))
-                    api(kotlinx("serialization-protobuf", serializationVersion))
 
                     api(ktor("client-android", ktorVersion))
                 }
@@ -132,7 +129,6 @@ kotlin {
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
                 api(kotlinx("io-jvm", coroutinesIoVersion))
-                api(kotlinx("serialization-protobuf", serializationVersion))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
