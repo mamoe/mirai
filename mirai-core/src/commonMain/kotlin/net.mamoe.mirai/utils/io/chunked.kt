@@ -19,6 +19,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.io.InputStream
 import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
