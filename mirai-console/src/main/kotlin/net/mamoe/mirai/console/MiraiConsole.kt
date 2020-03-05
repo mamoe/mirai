@@ -12,6 +12,7 @@ package net.mamoe.mirai.console
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsole.CommandProcessor.processNextCommandLine
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
@@ -19,11 +20,8 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.core.MiraiCoreLoader
 import net.mamoe.mirai.console.plugins.PluginManager
-import net.mamoe.mirai.console.plugins.loadAsConfig
-import net.mamoe.mirai.console.plugins.withDefaultWrite
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.cryptor.ECDH
-import java.io.File
 
 
 object MiraiConsole {
@@ -93,6 +91,7 @@ object MiraiConsole {
 
         MiraiCoreLoader()
 
+        println(BotFactory::class)
         /* 加载ECDH */
         try {
             ECDH()

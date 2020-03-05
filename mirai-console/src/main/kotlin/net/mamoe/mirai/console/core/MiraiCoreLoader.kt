@@ -207,16 +207,27 @@ object MiraiCoreLoader {
     private fun loadCoreAndLib() {
         try {
 
-            MiraiConsole.logger("Core: " + getCore())
-            MiraiConsole.logger("Protocol: " + getProtocolLib())
+            val coreFile = getCore()!!
+            val protocolFile = getProtocolLib()!!
+
+            MiraiConsole.logger("Core: $coreFile")
+            MiraiConsole.logger("Protocol: $protocolFile")
 
 
             val classloader = URLClassLoader(
-                arrayOf(getCore()!!.toURI().toURL(), getProtocolLib()!!.toURI().toURL()),
-                Thread.currentThread().contextClassLoader
+                arrayOf(coreFile.toURI().toURL(), protocolFile.toURI().toURL()),
+                this.javaClass.classLoader
             )
+            ClassLoader.getSystemClassLoader()
+            // this.javaClass.classLoader.
             println(classloader.loadClass("net.mamoe.mirai.BotFactory"))
             println(classloader.loadClass("net.mamoe.mirai.qqandroid.QQAndroid"))
+            println(classloader.loadClass("net.mamoe.mirai.utils.cryptor.ECDHJvmKt"))
+
+            val a = classloader.loadClass("net.mamoe.mirai.qqandroid.QQAndroid").kotlin.objectInstance!!
+            println(a::class.java)
+
+            println(Class.forName("net.mamoe.mirai.qqandroid.QQAndroid"))
 
         } catch (e: ClassNotFoundException) {
             MiraiConsole.logger("Failed to load core, please seek for help")
