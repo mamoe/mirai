@@ -206,6 +206,7 @@ private class JceInput(
             current.tag > tag -> null // tag 大了，即找不到
             current.tag == tag -> current // 满足需要.
             else -> { // tag 小了
+                skipField(current.type)
                 check(prepareNextHead()) { "cannot skip to tag $tag, early EOF" }
                 skipToHeadOrNull(tag)
             }
