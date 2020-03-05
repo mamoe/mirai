@@ -198,11 +198,12 @@ object MiraiCoreLoader {
             MiraiConsole.logger("Core:" + getCore())
             MiraiConsole.logger("Protocol:" + getProtocolLib())
 
+
             MiraiCoreClassLoader(
                 (getCore()!!),
                 this.javaClass.classLoader
             )
-                .loadClass("net.mamoe.mirai.BotFactory")
+                .loadClass("net.mamoe.mirai.BotImpl")
 
 
             MiraiCoreClassLoader(
