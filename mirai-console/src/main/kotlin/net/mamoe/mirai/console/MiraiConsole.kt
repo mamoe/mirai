@@ -12,7 +12,6 @@ package net.mamoe.mirai.console
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsole.CommandProcessor.processNextCommandLine
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
@@ -38,19 +37,9 @@ object MiraiConsole {
      * */
     val bots get() = Bot.instances
 
-    fun getBotByUIN(uin: Long): Bot? {
-        bots.forEach {
-            if (it.get()?.uin == uin) {
-                return it.get()
-            }
-        }
-        return null
+    fun getBotOrNull(uin: Long): Bot? {
+        return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.uin == uin }
     }
-
-    /**
-     * PluginManager
-     */
-    val pluginManager: PluginManager get() = PluginManager
 
     /**
      * 与前端交互所使用的Logger
@@ -89,9 +78,8 @@ object MiraiConsole {
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
 
-        MiraiCoreLoader()
+        MiraiCoreLoader.loadCore()
 
-        println(BotFactory::class)
         /* 加载ECDH */
         try {
             ECDH()
@@ -102,7 +90,7 @@ object MiraiConsole {
 
         /* 依次启用功能 */
         DefaultCommands()
-        pluginManager.loadPlugins()
+        PluginManager.loadPlugins()
         CommandProcessor.start()
 
         /* 通知启动完成 */
@@ -150,6 +138,7 @@ object MiraiConsole {
 
         fun runConsoleCommandBlocking(command: String) = runBlocking { runConsoleCommand(command) }
 
+        @Suppress("unused")
         fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking { runCommand(sender, command) }
 
         private suspend fun processNextCommandLine() {

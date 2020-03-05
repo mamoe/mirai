@@ -3,7 +3,6 @@ package net.mamoe.mirai.console.graphical.controller
 import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.stage.Modality
-import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.graphical.model.BotModel
@@ -11,6 +10,7 @@ import net.mamoe.mirai.console.graphical.model.ConsoleInfo
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
+import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
 import tornadofx.*
@@ -75,7 +75,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     override fun createLoginSolver(): LoginSolver = loginSolver
 
     private fun getPluginsFromConsole(): ObservableList<PluginModel> =
-        MiraiConsole.pluginManager.getAllPluginDescriptions().map(::PluginModel).toObservable()
+        PluginManager.getAllPluginDescriptions().map(::PluginModel).toObservable()
 
 }
 

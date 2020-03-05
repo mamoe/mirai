@@ -7,15 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.console.core
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
-import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.URLProtocol
-import io.ktor.util.KtorExperimentalAPI
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +27,11 @@ import java.net.URLClassLoader
 import kotlin.math.pow
 import kotlin.system.exitProcess
 
-@UseExperimental(KtorExperimentalAPI::class)
 val Http: HttpClient
     get() = HttpClient(CIO)
 
 object MiraiCoreLoader {
-    val coresPath by lazy {
+    private val coresPath by lazy {
         File(System.getProperty("user.dir") + "/core/").also {
             if (!it.exists()) {
                 it.mkdirs()
@@ -59,7 +58,7 @@ object MiraiCoreLoader {
     }
 
 
-    operator fun invoke(): String {
+    fun loadCore(): String {
         MiraiConsole.logger("Fetching Newest Core Version .. ")
         val newest = runBlocking {
             getNewestVersion()
@@ -82,7 +81,7 @@ object MiraiCoreLoader {
 
 
     /**
-     * 使用Protocol Lib判断最新版本
+     * 判断最新版本
      * */
     private suspend fun getNewestVersion(): String {
         try {
@@ -110,9 +109,9 @@ object MiraiCoreLoader {
     }
 
     /**
-     * 使用Protocol Lib判断当前版本
-     * 如果没有 会返回0.0.0
-     * */
+     * 判断当前版本
+     * 默认返回 "0.0.0"
+     */
     private fun getCurrentVersion(): String {
         val file = getProtocolLib()
         if (file == null || getCore() == null) return "0.0.0"
@@ -133,14 +132,18 @@ object MiraiCoreLoader {
     }
 
 
-    val lib_jcenter =
-        "https://jcenter.bintray.com/net/mamoe/mirai-core-qqandroid-jvm/{version}/:mirai-core-qqandroid-jvm-{version}.jar"
-    val lib_aliyun =
-        "https://maven.aliyun.com/nexus/content/repositories/jcenter/net/mamoe/mirai-core-qqandroid-jvm/{version}/mirai-core-qqandroid-jvm-{version}.jar"
+    @Suppress("SpellCheckingInspection")
+    private object Links {
+        internal const val libJcenter =
+            "https://jcenter.bintray.com/net/mamoe/mirai-core-qqandroid-jvm/{version}/:mirai-core-qqandroid-jvm-{version}.jar"
+        internal const val libAliyun =
+            "https://maven.aliyun.com/nexus/content/repositories/jcenter/net/mamoe/mirai-core-qqandroid-jvm/{version}/mirai-core-qqandroid-jvm-{version}.jar"
 
-    val core_jcenter = "https://jcenter.bintray.com/net/mamoe/mirai-core-jvm/{version}/:mirai-core-jvm-{version}.jar"
-    val core_aliyun =
-        "https://maven.aliyun.com/nexus/content/repositories/jcenter/net/mamoe/mirai-core-jvm/{version}/mirai-core-jvm-{version}.jar"
+        internal const val coreJcenter =
+            "https://jcenter.bintray.com/net/mamoe/mirai-core-jvm/{version}/:mirai-core-jvm-{version}.jar"
+        internal const val coreAliyun =
+            "https://maven.aliyun.com/nexus/content/repositories/jcenter/net/mamoe/mirai-core-jvm/{version}/mirai-core-jvm-{version}.jar"
+    }
 
     private suspend fun downloadCoreAndLib(version: String) {
         var fileStream = File(coresPath.absolutePath + "/" + "mirai-core-qqandroid-jvm-$version.jar").also {
@@ -150,18 +153,16 @@ object MiraiCoreLoader {
         }.outputStream()
 
         suspend fun downloadRequest(url: String, version: String): ByteReadChannel {
-            return Http.get<HttpResponse>() {
-                this.url(url.replace("{version}", version))
-            }.content
+            return Http.get<HttpResponse>(url.replace("{version}", version)).content
         }
 
         var stream = kotlin.runCatching {
             MiraiConsole.logger("Downloading newest Protocol lib from Aliyun")
-            downloadRequest(lib_aliyun, version)
+            downloadRequest(Links.libAliyun, version)
         }.getOrElse {
             kotlin.runCatching {
                 MiraiConsole.logger("Downloading newest Protocol lib from JCenter")
-                downloadRequest(lib_jcenter, version)
+                downloadRequest(Links.libJcenter, version)
             }.getOrElse { e ->
                 MiraiConsole.logger("Failed to download Protocol lib, please seeking for help")
                 e.printStackTrace()
@@ -184,11 +185,11 @@ object MiraiCoreLoader {
 
         stream = try {
             MiraiConsole.logger("Downloading newest Mirai Core from Aliyun")
-            downloadRequest(core_aliyun, version)
+            downloadRequest(Links.coreAliyun, version)
         } catch (ignored: Exception) {
             try {
                 MiraiConsole.logger("Downloading newest Mirai Core from JCenter")
-                downloadRequest(core_jcenter, version)
+                downloadRequest(Links.coreJcenter, version)
             } catch (e: Exception) {
                 MiraiConsole.logger("Failed to download Mirai Core, please seeking for help")
                 e.printStackTrace()
@@ -239,9 +240,6 @@ object MiraiCoreLoader {
 
 
 }
-
-internal class MiraiCoreClassLoader(file: File, parent: ClassLoader) :
-    URLClassLoader(arrayOf(file.toURI().toURL()), parent)
 
 
 

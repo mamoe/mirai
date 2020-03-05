@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package net.mamoe.mirai.console.plugins
 
 import com.alibaba.fastjson.JSON
@@ -17,12 +19,14 @@ import com.moandjiezana.toml.Toml
 import com.moandjiezana.toml.TomlWriter
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.encodeToString
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.io.InputStream
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.NoSuchElementException
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -134,16 +138,16 @@ inline operator fun <reified T : Any> Config.setValue(thisRef: Any?, property: K
 }
 
 /* 带有默认值的代理 */
+@Suppress("unused")
 inline fun <reified T : Any> Config.withDefault(
-    noinline defaultValue: () -> T
+    crossinline defaultValue: () -> T
 ): ReadWriteProperty<Any, T> {
-    val default by lazy { defaultValue.invoke() }
     return object : ReadWriteProperty<Any, T> {
         override fun getValue(thisRef: Any, property: KProperty<*>): T {
             if (this@withDefault.exist(property.name)) {//unsafe
                 return this@withDefault.smartCast(property)
             }
-            return default
+            return defaultValue()
         }
 
         override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
@@ -153,6 +157,7 @@ inline fun <reified T : Any> Config.withDefault(
 }
 
 /* 带有默认值且如果为空会写入的代理 */
+@Suppress("unused")
 inline fun <reified T : Any> Config.withDefaultWrite(
     noinline defaultValue: () -> T
 ): WithDefaultWriteLoader<T> {
@@ -191,7 +196,7 @@ class WithDefaultWriteLoader<T : Any>(
         return object : ReadWriteProperty<Any, T> {
             override fun getValue(thisRef: Any, property: KProperty<*>): T {
                 if (config.exist(property.name)) {//unsafe
-                    return config._smartCast(property.name, _class)
+                    return config.smartCastInternal(property.name, _class)
                 }
                 return defaultValue
             }
@@ -203,12 +208,14 @@ class WithDefaultWriteLoader<T : Any>(
     }
 }
 
-inline fun <reified T : Any> Config.smartCast(property: KProperty<*>): T {
-    return _smartCast(property.name, T::class)
+@PublishedApi
+internal inline fun <reified T : Any> Config.smartCast(property: KProperty<*>): T {
+    return smartCastInternal(property.name, T::class)
 }
 
+@PublishedApi
 @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
-fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
+internal fun <T : Any> Config.smartCastInternal(propertyName: String, _class: KClass<T>): T {
     return when (_class) {
         String::class -> this.getString(propertyName)
         Int::class -> this.getInt(propertyName)
@@ -251,70 +258,72 @@ fun <T : Any> Config._smartCast(propertyName: String, _class: KClass<T>): T {
 
 interface ConfigSection : Config, MutableMap<String, Any> {
     override fun getConfigSection(key: String): ConfigSection {
-        val content = get(key) ?: error("ConfigSection does not contain $key ")
+        val content = get(key) ?: throw NoSuchElementException(key)
         if (content is ConfigSection) {
             return content
         }
+        @Suppress("UNCHECKED_CAST")
         return ConfigSectionDelegation(
             Collections.synchronizedMap(
-                (get(key) ?: error("ConfigSection does not contain $key ")) as LinkedHashMap<String, Any>
+                (get(key) ?: throw NoSuchElementException(key)) as LinkedHashMap<String, Any>
             )
         )
     }
 
     override fun getString(key: String): String {
-        return (get(key) ?: error("ConfigSection does not contain $key ")).toString()
+        return (get(key) ?: throw NoSuchElementException(key)).toString()
     }
 
     override fun getInt(key: String): Int {
-        return (get(key) ?: error("ConfigSection does not contain $key ")).toString().toInt()
+        return (get(key) ?: throw NoSuchElementException(key)).toString().toInt()
     }
 
     override fun getFloat(key: String): Float {
-        return (get(key) ?: error("ConfigSection does not contain $key ")).toString().toFloat()
+        return (get(key) ?: throw NoSuchElementException(key)).toString().toFloat()
     }
 
     override fun getBoolean(key: String): Boolean {
-        return (get(key) ?: error("ConfigSection does not contain $key ")).toString().toBoolean()
+        return (get(key) ?: throw NoSuchElementException(key)).toString().toBoolean()
     }
 
     override fun getDouble(key: String): Double {
-        return (get(key) ?: error("ConfigSection does not contain $key ")).toString().toDouble()
+        return (get(key) ?: throw NoSuchElementException(key)).toString().toDouble()
     }
 
     override fun getLong(key: String): Long {
-        return (get(key) ?: error("ConfigSection does not contain $key ")).toString().toLong()
+        return (get(key) ?: throw NoSuchElementException(key)).toString().toLong()
     }
 
     override fun getList(key: String): List<*> {
-        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>)
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>)
     }
 
     override fun getStringList(key: String): List<String> {
-        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString() }
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).map { it.toString() }
     }
 
     override fun getIntList(key: String): List<Int> {
-        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toInt() }
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).map { it.toString().toInt() }
     }
 
     override fun getFloatList(key: String): List<Float> {
-        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toFloat() }
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).map { it.toString().toFloat() }
     }
 
     override fun getDoubleList(key: String): List<Double> {
-        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toDouble() }
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).map { it.toString().toDouble() }
     }
 
     override fun getLongList(key: String): List<Long> {
-        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map { it.toString().toLong() }
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).map { it.toString().toLong() }
     }
 
     override fun getConfigSectionList(key: String): List<ConfigSection> {
-        return ((get(key) ?: error("ConfigSection does not contain $key ")) as List<*>).map {
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).map {
             if (it is ConfigSection) {
                 it
             } else {
+                @Suppress("UNCHECKED_CAST")
                 ConfigSectionDelegation(
                     Collections.synchronizedMap(
                         it as MutableMap<String, Any>
@@ -334,7 +343,7 @@ interface ConfigSection : Config, MutableMap<String, Any> {
 }
 
 @Serializable
-open class ConfigSectionImpl() : ConcurrentHashMap<String, Any>(),
+open class ConfigSectionImpl : ConcurrentHashMap<String, Any>(),
     ConfigSection {
     override fun set(key: String, value: Any) {
         super.put(key, value)
@@ -370,7 +379,7 @@ open class ConfigSectionDelegation(
     private val delegate: MutableMap<String, Any>
 ) : ConfigSection, MutableMap<String, Any> by delegate {
     override fun set(key: String, value: Any) {
-        delegate.put(key, value)
+        delegate[key] = value
     }
 
     override fun contains(key: String): Boolean {
@@ -394,6 +403,7 @@ interface FileConfig : Config {
 }
 
 
+@MiraiInternalAPI
 abstract class FileConfigImpl internal constructor(
     private val rawContent: String
 ) : FileConfig,
@@ -402,6 +412,7 @@ abstract class FileConfigImpl internal constructor(
     internal var file: File? = null
 
 
+    @Suppress("unused")
     constructor(file: File) : this(file.readText()) {
         this.file = file
     }
@@ -425,7 +436,7 @@ abstract class FileConfigImpl internal constructor(
     override fun remove(key: String): Any? = content.remove(key)
 
     override fun save() {
-        if (isReadOnly()) {
+        if (isReadOnly) {
             error("Config is readonly")
         }
         if (!((file?.exists())!!)) {
@@ -434,7 +445,7 @@ abstract class FileConfigImpl internal constructor(
         file?.writeText(serialize(content))
     }
 
-    fun isReadOnly() = file == null
+    val isReadOnly: Boolean get() = file == null
 
     override fun contains(key: String): Boolean {
         return content.contains(key)
@@ -454,6 +465,7 @@ abstract class FileConfigImpl internal constructor(
 
 }
 
+@UseExperimental(MiraiInternalAPI::class)
 class JsonConfig internal constructor(
     content: String
 ) : FileConfigImpl(content) {
@@ -466,7 +478,7 @@ class JsonConfig internal constructor(
         if (content.isEmpty() || content.isBlank() || content == "{}") {
             return ConfigSectionImpl()
         }
-        return JSON.parseObject<ConfigSectionImpl>(
+        return JSON.parseObject(
             content,
             object : TypeReference<ConfigSectionImpl>() {},
             Feature.OrderedField
@@ -479,6 +491,7 @@ class JsonConfig internal constructor(
     }
 }
 
+@UseExperimental(MiraiInternalAPI::class)
 class YamlConfig internal constructor(content: String) : FileConfigImpl(content) {
     constructor(file: File) : this(file.readText()) {
         this.file = file
@@ -490,7 +503,7 @@ class YamlConfig internal constructor(content: String) : FileConfigImpl(content)
         }
         return ConfigSectionDelegation(
             Collections.synchronizedMap(
-                Yaml().load<LinkedHashMap<String, Any>>(content) as LinkedHashMap<String, Any>
+                Yaml().load(content) as LinkedHashMap<String, Any>
             )
         )
     }
@@ -501,6 +514,7 @@ class YamlConfig internal constructor(content: String) : FileConfigImpl(content)
 
 }
 
+@UseExperimental(MiraiInternalAPI::class)
 class TomlConfig internal constructor(content: String) : FileConfigImpl(content) {
     constructor(file: File) : this(file.readText()) {
         this.file = file

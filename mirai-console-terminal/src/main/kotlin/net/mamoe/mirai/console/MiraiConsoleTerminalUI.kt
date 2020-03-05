@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package net.mamoe.mirai.console
 
 import com.googlecode.lanterna.SGR
@@ -8,7 +10,6 @@ import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
-import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.terminal.swing.SwingTerminal
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame
 import kotlinx.coroutines.*
@@ -16,7 +17,6 @@ import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.close
 import kotlinx.coroutines.io.jvm.nio.copyTo
 import kotlinx.coroutines.io.reader
-import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
@@ -51,49 +51,26 @@ import kotlin.system.exitProcess
  *
  */
 
-fun String.actualLength(): Int {
-    var x = 0
-    this.forEach {
-        if (it.isChineseChar()) {
-            x += 2
-        } else {
-            x += 1
-        }
-    }
-    return x
-}
+val String.actualLength: Int get() = this.sumBy { if (it.isChineseChar) 2 else 1 }
+
 
 fun String.getSubStringIndexByActualLength(widthMax: Int): Int {
-    var index = 0
-    var currentLength = 0
-    this.forEach {
-        if (it.isChineseChar()) {
-            currentLength += 2
-        } else {
-            currentLength += 1
-        }
-        if (currentLength > widthMax) {
-            return@forEach
-        }
-        ++index
-    }
-    if (index < 2) {
-        index = 2
-    }
-    return index
+    return this.sumBy { if (it.isChineseChar) 2 else 1 }.coerceAtMost(widthMax).coerceAtLeast(2)
 }
 
-fun Char.isChineseChar(): Boolean {
-    return this.toString().isChineseChar()
-}
+val Char.isChineseChar: Boolean
+    get() {
+        return this.toString().isChineseChar
+    }
 
-fun String.isChineseChar(): Boolean {
-    return this.matches(Regex("[\u4e00-\u9fa5]"))
-}
+val String.isChineseChar: Boolean
+    get() {
+        return this.matches(Regex("[\u4e00-\u9fa5]"))
+    }
 
 
 object MiraiConsoleTerminalUI : MiraiConsoleUI {
-    val cacheLogSize = 50
+    const val cacheLogSize = 50
     var mainTitle = "Mirai Console v0.01 Core v0.15"
 
     override fun pushVersion(consoleVersion: String, consoleBuild: String, coreVersion: String) {
@@ -122,7 +99,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
     @Volatile
     var requesting = false
-    var requestResult: String? = null
+    private var requestResult: String? = null
     override suspend fun requestInput(): String {
         requesting = true
         while (requesting) {
@@ -132,7 +109,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     }
 
 
-    suspend fun provideInput(input: String) {
+    private suspend fun provideInput(input: String) {
         if (requesting) {
             requestResult = input
             requesting = false
@@ -164,17 +141,13 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     }
                 }
 
-                var toLog = ""
+                lateinit var toLog: String
                 tempFile.inputStream().use {
                     val img = ImageIO.read(it)
-                    if (img == null) {
-                        toLog += "无法创建字符图片. 请查看文件\n"
-                    } else {
-                        toLog += img.createCharImg((terminal.terminalSize.columns / 1.5).toInt())
-                    }
+                    toLog += img?.createCharImg((terminal.terminalSize.columns / 1.5).toInt()) ?: "无法创建字符图片. 请查看文件\n"
                 }
                 pushLog(0, "$toLog[Login Solver]请输验证码. ${tempFile.absolutePath}")
-                return requestInput()!!
+                return requestInput()
                     .takeUnless { it.isEmpty() || it.length != 4 }
                     .also {
                         pushLog(0, "[Login Solver]正在提交[$it]中...")
@@ -206,11 +179,11 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         }
     }
 
-    val log = ConcurrentHashMap<Long, LimitLinkedQueue<String>>().also {
+    private val log = ConcurrentHashMap<Long, LimitLinkedQueue<String>>().also {
         it[0L] = LimitLinkedQueue(cacheLogSize)
     }
 
-    val botAdminCount = ConcurrentHashMap<Long, Int>()
+    private val botAdminCount = ConcurrentHashMap<Long, Int>()
 
     private val screens = mutableListOf(0L)
     private var currentScreenId = 0
@@ -219,7 +192,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     lateinit var terminal: Terminal
     lateinit var textGraphics: TextGraphics
 
-    var hasStart = false
+    private var hasStart = false
     private lateinit var internalPrinter: PrintStream
     fun start() {
         if (hasStart) {
@@ -277,11 +250,12 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
        */
         var lastJob: Job? = null
-        terminal.addResizeListener(TerminalResizeListener { terminal1: Terminal, newSize: TerminalSize ->
+        terminal.addResizeListener { _: Terminal, _: TerminalSize ->
             lastJob = GlobalScope.launch {
                 try {
                     delay(300)
                     if (lastJob == coroutineContext[Job]) {
+                        @Suppress("BlockingMethodInNonBlockingContext")
                         terminal.clearScreen()
                         //inited = false
                         update()
@@ -292,7 +266,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     pushLog(0, "[UI ERROR] ${e.message}")
                 }
             }
-        })
+        }
 
         if (terminal !is SwingTerminalFrame) {
             System.setOut(PrintStream(object : OutputStream() {
@@ -322,7 +296,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         thread {
             while (true) {
                 try {
-                    var keyStroke: KeyStroke = terminal.readInput()
+                    val keyStroke: KeyStroke = terminal.readInput()
 
                     when (keyStroke.keyType) {
                         KeyType.ArrowLeft -> {
@@ -411,7 +385,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.GREEN
-        textGraphics.putString((width - mainTitle.actualLength()) / 2, 1, mainTitle, SGR.BOLD)
+        textGraphics.putString((width - mainTitle.actualLength) / 2, 1, mainTitle, SGR.BOLD)
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         textGraphics.putString(2, 3, "-".repeat(width - 4))
@@ -426,15 +400,15 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         val leftName =
             getScreenName(getLeftScreenId())
         // clearRows(2)
-        textGraphics.putString((width - title.actualLength()) / 2 - "$leftName << ".length, 2, "$leftName << ")
+        textGraphics.putString((width - title.actualLength) / 2 - "$leftName << ".length, 2, "$leftName << ")
         textGraphics.foregroundColor = TextColor.ANSI.WHITE
         textGraphics.backgroundColor = TextColor.ANSI.YELLOW
-        textGraphics.putString((width - title.actualLength()) / 2, 2, title, SGR.BOLD)
+        textGraphics.putString((width - title.actualLength) / 2, 2, title, SGR.BOLD)
         textGraphics.foregroundColor = TextColor.ANSI.DEFAULT
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         val rightName =
             getScreenName(getRightScreenId())
-        textGraphics.putString((width + title.actualLength()) / 2 + 1, 2, ">> $rightName")
+        textGraphics.putString((width + title.actualLength) / 2 + 1, 2, ">> $rightName")
     }
 
     fun drawMainFrame(
@@ -447,7 +421,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         clearRows(4)
         textGraphics.putString(2, 4, "|Online Bots: $onlineBotCount")
         textGraphics.putString(
-            width - 2 - "Powered By Mamoe Technologies|".actualLength(),
+            width - 2 - "Powered By Mamoe Technologies|".actualLength,
             4,
             "Powered By Mamoe Technologies|"
         )
@@ -463,7 +437,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         textGraphics.backgroundColor = TextColor.ANSI.DEFAULT
         clearRows(4)
         textGraphics.putString(2, 4, "|Admins: $adminCount")
-        textGraphics.putString(width - 2 - "Add admins via commands|".actualLength(), 4, "Add admins via commands|")
+        textGraphics.putString(width - 2 - "Add admins via commands|".actualLength, 4, "Add admins via commands|")
     }
 
 
@@ -472,7 +446,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
         fun drawLog(string: String, flush: Boolean = true) {
             val maxHeight = terminal.terminalSize.rows - 4
-            val heightNeed = (string.actualLength() / (terminal.terminalSize.columns - 6)) + 1
+            val heightNeed = (string.actualLength / (terminal.terminalSize.columns - 6)) + 1
             if (heightNeed - 1 > maxHeight) {
                 pushLog(0, "[UI ERROR]: 您的屏幕太小, 有一条超长LOG无法显示")
                 return//拒绝打印
@@ -481,7 +455,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                 cleanPage()//翻页
             }
             if (string.contains("\n")) {
-                string.split("\n").forEach {
+                string.split("\n").forEach { _ ->
                     drawLog(string, false)
                 }
             } else {
@@ -491,7 +465,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     if (x == "") {
                         break
                     }
-                    val toWrite = if (x.actualLength() > width) {
+                    val toWrite = if (x.actualLength > width) {
                         val index = x.getSubStringIndexByActualLength(width)
                         x.substring(0, index).also {
                             x = if (index < x.length) {
@@ -539,7 +513,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             var vara = 0
             val toPrint = mutableListOf<String>()
             toDraw.forEach {
-                val heightNeed = (it.actualLength() / (terminal.terminalSize.columns - 6)) + 1
+                val heightNeed = (it.actualLength / (terminal.terminalSize.columns - 6)) + 1
                 vara += heightNeed
                 if (currentHeight + vara < terminal.terminalSize.rows - 4) {
                     logsToDraw++
@@ -558,8 +532,8 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     }
 
 
-    var commandBuilder = StringBuilder()
-    fun redrawCommand() {
+    private var commandBuilder = StringBuilder()
+    private fun redrawCommand() {
         val height = terminal.terminalSize.rows
         val width = terminal.terminalSize.columns
         clearRows(height - 3)
@@ -594,7 +568,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     }
 
     private fun deleteCommandChar() {
-        if (!commandBuilder.isEmpty()) {
+        if (commandBuilder.isNotEmpty()) {
             commandBuilder = StringBuilder(commandBuilder.toString().substring(0, commandBuilder.length - 1))
         }
         val height = terminal.terminalSize.rows
@@ -606,7 +580,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     }
 
 
-    var lastEmpty: Job? = null
+    private var lastEmpty: Job? = null
     private fun emptyCommand() {
         commandBuilder = StringBuilder()
         if (terminal is SwingTerminal) {
@@ -617,7 +591,9 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                 try {
                     delay(100)
                     if (lastEmpty == coroutineContext[Job]) {
-                        terminal.clearScreen()
+                        withContext(Dispatchers.IO) {
+                            terminal.clearScreen()
+                        }
                         //inited = false
                         update()
                         redrawCommand()
@@ -630,7 +606,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         }
     }
 
-    fun update() {
+    private fun update() {
         when (screens[currentScreenId]) {
             0L -> {
                 drawMainFrame(screens.size - 1)
@@ -658,7 +634,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
 
 
 class LimitLinkedQueue<T>(
-    val limit: Int = 50
+    private val limit: Int = 50
 ) : ConcurrentLinkedDeque<T>() {
     override fun push(e: T) {
         if (size >= limit) {

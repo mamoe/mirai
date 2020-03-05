@@ -26,7 +26,7 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
-tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     manifest {
         attributes["Main-Class"] = "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
     }
@@ -35,6 +35,16 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
 
 val miraiVersion: String by rootProject.ext
 
+kotlin {
+    sourceSets {
+        all {
+            languageSettings.enableLanguageFeature("InlineClasses")
+
+            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+        }
+    }
+}
 dependencies {
     compileOnly("net.mamoe:mirai-core-jvm:$miraiVersion")
     // compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
@@ -65,8 +75,8 @@ dependencies {
     api(ktor("network", ktorVersion))
 }
 
-val mirai_console_version: String by project.ext
-version = mirai_console_version
+val miraiConsoleVersion: String by project.ext
+version = miraiConsoleVersion
 
 description = "Console with plugin support for mirai"
 bintray {
@@ -109,7 +119,7 @@ publishing {
 
             groupId = rootProject.group.toString()
             artifactId = "mirai-console"
-            version = mirai_console_version
+            version = miraiConsoleVersion
 
             pom.withXml {
                 val root = asNode()

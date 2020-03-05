@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused", "unused")
+
 package net.mamoe.mirai.console.plugins
 
 import kotlinx.coroutines.CancellationException
@@ -22,7 +24,6 @@ import java.util.jar.JarFile
 
 
 object PluginManager {
-
     @Volatile
     internal var lastPluginName: String = ""
 
