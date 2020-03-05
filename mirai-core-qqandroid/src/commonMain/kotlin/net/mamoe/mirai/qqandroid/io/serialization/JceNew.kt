@@ -191,12 +191,12 @@ private class JceInput(
     /**
      * 跳过 [JceHead] 和对应的数据值, 直到找到 [tag], 否则抛出异常
      */
-    inline fun <R> skipToTagAndUseIfPossibleOrFail(
+    inline fun <R : Any> skipToTagAndUseIfPossibleOrFail(
         tag: Int,
         crossinline message: () -> String = { "tag not found: $tag" },
         crossinline block: (JceHead) -> R
     ): R {
-        return checkNotNull(skipToTagAndUseIfPossibleOrNull(tag, block), message)
+        return checkNotNull<R>(skipToTagAndUseIfPossibleOrNull(tag, block), message)
     }
 
     tailrec fun skipToHeadOrNull(tag: Int): JceHead? {
