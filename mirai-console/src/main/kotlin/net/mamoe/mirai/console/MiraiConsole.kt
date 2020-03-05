@@ -179,6 +179,12 @@ object MiraiConsole {
                 frontEnd.pushLog(identity, "$identityStr: $any")
             }
         }
+
+        operator fun invoke(identityStr: String, identity: Long, e: Exception? = null) {
+            if (e != null) {
+                frontEnd.pushLog(identity, "$identityStr: ${e.stackTrace}")
+            }
+        }
     }
 
 }
