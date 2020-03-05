@@ -18,8 +18,8 @@ import net.mamoe.mirai.utils.LoginSolver
 import kotlin.concurrent.thread
 
 class MiraiConsoleUIPure : MiraiConsoleUI {
-    var requesting = false
-    var requestStr = ""
+    private var requesting = false
+    private var requestStr = ""
 
     init {
         thread {

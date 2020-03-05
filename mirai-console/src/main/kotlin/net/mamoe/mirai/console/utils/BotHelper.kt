@@ -18,32 +18,33 @@ import net.mamoe.mirai.console.plugins.withDefaultWriteSave
 import net.mamoe.mirai.console.utils.BotManagers.BOT_MANAGERS
 import java.io.File
 
-object BotManagers {
+internal object BotManagers {
     val config = File("${MiraiConsole.path}/bot.yml").loadAsConfig()
     val BOT_MANAGERS: ConfigSection by config.withDefaultWriteSave { ConfigSectionImpl() }
 }
 
-fun Bot.addManager(long: Long) {
+internal fun Bot.addManager(long: Long) {
     BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
     BOT_MANAGERS[this.uin.toString()] =
         (BOT_MANAGERS.getLongList(this.uin.toString()) as MutableList<Long>).apply { add(long) }
     BotManagers.config.save()
 }
 
-fun Bot.removeManager(long: Long) {
+internal fun Bot.removeManager(long: Long) {
     BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
     BOT_MANAGERS[this.uin.toString()] =
         (BOT_MANAGERS.getLongList(this.uin.toString()) as MutableList<Long>).apply { add(long) }
     BotManagers.config.save()
 }
 
-fun Bot.getManagers(): List<Long> {
-    BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
-    return BOT_MANAGERS.getLongList(this.uin.toString())
-}
+internal val Bot.managers: List<Long>
+    get() {
+        BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
+        return BOT_MANAGERS.getLongList(this.uin.toString())
+    }
 
-fun Bot.checkManager(long: Long): Boolean {
-    return this.getManagers().contains(long)
+internal fun Bot.checkManager(long: Long): Boolean {
+    return this.managers.contains(long)
 }
 
 

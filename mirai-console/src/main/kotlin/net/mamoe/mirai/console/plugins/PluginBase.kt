@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package net.mamoe.mirai.console.plugins
 
 import kotlinx.coroutines.*
@@ -15,36 +17,25 @@ import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
-import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
 import java.io.InputStream
-import java.net.URL
 import java.net.URLClassLoader
-import java.util.jar.JarFile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 
-abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
-    constructor() : this(EmptyCoroutineContext)
+abstract class PluginBase
+@JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope {
 
     private val supervisorJob = SupervisorJob()
     final override val coroutineContext: CoroutineContext = coroutineContext + supervisorJob
 
     /**
-     * 插件被分配的data folder， 如果插件改名了 data folder 也会变 请注意
+     * 插件被分配的数据目录。数据目录会与插件名称同名。
      */
     val dataFolder: File by lazy {
-        File(_getDataFolder()).also {
+        File(PluginManager.pluginsPath + "/" + PluginManager.lastPluginName).also {
             it.mkdir()
-        }
-    }
-
-    private fun _getDataFolder():String{
-        return if(inited){
-            PluginManager.pluginsPath + "/" + pluginName
-        }else{
-            PluginManager.pluginsPath + "/" + PluginManager.lastPluginName//for init
         }
     }
 
@@ -95,28 +86,19 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
         this.onDisable()
     }
 
-    internal var pluginName:String = ""
-
-    private var inited = false
-    internal fun init() {
-        this.onLoad()
-        inited = true
-    }
-
-    val pluginManager = PluginManager
+    internal var pluginName: String = ""
 
     val logger: MiraiLogger by lazy {
-        SimpleLogger("Plugin ${pluginName}") { _, message, e ->
+        SimpleLogger("Plugin $pluginName") { _, message, e ->
             MiraiConsole.logger("[${pluginName}]", 0, message)
             if (e != null) {
-                MiraiConsole.logger("[${pluginName}]", 0, e.toString())
-                e.printStackTrace()
+                MiraiConsole.logger("[${pluginName}]", 0, e)
             }
         }
     }
 
     /**
-     * 加载一个插件jar, resources中的东西
+     * 加载 resources 中的文件
      */
     fun getResources(fileName: String): InputStream? {
         return try {
@@ -130,16 +112,15 @@ abstract class PluginBase(coroutineContext: CoroutineContext) : CoroutineScope {
     }
 
     /**
-     * 加载一个插件jar, resources中的Config
-     * 这个Config是read-only的
+     * 加载 resource 中的 [Config]
+     * 这个 [Config] 是 read-only 的
      */
     fun getResourcesConfig(fileName: String): Config {
         if (fileName.contains(".")) {
             error("Unknown Config Type")
         }
-        return Config.load(getResources(fileName) ?: error("Config Not Found"), fileName.split(".")[1])
+        return Config.load(getResources(fileName) ?: error("No such file: $fileName"), fileName.substringAfter('.'))
     }
-
 }
 
 class PluginDescription(
@@ -159,37 +140,37 @@ class PluginDescription(
 
     companion object {
         fun readFromContent(content_: String): PluginDescription {
-            with(Config.load(content_,"yml")){
+            with(Config.load(content_, "yml")) {
                 try {
                     return PluginDescription(
                         name = this.getString("name"),
-                        author = try{
+                        author = kotlin.runCatching {
                             this.getString("author")
-                        }catch (e:Exception){
+                        }.getOrElse {
                             "unknown"
                         },
-                        basePath = try{
+                        basePath = kotlin.runCatching {
                             this.getString("path")
-                        }catch (e:Exception){
+                        }.getOrElse {
                             this.getString("main")
                         },
-                        version = try{
+                        version = kotlin.runCatching {
                             this.getString("version")
-                        }catch (e:Exception){
+                        }.getOrElse {
                             "unknown"
                         },
-                        info = try{
+                        info = kotlin.runCatching {
                             this.getString("info")
-                        }catch (e:Exception){
+                        }.getOrElse {
                             "unknown"
                         },
-                        depends = try{
+                        depends = kotlin.runCatching {
                             this.getStringList("depends")
-                        }catch (e:Exception){
-                            listOf<String>()
+                        }.getOrElse {
+                            listOf()
                         }
                     )
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     error("Failed to read Plugin.YML")
                 }
             }
@@ -199,237 +180,3 @@ class PluginDescription(
 
 internal class PluginClassLoader(file: File, parent: ClassLoader) :
     URLClassLoader(arrayOf(file.toURI().toURL()), parent)
-
-object PluginManager {
-
-    internal var lastPluginName: String = ""
-
-    internal val pluginsPath = (System.getProperty("user.dir") + "/plugins/").replace("//", "/").also {
-        File(it).mkdirs()
-    }
-
-    val logger = SimpleLogger("Plugin Manager") { _, message, e ->
-        MiraiConsole.logger("[Plugin Manager]", 0, message)
-    }
-
-    //已完成加载的
-    private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
-    private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
-
-    fun onCommand(command: Command, sender: CommandSender,args: List<String>) {
-        nameToPluginBaseMap.values.forEach {
-            it.onCommand(command,sender, args)
-        }
-    }
-
-
-    fun getPluginDescriptions(base:PluginBase):PluginDescription{
-        nameToPluginBaseMap.forEach{ (s, pluginBase) ->
-            if(pluginBase == base){
-                return pluginDescriptions[s]!!
-            }
-        }
-        error("can not find plugin description")
-    }
-
-    fun getPluginDataFolder(){
-    }
-
-    fun getAllPluginDescriptions(): Collection<PluginDescription> {
-        return pluginDescriptions.values
-    }
-
-    /**
-     * 尝试加载全部插件
-     */
-    fun loadPlugins() {
-        val pluginsFound: MutableMap<String, PluginDescription> = mutableMapOf()
-        val pluginsLocation: MutableMap<String, File> = mutableMapOf()
-
-        logger.info("""开始加载${pluginsPath}下的插件""")
-
-        File(pluginsPath).listFiles()?.forEach { file ->
-            if (file != null && file.extension == "jar") {
-                val jar = JarFile(file)
-                val pluginYml =
-                    jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
-                if (pluginYml == null) {
-                    logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
-                } else {
-                    try {
-                        val description =
-                            PluginDescription.readFromContent(
-                                URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
-                                    it.readBytes().encodeToString()
-                                })
-                        pluginsFound[description.name] = description
-                        pluginsLocation[description.name] = file
-                    }catch (e:Exception){
-                        logger.info(e.message)
-                    }
-                }
-            }
-        }
-
-        fun checkNoCircularDepends(
-            target: PluginDescription,
-            needDepends: List<String>,
-            existDepends: MutableList<String>
-        ) {
-
-            if (!target.noCircularDepend) {
-                return
-            }
-
-            existDepends.add(target.name)
-
-            if (needDepends.any { existDepends.contains(it) }) {
-                target.noCircularDepend = false
-            }
-
-            existDepends.addAll(needDepends)
-
-            needDepends.forEach {
-                if (pluginsFound.containsKey(it)) {
-                    checkNoCircularDepends(pluginsFound[it]!!, pluginsFound[it]!!.depends, existDepends)
-                }
-            }
-        }
-
-
-        pluginsFound.values.forEach {
-            checkNoCircularDepends(it, it.depends, mutableListOf())
-        }
-
-        //load
-
-
-        fun loadPlugin(description: PluginDescription): Boolean {
-            if (!description.noCircularDepend) {
-                logger.error("Failed to load plugin " + description.name + " because it has circular dependency")
-                return false
-            }
-
-            //load depends first
-            description.depends.forEach { dependent ->
-                if (!pluginsFound.containsKey(dependent)) {
-                    logger.error("Failed to load plugin " + description.name + " because it need " + dependent + " as dependency")
-                    return false
-                }
-                val depend = pluginsFound[dependent]!!
-                //还没有加载
-                if (!depend.loaded && !loadPlugin(pluginsFound[dependent]!!)) {
-                    logger.error("Failed to load plugin " + description.name + " because " + dependent + " as dependency failed to load")
-                    return false
-                }
-            }
-            //在这里所有的depends都已经加载了
-
-
-            //real load
-            logger.info("loading plugin " + description.name)
-
-            try {
-                val pluginClass = try {
-                    PluginClassLoader(
-                        (pluginsLocation[description.name]!!),
-                        this.javaClass.classLoader
-                    )
-                        .loadClass(description.basePath)
-                } catch (e: ClassNotFoundException) {
-                    logger.info("failed to find Main: " + description.basePath + " checking if it's kotlin's path")
-                    PluginClassLoader(
-                        (pluginsLocation[description.name]!!),
-                        this.javaClass.classLoader
-                    )
-                        .loadClass("${description.basePath}Kt")
-                }
-                return try {
-                    lastPluginName = description.name
-                    val subClass = pluginClass.asSubclass(PluginBase::class.java)
-                    val plugin: PluginBase =
-                        subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
-                    description.loaded = true
-                    logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
-                    logger.info(description.info)
-
-                    nameToPluginBaseMap[description.name] = plugin
-                    pluginDescriptions[description.name] = description
-                    plugin.pluginName = description.name
-                    plugin.init()
-                    true
-                } catch (e: ClassCastException) {
-                    logger.error("failed to load plugin " + description.name + " , Main class does not extends PluginBase ")
-                    false
-                }
-            } catch (e: ClassNotFoundException) {
-                e.printStackTrace()
-                logger.error("failed to load plugin " + description.name + " , Main class not found under " + description.basePath)
-                return false
-            }
-        }
-
-        pluginsFound.values.forEach {
-            loadPlugin(it)
-        }
-
-        nameToPluginBaseMap.values.forEach {
-            it.enable()
-        }
-
-        logger.info("""加载了${nameToPluginBaseMap.size}个插件""")
-
-    }
-
-
-    @JvmOverloads
-    fun disableAllPlugins(throwable: CancellationException? = null) {
-        nameToPluginBaseMap.values.forEach {
-            it.disable(throwable)
-        }
-    }
-
-    /**
-     * 根据插件名字找Jar的文件
-     * null => 没找到
-     */
-    fun getJarPath(pluginName: String): File? {
-        File(pluginsPath).listFiles()?.forEach { file ->
-            if (file != null && file.extension == "jar") {
-                val jar = JarFile(file)
-                val pluginYml =
-                    jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
-                if (pluginYml != null) {
-                    val description =
-                        PluginDescription.readFromContent(
-                            URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
-                                it.readBytes().encodeToString()
-                            })
-                    if (description.name.toLowerCase() == pluginName.toLowerCase()) {
-                        return file
-                    }
-                }
-            }
-        }
-        return null
-    }
-
-
-    /**
-     * 根据插件名字找Jar中的文件
-     * null => 没找到
-     */
-    fun getFileInJarByName(pluginName: String, toFind: String): InputStream? {
-        val jarFile = getJarPath(pluginName)
-        if (jarFile == null) {
-            return null
-        }
-        val jar = JarFile(jarFile)
-        val toFindFile =
-            jar.entries().asSequence().filter { it.name == toFind }.firstOrNull() ?: return null
-        return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
-    }
-}
-
-
-

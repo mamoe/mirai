@@ -19,11 +19,8 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.core.MiraiCoreLoader
 import net.mamoe.mirai.console.plugins.PluginManager
-import net.mamoe.mirai.console.plugins.loadAsConfig
-import net.mamoe.mirai.console.plugins.withDefaultWrite
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.cryptor.ECDH
-import java.io.File
 
 
 object MiraiConsole {
@@ -40,19 +37,9 @@ object MiraiConsole {
      * */
     val bots get() = Bot.instances
 
-    fun getBotByUIN(uin: Long): Bot? {
-        bots.forEach {
-            if (it.get()?.uin == uin) {
-                return it.get()
-            }
-        }
-        return null
+    fun getBotOrNull(uin: Long): Bot? {
+        return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.uin == uin }
     }
-
-    /**
-     * PluginManager
-     */
-    val pluginManager: PluginManager get() = PluginManager
 
     /**
      * 与前端交互所使用的Logger
@@ -91,7 +78,7 @@ object MiraiConsole {
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
 
-        MiraiCoreLoader()
+        MiraiCoreLoader.loadCore()
 
         /* 加载ECDH */
         try {
@@ -103,7 +90,7 @@ object MiraiConsole {
 
         /* 依次启用功能 */
         DefaultCommands()
-        pluginManager.loadPlugins()
+        PluginManager.loadPlugins()
         CommandProcessor.start()
 
         /* 通知启动完成 */
@@ -151,6 +138,7 @@ object MiraiConsole {
 
         fun runConsoleCommandBlocking(command: String) = runBlocking { runConsoleCommand(command) }
 
+        @Suppress("unused")
         fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking { runCommand(sender, command) }
 
         private suspend fun processNextCommandLine() {
@@ -178,6 +166,12 @@ object MiraiConsole {
         operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
             if (any != null) {
                 frontEnd.pushLog(identity, "$identityStr: $any")
+            }
+        }
+
+        operator fun invoke(identityStr: String, identity: Long, e: Exception? = null) {
+            if (e != null) {
+                frontEnd.pushLog(identity, "$identityStr: ${e.stackTrace}")
             }
         }
     }

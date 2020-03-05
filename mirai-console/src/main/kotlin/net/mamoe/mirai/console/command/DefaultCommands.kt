@@ -14,7 +14,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.addManager
 import net.mamoe.mirai.console.utils.checkManager
-import net.mamoe.mirai.console.utils.getManagers
+import net.mamoe.mirai.console.utils.managers
 import net.mamoe.mirai.console.utils.removeManager
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
@@ -49,7 +49,7 @@ object DefaultCommands {
                     MiraiConsole.logger("[Bot Manager]", 0, it[1] + " 不是一个Bot的ID")
                     return@onCommand false
                 }
-                val bot = MiraiConsole.getBotByUIN(botId)
+                val bot = MiraiConsole.getBotOrNull(botId)
                 if (bot == null) {
                     MiraiConsole.logger("[Bot Manager]", 0, "$botId 没有在Console中登陆")
                     return@onCommand false
@@ -88,7 +88,7 @@ object DefaultCommands {
                         MiraiConsole.logger("[Bot Manager]", 0, it[2] + "移除成功")
                     }
                     "list" -> {
-                        bot.getManagers().forEach {
+                        bot.managers.forEach {
                             MiraiConsole.logger("[Bot Manager]", 0, " -> $it")
                         }
                     }
@@ -106,7 +106,7 @@ object DefaultCommands {
                     return@onCommand false
                 }
                 if (it.size < 2) {
-                    MiraiConsole.logger("\"/login qqnumber qqpassword \" to login a bot")
+                    MiraiConsole.logger("\"/login qq password \" to login a bot")
                     MiraiConsole.logger("\"/login qq号 qq密码 \" 来登录一个BOT")
                     return@onCommand false
                 }
@@ -138,11 +138,11 @@ object DefaultCommands {
                     }
                     bot.login()
                     bot.subscribeMessages {
-                        this.startsWith("/") {
+                        startsWith("/") { message ->
                             if (bot.checkManager(this.sender.id)) {
                                 val sender = ContactCommandSender(this.subject)
                                 MiraiConsole.CommandProcessor.runCommand(
-                                    sender, it
+                                    sender, message
                                 )
                             }
                         }
@@ -159,13 +159,13 @@ object DefaultCommands {
         registerCommand {
             name = "status"
             description = "获取状态"
-            onCommand {
-                when (it.size) {
+            onCommand { args ->
+                when (args.size) {
                     0 -> {
                         sendMessage("当前有" + MiraiConsole.bots.size + "个BOT在线")
                     }
                     1 -> {
-                        val bot = it[0]
+                        val bot = args[0]
                         var find = false
                         MiraiConsole.bots.forEach {
                             if (it.get()?.uin.toString().contains(bot)) {
@@ -196,13 +196,13 @@ object DefaultCommands {
                     return@onCommand false
                 }
                 val bot: Bot? = if (it.size == 2) {
-                    if (MiraiConsole.bots.size == 0) {
+                    if (MiraiConsole.bots.isEmpty()) {
                         MiraiConsole.logger("还没有BOT登录")
                         return@onCommand false
                     }
                     MiraiConsole.bots[0].get()
                 } else {
-                    MiraiConsole.getBotByUIN(it[0].toLong())
+                    MiraiConsole.getBotOrNull(it[0].toLong())
                 }
                 if (bot == null) {
                     MiraiConsole.logger("没有找到BOT")
@@ -228,11 +228,11 @@ object DefaultCommands {
             alias = listOf("plugin")
             description = "获取插件列表"
             onCommand {
-                PluginManager.getAllPluginDescriptions().let {
-                    it.forEach {
+                PluginManager.getAllPluginDescriptions().let { descriptions ->
+                    descriptions.forEach {
                         appendMessage("\t" + it.name + " v" + it.version + " by" + it.author + " " + it.info)
                     }
-                    appendMessage("加载了" + it.size + "个插件")
+                    appendMessage("加载了" + descriptions.size + "个插件")
                     true
                 }
             }
@@ -243,10 +243,10 @@ object DefaultCommands {
             alias = listOf("commands", "help", "helps")
             description = "获取指令列表"
             onCommand {
-                CommandManager.getCommands().let {
+                CommandManager.commands.let { commands ->
                     var size = 0
                     appendMessage("")//\n
-                    it.toSet().forEach {
+                    commands.forEach {
                         ++size
                         appendMessage("-> " + it.name + " :" + it.description)
                     }

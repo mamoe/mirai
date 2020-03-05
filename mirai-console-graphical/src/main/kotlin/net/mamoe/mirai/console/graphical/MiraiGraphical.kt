@@ -17,8 +17,11 @@ import tornadofx.App
 import tornadofx.find
 import tornadofx.launch
 
-fun main(args: Array<String>) {
-    launch<MiraiGraphicalUI>(args)
+object MiraiGraphicalLoader {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        launch<MiraiGraphicalUI>(args)
+    }
 }
 
 class MiraiGraphicalUI : App(Decorator::class, PrimaryStyleSheet::class) {
