@@ -34,10 +34,7 @@ kotlin {
     }
 }
 dependencies {
-    compileOnly("net.mamoe:mirai-core-jvm:$miraiVersion")
-
     api(kotlin("stdlib", kotlinVersion))
-    api(kotlin("reflect", kotlinVersion))
 
     api(kotlinx("coroutines-core", coroutinesVersion))
 
