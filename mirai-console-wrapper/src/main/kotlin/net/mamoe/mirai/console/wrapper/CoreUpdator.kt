@@ -13,7 +13,8 @@ package net.mamoe.mirai.console.wrapper
 
 import io.ktor.client.request.get
 import io.ktor.http.URLProtocol
-import kotlinx.coroutines.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URLClassLoader
 import kotlin.math.pow
@@ -40,8 +41,7 @@ object CoreUpdator {
     }
 
 
-
-    suspend fun versionCheck(){
+    suspend fun versionCheck() {
         println("Fetching Newest Core Version .. ")
         val newest = getNewestVersion()
         val current = getCurrentVersion()
@@ -54,7 +54,7 @@ object CoreUpdator {
         }
     }
 
-    fun loadCore(){
+    fun loadCore() {
         println("Loading Core")
         loadCoreAndLib()
         println("Mirai Core and Libraries Loaded")
@@ -66,18 +66,18 @@ object CoreUpdator {
     private suspend fun getNewestVersion(): String {
         try {
             return """>([0-9])*\.([0-9])*\.([0-9])*/""".toRegex().findAll(
-                Http.get<String> {
-                    url {
-                        protocol = URLProtocol.HTTPS
-                        host = "jcenter.bintray.com"
-                        path("net/mamoe/mirai-core-qqandroid-jvm/")
+                    Http.get<String> {
+                        url {
+                            protocol = URLProtocol.HTTPS
+                            host = "jcenter.bintray.com"
+                            path("net/mamoe/mirai-core-qqandroid-jvm/")
+                        }
                     }
-                }
-            ).asSequence()
+                ).asSequence()
                 .map { it.value.drop(1).dropLast(1) }
                 .maxBy {
                     it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                        acc + 100.0.pow(index).toInt() + (s.toIntOrNull() ?: 0)
+                        acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
                     }
                 }!!
         } catch (e: Exception) {
@@ -92,7 +92,7 @@ object CoreUpdator {
      * 判断当前版本
      * 默认返回 "0.0.0"
      */
-     fun getCurrentVersion(): String {
+    fun getCurrentVersion(): String {
         val file = getProtocolLib()
         if (file == null || getCore() == null) return "0.0.0"
         val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value
@@ -112,23 +112,23 @@ object CoreUpdator {
     private suspend fun downloadCoreAndLib(version: String) {
         coroutineScope {
             launch {
-                tryNTimesOrQuit(3,"Failed to download newest Protocol lib, please seek for help") {
-                    Http.downloadMavenArchive("net/mamoe","mirai-core-qqandroid-jvm",version)
+                tryNTimesOrQuit(3, "Failed to download newest Protocol lib, please seek for help") {
+                    Http.downloadMavenArchive("net/mamoe", "mirai-core-qqandroid-jvm", version)
                         .saveToContent("mirai-core-qqandroid-jvm-$version.jar")
                 }
             }
 
             launch {
-                tryNTimesOrQuit(3,"Failed to download newest core, please seek for help") {
-                    Http.downloadMavenArchive("net/mamoe","mirai-core-jvm",version)
+                tryNTimesOrQuit(3, "Failed to download newest core, please seek for help") {
+                    Http.downloadMavenArchive("net/mamoe", "mirai-core-jvm", version)
                         .saveToContent("mirai-core-jvm-$version.jar")
                 }
             }
 
             launch {
                 LibManager.clearLibs()
-                LibManager.addDependencyRequest("net/mamoe","mirai-core-jvm",version)
-                LibManager.addDependencyRequest("net/mamoe","mirai-core-qqandroid-jvm",version)
+                LibManager.addDependencyRequest("net/mamoe", "mirai-core-jvm", version)
+                LibManager.addDependencyRequest("net/mamoe", "mirai-core-qqandroid-jvm", version)
             }
         }
 
