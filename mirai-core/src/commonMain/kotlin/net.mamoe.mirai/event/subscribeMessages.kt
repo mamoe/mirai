@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -172,8 +173,11 @@ inline fun <reified E : Event> CoroutineScope.incoming(
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
-        subscribeAlways<E>(coroutineContext) {
+        val listener = subscribeAlways<E>(coroutineContext) {
             send(this)
+        }
+        this.invokeOnClose {
+            listener.cancel(CancellationException("ReceiveChannel closed", it))
         }
     }
 }
