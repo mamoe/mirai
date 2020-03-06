@@ -529,6 +529,7 @@ class TomlConfig internal constructor(content: String) : FileConfigImpl(content)
                 Toml().read(content).toMap()
             )
         )
+        
     }
 
     override fun serialize(config: ConfigSection): String {

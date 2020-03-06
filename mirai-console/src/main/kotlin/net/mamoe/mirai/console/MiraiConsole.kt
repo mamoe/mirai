@@ -17,7 +17,6 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
-import net.mamoe.mirai.console.core.MiraiCoreLoader
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.cryptor.ECDH
@@ -78,7 +77,6 @@ object MiraiConsole {
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
 
-        MiraiCoreLoader.loadCore()
 
         /* 加载ECDH */
         try {
