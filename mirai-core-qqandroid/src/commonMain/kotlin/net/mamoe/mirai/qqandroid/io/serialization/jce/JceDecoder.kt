@@ -10,13 +10,14 @@
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
 import kotlinx.serialization.*
+import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.internal.TaggedDecoder
 import kotlinx.serialization.modules.SerialModule
-import kotlinx.serialization.protobuf.ProtoId
+import net.mamoe.mirai.qqandroid.io.serialization.Jce
 
 
 @OptIn(InternalSerializationApi::class) // 将来 kotlinx 修改后再复制过来 mirai.
-private class JceDecoder(
+internal class JceDecoder(
     val jce: JceInput, override val context: SerialModule
 ) : TaggedDecoder<JceTag>() {
     override val updateMode: UpdateMode
@@ -25,23 +26,103 @@ private class JceDecoder(
     override fun SerialDescriptor.getTag(index: Int): JceTag {
         val annotations = this.getElementAnnotations(index)
 
-        val id = (annotations.asSequence().filterIsInstance<JceId>().firstOrNull()?.id
-            ?: annotations.asSequence().filterIsInstance<ProtoId>().firstOrNull()?.id) // 旧版本兼容
-            ?: error("cannot find @JceId or @ProtoId for ${this.getElementName(index)} in ${this.serialName}")
+        val id = annotations.filterIsInstance<JceId>().single().id
+        // ?: error("cannot find @JceId or @ProtoId for ${this.getElementName(index)} in ${this.serialName}")
+        println("getTag: ${this.getElementName(index)}=$id")
 
         return JceTag(
             id,
             this.getElementDescriptor(index).isNullable
         )
     }
-
-
-    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        TODO("Not yet implemented")
+    fun SerialDescriptor.getJceTagId(index: Int): Int {
+        return getElementAnnotations(index).filterIsInstance<JceId>().single().id
     }
 
+
+    private val ByteArraySerializer = ByteArraySerializer()
+
+    // TODO: 2020/3/6 can be object
+    private inner class SimpleByteArrayReader() : CompositeDecoder by this {
+        override fun decodeSequentially(): Boolean = true
+        override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte {
+            return jce.input.readByte()
+        }
+
+        override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+            return 0
+        }
+
+        override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+            return jce.useHead { jce.readJceIntValue(it) }
+        }
+    }
+
+    // TODO: 2020/3/6 can be object
+    private inner class ListReader() : CompositeDecoder by this {
+        override fun decodeSequentially(): Boolean = false
+        override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+            return 0
+        }
+
+        override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+            return jce.useHead { jce.readJceIntValue(it) }
+        }
+    }
+
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        if (descriptor == ByteArraySerializer.descriptor) {
+            return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
+                when (it.type) {
+                    Jce.SIMPLE_LIST -> SimpleByteArrayReader()
+                    Jce.LIST -> ListReader()
+                    else -> error("type mismatch. Expected SIMPLE_LIST or LIST, got ${it.type} instead")
+                }
+            }
+        }
+        return when (descriptor.kind) {
+            StructureKind.MAP -> {
+                error("map")
+            }
+            StructureKind.LIST -> ListReader()
+
+            else -> this
+        }
+    }
+
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
+        println("decodeSerializableValue: ${deserializer.descriptor}")
+        return super.decodeSerializableValue(deserializer)
+    }
+
+    private var currentIndex = 0
+
+
+    override fun decodeSequentially(): Boolean = false
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        TODO("Not yet implemented")
+        val jceHead = jce.currentHeadOrNull ?: return CompositeDecoder.READ_DONE
+        repeat(descriptor.elementsCount){
+            val tag = descriptor.getJceTagId(it)
+            if (tag == jceHead.tag) {
+                return it
+            }
+        }
+
+        return CompositeDecoder.READ_DONE // optional support
+    }
+
+    override fun decodeTaggedNull(tag: JceTag): Nothing? {
+        println("decodeTaggedNull")
+        return super.decodeTaggedNull(tag)
+    }
+
+    override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
+        return super.decodeNullableSerializableValue(deserializer)
+    }
+
+    override fun decodeTaggedValue(tag: JceTag): Any {
+        println("decodeTaggedValue")
+        return super.decodeTaggedValue(tag)
     }
 
     override fun decodeTaggedInt(tag: JceTag): Int =
@@ -77,7 +158,6 @@ private class JceDecoder(
     }
 
     override fun decodeTaggedNotNullMark(tag: JceTag): Boolean {
-        println("!! decodeTaggedNotNullMark: $tag")
-        return super.decodeTaggedNotNullMark(tag)
+        return jce.skipToHeadOrNull(tag.id) != null
     }
 }

@@ -1,9 +1,12 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
 import io.ktor.utils.io.core.*
+import kotlinx.serialization.Serializable
+import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceInput
+import net.mamoe.mirai.qqandroid.io.serialization.jce.JceNew
 import net.mamoe.mirai.qqandroid.io.serialization.jce.writeJceHead
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -35,6 +38,39 @@ internal const val ZERO_TYPE: Byte = 12
  */
 @Suppress("INVISIBLE_MEMBER") // bug
 internal class JceInputTest {
+    @Serializable
+    data class TestSerializableClassA(
+        @JceId(0) val byte: Byte = 66,
+        @JceId(1) val short: Short = 123,
+        @JceId(3) val int: Int = 123456,
+        @JceId(8) val float: Float = 123f,
+        @JceId(15) val long: Long = 123456789123456789L,
+        @JceId(16) val double: Double = 123456.0,
+        @JceId(17) val boolean: Boolean = true,
+        @JceId(11111) val nullable: Int? = null
+    )
+
+    @Test
+    fun testSerializableClassA() {
+        val input = buildPacket {
+            writeJceHead(BYTE, 0)
+            writeByte(66)
+            writeJceHead(SHORT, 1)
+            writeShort(123)
+            writeJceHead(INT, 3)
+            writeInt(123456)
+            writeJceHead(FLOAT, 8)
+            writeFloat(123f)
+            writeJceHead(LONG, 15)
+            writeLong(123456789123456789L)
+            writeJceHead(DOUBLE, 16)
+            writeDouble(123456.0)
+            writeJceHead(BYTE, 17)
+            writeByte(1) // boolean
+        }
+
+        assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
+    }
 
     @Test
     fun testHeadSkip() {

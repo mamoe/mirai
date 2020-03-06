@@ -18,7 +18,7 @@ import net.mamoe.mirai.utils.io.readString
 /**
  * Jce Input. 需要手动管理 head.
  */
-class JceInput(
+internal class JceInput(
     val input: Input, val charset: JceCharset
 ) {
     private var _head: JceHead? = null
@@ -95,7 +95,7 @@ class JceInput(
     }
 
     tailrec fun skipToHeadOrNull(tag: Int): JceHead? {
-        val current: JceHead = currentHead // no backing field
+        val current: JceHead = currentHeadOrNull ?: return null // no backing field
 
         return when {
             current.tag > tag -> null // tag 大了，即找不到
@@ -167,6 +167,7 @@ class JceInput(
 
     // region readers
     fun readJceIntValue(head: JceHead): Int {
+        println("readJceIntValue: $head")
         return when (head.type) {
             Jce.ZERO_TYPE -> 0
             Jce.BYTE -> input.readByte().toInt()
@@ -197,6 +198,7 @@ class JceInput(
     }
 
     fun readJceByteValue(head: JceHead): Byte {
+        println("readJceByteValue: $head")
         return when (head.type) {
             Jce.ZERO_TYPE -> 0
             Jce.BYTE -> input.readByte()

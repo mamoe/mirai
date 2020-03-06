@@ -18,6 +18,7 @@ import net.mamoe.mirai.qqandroid.io.serialization.Jce
  * 标注 JCE 序列化时使用的 ID
  */
 @SerialInfo
+@Target(AnnotationTarget.PROPERTY)
 annotation class JceId(val id: Int)
 
 /**
@@ -31,6 +32,9 @@ internal data class JceTag(
     val isNullable: Boolean
 )
 
+fun JceHead.checkType(type: Byte) {
+    check(this.type == type) {"type mismatch. Expected $type, actual ${this.type}"}
+}
 
 @PublishedApi
 internal fun Output.writeJceHead(type: Byte, tag: Int) {
