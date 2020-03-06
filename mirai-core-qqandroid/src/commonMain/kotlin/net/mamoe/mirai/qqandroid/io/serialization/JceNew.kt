@@ -16,12 +16,18 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.BYTE
+import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.DOUBLE
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.FLOAT
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.INT
+import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.LIST
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.LONG
+import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.MAP
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.SHORT
+import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.SIMPLE_LIST
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.STRING1
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.STRING4
+import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.STRUCT_BEGIN
+import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.STRUCT_END
 import net.mamoe.mirai.qqandroid.io.serialization.Jce.Companion.ZERO_TYPE
 import net.mamoe.mirai.utils.io.readString
 
@@ -219,30 +225,30 @@ private class JceInput(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     @PublishedApi
-    internal fun skipField(type: Byte): Unit = when (type.toInt()) {
-        0 -> this.input.discardExact(1)
-        1 -> this.input.discardExact(2)
-        2 -> this.input.discardExact(4)
-        3 -> this.input.discardExact(8)
-        4 -> this.input.discardExact(4)
-        5 -> this.input.discardExact(8)
-        6 -> this.input.discardExact(this.input.readUByte().toInt())
-        7 -> this.input.discardExact(this.input.readInt())
-        8 -> { // map
+    internal fun skipField(type: Byte): Unit = when (type) {
+        BYTE -> this.input.discardExact(1)
+        SHORT -> this.input.discardExact(2)
+        INT -> this.input.discardExact(4)
+        LONG -> this.input.discardExact(8)
+        FLOAT -> this.input.discardExact(4)
+        DOUBLE -> this.input.discardExact(8)
+        STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
+        STRING4 -> this.input.discardExact(this.input.readInt())
+        MAP -> { // map
             repeat(skipToTagAndUseIfPossibleOrFail(0) {
                 readJceIntValue(it)
             } * 2) {
                 useHead { skipField(it.type) }
             }
         }
-        9 -> { // list
+        LIST -> { // list
             repeat(skipToTagAndUseIfPossibleOrFail(0) {
                 readJceIntValue(it)
             }) {
                 useHead { skipField(it.type) }
             }
         }
-        10 -> {
+        STRUCT_BEGIN -> {
             fun skipToStructEnd() {
                 var head: JceHead
                 do {
@@ -252,10 +258,10 @@ private class JceInput(
             }
             skipToStructEnd()
         }
-        11, 12 -> {
+        STRUCT_END, ZERO_TYPE -> {
 
         }
-        13 -> {
+        SIMPLE_LIST -> {
             val head = nextHead()
             check(head.type.toInt() == 0) { "skipField with invalid type, type value: " + type + ", " + head.type }
             this.input.discardExact(
