@@ -160,13 +160,16 @@ inline fun <R> Bot.subscribeFriendMessages(
  *
  * @param capacity 同 [Channel] 的参数, 参见 [Channel.Factory] 中的常量.
  *
+ * @see capacity 默认无限大小. 详见 [Channel.Factory] 中的常量 [Channel.UNLIMITED], [Channel.CONFLATED], [Channel.RENDEZVOUS].
+ * 请谨慎使用 [Channel.RENDEZVOUS]: 在 [Channel] 未被 [接收][Channel.receive] 时他将会阻塞事件处理
+ *
  * @see subscribeFriendMessages
  * @see subscribeMessages
  * @see subscribeGroupMessages
  */
 inline fun <reified E : Event> CoroutineScope.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    capacity: Int = Channel.RENDEZVOUS
+    capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
         subscribeAlways<E>(coroutineContext) {
