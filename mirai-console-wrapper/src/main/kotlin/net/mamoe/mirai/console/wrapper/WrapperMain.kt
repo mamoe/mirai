@@ -33,6 +33,12 @@ val contentPath by lazy {
 object WrapperMain {
     @JvmStatic
     fun main(args: Array<String>) {
+        GlobalScope.launch{
+            while (true) {
+                delay(1000*60*5)
+                System.gc()
+            }
+        }
         println("You are running Mirai-Console-Wrapper under " + System.getProperty("user.dir"))
 
         var type = WrapperProperties.determineConsoleType(WrapperProperties.content)
