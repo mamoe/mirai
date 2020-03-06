@@ -45,28 +45,28 @@ private class JceDecoder(
     }
 
     override fun decodeTaggedInt(tag: JceTag): Int =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceIntValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceIntValue(it) }
 
     override fun decodeTaggedByte(tag: JceTag): Byte =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceByteValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceByteValue(it) }
 
     override fun decodeTaggedBoolean(tag: JceTag): Boolean =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceBooleanValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceBooleanValue(it) }
 
     override fun decodeTaggedFloat(tag: JceTag): Float =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceFloatValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceFloatValue(it) }
 
     override fun decodeTaggedDouble(tag: JceTag): Double =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceDoubleValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceDoubleValue(it) }
 
     override fun decodeTaggedShort(tag: JceTag): Short =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceShortValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceShortValue(it) }
 
     override fun decodeTaggedLong(tag: JceTag): Long =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceLongValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceLongValue(it) }
 
     override fun decodeTaggedString(tag: JceTag): String =
-        jce.skipToTagAndUseIfPossibleOrFail(tag.id) { jce.readJceStringValue(it) }
+        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceStringValue(it) }
 
     override fun decodeTaggedEnum(tag: JceTag, enumDescription: SerialDescriptor): Int {
         return super.decodeTaggedEnum(tag, enumDescription)

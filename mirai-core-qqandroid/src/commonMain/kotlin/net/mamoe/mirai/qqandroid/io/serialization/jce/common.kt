@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
+import io.ktor.utils.io.core.Output
 import kotlinx.serialization.SerialInfo
 import net.mamoe.mirai.qqandroid.io.serialization.Jce
 
@@ -24,11 +25,26 @@ annotation class JceId(val id: Int)
  *
  * 保留这个结构, 为将来增加功能的兼容性.
  */
+@PublishedApi
 internal data class JceTag(
     val id: Int,
     val isNullable: Boolean
 )
 
+
+@PublishedApi
+internal fun Output.writeJceHead(type: Byte, tag: Int) {
+    if (tag < 15) {
+        writeByte(((tag shl 4) or type.toInt()).toByte())
+        return
+    }
+    if (tag < 256) {
+        writeByte((type.toInt() or 0xF0).toByte())
+        writeByte(tag.toByte())
+        return
+    }
+    error("tag is too large: $tag")
+}
 
 @OptIn(ExperimentalUnsignedTypes::class)
 inline class JceHead(private val value: Long) {

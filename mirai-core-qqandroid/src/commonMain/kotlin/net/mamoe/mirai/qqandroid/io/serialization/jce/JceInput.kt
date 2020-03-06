@@ -23,7 +23,7 @@ class JceInput(
 ) {
     private var _head: JceHead? = null
 
-    val currentHead: JceHead get() = _head ?: error("No current JceHead available")
+    val currentHead: JceHead get() = _head ?: throw EOFException("No current JceHead available")
     val currentHeadOrNull: JceHead? get() = _head
 
     init {
@@ -40,7 +40,9 @@ class JceInput(
     }
 
     fun nextHead(): JceHead {
-        check(prepareNextHead()) { "No more JceHead available" }
+        if (!prepareNextHead()) {
+            throw EOFException("No more JceHead available")
+        }
         return currentHead
     }
 
@@ -51,13 +53,13 @@ class JceInput(
     @Suppress("FunctionName")
     @OptIn(ExperimentalUnsignedTypes::class)
     private fun readNextHeadButDoNotAssignTo_Head(): JceHead? {
+        if (input.endOfInput) {
+            return null
+        }
         val var2 = input.readUByte()
         val type = var2 and 15u
         var tag = var2.toUInt() shr 4
         if (tag == 15u) {
-            if (input.endOfInput) {
-                return null
-            }
             tag = input.readUByte().toUInt()
         }
         return JceHead(
@@ -77,19 +79,19 @@ class JceInput(
     /**
      * 跳过 [JceHead] 和对应的数据值, 直到找到 [tag], 否则返回 `null`
      */
-    inline fun <R> skipToTagAndUseIfPossibleOrNull(tag: Int, crossinline block: (JceHead) -> R): R? {
+    inline fun <R> skipToHeadAndUseIfPossibleOrNull(tag: Int, crossinline block: (JceHead) -> R): R? {
         return skipToHeadOrNull(tag)?.let(block).also { prepareNextHead() }
     }
 
     /**
      * 跳过 [JceHead] 和对应的数据值, 直到找到 [tag], 否则抛出异常
      */
-    inline fun <R : Any> skipToTagAndUseIfPossibleOrFail(
+    inline fun <R : Any> skipToHeadAndUseIfPossibleOrFail(
         tag: Int,
         crossinline message: () -> String = { "tag not found: $tag" },
         crossinline block: (JceHead) -> R
     ): R {
-        return checkNotNull<R>(skipToTagAndUseIfPossibleOrNull(tag, block), message)
+        return checkNotNull<R>(skipToHeadAndUseIfPossibleOrNull(tag, block), message)
     }
 
     tailrec fun skipToHeadOrNull(tag: Int): JceHead? {
@@ -125,14 +127,14 @@ class JceInput(
         Jce.STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
         Jce.STRING4 -> this.input.discardExact(this.input.readInt())
         Jce.MAP -> { // map
-            repeat(skipToTagAndUseIfPossibleOrFail(0) {
+            repeat(skipToHeadAndUseIfPossibleOrFail(0) {
                 readJceIntValue(it)
             } * 2) {
                 useHead { skipField(it.type) }
             }
         }
         Jce.LIST -> { // list
-            repeat(skipToTagAndUseIfPossibleOrFail(0) {
+            repeat(skipToHeadAndUseIfPossibleOrFail(0) {
                 readJceIntValue(it)
             }) {
                 useHead { skipField(it.type) }
@@ -155,7 +157,7 @@ class JceInput(
             val head = nextHead()
             check(head.type.toInt() == 0) { "skipField with invalid type, type value: " + type + ", " + head.type }
             this.input.discardExact(
-                skipToTagAndUseIfPossibleOrFail(0) {
+                skipToHeadAndUseIfPossibleOrFail(0) {
                     readJceIntValue(it)
                 }
             )
@@ -232,6 +234,6 @@ class JceInput(
     }
 
     fun readJceBooleanValue(head: JceHead): Boolean {
-        return readJceByteValue(head) == 0.toByte()
+        return readJceByteValue(head) == 1.toByte()
     }
 }
