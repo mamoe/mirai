@@ -21,6 +21,7 @@ import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.jce.JceHead
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toReadPacket
 
@@ -588,7 +589,10 @@ class Jce private constructor(private val charset: JceCharset, override val cont
                 }
                 tag = readUByte().toUInt()
             }
-            currentJceHead = JceHead(tag = tag.toInt(), type = type.toByte())
+            currentJceHead = JceHead(
+                tag = tag.toInt(),
+                type = type.toByte()
+            )
             // println("doReadHead: $currentJceHead")
             return currentJceHead
         }
