@@ -7,7 +7,7 @@
 ----
 
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Actions Status](https://github.com/mamoe/mirai/workflows/CI/badge.svg)](https://github.com/mamoe/mirai/actions)
+![Gradle CI](https://github.com/mamoe/mirai/workflows/Gradle%20CI/badge.svg?branch=master)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
 Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持的高效率机器人框架
@@ -21,6 +21,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 ## Mirai
 
 **[English](README-eng.md)**  
+
 
 多平台 **QQ Android** 和 **TIM PC** 协议支持库与高效率的机器人框架.   
 纯 Kotlin 实现协议和支持框架，模块<b>全部免费开源</b>。  
@@ -60,7 +61,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ### 使用者
 
-- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件 **本模块正在完善**
+- [mirai-console](https://github.com/mamoe/mirai-console) 支持插件 **本模块正在完善**
 
 ### 我是其他平台的使用者
 
