@@ -85,7 +85,7 @@ suspend fun HttpClient.downloadMaven(
         )
     }.getOrElse {
         downloadRequest(
-            aliyunPath.buildPath(groupName,projectName,version,extension)
+            jcenterPath.buildPath(groupName,projectName,version,extension)
         )
     }
 }
