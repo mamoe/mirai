@@ -17,6 +17,7 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.coroutines.*
 import java.io.File
+import java.net.URLClassLoader
 import kotlin.system.exitProcess
 
 
@@ -46,18 +47,26 @@ object WrapperMain {
                 ConsoleUpdator.versionCheck(type)
             }
         }
-        println("Dependency needed:")
-        runBlocking {
-            LibManager.downloadIfNeeded()
-        }
         println("Version check complete, starting Mirai")
+        MiraiClassLoader(
+            CoreUpdator.getCore()!!,
+            CoreUpdator.getProtocolLib()!!,
+            ConsoleUpdator.getFile()!!,
+            this.javaClass.classLoader
+        ).loadClass(
+            "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
+        ).getMethod("main",  Array<String>(0) {"null"}.javaClass)
+            .invoke(null,args)
     }
 }
 
 class MiraiClassLoader(
-    val core:File,
-    val protocol: File,
-    val console: File
-){
-
-}
+    core:File,
+    protocol: File,
+    console: File,
+    parent: ClassLoader
+): URLClassLoader(arrayOf(
+    core.toURI().toURL(),
+    protocol.toURI().toURL(),
+    console.toURI().toURL()
+), parent)

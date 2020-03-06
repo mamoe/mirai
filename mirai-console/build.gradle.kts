@@ -50,29 +50,28 @@ dependencies {
     // compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
 
 
-    api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
-    api(group = "org.yaml", name = "snakeyaml", version = "1.25")
-    api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
+    compileOnly(group = "com.alibaba", name = "fastjson", version = "1.2.62")
+    compileOnly(group = "org.yaml", name = "snakeyaml", version = "1.25")
+    compileOnly(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
 
 
-    api(kotlin("stdlib", kotlinVersion))
-    api(kotlin("serialization", kotlinVersion))
+    compileOnly(kotlin("stdlib", kotlinVersion))
+    compileOnly(kotlin("serialization", kotlinVersion))
+    compileOnly(kotlin("reflect", kotlinVersion))
 
-    api(kotlin("reflect", kotlinVersion))
+    compileOnly(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
+    compileOnly(kotlinx("coroutines-core", coroutinesVersion))
+    compileOnly(kotlinx("serialization-runtime", serializationVersion))
+    compileOnly("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
 
-    api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
-    api(kotlinx("coroutines-core", coroutinesVersion))
-    api(kotlinx("serialization-runtime", serializationVersion))
-    api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+    compileOnly("org.bouncycastle:bcprov-jdk15on:1.64")
 
-    api("org.bouncycastle:bcprov-jdk15on:1.64")
-
-    api(ktor("http-cio", ktorVersion))
-    api(ktor("http-jvm", ktorVersion))
-    api(ktor("io-jvm", ktorVersion))
-    api(ktor("client-core-jvm", ktorVersion))
-    api(ktor("client-cio", ktorVersion))
-    api(ktor("network", ktorVersion))
+    compileOnly(ktor("http-cio", ktorVersion))
+    compileOnly(ktor("http-jvm", ktorVersion))
+    compileOnly(ktor("io-jvm", ktorVersion))
+    compileOnly(ktor("client-core-jvm", ktorVersion))
+    compileOnly(ktor("client-cio", ktorVersion))
+    compileOnly(ktor("network", ktorVersion))
 }
 
 val miraiConsoleVersion: String by project.ext
