@@ -156,7 +156,7 @@ object MiraiConsole {
     object UIPushLogger {
         operator fun invoke(any: Any? = null) {
             invoke(
-                "[Mirai$version $build]",
+                "[Mirai $version $build]",
                 0L,
                 any
             )
