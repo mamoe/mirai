@@ -52,5 +52,5 @@ data class BotAccount(
 @MiraiInternalAPI
 @Retention(AnnotationRetention.SOURCE)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
-@Experimental(level = Experimental.Level.WARNING)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 annotation class RawAccountIdUse
