@@ -20,6 +20,9 @@ object LibManager{
     val dynamic = false;
 
     fun clearLibs(){
+        if(!dynamic){
+            return;
+        }
         libPath.listFiles()?.forEach {
             it.delete()
         }
