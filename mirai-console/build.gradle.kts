@@ -8,9 +8,6 @@ plugins {
     id("com.jfrog.bintray")
 }
 
-
-apply(plugin = "com.github.johnrengelman.shadow")
-
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
@@ -25,13 +22,6 @@ val serializationVersion: String by rootProject.ext
 fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
-
-tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-    manifest {
-        attributes["Main-Class"] = "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
-    }
-}
-
 
 val miraiVersion: String by rootProject.ext
 

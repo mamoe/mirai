@@ -48,12 +48,19 @@ object WrapperMain {
             }
         }
         println("Version check complete, starting Mirai")
-        MiraiClassLoader(
+        println("Core    :" + CoreUpdator.getCore()!!)
+        println("Protocol:" + CoreUpdator.getProtocolLib()!!)
+        println("Console :" + ConsoleUpdator.getFile()!! )
+        println("Root    :" + System.getProperty("user.dir") + "/")
+
+        val loader = MiraiClassLoader(
             CoreUpdator.getCore()!!,
             CoreUpdator.getProtocolLib()!!,
             ConsoleUpdator.getFile()!!,
             this.javaClass.classLoader
-        ).loadClass(
+        )
+        loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
+        loader.loadClass(
             "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
         ).getMethod("main",  Array<String>(0) {"null"}.javaClass)
             .invoke(null,args)
