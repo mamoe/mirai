@@ -32,7 +32,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  *
- * @see CoroutineScope.incoming
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeMessages(
@@ -45,8 +45,8 @@ inline fun <R> CoroutineScope.subscribeMessages(
     }
 
     return MessageSubscribersBuilder { messageListener: MessageListener<MessagePacket<*, *>> ->
-        // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [listener]
-        // listener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
+        // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
+        // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
         subscribeAlways(coroutineContext) {
             messageListener.invoke(this, this.message.toString())
             // this.message.toString() 即为 messageListener 中 it 接收到的值
@@ -57,7 +57,7 @@ inline fun <R> CoroutineScope.subscribeMessages(
 /**
  * 订阅来自所有 [Bot] 的所有群消息事件
  *
- * @see CoroutineScope.incoming
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeGroupMessages(
@@ -77,7 +77,7 @@ inline fun <R> CoroutineScope.subscribeGroupMessages(
 /**
  * 订阅来自所有 [Bot] 的所有好友消息事件
  *
- * @see CoroutineScope.incoming
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
 inline fun <R> CoroutineScope.subscribeFriendMessages(
@@ -97,7 +97,7 @@ inline fun <R> CoroutineScope.subscribeFriendMessages(
 /**
  * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  *
- * @see CoroutineScope.incoming
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeMessages(
@@ -119,7 +119,7 @@ inline fun <R> Bot.subscribeMessages(
  *
  * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
  *
- * @see CoroutineScope.incoming
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeGroupMessages(
@@ -139,7 +139,7 @@ inline fun <R> Bot.subscribeGroupMessages(
 /**
  * 订阅来自这个 [Bot] 的所有好友消息事件.
  *
- * @see CoroutineScope.incoming
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
 inline fun <R> Bot.subscribeFriendMessages(
@@ -157,7 +157,7 @@ inline fun <R> Bot.subscribeFriendMessages(
 }
 
 /**
- * 返回一个指定事件的接收通道
+ * 打开一个指定事件的接收通道
  *
  * @param capacity 同 [Channel] 的参数, 参见 [Channel.Factory] 中的常量.
  *
