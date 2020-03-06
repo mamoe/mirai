@@ -12,10 +12,7 @@
 package net.mamoe.mirai.console.wrapper
 
 import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.URLProtocol
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.coroutines.*
 import java.io.File
 import java.net.URLClassLoader
@@ -125,50 +122,28 @@ object CoreUpdator {
     }
 
     private suspend fun downloadCoreAndLib(version: String) {
-        suspend fun downloadRequest(url: String, version: String): ByteReadChannel {
-            return Http.get<HttpResponse>(url.replace("{version}", version)).content
-        }
-
         coroutineScope {
             launch {
-                tryNTimesOrQuit(3) {
+                tryNTimesOrQuit(3,"Failed to download newest Protocol lib, please seek for help") {
                     kotlin.runCatching {
                         println("Downloading newest Protocol lib from Aliyun")
-                        downloadRequest(Links.libAliyun, version)
+                        Http.downloadRequest(Links.libAliyun, version)
                     }.getOrElse {
                         println("Downloading newest Protocol lib from JCenter")
-                        downloadRequest(Links.libJcenter, version)
-                    }.saveTo("mirai-core-qqandroid-jvm-$version.jar")
+                        Http.downloadRequest(Links.libJcenter, version)
+                    }.saveToContent("mirai-core-qqandroid-jvm-$version.jar")
                 }
             }
 
             launch {
-                tryNTimesOrQuit(3) {
-                    val fileStream = File(contentPath.absolutePath + "/" + "mirai-core-jvm-$version.jar").also {
-                        withContext(Dispatchers.IO) {
-                            it.createNewFile()
-                        }
-                    }.outputStream()
-
-                    val stream = try {
+                tryNTimesOrQuit(3,"Failed to download newest core, please seek for help") {
+                    kotlin.runCatching {
                         println("Downloading newest Mirai Core from Aliyun")
-                        downloadRequest(Links.coreAliyun, version)
-                    } catch (ignored: Exception) {
-                        try {
-                            println("Downloading newest Mirai Core from JCenter")
-                            downloadRequest(Links.coreJcenter, version)
-                        } catch (e: Exception) {
-                            println("Failed to download Mirai Core, please seeking for help")
-                            e.printStackTrace()
-                            println("Failed to download Mirai Core, please seeking for help")
-                            exitProcess(1)
-                        }
-                    }
-
-                    withContext(Dispatchers.IO) {
-                        stream.copyTo(fileStream)
-                        fileStream.flush()
-                    }
+                        Http.downloadRequest(Links.coreAliyun, version)
+                    }.getOrElse {
+                        println("Downloading newest Mirai Core from JCenter")
+                        Http.downloadRequest(Links.coreJcenter, version)
+                    }.saveToContent("mirai-core-jvm-$version.jar")
                 }
             }
         }
@@ -183,7 +158,6 @@ object CoreUpdator {
 
             println("Core: $coreFile")
             println("Protocol: $protocolFile")
-
 
             val classloader = URLClassLoader(
                 arrayOf(coreFile.toURI().toURL(), protocolFile.toURI().toURL()),

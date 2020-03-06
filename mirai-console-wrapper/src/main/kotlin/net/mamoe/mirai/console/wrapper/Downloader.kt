@@ -17,7 +17,7 @@ val Http: HttpClient
     get() = HttpClient(CIO)
 
 
-inline fun <R> tryNTimesOrQuit(repeat: Int, block: (Int) -> R){
+inline fun <R> tryNTimesOrQuit(repeat: Int, errorHint: String, block: (Int) -> R){
     var lastException: Throwable? = null
 
     repeat(repeat) {
@@ -30,8 +30,9 @@ inline fun <R> tryNTimesOrQuit(repeat: Int, block: (Int) -> R){
             } else lastException!!.addSuppressed(e)
         }
     }
-
+    println(errorHint)
     lastException!!.printStackTrace()
+    println(errorHint)
     exitProcess(1)
 }
 
@@ -43,7 +44,7 @@ suspend inline fun HttpClient.downloadRequest(url: String, version: String): Byt
 /**
  * 只要填content path后面的就可以
  */
-suspend fun ByteReadChannel.saveTo(filepath:String){
+suspend fun ByteReadChannel.saveToContent(filepath:String){
     val fileStream = File(contentPath.absolutePath + "/" +  filepath).also {
         withContext(Dispatchers.IO) {
             it.createNewFile()
@@ -51,8 +52,10 @@ suspend fun ByteReadChannel.saveTo(filepath:String){
     }.outputStream()
 
     withContext(Dispatchers.IO) {
-        this@saveTo.copyTo(fileStream)
+        this@saveToContent.copyTo(fileStream)
         fileStream.flush()
     }
 }
+
+
 

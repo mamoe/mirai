@@ -1,12 +1,7 @@
 package net.mamoe.mirai.console.wrapper
 
 import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.URLProtocol
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.jvm.javaio.copyTo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.pow
 import kotlin.system.exitProcess
@@ -95,7 +90,7 @@ object ConsoleUpdator{
     }
 
     private suspend fun downloadConsole(version:String){
-        tryNTimesOrQuit(3) {
+        tryNTimesOrQuit(3,"Failed to download Console, please seek for help") {
             kotlin.runCatching {
                 println("Downloading newest Console from Aliyun")
                 Http.downloadRequest(Links[consoleType]!!["aliyun"] ?: error("Unknown Console Type"), version)
@@ -103,7 +98,7 @@ object ConsoleUpdator{
                 println("Downloading newest Console from JCenter")
                 Http.downloadRequest(Links[consoleType]!!["jcenter"] ?: error("Unknown Console Type"), version)
             }
-                .saveTo(if (consoleType == CONSOLE_PURE) {
+                .saveToContent(if (consoleType == CONSOLE_PURE) {
                     "mirai-console-$version.jar"
                 } else {
                     "mirai-console-$consoleType-$version.jar"
