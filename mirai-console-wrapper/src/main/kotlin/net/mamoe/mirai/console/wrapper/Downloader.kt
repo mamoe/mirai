@@ -39,7 +39,15 @@ inline fun <R> tryNTimesOrQuit(repeat: Int, errorHint: String, block: (Int) -> R
 
 
 suspend inline fun HttpClient.downloadRequest(url: String): ByteReadChannel {
-    return this.get<HttpResponse>(url).content
+    return with(this.get<HttpResponse>(url)){
+        if(this.status.value == 404 || this.status.value == 403){
+            error("File not found")
+        }
+        if(this.headers["status"] !=null && this.headers["status"] == "404"){
+            error("File not found")
+        }
+        this.content
+    }
 }
 
 private val jcenterPath =  "https://jcenter.bintray.com/{group}/{project}/{version}/:{project}-{version}.{extension}"
