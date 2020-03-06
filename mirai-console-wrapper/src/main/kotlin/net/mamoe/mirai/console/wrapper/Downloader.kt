@@ -3,6 +3,7 @@ package net.mamoe.mirai.console.wrapper
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.features.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.utils.io.ByteReadChannel
@@ -43,7 +44,26 @@ suspend inline fun HttpClient.downloadRequest(url: String): ByteReadChannel {
 
 private val jcenterPath =  "https://jcenter.bintray.com/{group}/{project}/{version}/:{project}-{version}.{extension}"
 private val aliyunPath =  "https://maven.aliyun.com/nexus/content/repositories/jcenter/{group}/{project}/{version}/{project}-{version}.{extension}"
-
+private fun String.buildPath(
+    groupName: String,
+    projectName: String,
+    version: String,
+    extension: String
+):String{
+    return this
+        .replace(
+            "{group}",groupName
+        )
+        .replace(
+            "{project}",projectName
+        )
+        .replace(
+            "{extension}",extension
+        )
+        .replace(
+            "{version}",version
+        )
+}
 
 suspend fun HttpClient.downloadMaven(
     groupName: String,
@@ -53,35 +73,11 @@ suspend fun HttpClient.downloadMaven(
 ):ByteReadChannel{
     return kotlin.runCatching {
         downloadRequest(
-            aliyunPath
-                .replace(
-                "{group}",groupName
-                )
-                .replace(
-                "{project}",projectName
-                )
-                .replace(
-                    "{extension}",extension
-                )
-                .replace(
-                    "{version}",version
-                )
+            aliyunPath.buildPath(groupName,projectName,version,extension)
         )
     }.getOrElse {
         downloadRequest(
-            jcenterPath
-                .replace(
-                    "{group}",groupName
-                )
-                .replace(
-                    "{project}",projectName
-                )
-                .replace(
-                    "{extension}",extension
-                )
-                .replace(
-                    "{version}",version
-                )
+            aliyunPath.buildPath(groupName,projectName,version,extension)
         )
     }
 }
@@ -100,6 +96,29 @@ suspend inline fun HttpClient.downloadMavenPom(
     version: String
 ):ByteReadChannel{
     return downloadMaven(groupName,projectName,version,"pom")
+}
+
+suspend fun HttpClient.downloadMavenPomAsString(
+    groupName: String,
+    projectName: String,
+    version: String
+):String{
+    return kotlin.runCatching {
+        Http.get<String>(
+            aliyunPath.buildPath(groupName,projectName,version,"pom")
+        )
+    }.getOrElse {
+       try {
+           Http.get(
+               aliyunPath.buildPath(groupName, projectName, version, "pom")
+           )
+       }catch (e:Exception){
+           if(e.message?.contains("404 Not Found") == true) {
+               return ""
+           }
+           throw e
+       }
+    }
 }
 
 

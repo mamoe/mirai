@@ -46,6 +46,10 @@ object WrapperMain {
                 ConsoleUpdator.versionCheck(type)
             }
         }
+        println("Dependency needed:")
+        runBlocking {
+            LibManager.downloadIfNeeded()
+        }
         println("Version check complete, starting Mirai")
     }
 }

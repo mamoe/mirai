@@ -14,12 +14,11 @@ object ConsoleUpdator{
     private object Links:HashMap<String,Map<String,String>>() {
        init {
            put(CONSOLE_PURE, mapOf(
-               "version" to "/net/mamoe/mirai-console/",
-               "jcenter" to "https://jcenter.bintray.com/net/mamoe/mirai-console/{version}/:mirai-console-{version}.jar",
-               "aliyun"  to "https://maven.aliyun.com/nexus/content/repositories/jcenter/net/mamoe/mirai-console/{version}/mirai-console-{version}.jar"
+               "version" to "/net/mamoe/mirai-console/"
            ))
        }
     }
+
 
     var consoleType = CONSOLE_PURE
 
@@ -102,7 +101,8 @@ object ConsoleUpdator{
             Http.downloadMavenArchive("net/mamoe",getProjectName(),version)
                 .saveToContent("${getProjectName()}-$version.jar")
         }
-
+        LibManager.clearLibs()
+        LibManager.addDependencyRequest("net/mamoe",getProjectName(),version)
     }
 
 

@@ -108,19 +108,6 @@ object CoreUpdator {
     }
 
 
-    @Suppress("SpellCheckingInspection")
-    private object Links {
-        internal const val libJcenter =
-            "https://jcenter.bintray.com/net/mamoe/mirai-core-qqandroid-jvm/{version}/:mirai-core-qqandroid-jvm-{version}.jar"
-        internal const val libAliyun =
-            "https://maven.aliyun.com/nexus/content/repositories/jcenter/net/mamoe/mirai-core-qqandroid-jvm/{version}/mirai-core-qqandroid-jvm-{version}.jar"
-
-        internal const val coreJcenter =
-            "https://jcenter.bintray.com/net/mamoe/mirai-core-jvm/{version}/:mirai-core-jvm-{version}.jar"
-        internal const val coreAliyun =
-            "https://maven.aliyun.com/nexus/content/repositories/jcenter/net/mamoe/mirai-core-jvm/{version}/mirai-core-jvm-{version}.jar"
-    }
-
     private suspend fun downloadCoreAndLib(version: String) {
         coroutineScope {
             launch {
@@ -136,7 +123,14 @@ object CoreUpdator {
                         .saveToContent("mirai-core-jvm-$version.jar")
                 }
             }
+
+            launch {
+                LibManager.clearLibs()
+                LibManager.addDependencyRequest("net/mamoe","mirai-core-jvm",version)
+                LibManager.addDependencyRequest("net/mamoe","mirai-core-qqandroid-jvm",version)
+            }
         }
+
     }
 
 
