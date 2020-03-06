@@ -69,7 +69,7 @@ object ConsoleUpdator{
                 .map { it.value.drop(1).dropLast(1) }
                 .maxBy {
                     it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                        acc + 100.0.pow(index).toInt() + (s.toIntOrNull() ?: 0)
+                        acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
                     }
                 }!!
         } catch (e: Exception) {
