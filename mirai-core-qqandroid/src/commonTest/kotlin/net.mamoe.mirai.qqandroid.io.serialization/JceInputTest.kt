@@ -45,7 +45,7 @@ internal class JceInputTest {
         @Serializable
         data class TestSerializableClassA(
             @JceId(0) val byteArray: ByteArray = byteArrayOf(1, 2, 3),
-            @JceId(3) val byteArray2: ByteArray = byteArrayOf(1, 2, 3, 4)
+            @JceId(3) val byteArray2: List<Byte> = listOf(1, 2, 3, 4)
         ) {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -54,14 +54,13 @@ internal class JceInputTest {
                 other as TestSerializableClassA
 
                 if (!byteArray.contentEquals(other.byteArray)) return false
-                if (!byteArray2.contentEquals(other.byteArray2)) return false
+                if (byteArray2 != other.byteArray2) return false
 
                 return true
             }
-
             override fun hashCode(): Int {
                 var result = byteArray.contentHashCode()
-                result = 31 * result + byteArray2.contentHashCode()
+                result = 31 * result + byteArray2.hashCode()
                 return result
             }
         }

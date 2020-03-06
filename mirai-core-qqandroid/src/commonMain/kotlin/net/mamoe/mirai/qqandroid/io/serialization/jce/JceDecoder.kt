@@ -36,12 +36,14 @@ internal class JceDecoder(
         )
     }
 
-    fun SerialDescriptor.getJceTagId(index: Int): Int {
+    private fun SerialDescriptor.getJceTagId(index: Int): Int {
         return getElementAnnotations(index).filterIsInstance<JceId>().single().id
     }
 
 
-    private val ByteArraySerializer = ByteArraySerializer()
+    companion object {
+        private val ByteArraySerializer: KSerializer<ByteArray> = ByteArraySerializer()
+    }
 
     // TODO: 2020/3/6 can be object
     private inner class SimpleByteArrayReader : CompositeDecoder by this {
@@ -64,16 +66,14 @@ internal class JceDecoder(
     // TODO: 2020/3/6 can be object
     private inner class ListReader : CompositeDecoder by this {
         override fun decodeSequentially(): Boolean = true
-        override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-            error("should not be reached")
-        }
-
+        override fun decodeElementIndex(descriptor: SerialDescriptor): Int = error("should not be reached")
         override fun endStructure(descriptor: SerialDescriptor) {
             println("endStructure: ${descriptor.serialName}")
         }
 
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
-            return jce.useHead { jce.readJceIntValue(it) }
+            // 不读下一个 head
+            return jce.currentHead.let { jce.readJceIntValue(it) }.also { println("listSize=$it") }
         }
     }
 
@@ -86,24 +86,23 @@ internal class JceDecoder(
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         println("beginStructure: ${descriptor.serialName}")
-        if (descriptor == ByteArraySerializer.descriptor) {
-            println("!! ByteArray")
-            println("decoderTag: $currentTagOrNull")
-            println("jceHead: " + jce.currentHeadOrNull)
-            return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
-                println("listHead: $it")
-                when (it.type) {
-                    Jce.SIMPLE_LIST -> SimpleByteArrayReader().also { jce.prepareNextHead() } // 无用的元素类型
-                    Jce.LIST -> error(""); //ListReader()
-                    else -> error("type mismatch. Expected SIMPLE_LIST or LIST, got ${it.type} instead")
-                }
-            }
-        }
         return when (descriptor.kind) {
             StructureKind.MAP -> {
                 error("map")
             }
-            StructureKind.LIST -> ListReader()
+            StructureKind.LIST -> {
+                println("!! ByteArray")
+                println("decoderTag: $currentTagOrNull")
+                println("jceHead: " + jce.currentHeadOrNull)
+                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
+                    println("listHead: $it")
+                    when (it.type) {
+                        Jce.SIMPLE_LIST -> SimpleByteArrayReader().also { jce.prepareNextHead() } // 无用的元素类型
+                        Jce.LIST -> ListReader()
+                        else -> error("type mismatch. Expected SIMPLE_LIST or LIST, got ${it.type} instead")
+                    }
+                }
+            }
 
             else -> this@JceDecoder
         }
