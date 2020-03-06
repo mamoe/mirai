@@ -40,9 +40,11 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             ?: CoroutineExceptionHandler { _, e -> logger.error("An exception was thrown under a coroutine of Bot", e) })
     override val context: Context by context.unsafeWeakRef()
 
-    @Suppress("CanBePrimaryConstructorProperty") // for logger
+    @UseExperimental(LowLevelAPI::class)
+    @Suppress("CanBePrimaryConstructorProperty", "OverridingDeprecatedMember") // for logger
     final override val account: BotAccount = account
 
+    @Suppress("DEPRECATION_ERROR")
     @UseExperimental(RawAccountIdUse::class)
     override val uin: Long
         get() = account.id

@@ -65,12 +65,6 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
     actual abstract val context: Context
 
     /**
-     * 账号信息
-     */
-    @MiraiInternalAPI
-    actual abstract val account: BotAccount
-
-    /**
      * QQ 号码. 实际类型为 uint
      */
     actual abstract val uin: Long

@@ -71,12 +71,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     abstract val context: Context
 
     /**
-     * 账号信息
-     */
-    @MiraiInternalAPI
-    abstract val account: BotAccount
-
-    /**
      * QQ 号码. 实际类型为 uint
      */
     abstract val uin: Long
