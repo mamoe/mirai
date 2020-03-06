@@ -68,10 +68,10 @@ object ConsoleUpdator{
             ).asSequence()
                 .map { it.value.drop(1).dropLast(1) }
                 .maxBy {
-                    it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                        acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
-                    }
-                }!!
+                it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
+                    acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
+                }
+            }!!
         } catch (e: Exception) {
             println("Failed to fetch newest Console version, please seek for help")
             e.printStackTrace()
