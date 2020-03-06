@@ -9,9 +9,8 @@
 
 package net.mamoe.mirai.utils
 
-@MiraiInternalAPI
-@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-expect fun Throwable.addSuppressed(e: Throwable)
+@PublishedApi
+internal expect fun Throwable.addSuppressedMirai(e: Throwable)
 
 @MiraiInternalAPI
 @Suppress("DuplicatedCode")
@@ -24,7 +23,7 @@ inline fun <R> tryNTimes(repeat: Int, block: (Int) -> R): R {
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
-            } else lastException!!.addSuppressed(e)
+            } else lastException!!.addSuppressedMirai(e)
         }
     }
 
@@ -42,7 +41,7 @@ inline fun <R> tryNTimesOrNull(repeat: Int, block: (Int) -> R): R? {
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
-            } else lastException!!.addSuppressed(e)
+            } else lastException!!.addSuppressedMirai(e)
         }
     }
 
@@ -61,7 +60,7 @@ inline fun <R> tryNTimesOrException(repeat: Int, block: (Int) -> R): Throwable? 
         } catch (e: Throwable) {
             if (lastException == null) {
                 lastException = e
-            } else lastException!!.addSuppressed(e)
+            } else lastException!!.addSuppressedMirai(e)
         }
     }
 
