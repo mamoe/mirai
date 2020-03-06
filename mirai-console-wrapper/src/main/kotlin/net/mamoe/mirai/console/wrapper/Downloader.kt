@@ -37,9 +37,72 @@ inline fun <R> tryNTimesOrQuit(repeat: Int, errorHint: String, block: (Int) -> R
 }
 
 
-suspend inline fun HttpClient.downloadRequest(url: String, version: String): ByteReadChannel {
-    return this.get<HttpResponse>(url.replace("{version}", version)).content
+suspend inline fun HttpClient.downloadRequest(url: String): ByteReadChannel {
+    return this.get<HttpResponse>(url).content
 }
+
+private val jcenterPath =  "https://jcenter.bintray.com/{group}/{project}/{version}/:{project}-{version}.{extension}"
+private val aliyunPath =  "https://maven.aliyun.com/nexus/content/repositories/jcenter/{group}/{project}/{version}/{project}-{version}.{extension}"
+
+
+suspend fun HttpClient.downloadMaven(
+    groupName: String,
+    projectName: String,
+    version: String,
+    extension: String
+):ByteReadChannel{
+    return kotlin.runCatching {
+        downloadRequest(
+            aliyunPath
+                .replace(
+                "{group}",groupName
+                )
+                .replace(
+                "{project}",projectName
+                )
+                .replace(
+                    "{extension}",extension
+                )
+                .replace(
+                    "{version}",version
+                )
+        )
+    }.getOrElse {
+        downloadRequest(
+            jcenterPath
+                .replace(
+                    "{group}",groupName
+                )
+                .replace(
+                    "{project}",projectName
+                )
+                .replace(
+                    "{extension}",extension
+                )
+                .replace(
+                    "{version}",version
+                )
+        )
+    }
+}
+
+suspend inline fun HttpClient.downloadMavenArchive(
+    groupName: String,
+    projectName: String,
+    version: String
+):ByteReadChannel{
+    return downloadMaven(groupName,projectName,version,"jar")
+}
+
+suspend inline fun HttpClient.downloadMavenPom(
+    groupName: String,
+    projectName: String,
+    version: String
+):ByteReadChannel{
+    return downloadMaven(groupName,projectName,version,"pom")
+}
+
+
 
 /**
  * 只要填content path后面的就可以

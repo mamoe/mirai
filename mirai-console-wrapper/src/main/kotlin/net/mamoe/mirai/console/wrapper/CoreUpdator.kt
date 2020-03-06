@@ -125,25 +125,15 @@ object CoreUpdator {
         coroutineScope {
             launch {
                 tryNTimesOrQuit(3,"Failed to download newest Protocol lib, please seek for help") {
-                    kotlin.runCatching {
-                        println("Downloading newest Protocol lib from Aliyun")
-                        Http.downloadRequest(Links.libAliyun, version)
-                    }.getOrElse {
-                        println("Downloading newest Protocol lib from JCenter")
-                        Http.downloadRequest(Links.libJcenter, version)
-                    }.saveToContent("mirai-core-qqandroid-jvm-$version.jar")
+                    Http.downloadMavenArchive("net/mamoe","mirai-core-qqandroid-jvm",version)
+                        .saveToContent("mirai-core-qqandroid-jvm-$version.jar")
                 }
             }
 
             launch {
                 tryNTimesOrQuit(3,"Failed to download newest core, please seek for help") {
-                    kotlin.runCatching {
-                        println("Downloading newest Mirai Core from Aliyun")
-                        Http.downloadRequest(Links.coreAliyun, version)
-                    }.getOrElse {
-                        println("Downloading newest Mirai Core from JCenter")
-                        Http.downloadRequest(Links.coreJcenter, version)
-                    }.saveToContent("mirai-core-jvm-$version.jar")
+                    Http.downloadMavenArchive("net/mamoe","mirai-core-jvm",version)
+                        .saveToContent("mirai-core-jvm-$version.jar")
                 }
             }
         }

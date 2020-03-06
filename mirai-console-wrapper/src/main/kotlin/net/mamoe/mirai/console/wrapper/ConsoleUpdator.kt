@@ -89,22 +89,20 @@ object ConsoleUpdator{
         return "0.0.0"
     }
 
+    private fun getProjectName():String{
+        return if (consoleType == CONSOLE_PURE) {
+            "mirai-console"
+        } else {
+            "mirai-console-$consoleType"
+        }
+    }
+
     private suspend fun downloadConsole(version:String){
         tryNTimesOrQuit(3,"Failed to download Console, please seek for help") {
-            kotlin.runCatching {
-                println("Downloading newest Console from Aliyun")
-                Http.downloadRequest(Links[consoleType]!!["aliyun"] ?: error("Unknown Console Type"), version)
-            }.getOrElse {
-                println("Downloading newest Console from JCenter")
-                Http.downloadRequest(Links[consoleType]!!["jcenter"] ?: error("Unknown Console Type"), version)
-            }
-                .saveToContent(if (consoleType == CONSOLE_PURE) {
-                    "mirai-console-$version.jar"
-                } else {
-                    "mirai-console-$consoleType-$version.jar"
-                })
-
+            Http.downloadMavenArchive("net/mamoe",getProjectName(),version)
+                .saveToContent("${getProjectName()}-$version.jar")
         }
+
     }
 
 
