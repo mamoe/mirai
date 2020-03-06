@@ -40,6 +40,46 @@ internal const val ZERO_TYPE: Byte = 12
 @Suppress("INVISIBLE_MEMBER") // bug
 internal class JceInputTest {
 
+
+    @Test
+    fun testNestedList() {
+        @Serializable
+        data class TestSerializableClassA(
+            // @JceId(0) val byteArray: ByteArray = byteArrayOf(1, 2, 3),
+            @JceId(3) val byteArray2: List<List<Int>> = listOf(listOf(1, 2, 3, 4), listOf(1, 2, 3, 4))
+        )
+
+        val input = buildPacket {
+            //writeJceHead(SIMPLE_LIST, 0)
+            //writeJceHead(BYTE, 0)
+
+            //writeJceHead(BYTE, 0)
+            //byteArrayOf(1, 2, 3).let {
+            //    writeByte(it.size.toByte())
+            //    writeFully(it)
+            //}
+
+            writeJceHead(LIST, 3)
+
+            writeJceHead(BYTE, 0)
+            writeByte(2)
+            listOf(listOf(1, 2, 3, 4), listOf(1, 2, 3, 4)).forEach {
+                writeJceHead(LIST, 0)
+
+                writeJceHead(BYTE, 0)
+                writeByte(it.size.toByte())
+
+                it.forEach {
+                    writeJceHead(INT, 0)
+                    writeInt(it)
+                }
+            }
+        }
+
+        assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
+    }
+
+
     @Test
     fun testSimpleByteArray() {
         @Serializable
@@ -58,6 +98,7 @@ internal class JceInputTest {
 
                 return true
             }
+
             override fun hashCode(): Int {
                 var result = byteArray.contentHashCode()
                 result = 31 * result + byteArray2.hashCode()

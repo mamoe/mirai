@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
 import kotlinx.serialization.*
+import kotlinx.serialization.builtins.AbstractDecoder
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.internal.TaggedDecoder
 import kotlinx.serialization.modules.SerialModule
@@ -46,12 +47,28 @@ internal class JceDecoder(
     }
 
     // TODO: 2020/3/6 can be object
-    private inner class SimpleByteArrayReader : CompositeDecoder by this {
+    private inner class SimpleByteArrayReader : AbstractDecoder() {
         override fun decodeSequentially(): Boolean = true
-        override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte {
-            println("decodeByteElement: $index")
-            return jce.input.readByte().also { println("read: $it") }
+
+        override fun endStructure(descriptor: SerialDescriptor) {
+            this@JceDecoder.endStructure(descriptor)
         }
+
+        override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+            this@JceDecoder.pushTag(JceTag(0, false))
+            return this@JceDecoder.beginStructure(descriptor, *typeParams)
+        }
+
+        override fun decodeByte(): Byte = jce.input.readByte().also { println("decodeByte: $it") }
+        override fun decodeShort(): Short = error("illegal access")
+        override fun decodeInt(): Int = error("illegal access")
+        override fun decodeLong(): Long = error("illegal access")
+        override fun decodeFloat(): Float = error("illegal access")
+        override fun decodeDouble(): Double = error("illegal access")
+        override fun decodeBoolean(): Boolean = error("illegal access")
+        override fun decodeChar(): Char = error("illegal access")
+        override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = error("illegal access")
+        override fun decodeString(): String = error("illegal access")
 
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
             error("should not be reached")
@@ -64,23 +81,41 @@ internal class JceDecoder(
     }
 
     // TODO: 2020/3/6 can be object
-    private inner class ListReader : CompositeDecoder by this {
+    private inner class ListReader : AbstractDecoder() {
         override fun decodeSequentially(): Boolean = true
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int = error("should not be reached")
         override fun endStructure(descriptor: SerialDescriptor) {
-            println("endStructure: ${descriptor.serialName}")
+            this@JceDecoder.endStructure(descriptor)
         }
 
+        override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+            this@JceDecoder.pushTag(JceTag(0, false))
+            return this@JceDecoder.beginStructure(descriptor, *typeParams)
+        }
+
+        override fun decodeByte(): Byte = jce.useHead { jce.readJceByteValue(it) }
+        override fun decodeShort(): Short = jce.useHead { jce.readJceShortValue(it) }
+        override fun decodeInt(): Int = jce.useHead { jce.readJceIntValue(it) }
+        override fun decodeLong(): Long = jce.useHead { jce.readJceLongValue(it) }
+        override fun decodeFloat(): Float = jce.useHead { jce.readJceFloatValue(it) }
+        override fun decodeDouble(): Double = jce.useHead { jce.readJceDoubleValue(it) }
+        override fun decodeBoolean(): Boolean = jce.useHead { jce.readJceBooleanValue(it) }
+        override fun decodeChar(): Char = decodeByte().toChar()
+        override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = decodeInt()
+        override fun decodeString(): String = jce.useHead { jce.readJceStringValue(it) }
+
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+            println("decodeCollectionSize: ${descriptor.serialName}")
             // 不读下一个 head
-            return jce.currentHead.let { jce.readJceIntValue(it) }.also { println("listSize=$it") }
+            return jce.useHead { jce.readJceIntValue(it) }.also { println("listSize=$it") }
         }
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
+        println("endStructure: $descriptor")
         if (descriptor == ByteArraySerializer.descriptor) {
             jce.prepareNextHead() // list 里面没读 head
-        }
+        } else jce.prepareNextHead() // TODO ?? 测试这里
         super.endStructure(descriptor)
     }
 
