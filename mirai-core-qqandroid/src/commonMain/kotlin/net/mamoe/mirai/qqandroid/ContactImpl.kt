@@ -374,6 +374,7 @@ internal class GroupImpl(
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
 ) : Group() {
+    @Suppress("\"RemoveEmptyClassBody\"") // things will go wrong after removal, don't try
     companion object {
 
     }
