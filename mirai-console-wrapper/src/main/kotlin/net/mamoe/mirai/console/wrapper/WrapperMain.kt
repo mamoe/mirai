@@ -18,6 +18,7 @@ import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.coroutines.*
 import java.io.File
 import java.net.URLClassLoader
+import java.util.*
 import kotlin.system.exitProcess
 
 
@@ -33,12 +34,27 @@ object WrapperMain {
     @JvmStatic
     fun main(args: Array<String>) {
         println("You are running Mirai-Console-Wrapper under " + System.getProperty("user.dir"))
-        println("Starting version check...")
-        /**
-         * ask for type
-         */
-        val type = CONSOLE_PURE
 
+        var type = WrapperProperties.determineConsoleType(WrapperProperties.content)
+        if(type!=null){
+            println("Starting Mirai Console $type, reset by clear /content/")
+        }else{
+            println("Please select Console Type")
+            println("请选择 Console 版本")
+            println("=> Pure       : pure console")
+            println("=> Graphical  : [Not Supported Yet] graphical UI except unix")
+            println("=> Terminal   : [Not Supported Yet] console in unix")
+            val scanner = Scanner(System.`in`)
+            while (type == null){
+                var input =  scanner.next()
+                input  = input.toUpperCase()[0] + input.toLowerCase().substring(1)
+                println("Selecting $input")
+                type = WrapperProperties.determineConsoleType(input)
+            }
+            WrapperProperties.content = type
+        }
+
+        println("Starting version check...")
         runBlocking {
             launch {
                 CoreUpdator.versionCheck()
@@ -59,11 +75,15 @@ object WrapperMain {
             ConsoleUpdator.getFile()!!,
             this.javaClass.classLoader
         )
-        loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
-        loader.loadClass(
-            "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
-        ).getMethod("main",  Array<String>(0) {"null"}.javaClass)
-            .invoke(null,args)
+        when(type) {
+            CONSOLE_PURE -> {
+                loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
+                loader.loadClass(
+                    "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
+                ).getMethod("load", String::class.java,String::class.java)
+                    .invoke(null,CoreUpdator.getCurrentVersion(),ConsoleUpdator.getCurrentVersion())
+            }
+        }
     }
 }
 
@@ -77,3 +97,27 @@ class MiraiClassLoader(
     protocol.toURI().toURL(),
     console.toURI().toURL()
 ), parent)
+
+
+object WrapperProperties{
+    val contentFile by lazy{
+        File(contentPath.absolutePath + "/.wrapper.txt").also {
+            if(!it.exists())it.createNewFile()
+        }
+    }
+
+    var content
+        get() = contentFile.readText()
+        set(value) = contentFile.writeText(value)
+
+
+    fun determineConsoleType(
+        type:String
+    ):String?{
+        if(type == CONSOLE_PURE || type == CONSOLE_GRAPHICAL || type == CONSOLE_TERMINAL){
+            return type
+        }
+        return null
+    }
+
+}

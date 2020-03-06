@@ -7,6 +7,9 @@ import kotlin.math.pow
 import kotlin.system.exitProcess
 
 const val CONSOLE_PURE = "Pure"
+const val CONSOLE_TERMINAL = "Terminal"
+const val CONSOLE_GRAPHICAL = "Graphical"
+
 
 object ConsoleUpdator{
 
@@ -77,7 +80,7 @@ object ConsoleUpdator{
         }
     }
 
-    private fun getCurrentVersion():String{
+    fun getCurrentVersion():String{
         val file = getFile()
         if(file != null) {
             val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value
@@ -104,7 +107,4 @@ object ConsoleUpdator{
         LibManager.clearLibs()
         LibManager.addDependencyRequest("net/mamoe",getProjectName(),version)
     }
-
-
-
 }

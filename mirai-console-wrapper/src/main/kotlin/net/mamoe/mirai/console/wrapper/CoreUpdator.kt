@@ -40,6 +40,7 @@ object CoreUpdator {
     }
 
 
+
     suspend fun versionCheck(){
         println("Fetching Newest Core Version .. ")
         val newest = getNewestVersion()
@@ -91,7 +92,7 @@ object CoreUpdator {
      * 判断当前版本
      * 默认返回 "0.0.0"
      */
-    private fun getCurrentVersion(): String {
+     fun getCurrentVersion(): String {
         val file = getProtocolLib()
         if (file == null || getCore() == null) return "0.0.0"
         val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value

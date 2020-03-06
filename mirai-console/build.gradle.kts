@@ -8,6 +8,9 @@ plugins {
     id("com.jfrog.bintray")
 }
 
+
+apply(plugin = "com.github.johnrengelman.shadow")
+
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext

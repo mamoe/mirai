@@ -15,8 +15,15 @@ import kotlin.concurrent.thread
 class MiraiConsolePureLoader {
     companion object {
         @JvmStatic
-        fun main(args: Array<String>) {
-            MiraiConsole.start(MiraiConsoleUIPure())
+        fun load(
+            coreVersion: String,
+            consoleVersion: String
+        ) {
+            MiraiConsole.start(
+                MiraiConsoleUIPure(),
+                coreVersion,
+                consoleVersion
+            )
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
             })

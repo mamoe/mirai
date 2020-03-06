@@ -24,12 +24,10 @@ import net.mamoe.mirai.utils.cryptor.ECDH
 
 object MiraiConsole {
     /**
-     * 发布的版本号 统一修改位置
+     * 发布的版本名
      */
-    const val version = "0.3.1"
-    const val coreVersion = "v0.23.0"
-    const val build = "Alpha"
-
+    const val build = "Pkmon"
+    lateinit var version:String
 
     /**
      * 获取从Console登陆上的Bot, Bots
@@ -61,8 +59,11 @@ object MiraiConsole {
      */
     var start = false
 
+
     fun start(
-        frontEnd: MiraiConsoleUI
+        frontEnd: MiraiConsoleUI,
+        coreVersion: String = "0.0.0",
+        consoleVersion: String = "0.0.0"
     ) {
         if (start) {
             return
@@ -70,13 +71,13 @@ object MiraiConsole {
         start = true
 
         /* 初始化前端 */
+        this.version = consoleVersion
         this.frontEnd = frontEnd
-        frontEnd.pushVersion(version, build, "Loading")
+        this.frontEnd.pushVersion(consoleVersion, build, coreVersion)
         logger("Mirai-console now running under $path")
         logger("Get news in github: https://github.com/mamoe/mirai")
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
-
 
         /* 加载ECDH */
         try {
