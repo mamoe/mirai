@@ -173,7 +173,7 @@ inline fun <reified E : Event> CoroutineScope.incoming(
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
-        val listener = subscribeAlways<E>(coroutineContext) {
+        val listener = this@incoming.subscribeAlways<E>(coroutineContext) {
             send(this)
         }
         this.invokeOnClose {
