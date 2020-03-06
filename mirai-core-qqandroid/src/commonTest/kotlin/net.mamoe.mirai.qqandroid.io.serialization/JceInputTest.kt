@@ -2,12 +2,12 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
-import io.ktor.utils.io.core.Output
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.writeInt
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceInput
+import net.mamoe.mirai.qqandroid.io.serialization.jce.writeJceHead
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 internal const val BYTE: Byte = 0
 internal const val DOUBLE: Byte = 5
@@ -37,31 +37,59 @@ internal const val ZERO_TYPE: Byte = 12
 internal class JceInputTest {
 
     @Test
-    fun testHeadStack() {
+    fun testHeadSkip() {
+        val input = JceInput(buildPacket {
+            writeJceHead(BYTE, 0)
+            writeByte(66)
+            writeJceHead(SHORT, 1)
+            writeShort(123)
+            writeJceHead(INT, 3)
+            writeInt(123456)
+            writeJceHead(FLOAT, 8)
+            writeFloat(123f)
+            writeJceHead(LONG, 15)
+            writeLong(123456789123456789L)
+            writeJceHead(DOUBLE, 16)
+            writeDouble(123456.0)
+            writeJceHead(BYTE, 17)
+            writeByte(1) // boolean
+        }, JceCharset.UTF8)
 
+        assertEquals(123456, input.skipToHeadAndUseIfPossibleOrFail(3) { input.readJceIntValue(it) })
+
+        assertEquals(true, input.skipToHeadAndUseIfPossibleOrFail(17) { input.readJceBooleanValue(it) })
+
+        assertFailsWith<EOFException> {
+            input.skipToHeadAndUseIfPossibleOrFail(18) {
+                error("test failed")
+            }
+        }
     }
 
     @Test
-    fun testReadInt() {
+    fun testReadPrimitive() {
         val input = JceInput(buildPacket {
-            writeHead(INT, 0)
+            writeJceHead(BYTE, 0)
+            writeByte(66)
+            writeJceHead(SHORT, 1)
+            writeShort(123)
+            writeJceHead(INT, 3)
             writeInt(123456)
+            writeJceHead(FLOAT, 8)
+            writeFloat(123f)
+            writeJceHead(LONG, 15)
+            writeLong(123456789123456789L)
+            writeJceHead(DOUBLE, 16)
+            writeDouble(123456.0)
+            writeJceHead(BYTE, 17)
+            writeByte(1) // boolean
         }, JceCharset.UTF8)
-        assertEquals(123456, input.readJceIntValue(input.nextHead()))
-    }
-
-
-    @PublishedApi
-    internal fun Output.writeHead(type: Byte, tag: Int) {
-        if (tag < 15) {
-            writeByte(((tag shl 4) or type.toInt()).toByte())
-            return
-        }
-        if (tag < 256) {
-            writeByte((type.toInt() or 0xF0).toByte())
-            writeByte(tag.toByte())
-            return
-        }
-        error("tag is too large: $tag")
+        assertEquals(66, input.useHead { input.readJceByteValue(it) })
+        assertEquals(123, input.useHead { input.readJceShortValue(it) })
+        assertEquals(123456, input.useHead { input.readJceIntValue(it) })
+        assertEquals(123f, input.useHead { input.readJceFloatValue(it) })
+        assertEquals(123456789123456789, input.useHead { input.readJceLongValue(it) })
+        assertEquals(123456.0, input.useHead { input.readJceDoubleValue(it) })
+        assertEquals(true, input.useHead { input.readJceBooleanValue(it) })
     }
 }
