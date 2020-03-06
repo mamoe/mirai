@@ -104,20 +104,13 @@ suspend fun HttpClient.downloadMavenPomAsString(
     version: String
 ):String{
     return kotlin.runCatching {
-        Http.get<String>(
+        this.get<String>(
             aliyunPath.buildPath(groupName,projectName,version,"pom")
         )
     }.getOrElse {
-       try {
-           Http.get(
-               aliyunPath.buildPath(groupName, projectName, version, "pom")
-           )
-       }catch (e:Exception){
-           if(e.message?.contains("404 Not Found") == true) {
-               return ""
-           }
-           throw e
-       }
+        this.get(
+            aliyunPath.buildPath(groupName, projectName, version, "pom")
+        )
     }
 }
 
