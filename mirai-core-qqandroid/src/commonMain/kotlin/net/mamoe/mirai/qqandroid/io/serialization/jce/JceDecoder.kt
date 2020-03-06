@@ -35,6 +35,7 @@ internal class JceDecoder(
             this.getElementDescriptor(index).isNullable
         )
     }
+
     fun SerialDescriptor.getJceTagId(index: Int): Int {
         return getElementAnnotations(index).filterIsInstance<JceId>().single().id
     }
@@ -43,26 +44,32 @@ internal class JceDecoder(
     private val ByteArraySerializer = ByteArraySerializer()
 
     // TODO: 2020/3/6 can be object
-    private inner class SimpleByteArrayReader() : CompositeDecoder by this {
+    private inner class SimpleByteArrayReader : CompositeDecoder by this {
         override fun decodeSequentially(): Boolean = true
         override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte {
-            return jce.input.readByte()
+            println("decodeByteElement: $index")
+            return jce.input.readByte().also { println("read: $it") }
         }
 
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-            return 0
+            error("should not be reached")
         }
 
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
-            return jce.useHead { jce.readJceIntValue(it) }
+            // 不要读下一个 head
+            return jce.currentHead.let { jce.readJceIntValue(it) }.also { println("simpleListSize=$it") }
         }
     }
 
     // TODO: 2020/3/6 can be object
-    private inner class ListReader() : CompositeDecoder by this {
-        override fun decodeSequentially(): Boolean = false
+    private inner class ListReader : CompositeDecoder by this {
+        override fun decodeSequentially(): Boolean = true
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-            return 0
+            error("should not be reached")
+        }
+
+        override fun endStructure(descriptor: SerialDescriptor) {
+            println("endStructure: ${descriptor.serialName}")
         }
 
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
@@ -70,12 +77,24 @@ internal class JceDecoder(
         }
     }
 
-    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+    override fun endStructure(descriptor: SerialDescriptor) {
         if (descriptor == ByteArraySerializer.descriptor) {
+            jce.prepareNextHead() // list 里面没读 head
+        }
+        super.endStructure(descriptor)
+    }
+
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        println("beginStructure: ${descriptor.serialName}")
+        if (descriptor == ByteArraySerializer.descriptor) {
+            println("!! ByteArray")
+            println("decoderTag: $currentTagOrNull")
+            println("jceHead: " + jce.currentHeadOrNull)
             return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
+                println("listHead: $it")
                 when (it.type) {
-                    Jce.SIMPLE_LIST -> SimpleByteArrayReader()
-                    Jce.LIST -> ListReader()
+                    Jce.SIMPLE_LIST -> SimpleByteArrayReader().also { jce.prepareNextHead() } // 无用的元素类型
+                    Jce.LIST -> error(""); //ListReader()
                     else -> error("type mismatch. Expected SIMPLE_LIST or LIST, got ${it.type} instead")
                 }
             }
@@ -86,22 +105,22 @@ internal class JceDecoder(
             }
             StructureKind.LIST -> ListReader()
 
-            else -> this
+            else -> this@JceDecoder
         }
     }
 
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
-        println("decodeSerializableValue: ${deserializer.descriptor}")
+        println(
+            "decodeSerializableValue: ${deserializer.descriptor.toString().substringBefore('(')
+                .substringAfterLast('.')}"
+        )
         return super.decodeSerializableValue(deserializer)
     }
-
-    private var currentIndex = 0
-
 
     override fun decodeSequentially(): Boolean = false
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         val jceHead = jce.currentHeadOrNull ?: return CompositeDecoder.READ_DONE
-        repeat(descriptor.elementsCount){
+        repeat(descriptor.elementsCount) {
             val tag = descriptor.getJceTagId(it)
             if (tag == jceHead.tag) {
                 return it
@@ -114,10 +133,6 @@ internal class JceDecoder(
     override fun decodeTaggedNull(tag: JceTag): Nothing? {
         println("decodeTaggedNull")
         return super.decodeTaggedNull(tag)
-    }
-
-    override fun <T : Any> decodeNullableSerializableValue(deserializer: DeserializationStrategy<T?>): T? {
-        return super.decodeNullableSerializableValue(deserializer)
     }
 
     override fun decodeTaggedValue(tag: JceTag): Any {
@@ -148,14 +163,6 @@ internal class JceDecoder(
 
     override fun decodeTaggedString(tag: JceTag): String =
         jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceStringValue(it) }
-
-    override fun decodeTaggedEnum(tag: JceTag, enumDescription: SerialDescriptor): Int {
-        return super.decodeTaggedEnum(tag, enumDescription)
-    }
-
-    override fun decodeTaggedChar(tag: JceTag): Char {
-        return super.decodeTaggedChar(tag)
-    }
 
     override fun decodeTaggedNotNullMark(tag: JceTag): Boolean {
         return jce.skipToHeadOrNull(tag.id) != null

@@ -3,6 +3,7 @@
 package net.mamoe.mirai.qqandroid.io.serialization
 
 import io.ktor.utils.io.core.*
+import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceInput
@@ -38,20 +39,73 @@ internal const val ZERO_TYPE: Byte = 12
  */
 @Suppress("INVISIBLE_MEMBER") // bug
 internal class JceInputTest {
-    @Serializable
-    data class TestSerializableClassA(
-        @JceId(0) val byte: Byte = 66,
-        @JceId(1) val short: Short = 123,
-        @JceId(3) val int: Int = 123456,
-        @JceId(8) val float: Float = 123f,
-        @JceId(15) val long: Long = 123456789123456789L,
-        @JceId(16) val double: Double = 123456.0,
-        @JceId(17) val boolean: Boolean = true,
-        @JceId(11111) val nullable: Int? = null
-    )
+
+    @Test
+    fun testSimpleByteArray() {
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val byteArray: ByteArray = byteArrayOf(1, 2, 3),
+            @JceId(3) val byteArray2: ByteArray = byteArrayOf(1, 2, 3, 4)
+        ) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other == null || this::class != other::class) return false
+
+                other as TestSerializableClassA
+
+                if (!byteArray.contentEquals(other.byteArray)) return false
+                if (!byteArray2.contentEquals(other.byteArray2)) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = byteArray.contentHashCode()
+                result = 31 * result + byteArray2.contentHashCode()
+                return result
+            }
+        }
+
+        val input = buildPacket {
+            writeJceHead(SIMPLE_LIST, 0)
+            writeJceHead(BYTE, 0)
+
+            writeJceHead(BYTE, 0)
+            byteArrayOf(1, 2, 3).let {
+                writeByte(it.size.toByte())
+                writeFully(it)
+            }
+
+            writeJceHead(SIMPLE_LIST, 3)
+            writeJceHead(BYTE, 0)
+
+            writeJceHead(BYTE, 0)
+            byteArrayOf(1, 2, 3, 4).let {
+                writeByte(it.size.toByte())
+                writeFully(it)
+            }
+        }
+
+        assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
+    }
+
 
     @Test
     fun testSerializableClassA() {
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val byte: Byte = 66,
+            @JceId(1) val short: Short = 123,
+            @JceId(3) val int: Int = 123456,
+            @JceId(8) val float: Float = 123f,
+            @JceId(15) val long: Long = 123456789123456789L,
+            @JceId(16) val double: Double = 123456.0,
+            @JceId(17) val boolean: Boolean = true,
+            @JceId(11111) val nullable: Int? = null,
+            @JceId(111112) val nullable2: Int? = null,
+            @JceId(111113) val optional: Int = 123
+        )
+
         val input = buildPacket {
             writeJceHead(BYTE, 0)
             writeByte(66)
@@ -70,6 +124,25 @@ internal class JceInputTest {
         }
 
         assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
+    }
+
+    @Test
+    fun testNoSuchField() {
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val byte: Byte = 66,
+            @JceId(1) val short: Short = 123,
+            @JceId(3) val int: Int
+        )
+
+        val input = buildPacket {
+            writeJceHead(BYTE, 0)
+            writeByte(66)
+            writeJceHead(SHORT, 1)
+            writeShort(123)
+        }
+
+        assertFailsWith<MissingFieldException> { JceNew.UTF_8.load(TestSerializableClassA.serializer(), input) }
     }
 
     @Test
