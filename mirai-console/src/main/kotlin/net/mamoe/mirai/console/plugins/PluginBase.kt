@@ -83,7 +83,11 @@ abstract class PluginBase
     @JvmOverloads
     internal fun disable(throwable: CancellationException? = null) {
         this.coroutineContext[Job]!!.cancelChildren(throwable)
-        this.onDisable()
+        try {
+            this.onDisable()
+        }catch (e:Exception){
+            logger.info(e)
+        }
     }
 
     internal var pluginName: String = ""

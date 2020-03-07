@@ -42,7 +42,11 @@ object PluginManager {
 
     fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
         nameToPluginBaseMap.values.forEach {
-            it.onCommand(command, sender, args)
+            try {
+                it.onCommand(command, sender, args)
+            }catch (e:Exception){
+                logger.info(e)
+            }
         }
     }
 
@@ -194,7 +198,27 @@ object PluginManager {
         }
 
         nameToPluginBaseMap.values.forEach {
-            it.enable()
+            try {
+                it.onLoad()
+            }catch (ignored:Exception){
+                if(ignored is CancellationException) {
+                    logger.info(ignored)
+                    logger.info(it.pluginName + "Failed to load, disabling it")
+                    it.disable(ignored)
+                }
+            }
+        }
+
+        nameToPluginBaseMap.values.forEach {
+            try {
+                it.enable()
+            }catch (ignored:Exception){
+                logger.info(ignored)
+                logger.info(it.pluginName + "Failed to enable, disabling it")
+                if(ignored is CancellationException) {
+                    it.disable(ignored)
+                }
+            }
         }
 
         logger.info("""加载了${nameToPluginBaseMap.size}个插件""")
@@ -213,9 +237,9 @@ object PluginManager {
      * 根据插件名字找Jar的文件
      * null => 没找到
      */
-    fun getJarPath(pluginName: String): File? {
+    fun getJarFileByName(pluginName: String): File? {
         File(pluginsPath).listFiles()?.forEach { file ->
-            if (file != null && file.extension == "jar") {
+           if (file != null && file.extension == "jar") {
                 val jar = JarFile(file)
                 val pluginYml =
                     jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
@@ -240,7 +264,7 @@ object PluginManager {
      * null => 没找到
      */
     fun getFileInJarByName(pluginName: String, toFind: String): InputStream? {
-        val jarFile = getJarPath(pluginName) ?: return null
+        val jarFile = getJarFileByName(pluginName) ?: return null
         val jar = JarFile(jarFile)
         val toFindFile =
             jar.entries().asSequence().filter { it.name == toFind }.firstOrNull() ?: return null
