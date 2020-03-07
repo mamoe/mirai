@@ -52,10 +52,7 @@ kotlin {
         )
     }
 
-    targets {
-        jvm()
-        android()
-    }
+    jvm()
 
     sourceSets {
         all {
