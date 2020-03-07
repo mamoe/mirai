@@ -160,7 +160,7 @@ internal open class QQAndroidClient(
 
     @UseExperimental(RawAccountIdUse::class)
     @Suppress("PropertyName")
-    internal var _uin: Long = bot.account.id
+    internal var _uin: Long = bot.uin
 
     var t530: ByteArray? = null
     var t528: ByteArray? = null

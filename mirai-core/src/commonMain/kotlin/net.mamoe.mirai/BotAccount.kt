@@ -12,6 +12,7 @@
 package net.mamoe.mirai
 
 import io.ktor.utils.io.core.toByteArray
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.md5
 import kotlin.annotation.AnnotationTarget.*
@@ -23,6 +24,8 @@ data class BotAccount(
      */
     @RawAccountIdUse
     val id: Long,
+    @MiraiExperimentalAPI
+    @MiraiInternalAPI
     val passwordMd5: ByteArray // md5
 ) {
     constructor(id: Long, passwordPlainText: String) : this(id, md5(passwordPlainText.toByteArray()))
