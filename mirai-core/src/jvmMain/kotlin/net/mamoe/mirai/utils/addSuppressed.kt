@@ -4,7 +4,7 @@ private var isAddSuppressedSupported: Boolean = true
 
 @PublishedApi
 internal actual fun Throwable.addSuppressedMirai(e: Throwable) {
-    if (this === e) {
+    if (this == e) {
         return
     }
     if (!isAddSuppressedSupported) {
