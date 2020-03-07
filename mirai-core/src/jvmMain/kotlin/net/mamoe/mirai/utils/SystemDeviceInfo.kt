@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import net.mamoe.mirai.utils.io.getRandomByteArray
 import net.mamoe.mirai.utils.io.getRandomString
 import java.io.File
@@ -25,14 +26,15 @@ import java.io.File
 fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return SystemDeviceInfo(context).also {
-            this.writeText(Json.plain.stringify(SystemDeviceInfo.serializer(), it))
+            this.writeText(JSON.stringify(SystemDeviceInfo.serializer(), it))
         }
     }
-    return Json.nonstrict.parse(DeviceInfoData.serializer(), this.readText()).also {
+    return JSON.parse(DeviceInfoData.serializer(), this.readText()).also {
         it.context = context
     }
 }
 
+private val JSON = Json(JsonConfiguration.Stable)
 
 @Serializable
 @OptIn(ExperimentalUnsignedTypes::class)
