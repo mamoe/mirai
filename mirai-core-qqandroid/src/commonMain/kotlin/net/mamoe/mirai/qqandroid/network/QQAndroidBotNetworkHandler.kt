@@ -338,6 +338,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     suspend fun doHeartBeat(): Exception? {
         val lastException: Exception?
         try {
+            kotlin.runCatching {
+                Heartbeat.Alive(bot.client)
+                    .sendAndExpect<Heartbeat.Alive.Response>(
+                        timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                        retry = 2
+                    )
+                return null
+            }
             Heartbeat.Alive(bot.client)
                 .sendAndExpect<Heartbeat.Alive.Response>(
                     timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
