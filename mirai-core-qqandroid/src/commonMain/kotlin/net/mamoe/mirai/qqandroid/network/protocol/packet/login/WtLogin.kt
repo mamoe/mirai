@@ -355,7 +355,7 @@ internal class WtLogin {
                 val otherInfo: String = readUShortLVString()
 
                 LoginPacketResponse.Error(title, content, otherInfo)
-            } ?: tlvMap[0x146]?.toReadPacket()?.run {
+            } ?: tlvMap[0x146]?.read {
                 discardExact(2) // ver
                 discardExact(2)  // code
 
