@@ -13,11 +13,11 @@
 
 package net.mamoe.mirai.utils.io
 
-import io.ktor.utils.io.charsets.Charset
-import io.ktor.utils.io.charsets.Charsets
-import io.ktor.utils.io.core.ByteReadPacket
-import io.ktor.utils.io.core.String
-import io.ktor.utils.io.core.use
+import kotlinx.io.charsets.Charset
+import kotlinx.io.charsets.Charsets
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.String
+import kotlinx.io.core.use
 import net.mamoe.mirai.utils.checkOffsetAndLength
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind

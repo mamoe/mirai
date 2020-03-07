@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.core.toByteArray
+import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.md5

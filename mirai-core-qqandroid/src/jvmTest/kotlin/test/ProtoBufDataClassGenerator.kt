@@ -28,7 +28,7 @@ fun main() {
     println(
         File(
             """
-            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\oidb\cmd0x857
+            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\msgrevoke
         """.trimIndent()
         )
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")

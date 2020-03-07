@@ -12,13 +12,13 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.Input
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.copyTo
-import io.ktor.utils.io.errors.IOException
-import io.ktor.utils.io.streams.asOutput
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.copyTo
+import kotlinx.io.errors.IOException
+import kotlinx.io.streams.asOutput
 import net.mamoe.mirai.utils.io.getRandomString
 import java.awt.image.BufferedImage
 import java.io.File

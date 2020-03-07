@@ -10,7 +10,10 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
 
-import io.ktor.utils.io.core.*
+import kotlinx.io.core.BytePacketBuilder
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.encryptAndWrite
@@ -43,7 +46,6 @@ internal inline fun OutgoingPacketFactory<*>.buildOutgoingUniPacket(
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
 
-    @Suppress("DuplicatedCode")
     return OutgoingPacket(name, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x0B)
@@ -52,7 +54,7 @@ internal inline fun OutgoingPacketFactory<*>.buildOutgoingUniPacket(
             writeByte(0)
             client.uin.toString().let {
                 writeInt(it.length + 4)
-                writeText(it)
+                writeStringUtf8(it)
             }
             encryptAndWrite(key) {
                 writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
@@ -75,7 +77,6 @@ internal inline fun IncomingPacketFactory<*>.buildResponseUniPacket(
     sequenceId: Int = client.nextSsoSequenceId(),
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
-    @Suppress("DuplicatedCode")
     return OutgoingPacket(name, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x0B)
@@ -84,7 +85,7 @@ internal inline fun IncomingPacketFactory<*>.buildResponseUniPacket(
             writeByte(0)
             client.uin.toString().let {
                 writeInt(it.length + 4)
-                writeText(it)
+                writeStringUtf8(it)
             }
             encryptAndWrite(key) {
                 writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
@@ -105,7 +106,7 @@ internal inline fun BytePacketBuilder.writeUniPacket(
     writeIntLVPacket(lengthOffset = { it + 4 }) {
         commandName.let {
             writeInt(it.length + 4)
-            writeText(it)
+            writeStringUtf8(it)
         }
 
         writeInt(4 + 4)
@@ -152,7 +153,7 @@ internal inline fun OutgoingPacketFactory<*>.buildLoginOutgoingPacket(
 
             client.uin.toString().let {
                 writeInt(it.length + 4)
-                writeText(it)
+                writeStringUtf8(it)
             }
 
             if (key === NO_ENCRYPT) {
@@ -207,7 +208,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         }
         commandName.let {
             writeInt(it.length + 4)
-            writeText(it)
+            writeStringUtf8(it)
         }
 
         writeInt(4 + 4)
@@ -215,7 +216,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
 
         client.device.imei.let {
             writeInt(it.length + 4)
-            writeText(it)
+            writeStringUtf8(it)
         }
 
         writeInt(4)

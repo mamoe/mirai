@@ -12,9 +12,9 @@
 package net.mamoe.mirai.message
 
 import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.core.Input
+import kotlinx.io.core.Input
 import io.ktor.utils.io.core.Output
-import io.ktor.utils.io.core.use
+import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.data.Image

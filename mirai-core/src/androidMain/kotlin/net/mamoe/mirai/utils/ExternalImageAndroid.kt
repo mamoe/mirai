@@ -53,6 +53,7 @@ fun File.toExternalImage(): ExternalImage {
         md5 = this.inputStream().use { it.md5() },
         imageFormat = this.nameWithoutExtension,
         input = this.inputStream(),
+        inputSize = this.length(),
         filename = this.name
     )
 }
