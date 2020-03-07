@@ -2,7 +2,6 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
-import kotlinx.io.core.EOFException
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
@@ -112,8 +111,8 @@ internal class JceInputTest {
             writeJceHead(SIMPLE_LIST, 0)
             writeJceHead(BYTE, 0)
 
-            writeJceHead(BYTE, 0)
             byteArrayOf(1, 2, 3).let {
+                writeJceHead(BYTE, 0)
                 writeByte(it.size.toByte())
                 writeFully(it)
             }
@@ -121,8 +120,8 @@ internal class JceInputTest {
             writeJceHead(SIMPLE_LIST, 3)
             writeJceHead(BYTE, 0)
 
-            writeJceHead(BYTE, 0)
             byteArrayOf(1, 2, 3, 4).let {
+                writeJceHead(BYTE, 0)
                 writeByte(it.size.toByte())
                 writeFully(it)
             }
@@ -210,7 +209,7 @@ internal class JceInputTest {
 
         assertEquals(true, input.skipToHeadAndUseIfPossibleOrFail(17) { input.readJceBooleanValue(it) })
 
-        assertFailsWith<EOFException> {
+        assertFailsWith<IllegalStateException> {
             input.skipToHeadAndUseIfPossibleOrFail(18) {
                 error("test failed")
             }
