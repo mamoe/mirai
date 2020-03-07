@@ -52,49 +52,40 @@ kotlin {
         )
     }
 
-    jvm("jvm") {
+    targets {
+        jvm()
+        android()
     }
 
     sourceSets {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
-
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+        }
 
+        commonMain {
             dependencies {
                 api(kotlin("stdlib", kotlinVersion))
                 api(kotlin("serialization", kotlinVersion))
+                api(kotlin("reflect", kotlinVersion))
 
-                api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+                api(kotlinx("coroutines-core-common", coroutinesVersion))
+                api(kotlinx("serialization-runtime-common", serializationVersion))
                 api(kotlinx("io", kotlinXIoVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-core", coroutinesVersion))
-            }
-        }
-        commonMain {
-            dependencies {
-                api(kotlin("reflect", kotlinVersion))
-                api(kotlin("serialization", kotlinVersion))
-                api(kotlinx("coroutines-core-common", coroutinesVersion))
-                api(kotlinx("serialization-runtime-common", serializationVersion))
 
-                api(ktor("http-cio", ktorVersion))
-                api(ktor("http", ktorVersion))
-                api(ktor("client-core-jvm", ktorVersion))
+                api("org.jetbrains.kotlinx:atomicfu-common:$atomicFuVersion")
+
                 api(ktor("client-cio", ktorVersion))
                 api(ktor("client-core", ktorVersion))
                 api(ktor("network", ktorVersion))
-                //implementation("io.ktor:ktor-io:1.3.0-beta-1")
-
-                //runtimeOnly(files("build/classes/kotlin/metadata/main")) // classpath is not properly set by IDE
             }
         }
         commonTest {
             dependencies {
                 implementation(kotlin("test-annotations-common"))
                 implementation(kotlin("test-common"))
-
-                //runtimeOnly(files("build/classes/kotlin/metadata/test")) // classpath is not properly set by IDE
             }
         }
 
@@ -103,7 +94,6 @@ kotlin {
                 dependencies {
                     api(kotlin("reflect", kotlinVersion))
 
-                    api(kotlinx("io", kotlinXIoVersion))
                     api(kotlinx("io-jvm", kotlinXIoVersion))
                     api(kotlinx("serialization-runtime", serializationVersion))
                     api(kotlinx("coroutines-android", coroutinesVersion))
@@ -133,6 +123,7 @@ kotlin {
                 api(kotlinx("io-jvm", kotlinXIoVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
                 api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
+                api(kotlinx("coroutines-core", coroutinesVersion))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
