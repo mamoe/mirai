@@ -4,12 +4,11 @@ import java.util.*
 buildscript {
     repositories {
         mavenLocal()
-        maven { setUrl("https://mirrors.huaweicloud.com/repository/maven") }
+        maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         jcenter()
-        mavenCentral()
+        // mavenCentral()
         google()
-        maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
-        maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
+        // maven (url="https://dl.bintray.com/kotlin/kotlin-eap")
     }
 
     dependencies {
@@ -42,11 +41,10 @@ allprojects {
 
     repositories {
         mavenLocal()
-        maven { setUrl("https://mirrors.huaweicloud.com/repository/maven") }
+        maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         jcenter()
-        mavenCentral()
+        // mavenCentral()
         google()
-        maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
-        maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
+        // maven (url="https://dl.bintray.com/kotlin/kotlin-eap")
     }
 }

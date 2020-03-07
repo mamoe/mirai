@@ -9,9 +9,10 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
-import io.ktor.utils.io.core.ByteReadPacket
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.discardExact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo

@@ -11,9 +11,9 @@
 
 package net.mamoe.mirai.qqandroid.network
 
-import io.ktor.utils.io.core.*
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
+import kotlinx.io.core.*
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.RawAccountIdUse
 import net.mamoe.mirai.data.OnlineStatus
@@ -159,7 +159,7 @@ internal open class QQAndroidClient(
     val uin: Long get() = _uin
 
     @OptIn(RawAccountIdUse::class)
-    @Suppress("PropertyName")
+    @Suppress("PropertyName", "DEPRECATION_ERROR")
     internal var _uin: Long = bot.account.id
 
     var t530: ByteArray? = null
@@ -315,7 +315,7 @@ internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) :
 internal typealias PSKeyMap = MutableMap<String, PSKey>
 internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
 
-internal inline fun Input.readUShortLVString(): String = io.ktor.utils.io.core.String(this.readUShortLVByteArray())
+internal inline fun Input.readUShortLVString(): String = kotlinx.io.core.String(this.readUShortLVByteArray())
 
 internal inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 

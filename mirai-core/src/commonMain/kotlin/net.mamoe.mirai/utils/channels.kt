@@ -14,13 +14,13 @@
 package net.mamoe.mirai.utils
 
 
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.Output
-import io.ktor.utils.io.core.writeFully
-import io.ktor.utils.io.pool.useInstance
-import io.ktor.utils.io.readAvailable
+import kotlinx.coroutines.io.ByteReadChannel
+import kotlinx.coroutines.io.ByteWriteChannel
+import kotlinx.coroutines.io.readAvailable
 import kotlinx.io.OutputStream
 import kotlinx.serialization.InternalSerializationApi
+import kotlinx.io.core.Output
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -46,6 +46,19 @@ suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
  */
 suspend fun ByteReadChannel.copyTo(dst: Output) {
     @OptIn(MiraiInternalAPI::class)
+    ByteArrayPool.useInstance { buffer ->
+        var size: Int
+        while (this.readAvailable(buffer).also { size = it } > 0) {
+            dst.writeFully(buffer, 0, size)
+        }
+    }
+}
+
+/**
+ * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
+ */
+suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel) {
+    @UseExperimental(MiraiInternalAPI::class)
     ByteArrayPool.useInstance { buffer ->
         var size: Int
         while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -104,6 +117,44 @@ suspend fun ByteReadChannel.copyAndClose(dst: Output) {
         }
     } finally {
         dst.close()
+    }
+}
+
+/**
+ * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
+ */
+suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
+    @Suppress("DuplicatedCode")
+    try {
+        @UseExperimental(MiraiInternalAPI::class)
+        ByteArrayPool.useInstance { buffer ->
+            var size: Int
+            while (this.readAvailable(buffer).also { size = it } > 0) {
+                dst.writeFully(buffer, 0, size)
+            }
+        }
+    } finally {
+        @Suppress("DuplicatedCode")
+        dst.close(null)
+    }
+}
+
+/**
+ * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
+ */
+suspend fun ByteReadChannel.copyAndClose(dst: io.ktor.utils.io.ByteWriteChannel) {
+    @Suppress("DuplicatedCode")
+    try {
+        @UseExperimental(MiraiInternalAPI::class)
+        ByteArrayPool.useInstance { buffer ->
+            var size: Int
+            while (this.readAvailable(buffer).also { size = it } > 0) {
+                dst.writeFully(buffer, 0, size)
+            }
+        }
+    } finally {
+        @Suppress("DuplicatedCode")
+        dst.close(null)
     }
 }
 

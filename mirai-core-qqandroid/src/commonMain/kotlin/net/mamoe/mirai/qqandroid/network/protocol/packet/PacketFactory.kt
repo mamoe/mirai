@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
-import io.ktor.utils.io.core.*
-import io.ktor.utils.io.pool.useInstance
+import kotlinx.io.core.*
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot

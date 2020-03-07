@@ -61,7 +61,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
-     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage].
+     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage], [QuoteReply].
      * 仅供 `Java` 使用
      */
     @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
@@ -71,13 +71,26 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     fun `__forEachContent for Java__`(block: (Message) -> Unit) {
         this.foreachContent(block)
     }
+
+    /**
+     * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage], [QuoteReply].
+     * 仅供 `Java` 使用
+     */
+    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
+    @JsName("forEach")
+    @JvmName("forEach")
+    @MiraiInternalAPI
+    fun `__forEach for Java__`(block: (Message) -> Unit) {
+        this.forEach(block)
+    }
 }
 
 // region accessors
 
 /**
- * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage]
+ * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage], [QuoteReply]
  */
+@JvmSynthetic
 inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
     this.forEach {
         if (it !is MessageMetadata) block(it)
@@ -87,23 +100,27 @@ inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
+@JvmSynthetic
 inline fun <reified M : Message?> MessageChain.firstOrNull(): M? = this.firstOrNull { it is M } as M?
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
+@JvmSynthetic
 inline fun <reified M : Message> MessageChain.first(): M = this.first { it is M } as M
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
+@JvmSynthetic
 inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is M }
 
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
+@JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {
     At -> first<At>()
@@ -120,6 +137,7 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
  * 获取第一个 [M] 类型的 [Message] 实例
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
+@JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
     firstOrNull(key) ?: throw NoSuchElementException("no such element: $key")
@@ -127,6 +145,7 @@ fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
+@JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(key) != null
 
@@ -211,9 +230,6 @@ fun Message.asMessageChain(): MessageChain = when (this) {
     else -> SingleMessageChainImpl(this as SingleMessage)
 }
 
-@Deprecated("use asMessageChain instead", ReplaceWith("this.asMessageChain()"), DeprecationLevel.ERROR)
-fun Message.toChain(): MessageChain = this.asMessageChain()
-
 /**
  * 直接将 [this] 委托为一个 [MessageChain]
  */
@@ -233,7 +249,17 @@ fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySeque
 @JvmSynthetic
 fun Iterable<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByIterable(this)
 
+@JvmSynthetic
 inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
+
+@JvmSynthetic
+fun CombinedMessage.asMessageChain(): MessageChain {
+    if (left is SingleMessage && this.element is SingleMessage) {
+        @Suppress("UNCHECKED_CAST")
+        return (this as Iterable<SingleMessage>).asMessageChain()
+    }
+    return (this as Iterable<Message>).asMessageChain()
+} // 避免套娃
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
@@ -324,10 +350,19 @@ fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast pa
 fun Message.flatten(): Sequence<SingleMessage> {
     return when (this) {
         is MessageChain -> this.asSequence()
-        is CombinedMessage -> this.asSequence().flatten()
+        is CombinedMessage -> this.flatten()
         else -> sequenceOf(this as SingleMessage)
     }
 }
+
+fun CombinedMessage.flatten(): Sequence<SingleMessage> {
+    if (this.isFlat()){
+        @Suppress("UNCHECKED_CAST")
+        return (this as Iterable<SingleMessage>).asSequence()
+    } else return this.asSequence().flatten()
+}
+
+fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
 // endregion converters
 

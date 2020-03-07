@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
@@ -65,12 +65,6 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * 在 Android 实现为 `android.content.Context`
      */
     actual abstract val context: Context
-
-    /**
-     * 账号信息
-     */
-    @MiraiInternalAPI
-    actual abstract val account: BotAccount
 
     /**
      * QQ 号码. 实际类型为 uint

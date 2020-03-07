@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
-import io.ktor.utils.io.core.*
+import kotlinx.io.core.*
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MultiPacketBySequence
 import net.mamoe.mirai.data.NoPacket
@@ -341,7 +341,7 @@ internal class OnlinePush {
                                         }
                                     }
                                     0x11 -> {
-                                        discard(1)
+                                        discardExact(1)
                                         val proto = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer())
                                         proto.optMsgRecall?.let { recallReminder ->
 

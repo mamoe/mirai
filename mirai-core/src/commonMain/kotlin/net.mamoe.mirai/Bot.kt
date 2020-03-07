@@ -11,10 +11,10 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
@@ -75,12 +75,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * 在 Android 实现为 `android.content.Context`
      */
     abstract val context: Context
-
-    /**
-     * 账号信息
-     */
-    @MiraiInternalAPI
-    abstract val account: BotAccount
 
     /**
      * QQ 号码. 实际类型为 uint

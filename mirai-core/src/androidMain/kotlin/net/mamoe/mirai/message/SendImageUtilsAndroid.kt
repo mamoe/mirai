@@ -12,9 +12,9 @@
 package net.mamoe.mirai.message
 
 import android.graphics.Bitmap
-import io.ktor.utils.io.core.Input
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.OverFileSizeMaxException
@@ -36,28 +36,31 @@ import java.net.URL
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun Bitmap.sendTo(contact: Contact) = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun <C : Contact> Bitmap.sendTo(contact: C): MessageReceipt<C> =
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun URL.sendAsImageTo(contact: Contact) = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun <C : Contact> URL.sendAsImageTo(contact: C): MessageReceipt<C> =
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun Input.sendAsImageTo(contact: Contact) = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun <C : Contact> Input.sendAsImageTo(contact: C): MessageReceipt<C> =
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun InputStream.sendAsImageTo(contact: Contact) =
+suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
     withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
@@ -65,9 +68,9 @@ suspend fun InputStream.sendAsImageTo(contact: Contact) =
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun File.sendAsImageTo(contact: Contact) {
+suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
     require(this.exists() && this.canRead())
-    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+    return withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 }
 
 // endregion
@@ -124,35 +127,36 @@ suspend fun File.uploadAsImage(contact: Contact): Image {
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.sendImage(bufferedImage: Bitmap) = bufferedImage.sendTo(this)
+suspend inline fun <C : Contact> C.sendImage(bufferedImage: Bitmap): MessageReceipt<C> = bufferedImage.sendTo(this)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.sendImage(imageUrl: URL) = imageUrl.sendAsImageTo(this)
+suspend inline fun <C : Contact> C.sendImage(imageUrl: URL): MessageReceipt<C> = imageUrl.sendAsImageTo(this)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.sendImage(imageInput: Input) = imageInput.sendAsImageTo(this)
+suspend inline fun <C : Contact> C.sendImage(imageInput: Input): MessageReceipt<C> = imageInput.sendAsImageTo(this)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.sendImage(imageStream: InputStream) = imageStream.sendAsImageTo(this)
+suspend inline fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
+    imageStream.sendAsImageTo(this)
 
 /**
  * 在 [Dispatchers.IO] 中将文件作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.sendImage(file: File) = file.sendAsImageTo(this)
+suspend inline fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
 
 // endregion
 

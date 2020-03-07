@@ -11,8 +11,8 @@ package net.mamoe.mirai.qqandroid
 
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
-import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.LowLevelAPI
@@ -222,6 +222,10 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override suspend fun openChannel(image: Image): ByteReadChannel {
-        return Http.get<HttpResponse>(queryImageUrl(image)).content
+        return Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
     }
 }
+
+@Suppress("DEPRECATION")
+@UseExperimental(MiraiInternalAPI::class)
+internal expect fun io.ktor.utils.io.ByteReadChannel.toKotlinByteReadChannel(): ByteReadChannel

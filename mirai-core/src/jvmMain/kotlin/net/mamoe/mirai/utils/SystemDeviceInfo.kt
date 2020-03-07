@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.utils.io.core.toByteArray
+import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
