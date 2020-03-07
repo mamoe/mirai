@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
-import io.ktor.utils.io.core.Output
+import kotlinx.io.core.Output
 import kotlinx.serialization.SerialInfo
 import net.mamoe.mirai.qqandroid.io.serialization.Jce
 

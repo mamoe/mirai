@@ -2,7 +2,9 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
-import io.ktor.utils.io.core.*
+import kotlinx.io.core.EOFException
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
@@ -63,13 +65,13 @@ internal class JceInputTest {
 
             writeJceHead(BYTE, 0)
             writeByte(2)
-            listOf(listOf(1, 2, 3, 4), listOf(1, 2, 3, 4)).forEach {
+            listOf(listOf(1, 2, 3, 4), listOf(1, 2, 3, 4)).forEach { child ->
                 writeJceHead(LIST, 0)
 
                 writeJceHead(BYTE, 0)
-                writeByte(it.size.toByte())
+                writeByte(child.size.toByte())
 
-                it.forEach {
+                child.forEach {
                     writeJceHead(INT, 0)
                     writeInt(it)
                 }
