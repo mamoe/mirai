@@ -35,7 +35,7 @@ import java.net.URL
  */
 @Suppress("UNUSED_PARAMETER")
 @Throws(IOException::class)
-fun Bitmap.toExternalImage(formatName: String = "gif"): Nothing {
+fun Bitmap.toExternalImage(formatName: String = "gif"): ExternalImage {
     TODO()
 }
 
