@@ -37,7 +37,7 @@ internal actual class QQAndroidBot actual constructor(
     configuration: BotConfiguration
 ) : QQAndroidBotBase(context, account, configuration)
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 @Suppress("DEPRECATION")
 internal actual fun ByteReadChannel.toKotlinByteReadChannel(): kotlinx.coroutines.io.ByteReadChannel {
     return object : kotlinx.coroutines.io.ByteReadChannel {
@@ -145,7 +145,7 @@ internal actual fun ByteReadChannel.toKotlinByteReadChannel(): kotlinx.coroutine
             return this@toKotlinByteReadChannel.readRemaining(limit, headerSizeHint).readBytes().toReadPacket()
         }
 
-        @UseExperimental(ExperimentalIoApi::class)
+        @OptIn(ExperimentalIoApi::class)
         @ExperimentalIoApi
         override fun readSession(consumer: ReadSession.() -> Unit) {
             @Suppress("DEPRECATION")

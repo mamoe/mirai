@@ -227,5 +227,5 @@ internal abstract class QQAndroidBotBase constructor(
 }
 
 @Suppress("DEPRECATION")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal expect fun io.ktor.utils.io.ByteReadChannel.toKotlinByteReadChannel(): ByteReadChannel

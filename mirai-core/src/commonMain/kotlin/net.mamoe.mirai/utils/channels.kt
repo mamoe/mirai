@@ -58,7 +58,7 @@ suspend fun ByteReadChannel.copyTo(dst: Output) {
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel) {
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     ByteArrayPool.useInstance { buffer ->
         var size: Int
         while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -126,7 +126,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: Output) {
 suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
-        @UseExperimental(MiraiInternalAPI::class)
+        @OptIn(MiraiInternalAPI::class)
         ByteArrayPool.useInstance { buffer ->
             var size: Int
             while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -145,7 +145,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
 suspend fun ByteReadChannel.copyAndClose(dst: io.ktor.utils.io.ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
-        @UseExperimental(MiraiInternalAPI::class)
+        @OptIn(MiraiInternalAPI::class)
         ByteArrayPool.useInstance { buffer ->
             var size: Int
             while (this.readAvailable(buffer).also { size = it } > 0) {
