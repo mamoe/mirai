@@ -59,15 +59,7 @@ actual open class MessageReceipt<C : Contact> actual constructor(
     actual suspend fun recall() {
         @Suppress("BooleanLiteralArgument")
         if (_isRecalled.compareAndSet(false, true)) {
-            when (val contact = target) {
-                is Group -> {
-                    contact.bot.recall(source)
-                }
-                is QQ -> {
-                    TODO()
-                }
-                else -> error("Unknown contact type")
-            }
+            target.bot.recall(source)
         } else error("message is already or planned to be recalled")
     }
 
