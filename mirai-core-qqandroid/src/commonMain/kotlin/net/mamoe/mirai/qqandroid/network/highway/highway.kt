@@ -11,11 +11,14 @@
 
 package net.mamoe.mirai.qqandroid.network.highway
 
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.io.InputStream
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead

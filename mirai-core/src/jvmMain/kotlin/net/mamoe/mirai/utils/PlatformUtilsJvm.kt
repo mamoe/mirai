@@ -13,7 +13,7 @@ package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.utils.io.pool.useInstance
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import java.io.*
 import java.net.InetAddress

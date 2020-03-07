@@ -9,9 +9,8 @@
 
 package net.mamoe.mirai.utils.cryptor
 
-import io.ktor.utils.io.core.ByteReadPacket
-import io.ktor.utils.io.core.readFully
-import io.ktor.utils.io.pool.useInstance
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toByteArray

@@ -11,7 +11,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 
 import io.ktor.util.InternalAPI
-import io.ktor.utils.io.core.*
+import kotlinx.io.core.*
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.*
@@ -127,7 +127,7 @@ internal class WtLogin {
             private const val appId = 16L
             private const val subAppId = 537062845L
 
-            @UseExperimental(MiraiInternalAPI::class)
+            @UseExperimental(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
             operator fun invoke(
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->

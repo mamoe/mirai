@@ -13,7 +13,7 @@
 
 package net.mamoe.mirai.utils.io
 
-import io.ktor.utils.io.core.*
+import kotlinx.io.core.*
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.coerceAtMostOrFail
 import net.mamoe.mirai.utils.cryptor.TEA

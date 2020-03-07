@@ -13,13 +13,14 @@ package net.mamoe.mirai.utils
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.Input
-import io.ktor.utils.io.core.copyTo
-import io.ktor.utils.io.errors.IOException
-import io.ktor.utils.io.streams.asOutput
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.Input
+import kotlinx.io.core.IoBuffer
+import kotlinx.io.core.copyTo
+import kotlinx.io.errors.IOException
+import kotlinx.io.streams.asInput
+import kotlinx.io.streams.asOutput
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -30,7 +31,7 @@ import java.net.URL
 
 
 /**
- * 读取 [BufferedImage] 的属性, 然后构造 [ExternalImage]
+ * 读取 [Bitmap] 的属性, 然后构造 [ExternalImage]
  */
 @Throws(IOException::class)
 fun Bitmap.toExternalImage(formatName: String = "gif"): Nothing {
@@ -52,7 +53,8 @@ fun File.toExternalImage(): ExternalImage {
         height = input.height,
         md5 = this.inputStream().use { it.md5() },
         imageFormat = this.nameWithoutExtension,
-        input = this.inputStream(),
+        input = this.inputStream().asInput(IoBuffer.Pool),
+        inputSize = this.length(),
         filename = this.name
     )
 }
@@ -68,8 +70,8 @@ suspend inline fun File.suspendToExternalImage(): ExternalImage = withContext(IO
 @Throws(IOException::class)
 fun URL.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().use { output ->
-        openStream().use { input ->
+    file.outputStream().asOutput().use { output ->
+        openStream().asInput().use { input ->
             input.copyTo(output)
         }
         output.flush()
@@ -121,6 +123,7 @@ fun Input.toExternalImage(): ExternalImage {
  */
 suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
+/*
 /**
  * 保存为临时文件然后调用 [File.toExternalImage].
  */
@@ -132,4 +135,4 @@ suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
     }
 
     return file.suspendToExternalImage()
-}
+}*/

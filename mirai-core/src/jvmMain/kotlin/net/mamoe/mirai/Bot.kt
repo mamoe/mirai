@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult

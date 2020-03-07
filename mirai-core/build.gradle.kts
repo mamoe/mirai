@@ -11,6 +11,7 @@ plugins {
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
+val kotlinXIoVersion: String by rootProject.ext
 val coroutinesIoVersion: String by rootProject.ext
 
 
@@ -51,48 +52,37 @@ kotlin {
         )
     }
 
-    jvm("jvm") {
-    }
+    jvm()
 
     sourceSets {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
-
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+        }
 
+        commonMain {
             dependencies {
                 api(kotlin("stdlib", kotlinVersion))
                 api(kotlin("serialization", kotlinVersion))
-
-                api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-                api(kotlinx("coroutines-io", coroutinesIoVersion))
-                api(kotlinx("coroutines-core", coroutinesVersion))
-            }
-        }
-        commonMain {
-            dependencies {
                 api(kotlin("reflect", kotlinVersion))
-                api(kotlin("serialization", kotlinVersion))
+
                 api(kotlinx("coroutines-core-common", coroutinesVersion))
                 api(kotlinx("serialization-runtime-common", serializationVersion))
+                api(kotlinx("io", kotlinXIoVersion))
+                api(kotlinx("coroutines-io", coroutinesIoVersion))
+                api(kotlinx("coroutines-core", coroutinesVersion))
 
-                api(ktor("http-cio", ktorVersion))
-                api(ktor("http", ktorVersion))
-                api(ktor("client-core-jvm", ktorVersion))
+                api("org.jetbrains.kotlinx:atomicfu-common:$atomicFuVersion")
+
                 api(ktor("client-cio", ktorVersion))
                 api(ktor("client-core", ktorVersion))
                 api(ktor("network", ktorVersion))
-                //implementation("io.ktor:ktor-io:1.3.0-beta-1")
-
-                //runtimeOnly(files("build/classes/kotlin/metadata/main")) // classpath is not properly set by IDE
             }
         }
         commonTest {
             dependencies {
                 implementation(kotlin("test-annotations-common"))
                 implementation(kotlin("test-common"))
-
-                //runtimeOnly(files("build/classes/kotlin/metadata/test")) // classpath is not properly set by IDE
             }
         }
 
@@ -101,8 +91,10 @@ kotlin {
                 dependencies {
                     api(kotlin("reflect", kotlinVersion))
 
+                    api(kotlinx("io-jvm", kotlinXIoVersion))
                     api(kotlinx("serialization-runtime", serializationVersion))
                     api(kotlinx("coroutines-android", coroutinesVersion))
+                    api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
 
                     api(ktor("client-android", ktorVersion))
                 }
@@ -125,10 +117,10 @@ kotlin {
                 api(kotlin("reflect", kotlinVersion))
 
                 api(ktor("client-core-jvm", ktorVersion))
+                api(kotlinx("io-jvm", kotlinXIoVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
-                api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
-                api(kotlinx("io-jvm", coroutinesIoVersion))
+                api(kotlinx("coroutines-core", coroutinesVersion))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE

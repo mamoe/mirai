@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.qqandroid
 
-import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
