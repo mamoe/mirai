@@ -11,9 +11,9 @@
 
 package net.mamoe.mirai.message
 
-import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.io.core.Input
-import io.ktor.utils.io.core.Output
+import kotlinx.io.core.Output
 import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ

@@ -31,7 +31,7 @@ import java.net.URL
 
 
 /**
- * 读取 [BufferedImage] 的属性, 然后构造 [ExternalImage]
+ * 读取 [Bitmap] 的属性, 然后构造 [ExternalImage]
  */
 @Throws(IOException::class)
 fun Bitmap.toExternalImage(formatName: String = "gif"): Nothing {
@@ -123,6 +123,7 @@ fun Input.toExternalImage(): ExternalImage {
  */
 suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
+/*
 /**
  * 保存为临时文件然后调用 [File.toExternalImage].
  */
@@ -134,4 +135,4 @@ suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
     }
 
     return file.suspendToExternalImage()
-}
+}*/

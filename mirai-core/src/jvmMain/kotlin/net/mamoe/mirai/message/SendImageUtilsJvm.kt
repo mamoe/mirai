@@ -37,28 +37,32 @@ import java.net.URL
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun <C : Contact> BufferedImage.sendTo(contact: C): MessageReceipt<C> = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun <C : Contact> BufferedImage.sendTo(contact: C): MessageReceipt<C> =
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun <C : Contact> URL.sendAsImageTo(contact: C): MessageReceipt<C> = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun <C : Contact> URL.sendAsImageTo(contact: C): MessageReceipt<C> =
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun <C : Contact> Input.sendAsImageTo(contact: C): MessageReceipt<C> = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun <C : Contact> Input.sendAsImageTo(contact: C): MessageReceipt<C> =
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> = withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
+    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中将文件作为图片发送到指定联系人
@@ -79,28 +83,32 @@ suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun BufferedImage.upload(contact: Contact): OfflineImage = withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+suspend fun BufferedImage.upload(contact: Contact): OfflineImage =
+    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片上传后构造 [Image]
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun URL.uploadAsImage(contact: Contact): OfflineImage = withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+suspend fun URL.uploadAsImage(contact: Contact): OfflineImage =
+    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片上传后构造 [Image]
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun Input.uploadAsImage(contact: Contact): OfflineImage = withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+suspend fun Input.uploadAsImage(contact: Contact): OfflineImage =
+    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun InputStream.uploadAsImage(contact: Contact): OfflineImage = withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+suspend fun InputStream.uploadAsImage(contact: Contact): OfflineImage =
+    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中将文件作为图片上传后构造 [Image]
@@ -121,7 +129,8 @@ suspend fun File.uploadAsImage(contact: Contact): OfflineImage {
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun <C : Contact> C.sendImage(bufferedImage: BufferedImage): MessageReceipt<C> = bufferedImage.sendTo(this)
+suspend inline fun <C : Contact> C.sendImage(bufferedImage: BufferedImage): MessageReceipt<C> =
+    bufferedImage.sendTo(this)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片发送到指定联系人
@@ -142,7 +151,8 @@ suspend inline fun <C : Contact> C.sendImage(imageInput: Input): MessageReceipt<
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> = imageStream.sendAsImageTo(this)
+suspend inline fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
+    imageStream.sendAsImageTo(this)
 
 /**
  * 在 [Dispatchers.IO] 中将文件作为图片发送到指定联系人

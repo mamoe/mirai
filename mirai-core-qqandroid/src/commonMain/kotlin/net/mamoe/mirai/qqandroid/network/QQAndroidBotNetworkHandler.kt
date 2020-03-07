@@ -9,12 +9,15 @@
 
 package net.mamoe.mirai.qqandroid.network
 
-import io.ktor.utils.io.core.*
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.use
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
@@ -67,14 +70,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         _packetReceiverJob?.join()
 
         return this.launch(CoroutineName("Incoming Packet Receiver")) {
-            while (channel.isOpen) {
+            while (channel.isOpen && isActive) {
                 val rawInput = try {
                     channel.read()
                 } catch (e: CancellationException) {
                     return@launch
                 } catch (e: Throwable) {
                     if (this@QQAndroidBotNetworkHandler.isActive) {
-                        BotOfflineEvent.Dropped(bot, e).broadcast()
+                        bot.launch { BotOfflineEvent.Dropped(bot, e).broadcast() }
                     }
                     return@launch
                 }
@@ -141,10 +144,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         continue@mainloop
                     }
                     is WtLogin.Login.LoginPacketResponse.Captcha.Slider -> {
-                        var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
-                        if (ticket == null) {
-                            ticket = ""
-                        }
+                        val ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url).orEmpty()
                         response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
                     }

@@ -127,7 +127,7 @@ internal class WtLogin {
             private const val appId = 16L
             private const val subAppId = 537062845L
 
-            @UseExperimental(MiraiInternalAPI::class)
+            @UseExperimental(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
             operator fun invoke(
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
@@ -288,7 +288,7 @@ internal class WtLogin {
                 }
 
                 class Picture(
-                    val data: IoBuffer,
+                    val data: ByteArray,
                     val sign: ByteArray
                 ) : Captcha() {
                     override fun toString(): String = "LoginPacketResponse.Captcha.Picture"
@@ -394,11 +394,8 @@ internal class WtLogin {
                 imageData.discardExact(2)//image Length
                 val sign = imageData.readBytes(signInfoLength.toInt())
 
-
-                val buffer = IoBuffer.Pool.borrow()
-                imageData.readAvailable(buffer)
                 return LoginPacketResponse.Captcha.Picture(
-                    data = buffer,
+                    data = imageData.readBytes(),
                     sign = sign
                 )
                 // } else error("UNKNOWN CAPTCHA QUESTION: ${question.toUHexString()}, tlvMap=" + tlvMap.contentToString())

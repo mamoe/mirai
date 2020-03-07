@@ -9,13 +9,10 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
@@ -278,60 +275,6 @@ internal class MessageSvc {
             data class Failed(val resultType: Int, val errorCode: Int, val errorMessage: String) : Response() {
                 override fun toString(): String =
                     "MessageSvc.PbSendMsg.Response.Failed(resultType=$resultType, errorCode=$errorCode, errorMessage=$errorMessage)"
-            }
-        }
-
-        internal class MessageSourceFromSendFriend(
-            val messageRandom: Int,
-            override val time: Long,
-            override val qqId: Long,
-            override val groupId: Long,
-            val sequenceId: Int
-        ) : MessageSource {
-            @UseExperimental(ExperimentalCoroutinesApi::class)
-            override val id: Long
-                get() = sequenceId.toLong().shl(32) or
-                        messageRandom.toLong().and(0xFFFFFFFF)
-
-            override suspend fun ensureSequenceIdAvailable() {
-                // nothing to do
-            }
-
-            override fun toString(): String {
-                return ""
-            }
-        }
-
-        internal class MessageSourceFromSendGroup(
-            val messageRandom: Int,
-            override val time: Long,
-            override val qqId: Long,
-            override val groupId: Long// ,
-            // override val sourceMessage: MessageChain
-        ) : MessageSource {
-            private lateinit var sequenceIdDeferred: Deferred<Int>
-
-            @UseExperimental(ExperimentalCoroutinesApi::class)
-            override val id: Long
-                get() = sequenceIdDeferred.getCompleted().toLong().shl(32) or
-                        messageRandom.toLong().and(0xFFFFFFFF)
-
-            @UseExperimental(MiraiExperimentalAPI::class)
-            fun startWaitingSequenceId(contact: Contact) {
-                sequenceIdDeferred =
-                    contact.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(timeoutMillis = 3000) {
-                        if (it.messageRandom == this@MessageSourceFromSendGroup.messageRandom) {
-                            it.sequenceId
-                        } else null
-                    }
-            }
-
-            override suspend fun ensureSequenceIdAvailable() {
-                sequenceIdDeferred.join()
-            }
-
-            override fun toString(): String {
-                return ""
             }
         }
 

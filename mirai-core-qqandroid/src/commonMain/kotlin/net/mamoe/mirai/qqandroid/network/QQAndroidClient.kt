@@ -159,8 +159,8 @@ internal open class QQAndroidClient(
     val uin: Long get() = _uin
 
     @UseExperimental(RawAccountIdUse::class)
-    @Suppress("PropertyName")
-    internal var _uin: Long = bot.uin
+    @Suppress("PropertyName", "DEPRECATION_ERROR")
+    internal var _uin: Long = bot.account.id
 
     var t530: ByteArray? = null
     var t528: ByteArray? = null

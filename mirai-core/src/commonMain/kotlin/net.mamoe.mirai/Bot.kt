@@ -11,10 +11,10 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
@@ -89,7 +89,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     // region contacts
 
     /**
-     * [_lowLevelNewQQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewQQ] 实例
+     * [QQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewQQ] 实例
      */
     abstract val selfQQ: QQ
 

@@ -107,6 +107,7 @@ kotlin {
                     api(kotlinx("io-jvm", kotlinXIoVersion))
                     api(kotlinx("serialization-runtime", serializationVersion))
                     api(kotlinx("coroutines-android", coroutinesVersion))
+                    api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
 
                     api(ktor("client-android", ktorVersion))
                 }
@@ -131,9 +132,7 @@ kotlin {
                 api(ktor("client-core-jvm", ktorVersion))
                 api(kotlinx("io-jvm", kotlinXIoVersion))
                 api(kotlinx("serialization-runtime", serializationVersion))
-                api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
-                api(kotlinx("io-jvm", coroutinesIoVersion))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE

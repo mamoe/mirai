@@ -14,8 +14,9 @@
 package net.mamoe.mirai.utils
 
 
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.readAvailable
+import kotlinx.coroutines.io.ByteReadChannel
+import kotlinx.coroutines.io.ByteWriteChannel
+import kotlinx.coroutines.io.readAvailable
 import kotlinx.io.OutputStream
 import kotlinx.io.core.Output
 import kotlinx.io.pool.useInstance
@@ -120,6 +121,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: Output) {
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
 suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
+    @Suppress("DuplicatedCode")
     try {
         @UseExperimental(MiraiInternalAPI::class)
         ByteArrayPool.useInstance { buffer ->
@@ -130,7 +132,26 @@ suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
         }
     } finally {
         @Suppress("DuplicatedCode")
-        dst.close()
+        dst.close(null)
+    }
+}
+
+/**
+ * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
+ */
+suspend fun ByteReadChannel.copyAndClose(dst: io.ktor.utils.io.ByteWriteChannel) {
+    @Suppress("DuplicatedCode")
+    try {
+        @UseExperimental(MiraiInternalAPI::class)
+        ByteArrayPool.useInstance { buffer ->
+            var size: Int
+            while (this.readAvailable(buffer).also { size = it } > 0) {
+                dst.writeFully(buffer, 0, size)
+            }
+        }
+    } finally {
+        @Suppress("DuplicatedCode")
+        dst.close(null)
     }
 }
 

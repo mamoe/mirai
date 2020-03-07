@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.io.InputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
