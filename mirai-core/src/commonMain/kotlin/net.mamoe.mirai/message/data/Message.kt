@@ -106,12 +106,19 @@ interface Message {
     operator fun plus(another: Message): CombinedMessage = this.followedBy(another)
 
     operator fun plus(another: String): CombinedMessage = this.followedBy(another.toMessage())
+
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): CombinedMessage = this.followedBy(another.toString().toMessage())
 }
 
-suspend fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
+suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
     return contact.sendMessage(this)
+}
+
+operator fun Message.times(count: Int): MessageChain {
+    return buildMessageChain(count) {
+        add(this@times)
+    }
 }
 
 interface SingleMessage : Message
