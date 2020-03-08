@@ -38,6 +38,10 @@ inline class PlainText(val stringValue: String) : Message, MessageContent {
         inline fun of(value: String): PlainText {
             return PlainText(value)
         }
+
+        inline fun of(value: CharSequence): PlainText {
+            return PlainText(value)
+        }
     }
 }
 
