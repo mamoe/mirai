@@ -40,7 +40,7 @@ kotlin {
 }
 dependencies {
     compileOnly("net.mamoe:mirai-core-jvm:$miraiVersion")
-    // compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
+    compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
 
 
     compileOnly(group = "com.alibaba", name = "fastjson", version = "1.2.62")

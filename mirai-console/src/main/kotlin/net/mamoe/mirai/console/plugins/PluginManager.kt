@@ -222,7 +222,6 @@ object PluginManager {
         }
 
         logger.info("""加载了${nameToPluginBaseMap.size}个插件""")
-
     }
 
 
@@ -270,4 +269,5 @@ object PluginManager {
             jar.entries().asSequence().filter { it.name == toFind }.firstOrNull() ?: return null
         return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
+
 }

@@ -8,6 +8,7 @@ val kotlinVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
 val coroutinesIoVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
+val kotlinXIoVersion: String by rootProject.ext
 
 val ktorVersion: String by rootProject.ext
 
@@ -38,37 +39,47 @@ kotlin {
 val serializationVersion: String by rootProject.ext
 
 dependencies {
+    //core && protocol
     api(kotlin("stdlib", kotlinVersion))
+    api(kotlin("serialization", kotlinVersion))
+    api(kotlin("reflect", kotlinVersion))
 
+    api(kotlinx("coroutines-core-common", coroutinesVersion))
+    api(kotlinx("serialization-runtime-common", serializationVersion))
+    api(kotlinx("serialization-protobuf-common", serializationVersion))
+    api(kotlinx("io", kotlinXIoVersion))
+    api(kotlinx("coroutines-io", coroutinesIoVersion))
     api(kotlinx("coroutines-core", coroutinesVersion))
 
-    api(ktor("client-core-jvm", ktorVersion))
-    api(ktor("client-cio", ktorVersion))
-    api(kotlin("reflect"))
+    api("org.jetbrains.kotlinx:atomicfu-common:$atomicFuVersion")
 
+    api(ktor("client-cio", ktorVersion))
+    api(ktor("client-core", ktorVersion))
+    api(ktor("network", ktorVersion))
+    api(kotlin("reflect", kotlinVersion))
+
+    api(ktor("client-core-jvm", ktorVersion))
+    api(kotlinx("io-jvm", kotlinXIoVersion))
+    api(kotlinx("serialization-runtime", serializationVersion))
+    api(kotlinx("serialization-protobuf", serializationVersion))
+    api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
+    api(kotlinx("coroutines-core", coroutinesVersion))
+
+    api("org.bouncycastle:bcprov-jdk15on:1.64")
+
+    api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+    api(kotlinx("serialization-runtime-common", serializationVersion))
+    api(kotlinx("serialization-protobuf-common", serializationVersion))
+    api(kotlinx("serialization-runtime", serializationVersion))
+
+    //for slf4j[ktor used]
+    api(group = "org.apache.cassandra", name = "cassandra-all", version = "0.8.1")
+
+    //mirai-console
     api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
     api(group = "org.yaml", name = "snakeyaml", version = "1.25")
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
 
-
-    api(kotlin("stdlib", kotlinVersion))
-    api(kotlin("serialization", kotlinVersion))
-
-    api(kotlin("reflect", kotlinVersion))
-
-    api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
-    api(kotlinx("coroutines-core", coroutinesVersion))
-    api(kotlinx("serialization-runtime", serializationVersion))
-    api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-
-    api("org.bouncycastle:bcprov-jdk15on:1.64")
-
-    api(ktor("http-cio", ktorVersion))
-    api(ktor("http-jvm", ktorVersion))
-    api(ktor("io-jvm", ktorVersion))
-    api(ktor("client-core-jvm", ktorVersion))
-    api(ktor("client-cio", ktorVersion))
-    api(ktor("network", ktorVersion))
 }
 
 val miraiConsoleWrapperVersion: String by project.ext
