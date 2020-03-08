@@ -111,6 +111,42 @@ internal class JceDecoder(
         }
     }
 
+
+    private val MapReader: MapReaderImpl = MapReaderImpl()
+
+    private inner class MapReaderImpl : AbstractDecoder() {
+        override fun decodeSequentially(): Boolean = true
+        override fun decodeElementIndex(descriptor: SerialDescriptor): Int = error("should not be reached")
+        override fun endStructure(descriptor: SerialDescriptor) {
+            this@JceDecoder.endStructure(descriptor)
+        }
+
+        private var state: Boolean = true
+        override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+            this@JceDecoder.pushTag(JceTag(if (state) 0 else 1, false))
+            state = !state
+            return this@JceDecoder.beginStructure(descriptor, *typeParams)
+        }
+
+        override fun decodeByte(): Byte = jce.useHead { jce.readJceByteValue(it) }
+        override fun decodeShort(): Short = jce.useHead { jce.readJceShortValue(it) }
+        override fun decodeInt(): Int = jce.useHead { jce.readJceIntValue(it) }
+        override fun decodeLong(): Long = jce.useHead { jce.readJceLongValue(it) }
+        override fun decodeFloat(): Float = jce.useHead { jce.readJceFloatValue(it) }
+        override fun decodeDouble(): Double = jce.useHead { jce.readJceDoubleValue(it) }
+        override fun decodeBoolean(): Boolean = jce.useHead { jce.readJceBooleanValue(it) }
+        override fun decodeChar(): Char = decodeByte().toChar()
+        override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = decodeInt()
+        override fun decodeString(): String = jce.useHead { jce.readJceStringValue(it) }
+
+        override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+            println("decodeCollectionSize in MapReader: ${descriptor.serialName}")
+            // 不读下一个 head
+            return jce.useHead { jce.readJceIntValue(it) }.also { println("listSize=$it") }
+        }
+    }
+
+
     override fun endStructure(descriptor: SerialDescriptor) {
         println("endStructure: $descriptor")
         if (currentTagOrNull?.isSimpleByteArray == true) {
@@ -123,9 +159,11 @@ internal class JceDecoder(
             while (true) {
                 val currentHead = jce.currentHeadOrNull ?: return
                 if (currentHead.type == Jce.STRUCT_END) {
+                    jce.prepareNextHead()
+                    println("current end")
                     break
                 }
-                println("skipping")
+                println("current $currentHead")
                 jce.skipField(currentHead.type)
                 jce.prepareNextHead()
             }
@@ -145,7 +183,7 @@ internal class JceDecoder(
                 println("!! MAP")
                 return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
                     it.checkType(Jce.MAP)
-                    ListReader
+                    MapReader
                 }
             }
             StructureKind.LIST -> {
@@ -171,9 +209,15 @@ internal class JceDecoder(
                 println("!! CLASS")
                 println("decoderTag: $currentTag")
                 println("jceHead: " + jce.currentHeadOrNull)
-                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
-                    it.checkType(Jce.STRUCT_BEGIN)
-                    this@JceDecoder
+                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) { jceHead ->
+                    jceHead.checkType(Jce.STRUCT_BEGIN)
+
+
+                    // TODO: 2020/3/8 检查是否需要 scope 化
+                    repeat(descriptor.elementsCount) {
+                        pushTag(descriptor.getTag(descriptor.elementsCount - it - 1)) // better performance
+                    }
+                    this // independent tag stack
                 }
             }
 

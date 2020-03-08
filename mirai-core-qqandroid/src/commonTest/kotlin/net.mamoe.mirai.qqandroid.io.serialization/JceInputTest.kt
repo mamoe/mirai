@@ -42,7 +42,7 @@ internal const val ZERO_TYPE: Byte = 12
 internal class JceInputTest {
 
     @Test
-    fun testNestedJceStruct() {
+    fun testFuckingComprehensiveStruct() {
         @Serializable
         data class TestSerializableClassC(
             @JceId(5) val value3: Int = 123123
@@ -51,15 +51,77 @@ internal class JceInputTest {
         @Serializable
         data class TestSerializableClassB(
             @JceId(0) val value: Int,
-            @JceId(123) val nested2: TestSerializableClassC
+            @JceId(123) val nested2: TestSerializableClassC,
+            @JceId(5) val value5: Int
+        )
+
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val map: Map<TestSerializableClassB, TestSerializableClassC>
+        )
+
+
+        val input = buildPacket {
+            writeJceHead(MAP, 0) // TestSerializableClassB
+            writeJceHead(BYTE, 0)
+            writeByte(1)
+
+            writeJceHead(STRUCT_BEGIN, 0);
+            {
+                writeJceHead(INT, 0)
+                writeInt(123)
+
+                writeJceHead(STRUCT_BEGIN, 123); // TestSerializableClassC
+                {
+                    writeJceHead(INT, 5)
+                    writeInt(123123)
+                }()
+                writeJceHead(STRUCT_END, 0)
+
+                writeJceHead(INT, 5)
+                writeInt(9)
+            }()
+            writeJceHead(STRUCT_END, 0)
+
+            writeJceHead(STRUCT_BEGIN, 1);
+            {
+                writeJceHead(INT, 5)
+                writeInt(123123)
+            }()
+            writeJceHead(STRUCT_END, 0)
+        }
+
+        assertEquals(
+            TestSerializableClassA(
+                mapOf(
+                    TestSerializableClassB(123, TestSerializableClassC(123123), 9)
+                            to TestSerializableClassC(123123)
+                )
+            ),
+            JceNew.UTF_8.load(TestSerializableClassA.serializer(), input)
+        )
+    }
+
+    @Test
+    fun testNestedJceStruct() {
+        @Serializable
+        data class TestSerializableClassC(
+            @JceId(5) val value3: Int
+        )
+
+        @Serializable
+        data class TestSerializableClassB(
+            @JceId(0) val value: Int,
+            @JceId(123) val nested2: TestSerializableClassC,
+            @JceId(5) val value5: Int
         )
 
         @Serializable
         data class TestSerializableClassA(
             @JceId(0) val value1: Int,
+            @JceId(4) val notOptional: Int,
             @JceId(1) val nestedStruct: TestSerializableClassB,
-            @JceId(2) val optional: Int = 3,
-            @JceId(4) val notOptional: Int
+            @JceId(2) val optional: Int = 3
         )
 
         val input = buildPacket {
@@ -78,8 +140,8 @@ internal class JceInputTest {
                 }()
                 writeJceHead(STRUCT_END, 0)
 
-                writeJceHead(INT, 2) // 多余
-                writeInt(123)
+                writeJceHead(INT, 5)
+                writeInt(9)
             }()
             writeJceHead(STRUCT_END, 0)
 
@@ -88,7 +150,11 @@ internal class JceInputTest {
         }
 
         assertEquals(
-            TestSerializableClassA(444, TestSerializableClassB(123, TestSerializableClassC(123123)), notOptional = 5),
+            TestSerializableClassA(
+                444,
+                5,
+                TestSerializableClassB(123, TestSerializableClassC(123123), 9)
+            ),
             JceNew.UTF_8.load(TestSerializableClassA.serializer(), input)
         )
     }
