@@ -18,8 +18,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:3.5.3")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
-        @kotlin.Suppress("GradleDependency") // 1.3.70 有 bug, 无法编译添加 SerialInfo
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.61") // 不要用 $kotlinVersion
+        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
     }
 }
