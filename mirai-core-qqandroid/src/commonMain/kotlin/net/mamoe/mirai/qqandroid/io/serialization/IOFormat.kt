@@ -8,7 +8,7 @@ import kotlinx.serialization.SerializationStrategy
 
 interface IOFormat : SerialFormat {
 
-    fun <T> dump(serializer: SerializationStrategy<T>, output: Output): ByteArray
+    fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output)
 
     fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T
 }

@@ -18,21 +18,29 @@ import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.utils.io.readPacketExact
+import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 
 fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {
-    return Jce.byCharSet(c).load(deserializer, this)
+    return Jce.byCharSet(c).load(deserializer, this.toReadPacket())
 }
 
-fun <T : JceStruct> BytePacketBuilder.writeJceStruct(serializer: SerializationStrategy<T>, struct: T, charset: JceCharset = JceCharset.GBK) {
-    this.writePacket(Jce.byCharSet(charset).dumpAsPacket(serializer, struct))
+fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
+    serializer: SerializationStrategy<T>,
+    struct: T,
+    charset: JceCharset = JceCharset.GBK
+) {
+    Jce.byCharSet(charset).dumpTo(serializer, struct, this)
 }
 
 fun <T : JceStruct> ByteReadPacket.readJceStruct(
@@ -40,7 +48,8 @@ fun <T : JceStruct> ByteReadPacket.readJceStruct(
     charset: JceCharset = JceCharset.UTF8,
     length: Int = this.remaining.toInt()
 ): T {
-    return Jce.byCharSet(charset).load(serializer, this, length)
+    @OptIn(MiraiInternalAPI::class)
+    return Jce.byCharSet(charset).load(serializer, this.readPacketExact(length))
 }
 
 /**
@@ -82,7 +91,8 @@ fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null
     })
 }
 
-fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray = Jce.byCharSet(c).dump(serializer, this)
+fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray =
+    Jce.byCharSet(c).dump(serializer, this)
 
 fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
     this.writeFully(v.toByteArray(serializer))

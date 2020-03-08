@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
-import kotlinx.io.core.Input
-import kotlinx.io.core.Output
+import kotlinx.io.core.*
+import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialFormat
 import kotlinx.serialization.SerializationStrategy
@@ -18,26 +18,56 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.serialization.IOFormat
 import net.mamoe.mirai.qqandroid.io.serialization.JceCharset
+import net.mamoe.mirai.qqandroid.io.serialization.JceOld
+import net.mamoe.mirai.utils.io.toReadPacket
 
 /**
  * Jce 数据结构序列化和反序列化器.
  *
  * @author Him188
  */
-class JceNew(
+class Jce(
     override val context: SerialModule,
     val charset: JceCharset
-) : SerialFormat, IOFormat {
-    override fun <T> dump(serializer: SerializationStrategy<T>, output: Output): ByteArray {
-        TODO("Not yet implemented")
+) : SerialFormat, IOFormat, BinaryFormat {
+    override fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output) {
+        output.writePacket(JceOld.byCharSet(this.charset).dumpAsPacket(serializer, ojb))
     }
 
     override fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T {
         return JceDecoder(JceInput(input, charset), context).decodeSerializableValue(deserializer)
     }
 
+    override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray {
+        return buildPacket { dumpTo(serializer, value, this) }.readBytes()
+    }
+
+    override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
+        return load(deserializer, bytes.toReadPacket())
+    }
+
     companion object {
-        val UTF_8 = JceNew(EmptyModule, JceCharset.UTF8)
-        val GBK = JceNew(EmptyModule, JceCharset.GBK)
+        val UTF_8 = Jce(EmptyModule, JceCharset.UTF8)
+        val GBK = Jce(EmptyModule, JceCharset.GBK)
+
+        fun byCharSet(c: JceCharset): Jce {
+            return if (c == JceCharset.UTF8) UTF_8 else GBK
+        }
+
+        internal const val BYTE: Byte = 0
+        internal const val DOUBLE: Byte = 5
+        internal const val FLOAT: Byte = 4
+        internal const val INT: Byte = 2
+        internal const val JCE_MAX_STRING_LENGTH = 104857600
+        internal const val LIST: Byte = 9
+        internal const val LONG: Byte = 3
+        internal const val MAP: Byte = 8
+        internal const val SHORT: Byte = 1
+        internal const val SIMPLE_LIST: Byte = 13
+        internal const val STRING1: Byte = 6
+        internal const val STRING4: Byte = 7
+        internal const val STRUCT_BEGIN: Byte = 10
+        internal const val STRUCT_END: Byte = 11
+        internal const val ZERO_TYPE: Byte = 12
     }
 }

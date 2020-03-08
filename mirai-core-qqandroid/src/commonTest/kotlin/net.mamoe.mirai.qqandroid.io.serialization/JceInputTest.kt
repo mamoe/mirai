@@ -6,9 +6,9 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceInput
-import net.mamoe.mirai.qqandroid.io.serialization.jce.JceNew
 import net.mamoe.mirai.qqandroid.io.serialization.jce.writeJceHead
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -98,7 +98,7 @@ internal class JceInputTest {
                             to TestSerializableClassC(123123)
                 )
             ),
-            JceNew.UTF_8.load(TestSerializableClassA.serializer(), input)
+            Jce.UTF_8.load(TestSerializableClassA.serializer(), input)
         )
     }
 
@@ -155,7 +155,7 @@ internal class JceInputTest {
                 5,
                 TestSerializableClassB(123, TestSerializableClassC(123123), 9)
             ),
-            JceNew.UTF_8.load(TestSerializableClassA.serializer(), input)
+            Jce.UTF_8.load(TestSerializableClassA.serializer(), input)
         )
     }
 
@@ -194,7 +194,7 @@ internal class JceInputTest {
             }
         }
 
-        assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
+        assertEquals(TestSerializableClassA(), Jce.UTF_8.load(TestSerializableClassA.serializer(), input))
     }
 
     @Test
@@ -232,7 +232,70 @@ internal class JceInputTest {
 
         assertEquals(
             TestSerializableClassA(mapOf(1 to 2, 33 to 44)),
-            JceNew.UTF_8.load(TestSerializableClassA.serializer(), input)
+            Jce.UTF_8.load(TestSerializableClassA.serializer(), input)
+        )
+    }
+
+    @Test
+    fun testMapStringInt() {
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val byteArray: Map<String, Int>
+        )
+
+        val input = buildPacket {
+            writeJceHead(MAP, 0)
+
+            mapOf("str1" to 2, "str2" to 44).let {
+                writeJceHead(BYTE, 0)
+                writeByte(it.size.toByte())
+
+                it.forEach { (key, value) ->
+                    writeJceHead(STRING1, 0)
+                    writeByte(key.length.toByte())
+                    writeStringUtf8(key)
+
+                    writeJceHead(INT, 1)
+                    writeInt(value)
+                }
+            }
+        }
+
+        assertEquals(
+            TestSerializableClassA(mapOf("str1" to 2, "str2" to 44)),
+            Jce.UTF_8.load(TestSerializableClassA.serializer(), input)
+        )
+    }
+
+    @Test
+    fun testMapStringByteArray() {
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val byteArray: Map<String, ByteArray>
+        )
+
+        val input = buildPacket {
+            writeJceHead(MAP, 0)
+
+            mapOf("str1" to byteArrayOf(2, 3, 4), "str2" to byteArrayOf(2, 3, 4)).let {
+                writeJceHead(BYTE, 0)
+                writeByte(it.size.toByte())
+
+                it.forEach { (key, value) ->
+                    writeJceHead(STRING1, 0)
+                    writeByte(key.length.toByte())
+                    writeStringUtf8(key)
+
+                    writeJceHead(SIMPLE_LIST, 1)
+                    writeJceHead(BYTE, 0)
+                    writeFully(value)
+                }
+            }
+        }
+
+        assertEquals(
+            TestSerializableClassA(mapOf("str1" to byteArrayOf(2, 3, 4), "str2" to byteArrayOf(2, 3, 4))),
+            Jce.UTF_8.load(TestSerializableClassA.serializer(), input)
         )
     }
 
@@ -282,7 +345,7 @@ internal class JceInputTest {
             }
         }
 
-        assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
+        assertEquals(TestSerializableClassA(), Jce.UTF_8.load(TestSerializableClassA.serializer(), input))
     }
 
 
@@ -319,7 +382,7 @@ internal class JceInputTest {
             writeByte(1) // boolean
         }
 
-        assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
+        assertEquals(TestSerializableClassA(), Jce.UTF_8.load(TestSerializableClassA.serializer(), input))
     }
 
     @Test
@@ -338,7 +401,7 @@ internal class JceInputTest {
             writeShort(123)
         }
 
-        assertFailsWith<MissingFieldException> { JceNew.UTF_8.load(TestSerializableClassA.serializer(), input) }
+        assertFailsWith<MissingFieldException> { Jce.UTF_8.load(TestSerializableClassA.serializer(), input) }
     }
 
     @Test

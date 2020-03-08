@@ -11,7 +11,6 @@ package net.mamoe.mirai.qqandroid.io.serialization.jce
 
 import kotlinx.io.core.Output
 import kotlinx.serialization.SerialInfo
-import net.mamoe.mirai.qqandroid.io.serialization.Jce
 
 
 /**
@@ -27,15 +26,47 @@ annotation class JceId(val id: Int)
  * 保留这个结构, 为将来增加功能的兼容性.
  */
 @PublishedApi
-internal data class JceTag(
-    val id: Int,
-    val isNullable: Boolean
-){
+internal abstract class JceTag {
+    abstract val id: Int
+    abstract val isNullable: Boolean
+
     internal var isSimpleByteArray: Boolean = false
 }
 
+internal sealed class JceTagListElement(
+    override val isNullable: Boolean
+) : JceTag(){
+    override val id: Int get() = 0
+
+    object Nullable : JceTagListElement(true)
+    object NotNull : JceTagListElement(false)
+}
+
+internal sealed class JceTagMapEntryKey(
+    override val isNullable: Boolean
+) : JceTag(){
+    override val id: Int get() = 0
+
+    object Nullable : JceTagMapEntryKey(true)
+    object NotNull : JceTagMapEntryKey(false)
+}
+
+internal sealed class JceTagMapEntryValue(
+    override val isNullable: Boolean
+) : JceTag() {
+    override val id: Int get() = 1
+
+    object Nullable : JceTagMapEntryValue(true)
+    object NotNull : JceTagMapEntryValue(false)
+}
+
+internal data class JceTagCommon(
+    override val id: Int,
+    override val isNullable: Boolean
+) : JceTag()
+
 fun JceHead.checkType(type: Byte) {
-    check(this.type == type) {"type mismatch. Expected $type, actual ${this.type}"}
+    check(this.type == type) { "type mismatch. Expected $type, actual ${this.type}" }
 }
 
 @PublishedApi

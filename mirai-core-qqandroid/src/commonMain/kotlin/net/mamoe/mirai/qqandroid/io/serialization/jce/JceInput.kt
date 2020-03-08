@@ -10,7 +10,6 @@
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
 import kotlinx.io.core.*
-import net.mamoe.mirai.qqandroid.io.serialization.Jce
 import net.mamoe.mirai.qqandroid.io.serialization.JceCharset
 import net.mamoe.mirai.utils.io.readString
 

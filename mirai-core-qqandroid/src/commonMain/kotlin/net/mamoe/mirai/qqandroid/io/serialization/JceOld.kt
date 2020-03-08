@@ -21,7 +21,24 @@ import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.BYTE
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.DOUBLE
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.FLOAT
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.INT
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.JCE_MAX_STRING_LENGTH
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.LIST
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.LONG
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.MAP
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.SHORT
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.SIMPLE_LIST
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRING1
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRING4
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRUCT_BEGIN
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRUCT_END
+import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.ZERO_TYPE
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceHead
+import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
 import net.mamoe.mirai.utils.io.readString
 import net.mamoe.mirai.utils.io.toReadPacket
 
@@ -36,14 +53,14 @@ enum class JceCharset(val kotlinCharset: Charset) {
     UTF8(Charset.forName("UTF8"))
 }
 
-internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<ProtoId>(index)?.id
+internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<JceId>(index)?.id
 
 /**
  * Jce 数据结构序列化和反序列化工具, 能将 kotlinx.serialization 通用的注解标记格式的 `class` 序列化为 [ByteArray]
  */
 @Suppress("DEPRECATION_ERROR")
 @OptIn(InternalSerializationApi::class)
-class Jce private constructor(private val charset: JceCharset, override val context: SerialModule = EmptyModule) :
+class JceOld private constructor(private val charset: JceCharset, override val context: SerialModule = EmptyModule) :
     SerialFormat, BinaryFormat {
 
     private inner class ListWriter(
@@ -101,7 +118,7 @@ class Jce private constructor(private val charset: JceCharset, override val cont
     private open inner class JceEncoder(
         internal val output: BytePacketBuilder
     ) : TaggedEncoder<Int>() {
-        override val context get() = this@Jce.context
+        override val context get() = this@JceOld.context
 
         override fun SerialDescriptor.getTag(index: Int): Int {
             return getSerialId(this, index) ?: error("cannot find @SerialId")
@@ -753,32 +770,16 @@ class Jce private constructor(private val charset: JceCharset, override val cont
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
-        val UTF8 = Jce(JceCharset.UTF8)
-        val GBK = Jce(JceCharset.GBK)
+        val UTF8 = JceOld(JceCharset.UTF8)
+        val GBK = JceOld(JceCharset.GBK)
 
-        fun byCharSet(c: JceCharset): Jce {
+        fun byCharSet(c: JceCharset): JceOld {
             return if (c == JceCharset.UTF8) {
                 UTF8
             } else {
                 GBK
             }
         }
-
-        internal const val BYTE: Byte = 0
-        internal const val DOUBLE: Byte = 5
-        internal const val FLOAT: Byte = 4
-        internal const val INT: Byte = 2
-        internal const val JCE_MAX_STRING_LENGTH = 104857600
-        internal const val LIST: Byte = 9
-        internal const val LONG: Byte = 3
-        internal const val MAP: Byte = 8
-        internal const val SHORT: Byte = 1
-        internal const val SIMPLE_LIST: Byte = 13
-        internal const val STRING1: Byte = 6
-        internal const val STRING4: Byte = 7
-        internal const val STRUCT_BEGIN: Byte = 10
-        internal const val STRUCT_END: Byte = 11
-        internal const val ZERO_TYPE: Byte = 12
 
         private fun Any?.getClassName(): String =
             (if (this == null) Unit::class else this::class).qualifiedName?.split(".")?.takeLast(2)?.joinToString(".")
@@ -815,7 +816,7 @@ class Jce private constructor(private val charset: JceCharset, override val cont
     }
 }
 
-internal inline fun <R> Jce.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) -> R): R? {
+internal inline fun <R> JceOld.JceInput.skipToTagOrNull(tag: Int, block: (JceHead) -> R): R? {
     // println("skipping to $tag start")
     while (true) {
         if (isEndOfInput) { // 读不了了
