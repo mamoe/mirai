@@ -157,7 +157,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             }
         }
 
-        logger.info("Initializing BotNetworkHandler")
+        // logger.info("Initializing BotNetworkHandler")
 
         if (::_network.isInitialized) {
             BotReloginEvent(this, cause).broadcast()
