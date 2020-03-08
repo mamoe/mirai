@@ -13,7 +13,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 
 /**
- * 小程序, 如音乐分享
+ * 小程序分享, 如音乐分享
  */
 @OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.27.0")

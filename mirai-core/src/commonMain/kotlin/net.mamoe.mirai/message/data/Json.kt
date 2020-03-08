@@ -12,10 +12,16 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 
+/**
+ * Json 消息.
+ *
+ * @see LightApp 一些消息实际上是 [LightApp]
+ */
 @SinceMirai("0.27.0")
 @OptIn(MiraiExperimentalAPI::class)
 class JsonMessage(override val content: String) : RichMessage {
     companion object Key : Message.Key<JsonMessage>
+
     // serviceId = 1
     override fun toString(): String = content
 }

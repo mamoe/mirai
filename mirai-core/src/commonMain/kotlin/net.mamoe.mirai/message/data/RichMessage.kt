@@ -9,18 +9,18 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * XML 消息等富文本消息
  *
  * @see XmlMessage
+ * @see JsonMessage
+ * @see LightApp
  */
 @SinceMirai("0.27.0")
 interface RichMessage : MessageContent {
     companion object Key : Message.Key<RichMessage>
 
-    @MiraiExperimentalAPI
     val content: String
 }
