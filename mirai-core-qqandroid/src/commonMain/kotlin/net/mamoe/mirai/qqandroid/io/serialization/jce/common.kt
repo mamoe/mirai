@@ -28,41 +28,33 @@ annotation class JceId(val id: Int)
 @PublishedApi
 internal abstract class JceTag {
     abstract val id: Int
-    abstract val isNullable: Boolean
 
     internal var isSimpleByteArray: Boolean = false
 }
 
-internal sealed class JceTagListElement(
-    override val isNullable: Boolean
-) : JceTag(){
+internal object JceTagListElement : JceTag() {
     override val id: Int get() = 0
-
-    object Nullable : JceTagListElement(true)
-    object NotNull : JceTagListElement(false)
+    override fun toString(): String {
+        return "JceTagListElement"
+    }
 }
 
-internal sealed class JceTagMapEntryKey(
-    override val isNullable: Boolean
-) : JceTag(){
+internal object JceTagMapEntryKey : JceTag() {
     override val id: Int get() = 0
-
-    object Nullable : JceTagMapEntryKey(true)
-    object NotNull : JceTagMapEntryKey(false)
+    override fun toString(): String {
+        return "JceTagMapEntryKey"
+    }
 }
 
-internal sealed class JceTagMapEntryValue(
-    override val isNullable: Boolean
-) : JceTag() {
+internal object JceTagMapEntryValue : JceTag() {
     override val id: Int get() = 1
-
-    object Nullable : JceTagMapEntryValue(true)
-    object NotNull : JceTagMapEntryValue(false)
+    override fun toString(): String {
+        return "JceTagMapEntryValue"
+    }
 }
 
 internal data class JceTagCommon(
-    override val id: Int,
-    override val isNullable: Boolean
+    override val id: Int
 ) : JceTag()
 
 fun JceHead.checkType(type: Byte) {

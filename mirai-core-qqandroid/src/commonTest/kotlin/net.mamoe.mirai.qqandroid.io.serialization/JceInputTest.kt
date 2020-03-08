@@ -3,6 +3,7 @@
 package net.mamoe.mirai.qqandroid.io.serialization
 
 import kotlinx.io.core.buildPacket
+import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
@@ -271,8 +272,13 @@ internal class JceInputTest {
     fun testMapStringByteArray() {
         @Serializable
         data class TestSerializableClassA(
-            @JceId(0) val byteArray: Map<String, ByteArray>
-        )
+            @JceId(0) val map: Map<String, ByteArray>
+        ) {
+            override fun toString(): String {
+                @Suppress("EXPERIMENTAL_API_USAGE")
+                return map.entries.joinToString { "${it.key}=${it.value.contentToString()}" }
+            }
+        }
 
         val input = buildPacket {
             writeJceHead(MAP, 0)
@@ -284,18 +290,20 @@ internal class JceInputTest {
                 it.forEach { (key, value) ->
                     writeJceHead(STRING1, 0)
                     writeByte(key.length.toByte())
-                    writeStringUtf8(key)
+                    writeFully(key.toByteArray())
 
                     writeJceHead(SIMPLE_LIST, 1)
                     writeJceHead(BYTE, 0)
+                    writeJceHead(INT, 0)
+                    writeInt(value.size)
                     writeFully(value)
                 }
             }
         }
 
         assertEquals(
-            TestSerializableClassA(mapOf("str1" to byteArrayOf(2, 3, 4), "str2" to byteArrayOf(2, 3, 4))),
-            Jce.UTF_8.load(TestSerializableClassA.serializer(), input)
+            TestSerializableClassA(mapOf("str1" to byteArrayOf(2, 3, 4), "str2" to byteArrayOf(2, 3, 4))).toString(),
+            Jce.UTF_8.load(TestSerializableClassA.serializer(), input).toString()
         )
     }
 

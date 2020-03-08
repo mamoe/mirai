@@ -166,7 +166,7 @@ internal class JceInput(
 
     // region readers
     fun readJceIntValue(head: JceHead): Int {
-        println("readJceIntValue: $head")
+        //println("readJceIntValue: $head")
         return when (head.type) {
             Jce.ZERO_TYPE -> 0
             Jce.BYTE -> input.readByte().toInt()
@@ -197,7 +197,7 @@ internal class JceInput(
     }
 
     fun readJceByteValue(head: JceHead): Byte {
-        println("readJceByteValue: $head")
+        //println("readJceByteValue: $head")
         return when (head.type) {
             Jce.ZERO_TYPE -> 0
             Jce.BYTE -> input.readByte()
@@ -215,6 +215,7 @@ internal class JceInput(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun readJceStringValue(head: JceHead): String {
+        //println("readJceStringValue: $head")
         return when (head.type) {
             Jce.STRING1 -> input.readString(input.readUByte().toInt(), charset = charset.kotlinCharset)
             Jce.STRING4 -> input.readString(
