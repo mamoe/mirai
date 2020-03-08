@@ -252,7 +252,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
             is QuoteReplyToSend -> {
                 if (forGroup) {
                     check(it is QuoteReplyToSend.ToGroup) {
-                        "sending a quote to group suing QuoteReplyToSend.ToFriend"
+                        "sending a quote to group using QuoteReplyToSend.ToFriend"
                     }
                     if (it.sender is Member) {
                         transformOneMessage(it.createAt())
