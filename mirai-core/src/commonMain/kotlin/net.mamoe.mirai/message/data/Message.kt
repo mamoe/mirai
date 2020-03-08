@@ -86,14 +86,12 @@ interface Message {
      * ```kotlin
      * val a = PlainText("Hello ")
      * val b = PlainText("world!")
-     * val c:MessageChain = a + b
-     * println(c)// "Hello world!"
-     * ```
+     * val c: CombinedMessage = a + b
+     * println(c) // "Hello world!"
      *
-     * ```kotlin
      * val d = PlainText("world!")
-     * val e = c + d;//PlainText + MessageChain
-     * println(c)// "Hello world!"
+     * val e = c + d; // PlainText + CombinedMessage
+     * println(c) // "Hello world!"
      * ```
      */
     @JvmSynthetic // in java they should use `plus` instead
