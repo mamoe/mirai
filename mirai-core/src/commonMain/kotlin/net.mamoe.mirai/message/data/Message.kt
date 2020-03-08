@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
@@ -115,11 +115,13 @@ suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
     return contact.sendMessage(this)
 }
 
-operator fun Message.times(count: Int): MessageChain {
+fun Message.repeat(count: Int): MessageChain {
     return buildMessageChain(count) {
-        add(this@times)
+        add(this@repeat)
     }
 }
+
+inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 interface SingleMessage : Message
 
