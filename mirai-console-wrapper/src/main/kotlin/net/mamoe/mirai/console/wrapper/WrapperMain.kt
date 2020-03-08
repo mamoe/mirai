@@ -9,17 +9,10 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 package net.mamoe.mirai.console.wrapper
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.coroutines.*
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*
-import kotlin.system.exitProcess
 
 
 val contentPath by lazy {
@@ -33,6 +26,12 @@ val contentPath by lazy {
 object WrapperMain {
     @JvmStatic
     fun main(args: Array<String>) {
+        GlobalScope.launch{
+            while (true) {
+                delay(1000*60*5)
+                System.gc()
+            }
+        }
         println("You are running Mirai-Console-Wrapper under " + System.getProperty("user.dir"))
 
         var type = WrapperProperties.determineConsoleType(WrapperProperties.content)

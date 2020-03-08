@@ -39,7 +39,15 @@ inline fun <R> tryNTimesOrQuit(repeat: Int, errorHint: String, block: (Int) -> R
 
 
 suspend inline fun HttpClient.downloadRequest(url: String): ByteReadChannel {
-    return this.get<HttpResponse>(url).content
+    return with(this.get<HttpResponse>(url)){
+        if(this.status.value == 404 || this.status.value == 403){
+            error("File not found")
+        }
+        if(this.headers["status"] !=null && this.headers["status"] == "404"){
+            error("File not found")
+        }
+        this.content
+    }
 }
 
 private val jcenterPath =  "https://jcenter.bintray.com/{group}/{project}/{version}/:{project}-{version}.{extension}"
@@ -77,7 +85,7 @@ suspend fun HttpClient.downloadMaven(
         )
     }.getOrElse {
         downloadRequest(
-            aliyunPath.buildPath(groupName,projectName,version,extension)
+            jcenterPath.buildPath(groupName,projectName,version,extension)
         )
     }
 }
@@ -104,20 +112,13 @@ suspend fun HttpClient.downloadMavenPomAsString(
     version: String
 ):String{
     return kotlin.runCatching {
-        Http.get<String>(
+        this.get<String>(
             aliyunPath.buildPath(groupName,projectName,version,"pom")
         )
     }.getOrElse {
-       try {
-           Http.get(
-               aliyunPath.buildPath(groupName, projectName, version, "pom")
-           )
-       }catch (e:Exception){
-           if(e.message?.contains("404 Not Found") == true) {
-               return ""
-           }
-           throw e
-       }
+        this.get(
+            aliyunPath.buildPath(groupName, projectName, version, "pom")
+        )
     }
 }
 
