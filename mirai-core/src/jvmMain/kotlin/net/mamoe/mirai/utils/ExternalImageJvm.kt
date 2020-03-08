@@ -11,14 +11,14 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.Input
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.copyTo
-import io.ktor.utils.io.errors.IOException
-import io.ktor.utils.io.streams.asOutput
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.copyTo
+import kotlinx.io.errors.IOException
+import kotlinx.io.streams.asOutput
 import net.mamoe.mirai.utils.io.getRandomString
 import java.awt.image.BufferedImage
 import java.io.File
@@ -60,6 +60,7 @@ suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withC
 /**
  * 读取文件头识别图片属性, 然后构造 [ExternalImage]
  */
+@OptIn(MiraiInternalAPI::class)
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
     val input = ImageIO.createImageInputStream(this)
@@ -71,7 +72,7 @@ fun File.toExternalImage(): ExternalImage {
     return ExternalImage(
         width = image.getWidth(0),
         height = image.getHeight(0),
-        md5 = this.inputStream().md5(), // dont change
+        md5 = MiraiPlatformUtils.md5(this.inputStream()), // dont change
         imageFormat = image.formatName,
         input = this.inputStream(),
         filename = this.name

@@ -17,8 +17,8 @@ import kotlin.annotation.AnnotationTarget.*
  * 这些 API 可能会在任意时刻更改, 且不会发布任何预警.
  * 非常不建议在发行版本中使用这些 API.
  */
-@Retention(AnnotationRetention.BINARY)
-@Experimental(level = Experimental.Level.ERROR)
+@Retention(AnnotationRetention.SOURCE)
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
     CLASS,
@@ -35,8 +35,8 @@ annotation class MiraiInternalAPI(
  * 这些 API 不具有稳定性, 且可能会在任意时刻更改.
  * 不建议在发行版本中使用这些 API.
  */
-@Retention(AnnotationRetention.BINARY)
-@Experimental(level = Experimental.Level.WARNING)
+@Retention(AnnotationRetention.SOURCE)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 annotation class MiraiExperimentalAPI(
     val message: String = ""
@@ -48,8 +48,8 @@ annotation class MiraiExperimentalAPI(
  * 这些 API 不具有稳定性, 可能会在任意时刻更改, 并且效率非常低下.
  * 非常不建议在发行版本中使用这些 API.
  */
-@Retention(AnnotationRetention.BINARY)
-@Experimental(level = Experimental.Level.WARNING)
+@Retention(AnnotationRetention.SOURCE)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 annotation class MiraiDebugAPI(
     val message: String = ""
@@ -59,6 +59,6 @@ annotation class MiraiDebugAPI(
  * 标记一个自 Mirai 某个版本起才支持的 API.
  */
 @Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
-@Retention(AnnotationRetention.BINARY)
+@Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
 annotation class SinceMirai(val version: String)

@@ -16,25 +16,27 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.userAgent
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.copyAndClose
-import io.ktor.utils.io.core.Input
-import io.ktor.utils.io.core.readAvailable
-import io.ktor.utils.io.core.readInt
-import io.ktor.utils.io.core.use
-import io.ktor.utils.io.pool.useInstance
+import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.io.InputStream
+import kotlinx.io.core.Input
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readAvailable
+import kotlinx.io.core.use
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.copyAndClose
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
 import net.mamoe.mirai.utils.io.withUse
+import kotlinx.serialization.InternalSerializationApi
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 @Suppress("SpellCheckingInspection")
 internal suspend fun HttpClient.postImage(
     htcmd: String,
@@ -67,7 +69,7 @@ internal suspend fun HttpClient.postImage(
         override val contentType: ContentType = ContentType.Image.Any
         override val contentLength: Long = inputSize
 
-        override suspend fun writeTo(channel: io.ktor.utils.io.ByteWriteChannel) {
+        override suspend fun writeTo(channel: ByteWriteChannel) {
             ByteArrayPool.useInstance { buffer: ByteArray ->
                 when (imageInput) {
                     is Input -> {
@@ -92,9 +94,9 @@ internal suspend fun HttpClient.postImage(
     }
 } == HttpStatusCode.OK
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal object HighwayHelper {
-    @UseExperimental(InternalCoroutinesApi::class)
+    @OptIn(InternalCoroutinesApi::class)
     suspend fun uploadImage(
         client: QQAndroidClient,
         serverIp: String,

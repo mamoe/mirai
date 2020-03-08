@@ -9,11 +9,14 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.utils.io.core.toByteArray
+import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import net.mamoe.mirai.utils.MiraiPlatformUtils.localIpAddress
+import net.mamoe.mirai.utils.MiraiPlatformUtils.md5
 import net.mamoe.mirai.utils.io.getRandomByteArray
 import net.mamoe.mirai.utils.io.getRandomString
 import java.io.File
@@ -21,21 +24,22 @@ import java.io.File
 /**
  * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
  */
-@UseExperimental(UnstableDefault::class)
+@OptIn(UnstableDefault::class)
 fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return SystemDeviceInfo(context).also {
-            this.writeText(Json.plain.stringify(SystemDeviceInfo.serializer(), it))
+            this.writeText(JSON.stringify(SystemDeviceInfo.serializer(), it))
         }
     }
-    return Json.nonstrict.parse(DeviceInfoData.serializer(), this.readText()).also {
+    return JSON.parse(DeviceInfoData.serializer(), this.readText()).also {
         it.context = context
     }
 }
 
+private val JSON = Json(JsonConfiguration.Stable)
 
 @Serializable
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     actual constructor(context: Context) : this() {
         this.context = context

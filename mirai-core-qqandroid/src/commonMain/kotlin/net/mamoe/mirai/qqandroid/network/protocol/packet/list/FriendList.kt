@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.list
 
-import io.ktor.utils.io.core.ByteReadPacket
+import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
@@ -123,7 +123,8 @@ internal class FriendList {
         }
     }
 
-    internal object GetFriendGroupList : OutgoingPacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
+    internal object GetFriendGroupList :
+        OutgoingPacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
         class Response(
             val totalFriendCount: Short,

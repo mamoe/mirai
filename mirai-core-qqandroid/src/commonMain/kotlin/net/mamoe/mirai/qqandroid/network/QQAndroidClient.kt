@@ -11,9 +11,9 @@
 
 package net.mamoe.mirai.qqandroid.network
 
-import io.ktor.utils.io.core.*
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
+import kotlinx.io.core.*
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.RawAccountIdUse
 import net.mamoe.mirai.data.OnlineStatus
@@ -40,7 +40,7 @@ import net.mamoe.mirai.utils.io.*
  DOMAINS
  Pskey: "openmobile.qq.com"
  */
-@UseExperimental(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
+@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
 @PublishedApi
 internal open class QQAndroidClient(
     context: Context,
@@ -158,8 +158,8 @@ internal open class QQAndroidClient(
      */
     val uin: Long get() = _uin
 
-    @UseExperimental(RawAccountIdUse::class)
-    @Suppress("PropertyName")
+    @OptIn(RawAccountIdUse::class)
+    @Suppress("PropertyName", "DEPRECATION_ERROR")
     internal var _uin: Long = bot.account.id
 
     var t530: ByteArray? = null
@@ -191,8 +191,9 @@ internal open class QQAndroidClient(
     lateinit var t104: ByteArray
 }
 
+@OptIn(MiraiInternalAPI::class)
 internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
-    md5(getRandomByteArray(16) + guid)
+    MiraiPlatformUtils.md5(getRandomByteArray(16) + guid)
 
 
 internal class ReserveUinInfo(
@@ -315,7 +316,7 @@ internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) :
 internal typealias PSKeyMap = MutableMap<String, PSKey>
 internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
 
-internal inline fun Input.readUShortLVString(): String = io.ktor.utils.io.core.String(this.readUShortLVByteArray())
+internal inline fun Input.readUShortLVString(): String = kotlinx.io.core.String(this.readUShortLVByteArray())
 
 internal inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 

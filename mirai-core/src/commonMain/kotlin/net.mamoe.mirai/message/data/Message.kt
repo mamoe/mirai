@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
@@ -86,14 +86,12 @@ interface Message {
      * ```kotlin
      * val a = PlainText("Hello ")
      * val b = PlainText("world!")
-     * val c:MessageChain = a + b
-     * println(c)// "Hello world!"
-     * ```
+     * val c: CombinedMessage = a + b
+     * println(c) // "Hello world!"
      *
-     * ```kotlin
      * val d = PlainText("world!")
-     * val e = c + d;//PlainText + MessageChain
-     * println(c)// "Hello world!"
+     * val e = c + d; // PlainText + CombinedMessage
+     * println(c) // "Hello world!"
      * ```
      */
     @JvmSynthetic // in java they should use `plus` instead
@@ -106,13 +104,22 @@ interface Message {
     operator fun plus(another: Message): CombinedMessage = this.followedBy(another)
 
     operator fun plus(another: String): CombinedMessage = this.followedBy(another.toMessage())
+
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): CombinedMessage = this.followedBy(another.toString().toMessage())
 }
 
-suspend fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
+suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
     return contact.sendMessage(this)
 }
+
+fun Message.repeat(count: Int): MessageChain {
+    return buildMessageChain(count) {
+        add(this@repeat)
+    }
+}
+
+inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 interface SingleMessage : Message
 

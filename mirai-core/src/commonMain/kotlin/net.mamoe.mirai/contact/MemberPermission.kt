@@ -82,7 +82,7 @@ expect class PermissionDeniedException : IllegalStateException {
  *
  * @throws PermissionDeniedException
  */
-@UseExperimental(MiraiExperimentalAPI::class)
+@OptIn(MiraiExperimentalAPI::class)
 inline fun Group.checkBotPermission(
     required: MemberPermission,
     lazyMessage: () -> String = {
@@ -99,7 +99,7 @@ inline fun Group.checkBotPermission(
  *
  * @throws PermissionDeniedException
  */
-@UseExperimental(MiraiExperimentalAPI::class)
+@OptIn(MiraiExperimentalAPI::class)
 inline fun Group.checkBotPermissionOperator(
     lazyMessage: () -> String = {
         "Permission denied: required ${MemberPermission.ADMINISTRATOR} or ${MemberPermission.OWNER}, got actual $botPermission for $bot in group $id"

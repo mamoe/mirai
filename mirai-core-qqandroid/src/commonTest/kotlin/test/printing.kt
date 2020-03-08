@@ -11,11 +11,11 @@
 
 package test
 
-import io.ktor.utils.io.core.ByteReadPacket
-import io.ktor.utils.io.core.Input
-import io.ktor.utils.io.core.readAvailable
-import io.ktor.utils.io.core.use
-import io.ktor.utils.io.pool.useInstance
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.readAvailable
+import kotlinx.io.core.use
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
@@ -35,7 +35,7 @@ inline fun ByteArray.debugPrintThis(name: String): ByteArray {
     return this
 }
 
-@UseExperimental(ExperimentalContracts::class, MiraiInternalAPI::class)
+@OptIn(ExperimentalContracts::class, MiraiInternalAPI::class)
 inline fun <R> Input.debugIfFail(name: String = "", onFail: (ByteArray) -> ByteReadPacket = { it.toReadPacket() }, block: ByteReadPacket.() -> R): R {
 
     contract {

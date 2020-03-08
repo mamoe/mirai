@@ -9,13 +9,13 @@
 
 package net.mamoe.mirai.utils.io
 
-import io.ktor.utils.io.core.ByteReadPacket
-import io.ktor.utils.io.core.Closeable
-import io.ktor.utils.io.core.ExperimentalIoApi
-import io.ktor.utils.io.streams.readPacketAtMost
-import io.ktor.utils.io.streams.writePacket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Closeable
+import kotlinx.io.core.ExperimentalIoApi
+import kotlinx.io.streams.readPacketAtMost
+import kotlinx.io.streams.writePacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -80,7 +80,7 @@ actual class PlatformSocket : Closeable {
         }
     }
 
-    @UseExperimental(ExperimentalIoApi::class)
+    @OptIn(ExperimentalIoApi::class)
     actual suspend fun connect(serverHost: String, serverPort: Int) {
         withContext(Dispatchers.IO) {
             socket = Socket(serverHost, serverPort)

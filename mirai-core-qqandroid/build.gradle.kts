@@ -8,9 +8,12 @@ plugins {
     id("com.jfrog.bintray") version "1.8.4-jetbrains-3"
 }
 
+apply(plugin = "com.github.johnrengelman.shadow")
+
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
+val kotlinXIoVersion: String by rootProject.ext
 val coroutinesIoVersion: String by rootProject.ext
 
 
@@ -66,6 +69,7 @@ kotlin {
                 api(kotlin("stdlib", kotlinVersion))
 
                 api("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+                api(kotlinx("io", kotlinXIoVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-core", coroutinesVersion))
             }
@@ -73,6 +77,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(kotlinx("serialization-runtime-common", serializationVersion))
+                api(kotlinx("serialization-protobuf-common", serializationVersion))
             }
         }
         commonTest {
@@ -86,6 +91,7 @@ kotlin {
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 dependencies {
+                    api(kotlinx("serialization-protobuf", serializationVersion))
                 }
             }
 

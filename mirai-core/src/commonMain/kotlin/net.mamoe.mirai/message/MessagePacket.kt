@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.message
 
-import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -33,7 +33,7 @@ import kotlin.jvm.JvmName
  * 一条从服务器接收到的消息事件.
  * 请查看各平台的 `actual` 实现的说明.
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
 
 /**

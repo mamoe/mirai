@@ -11,9 +11,10 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.core.toByteArray
+import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 import kotlin.annotation.AnnotationTarget.*
 
 @MiraiInternalAPI
@@ -23,9 +24,11 @@ data class BotAccount(
      */
     @RawAccountIdUse
     val id: Long,
+    @MiraiExperimentalAPI
+    @MiraiInternalAPI
     val passwordMd5: ByteArray // md5
 ) {
-    constructor(id: Long, passwordPlainText: String) : this(id, md5(passwordPlainText.toByteArray()))
+    constructor(id: Long, passwordPlainText: String) : this(id, MiraiPlatformUtils.md5(passwordPlainText.toByteArray()))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -52,5 +55,5 @@ data class BotAccount(
 @MiraiInternalAPI
 @Retention(AnnotationRetention.SOURCE)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
-@Experimental(level = Experimental.Level.WARNING)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 annotation class RawAccountIdUse

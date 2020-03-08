@@ -23,6 +23,7 @@ import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
@@ -40,7 +41,7 @@ internal class MessageSourceFromServer(
             ?: error("cannot find sequenceId from ImMsgBody.SourceMsg")).toLong().shl(32) or
                 delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!.and(0xFFFFFFFF)
 
-    override val toUin: Long get() = delegate.toUin
+    override val toUin: Long get() = delegate.toUin // always 0
 
     override suspend fun ensureSequenceIdAvailable() {
         // nothing to do
@@ -118,38 +119,16 @@ internal class MessageSourceFromMsg(
     }
 
     private fun toJceDataImplForGroup(): ImMsgBody.SourceMsg {
-
-        val groupUin = Group.calculateGroupUinByGroupCode(groupId)
-
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(delegate.msgHead.msgSeq),
             senderUin = delegate.msgHead.fromUin,
-            toUin = groupUin,
+            toUin = 0,
             flag = 1,
             elems = delegate.msgBody.richText.elems,
             type = 0,
             time = delegate.msgHead.msgTime,
-            pbReserve = SourceMsg.ResvAttr(
-                origUids = messageRandom.toLong() and 0xffFFffFF
-            ).toByteArray(SourceMsg.ResvAttr.serializer()),
-            srcMsg = MsgComm.Msg(
-                msgHead = MsgComm.MsgHead(
-                    fromUin = delegate.msgHead.fromUin, // qq
-                    toUin = groupUin, // group
-                    msgType = delegate.msgHead.msgType, // 82?
-                    c2cCmd = delegate.msgHead.c2cCmd,
-                    msgSeq = delegate.msgHead.msgSeq,
-                    msgTime = delegate.msgHead.msgTime,
-                    msgUid = messageRandom.toLong() and 0xffFFffFF, // ok
-                    groupInfo = MsgComm.GroupInfo(groupCode = groupId),
-                    isSrcMsg = true
-                ),
-                msgBody = ImMsgBody.MsgBody(
-                    richText = ImMsgBody.RichText(
-                        elems = elems
-                    )
-                )
-            ).toByteArray(MsgComm.Msg.serializer())
+            pbReserve = EMPTY_BYTE_ARRAY,
+            srcMsg = EMPTY_BYTE_ARRAY
         )
     }
 
@@ -253,7 +232,7 @@ internal class MessageSourceFromSendFriend(
     val sequenceId: Int,
     override val originalMessage: MessageChain
 ) : MessageSourceFromSend() {
-    @UseExperimental(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val id: Long
         get() = sequenceId.toLong().shl(32) or
                 messageRandom.toLong().and(0xFFFFFFFF)
@@ -277,12 +256,12 @@ internal class MessageSourceFromSendGroup(
 ) : MessageSourceFromSend() {
     private lateinit var sequenceIdDeferred: Deferred<Int>
 
-    @UseExperimental(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val id: Long
         get() = sequenceIdDeferred.getCompleted().toLong().shl(32) or
                 messageRandom.toLong().and(0xFFFFFFFF)
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     internal fun startWaitingSequenceId(coroutineScope: CoroutineScope) {
         sequenceIdDeferred =
             coroutineScope.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(

@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.contact
 
-import io.ktor.utils.io.core.Input
 import kotlinx.coroutines.Dispatchers
+import kotlinx.io.core.Input
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaHappyAPI
 import net.mamoe.mirai.event.events.*

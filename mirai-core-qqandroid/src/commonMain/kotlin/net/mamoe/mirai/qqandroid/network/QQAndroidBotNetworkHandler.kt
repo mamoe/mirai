@@ -9,12 +9,15 @@
 
 package net.mamoe.mirai.qqandroid.network
 
-import io.ktor.utils.io.core.*
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.use
 import net.mamoe.mirai.data.MultiPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
@@ -45,7 +48,7 @@ import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime
 
 @Suppress("MemberVisibilityCanBePrivate")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(bot.coroutineContext[Job])
@@ -67,14 +70,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         _packetReceiverJob?.join()
 
         return this.launch(CoroutineName("Incoming Packet Receiver")) {
-            while (channel.isOpen) {
+            while (channel.isOpen && isActive) {
                 val rawInput = try {
                     channel.read()
                 } catch (e: CancellationException) {
                     return@launch
                 } catch (e: Throwable) {
                     if (this@QQAndroidBotNetworkHandler.isActive) {
-                        BotOfflineEvent.Dropped(bot, e).broadcast()
+                        bot.launch { BotOfflineEvent.Dropped(bot, e).broadcast() }
                     }
                     return@launch
                 }
@@ -141,10 +144,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         continue@mainloop
                     }
                     is WtLogin.Login.LoginPacketResponse.Captcha.Slider -> {
-                        var ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url)
-                        if (ticket == null) {
-                            ticket = ""
-                        }
+                        val ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url).orEmpty()
                         response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
                     }
@@ -183,7 +183,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()
 
-    @UseExperimental(MiraiExperimentalAPI::class, ExperimentalTime::class)
+    @OptIn(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
@@ -338,6 +338,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     suspend fun doHeartBeat(): Exception? {
         val lastException: Exception?
         try {
+            kotlin.runCatching {
+                Heartbeat.Alive(bot.client)
+                    .sendAndExpect<Heartbeat.Alive.Response>(
+                        timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
+                        retry = 2
+                    )
+                return null
+            }
             Heartbeat.Alive(bot.client)
                 .sendAndExpect<Heartbeat.Alive.Response>(
                     timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
@@ -372,10 +380,17 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
-    @UseExperimental(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun parsePacketAsync(input: Input): Job {
-        return this.launch(start = CoroutineStart.ATOMIC) {
-            input.use { parsePacket(it) }
+        return this.launch(
+            start = CoroutineStart.ATOMIC
+        ) {
+            try {
+                input.use { parsePacket(it) }
+            } catch (e: Exception) {
+                // 傻逼协程吞异常
+                logger.error(e)
+            }
         }
     }
 

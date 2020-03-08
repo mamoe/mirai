@@ -32,7 +32,7 @@ import net.mamoe.mirai.utils.WeakRefProperty
  * @author Him188moe
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@UseExperimental(MiraiInternalAPI::class, JavaHappyAPI::class)
+@OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
 actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
     /**
      * 这个联系人所属 [Bot].

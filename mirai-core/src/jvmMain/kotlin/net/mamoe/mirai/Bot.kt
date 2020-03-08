@@ -2,7 +2,7 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
@@ -24,7 +24,9 @@ import net.mamoe.mirai.utils.*
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@UseExperimental(MiraiInternalAPI::class, LowLevelAPI::class, MiraiExperimentalAPI::class, JavaHappyAPI::class)
+@OptIn(
+    MiraiInternalAPI::class, LowLevelAPI::class, MiraiExperimentalAPI::class, JavaHappyAPI::class
+)
 actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIAccessor, BotJavaHappyAPI() {
     actual companion object {
         /**
@@ -63,12 +65,6 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * 在 Android 实现为 `android.content.Context`
      */
     actual abstract val context: Context
-
-    /**
-     * 账号信息
-     */
-    @MiraiInternalAPI
-    actual abstract val account: BotAccount
 
     /**
      * QQ 号码. 实际类型为 uint
@@ -244,6 +240,6 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      */
     actual abstract fun close(cause: Throwable?)
 
-    @UseExperimental(LowLevelAPI::class, MiraiExperimentalAPI::class)
+    @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
     actual final override fun toString(): String = "Bot(${uin})"
 }

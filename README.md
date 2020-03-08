@@ -61,7 +61,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ### 使用者
 
-- [mirai-console](https://github.com/mamoe/mirai/tree/master/mirai-console) 支持插件 **本模块正在完善**
+- [mirai-console](https://github.com/mamoe/mirai-console) 支持插件 **本模块正在完善**
 
 ### 我是其他平台的使用者
 

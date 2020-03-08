@@ -58,4 +58,8 @@ class CombinedMessage(
     override fun toString(): String {
         return element.toString() + left.toString()
     }
+
+    fun isFlat(): Boolean {
+        return element is SingleMessage && left is SingleMessage
+    }
 }

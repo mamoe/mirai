@@ -11,10 +11,10 @@
 
 package net.mamoe.mirai
 
-import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
@@ -32,6 +32,12 @@ import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
 /**
+ * 登录, 返回 [this]
+ */
+suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
+// 任何人都能看到这个方法
+
+/**
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
  * Mirai 为多账号设计, 可同时维护多个机器人.
  *
@@ -41,7 +47,7 @@ import kotlin.jvm.JvmSynthetic
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@UseExperimental(MiraiInternalAPI::class, LowLevelAPI::class)
+@OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     companion object {
         /**
@@ -71,12 +77,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     abstract val context: Context
 
     /**
-     * 账号信息
-     */
-    @MiraiInternalAPI
-    abstract val account: BotAccount
-
-    /**
      * QQ 号码. 实际类型为 uint
      */
     abstract val uin: Long
@@ -95,7 +95,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     // region contacts
 
     /**
-     * [_lowLevelNewQQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewQQ] 实例
+     * [QQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewQQ] 实例
      */
     abstract val selfQQ: QQ
 
@@ -172,6 +172,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.relogin]
      *
      * @throws LoginFailedException
+     * @see alsoLogin
      */
     @JvmName("loginSuspend")
     @JvmSynthetic
@@ -241,7 +242,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      */
     abstract fun close(cause: Throwable? = null)
 
-    @UseExperimental(LowLevelAPI::class, MiraiExperimentalAPI::class)
+    @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
     final override fun toString(): String
 }
 

@@ -13,11 +13,11 @@
 
 package net.mamoe.mirai.utils.io
 
-import io.ktor.utils.io.charsets.Charset
-import io.ktor.utils.io.charsets.Charsets
-import io.ktor.utils.io.core.*
-import io.ktor.utils.io.pool.useInstance
 import kotlinx.io.OutputStream
+import kotlinx.io.charsets.Charset
+import kotlinx.io.charsets.Charsets
+import kotlinx.io.core.*
+import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.contracts.ExperimentalContracts
@@ -26,8 +26,9 @@ import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
+import kotlinx.serialization.InternalSerializationApi
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 fun ByteReadPacket.copyTo(outputStream: OutputStream) {
     ByteArrayPool.useInstance {
         while (this.isNotEmpty) {
@@ -50,7 +51,7 @@ inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 
-@UseExperimental(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class)
 inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)

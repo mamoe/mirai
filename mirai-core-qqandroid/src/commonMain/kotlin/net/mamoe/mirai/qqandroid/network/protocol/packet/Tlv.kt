@@ -9,12 +9,16 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
-import io.ktor.utils.io.core.*
+import kotlinx.io.core.BytePacketBuilder
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.toByteArray
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.protocol.LoginType
 import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.io.*
-import net.mamoe.mirai.utils.md5
 import kotlin.random.Random
 
 /**
@@ -73,6 +77,7 @@ fun BytePacketBuilder.t18(
     } shouldEqualsTo 22
 }
 
+@OptIn(MiraiInternalAPI::class)
 fun BytePacketBuilder.t106(
     appId: Long = 16L,
     subAppId: Long = 537062845L,
@@ -93,7 +98,7 @@ fun BytePacketBuilder.t106(
     guid?.requireSize(16)
 
     writeShortLVPacket {
-        encryptAndWrite(md5(passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt().toByteArray())) {
+        encryptAndWrite(MiraiPlatformUtils.md5(passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt().toByteArray())) {
             writeShort(4)//TGTGTVer
             writeInt(Random.nextInt())
             writeInt(5)//ssoVer
@@ -318,12 +323,13 @@ fun BytePacketBuilder.t144(
     }
 }
 
+@OptIn(MiraiInternalAPI::class)
 fun BytePacketBuilder.t109(
     androidId: ByteArray
 ) {
     writeShort(0x109)
     writeShortLVPacket {
-        writeFully(md5(androidId))
+        writeFully(MiraiPlatformUtils.md5(androidId))
     } shouldEqualsTo 16
 }
 
@@ -553,21 +559,23 @@ fun BytePacketBuilder.t400(
     }
 }
 
+@OptIn(MiraiInternalAPI::class)
 fun BytePacketBuilder.t187(
     macAddress: ByteArray
 ) {
     writeShort(0x187)
     writeShortLVPacket {
-        writeFully(md5(macAddress)) // may be md5
+        writeFully(MiraiPlatformUtils.md5(macAddress)) // may be md5
     }
 }
 
+@OptIn(MiraiInternalAPI::class)
 fun BytePacketBuilder.t188(
     androidId: ByteArray
 ) {
     writeShort(0x188)
     writeShortLVPacket {
-        writeFully(md5(androidId))
+        writeFully(MiraiPlatformUtils.md5(androidId))
     } shouldEqualsTo 16
 }
 

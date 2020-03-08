@@ -15,9 +15,12 @@ import java.util.*
 /**
  * JVM 控制台日志实现
  */
-actual open class PlatformLogger @JvmOverloads internal actual constructor(
-    override val identity: String?
+actual open class PlatformLogger constructor(
+    override val identity: String? = "Mirai",
+    open val output: (String) -> Unit
 ) : MiraiLoggerPlatformBase() {
+    actual constructor(identity: String?) : this(identity, ::println)
+
     override fun verbose0(message: String?) = println(message, LoggerTextFormat.RESET)
     override fun verbose0(message: String?, e: Throwable?) {
         if (message != null) verbose(message.toString())
@@ -52,9 +55,9 @@ actual open class PlatformLogger @JvmOverloads internal actual constructor(
         val time = SimpleDateFormat("HH:mm:ss", Locale.SIMPLIFIED_CHINESE).format(Date())
 
         if (identity == null) {
-            println("$color$time : $value")
+            output("$color$time : $value")
         } else {
-            println("$color$identity $time : $value")
+            output("$color$identity $time : $value")
         }
     }
 }

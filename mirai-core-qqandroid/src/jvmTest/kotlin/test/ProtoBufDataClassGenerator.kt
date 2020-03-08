@@ -28,7 +28,7 @@ fun main() {
     println(
         File(
             """
-            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\oidb\cmd0x857
+            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\msgrevoke
         """.trimIndent()
         )
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
@@ -161,7 +161,7 @@ data class PBFieldInfo(
     }
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 fun String.generateProtoBufDataClass(): GeneratedClass {
     if (this.indexOf("extends") == -1) {
         val javaClassname = substringBetween("class", "{")
@@ -367,7 +367,7 @@ fun String.getNumericalValue(): Int? {
     return this.filter { it in '0'..'9' }.toDoubleOrNull()?.toInt()
 }
 
-@UseExperimental(MiraiDebugAPI::class)
+@OptIn(MiraiDebugAPI::class)
 fun ProtoType.mapToKotlinType(): String {
     return when (this) {
         ProtoType.VAR_INT -> "Int"

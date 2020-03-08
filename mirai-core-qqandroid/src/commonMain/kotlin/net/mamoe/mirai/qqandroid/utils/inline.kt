@@ -21,7 +21,7 @@ import kotlin.jvm.JvmName
 /**
  * Inline the block
  */
-@UseExperimental(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class)
 @PublishedApi
 internal inline fun <R> inline(block: () -> R): R {
     contract {

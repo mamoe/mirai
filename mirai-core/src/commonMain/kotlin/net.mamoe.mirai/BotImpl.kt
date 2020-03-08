@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai
 
@@ -27,7 +27,7 @@ import kotlin.coroutines.CoroutineContext
 /*
  * 泛型 N 不需要向外(接口)暴露.
  */
-@UseExperimental(MiraiExperimentalAPI::class)
+@OptIn(MiraiExperimentalAPI::class)
 @MiraiInternalAPI
 abstract class BotImpl<N : BotNetworkHandler> constructor(
     context: Context,
@@ -40,12 +40,13 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             ?: CoroutineExceptionHandler { _, e -> logger.error("An exception was thrown under a coroutine of Bot", e) })
     override val context: Context by context.unsafeWeakRef()
 
-    @Suppress("CanBePrimaryConstructorProperty") // for logger
+    @OptIn(LowLevelAPI::class)
+    @Suppress("CanBePrimaryConstructorProperty", "OverridingDeprecatedMember") // for logger
     final override val account: BotAccount = account
 
-    @UseExperimental(RawAccountIdUse::class)
+    @OptIn(RawAccountIdUse::class)
     override val uin: Long
-        get() = account.id
+        get() = this.account.id
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
     init {
@@ -156,7 +157,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             }
         }
 
-        logger.info("Initializing BotNetworkHandler")
+        // logger.info("Initializing BotNetworkHandler")
 
         if (::_network.isInitialized) {
             BotReloginEvent(this, cause).broadcast()
@@ -172,7 +173,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     // endregion
 
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     override fun close(cause: Throwable?) {
         if (!this.botJob.isActive) {
             // already cancelled

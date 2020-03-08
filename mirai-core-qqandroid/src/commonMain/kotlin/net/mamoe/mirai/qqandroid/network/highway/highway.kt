@@ -11,19 +11,24 @@
 
 package net.mamoe.mirai.qqandroid.network.highway
 
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.io.InputStream
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.core.buildPacket
+import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.*
+import kotlinx.serialization.InternalSerializationApi
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal fun createImageDataPacketSequence( // RequestDataTrans
     client: QQAndroidClient,
     command: String,
@@ -73,7 +78,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                     dataoffset = offset,
                     filesize = dataSize.toLong(),
                     serviceticket = uKey,
-                    md5 = net.mamoe.mirai.utils.md5(chunkedInput.buffer, 0, chunkedInput.bufferSize),
+                    md5 = MiraiPlatformUtils.md5(chunkedInput.buffer, 0, chunkedInput.bufferSize),
                     fileMd5 = fileMd5,
                     flag = 0,
                     rtcode = 0

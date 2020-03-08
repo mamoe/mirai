@@ -17,6 +17,7 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRef
 
 /**
@@ -25,7 +26,7 @@ import net.mamoe.mirai.utils.WeakRef
  * 使用低级的 API 无法带来任何安全和便捷保障.
  * 仅在某些使用结构化 API 可能影响性能的情况下使用这些低级 API.
  */
-@Experimental
+@RequiresOptIn
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 annotation class LowLevelAPI
@@ -37,6 +38,14 @@ annotation class LowLevelAPI
 @Suppress("FunctionName", "unused")
 @LowLevelAPI
 interface LowLevelBotAPIAccessor {
+    /**
+     * 账号信息
+     */
+    @Deprecated("将来会做修改", level = DeprecationLevel.ERROR)
+    @MiraiExperimentalAPI
+    @LowLevelAPI
+    @MiraiInternalAPI
+    abstract val account: BotAccount
 
     /**
      * 构造一个 [_lowLevelNewQQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).

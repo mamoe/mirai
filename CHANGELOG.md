@@ -2,12 +2,29 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
-## `0.25.0` 还未发布
+## `0.27.0` 2020/3/8
+- 支持 `XML`, `Json`, `LightApp` 等 `RichMessage`
+
+## `0.26.2` 2020/3/8
+- 新增 `MessageChain.repeat` 与 `MessageChain.times`
+- JVM 平台下 `PlatformLogger` 可重定向输出
+- 修复 `NullMessageChain.equals` 判断不正确的问题
+- 新增 `PlainText.of` 以应对一些特殊情况
+
+## `0.26.1` 2020/3/8
+- 重写 Jce 序列化, 提升反序列性能
+- 更新 `Kotlin` 版本到 1.3.70
+- 更新 `kotlinx.coroutines`, `atomicfu`, `kotlinx.coroutines` 依赖版本
+
+## `0.26.0` 2020/3/7
+- 使用 `kotlinx.io` 而不是 `ktor.io`
+- 修复 #111, #108, #116, #112
+
+## `0.25.0` 2020/3/6
 - 适配 8.2.7 版本（2020 年 3 月）协议
 - 全面的 `Image` 类型: Online/Offline Image, Friend/Group Image
 - 修复查询图片链接时好友图片链接错误的问题
-- Kotlin 1.3.70
-- 修复事件处理错误 (#107)
+- 修复 bugs: #105, #106, #107
 
 ## `0.24.1` 2020/3/3
 - 修复 `Member` 的委托 `QQ` 弱引用被释放的问题
