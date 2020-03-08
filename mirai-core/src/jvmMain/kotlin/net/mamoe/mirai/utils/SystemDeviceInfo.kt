@@ -15,6 +15,8 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
+import net.mamoe.mirai.utils.MiraiPlatformUtils.localIpAddress
+import net.mamoe.mirai.utils.MiraiPlatformUtils.md5
 import net.mamoe.mirai.utils.io.getRandomByteArray
 import net.mamoe.mirai.utils.io.getRandomString
 import java.io.File
@@ -37,7 +39,7 @@ fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
 private val JSON = Json(JsonConfiguration.Stable)
 
 @Serializable
-@OptIn(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     actual constructor(context: Context) : this() {
         this.context = context

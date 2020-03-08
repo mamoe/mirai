@@ -78,6 +78,7 @@ internal class QQImpl(
         return MessageReceipt(source, this, null)
     }
 
+    @OptIn(MiraiInternalAPI::class)
     override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
@@ -111,7 +112,7 @@ internal class QQImpl(
                     ImageUploadEvent.Succeed(this@QQImpl, image, it).broadcast()
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
-                    Http.postImage(
+                    MiraiPlatformUtils.Http.postImage(
                         "0x6ff0070",
                         bot.uin,
                         null,

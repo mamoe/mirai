@@ -222,7 +222,7 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override suspend fun openChannel(image: Image): ByteReadChannel {
-        return Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
+        return MiraiPlatformUtils.Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
     }
 }
 

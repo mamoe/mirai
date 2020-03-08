@@ -15,6 +15,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -23,20 +24,25 @@ import kotlin.jvm.JvmName
  *
  * @see buildXMLMessage
  */
-@MiraiExperimentalAPI
-inline class XMLMessage(val stringValue: String) : Message, MessageContent {
-    override fun followedBy(tail: Message): Nothing = error("XMLMessage Message cannot be followed")
-    override fun toString(): String = stringValue
+@SinceMirai("0.27.0")
+@OptIn(MiraiExperimentalAPI::class)
+class XmlMessage constructor(override val content: String) : RichMessage {
+    companion object Key : Message.Key<XmlMessage>
+
+    // override val serviceId: Int get() = 60
+
+    override fun toString(): String = content
 }
 
 /**
  * 构造一条 XML 消息
  */
-@MiraiExperimentalAPI("还未支持")
-inline fun buildXMLMessage(block: @XMLDsl XMLMessageBuilder.() -> Unit): XMLMessage =
-    XMLMessage(XMLMessageBuilder().apply(block).text)
+@SinceMirai("0.27.0")
+@MiraiExperimentalAPI
+inline fun buildXMLMessage(block: @XMLDsl XMLMessageBuilder.() -> Unit): XmlMessage =
+    XmlMessage(XMLMessageBuilder().apply(block).text)
 
-@Suppress("NOTHING_TO_INLINE")
+@SinceMirai("0.27.0")
 @XMLDsl
 class ItemBuilder(
     var bg: Int = 0,
@@ -46,21 +52,20 @@ class ItemBuilder(
     internal val builder: StringBuilder = StringBuilder()
     val text: String get() = "<item bg='$bg' layout='$layout'>$builder</item>"
 
-    inline fun summary(text: String, color: String = "#FFFFFF") {
+    fun summary(text: String, color: String = "#000000") {
         this.builder.append("<summary color='$color'>$text</summary>")
     }
 
-    inline fun title(text: String, size: Int = 18, color: String = "#FFFFFF") {
+    fun title(text: String, size: Int = 25, color: String = "#000000") {
         this.builder.append("<title size='$size' color='$color'>$text</title>")
     }
 
-    inline fun picture(coverUrl: String) {
+    fun picture(coverUrl: String) {
         this.builder.append("<picture cover='$coverUrl'/>")
     }
 }
 
 @XMLDsl
-@Suppress("NOTHING_TO_INLINE")
 class XMLMessageBuilder(
     var templateId: Int = 1,
     var serviceId: Int = 1,
@@ -70,7 +75,7 @@ class XMLMessageBuilder(
      */
     var actionData: String = "",
     /**
-     * 摘要
+     * 摘要, 在官方客户端内消息列表中显示
      */
     var brief: String = "",
     var flag: Int = 3,
@@ -89,11 +94,11 @@ class XMLMessageBuilder(
                 "</msg>"
 
     @XMLDsl
-    inline fun item(block: @XMLDsl ItemBuilder.() -> Unit) {
+    fun item(block: @XMLDsl ItemBuilder.() -> Unit) {
         builder.append(ItemBuilder().apply(block).text)
     }
 
-    inline fun source(name: String, iconURL: String = "") {
+    fun source(name: String, iconURL: String = "") {
         sourceName = name
         sourceIconURL = iconURL
     }
@@ -101,4 +106,4 @@ class XMLMessageBuilder(
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
 @DslMarker
-internal annotation class XMLDsl
+annotation class XMLDsl

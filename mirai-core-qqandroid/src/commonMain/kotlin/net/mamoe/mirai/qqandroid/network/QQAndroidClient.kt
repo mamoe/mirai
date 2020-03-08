@@ -191,8 +191,9 @@ internal open class QQAndroidClient(
     lateinit var t104: ByteArray
 }
 
+@OptIn(MiraiInternalAPI::class)
 internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
-    md5(getRandomByteArray(16) + guid)
+    MiraiPlatformUtils.md5(getRandomByteArray(16) + guid)
 
 
 internal class ReserveUinInfo(

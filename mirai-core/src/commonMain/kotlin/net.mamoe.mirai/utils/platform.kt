@@ -12,7 +12,6 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.client.HttpClient
-import kotlinx.io.core.toByteArray
 
 /**
  * 时间戳
@@ -21,30 +20,30 @@ expect val currentTimeMillis: Long
 
 inline val currentTimeSeconds: Long get() = currentTimeMillis / 1000
 
-
 /**
- * 解 zip 压缩
+ * 仅供内部使用的工具类.
+ * 不写为扩展是为了避免污染命名空间.
  */
-expect fun ByteArray.unzip(offset: Int = 0, length: Int = this.size - offset): ByteArray
+@MiraiInternalAPI
+expect object MiraiPlatformUtils {
+    fun unzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
 
-/**
- * MD5 算法
- *
- * @return 16 bytes
- */
-expect fun md5(byteArray: ByteArray, offset: Int = 0, length: Int = byteArray.size - offset): ByteArray
+    fun zip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
 
-inline fun md5(str: String): ByteArray = md5(str.toByteArray())
 
-/**
- * Localhost 解析
- */
-expect fun localIpAddress(): String
+    fun md5(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
 
-/**
- * Ktor HttpClient. 不同平台使用不同引擎.
- */
-expect val Http: HttpClient
+    inline fun md5(str: String): ByteArray
+
+    fun localIpAddress(): String
+
+    /**
+     * Ktor HttpClient. 不同平台使用不同引擎.
+     */
+    @MiraiInternalAPI
+    val Http: HttpClient
+}
+
 
 @Suppress("DuplicatedCode") // false positive. `this` is not the same for `List<Byte>` and `ByteArray`
 internal fun ByteArray.checkOffsetAndLength(offset: Int, length: Int) {

@@ -84,7 +84,7 @@ internal class WtLogin {
                         t8(2052)
                         t104(client.t104)
                         t116(150470524, 66560)
-                        t401(md5(client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402))
+                        t401(MiraiPlatformUtils.md5(client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402))
                     }
                 }
             }

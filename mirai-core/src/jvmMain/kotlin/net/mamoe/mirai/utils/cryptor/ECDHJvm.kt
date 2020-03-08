@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.utils.cryptor
 
-import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -58,6 +59,7 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
                 .genKeyPair())
         }
 
+        @OptIn(MiraiInternalAPI::class)
         actual fun calculateShareKey(
             privateKey: ECDHPrivateKey,
             publicKey: ECDHPublicKey
@@ -65,7 +67,7 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             val instance = KeyAgreement.getInstance("ECDH", "BC")
             instance.init(privateKey)
             instance.doPhase(publicKey, true)
-            return md5(instance.generateSecret())
+            return MiraiPlatformUtils.md5(instance.generateSecret())
         }
 
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {

@@ -11,8 +11,8 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
@@ -60,6 +60,7 @@ suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withC
 /**
  * 读取文件头识别图片属性, 然后构造 [ExternalImage]
  */
+@OptIn(MiraiInternalAPI::class)
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
     val input = ImageIO.createImageInputStream(this)
@@ -71,7 +72,7 @@ fun File.toExternalImage(): ExternalImage {
     return ExternalImage(
         width = image.getWidth(0),
         height = image.getHeight(0),
-        md5 = this.inputStream().md5(), // dont change
+        md5 = MiraiPlatformUtils.md5(this.inputStream()), // dont change
         imageFormat = image.formatName,
         input = this.inputStream(),
         filename = this.name

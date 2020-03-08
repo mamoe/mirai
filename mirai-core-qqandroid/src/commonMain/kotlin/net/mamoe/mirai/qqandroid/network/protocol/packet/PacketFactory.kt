@@ -342,7 +342,7 @@ internal object KnownPacketFactories {
             1 -> {
                 input.discardExact(4)
                 input.useBytes { data, length ->
-                    data.unzip(length = length).let {
+                    MiraiPlatformUtils.unzip(data, 0, length).let {
                         val size = it.toInt()
                         if (size == it.size || size == it.size + 4) {
                             it.toReadPacket(offset = 4)
