@@ -153,6 +153,7 @@ object PluginManager {
 
             //real load
             logger.info("loading plugin " + description.name)
+            lastPluginName = description.name
 
             try {
                 val pluginClass = try {
@@ -170,7 +171,6 @@ object PluginManager {
                         .loadClass("${description.basePath}Kt")
                 }
                 return try {
-                    lastPluginName = description.name
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
                     val plugin: PluginBase =
                         subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
