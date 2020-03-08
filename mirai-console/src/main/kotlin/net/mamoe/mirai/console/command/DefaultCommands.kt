@@ -19,6 +19,7 @@ import net.mamoe.mirai.console.utils.removeManager
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.getFriendOrNull
+import net.mamoe.mirai.utils.FileBasedDeviceInfo
 import net.mamoe.mirai.utils.SimpleLogger
 import java.util.*
 
@@ -116,6 +117,7 @@ object DefaultCommands {
                 try {
                     MiraiConsole.frontEnd.prePushBot(qqNumber)
                     val bot = Bot(qqNumber, qqPassword) {
+                        +FileBasedDeviceInfo
                         this.loginSolver = MiraiConsole.frontEnd.createLoginSolver()
                         this.botLoggerSupplier = {
                             SimpleLogger("BOT $qqNumber]") { _, message, e ->
