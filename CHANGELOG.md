@@ -2,6 +2,11 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.26.1` 2020/3/8
+- 重写 Jce 序列化, 提升反序列性能
+- 更新 `Kotlin` 版本到 1.3.70
+- 更新 `kotlinx.coroutines`, `atomicfu`, `kotlinx.coroutines` 依赖版本
+
 ## `0.26.0` 2020/3/7
 - 使用 `kotlinx.io` 而不是 `ktor.io`
 - 修复 #111, #108, #116, #112
