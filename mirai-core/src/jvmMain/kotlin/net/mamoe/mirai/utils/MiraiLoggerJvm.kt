@@ -15,7 +15,7 @@ import java.util.*
 /**
  * JVM 控制台日志实现
  */
-actual open class PlatformLogger @JvmOverloads constructor(
+actual open class PlatformLogger constructor(
     override val identity: String? = "Mirai",
     open val output: (String) -> Unit
 ) : MiraiLoggerPlatformBase() {
