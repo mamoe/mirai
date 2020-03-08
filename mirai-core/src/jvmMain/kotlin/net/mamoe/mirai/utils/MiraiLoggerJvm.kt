@@ -17,7 +17,7 @@ import java.util.*
  */
 actual open class PlatformLogger @JvmOverloads constructor(
     override val identity: String? = "Mirai",
-    val output: (String) -> Unit
+    open val output: (String) -> Unit
 ) : MiraiLoggerPlatformBase() {
     actual constructor(identity: String?) : this(identity, ::println)
 
