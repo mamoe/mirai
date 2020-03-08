@@ -73,13 +73,13 @@ IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后�
 #### IDE准备
 安装idea插件[mirai-console-intellij](https://github.com/mamoe/mirai-console-intellij), 这是一个用于快速创建Mirai Console插件的IDE插件 <br>
 1: 自动安装<br>
-打开IDEA, 点击Preferences, 点击插件[Plugins], 市场[Market place], 搜索Mirai, 安装Mirai-Console<br>
+打开IDEA, 点击Preferences[Ctrl+Alt+Shift+S]或[Cmd+Alt+Shift+S], 点击插件[Plugins], 市场[Market place], 搜索Mirai, 安装Mirai-Console<br>
 预计2020/3/11号后才可以在market里搜索到<br>
 <br>
 
 2: 手动安装<br>
 前往[这里](https://github.com/mamoe/mirai-console-intellij/releases)下载最新的插件[.jar]<BR>
-打开IDEA, 点击Preferences, 按下图操作, 选择下载的jar 然后重启IDE<br>
+打开IDEA, 点击Preferences[Ctrl+Alt+Shift+S]或[Cmd+Alt+Shift+S], 按下图操作, 选择下载的jar 然后重启IDE<br>
 ![如何手动安装](assets/ideaInstall.png)
 
 <br>
