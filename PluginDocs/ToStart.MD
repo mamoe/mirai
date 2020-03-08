@@ -88,30 +88,30 @@ IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后�
 1： 点击New Project<br>
 2： 在左侧选择Mirai Console Plugin<br>
 3： 根据下图辅助填写信息<br>
-![填写信息1](assets/ideaplugin1.jpg)
+![填写信息1](assets/ideaplugin1.jpg)<br>
 4:  点击[next]<br>
 5:  根据下图辅助继续填写信息<br>
-![填写信息2](assets/ideaplugin2.jpg)
+![填写信息2](assets/ideaplugin2.jpg)<br>
 6:  点击[next]<br>
 7:  最后一页与本地储存位置有关, 如不懂使用默认即可<br>
 8:  点击[Finish]稍作等待<br>
 9:  等待这个页面加载出来<br>
-![how it look like](assets/ideaplugin3.png)
+![外观1](assets/ideaplugin3.png)<br>
 10: 点击右下↘的Import gradle project或Import Maven Project<br>
 11: 等待进度条结束<br>
-![bar](assets/ideaplugin4.png)
+![进度条](assets/ideaplugin4.png)<br>
 12: 等待这个页面加载出来(这是第一页选的Java语言, kotlin类似)<br>
-![how it look like2](assets/ideaplugin5.png)
+![外观2](assets/ideaplugin5.png)<br>
 13: 插件环境正式完成<br>
 
 
 #### 如何打包插件
 1: 根据下图帮助打开gradle window[maven同理]<br>
-![namnamnam](assets/ideaplugin6.jpg)
+![打开window](assets/ideaplugin6.jpg)<br>
 2: 根据下图帮助点击JAR<br>
-![NMSLNMSL](assets/ideaplugin7.png)
+![找菜单](assets/ideaplugin7.png)<br>
 3: 在这里找到成品, 完成<br>
-![NMSLNMSL](assets/ideaplugin8.png)
+![点击](assets/ideaplugin8.png)<br>
 
 PS: 如果要打包有依赖lib的插件, 请继续向后读<br>
 
