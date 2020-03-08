@@ -80,7 +80,7 @@ actual class PlatformSocket : Closeable {
         }
     }
 
-    @UseExperimental(ExperimentalIoApi::class)
+    @OptIn(ExperimentalIoApi::class)
     actual suspend fun connect(serverHost: String, serverPort: Int) {
         withContext(Dispatchers.IO) {
             socket = Socket(serverHost, serverPort)

@@ -9,6 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
+@file:Suppress("NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
@@ -30,8 +31,17 @@ inline class PlainText(val stringValue: String) : Message, MessageContent {
     companion object Key : Message.Key<PlainText> {
         @JvmStatic
         val Empty = PlainText("")
+
         @JvmStatic
         val Null = PlainText("null")
+
+        inline fun of(value: String): PlainText {
+            return PlainText(value)
+        }
+
+        inline fun of(value: CharSequence): PlainText {
+            return PlainText(value)
+        }
     }
 }
 

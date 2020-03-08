@@ -21,7 +21,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 actual object QQAndroid : BotFactory {
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     @JvmName("newBot")
     actual override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
         return QQAndroidBot(context, BotAccount(qq, password), configuration)
@@ -30,7 +30,7 @@ actual object QQAndroid : BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     @JvmName("newBot")
     actual override fun Bot(
         context: Context,

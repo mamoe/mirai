@@ -34,7 +34,7 @@ internal class OutgoingPacket constructor(
 internal val KEY_16_ZEROS = ByteArray(16)
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal inline fun OutgoingPacketFactory<*>.buildOutgoingUniPacket(
     client: QQAndroidClient,
     bodyType: Byte = 1, // 1: PB?
@@ -66,7 +66,7 @@ internal inline fun OutgoingPacketFactory<*>.buildOutgoingUniPacket(
 }
 
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal inline fun IncomingPacketFactory<*>.buildResponseUniPacket(
     client: QQAndroidClient,
     bodyType: Byte = 1, // 1: PB?
@@ -96,7 +96,7 @@ internal inline fun IncomingPacketFactory<*>.buildResponseUniPacket(
     })
 }
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal inline fun BytePacketBuilder.writeUniPacket(
     commandName: String,
     unknownData: ByteArray,
@@ -129,7 +129,7 @@ internal val NO_ENCRYPT: ByteArray = ByteArray(0)
 /**
  * com.tencent.qphone.base.util.CodecWarpper#encodeRequest(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, byte[], int, int, java.lang.String, byte, byte, byte, byte[], byte[], boolean)
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal inline fun OutgoingPacketFactory<*>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
     bodyType: Byte,
@@ -167,7 +167,7 @@ internal inline fun OutgoingPacketFactory<*>.buildLoginOutgoingPacket(
 
 private inline val BRP_STUB get() = ByteReadPacket.Empty
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal inline fun BytePacketBuilder.writeSsoPacket(
     client: QQAndroidClient,
     subAppId: Long,
@@ -233,7 +233,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
     writeIntLVPacket(lengthOffset = { it + 4 }, builder = body)
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
+@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun BytePacketBuilder.writeOicqRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,

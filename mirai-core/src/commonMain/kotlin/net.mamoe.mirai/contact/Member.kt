@@ -25,7 +25,7 @@ import kotlin.time.ExperimentalTime
  * 群成员.
  */ // 不要删除多平台结构, kotlin bug
 @Suppress("INAPPLICABLE_JVM_NAME")
-@UseExperimental(MiraiInternalAPI::class, JavaHappyAPI::class)
+@OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
 expect abstract class Member() : MemberJavaHappyAPI {
     /**
      * 所在的群.

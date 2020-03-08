@@ -25,19 +25,19 @@ import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toReadPacket
 import java.nio.ByteBuffer
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 @Suppress("FunctionName")
 internal fun QQAndroidBot(account: BotAccount, configuration: BotConfiguration): QQAndroidBot =
     QQAndroidBot(ContextImpl(), account, configuration)
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal actual class QQAndroidBot actual constructor(
     context: Context,
     account: BotAccount,
     configuration: BotConfiguration
 ) : QQAndroidBotBase(context, account, configuration)
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 @Suppress("DEPRECATION")
 internal actual fun ByteReadChannel.toKotlinByteReadChannel(): kotlinx.coroutines.io.ByteReadChannel {
     return object : kotlinx.coroutines.io.ByteReadChannel {
@@ -145,7 +145,7 @@ internal actual fun ByteReadChannel.toKotlinByteReadChannel(): kotlinx.coroutine
             return this@toKotlinByteReadChannel.readRemaining(limit, headerSizeHint).readBytes().toReadPacket()
         }
 
-        @UseExperimental(ExperimentalIoApi::class)
+        @OptIn(ExperimentalIoApi::class)
         @ExperimentalIoApi
         override fun readSession(consumer: ReadSession.() -> Unit) {
             @Suppress("DEPRECATION")

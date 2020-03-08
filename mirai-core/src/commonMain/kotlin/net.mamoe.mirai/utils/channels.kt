@@ -18,6 +18,7 @@ import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.readAvailable
 import kotlinx.io.OutputStream
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.io.core.Output
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.utils.io.ByteArrayPool
@@ -29,8 +30,9 @@ import kotlin.jvm.JvmName
 /**
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
+@OptIn(InternalSerializationApi::class)
 suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     ByteArrayPool.useInstance { buffer ->
         var size: Int
         while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -43,7 +45,7 @@ suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 suspend fun ByteReadChannel.copyTo(dst: Output) {
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     ByteArrayPool.useInstance { buffer ->
         var size: Int
         while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -56,7 +58,7 @@ suspend fun ByteReadChannel.copyTo(dst: Output) {
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel) {
-    @UseExperimental(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class)
     ByteArrayPool.useInstance { buffer ->
         var size: Int
         while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -86,9 +88,10 @@ suspend fun ByteReadChannel.copyTo(dst: kotlinx.coroutines.io.ByteWriteChannel) 
 /**
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
-suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
+@OptIn(InternalSerializationApi::class)
+suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) { // 在 JVM 这个 API 不是 internal 的
     try {
-        @UseExperimental(MiraiInternalAPI::class)
+        @OptIn(MiraiInternalAPI::class)
         ByteArrayPool.useInstance { buffer ->
             var size: Int
             while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -105,7 +108,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) {
  */
 suspend fun ByteReadChannel.copyAndClose(dst: Output) {
     try {
-        @UseExperimental(MiraiInternalAPI::class)
+        @OptIn(MiraiInternalAPI::class)
         ByteArrayPool.useInstance { buffer ->
             var size: Int
             while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -123,7 +126,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: Output) {
 suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
-        @UseExperimental(MiraiInternalAPI::class)
+        @OptIn(MiraiInternalAPI::class)
         ByteArrayPool.useInstance { buffer ->
             var size: Int
             while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -142,7 +145,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
 suspend fun ByteReadChannel.copyAndClose(dst: io.ktor.utils.io.ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
-        @UseExperimental(MiraiInternalAPI::class)
+        @OptIn(MiraiInternalAPI::class)
         ByteArrayPool.useInstance { buffer ->
             var size: Int
             while (this.readAvailable(buffer).also { size = it } > 0) {

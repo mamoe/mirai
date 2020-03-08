@@ -381,7 +381,7 @@ object EmptyMessageChain : MessageChain by MessageChainImplByIterable(emptyList(
  */
 object NullMessageChain : MessageChain {
     override fun toString(): String = "NullMessageChain"
-    override fun equals(other: Any?): Boolean = other == null
+    override fun equals(other: Any?): Boolean = other === this
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
     override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, element = tail)
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")

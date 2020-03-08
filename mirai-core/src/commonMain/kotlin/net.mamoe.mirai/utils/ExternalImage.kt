@@ -23,6 +23,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.io.toUHexString
+import kotlinx.serialization.InternalSerializationApi
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
@@ -70,6 +71,7 @@ class ExternalImage private constructor(
         filename: String
     ) : this(width, height, md5, imageFormat, input as Any, input.remaining, filename)
 
+    @OptIn(InternalSerializationApi::class)
     constructor(
         width: Int,
         height: Int,

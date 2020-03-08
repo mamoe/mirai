@@ -142,7 +142,7 @@ internal class LockFreeLinkedListTest {
         list.size shouldBeEqualTo 0
     }
 
-    @UseExperimental(ExperimentalUnsignedTypes::class)
+    @OptIn(ExperimentalUnsignedTypes::class)
     @Test
     fun withInlineClassElements() {
         val list = LockFreeLinkedList<UInt>()
@@ -270,7 +270,7 @@ internal class LockFreeLinkedListTest {
      */
 }
 
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @MiraiExperimentalAPI
 internal suspend inline fun <E : LockFreeLinkedList<*>> E.concurrentDo(numberOfCoroutines: Int, times: Int, crossinline todo: E.() -> Unit) =
     coroutineScope {

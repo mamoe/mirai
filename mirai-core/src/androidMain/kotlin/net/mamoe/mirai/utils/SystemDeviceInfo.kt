@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.utils
 
 import android.annotation.SuppressLint
@@ -18,22 +20,26 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import java.io.File
 
 /**
  * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
  */
-@UseExperimental(UnstableDefault::class)
+@OptIn(UnstableDefault::class)
 fun File.loadAsDeviceInfo(context: Context): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return SystemDeviceInfo(context).also {
-            this.writeText(Json.plain.stringify(SystemDeviceInfo.serializer(), it))
+            this.writeText(JSON.stringify(SystemDeviceInfo.serializer(), it))
         }
     }
-    return Json.nonstrict.parse(DeviceInfoData.serializer(), this.readText()).also {
+    return JSON.parse(DeviceInfoData.serializer(), this.readText()).also {
         it.context = context
     }
 }
+
+@OptIn(UnstableDefault::class)
+private val JSON = Json(JsonConfiguration.Default)
 
 /**
  * 部分引用指向 [Build].

@@ -142,7 +142,7 @@ sealed class MessageRecallEvent : BotEvent {
     ) : MessageRecallEvent(), GroupOperableEvent, Packet
 }
 
-@UseExperimental(MiraiExperimentalAPI::class)
+@OptIn(MiraiExperimentalAPI::class)
 val MessageRecallEvent.GroupRecall.author: Member
     get() = if (authorId == bot.uin) group.botAsMember else group[authorId]
 

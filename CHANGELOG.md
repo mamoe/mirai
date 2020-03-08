@@ -2,6 +2,17 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.26.2` 2020/3/8
+- 新增 `MessageChain.repeat` 与 `MessageChain.times`
+- JVM 平台下 `PlatformLogger` 可重定向输出
+- 修复 `NullMessageChain.equals` 判断不正确的问题
+- 新增 `PlainText.of` 以应对一些特殊情况
+
+## `0.26.1` 2020/3/8
+- 重写 Jce 序列化, 提升反序列性能
+- 更新 `Kotlin` 版本到 1.3.70
+- 更新 `kotlinx.coroutines`, `atomicfu`, `kotlinx.coroutines` 依赖版本
+
 ## `0.26.0` 2020/3/7
 - 使用 `kotlinx.io` 而不是 `ktor.io`
 - 修复 #111, #108, #116, #112
