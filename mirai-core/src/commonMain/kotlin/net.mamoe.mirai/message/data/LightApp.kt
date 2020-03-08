@@ -13,14 +13,12 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 
 /**
- * XML 消息等富文本消息
- *
- * @see XmlMessage
+ * 小程序, 如音乐分享
  */
+@OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.27.0")
-interface RichMessage : MessageContent {
-    companion object Key : Message.Key<RichMessage>
+class LightApp constructor(override val content: String) : RichMessage {
+    companion object Key : Message.Key<LightApp>
 
-    @MiraiExperimentalAPI
-    val content: String
+    override fun toString(): String = content
 }

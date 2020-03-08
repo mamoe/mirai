@@ -16,9 +16,6 @@ import net.mamoe.mirai.utils.SinceMirai
 @OptIn(MiraiExperimentalAPI::class)
 class JsonMessage(override val content: String) : RichMessage {
     companion object Key : Message.Key<JsonMessage>
-
-    override val serviceId: Int
-        get() = 1
-
+    // serviceId = 1
     override fun toString(): String = content
 }

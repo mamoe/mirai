@@ -239,10 +239,21 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
                 elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
             }
+            is LightApp -> elements.add(
+                ImMsgBody.Elem(
+                    lightApp = ImMsgBody.LightAppElem(
+                        data = byteArrayOf(1) + MiraiPlatformUtils.zip(it.content.toByteArray())
+                    )
+                )
+            )
             is RichMessage -> elements.add(
                 ImMsgBody.Elem(
                     richMsg = ImMsgBody.RichMsg(
-                        serviceId = it.serviceId,
+                        serviceId = when (it) {
+                            is XmlMessage -> 60
+                            is JsonMessage -> 1
+                            else -> error("unsupported RichMessage")
+                        },
                         template1 = byteArrayOf(1) + MiraiPlatformUtils.zip(it.content.toByteArray())
                     )
                 )
@@ -274,6 +285,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
     this.forEach(::transformOneMessage)
 
     if (this.any<RichMessage>()) {
+        // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
         elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes())))
     } else elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
 
@@ -343,7 +355,7 @@ internal class OnlineFriendImageImpl(
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
 
-    if (this.msgHead.fromUin == 1040400290L){
+    if (this.msgHead.fromUin == 1040400290L) {
         println(this._miraiContentToString())
     }
 
@@ -407,6 +419,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                         message.add(At._lowLevelConstructAtInstance(id, it.text.str))
                     }
                 }
+            }
+            it.lightApp != null -> {
+                val content = MiraiPlatformUtils.unzip(it.lightApp.data, 1).encodeToString()
+                message.add(LightApp(content))
             }
             it.richMsg != null -> {
                 println(this._miraiContentToString())

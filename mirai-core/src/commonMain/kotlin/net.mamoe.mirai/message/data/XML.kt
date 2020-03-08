@@ -29,7 +29,7 @@ import kotlin.jvm.JvmName
 class XmlMessage constructor(override val content: String) : RichMessage {
     companion object Key : Message.Key<XmlMessage>
 
-    override val serviceId: Int get() = 60
+    // override val serviceId: Int get() = 60
 
     override fun toString(): String = content
 }

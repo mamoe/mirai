@@ -133,6 +133,7 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
     XmlMessage -> first<XmlMessage>()
     JsonMessage -> first<JsonMessage>()
     RichMessage -> first<RichMessage>()
+    LightApp -> first<LightApp>()
     else -> null
 } as M?
 
