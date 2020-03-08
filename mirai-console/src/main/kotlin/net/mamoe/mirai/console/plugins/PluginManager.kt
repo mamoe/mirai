@@ -44,7 +44,7 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.onCommand(command, sender, args)
-            }catch (e:Exception){
+            }catch (e:Throwable){
                 logger.info(e)
             }
         }
@@ -200,7 +200,7 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.onLoad()
-            }catch (ignored:Exception){
+            }catch (ignored  : Throwable){
                 if(ignored is CancellationException) {
                     logger.info(ignored)
                     logger.info(it.pluginName + "Failed to load, disabling it")
@@ -212,7 +212,7 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.enable()
-            }catch (ignored:Exception){
+            }catch (ignored : Throwable){
                 logger.info(ignored)
                 logger.info(it.pluginName + "Failed to enable, disabling it")
                 if(ignored is CancellationException) {

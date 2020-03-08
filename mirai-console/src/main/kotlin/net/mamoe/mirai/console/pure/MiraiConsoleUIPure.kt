@@ -15,7 +15,10 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.concurrent.thread
+
 
 class MiraiConsoleUIPure : MiraiConsoleUI {
     private var requesting = false
@@ -35,8 +38,11 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
         }
     }
 
+    val sdf by lazy{
+        SimpleDateFormat("HH:mm:ss")
+    }
     override fun pushLog(identity: Long, message: String) {
-        println("\u001b[0m$message")
+        println("\u001b[0m " + sdf.format(Date()) +" $message")
     }
 
     override fun prePushBot(identity: Long) {
