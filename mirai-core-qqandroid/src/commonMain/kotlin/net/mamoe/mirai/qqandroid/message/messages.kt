@@ -273,9 +273,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
     }
     this.forEach(::transformOneMessage)
 
-    // if(this.any<QuoteReply>()){
-    elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
-    // }
+    if (this.any<RichMessage>()) {
+        elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes())))
+    } else elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
 
     return elements
 }
@@ -343,6 +343,10 @@ internal class OnlineFriendImageImpl(
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
 
+    if (this.msgHead.fromUin == 1040400290L){
+        println(this._miraiContentToString())
+    }
+
     return buildMessageChain(elements.size + 1) {
         +MessageSourceFromMsg(delegate = this@toMessageChain)
         elements.joinToMessageChain(this)
@@ -405,26 +409,18 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                 }
             }
             it.richMsg != null -> {
+                println(this._miraiContentToString())
+                val content = MiraiPlatformUtils.unzip(it.richMsg.template1, 1).encodeToString()
                 when (it.richMsg.serviceId) {
-                    60 -> message.add(
-                        XMLMessage(
-                            content = MiraiPlatformUtils.unzip(it.richMsg.template1, 1).encodeToString()
-                        )
-                    )
+                    1 -> message.add(JsonMessage(content))
+                    60 -> message.add(XmlMessage(content))
                     else -> {
                         @Suppress("DEPRECATION")
                         MiraiLogger.debug {
-                            "unknown richMsg.serviceId: ${it.richMsg.serviceId}, content=${it.richMsg.template1.contentToString()}, \ntryUnzip=${
-                            kotlin.runCatching {
-                                MiraiPlatformUtils.unzip(it.richMsg.template1, 1).encodeToString()
-                            }.getOrElse { "<failed>" }
-                            }"
+                            "unknown richMsg.serviceId: ${it.richMsg.serviceId}, content=${it.richMsg.template1.contentToString()}, \ntryUnzip=${content}"
                         }
                     }
                 }
-            }
-            else -> {
-                println(it._miraiContentToString())
             }
         }
     }

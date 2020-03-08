@@ -61,7 +61,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
-     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage], [QuoteReply].
+     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply].
      * 仅供 `Java` 使用
      */
     @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
@@ -73,7 +73,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     }
 
     /**
-     * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage], [QuoteReply].
+     * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply].
      * 仅供 `Java` 使用
      */
     @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
@@ -88,7 +88,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
 // region accessors
 
 /**
- * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XMLMessage], [QuoteReply]
+ * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply]
  */
 @JvmSynthetic
 inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
@@ -130,6 +130,9 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
     Face -> first<Face>()
     QuoteReply -> first<QuoteReply>()
     MessageSource -> first<MessageSource>()
+    XmlMessage -> first<XmlMessage>()
+    JsonMessage -> first<JsonMessage>()
+    RichMessage -> first<RichMessage>()
     else -> null
 } as M?
 
