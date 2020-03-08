@@ -94,6 +94,7 @@ abstract class DeviceInfo {
     }
 }
 
+@OptIn(MiraiInternalAPI::class)
 @Serializable
 class DeviceInfoData(
     override val display: ByteArray,
@@ -122,7 +123,8 @@ class DeviceInfoData(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     override val ipAddress: ByteArray
-        get() = localIpAddress().split(".").map { it.toUByte().toByte() }.takeIf { it.size == 4 }?.toByteArray()
+        get() = MiraiPlatformUtils.localIpAddress().split(".").map { it.toUByte().toByte() }.takeIf { it.size == 4 }
+            ?.toByteArray()
             ?: byteArrayOf()
     override val androidId: ByteArray get() = display
 
@@ -138,7 +140,9 @@ class DeviceInfoData(
 /**
  * Defaults "%4;7t>;28<fc.5*6".toByteArray()
  */
-fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray = md5(androidId + macAddress)
+@OptIn(MiraiInternalAPI::class)
+fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
+    MiraiPlatformUtils.md5(androidId + macAddress)
 
 /*
 fun DeviceInfo.toOidb0x769DeviceInfo() : Oidb0x769.DeviceInfo = Oidb0x769.DeviceInfo(

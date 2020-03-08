@@ -23,9 +23,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
 import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.localIpAddress
 
 @Suppress("EnumEntryName")
 internal enum class RegPushReason {
@@ -89,6 +90,7 @@ internal class StatSvc {
 
         private const val subAppId = 537062845L
 
+        @OptIn(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
@@ -138,7 +140,7 @@ internal class StatSvc {
                                 strOSVer = client.device.version.release.encodeToString(),
 
                                 uOldSSOIp = 0,
-                                uNewSSOIp = localIpAddress().split(".").foldIndexed(0L) { index: Int, acc: Long, s: String ->
+                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().split(".").foldIndexed(0L) { index: Int, acc: Long, s: String ->
                                     acc or ((s.toLong() shl (index * 16)))
                                 },
                                 strVendorName = "MIUI",

@@ -9,18 +9,14 @@
 
 package net.mamoe.mirai.qqandroid.message
 
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
+import kotlinx.io.core.*
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiDebugAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.utils.io.toByteArray
@@ -222,7 +218,7 @@ private val atAllData = ImMsgBody.Elem(
     )
 )
 
-@OptIn(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
 
@@ -243,6 +239,14 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
                 elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
             }
+            is RichMessage -> elements.add(
+                ImMsgBody.Elem(
+                    richMsg = ImMsgBody.RichMsg(
+                        serviceId = it.serviceId,
+                        template1 = byteArrayOf(1) + MiraiPlatformUtils.zip(it.content.toByteArray())
+                    )
+                )
+            )
             is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
@@ -399,6 +403,28 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                         message.add(At._lowLevelConstructAtInstance(id, it.text.str))
                     }
                 }
+            }
+            it.richMsg != null -> {
+                when (it.richMsg.serviceId) {
+                    60 -> message.add(
+                        XMLMessage(
+                            content = MiraiPlatformUtils.unzip(it.richMsg.template1, 1).encodeToString()
+                        )
+                    )
+                    else -> {
+                        @Suppress("DEPRECATION")
+                        MiraiLogger.debug {
+                            "unknown richMsg.serviceId: ${it.richMsg.serviceId}, content=${it.richMsg.template1.contentToString()}, \ntryUnzip=${
+                            kotlin.runCatching {
+                                MiraiPlatformUtils.unzip(it.richMsg.template1, 1).encodeToString()
+                            }.getOrElse { "<failed>" }
+                            }"
+                        }
+                    }
+                }
+            }
+            else -> {
+                println(it._miraiContentToString())
             }
         }
     }

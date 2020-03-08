@@ -44,6 +44,7 @@ fun Bitmap.toExternalImage(formatName: String = "gif"): ExternalImage {
 /**
  * 读取文件头识别图片属性, 然后构造 [ExternalImage]
  */
+@OptIn(MiraiInternalAPI::class)
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
     val input = BitmapFactory.decodeFile(this.absolutePath)
@@ -52,7 +53,7 @@ fun File.toExternalImage(): ExternalImage {
     return ExternalImage(
         width = input.width,
         height = input.height,
-        md5 = this.inputStream().use { it.md5() },
+        md5 = this.inputStream().use { MiraiPlatformUtils.md5(it) },
         imageFormat = this.nameWithoutExtension,
         input = this.inputStream().asInput(IoBuffer.Pool),
         inputSize = this.length(),
