@@ -54,18 +54,12 @@ actual object MiraiPlatformUtils {
         data.checkOffsetAndLength(offset, length)
         if (length == 0) return ByteArray(0)
 
-        val inflater = Deflater()
-        inflater.reset()
-        ByteArrayOutputStream().use { output ->
-            inflater.setInput(data, offset, length)
-            ByteArrayPool.useInstance {
-                while (!inflater.finished()) {
-                    output.write(it, 0, inflater.deflate(it))
-                }
-            }
+        val deflater = Deflater()
+        deflater.setInput(data, offset, length)
+        deflater.finish()
 
-            inflater.end()
-            return output.toByteArray()
+        ByteArrayPool.useInstance {
+            return it.take(deflater.deflate(it)).toByteArray().also { deflater.end() }
         }
     }
 
