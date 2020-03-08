@@ -355,10 +355,6 @@ internal class OnlineFriendImageImpl(
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
 
-    if (this.msgHead.fromUin == 1040400290L) {
-        println(this._miraiContentToString())
-    }
-
     return buildMessageChain(elements.size + 1) {
         +MessageSourceFromMsg(delegate = this@toMessageChain)
         elements.joinToMessageChain(this)
@@ -425,7 +421,6 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                 message.add(LightApp(content))
             }
             it.richMsg != null -> {
-                println(this._miraiContentToString())
                 val content = MiraiPlatformUtils.unzip(it.richMsg.template1, 1).encodeToString()
                 when (it.richMsg.serviceId) {
                     1 -> message.add(JsonMessage(content))
