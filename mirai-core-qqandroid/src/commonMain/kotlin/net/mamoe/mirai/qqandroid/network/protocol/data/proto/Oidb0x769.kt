@@ -7,16 +7,16 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.network.protocol.packet.oidb.oidb0x769
+package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
-import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 
 class Oidb0x769 {
     @Serializable
     class RequestBody(
-        @SerialId(1) val rpt_config_list: List<ConfigSeq>
+        @ProtoId(1) val rpt_config_list: List<ConfigSeq>
        // @SerialId(2) val msg_device_info: DeviceInfo,
        // @SerialId(3) val str_info: String = "",
        // @SerialId(4) val province: String,
@@ -27,20 +27,20 @@ class Oidb0x769 {
 
     @Serializable
     class QueryUinPackageUsageReq(
-        @SerialId(1) val type: Int,
-        @SerialId(2) val uinFileSize: Long = 0
+        @ProtoId(1) val type: Int,
+        @ProtoId(2) val uinFileSize: Long = 0
     ): ProtoBuf
 
     @Serializable
     class ConfigSeq(
-        @SerialId(1) val type: Int, // uint
-        @SerialId(2) val version: Int // uint
+        @ProtoId(1) val type: Int, // uint
+        @ProtoId(2) val version: Int // uint
     ): ProtoBuf
 
     @Serializable
     class DeviceInfo(
-        @SerialId(1) val brand: String,
-        @SerialId(2) val model: String
+        @ProtoId(1) val brand: String,
+        @ProtoId(2) val model: String
         //@SerialId(3) val os: OS,
         //@SerialId(4) val cpu: CPU,
         //@SerialId(5) val memory: Memory,
@@ -51,45 +51,45 @@ class Oidb0x769 {
 
     @Serializable
     class OS(
-        @SerialId(1) val type: Int = 1,
-        @SerialId(2) val version: String,
-        @SerialId(3) val sdk: String,
-        @SerialId(4) val kernel: String,
-        @SerialId(5) val rom: String
+        @ProtoId(1) val type: Int = 1,
+        @ProtoId(2) val version: String,
+        @ProtoId(3) val sdk: String,
+        @ProtoId(4) val kernel: String,
+        @ProtoId(5) val rom: String
     ): ProtoBuf
 
     @Serializable
     class Camera(
-        @SerialId(1) val primary: Long,
-        @SerialId(2) val secondary: Long,
-        @SerialId(3) val flag: Boolean
+        @ProtoId(1) val primary: Long,
+        @ProtoId(2) val secondary: Long,
+        @ProtoId(3) val flag: Boolean
     ): ProtoBuf
 
     @Serializable
     class CPU(
-        @SerialId(1) val model: String,
-        @SerialId(2) val frequency: Int,
-        @SerialId(3) val cores: Int
+        @ProtoId(1) val model: String,
+        @ProtoId(2) val frequency: Int,
+        @ProtoId(3) val cores: Int
     ): ProtoBuf
 
     @Serializable
     class Memory(
-        @SerialId(1) val total: Int,
-        @SerialId(2) val process: Int
+        @ProtoId(1) val total: Int,
+        @ProtoId(2) val process: Int
     ): ProtoBuf
 
     @Serializable
     class Screen(
-        @SerialId(1) val model: String,
-        @SerialId(2) val width: Int,
-        @SerialId(3) val height: Int,
-        @SerialId(4) val dpi: Int,
-        @SerialId(5) val multiTouch: Boolean
+        @ProtoId(1) val model: String,
+        @ProtoId(2) val width: Int,
+        @ProtoId(3) val height: Int,
+        @ProtoId(4) val dpi: Int,
+        @ProtoId(5) val multiTouch: Boolean
     ): ProtoBuf
 
     @Serializable
     class Storage(
-        @SerialId(1) val builtin: Int,
-        @SerialId(2) val external: Int
+        @ProtoId(1) val builtin: Int,
+        @ProtoId(2) val external: Int
     ): ProtoBuf
 }

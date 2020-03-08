@@ -18,7 +18,7 @@ import kotlin.annotation.AnnotationTarget.*
  * 非常不建议在发行版本中使用这些 API.
  */
 @Retention(AnnotationRetention.BINARY)
-@Experimental(level = Experimental.Level.ERROR)
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
     CLASS,
@@ -36,7 +36,7 @@ annotation class MiraiInternalAPI(
  * 不建议在发行版本中使用这些 API.
  */
 @Retention(AnnotationRetention.BINARY)
-@Experimental(level = Experimental.Level.WARNING)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 annotation class MiraiExperimentalAPI(
     val message: String = ""
@@ -49,7 +49,7 @@ annotation class MiraiExperimentalAPI(
  * 非常不建议在发行版本中使用这些 API.
  */
 @Retention(AnnotationRetention.BINARY)
-@Experimental(level = Experimental.Level.WARNING)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 annotation class MiraiDebugAPI(
     val message: String = ""

@@ -33,8 +33,9 @@ import java.net.URL
 /**
  * 读取 [Bitmap] 的属性, 然后构造 [ExternalImage]
  */
+@Suppress("UNUSED_PARAMETER")
 @Throws(IOException::class)
-fun Bitmap.toExternalImage(formatName: String = "gif"): Nothing {
+fun Bitmap.toExternalImage(formatName: String = "gif"): ExternalImage {
     TODO()
 }
 

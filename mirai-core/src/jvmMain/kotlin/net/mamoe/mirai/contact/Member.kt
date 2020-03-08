@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.WeakRefProperty
 /**
  * 群成员.
  */
-@UseExperimental(MiraiInternalAPI::class, JavaHappyAPI::class)
+@OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
 @Suppress("INAPPLICABLE_JVM_NAME")
 actual abstract class Member : MemberJavaHappyAPI() {
     /**

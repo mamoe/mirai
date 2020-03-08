@@ -358,7 +358,7 @@ internal class MemberInfoImpl(
     override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
-@UseExperimental(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class)
 internal fun GroupImpl.Companion.checkIsInstance(expression: Boolean) {
     contract {
         returns() implies expression
@@ -367,13 +367,14 @@ internal fun GroupImpl.Companion.checkIsInstance(expression: Boolean) {
 }
 
 @Suppress("PropertyName")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
 ) : Group() {
+    @Suppress("\"RemoveEmptyClassBody\"") // things will go wrong after removal, don't try
     companion object {
 
     }
@@ -383,7 +384,7 @@ internal class GroupImpl(
 
     override lateinit var owner: Member
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     override val botAsMember: Member by lazy {
         Member(object : MemberInfo {
             override val nameCard: String
@@ -401,7 +402,7 @@ internal class GroupImpl(
         })
     }
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
     var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
@@ -557,10 +558,10 @@ internal class GroupImpl(
         TODO("not implemented")
     }
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            @UseExperimental(LowLevelAPI::class)
+            @OptIn(LowLevelAPI::class)
             bot._lowLevelNewQQ(memberInfo) as QQImpl,
             this,
             this.coroutineContext,
