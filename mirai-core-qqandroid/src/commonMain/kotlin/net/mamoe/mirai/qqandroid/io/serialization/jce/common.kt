@@ -30,7 +30,9 @@ annotation class JceId(val id: Int)
 internal data class JceTag(
     val id: Int,
     val isNullable: Boolean
-)
+){
+    internal var isSimpleByteArray: Boolean = false
+}
 
 fun JceHead.checkType(type: Byte) {
     check(this.type == type) {"type mismatch. Expected $type, actual ${this.type}"}

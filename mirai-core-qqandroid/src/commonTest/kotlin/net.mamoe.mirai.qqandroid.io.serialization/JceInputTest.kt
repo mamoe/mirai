@@ -41,6 +41,57 @@ internal const val ZERO_TYPE: Byte = 12
 @Suppress("INVISIBLE_MEMBER") // bug
 internal class JceInputTest {
 
+    @Test
+    fun testNestedJceStruct() {
+        @Serializable
+        data class TestSerializableClassC(
+            @JceId(5) val value3: Int = 123123
+        )
+
+        @Serializable
+        data class TestSerializableClassB(
+            @JceId(0) val value: Int,
+            @JceId(123) val nested2: TestSerializableClassC
+        )
+
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val value1: Int,
+            @JceId(1) val nestedStruct: TestSerializableClassB,
+            @JceId(2) val optional: Int = 3,
+            @JceId(4) val notOptional: Int
+        )
+
+        val input = buildPacket {
+            writeJceHead(INT, 0)
+            writeInt(444)
+
+            writeJceHead(STRUCT_BEGIN, 1); // TestSerializableClassB
+            {
+                writeJceHead(INT, 0)
+                writeInt(123)
+
+                writeJceHead(STRUCT_BEGIN, 123); // TestSerializableClassC
+                {
+                    writeJceHead(INT, 5)
+                    writeInt(123123)
+                }()
+                writeJceHead(STRUCT_END, 0)
+
+                writeJceHead(INT, 2) // 多余
+                writeInt(123)
+            }()
+            writeJceHead(STRUCT_END, 0)
+
+            writeJceHead(INT, 4)
+            writeInt(5)
+        }
+
+        assertEquals(
+            TestSerializableClassA(444, TestSerializableClassB(123, TestSerializableClassC(123123)), notOptional = 5),
+            JceNew.UTF_8.load(TestSerializableClassA.serializer(), input)
+        )
+    }
 
     @Test
     fun testNestedList() {
@@ -80,6 +131,44 @@ internal class JceInputTest {
         assertEquals(TestSerializableClassA(), JceNew.UTF_8.load(TestSerializableClassA.serializer(), input))
     }
 
+    @Test
+    fun testMap() {
+        @Serializable
+        data class TestSerializableClassA(
+            @JceId(0) val byteArray: Map<Int, Int>
+        )
+
+        val input = buildPacket {
+            writeJceHead(MAP, 0)
+
+            mapOf(1 to 2, 33 to 44).let {
+                writeJceHead(BYTE, 0)
+                writeByte(it.size.toByte())
+
+                it.forEach { (key, value) ->
+                    writeJceHead(INT, 0)
+                    writeInt(key)
+
+                    writeJceHead(INT, 1)
+                    writeInt(value)
+                }
+            }
+
+            writeJceHead(SIMPLE_LIST, 3)
+            writeJceHead(BYTE, 0)
+
+            byteArrayOf(1, 2, 3, 4).let {
+                writeJceHead(BYTE, 0)
+                writeByte(it.size.toByte())
+                writeFully(it)
+            }
+        }
+
+        assertEquals(
+            TestSerializableClassA(mapOf(1 to 2, 33 to 44)),
+            JceNew.UTF_8.load(TestSerializableClassA.serializer(), input)
+        )
+    }
 
     @Test
     fun testSimpleByteArray() {

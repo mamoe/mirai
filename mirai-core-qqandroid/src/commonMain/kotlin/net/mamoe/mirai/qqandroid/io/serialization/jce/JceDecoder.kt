@@ -7,11 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("PrivatePropertyName")
+
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.AbstractDecoder
-import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.internal.TaggedDecoder
 import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.serialization.Jce
@@ -38,16 +39,14 @@ internal class JceDecoder(
     }
 
     private fun SerialDescriptor.getJceTagId(index: Int): Int {
-        return getElementAnnotations(index).filterIsInstance<JceId>().single().id
+        println("getTag: ${getElementName(index)}")
+        return getElementAnnotations(index).filterIsInstance<JceId>().singleOrNull()?.id
+            ?: error("missing @JceId for ${getElementName(index)} in ${this.serialName}")
     }
 
+    private val SimpleByteArrayReader: SimpleByteArrayReaderImpl = SimpleByteArrayReaderImpl()
 
-    companion object {
-        private val ByteArraySerializer: KSerializer<ByteArray> = ByteArraySerializer()
-    }
-
-    // TODO: 2020/3/6 can be object
-    private inner class SimpleByteArrayReader : AbstractDecoder() {
+    private inner class SimpleByteArrayReaderImpl : AbstractDecoder() {
         override fun decodeSequentially(): Boolean = true
 
         override fun endStructure(descriptor: SerialDescriptor) {
@@ -80,8 +79,9 @@ internal class JceDecoder(
         }
     }
 
-    // TODO: 2020/3/6 can be object
-    private inner class ListReader : AbstractDecoder() {
+    private val ListReader: ListReaderImpl = ListReaderImpl()
+
+    private inner class ListReaderImpl : AbstractDecoder() {
         override fun decodeSequentially(): Boolean = true
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int = error("should not be reached")
         override fun endStructure(descriptor: SerialDescriptor) {
@@ -113,33 +113,73 @@ internal class JceDecoder(
 
     override fun endStructure(descriptor: SerialDescriptor) {
         println("endStructure: $descriptor")
-        if (descriptor == ByteArraySerializer.descriptor) {
-            jce.prepareNextHead() // list 里面没读 head
-        } else jce.prepareNextHead() // TODO ?? 测试这里
-        super.endStructure(descriptor)
+        if (currentTagOrNull?.isSimpleByteArray == true) {
+            jce.prepareNextHead() // read to next head
+        }
+        if (descriptor.kind == StructureKind.CLASS) {
+            if (currentTagOrNull == null) {
+                return
+            }
+            while (true) {
+                val currentHead = jce.currentHeadOrNull ?: return
+                if (currentHead.type == Jce.STRUCT_END) {
+                    break
+                }
+                println("skipping")
+                jce.skipField(currentHead.type)
+                jce.prepareNextHead()
+            }
+            // pushTag(JceTag(0, true))
+            // skip STRUCT_END
+            // popTag()
+        }
     }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        println()
         println("beginStructure: ${descriptor.serialName}")
         return when (descriptor.kind) {
+            is PrimitiveKind -> this@JceDecoder
+
             StructureKind.MAP -> {
-                error("map")
+                println("!! MAP")
+                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
+                    it.checkType(Jce.MAP)
+                    ListReader
+                }
             }
             StructureKind.LIST -> {
                 println("!! ByteArray")
                 println("decoderTag: $currentTagOrNull")
                 println("jceHead: " + jce.currentHeadOrNull)
-                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
+                return jce.skipToHeadAndUseIfPossibleOrFail(currentTag.id) {
                     println("listHead: $it")
                     when (it.type) {
-                        Jce.SIMPLE_LIST -> SimpleByteArrayReader().also { jce.prepareNextHead() } // 无用的元素类型
-                        Jce.LIST -> ListReader()
+                        Jce.SIMPLE_LIST -> {
+                            currentTag.isSimpleByteArray = true
+                            jce.prepareNextHead() // 无用的元素类型
+                            SimpleByteArrayReader
+                        }
+                        Jce.LIST -> ListReader
                         else -> error("type mismatch. Expected SIMPLE_LIST or LIST, got ${it.type} instead")
                     }
                 }
             }
+            StructureKind.CLASS -> {
+                val currentTag = currentTagOrNull ?: return this@JceDecoder
 
-            else -> this@JceDecoder
+                println("!! CLASS")
+                println("decoderTag: $currentTag")
+                println("jceHead: " + jce.currentHeadOrNull)
+                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
+                    it.checkType(Jce.STRUCT_BEGIN)
+                    this@JceDecoder
+                }
+            }
+
+            StructureKind.OBJECT -> error("unsupported StructureKind.OBJECT: ${descriptor.serialName}")
+            is UnionKind -> error("unsupported UnionKind: ${descriptor.serialName}")
+            is PolymorphicKind -> error("unsupported PolymorphicKind: ${descriptor.serialName}")
         }
     }
 
@@ -154,6 +194,10 @@ internal class JceDecoder(
     override fun decodeSequentially(): Boolean = false
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         val jceHead = jce.currentHeadOrNull ?: return CompositeDecoder.READ_DONE
+        if (jceHead.type == Jce.STRUCT_END) {
+            return CompositeDecoder.READ_DONE
+        }
+
         repeat(descriptor.elementsCount) {
             val tag = descriptor.getJceTagId(it)
             if (tag == jceHead.tag) {
