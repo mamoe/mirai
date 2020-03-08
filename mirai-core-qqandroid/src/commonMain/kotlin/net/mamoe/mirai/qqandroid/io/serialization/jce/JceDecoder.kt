@@ -212,8 +212,6 @@ internal class JceDecoder(
                 return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) { jceHead ->
                     jceHead.checkType(Jce.STRUCT_BEGIN)
 
-
-                    // TODO: 2020/3/8 检查是否需要 scope 化
                     repeat(descriptor.elementsCount) {
                         pushTag(descriptor.getTag(descriptor.elementsCount - it - 1)) // better performance
                     }
