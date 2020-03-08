@@ -58,7 +58,8 @@ javac 1.8.0_60-ea
 ```
 - 检查是否配置成功。
 #### IDE
-IDE，即集成开发环境，是辅助编程开发的软件。使用合适的IDE能有效地减少代码语法错误、编译麻烦等问题，加大开发效率。目前java开发者常用的IDE有Eclipse，NetBeans，IntelliJ IDEA等软件。我这里使用IntelliJ IDEA 14.1（以下简称“IDEA”）与windows 7系统为例子，来讲IDE的安装和配置。
+IDE，即集成开发环境，是辅助编程开发的软件。使用合适的IDE能有效地减少代码语法错误、编译麻烦等问题，加大开发效率。目前java开发者常用的IDE有Eclipse，NetBeans，IntelliJ IDEA等软件。我这里使用IntelliJ IDEA 14.1（以下简称“IDEA”）与windows 7系统为例子，来讲IDE的安装和配置。<br>
+强烈推荐IDEA， IDEA可以使用idea插件[mirai-console-intellij](https://github.com/mamoe/mirai-console-intellij)快速进行插件开发
 <br>
 打开[IntelliJ IDEA的官方网站]( http://www.jetbrains.com/idea/)，点击“Get IntelliJ IDEA now”
 <br>
@@ -66,9 +67,55 @@ IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后�
 <br>
 
 ### 我要如何开始
-**此处使用IDEA作为演示IDE**
+**此处使用IDEA作为演示IDE**<br>
+新手只推荐使用IDEA, 如执着于不使用idea, 可以阅读[PluginStructure](PluginStructure.MD)手动构建插件环境<br>
+
+#### IDE准备
+安装idea插件[mirai-console-intellij](https://github.com/mamoe/mirai-console-intellij), 这是一个用于快速创建Mirai Console插件的IDE插件 <br>
+1: 自动安装<br>
+打开IDEA, 点击Preferences, 点击插件[Plugins], 市场[Market place], 搜索Mirai, 安装Mirai-Console<br>
+预计2020/3/11号后才可以在market里搜索到<br>
+<br>
+
+2: 手动安装<br>
+前往[这里](https://github.com/mamoe/mirai-console-intellij/releases)下载最新的插件[.jar]<BR>
+打开IDEA, 点击Preferences, 按下图操作, 选择下载的jar 然后重启IDE<br>
+![如何手动安装](assets/ideaInstall.png)
+
+<br>
+
+#### 启动项目
+1： 点击New Project<br>
+2： 在左侧选择Mirai Console Plugin<br>
+3： 根据下图辅助填写信息<br>
+![填写信息1](assets/ideaplugin1.jpg)
+4:  点击[next]<br>
+5:  根据下图辅助继续填写信息<br>
+![填写信息2](assets/ideaplugin2.jpg)
+6:  点击[next]<br>
+7:  最后一页与本地储存位置有关, 如不懂使用默认即可<br>
+8:  点击[Finish]稍作等待<br>
+9:  等待这个页面加载出来<br>
+![how it look like](assets/ideaplugin3.png)
+10: 点击右下↘的Import gradle project或Import Maven Project<br>
+11: 等待进度条结束<br>
+![bar](assets/ideaplugin4.png)
+12: 等待这个页面加载出来(这是第一页选的Java语言, kotlin类似)<br>
+![how it look like2](assets/ideaplugin5.png)
+13: 插件环境正式完成<br>
 
 
+#### 如何打包插件
+1: 根据下图帮助打开gradle window[maven同理]<br>
+![namnamnam](assets/ideaplugin6.jpg)
+2: 根据下图帮助点击JAR<br>
+![NMSLNMSL](assets/ideaplugin7.png)
+3: 在这里找到成品, 完成<br>
+![NMSLNMSL](assets/ideaplugin8.png)
+
+PS: 如果要打包有依赖lib的插件, 请继续向后读<br>
+
+    
 
 <i>本章部分章节引用自[搭建环境 - Nukkit插件从0开始](https://www.cnblogs.com/xtypr/p/nukkit_plugin_start_from_0_build_environment.html),</i>
 
