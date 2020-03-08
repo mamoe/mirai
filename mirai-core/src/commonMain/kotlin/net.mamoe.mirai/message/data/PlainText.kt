@@ -30,8 +30,13 @@ inline class PlainText(val stringValue: String) : Message, MessageContent {
     companion object Key : Message.Key<PlainText> {
         @JvmStatic
         val Empty = PlainText("")
+
         @JvmStatic
         val Null = PlainText("null")
+
+        fun of(value: String): PlainText {
+            return PlainText(value)
+        }
     }
 }
 
