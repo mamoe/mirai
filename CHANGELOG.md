@@ -2,6 +2,9 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.27.0` 2020/3/8
+- 支持 `XML`, `Json`, `LightApp` 等 `RichMessage`
+
 ## `0.26.2` 2020/3/8
 - 新增 `MessageChain.repeat` 与 `MessageChain.times`
 - JVM 平台下 `PlatformLogger` 可重定向输出
