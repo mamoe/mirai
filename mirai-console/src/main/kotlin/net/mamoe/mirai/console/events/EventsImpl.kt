@@ -14,3 +14,14 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 
 internal fun <E : Event> broadcast(e: E): E = runBlocking { e.broadcast() }
+
+class A{
+
+    var x = 0
+
+    var width:Int
+    get() = x
+    set(value){
+        x = value
+    }
+}

@@ -52,6 +52,7 @@ public final class Events {
         return EventInternalJvmKt._subscribeEventForJaptOnly(eventClass, GlobalScope.INSTANCE, onEvent);
     }
 
+
     /**
      * 阻塞地广播一个事件.
      *
