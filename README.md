@@ -87,17 +87,17 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 ### 贡献者
 感谢以下全体开发者对 mirai 的贡献（排名不分先后）
 
-![[](https://github.com/Him188)](https://avatars2.githubusercontent.com/u/12100985?s=60&v=4)
-![](https://avatars0.githubusercontent.com/u/24618776?s=60&v=4)
-![](https://avatars2.githubusercontent.com/u/28707253?s=60&v=4)
-![](https://avatars1.githubusercontent.com/u/11070535?s=60&v=4)
- <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/13656668?s=60&v=4" />
- <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/18532671?s=60&v=4" />
- <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/10308687?s=60&v=4" />
-![](https://avatars3.githubusercontent.com/u/16398479?s=60&v=4)
-![](https://avatars0.githubusercontent.com/u/20042607?s=60&v=4)
-![](https://avatars0.githubusercontent.com/u/25280943?s=60&v=4)
-![](https://avatars3.githubusercontent.com/u/40517459?s=60&v=4)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/12100985?s=60&v=4" />](https://github.com/Him188)
+[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/24618776?s=60&v=4" />](https://github.com/liujiahua123123)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/28707253?s=60&v=4" />](https://github.com/ryoii)
+[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/11070535?s=60&v=4" />](https://github.com/jasonczc)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/13656668?s=60&v=4" />](https://github.com/PeratX)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/18532671?s=60&v=4" />](https://github.com/uebian)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/10308687?s=60&v=4" />](https://github.com/Freedom0925)
+[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/16398479?s=60&v=4" />](https://github.com/ice1000)
+[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/20042607?s=60&v=4" />](https://github.com/PragmaTwice)
+[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/25280943?s=60&v=4" />](https://github.com/HoshinoTented)
+[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/40517459?s=60&v=4" />](https://github.com/Cyenoch)
 
 
 ## 鸣谢
