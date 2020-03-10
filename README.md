@@ -111,17 +111,10 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
 - [kotlin-reflect](https://github.com/JetBrains/kotlin)
-- [pcap4j](https://github.com/kaitoy/pcap4j)
 - [atomicfu](https://github.com/Kotlin/kotlinx.atomicfu)
 - [ktor](https://github.com/ktorio/ktor)
-- [tornadofx](https://github.com/edvin/tornadofx)
-- [javafx](https://github.com/openjdk/jfx)
 - [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
 - [bouncycastle](https://www.bouncycastle.org/java.html)
-- [lanterna](https://github.com/mabe02/lanterna/tree/master)
-- [fastjson](https://github.com/alibaba/fastjson)
-- [toml4j](https://github.com/mwanji/toml4j)
-- [snakeyaml](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
 
 
 
