@@ -93,7 +93,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 ![](https://avatars1.githubusercontent.com/u/11070535?s=60&v=4)
  <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/13656668?s=60&v=4" />
  <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/18532671?s=60&v=4" />
-![](https://avatars1.githubusercontent.com/u/10308687?s=60&v=4)
+ <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/10308687?s=60&v=4" />
 ![](https://avatars3.githubusercontent.com/u/16398479?s=60&v=4)
 ![](https://avatars0.githubusercontent.com/u/20042607?s=60&v=4)
 ![](https://avatars0.githubusercontent.com/u/25280943?s=60&v=4)
