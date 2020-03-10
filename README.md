@@ -84,6 +84,20 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
+### 贡献者
+感谢以下全体开发者对 mirai 的贡献（排名不分先后）
+
+![](https://avatars2.githubusercontent.com/u/12100985?s=60&v=4)
+![](https://avatars0.githubusercontent.com/u/24618776?s=60&v=4)
+![](https://avatars2.githubusercontent.com/u/28707253?s=60&v=4)
+![](https://avatars1.githubusercontent.com/u/11070535?s=60&v=4)
+ <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/13656668?s=60&v=4" />
+ <img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/18532671?s=60&v=4" />
+![](https://avatars1.githubusercontent.com/u/10308687?s=60&v=4)
+![](https://avatars3.githubusercontent.com/u/16398479?s=60&v=4)
+![](https://avatars0.githubusercontent.com/u/20042607?s=60&v=4)
+![](https://avatars0.githubusercontent.com/u/25280943?s=60&v=4)
+![](https://avatars3.githubusercontent.com/u/40517459?s=60&v=4)
 
 
 ## 鸣谢
