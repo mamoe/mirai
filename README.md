@@ -87,7 +87,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 ### 贡献者
 感谢以下全体开发者对 mirai 的贡献（排名不分先后）
 
-![](https://avatars2.githubusercontent.com/u/12100985?s=60&v=4)
+![[](https://github.com/Him188)](https://avatars2.githubusercontent.com/u/12100985?s=60&v=4)
 ![](https://avatars0.githubusercontent.com/u/24618776?s=60&v=4)
 ![](https://avatars2.githubusercontent.com/u/28707253?s=60&v=4)
 ![](https://avatars1.githubusercontent.com/u/11070535?s=60&v=4)
