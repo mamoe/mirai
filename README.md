@@ -33,7 +33,7 @@ mirai 既可以作为你项目中的 QQ 协议支持库, 也可以作为单独�
 加入 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), 或加入 QQ 群: 655057127
 
 
-## 开始使用Mirai
+## 开始
 
 Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。
 
@@ -41,7 +41,7 @@ Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他�
 
 ### 开发者
 
-了解 mirai 架构： [Wiki](https://github.com/mamoe/mirai/wiki/Home) 
+**了解 mirai 架构**： [Wiki](https://github.com/mamoe/mirai/wiki/Home) 
 
 #### 使用 mirai 作为服务器，为 mirai 开发插件
 
@@ -65,7 +65,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ### 我是其他平台的使用者
 
-#### 酷Q平台用户: 
+#### 酷 Q 平台用户: 
 
 - 酷Q的插件可以在 mirai 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
 - 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
@@ -75,35 +75,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 * 在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
 * 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
 
-
-
-## 模块
-
-### mirai-core
-
-通用 API 模块，一套 API 适配两套协议。
-**请参考此模块的 API**  
-
-### mirai-core-qqandroid
-
-  QQ for Android （8.2.7 版本，2020 年 3 月）协议的实现，目前完成大部分。
-
-  - 高兼容性：协议仅含极少部分为硬编码，其余全部随官方方式动态生成
-  - 高安全性：密匙随机，ECDH 动态计算
-  - 已支持大部分使用场景, 详情请在[Project](https://github.com/mamoe/mirai/projects/3)查看
-
-### mirai-core-timpc
-
-TIM PC （2.3.2 版本，2019 年 8 月）协议的实现  
-支持的功能： 
-
-- 消息收发：图片文字复合消息，图片消息
-- 群管功能：群员列表，禁言
-  （目前不再更新此协议，请关注上文的安卓协议）
-
-
-
-## 加入开发
+## [贡献](https://github.com/mamoe/mirai/blob/master/CONTRIBUTING.md)
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 mirai 的开发。  
