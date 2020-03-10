@@ -6,8 +6,8 @@
 ----
 
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Actions Status](https://github.com/mamoe/mirai/workflows/CI/badge.svg)](https://github.com/mamoe/mirai/actions)
-[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
+![Gradle CI](https://github.com/mamoe/mirai-console/workflows/Gradle%20CI/badge.svg?branch=master)
+[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-console/)  
 
 Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持的高效率机器人框架
 
@@ -36,9 +36,9 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 如果是打包好的软件, 请根据UI操作<br>
 如果是命令行运行, 插件的所有配置文件将出现在 **运行目录/plugins/插件名** 下，推荐在mirai-console关闭时修改
 #### 如何选择版本
-Mirai Console提供了6个版本以满足各种需要<br>
-所有版本的Mirai Console API相同 插件系统相同<br>
-|  名字    | 介绍 |
+Mirai Console 提供了6个版本以满足各种需要<br>
+所有版本的 Mirai Console API 相同 插件系统相同<br>
+|  名称    | 介绍 |
 | --- | --- |
 | Mirai-Console-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
 | Mirai-Console-Terminal  |  (UNIX)Terminal环境 提供简洁的富文本控制台 |
