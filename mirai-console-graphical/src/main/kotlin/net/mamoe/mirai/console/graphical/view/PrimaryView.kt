@@ -32,12 +32,14 @@ class PrimaryView : View() {
 
                 setCellFactory {
                     object : JFXListCell<BotModel>() {
+                        var tab: Tab? = null
+
                         init {
                             onDoubleClick {
-                                (center as TabPane).logTab(
+                                tab?.select() ?: (center as TabPane).logTab(
                                     text = item.uin.toString(),
                                     logs = item.logHistory
-                                ).select()
+                                ).select().also { tab = it }
                             }
                         }
 
