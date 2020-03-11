@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
@@ -15,6 +17,8 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.AbstractCancellableEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
+import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
+import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.ExternalImage
@@ -52,12 +56,13 @@ sealed class BotOfflineEvent : BotEvent {
     /**
      * 被挤下线
      */
-    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet, BotPassiveEvent
+    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet,
+        BotPassiveEvent
 
     /**
      * 被服务器断开或因网络问题而掉线
      */
-    data class Dropped(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
+    data class Dropped(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
 
 /**
@@ -88,6 +93,67 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
     ) : MessageSendEvent(), CancellableEvent
 }
 
+/**
+ * 消息撤回事件. 可是任意消息被任意人撤回.
+ */
+sealed class MessageRecallEvent : BotEvent {
+    /**
+     * 消息原发送人
+     */
+    abstract val authorId: Long
+
+    /**
+     * 消息 id.
+     * @see MessageSource.id
+     */
+    abstract val messageId: Long
+
+    /**
+     * 原发送时间
+     */
+    abstract val messageTime: Int // seconds
+
+    /**
+     * 好友消息撤回事件, 暂不支持解析.
+     */
+    data class FriendRecall(
+        override val bot: Bot,
+        override val messageId: Long,
+        override val messageTime: Int,
+        /**
+         * 撤回操作人, 可能为 [Bot.uin] 或好友的 [QQ.id]
+         */
+        val operator: Long
+    ) : MessageRecallEvent(), Packet {
+        override val authorId: Long
+            get() = bot.uin
+    }
+
+    data class GroupRecall(
+        override val bot: Bot,
+        override val authorId: Long,
+        override val messageId: Long,
+        override val messageTime: Int,
+        /**
+         * 操作人. 为 null 时则为 [Bot] 操作.
+         */
+        override val operator: Member?,
+        override val group: Group
+    ) : MessageRecallEvent(), GroupOperableEvent, Packet
+}
+
+@OptIn(MiraiExperimentalAPI::class)
+val MessageRecallEvent.GroupRecall.author: Member
+    get() = if (authorId == bot.uin) group.botAsMember else group[authorId]
+
+val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.uin
+
+val MessageRecallEvent.isByBot: Boolean
+    get() = when (this) {
+        is MessageRecallEvent.FriendRecall -> this.isByBot
+        is MessageRecallEvent.GroupRecall -> (this as GroupOperableEvent).isByBot
+    }
+
 // endregion
 
 // region 图片
@@ -105,6 +171,9 @@ data class BeforeImageUploadEvent(
 
 /**
  * 图片上传完成
+ *
+ * @see Succeed
+ * @see Failed
  */
 sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
     abstract val target: Contact
@@ -194,7 +263,7 @@ data class GroupNameChangeEvent(
     override val origin: String,
     override val new: String,
     override val group: Group,
-    val isByBot: Boolean
+    val isByBot: Boolean // 无法获取操作人
 ) : GroupSettingChangeEvent<String>, Packet
 
 /**
@@ -207,8 +276,8 @@ data class GroupEntranceAnnouncementChangeEvent(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    val operator: Member?
-) : GroupSettingChangeEvent<String>, Packet
+    override val operator: Member?
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent
 
 
 /**
@@ -221,8 +290,9 @@ data class GroupMuteAllEvent(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet
+    override val operator: Member?
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
+
 
 /**
  * 群 "匿名聊天" 功能状态改变. 此事件广播前修改就已经完成.
@@ -234,8 +304,9 @@ data class GroupAllowAnonymousChatEvent(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet
+    override val operator: Member?
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
+
 
 /**
  * 群 "坦白说" 功能状态改变. 此事件广播前修改就已经完成.
@@ -244,7 +315,7 @@ data class GroupAllowConfessTalkEvent(
     override val origin: Boolean,
     override val new: Boolean,
     override val group: Group,
-    val isByBot: Boolean
+    val isByBot: Boolean // 无法获取操作人
 ) : GroupSettingChangeEvent<Boolean>, Packet
 
 /**
@@ -257,8 +328,9 @@ data class GroupAllowMemberInviteEvent(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet
+    override val operator: Member?
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
+
 
 // endregion
 
@@ -284,13 +356,21 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
         /**
          * 操作人. 为 null 则是机器人操作
          */
-        val operator: Member?
-    ) : MemberLeaveEvent(), Packet
+        override val operator: Member?
+    ) : MemberLeaveEvent(), Packet, GroupOperableEvent {
+        override fun toString(): String {
+            return "MemberLeaveEvent.Kick(member=$member, operator=$operator)"
+        }
+    }
 
     /**
      * 成员主动离开
      */
-    data class Quit(override val member: Member) : MemberLeaveEvent()
+    data class Quit(override val member: Member) : MemberLeaveEvent(), Packet {
+        override fun toString(): String {
+            return "MemberLeaveEvent.Quit(member=$member)"
+        }
+    }
 }
 
 // endregion
@@ -316,8 +396,8 @@ data class MemberCardChangeEvent(
     /**
      * 操作人. 为 null 时则是机器人操作. 可能与 [member] 引用相同, 此时为群员自己修改.
      */
-    val operator: Member?
-) : GroupMemberEvent
+    override val operator: Member?
+) : GroupMemberEvent, GroupOperableEvent
 
 /**
  * 群头衔改动. 一定为群主操作
@@ -333,8 +413,15 @@ data class MemberSpecialTitleChangeEvent(
      */
     val new: String,
 
-    override val member: Member
-) : GroupMemberEvent
+    override val member: Member,
+
+    /**
+     * 操作人.
+     * 不为 null 时一定为群主. 可能与 [member] 引用相同, 此时为群员自己修改.
+     * 为 null 时则是机器人操作.
+     */
+    override val operator: Member?
+) : GroupMemberEvent, GroupOperableEvent
 
 // endregion
 
@@ -364,8 +451,8 @@ data class MemberMuteEvent(
     /**
      * 操作人. 为 null 则为机器人操作
      */
-    val operator: Member?
-) : GroupMemberEvent, Packet
+    override val operator: Member?
+) : GroupMemberEvent, Packet, GroupOperableEvent
 
 /**
  * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
@@ -375,8 +462,8 @@ data class MemberUnmuteEvent(
     /**
      * 操作人. 为 null 则为机器人操作
      */
-    val operator: Member?
-) : GroupMemberEvent, Packet
+    override val operator: Member?
+) : GroupMemberEvent, Packet, GroupOperableEvent
 
 // endregion
 

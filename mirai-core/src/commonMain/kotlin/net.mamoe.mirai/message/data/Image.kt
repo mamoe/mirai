@@ -7,27 +7,30 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotImpl
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.chunkedHexToBytes
+import kotlin.js.JsName
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 /**
  * 自定义表情 (收藏的表情), 图片
  */
-sealed class Image : Message {
-    companion object Key : Message.Key<Image> {
-        @JvmName("fromId")
-        operator fun invoke(imageId: String): Image = when (imageId.length) {
-            37 -> NotOnlineImageFromFile(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
-            42 -> CustomFaceFromFile(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-            else -> throw IllegalArgumentException("Bad imageId, expecting length=37 or 42, got ${imageId.length}")
-        }
-    }
+interface Image : Message, MessageContent {
+    companion object Key : Message.Key<Image>
 
     /**
      * 图片的 id. 只需要有这个 id 即可发送图片.
@@ -36,19 +39,84 @@ sealed class Image : Message {
      * 好友图片的 id: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
      * 群图片的 id: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png`
      */
-    abstract val imageId: String
+    val imageId: String
+}
 
+@Suppress("FunctionName")
+@JsName("newImage")
+@JvmName("newImage")
+fun Image(imageId: String): Image = when (imageId.length) {
+    37 -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
+    42 -> OfflineGroupImage(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
+    else -> throw IllegalArgumentException("Bad imageId, expecting length=37 or 42, got ${imageId.length}")
+}
+
+@MiraiInternalAPI("使用 Image")
+abstract class AbstractImage internal constructor() : Image {
     final override fun toString(): String {
-        return "[image::$imageId]"
-    }
-
-    final override fun eq(other: Message): Boolean {
-        return if (other is Image) return other.imageId == this.imageId
-        else this.toString() == other.toString()
+        return "[mirai:$imageId]"
     }
 }
 
-abstract class CustomFace : Image() {
+// region 在线图片
+
+/**
+ * 在服务器上的图片. 它可以直接获取下载链接.
+ *
+ * 一般由 [Contact.uploadImage] 得到
+ */
+interface OnlineImage : Image {
+    /**
+     * 原图下载链接. 包含域名
+     */
+    val originUrl: String
+}
+
+/**
+ * 查询原图下载链接.
+ */
+suspend fun Image.queryUrl(): String {
+    @OptIn(MiraiInternalAPI::class)
+    return when (this) {
+        is OnlineImage -> this.originUrl
+        else -> BotImpl.instances.peekFirst().get()?.queryImageUrl(this)
+            ?: error("No Bot available to query image url")
+    }
+}
+
+// endregion 在线图片
+
+
+// region 离线图片
+
+/**
+ * 离线的图片, 即为客户端主动上传到服务器而获得的 [Image] 实例.
+ * 不能直接获取它在服务器上的链接. 需要通过 [Bot.queryImageUrl] 查询
+ *
+ * 一般由 [Contact.uploadImage] 得到
+ * @see queryOriginUrl
+ */
+interface OfflineImage : Image
+
+/**
+ * 原图下载链接. 包含域名
+ */
+suspend fun OfflineImage.queryOriginUrl(): String {
+    @OptIn(MiraiInternalAPI::class)
+    return BotImpl.instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
+}
+
+// endregion 离线图片
+
+// region 群图片
+
+
+/**
+ * 群图片
+ */
+// CustomFace
+@OptIn(MiraiInternalAPI::class)
+sealed class GroupImage : AbstractImage() {
     abstract val filepath: String
     abstract val fileId: Int
     abstract val serverIp: Int
@@ -67,30 +135,14 @@ abstract class CustomFace : Image() {
     abstract val original: Int
 }
 
-private val EMPTY_BYTE_ARRAY = ByteArray(0)
-
-private fun calculateImageMd5ByImageId(imageId: String): ByteArray {
-    return if (imageId.startsWith('/')) {
-        imageId
-            .drop(1)
-            .replace("-", "")
-            .take(16 * 2)
-            .chunkedHexToBytes()
-    } else {
-        imageId
-            .substringAfter('{')
-            .substringBefore('}')
-            .replace("-", "")
-            .take(16 * 2)
-            .chunkedHexToBytes()
-    }
-}
-
+/**
+ * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [Bot.queryImageUrl]
+ */
 @Serializable
-data class CustomFaceFromFile(
+data class OfflineGroupImage(
     override val filepath: String, // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
     override val md5: ByteArray
-) : CustomFace() {
+) : GroupImage(), OfflineImage {
     constructor(imageId: String) : this(filepath = imageId, md5 = calculateImageMd5ByImageId(imageId))
 
     override val fileId: Int get() = 0
@@ -114,14 +166,26 @@ data class CustomFaceFromFile(
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is CustomFaceFromFile && other.md5.contentEquals(this.md5) && other.filepath == this.filepath
+        return other is OfflineGroupImage && other.md5.contentEquals(this.md5) && other.filepath == this.filepath
     }
 }
 
 /**
- * 电脑可能看不到这个消息.
+ * 接收消息时获取到的 [GroupImage]. 它可以直接获取下载链接 [originUrl]
  */
-abstract class NotOnlineImage : Image() {
+abstract class OnlineGroupImage : GroupImage(), OnlineImage
+
+
+// endregion 群图片
+
+// region 好友图片
+
+
+/**
+ * 好友图片
+ */ // NotOnlineImage
+@OptIn(MiraiInternalAPI::class)
+sealed class FriendImage : AbstractImage() {
     abstract val resourceId: String
     abstract val md5: ByteArray
     abstract val filepath: String
@@ -137,7 +201,10 @@ abstract class NotOnlineImage : Image() {
     override val imageId: String get() = resourceId
 }
 
-data class NotOnlineImageFromFile(
+/**
+ * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [Bot.queryImageUrl]
+ */
+data class OfflineFriendImage(
     override val resourceId: String,
     override val md5: ByteArray,
     @Transient override val filepath: String = resourceId,
@@ -148,7 +215,7 @@ data class NotOnlineImageFromFile(
     @Transient override val imageType: Int = 1000,
     @Transient override val downloadPath: String = resourceId,
     @Transient override val fileId: Int = 0
-) : NotOnlineImage() {
+) : FriendImage(), OfflineImage {
     constructor(imageId: String) : this(resourceId = imageId, md5 = calculateImageMd5ByImageId(imageId))
 
     override fun hashCode(): Int {
@@ -156,6 +223,39 @@ data class NotOnlineImageFromFile(
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is NotOnlineImageFromFile && other.md5.contentEquals(this.md5) && other.resourceId == this.resourceId
+        return other is OfflineFriendImage && other.md5
+            .contentEquals(this.md5) && other.resourceId == this.resourceId
     }
 }
+
+/**
+ * 接收消息时获取到的 [FriendImage]. 它可以直接获取下载链接 [originUrl]
+ */
+abstract class OnlineFriendImage : FriendImage(), OnlineImage
+
+
+// endregion
+
+
+// region internal
+
+private val EMPTY_BYTE_ARRAY = ByteArray(0)
+
+private fun calculateImageMd5ByImageId(imageId: String): ByteArray {
+    return if (imageId.startsWith('/')) {
+        imageId
+            .drop(1)
+            .replace("-", "")
+            .take(16 * 2)
+            .chunkedHexToBytes()
+    } else {
+        imageId
+            .substringAfter('{')
+            .substringBefore('}')
+            .replace("-", "")
+            .take(16 * 2)
+            .chunkedHexToBytes()
+    }
+}
+
+// endregion

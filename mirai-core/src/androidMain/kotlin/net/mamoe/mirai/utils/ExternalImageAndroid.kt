@@ -7,10 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.utils
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
@@ -28,9 +29,22 @@ import java.net.URL
  * 将各类型图片容器转为 [ExternalImage]
  */
 
+
+/**
+ * 读取 [Bitmap] 的属性, 然后构造 [ExternalImage]
+ */
+@Suppress("UNUSED_PARAMETER")
+@Throws(IOException::class)
+fun Bitmap.toExternalImage(formatName: String = "gif"): ExternalImage {
+    TODO()
+}
+
+// suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+
 /**
  * 读取文件头识别图片属性, 然后构造 [ExternalImage]
  */
+@OptIn(MiraiInternalAPI::class)
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
     val input = BitmapFactory.decodeFile(this.absolutePath)
@@ -39,7 +53,7 @@ fun File.toExternalImage(): ExternalImage {
     return ExternalImage(
         width = input.width,
         height = input.height,
-        md5 = this.inputStream().use { it.md5() },
+        md5 = this.inputStream().use { MiraiPlatformUtils.md5(it) },
         imageFormat = this.nameWithoutExtension,
         input = this.inputStream().asInput(IoBuffer.Pool),
         inputSize = this.length(),
@@ -50,8 +64,7 @@ fun File.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [File.toExternalImage]
  */
-@Suppress("unused")
-suspend fun File.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun File.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 下载文件到临时目录然后调用 [File.toExternalImage]
@@ -63,6 +76,7 @@ fun URL.toExternalImage(): ExternalImage {
         openStream().asInput().use { input ->
             input.copyTo(output)
         }
+        output.flush()
     }
     return file.toExternalImage()
 }
@@ -70,8 +84,7 @@ fun URL.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [URL.toExternalImage]
  */
-@Suppress("unused")
-suspend fun URL.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun URL.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
  * 保存为临时文件然后调用 [File.toExternalImage]
@@ -79,8 +92,9 @@ suspend fun URL.suspendToExternalImage(): ExternalImage = withContext(IO) { toEx
 @Throws(IOException::class)
 fun InputStream.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
-    file.outputStream().asOutput().use {
-        this.asInput().copyTo(it)
+    file.outputStream().use {
+        this.copyTo(it)
+        it.flush()
     }
     this.close()
     return file.toExternalImage()
@@ -89,17 +103,19 @@ fun InputStream.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [InputStream.toExternalImage]
  */
-@Suppress("unused")
-suspend fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun InputStream.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
- * 保存为临时文件然后调用 [File.toExternalImage]
+ * 保存为临时文件然后调用 [File.toExternalImage].
+ *
+ * 需要函数调用者 close [this]
  */
 @Throws(IOException::class)
 fun Input.toExternalImage(): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
     file.outputStream().asOutput().use {
         this.copyTo(it)
+        it.flush()
     }
     return file.toExternalImage()
 }
@@ -107,5 +123,18 @@ fun Input.toExternalImage(): ExternalImage {
 /**
  * 在 [IO] 中进行 [Input.toExternalImage]
  */
-@Suppress("unused")
-suspend fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+suspend inline fun Input.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
+
+/*
+/**
+ * 保存为临时文件然后调用 [File.toExternalImage].
+ */
+suspend fun ByteReadChannel.toExternalImage(): ExternalImage {
+    val file = createTempFile().apply { deleteOnExit() }
+    file.outputStream().use {
+        withContext(IO) { copyTo(it) }
+        it.flush()
+    }
+
+    return file.suspendToExternalImage()
+}*/

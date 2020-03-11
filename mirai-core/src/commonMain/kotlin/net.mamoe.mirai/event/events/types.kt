@@ -14,6 +14,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
  * 有关一个 [Bot] 的事件
@@ -50,6 +51,31 @@ interface GroupMemberEvent : GroupEvent {
     override val group: Group
         get() = member.group
 }
+
+/**
+ * 可由 [Member] 或 [Bot] 操作的事件
+ * @see isByBot
+ * @see operatorOrBot
+ */
+interface GroupOperableEvent : GroupEvent {
+    /**
+     * 操作人, 为 `null` 时为 [Bot] 操作
+     */
+    val operator: Member?
+}
+
+/**
+ * 是否由 [Bot] 操作
+ */
+val GroupOperableEvent.isByBot: Boolean get() = operator == null
+
+/**
+ * 当操作人为 [Member] 时获取这个 [Member],
+ * 当操作人为 [Bot] 时获取 [Group.botAsMember]
+ */
+@OptIn(MiraiExperimentalAPI::class)
+val GroupOperableEvent.operatorOrBot: Member
+    get() = this.operator ?: this.group.botAsMember
 
 
 /**

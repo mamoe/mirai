@@ -1,6 +1,6 @@
-name: CI
+name: Gradle CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -8,10 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: setup-android
-      uses: msfjarvis/setup-android@0.2
+    - uses: actions/checkout@v2
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
       with:
-        # Gradle tasks to run - If you want to run ./gradlew assemble, specify assemble here. 
-        gradleTasks: build -x mirai-core:jvmTest
-    
+        java-version: 1.8
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew build

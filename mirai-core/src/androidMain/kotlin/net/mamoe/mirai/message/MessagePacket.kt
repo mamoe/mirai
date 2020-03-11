@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.message
 
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -17,8 +16,8 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 /**
  * 平台相关扩展
  */
-@UseExperimental(MiraiInternalAPI::class)
-actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor(bot: Bot) : MessagePacketBase<TSender, TSubject>(bot) {
+@OptIn(MiraiInternalAPI::class)
+actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() : MessagePacketBase<TSender, TSubject>() {
     //   suspend inline fun uploadImage(image: Bitmap): Image = subject.uploadImage(image)
     //suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
     //suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)

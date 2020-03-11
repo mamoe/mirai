@@ -5,7 +5,7 @@ import net.mamoe.mirai.Bot
 /**
  * 群资料.
  *
- * 通过 [Bot.queryGroupInfo] 得到
+ * 通过 [Bot._lowLevelQueryGroupInfo] 得到
  */
 interface GroupInfo {
     /**
@@ -62,4 +62,15 @@ interface GroupInfo {
      * 机器人被禁言还剩时间, 秒.
      */
     val botMuteRemaining: Int
+
+    /*
+    /**
+     * 机器人的头衔
+     */
+    val botSpecialTitle: String
+
+    /**
+     * 机器人的昵称
+     */
+    val botNameCard: String*/
 }

@@ -9,14 +9,14 @@
 
 package net.mamoe.mirai.event.internal
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.logStacktrace
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
@@ -32,8 +32,13 @@ fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L
 
 @PublishedApi
 @Suppress("FunctionName")
-internal fun <E : Event> CoroutineScope.Handler(handler: suspend (E) -> ListeningStatus): Handler<E> {
-    return Handler(coroutineContext[Job], coroutineContext, handler)
+internal fun <E : Event> CoroutineScope.Handler(
+    coroutineContext: CoroutineContext,
+    handler: suspend (E) -> ListeningStatus
+): Handler<E> {
+    @OptIn(ExperimentalCoroutinesApi::class) // don't remove
+    val context = this.newCoroutineContext(coroutineContext)
+    return Handler(context[Job], context, handler)
 }
 
 private inline fun inline(block: () -> Unit) = block()
@@ -45,7 +50,7 @@ internal class Handler<in E : Event>
 @PublishedApi internal constructor(parentJob: Job?, private val subscriberContext: CoroutineContext, @JvmField val handler: suspend (E) -> ListeningStatus) :
     Listener<E>, CompletableJob by Job(parentJob) {
 
-    @UseExperimental(MiraiDebugAPI::class)
+    @OptIn(MiraiDebugAPI::class)
     override suspend fun onEvent(event: E): ListeningStatus {
         if (isCompleted || isCancelled) return ListeningStatus.STOPPED
         if (!isActive) return ListeningStatus.LISTENING
@@ -60,8 +65,8 @@ internal class Handler<in E : Event>
                     MiraiLogger.warning(
                         """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
                         either in coroutineContext from Handler job, or in subscriberContext""".trimIndent()
+                        , e
                     )
-                    e.logStacktrace("Event processing(No CoroutineExceptionHandler found)")
                 }
             // this.complete() // do not `completeExceptionally`, otherwise parentJob will fai`l.
             // ListeningStatus.STOPPED
@@ -70,6 +75,9 @@ internal class Handler<in E : Event>
             ListeningStatus.LISTENING
         }
     }
+
+    @MiraiInternalAPI
+    override val lock: Mutex = Mutex()
 }
 
 /**
@@ -77,7 +85,32 @@ internal class Handler<in E : Event>
  */
 internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
 
-internal class EventListeners<E : Event> : LockFreeLinkedList<Listener<E>>()
+internal class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>>() {
+    @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
+    val supertypes: Set<KClass<out Event>> by lazy {
+        val supertypes = mutableSetOf<KClass<out Event>>()
+
+        fun addSupertypes(clazz: KClass<out Event>) {
+            clazz.supertypes.forEach {
+                val classifier = it.classifier as? KClass<out Event>
+                if (classifier != null) {
+                    supertypes.add(classifier)
+                    addSupertypes(classifier)
+                }
+            }
+        }
+        addSupertypes(clazz)
+
+        supertypes
+    }
+}
+
+internal expect class MiraiAtomicBoolean(initial: Boolean) {
+
+    fun compareAndSet(expect: Boolean, update: Boolean): Boolean
+
+    var value: Boolean
+}
 
 /**
  * 管理每个事件 class 的 [EventListeners].
@@ -88,7 +121,8 @@ internal object EventListenerManager {
 
     private val registries = LockFreeLinkedList<Registry<*>>()
 
-    private val lock = atomic(false)
+    // 不要用 atomicfu. 在 publish 后会出现 VerifyError
+    private val lock: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
     internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
@@ -98,10 +132,10 @@ internal object EventListenerManager {
             }
         }
         if (lock.compareAndSet(false, true)) {
-            val registry = Registry(clazz, EventListeners())
+            val registry = Registry(clazz as KClass<E>, EventListeners(clazz))
             registries.addLast(registry)
             lock.value = false
-            return registry.listeners as EventListeners<E>
+            return registry.listeners
         }
         return get(clazz)
     }
@@ -109,32 +143,29 @@ internal object EventListenerManager {
 
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
-internal suspend inline fun Event.broadcastInternal() {
-    if (EventDisabled) return
+internal suspend inline fun Event.broadcastInternal() = coroutineScope {
+    if (EventDisabled) return@coroutineScope
 
     EventLogger.info { "Event broadcast: $this" }
 
-    callAndRemoveIfRequired(this::class.listeners())
-
-    var supertypes = this::class.supertypes
-    while (true) {
-        val superSubscribableType = supertypes.firstOrNull {
-            it.classifier as? KClass<out Event> != null
-        }
-
-        superSubscribableType?.let {
-            callAndRemoveIfRequired((it.classifier as KClass<out Event>).listeners())
-        }
-
-        supertypes = (superSubscribableType?.classifier as? KClass<*>)?.supertypes ?: return
+    val listeners = this@broadcastInternal::class.listeners()
+    callAndRemoveIfRequired(this@broadcastInternal, listeners)
+    listeners.supertypes.forEach {
+        callAndRemoveIfRequired(this@broadcastInternal, it.listeners())
     }
 }
 
-private suspend inline fun <E : Event> E.callAndRemoveIfRequired(listeners: EventListeners<E>) {
+@OptIn(MiraiInternalAPI::class)
+private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(event: E, listeners: EventListeners<E>) {
     // atomic foreach
-    listeners.forEach {
-        if (it.onEvent(this) == ListeningStatus.STOPPED) {
-            listeners.remove(it) // atomic remove
+    listeners.forEachNode { node ->
+        launch {
+            val listener = node.nodeValue
+            listener.lock.withLock {
+                if (!node.isRemoved() && listener.onEvent(event) == ListeningStatus.STOPPED) {
+                    listeners.remove(listener) // atomic remove
+                }
+            }
         }
     }
 }

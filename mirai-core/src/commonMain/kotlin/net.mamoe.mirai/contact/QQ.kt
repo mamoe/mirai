@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.contact
 
@@ -16,7 +16,19 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
+import net.mamoe.mirai.event.events.BeforeImageUploadEvent
+import net.mamoe.mirai.event.events.EventCancelledException
+import net.mamoe.mirai.event.events.ImageUploadEvent
+import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
+import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OfflineFriendImage
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.OverFileSizeMaxException
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * QQ 对象.
@@ -30,28 +42,32 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  *
  * @author Him188moe
  */
-interface QQ : Contact, CoroutineScope {
-    /**
-     * QQ 号码
-     */
-    override val id: Long
-
-    /**
-     * 昵称
-     */
-    val nick: String
-
+@Suppress("INAPPLICABLE_JVM_NAME")
+expect abstract class QQ() : Contact, CoroutineScope {
     /**
      * 请求头像下载链接
      */
     // @MiraiExperimentalAPI
     //suspend fun queryAvatar(): AvatarLink
+    /**
+     * QQ 号码
+     */
+    abstract override val id: Long
+    /**
+     * 昵称
+     */
+    abstract val nick: String
 
     /**
      * 查询用户资料
      */
     @MiraiExperimentalAPI("还未支持")
-    suspend fun queryProfile(): Profile
+    abstract suspend fun queryProfile(): Profile
+
+    /**
+     * 头像下载链接
+     */
+    val avatarUrl: String
 
     /**
      * 查询曾用名.
@@ -61,11 +77,39 @@ interface QQ : Contact, CoroutineScope {
      * - 共同群内的群名片
      */
     @MiraiExperimentalAPI("还未支持")
-    suspend fun queryPreviousNameList(): PreviousNameList
+    abstract suspend fun queryPreviousNameList(): PreviousNameList
 
     /**
      * 查询机器人账号给这个人设置的备注
      */
     @MiraiExperimentalAPI("还未支持")
-    suspend fun queryRemark(): FriendNameRemark
+    abstract suspend fun queryRemark(): FriendNameRemark
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     *
+     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
+     */
+    @JvmSynthetic
+    @JvmName("sendMessageSuspend")
+    abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ>
+
+    /**
+     * 上传一个图片以备发送.
+     *
+     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
+     * @see ImageUploadEvent 图片发送完成事件
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
+     */
+    @JvmName("uploadImageSuspend")
+    @JvmSynthetic
+    abstract override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage
 }

@@ -1,4 +1,5 @@
 // 部分源码来自 kotlinx.coroutines
+// Source code from kotlinx.coroutines
 
 def pomConfig = {
     licenses {
@@ -12,6 +13,7 @@ def pomConfig = {
         developer {
             id "mamoe"
             name "Mamoe Technologies"
+            email "support@mamoe.net"
         }
     }
     scm {
@@ -65,12 +67,16 @@ bintrayUpload.dependsOn {
     list
 }
 
+try{
 
 // empty xxx-javadoc.jar
-task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-}
+    task javadocJar(type: Jar) {
+        archiveClassifier = 'javadoc'
+    }
 
+} catch (Exception e){
+
+}
 publishing {
     publications.all {
         // add empty javadocs (no need for MPP root publication which publishes only pom file)
@@ -88,7 +94,7 @@ publishing {
                 it.artifactId = "$project.name-common"
                 break
             case 'jvm':
-                it.artifactId = "$project.name"
+                it.artifactId = "$project.name-jvm"
                 break
             case 'js':
             case 'native':

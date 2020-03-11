@@ -30,7 +30,10 @@ actual class PlatformSocket : Closeable {
     private lateinit var socket: Socket
 
     actual val isOpen: Boolean
-        get() = socket.isConnected
+        get() =
+            if (::socket.isInitialized)
+                socket.isConnected
+            else false
 
     actual override fun close() {
         if (::socket.isInitialized) {
@@ -77,7 +80,7 @@ actual class PlatformSocket : Closeable {
         }
     }
 
-    @UseExperimental(ExperimentalIoApi::class)
+    @OptIn(ExperimentalIoApi::class)
     actual suspend fun connect(serverHost: String, serverPort: Int) {
         withContext(Dispatchers.IO) {
             socket = Socket(serverHost, serverPort)

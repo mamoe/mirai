@@ -15,18 +15,6 @@ import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
 
-inline fun <E> LockFreeLinkedList<E>.joinToString(
-    separator: CharSequence = ", ",
-    prefix: CharSequence = "[",
-    postfix: CharSequence = "]",
-    transform: ((E) -> CharSequence) = { it.toString() }
-): String = prefix.toString() + buildString {
-    this@joinToString.forEach {
-        append(transform(it))
-        append(separator)
-    }
-}.dropLast(separator.length) + postfix
-
 /**
  * Collect all the elements into a [MutableList] then cast it as a [List]
  */
@@ -68,6 +56,10 @@ fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
     }
 }
 
+operator fun <E> LockFreeLinkedList<E>.iterator(): Iterator<E> {
+    return asSequence().iterator()
+}
+
 /**
  * 构建链表结构然后转为 [LockFreeLinkedList]
  */
@@ -107,9 +99,14 @@ open class LockFreeLinkedList<E> {
         }
     }
 
-    open fun peekFirst(): E = head.nextNode.letValueIfValid { return it } ?: throw NoSuchElementException()
-
-    open fun peekLast(): E = head.iterateBeforeFirst { it === tail }.letValueIfValid { return it } ?: throw NoSuchElementException()
+    open fun peekFirst(): E {
+        return head
+            .iterateBeforeFirst { it.isValidElementNode() }
+            .takeUnless { it.isTail() }
+            ?.nextNode
+            ?.nodeValue
+            ?: throw NoSuchElementException()
+    }
 
     open fun removeLast(): E {
         while (true) {
@@ -128,7 +125,7 @@ open class LockFreeLinkedList<E> {
         addLastNode(element.asNode(tail))
     }
 
-    private fun addLastNode(node: Node<E>) {
+    private fun addLastNode(node: LockFreeLinkedListNode<E>) {
         while (true) {
             val tail = head.iterateBeforeFirst { it === tail } // find the last node.
             if (tail.nextNodeRef.compareAndSet(this.tail, node)) { // ensure the last node is the last node
@@ -142,9 +139,9 @@ open class LockFreeLinkedList<E> {
      */
     @Suppress("DuplicatedCode")
     open fun addAll(iterable: Iterable<E>) {
-        var firstNode: Node<E>? = null
+        var firstNode: LockFreeLinkedListNode<E>? = null
 
-        var currentNode: Node<E>? = null
+        var currentNode: LockFreeLinkedListNode<E>? = null
         iterable.forEach {
             val nextNode = it.asNode(tail)
             if (firstNode == null) {
@@ -162,9 +159,9 @@ open class LockFreeLinkedList<E> {
      */
     @Suppress("DuplicatedCode")
     open fun addAll(iterable: Sequence<E>) {
-        var firstNode: Node<E>? = null
+        var firstNode: LockFreeLinkedListNode<E>? = null
 
-        var currentNode: Node<E>? = null
+        var currentNode: LockFreeLinkedListNode<E>? = null
         iterable.forEach {
             val nextNode = it.asNode(tail)
             if (firstNode == null) {
@@ -186,7 +183,7 @@ open class LockFreeLinkedList<E> {
         val node = LazyNode(tail, supplier)
 
         while (true) {
-            var current: Node<E> = head
+            var current: LockFreeLinkedListNode<E> = head
 
             findLastNode@ while (true) {
                 if (current.isValidElementNode() && filter(current.nodeValue))
@@ -204,13 +201,14 @@ open class LockFreeLinkedList<E> {
     }
 
     @PublishedApi // limitation by atomicfu
-    internal fun <E> Node<E>.compareAndSetNextNodeRef(expect: Node<E>, update: Node<E>) = this.nextNodeRef.compareAndSet(expect, update)
+    internal fun <E> LockFreeLinkedListNode<E>.compareAndSetNextNodeRef(expect: LockFreeLinkedListNode<E>, update: LockFreeLinkedListNode<E>) =
+        this.nextNodeRef.compareAndSet(expect, update)
 
-    override fun toString(): String = joinToString()
+    override fun toString(): String = "[" + asSequence().joinToString() + "]"
 
     @Suppress("unused")
     internal fun getLinkStructure(): String = buildString {
-        head.childIterateReturnsLastSatisfying<Node<*>>({
+        head.childIterateReturnsLastSatisfying<LockFreeLinkedListNode<*>>({
             append(it.toString())
             append(" <- ")
             it.nextNode
@@ -236,7 +234,7 @@ open class LockFreeLinkedList<E> {
 
 
             // physically remove: try to fix the link
-            var next: Node<E> = toRemove.nextNode
+            var next: LockFreeLinkedListNode<E> = toRemove.nextNode
             while (next !== tail && next.isRemoved()) {
                 next = next.nextNode
             }
@@ -265,7 +263,7 @@ open class LockFreeLinkedList<E> {
 
 
             // physically remove: try to fix the link
-            var next: Node<E> = toRemove.nextNode
+            var next: LockFreeLinkedListNode<E> = toRemove.nextNode
             while (next !== tail && next.isRemoved()) {
                 next = next.nextNode
             }
@@ -278,7 +276,7 @@ open class LockFreeLinkedList<E> {
     /**
      * 动态计算的大小
      */
-    val size: Int get() = head.countChildIterate<Node<E>>({ it.nextNode }, { it !is Tail }) - 1 // empty head is always included
+    val size: Int get() = head.countChildIterate<LockFreeLinkedListNode<E>>({ it.nextNode }, { it !is Tail }) - 1 // empty head is always included
 
     open operator fun contains(element: E): Boolean {
         forEach { if (it == element) return true }
@@ -291,10 +289,19 @@ open class LockFreeLinkedList<E> {
     open fun isEmpty(): Boolean = head.allMatching { it.isValidElementNode().not() }
 
     inline fun forEach(block: (E) -> Unit) {
-        var node: Node<E> = head
+        var node: LockFreeLinkedListNode<E> = head
         while (true) {
             if (node === tail) return
             node.letValueIfValid(block)
+            node = node.nextNode
+        }
+    }
+
+    inline fun forEachNode(block: (LockFreeLinkedListNode<E>) -> Unit) {
+        var node: LockFreeLinkedListNode<E> = head
+        while (true) {
+            if (node === tail) return
+            node.letValueIfValid { block(node) }
             node = node.nextNode
         }
     }
@@ -634,14 +641,14 @@ open class LockFreeLinkedList<E> {
 // region internal
 
 @Suppress("NOTHING_TO_INLINE")
-private inline fun <E> E.asNode(nextNode: Node<E>): Node<E> = Node(nextNode, this)
+private inline fun <E> E.asNode(nextNode: LockFreeLinkedListNode<E>): LockFreeLinkedListNode<E> = LockFreeLinkedListNode(nextNode, this)
 
 /**
  * Self-iterate using the [iterator], until [mustBeTrue] returns `false`.
  * Returns the element at the last time when the [mustBeTrue] returns `true`
  */
 @PublishedApi
-internal inline fun <N : Node<*>> N.childIterateReturnsLastSatisfying(iterator: (N) -> N, mustBeTrue: (N) -> Boolean): N {
+internal inline fun <N : LockFreeLinkedListNode<*>> N.childIterateReturnsLastSatisfying(iterator: (N) -> N, mustBeTrue: (N) -> Boolean): N {
     if (!mustBeTrue(this)) return this
     var value: N = this
 
@@ -699,9 +706,9 @@ private inline fun <E> E.countChildIterate(iterator: (E) -> E, mustBeTrue: (E) -
 
 @PublishedApi
 internal class LazyNode<E> @PublishedApi internal constructor(
-    nextNode: Node<E>,
+    nextNode: LockFreeLinkedListNode<E>,
     private val valueComputer: () -> E
-) : Node<E>(nextNode, null) {
+) : LockFreeLinkedListNode<E>(nextNode, null) {
     private val initialized = atomic(false)
 
     private val value: AtomicRef<E?> = atomic(null)
@@ -723,21 +730,20 @@ internal class LazyNode<E> @PublishedApi internal constructor(
 }
 
 @PublishedApi
-internal class Head<E>(nextNode: Node<E>) : Node<E>(nextNode, null) {
+internal class Head<E>(nextNode: LockFreeLinkedListNode<E>) : LockFreeLinkedListNode<E>(nextNode, null) {
     override fun toString(): String = "Head"
     override val nodeValue: Nothing get() = error("Internal error: trying to get the value of a Head")
 }
 
 @PublishedApi
-internal open class Tail<E> : Node<E>(null, null) {
+internal open class Tail<E> : LockFreeLinkedListNode<E>(null, null) {
     override fun toString(): String = "Tail"
     override val nodeValue: Nothing get() = error("Internal error: trying to get the value of a Tail")
 }
 
-@PublishedApi
-internal open class Node<E>(
-    nextNode: Node<E>?,
-    private var initialNodeValue: E?
+open class LockFreeLinkedListNode<E>(
+    nextNode: LockFreeLinkedListNode<E>?,
+    private val initialNodeValue: E?
 ) {
     /*
     internal val id: Int = nextId()
@@ -750,23 +756,21 @@ internal open class Node<E>(
 
     open val nodeValue: E get() = initialNodeValue ?: error("Internal error: nodeValue is not initialized")
 
-    val removed = atomic(false)
+    @PublishedApi
+    internal val removed = atomic(false)
 
     @Suppress("LeakingThis")
-    val nextNodeRef: AtomicRef<Node<E>> = atomic(nextNode ?: this)
+    internal val nextNodeRef: AtomicRef<LockFreeLinkedListNode<E>> = atomic(nextNode ?: this)
 
     inline fun <R> letValueIfValid(block: (E) -> R): R? {
-        if (!this.isValidElementNode()) {
-            return null
-        }
-        val value = this.nodeValue
-        return if (value !== null) block(value) else null
+        return this.takeIf { isValidElementNode() }?.nodeValue?.let(block)
     }
 
     /**
      * Short cut for accessing [nextNodeRef]
      */
-    var nextNode: Node<E>
+    @PublishedApi
+    internal var nextNode: LockFreeLinkedListNode<E>
         get() = nextNodeRef.value
         set(value) {
             nextNodeRef.value = value
@@ -775,7 +779,7 @@ internal open class Node<E>(
     /**
      * Returns the former node of the last node whence [filter] returns true
      */
-    inline fun iterateBeforeFirst(filter: (Node<E>) -> Boolean): Node<E> =
+    inline fun iterateBeforeFirst(filter: (LockFreeLinkedListNode<E>) -> Boolean): LockFreeLinkedListNode<E> =
         this.childIterateReturnsLastSatisfying({ it.nextNode }, { !filter(it) })
 
     /**
@@ -784,7 +788,8 @@ internal open class Node<E>(
      * Head, which is this, is also being tested.
      * [Tail], is not being tested.
      */
-    inline fun allMatching(condition: (Node<E>) -> Boolean): Boolean = this.childIterateReturnsLastSatisfying({ it.nextNode }, condition) !is Tail
+    inline fun allMatching(condition: (LockFreeLinkedListNode<E>) -> Boolean): Boolean =
+        this.childIterateReturnsLastSatisfying({ it.nextNode }, condition) !is Tail
 
     /**
      * Stop on and returns the former element of the element that is [equals] to the [element]
@@ -792,23 +797,23 @@ internal open class Node<E>(
      * E.g.: for `head <- 1 <- 2 <- 3 <- tail`, `iterateStopOnNodeValue(2)` returns the node whose value is 1
      */
     @Suppress("NOTHING_TO_INLINE")
-    internal inline fun iterateBeforeNodeValue(element: E): Node<E> = this.iterateBeforeFirst { it.isValidElementNode() && it.nodeValue == element }
+    internal inline fun iterateBeforeNodeValue(element: E): LockFreeLinkedListNode<E> =
+        this.iterateBeforeFirst { it.isValidElementNode() && it.nodeValue == element }
 
 }
 
-@PublishedApi // DO NOT INLINE: ATOMIC OPERATION
-internal fun <E> Node<E>.isRemoved() = this.removed.value
+fun <E> LockFreeLinkedListNode<E>.isRemoved() = this.removed.value
 
 @PublishedApi
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun Node<*>.isValidElementNode(): Boolean = !isHead() && !isTail() && !isRemoved()
+internal inline fun LockFreeLinkedListNode<*>.isValidElementNode(): Boolean = !isHead() && !isTail() && !isRemoved()
 
 @PublishedApi
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun Node<*>.isHead(): Boolean = this is Head
+internal inline fun LockFreeLinkedListNode<*>.isHead(): Boolean = this is Head
 
 @PublishedApi
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun Node<*>.isTail(): Boolean = this is Tail
+internal inline fun LockFreeLinkedListNode<*>.isTail(): Boolean = this is Tail
 
 // end region

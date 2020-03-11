@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.utils.cryptor
 
-import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -20,13 +21,13 @@ import javax.crypto.KeyAgreement
 actual typealias ECDHPrivateKey = PrivateKey
 actual typealias ECDHPublicKey = PublicKey
 
-actual class ECDHKeyPair(
+internal actual class ECDHKeyPairImpl(
     private val delegate: KeyPair
-) {
-    actual val privateKey: ECDHPrivateKey get() = delegate.private
-    actual val publicKey: ECDHPublicKey get() = delegate.public
+) : ECDHKeyPair {
+    override val privateKey: ECDHPrivateKey get() = delegate.private
+    override val publicKey: ECDHPublicKey get() = delegate.public
 
-    actual val initialShareKey: ByteArray = ECDH.calculateShareKey(privateKey, initialPublicKey)
+    override val initialShareKey: ByteArray = ECDH.calculateShareKey(privateKey, initialPublicKey)
 }
 
 @Suppress("FunctionName")
@@ -34,14 +35,31 @@ actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
-        init {
+        @Suppress("ObjectPropertyName")
+        private val _isECDHAvailable: Boolean = kotlin.runCatching {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
+            }
             Security.addProvider(BouncyCastleProvider())
-        }
+            ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
+                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                .genKeyPair()).let {
+                calculateShareKey(it.privateKey, it.publicKey)
+            } // try if it is working
+        }.isSuccess
+
+        actual val isECDHAvailable: Boolean get() = _isECDHAvailable
 
         actual fun generateKeyPair(): ECDHKeyPair {
-            return ECDHKeyPair(KeyPairGenerator.getInstance("EC", "BC").apply { initialize(ECGenParameterSpec("secp192k1")) }.genKeyPair())
+            if (!isECDHAvailable) {
+                return ECDHKeyPair.DefaultStub
+            }
+            return ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
+                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                .genKeyPair())
         }
 
+        @OptIn(MiraiInternalAPI::class)
         actual fun calculateShareKey(
             privateKey: ECDHPrivateKey,
             publicKey: ECDHPublicKey
@@ -49,7 +67,7 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             val instance = KeyAgreement.getInstance("ECDH", "BC")
             instance.init(privateKey)
             instance.doPhase(publicKey, true)
-            return md5(instance.generateSecret())
+            return MiraiPlatformUtils.md5(instance.generateSecret())
         }
 
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {

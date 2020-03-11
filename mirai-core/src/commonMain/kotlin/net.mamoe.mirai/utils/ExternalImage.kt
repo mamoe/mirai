@@ -11,14 +11,19 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.io.ByteReadChannel
+import kotlinx.io.InputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.io.toUHexString
+import kotlinx.serialization.InternalSerializationApi
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
@@ -28,31 +33,91 @@ import net.mamoe.mirai.utils.io.toUHexString
  * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
-class ExternalImage(
+class ExternalImage private constructor(
     val width: Int,
     val height: Int,
     val md5: ByteArray,
     imageFormat: String,
-    val input: Input,
+    val input: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
     val inputSize: Long, // dont be greater than Int.MAX
     val filename: String
 ) {
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: ByteReadChannel,
+        inputSize: Long, // dont be greater than Int.MAX
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, inputSize, filename)
+
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: Input,
+        inputSize: Long, // dont be greater than Int.MAX
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, inputSize, filename)
+
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: ByteReadPacket,
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, input.remaining, filename)
+
+    @OptIn(InternalSerializationApi::class)
+    constructor(
+        width: Int,
+        height: Int,
+        md5: ByteArray,
+        imageFormat: String,
+        input: InputStream,
+        filename: String
+    ) : this(width, height, md5, imageFormat, input as Any, input.available().toLong(), filename)
+
     init {
-        check(inputSize in 0L..Int.MAX_VALUE.toLong()) { "file is too big" }
+        require(inputSize < 30L * 1024 * 1024) { "file is too big. Maximum is about 20MB" }
     }
 
     companion object {
-        operator fun invoke(
-            width: Int,
-            height: Int,
-            md5: ByteArray,
-            format: String,
-            data: ByteReadPacket,
-            filename: String
-        ): ExternalImage = ExternalImage(width, height, md5, format, data, data.remaining, filename)
-
-        fun generateUUID(md5: ByteArray): String{
+        fun generateUUID(md5: ByteArray): String {
             return "${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}"
+        }
+
+        fun generateImageId(md5: ByteArray, imageType: Int): String {
+            return """{${generateUUID(md5)}}.${determineFormat(imageType)}"""
+        }
+
+        fun determineImageType(format: String): Int {
+            return when (format) {
+                "jpg" -> 1000
+                "png" -> 1001
+                "webp" -> 1002
+                "bmp" -> 1005
+                "gig" -> 2000
+                "apng" -> 2001
+                "sharpp" -> 1004
+                else -> 1000 // unsupported, just make it jpg
+            }
+        }
+
+        fun determineFormat(imageType: Int): String {
+            return when (imageType) {
+                1000 -> "jpg"
+                1001 -> "png"
+                1002 -> "webp"
+                1005 -> "bmp"
+                2000 -> "gig"
+                2001 -> "apng"
+                1004 -> "sharpp"
+                else -> "jpg" // unsupported, just make it jpg
+            }
         }
     }
 
@@ -73,16 +138,7 @@ class ExternalImage(
      *  SHARPP: 1004
      */
     val imageType: Int
-        get() = when (format) {
-            "jpg" -> 1000
-            "png" -> 1001
-            "webp" -> 1002
-            "bmp" -> 1005
-            "gig" -> 2000
-            "apng" -> 2001
-            "sharpp" -> 1004
-            else -> 1000 // unsupported, just make it jpg
-        }
+        get() = determineImageType(format)
 
     override fun toString(): String = "[ExternalImage(${width}x$height $format)]"
 
@@ -94,7 +150,7 @@ class ExternalImage(
 /**
  * 将图片发送给指定联系人
  */
-suspend fun ExternalImage.sendTo(contact: Contact) = when (contact) {
+suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
     is Group -> contact.uploadImage(this).sendTo(contact)
     is QQ -> contact.uploadImage(this).sendTo(contact)
     else -> error("unreachable")
@@ -106,7 +162,7 @@ suspend fun ExternalImage.sendTo(contact: Contact) = when (contact) {
  *
  * @see contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
  */
-suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
+suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact) {
     is Group -> contact.uploadImage(this)
     is QQ -> contact.uploadImage(this)
     else -> error("unreachable")
@@ -115,7 +171,7 @@ suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
 /**
  * 将图片发送给 [this]
  */
-suspend inline fun Contact.sendImage(image: ExternalImage) = image.sendTo(this)
+suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
 
 private operator fun ByteArray.get(range: IntRange): String = buildString {
     range.forEach {

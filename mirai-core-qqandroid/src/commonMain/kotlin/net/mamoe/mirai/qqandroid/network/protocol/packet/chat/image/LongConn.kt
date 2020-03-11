@@ -67,7 +67,7 @@ internal class LongConn {
     }
 
     object OffPicDown : OutgoingPacketFactory<OffPicDown.ImageDownPacketResponse>("LongConn.OffPicDown") {
-        operator fun invoke(client: QQAndroidClient, req: GetImgUrlReq): OutgoingPacket {
+        operator fun invoke(client: QQAndroidClient, @Suppress("UNUSED_PARAMETER") req: GetImgUrlReq): OutgoingPacket {
             return buildOutgoingUniPacket(client) {
                 TODO()
             }

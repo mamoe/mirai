@@ -29,8 +29,15 @@ object NoPacket : Packet {
 /**
  * PacketFactory 可以一次解析多个包出来. 它们将会被分别广播.
  */
-open class MultiPacket<P : Packet>(internal val delegate: List<P>) : List<P> by delegate, Packet {
-    override fun toString(): String {
-        return "MultiPacket<${this.firstOrNull()?.let { it::class.simpleName } ?: "?"}>"
-    }
+interface MultiPacket<out P : Packet> : Packet, Iterable<P>
+
+open class MultiPacketByIterable<out P : Packet>(internal val delegate: Iterable<P>) : MultiPacket<P>,
+    Iterable<P> by delegate {
+    override fun toString(): String = "MultiPacketByIterable"
+}
+
+open class MultiPacketBySequence<out P : Packet>(internal val delegate: Sequence<P>) : MultiPacket<P> {
+    override operator fun iterator(): Iterator<P> = delegate.iterator()
+
+    override fun toString(): String = "MultiPacketBySequence"
 }

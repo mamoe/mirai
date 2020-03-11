@@ -16,10 +16,10 @@ import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.close
 import kotlinx.coroutines.io.jvm.nio.copyTo
 import kotlinx.coroutines.io.reader
+import kotlinx.coroutines.io.writeFully
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.io.core.IoBuffer
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -31,64 +31,61 @@ import javax.imageio.ImageIO
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-/**
- * 平台默认的验证码识别器.
- *
- * 可被修改, 除覆盖配置外全局生效.
- */
-actual var defaultLoginSolver: LoginSolver = DefaultLoginSolver()
-
-
-internal class DefaultLoginSolver : LoginSolver() {
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String? = loginSolverLock.withLock {
+class DefaultLoginSolver(
+    private val input: suspend () -> String,
+    private val overrideLogger: MiraiLogger? = null
+) : LoginSolver() {
+    override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
+        val logger = overrideLogger ?: bot.logger
         val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
         withContext(Dispatchers.IO) {
             tempFile.createNewFile()
-            bot.logger.info("需要图片验证码登录, 验证码为 4 字母")
+            logger.info("需要图片验证码登录, 验证码为 4 字母")
             try {
                 tempFile.writeChannel().apply { writeFully(data); close() }
-                bot.logger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
+                logger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
             } catch (e: Exception) {
-                bot.logger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+                logger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
             }
 
             tempFile.inputStream().use {
                 val img = ImageIO.read(it)
                 if (img == null) {
-                    bot.logger.info("无法创建字符图片. 请查看文件")
+                    logger.info("无法创建字符图片. 请查看文件")
                 } else {
-                    bot.logger.info(img.createCharImg())
+                    logger.info(img.createCharImg())
                 }
             }
         }
-        bot.logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
-        return readLine()!!.takeUnless { it.isEmpty() || it.length != 4 }.also {
-            bot.logger.info("正在提交[$it]中...")
+        logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
+        return input().takeUnless { it.isEmpty() || it.length != 4 }.also {
+            logger.info("正在提交[$it]中...")
         }
     }
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? = loginSolverLock.withLock {
-        bot.logger.info("需要滑动验证码")
-        bot.logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
-        bot.logger.info("完成后请输入任意字符 ")
-        bot.logger.info(url)
-        return readLine().also {
-            bot.logger.info("正在提交中...")
+        val logger = overrideLogger ?: bot.logger
+        logger.info("需要滑动验证码")
+        logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
+        logger.info("完成后请输入任意字符 ")
+        logger.info(url)
+        return input().also {
+            logger.info("正在提交中...")
         }
     }
 
     override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? = loginSolverLock.withLock {
-        bot.logger.info("需要进行账户安全认证")
-        bot.logger.info("该账户有[设备锁]/[不常用登陆地点]/[不常用设备登陆]的问题")
-        bot.logger.info("完成以下账号认证即可成功登陆|理论本认证在mirai每个账户中最多出现1次")
-        bot.logger.info("请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
-        bot.logger.info("这步操作将在后续的版本中优化")
-        bot.logger.info(url)
-        return readLine().also {
-            bot.logger.info("正在提交中...")
+        val logger = overrideLogger ?: bot.logger
+        logger.info("需要进行账户安全认证")
+        logger.info("该账户有[设备锁]/[不常用登录地点]/[不常用设备登录]的问题")
+        logger.info("完成以下账号认证即可成功登录|理论本认证在mirai每个账户中最多出现1次")
+        logger.info("请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
+        logger.info("这步操作将在后续的版本中优化")
+        logger.info(url)
+        return input().also {
+            logger.info("正在提交中...")
         }
     }
-
 }
 
 // Copied from Ktor CIO
@@ -195,15 +192,15 @@ actual open class BotConfiguration actual constructor() {
     /**
      * 重连失败后, 继续尝试的每次等待时间
      */
-    actual var reconnectPeriodMillis: Long = 60.secondsToMillis
+    actual var reconnectPeriodMillis: Long = 5.secondsToMillis
     /**
      * 最多尝试多少次重连
      */
-    actual var reconnectionRetryTimes: Int = 3
+    actual var reconnectionRetryTimes: Int = Int.MAX_VALUE
     /**
      * 验证码处理器
      */
-    actual var loginSolver: LoginSolver = defaultLoginSolver
+    actual var loginSolver: LoginSolver = LoginSolver.Default
 
     actual companion object {
         /**
@@ -253,4 +250,18 @@ inline class FileBasedDeviceInfo @BotConfigurationDsl constructor(val filepath: 
      */
     @BotConfigurationDsl
     companion object ByDeviceDotJson
+}
+
+/**
+ * 验证码, 设备锁解决器
+ */
+actual abstract class LoginSolver {
+    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
+    actual abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
+    actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
+
+    actual companion object {
+        actual val Default: LoginSolver
+            get() = DefaultLoginSolver(input = { withContext(Dispatchers.IO) { readLine() } ?: error("No standard input") })
+    }
 }

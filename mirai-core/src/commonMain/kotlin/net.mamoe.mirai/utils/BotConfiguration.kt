@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.IoBuffer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
@@ -18,18 +17,17 @@ import kotlin.jvm.JvmStatic
 /**
  * 验证码, 设备锁解决器
  */
-abstract class LoginSolver {
-    abstract suspend fun onSolvePicCaptcha(bot: Bot, data: IoBuffer): String?
+expect abstract class LoginSolver {
+    abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
 
     abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
 
     abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
-}
 
-/**
- * 在各平台实现的默认的验证码处理器.
- */
-expect var defaultLoginSolver: LoginSolver
+    companion object {
+        val Default: LoginSolver
+    }
+}
 
 /**
  * [Bot] 配置

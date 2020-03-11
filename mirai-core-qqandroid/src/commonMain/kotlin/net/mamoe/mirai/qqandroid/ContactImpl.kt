@@ -10,16 +10,21 @@
 package net.mamoe.mirai.qqandroid
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.core.Closeable
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
-import net.mamoe.mirai.message.data.CustomFaceFromFile
-import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.NotOnlineImageFromFile
+import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.OfflineFriendImage
+import net.mamoe.mirai.message.data.OfflineGroupImage
+import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
@@ -31,23 +36,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.toUHexString
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
-
-internal abstract class ContactImpl : Contact {
-    override fun hashCode(): Int {
-        var result = bot.hashCode()
-        result = 31 * result + id.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Contact) return false
-        if (this::class != other::class) return false
-        return this.id == other.id && this.bot == other.bot
-    }
-}
 
 internal inline class FriendInfoImpl(
     private val jceFriendInfo: JceFriendInfo
@@ -61,28 +53,33 @@ internal class QQImpl(
     override val coroutineContext: CoroutineContext,
     override val id: Long,
     private val friendInfo: FriendInfo
-) : ContactImpl(), QQ {
+) : QQ() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val nick: String
         get() = friendInfo.nick
 
-    override suspend fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> {
         val event = FriendMessageSendEvent(this, message).broadcast()
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSource
         bot.network.run {
             check(
                 MessageSvc.PbSendMsg.ToFriend(
                     bot.client,
                     id,
                     event.message
-                ).sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+                ) {
+                    source = it
+                }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
+        return MessageReceipt(source, this, null)
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image = try {
+    @OptIn(MiraiInternalAPI::class)
+    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -102,8 +99,9 @@ internal class QQImpl(
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
+            @Suppress("UNCHECKED_CAST") // bug
             return when (response) {
-                is LongConn.OffPicUp.Response.FileExists -> NotOnlineImageFromFile(
+                is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(
                     filepath = response.resourceId,
                     md5 = response.imageInfo.fileMd5,
                     fileLength = response.imageInfo.fileSize.toInt(),
@@ -114,19 +112,27 @@ internal class QQImpl(
                     ImageUploadEvent.Succeed(this@QQImpl, image, it).broadcast()
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
-                    Http.postImage("0x6ff0070", bot.uin, null, imageInput = image.input, inputSize = image.inputSize, uKeyHex = response.uKey.toUHexString(""))
-//                    HighwayHelper.uploadImage(
-//                        client = bot.client,
-//                        serverIp = response.serverIp[0].toIpV4AddressString(),
-//                        serverPort = response.serverPort[0],
-//                        imageInput = image.input,
-//                        inputSize = image.inputSize.toInt(),
-//                        md5 = image.md5,
-//                        uKey = response.uKey,
-//                        commandId = 1
-//                    )
+                    MiraiPlatformUtils.Http.postImage(
+                        "0x6ff0070",
+                        bot.uin,
+                        null,
+                        imageInput = image.input,
+                        inputSize = image.inputSize,
+                        uKeyHex = response.uKey.toUHexString("")
+                    )
+                    //HighwayHelper.uploadImage(
+                    //    client = bot.client,
+                    //    serverIp = response.serverIp[0].toIpV4AddressString(),
+                    //    serverPort = response.serverPort[0],
+                    //    imageInput = image.input,
+                    //    inputSize = image.inputSize.toInt(),
+                    //    fileMd5 = image.md5,
+                    //    uKey = response.uKey,
+                    //    commandId = 1
+                    //)
+                    // 为什么不能 ??
 
-                    return NotOnlineImageFromFile(
+                    return OfflineFriendImage(
                         filepath = response.resourceId,
                         md5 = image.md5,
                         fileLength = image.inputSize.toInt(),
@@ -144,7 +150,22 @@ internal class QQImpl(
             }
         }
     } finally {
-        image.input.close()
+        (image.input as? Closeable)?.close()
+        (image.input as? Closeable)?.close()
+    }
+
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        @Suppress("DuplicatedCode")
+        if (this === other) return true
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
     }
 
     @MiraiExperimentalAPI
@@ -162,28 +183,53 @@ internal class QQImpl(
         TODO("not implemented")
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is QQ && other.id == this.id
-    }
-
-    override fun hashCode(): Int = super.hashCode()
+    override fun toString(): String = "QQ($id)"
 }
 
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl(
-    qq: QQImpl,
+    val qq: QQImpl, // 不要 WeakRef
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
-) : ContactImpl(), Member, QQ by qq {
+) : Member() {
     override val group: GroupImpl by group.unsafeWeakRef()
-    val qq: QQImpl by qq.unsafeWeakRef()
+
+    // region QQ delegate
+    override val id: Long = qq.id
+    override val nick: String = qq.nick
+
+    @MiraiExperimentalAPI
+    override suspend fun queryProfile(): Profile = qq.queryProfile()
+
+    @MiraiExperimentalAPI
+    override suspend fun queryPreviousNameList(): PreviousNameList = qq.queryPreviousNameList()
+
+    @MiraiExperimentalAPI
+    override suspend fun queryRemark(): FriendNameRemark = qq.queryRemark()
+
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> = qq.sendMessage(message)
+    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = qq.uploadImage(image)
+    // endregion
 
     override var permission: MemberPermission = memberInfo.permission
+
+    @Suppress("PropertyName")
     internal var _nameCard: String = memberInfo.nameCard
+
+    @Suppress("PropertyName")
     internal var _specialTitle: String = memberInfo.specialTitle
+
+    @Suppress("PropertyName")
+    var _muteTimestamp: Int = memberInfo.muteTimestamp
+
+    override val muteTimeRemaining: Int =
+        if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
+            0
+        } else {
+            _muteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+        }
 
     override var nameCard: String
         get() = _nameCard
@@ -220,7 +266,7 @@ internal class MemberImpl(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl).broadcast()
+                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl, null).broadcast()
                 }
             }
         }
@@ -279,62 +325,102 @@ internal class MemberImpl(
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is Member && other.id == this.id
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
     }
 
-    override fun hashCode(): Int = super.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
+    }
+
+    override fun toString(): String {
+        return "Member($id)"
+    }
 }
 
 internal class MemberInfoImpl(
-    private val jceInfo: StTroopMemberInfo,
-    private val groupOwnerId: Long
+    jceInfo: StTroopMemberInfo,
+    groupOwnerId: Long
 ) : MemberInfo {
-    override val uin: Long get() = jceInfo.memberUin
-    override val nameCard: String get() = jceInfo.sName ?: ""
-    override val nick: String get() = jceInfo.nick
-    override val permission: MemberPermission
-        get() = when {
-            jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
-            jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
-            else -> MemberPermission.MEMBER
-        }
-    override val specialTitle: String get() = jceInfo.sSpecialTitle ?: ""
+    override val uin: Long = jceInfo.memberUin
+    override val nameCard: String = jceInfo.sName ?: ""
+    override val nick: String = jceInfo.nick
+    override val permission: MemberPermission = when {
+        jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
+        jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
+        else -> MemberPermission.MEMBER
+    }
+    override val specialTitle: String = jceInfo.sSpecialTitle ?: ""
+    override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
 }
 
-/**
- * 对GroupImpl
- * 中name/announcement的更改会直接向服务器异步汇报
- */
+@OptIn(ExperimentalContracts::class)
+internal fun GroupImpl.Companion.checkIsInstance(expression: Boolean) {
+    contract {
+        returns() implies expression
+    }
+    check(expression) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
+}
+
 @Suppress("PropertyName")
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
-) : ContactImpl(), Group {
+) : Group() {
+    @Suppress("\"RemoveEmptyClassBody\"") // things will go wrong after removal, don't try
+    companion object {
+
+    }
+
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     val uin: Long = groupInfo.uin
 
     override lateinit var owner: Member
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
+    override val botAsMember: Member by lazy {
+        Member(object : MemberInfo {
+            override val nameCard: String
+                get() = bot.nick // TODO: 2020/2/21 机器人在群内的昵称获取
+            override val permission: MemberPermission
+                get() = botPermission
+            override val specialTitle: String
+                get() = "" // TODO: 2020/2/21 获取机器人在群里的头衔
+            override val muteTimestamp: Int
+                get() = botMuteRemaining
+            override val uin: Long
+                get() = bot.uin
+            override val nick: String
+                get() = bot.nick
+        })
+    }
+
+    @OptIn(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
-    var _botMuteRemaining: Int = groupInfo.botMuteRemaining
+    var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
 
     override val botMuteRemaining: Int =
-        if (_botMuteRemaining == 0 || _botMuteRemaining == 0xFFFFFFFF.toInt()) {
+        if (_botMuteTimestamp == 0 || _botMuteTimestamp == 0xFFFFFFFF.toInt()) {
             0
         } else {
-            _botMuteRemaining - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+            _botMuteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
         }
 
     override val members: ContactList<Member> = ContactList(members.mapNotNull {
         if (it.uin == bot.uin) {
             botPermission = it.permission
+            if (it.permission == MemberPermission.OWNER) {
+                owner = botAsMember
+            }
             null
         } else Member(it).also { member ->
             if (member.permission == MemberPermission.OWNER) {
@@ -344,11 +430,11 @@ internal class GroupImpl(
     }.toLockFreeLinkedList())
 
     internal var _name: String = groupInfo.name
-    internal var _announcement: String = groupInfo.memo
-    internal var _allowMemberInvite: Boolean = groupInfo.allowMemberInvite
+    private var _announcement: String = groupInfo.memo
+    private var _allowMemberInvite: Boolean = groupInfo.allowMemberInvite
     internal var _confessTalk: Boolean = groupInfo.confessTalk
     internal var _muteAll: Boolean = groupInfo.muteAll
-    internal var _autoApprove: Boolean = groupInfo.autoApprove
+    private var _autoApprove: Boolean = groupInfo.autoApprove
     internal var _anonymousChat: Boolean = groupInfo.allowAnonymousChat
 
     override var name: String
@@ -414,12 +500,14 @@ internal class GroupImpl(
 
     override var isAutoApproveEnabled: Boolean
         get() = _autoApprove
+        @Suppress("UNUSED_PARAMETER")
         set(newValue) {
             TODO()
         }
 
     override var isAnonymousChatEnabled: Boolean
         get() = _anonymousChat
+        @Suppress("UNUSED_PARAMETER")
         set(newValue) {
             TODO()
         }
@@ -465,15 +553,17 @@ internal class GroupImpl(
             }
         }
 
+    @MiraiExperimentalAPI
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
         TODO("not implemented")
     }
 
-    @UseExperimental(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            bot.QQ(memberInfo) as QQImpl,
+            @OptIn(LowLevelAPI::class)
+            bot._lowLevelNewQQ(memberInfo) as QQImpl,
             this,
             this.coroutineContext,
             memberInfo
@@ -482,7 +572,8 @@ internal class GroupImpl(
 
 
     override operator fun get(id: Long): Member {
-        return members.delegate.filteringGetOrNull { it.id == id } ?: throw NoSuchElementException("member $id not found in group $uin")
+        return members.delegate.filteringGetOrNull { it.id == id }
+            ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
@@ -493,25 +584,31 @@ internal class GroupImpl(
         return members.delegate.filteringGetOrNull { it.id == id }
     }
 
-    override suspend fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group> {
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
         val event = GroupMessageSendEvent(this, message).broadcast()
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
+        lateinit var source: MessageSourceFromSendGroup
         bot.network.run {
-            val response = MessageSvc.PbSendMsg.ToGroup(
+            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,
                 id,
                 event.message
-            ).sendAndExpect<MessageSvc.PbSendMsg.Response>()
+            ) {
+                source = it
+                source.startWaitingSequenceId(this)
+            }.sendAndExpect()
             check(
                 response is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed: $response" }
         }
+
+        return MessageReceipt(source, this, botAsMember)
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image = try {
+    override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -528,9 +625,11 @@ internal class GroupImpl(
                 filename = image.filename
             ).sendAndExpect()
 
+            @Suppress("UNCHECKED_CAST") // bug
             when (response) {
                 is ImgStore.GroupPicUp.Response.Failed -> {
                     ImageUploadEvent.Failed(this@GroupImpl, image, response.resultCode, response.message).broadcast()
+                    if (response.message == "over file size max") throw OverFileSizeMaxException()
                     error("upload group image failed with reason ${response.message}")
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
@@ -546,22 +645,25 @@ internal class GroupImpl(
 //                        fileId = response.fileId.toInt()
 //                    )
                     //  println("NMSL")
-                    return CustomFaceFromFile(
+                    return OfflineGroupImage(
                         md5 = image.md5,
                         filepath = resourceId
                     ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    HighwayHelper.uploadImage(
-                        client = bot.client,
-                        serverIp = response.uploadIpList.first().toIpV4AddressString(),
-                        serverPort = response.uploadPortList.first(),
-                        imageInput = image.input,
-                        inputSize = image.inputSize.toInt(),
-                        md5 = image.md5,
-                        uKey = response.uKey,
-                        commandId = 2
-                    )
+                    // 每 10KB 等 1 秒
+                    withTimeoutOrNull(image.inputSize * 1000 / 1024 / 10) {
+                        HighwayHelper.uploadImage(
+                            client = bot.client,
+                            serverIp = response.uploadIpList.first().toIpV4AddressString(),
+                            serverPort = response.uploadPortList.first(),
+                            imageInput = image.input,
+                            inputSize = image.inputSize.toInt(),
+                            fileMd5 = image.md5,
+                            uKey = response.uKey,
+                            commandId = 2
+                        )
+                    } ?: error("timeout uploading image: ${image.filename}")
                     val resourceId = image.calculateImageResourceId()
                     // return NotOnlineImageFromFile(
                     //     resourceId = resourceId,
@@ -573,7 +675,7 @@ internal class GroupImpl(
                     //     imageType = image.imageType,
                     //     fileId = response.fileId.toInt()
                     // )
-                    return CustomFaceFromFile(
+                    return OfflineGroupImage(
                         md5 = image.md5,
                         filepath = resourceId
                     ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
@@ -597,13 +699,24 @@ internal class GroupImpl(
             }
         }
     } finally {
-        image.input.close()
+        (image.input as? Closeable)?.close()
+    }
+
+    override fun toString(): String {
+        return "Group($id)"
+    }
+
+    override fun hashCode(): Int {
+        var result = bot.hashCode()
+        result = 31 * result + id.hashCode()
+        return result
     }
 
     override fun equals(other: Any?): Boolean {
+        @Suppress("DuplicatedCode", "DuplicatedCode")
         if (this === other) return true
-        return other is Group && other.id == this.id
+        if (other !is Contact) return false
+        if (this::class != other::class) return false
+        return this.id == other.id && this.bot == other.bot
     }
-
-    override fun hashCode(): Int = super.hashCode()
 }

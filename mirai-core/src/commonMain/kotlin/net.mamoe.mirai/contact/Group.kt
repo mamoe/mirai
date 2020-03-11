@@ -7,20 +7,30 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
+import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OfflineGroupImage
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.OverFileSizeMaxException
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
  */
-interface Group : Contact, CoroutineScope {
+@Suppress("INAPPLICABLE_JVM_NAME")
+expect abstract class Group() : Contact, CoroutineScope {
     /**
      * 群名称.
      *
@@ -30,7 +40,7 @@ interface Group : Contact, CoroutineScope {
      * @see MemberPermissionChangeEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var name: String
+    abstract var name: String
     /**
      * 入群公告, 没有时为空字符串.
      *
@@ -39,7 +49,7 @@ interface Group : Contact, CoroutineScope {
      * @see GroupEntranceAnnouncementChangeEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var entranceAnnouncement: String
+    abstract var entranceAnnouncement: String
     /**
      * 全体禁言状态. `true` 为开启.
      *
@@ -48,7 +58,7 @@ interface Group : Contact, CoroutineScope {
      * @see GroupMuteAllEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var isMuteAll: Boolean
+    abstract var isMuteAll: Boolean
     /**
      * 坦白说状态. `true` 为允许.
      *
@@ -57,7 +67,7 @@ interface Group : Contact, CoroutineScope {
      * @see GroupAllowConfessTalkEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var isConfessTalkEnabled: Boolean
+    abstract var isConfessTalkEnabled: Boolean
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许
      *
@@ -66,70 +76,85 @@ interface Group : Contact, CoroutineScope {
      * @see GroupAllowMemberInviteEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var isAllowMemberInvite: Boolean
+    abstract var isAllowMemberInvite: Boolean
     /**
      * 自动加群审批
      */
-    val isAutoApproveEnabled: Boolean
+    abstract val isAutoApproveEnabled: Boolean
     /**
      * 匿名聊天
      */
-    val isAnonymousChatEnabled: Boolean
+    abstract val isAnonymousChatEnabled: Boolean
 
     /**
      * 同为 groupCode, 用户看到的群号码.
      */
-    override val id: Long
+    abstract override val id: Long
 
     /**
-     * 群主
+     * 群主.
+     *
+     * @return 若机器人是群主, 返回 [botAsMember]. 否则返回相应的成员
      */
-    val owner: Member
+    abstract val owner: Member
+
+    /**
+     * [Bot] 在群内的 [Member] 实例
+     */
+    @MiraiExperimentalAPI
+    abstract val botAsMember: Member
 
     /**
      * 机器人被禁言还剩余多少秒
      *
-     * @see BotMuteEvent
-     * @see isBotMuted
+     * @see BotMuteEvent 机器人被禁言事件
+     * @see isBotMuted 判断机器人是否正在被禁言
      */
-    val botMuteRemaining: Int
+    abstract val botMuteRemaining: Int
 
     /**
      * 机器人在这个群里的权限
      *
-     * **MiraiExperimentalAPI**: 在未来可能会被修改
+     * @see Group.checkBotPermission 检查 [Bot] 在这个群里的权限
+     * @see Group.checkBotPermissionOperator 要求 [Bot] 在这个群里的权限为 [管理员或群主][MemberPermission.isOperator]
      *
-     * @see BotGroupPermissionChangeEvent
+     * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
-    @MiraiExperimentalAPI
-    val botPermission: MemberPermission
+    abstract val botPermission: MemberPermission
 
+    /**
+     * 群头像下载链接.
+     */
+    val avatarUrl: String
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
      * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新
      */
-    val members: ContactList<Member>
+    abstract val members: ContactList<Member>
 
     /**
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException]
      */
-    operator fun get(id: Long): Member
+    abstract operator fun get(id: Long): Member
 
     /**
      * 获取群成员实例, 不存在则 null
      */
-    fun getOrNull(id: Long): Member?
+    abstract fun getOrNull(id: Long): Member?
 
     /**
      * 检查此 id 的群成员是否存在
      */
-    operator fun contains(id: Long): Boolean
+    abstract operator fun contains(id: Long): Boolean
 
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
      */
-    suspend fun quit(): Boolean
+    @JvmName("quitSuspend")
+    @JvmSynthetic
+    @MiraiExperimentalAPI("还未支持")
+    abstract suspend fun quit(): Boolean
 
     /**
      * 构造一个 [Member].
@@ -138,51 +163,50 @@ interface Group : Contact, CoroutineScope {
     @MiraiExperimentalAPI("dangerous")
     @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName")
     @JvmName("newMember")
-    fun Member(memberInfo: MemberInfo): Member
+    abstract fun Member(memberInfo: MemberInfo): Member
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     *
+     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
+     */
+    @JvmName("sendMessageSuspend")
+    @JvmSynthetic
+    abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>
+
+    /**
+     * 上传一个图片以备发送.
+     *
+     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
+     * @see ImageUploadEvent 图片发送完成事件
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
+     */
+    @JvmName("uploadImageSuspend")
+    @JvmSynthetic
+    abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
 
     companion object {
+        // don't @JvmStatic: JDK 1.8 required
+        fun calculateGroupUinByGroupCode(groupCode: Long): Long
 
-        /**
-         * by @kar98k
-         */ // don't @JvmStatic: JDK 1.8 required
-        fun calculateGroupUinByGroupCode(groupCode: Long): Long {
-            var left: Long = groupCode / 1000000L
-
-            when (left) {
-                in 0..10 -> left += 202
-                in 11..19 -> left += 480 - 11
-                in 20..66 -> left += 2100 - 20
-                in 67..156 -> left += 2010 - 67
-                in 157..209 -> left += 2147 - 157
-                in 210..309 -> left += 4100 - 210
-                in 310..499 -> left += 3800 - 310
-            }
-
-            return left * 1000000L + groupCode % 1000000L
-        }
-
-        fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
-            var left: Long = groupUin / 1000000L
-
-            when (left) {
-                in 0 + 202..10 + 202 -> left -= 202
-                in 11 + 480 - 11..19 + 480 - 11 -> left -= 480 - 11
-                in 20 + 2100 - 20..66 + 2100 - 20 -> left -= 2100 - 20
-                in 67 + 2010 - 67..156 + 2010 - 67 -> left -= 2010 - 67
-                in 157 + 2147 - 157..209 + 2147 - 157 -> left -= 2147 - 157
-                in 210 + 4100 - 210..309 + 4100 - 210 -> left -= 4100 - 210
-                in 310 + 3800 - 310..499 + 3800 - 310 -> left -= 3800 - 310
-            }
-
-            return left * 1000000L + groupUin % 1000000L
-        }
+        fun calculateGroupCodeByGroupUin(groupUin: Long): Long
     }
 
     @MiraiExperimentalAPI
-    fun toFullString(): String = "Group(id=${this.id}, name=$name, owner=${owner.id}, members=${members.idContentString})"
+    fun toFullString(): String
 }
 
 /**
  * 返回机器人是否正在被禁言
+ *
+ * @see Group.botMuteRemaining 剩余禁言时间
  */
 val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0

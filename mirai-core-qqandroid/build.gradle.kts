@@ -5,10 +5,10 @@ plugins {
     id("kotlinx-atomicfu")
     id("kotlinx-serialization")
     `maven-publish`
-    id("com.jfrog.bintray") version "1.8.4-jetbrains-3" // DO NOT CHANGE THIS VERSION UNLESS YOU WANT TO WASTE YOUR TIME
+    id("com.jfrog.bintray") version "1.8.4-jetbrains-3"
 }
 
-apply(from = rootProject.file("gradle/publish.gradle"))
+apply(plugin = "com.github.johnrengelman.shadow")
 
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
@@ -16,7 +16,7 @@ val coroutinesVersion: String by rootProject.ext
 val kotlinXIoVersion: String by rootProject.ext
 val coroutinesIoVersion: String by rootProject.ext
 
-val klockVersion: String by rootProject.ext
+
 val ktorVersion: String by rootProject.ext
 
 val serializationVersion: String by rootProject.ext
@@ -27,9 +27,11 @@ fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 
 description = "QQ protocol library"
-version = rootProject.ext.get("mirai_version")!!.toString()
 
 val isAndroidSDKAvailable: Boolean by project
+
+val miraiVersion: String by project
+version = miraiVersion
 
 kotlin {
     if (isAndroidSDKAvailable) {
@@ -75,6 +77,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(kotlinx("serialization-runtime-common", serializationVersion))
+                api(kotlinx("serialization-protobuf-common", serializationVersion))
             }
         }
         commonTest {
@@ -88,6 +91,7 @@ kotlin {
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 dependencies {
+                    api(kotlinx("serialization-protobuf", serializationVersion))
                 }
             }
 
@@ -105,6 +109,7 @@ kotlin {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 api(kotlinx("serialization-runtime", serializationVersion))
+                //api(kotlinx("serialization-protobuf", serializationVersion))
             }
         }
 
@@ -120,3 +125,9 @@ kotlin {
         }
     }
 }
+//
+//tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+//    kotlinOptions.jvmTarget = "1.8"
+//}
+
+apply(from = rootProject.file("gradle/publish.gradle"))

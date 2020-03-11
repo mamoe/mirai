@@ -20,8 +20,6 @@ import java.nio.channels.DatagramChannel
 import java.nio.channels.ReadableByteChannel
 import java.nio.channels.WritableByteChannel
 
-actual typealias ClosedChannelException = java.nio.channels.ClosedChannelException
-
 /**
  * 多平台适配的 DatagramChannel.
  */

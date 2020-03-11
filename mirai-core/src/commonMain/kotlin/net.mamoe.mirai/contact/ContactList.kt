@@ -16,8 +16,10 @@ import net.mamoe.mirai.utils.*
 
 /**
  * 只读联系人列表, lock-free 实现
+ *
+ * @see ContactList.asSequence
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 @Suppress("unused")
 class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedList<C>) {
     /**
@@ -40,8 +42,17 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
     fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
     fun isEmpty(): Boolean = delegate.isEmpty()
     inline fun forEach(block: (C) -> Unit) = delegate.forEach(block)
+    fun first(): C {
+        forEach { return it }
+        throw NoSuchElementException()
+    }
 
-    override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
+    fun firstOrNull(): C? {
+        forEach { return it }
+        return null
+    }
+
+    override fun toString(): String = delegate.asSequence().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
 }
 
 operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
@@ -68,7 +79,7 @@ fun <E : Contact> ContactList<E>.toList(): List<E> = toMutableList()
 /**
  * Collect all the elements into a [MutableList].
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 fun <E : Contact> ContactList<E>.toMutableList(): MutableList<E> = this.delegate.toMutableList()
 
 /**
@@ -79,7 +90,7 @@ fun <E : Contact> ContactList<E>.toSet(): Set<E> = toMutableSet()
 /**
  * Collect all the elements into a [MutableSet].
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 fun <E : Contact> ContactList<E>.toMutableSet(): MutableSet<E> = this.delegate.toMutableSet()
 
 /**
@@ -87,7 +98,7 @@ fun <E : Contact> ContactList<E>.toMutableSet(): MutableSet<E> = this.delegate.t
  *
  * Note that the sequence is dynamic, that is, elements are yielded atomically only when it is required
  */
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 fun <E : Contact> ContactList<E>.asSequence(): Sequence<E> {
     return this.delegate.asSequence()
 }

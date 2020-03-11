@@ -7,8 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package test
 
+import net.mamoe.mirai.utils.MiraiDebugAPI
 import net.mamoe.mirai.utils.cryptor.ProtoType
 import net.mamoe.mirai.utils.cryptor.protoFieldNumber
 import java.io.File
@@ -25,7 +28,7 @@ fun main() {
     println(
         File(
             """
-            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\statsvc\getonline
+            E:\Projects\QQAndroidFF\app\src\main\java\tencent\im\msgrevoke
         """.trimIndent()
         )
             .generateUnarrangedClasses().toMutableList().arrangeClasses().joinToString("\n\n")
@@ -158,7 +161,7 @@ data class PBFieldInfo(
     }
 }
 
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 fun String.generateProtoBufDataClass(): GeneratedClass {
     if (this.indexOf("extends") == -1) {
         val javaClassname = substringBetween("class", "{")
@@ -364,6 +367,7 @@ fun String.getNumericalValue(): Int? {
     return this.filter { it in '0'..'9' }.toDoubleOrNull()?.toInt()
 }
 
+@OptIn(MiraiDebugAPI::class)
 fun ProtoType.mapToKotlinType(): String {
     return when (this) {
         ProtoType.VAR_INT -> "Int"

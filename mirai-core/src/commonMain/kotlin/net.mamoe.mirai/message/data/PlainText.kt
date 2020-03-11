@@ -7,20 +7,41 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+@file:Suppress("NOTHING_TO_INLINE")
+
 package net.mamoe.mirai.message.data
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
-inline class PlainText(val stringValue: String) : Message {
+/**
+ * 纯文本. 可含 emoji 表情.
+ *
+ * 一般不需要主动构造 [PlainText], [Message] 可直接与 [String] 相加. Java 用户请使用 [MessageChain.plus]
+ */
+inline class PlainText(val stringValue: String) : Message, MessageContent {
+    constructor(charSequence: CharSequence) : this(charSequence.toString())
+
     override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
 
-    companion object Key : Message.Key<PlainText>
+    companion object Key : Message.Key<PlainText> {
+        @JvmStatic
+        val Empty = PlainText("")
 
-    override fun eq(other: Message): Boolean {
-        if(other is MessageChain){
-            return other eq this.toString()
+        @JvmStatic
+        val Null = PlainText("null")
+
+        inline fun of(value: String): PlainText {
+            return PlainText(value)
         }
-        return other is PlainText && other.stringValue == this.stringValue
+
+        inline fun of(value: CharSequence): PlainText {
+            return PlainText(value)
+        }
     }
 }
 
@@ -29,14 +50,3 @@ inline class PlainText(val stringValue: String) : Message {
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun String.toMessage(): PlainText = PlainText(this)
-
-/**
- * 得到包含作为 [PlainText] 的 [this] 的 [MessageChain].
- *
- * @return 唯一成员且不可修改的 [SingleMessageChainImpl]
- *
- * @see SingleMessageChain
- * @see SingleMessageChainImpl
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun String.singleChain(): MessageChain = SingleMessageChainImpl(this.toMessage())

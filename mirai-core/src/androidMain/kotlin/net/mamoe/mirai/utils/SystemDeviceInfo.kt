@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.utils
 
 import android.annotation.SuppressLint
@@ -18,22 +20,28 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import net.mamoe.mirai.utils.MiraiPlatformUtils.localIpAddress
+import net.mamoe.mirai.utils.MiraiPlatformUtils.md5
 import java.io.File
 
 /**
  * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
  */
-@UseExperimental(UnstableDefault::class)
+@OptIn(UnstableDefault::class)
 fun File.loadAsDeviceInfo(context: Context): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return SystemDeviceInfo(context).also {
-            this.writeText(Json.plain.stringify(SystemDeviceInfo.serializer(), it))
+            this.writeText(JSON.stringify(SystemDeviceInfo.serializer(), it))
         }
     }
-    return Json.nonstrict.parse(DeviceInfoData.serializer(), this.readText()).also {
+    return JSON.parse(DeviceInfoData.serializer(), this.readText()).also {
         it.context = context
     }
 }
+
+@OptIn(UnstableDefault::class)
+private val JSON = Json(JsonConfiguration.Default)
 
 /**
  * 部分引用指向 [Build].
@@ -96,6 +104,7 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
             (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo.ssid.toByteArray()
         }.getOrElse { byteArrayOf() }
 
+    @OptIn(MiraiInternalAPI::class)
     override val imsiMd5: ByteArray
         @SuppressLint("HardwareIds")
         get() = md5(kotlin.runCatching {
@@ -111,6 +120,8 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
                 (context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
             }
         }.getOrElse { "" }
+
+    @OptIn(MiraiInternalAPI::class)
     override val ipAddress: ByteArray get() = localIpAddress().split(".").map { it.toByte() }.takeIf { it.size == 4 }?.toByteArray() ?: byteArrayOf()
     override val androidId: ByteArray get() = Build.ID.toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()

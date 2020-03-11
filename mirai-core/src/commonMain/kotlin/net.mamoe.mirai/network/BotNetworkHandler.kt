@@ -68,7 +68,7 @@ abstract class BotNetworkHandler : CoroutineScope {
      */
     @Suppress("SpellCheckingInspection")
     @MiraiInternalAPI
-    abstract suspend fun relogin()
+    abstract suspend fun relogin(cause: Throwable? = null)
 
     /**
      * 初始化获取好友列表等值.
@@ -80,9 +80,10 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 
     /**
-     * 等待直到与服务器断开连接. 若未连接则立即返回
+     * 当 [Bot] 正常运作时, 这个函数将一直挂起协程到 [Bot] 被 [Bot.close]
+     * 当 [Bot] 离线时, 这个函数立即返回.
      */
-    abstract suspend fun awaitDisconnection()
+    abstract suspend fun join()
 
     /**
      * 关闭网络接口, 停止所有有关协程和任务
@@ -100,7 +101,7 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 }
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null) {
     this.close(cause)
     this.supervisor.join()

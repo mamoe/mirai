@@ -11,7 +11,6 @@ package net.mamoe.mirai.utils.io
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
-import kotlinx.io.errors.IOException
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
@@ -31,11 +30,6 @@ expect class PlatformDatagramChannel(serverHost: String, serverPort: Short) : Cl
 
     val isOpen: Boolean
 }
-
-/**
- * Channel 被关闭
- */
-expect class ClosedChannelException : IOException
 
 /**
  * 在 [PlatformDatagramChannel.send] 或 [PlatformDatagramChannel.read] 时出现的错误.

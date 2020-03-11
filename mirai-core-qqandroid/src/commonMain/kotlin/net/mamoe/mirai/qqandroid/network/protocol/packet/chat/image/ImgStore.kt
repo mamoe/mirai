@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image
 
-import io.ktor.client.HttpClient
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot

@@ -9,8 +9,11 @@
 
 package net.mamoe.mirai.utils.cryptor
 
-import net.mamoe.mirai.utils.md5
+import android.annotation.SuppressLint
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiPlatformUtils.md5
 import java.security.*
+import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.KeyAgreement
 
@@ -18,13 +21,13 @@ import javax.crypto.KeyAgreement
 actual typealias ECDHPrivateKey = PrivateKey
 actual typealias ECDHPublicKey = PublicKey
 
-actual class ECDHKeyPair(
+internal actual class ECDHKeyPairImpl(
     private val delegate: KeyPair
-) {
-    actual val privateKey: ECDHPrivateKey get() = delegate.private
-    actual val publicKey: ECDHPublicKey get() = delegate.public
+) : ECDHKeyPair {
+    override val privateKey: ECDHPrivateKey get() = delegate.private
+    override val publicKey: ECDHPublicKey get() = delegate.public
 
-    actual val initialShareKey: ByteArray = ECDH.calculateShareKey(privateKey, initialPublicKey)
+    override val initialShareKey: ByteArray = ECDH.calculateShareKey(privateKey, initialPublicKey)
 }
 
 @Suppress("FunctionName")
@@ -32,10 +35,44 @@ actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
-        actual fun generateKeyPair(): ECDHKeyPair {
-            return ECDHKeyPair(KeyPairGenerator.getInstance("ECDH").genKeyPair())
+        @Suppress("ObjectPropertyName")
+        private var _isECDHAvailable: Boolean = false // because `runCatching` has no contract.
+        actual val isECDHAvailable: Boolean get() = _isECDHAvailable
+
+        init {
+            kotlin.runCatching {
+                @SuppressLint("PrivateApi")
+                val clazz = Class.forName(
+                    "com.android.org.bouncycastle.jce.provider.BouncyCastleProvider",
+                    true,
+                    ClassLoader.getSystemClassLoader()
+                )
+
+                val providerName = clazz.getDeclaredField("PROVIDER_NAME").get(null) as String
+
+                if (Security.getProvider(providerName) != null) {
+                    Security.removeProvider(providerName)
+                }
+                Security.addProvider(clazz.newInstance() as Provider)
+                generateKeyPair()
+                _isECDHAvailable = true
+            }.exceptionOrNull()?.let {
+                throw IllegalStateException("cannot init BouncyCastle", it)
+            }
+            _isECDHAvailable = false
         }
 
+
+        actual fun generateKeyPair(): ECDHKeyPair {
+            if (!isECDHAvailable) {
+                return ECDHKeyPair.DefaultStub
+            }
+            return ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
+                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                .genKeyPair())
+        }
+
+        @OptIn(MiraiInternalAPI::class)
         actual fun calculateShareKey(
             privateKey: ECDHPrivateKey,
             publicKey: ECDHPublicKey

@@ -7,16 +7,21 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmName("Utils")
+@file:JvmMultifileClass
+
 package net.mamoe.mirai.qqandroid.utils
 
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * Inline the block
  */
-@UseExperimental(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class)
 @PublishedApi
 internal inline fun <R> inline(block: () -> R): R {
     contract {

@@ -13,7 +13,6 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
-import kotlinx.serialization.toUtf8Bytes
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.Packet
@@ -410,7 +409,7 @@ internal class TroopManagement {
                                         gender = 0,
                                         dwuin = member.id,
                                         dwFlag = 31,
-                                        sName = newName.toUtf8Bytes().encodeToString(charset = CharsetGBK),
+                                        sName = newName.toByteArray(CharsetUTF8).encodeToString(CharsetGBK),
                                         sPhone = "",
                                         sEmail = "",
                                         sRemark = ""

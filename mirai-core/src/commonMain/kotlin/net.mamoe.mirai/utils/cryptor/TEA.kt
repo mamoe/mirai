@@ -10,8 +10,8 @@
 package net.mamoe.mirai.utils.cryptor
 
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.IoBuffer
 import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.toByteArray
 import net.mamoe.mirai.utils.io.toUHexString
@@ -19,7 +19,6 @@ import kotlin.experimental.and
 import kotlin.experimental.xor
 import kotlin.jvm.JvmStatic
 import kotlin.random.Random
-
 
 /**
  * 解密错误
@@ -29,98 +28,52 @@ class DecryptionFailedException : Exception {
     constructor(message: String?) : super(message)
 }
 
-
-// region encrypt
-
 /**
- * 使用 [key] 解密 [this]
+ * TEA 算法加密解密工具类.
  *
- * @param key 长度至少为 16
- * @throws DecryptionFailedException 解密错误时
+ * **注意**: 此为 Mirai 内部 API. 它可能会在任何时刻被改变.
  */
-fun ByteArray.encryptBy(key: ByteArray, length: Int = this.size): ByteArray =
-    TEA.encrypt(this, key, sourceLength = length)
+@MiraiInternalAPI
+object TEA {
+    // TODO: 2020/2/28 使用 stream 式输入以避免缓存
 
-/**
- * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 加密.
- *
- * @param key 长度至少为 16
- * @consumer 由于缓存需要被回收, 需在方法内执行解密后明文的消耗过程
- * @throws DecryptionFailedException 解密错误时
- */
-inline fun ByteReadPacket.encryptBy(key: ByteArray, offset: Int = 0, length: Int = remaining.toInt() - offset, consumer: (ByteArray) -> Unit) {
-    ByteArrayPool.useInstance {
-        this.readFully(it, offset, length)
-        consumer(it.encryptBy(key, length = length))
+    /**
+     * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 加密.
+     *
+     * @param key 长度至少为 16
+     * @consumer 由于缓存需要被回收, 需在方法内执行解密后明文的消耗过程
+     * @throws DecryptionFailedException 解密错误时
+     */
+    inline fun encrypt(
+        receiver: ByteReadPacket,
+        key: ByteArray,
+        offset: Int = 0,
+        length: Int = receiver.remaining.toInt() - offset,
+        consumer: (ByteArray) -> Unit
+    ) {
+        ByteArrayPool.useInstance {
+            receiver.readFully(it, offset, length)
+            consumer(encrypt(it, key, length = length))
+        }
     }
-}
 
-// endregion
+    @JvmStatic
+    fun decrypt(receiver: ByteReadPacket, key: ByteArray, offset: Int = 0, length: Int = (receiver.remaining - offset).toInt()): ByteReadPacket =
+        decryptAsByteArray(receiver, key, offset, length) { data -> ByteReadPacket(data) }
 
-
-// region decrypt
-
-/**
- * 使用 [key] 解密 [this].
- *
- * @param key 固定长度 16
- * @throws DecryptionFailedException 解密错误时
- */
-fun ByteArray.decryptBy(key: ByteArray, length: Int = this.size): ByteArray =
-    TEA.decrypt(checkDataLengthAndReturnSelf(length), key, sourceLength = length)
-
-/**
- * 使用 [key] 解密 [this].
- * [key] 将会被读取掉前 16 个字节
- * 将会使用 [ByteArrayPool] 来缓存 [key].
- *
- * @param key 长度至少为 16
- * @throws DecryptionFailedException 解密错误时
- */
-fun ByteArray.decryptBy(key: IoBuffer, length: Int = this.size): ByteArray {
-    checkDataLengthAndReturnSelf(length)
-    return ByteArrayPool.useInstance { keyBuffer ->
-        key.readFully(keyBuffer, 0, key.readRemaining)
-        TEA.decrypt(this, keyBuffer, sourceLength = length)
+    inline fun <R> decryptAsByteArray(
+        receiver: ByteReadPacket,
+        key: ByteArray,
+        offset: Int = 0,
+        length: Int = (receiver.remaining - offset).toInt(),
+        consumer: (ByteArray) -> R
+    ): R {
+        return ByteArrayPool.useInstance {
+            receiver.readFully(it, offset, length)
+            consumer(decrypt(it, key, length))
+        }.also { receiver.close() }
     }
-}
 
-/**
- * 在 [ByteArrayPool] 缓存 [this], 然后使用 [key] 解密.
- *
- * @param key 长度至少为 16
- * @throws DecryptionFailedException 解密错误时
- */
-fun IoBuffer.decryptBy(key: ByteArray, offset: Int = 0, length: Int = readRemaining - offset): ByteArray {
-    return ByteArrayPool.useInstance {
-        this.readFully(it, offset, length)
-        it.checkDataLengthAndReturnSelf(length)
-        TEA.decrypt(it, key, length)
-    }
-}
-
-// endregion
-
-// region ByteReadPacket extension
-
-fun ByteReadPacket.decryptBy(key: ByteArray, offset: Int = 0, length: Int = (this.remaining - offset).toInt()): ByteReadPacket = decryptAsByteArray(key, offset, length) { data -> ByteReadPacket(data) }
-
-fun ByteReadPacket.decryptBy(key: IoBuffer, offset: Int = 0, length: Int = (this.remaining - offset).toInt()): ByteReadPacket = decryptAsByteArray(key, offset, length) { data -> ByteReadPacket(data) }
-
-inline fun <R> ByteReadPacket.decryptAsByteArray(key: ByteArray, offset: Int = 0, length: Int = (this.remaining - offset).toInt(), consumer: (ByteArray) -> R): R =
-    ByteArrayPool.useInstance {
-        readFully(it, offset, length)
-        consumer(it.decryptBy(key, length))
-    }.also { close() }
-
-inline fun <R> ByteReadPacket.decryptAsByteArray(key: IoBuffer, offset: Int = 0, length: Int = (this.remaining - offset).toInt(), consumer: (ByteArray) -> R): R =
-    ByteArrayPool.useInstance {
-        readFully(it, offset, length)
-        consumer(it.decryptBy(key, length))
-    }.also { close() }
-
-// endregion
-private object TEA {
     private const val UINT32_MASK = 0xffffffffL
 
     private fun doOption(data: ByteArray, key: ByteArray, length: Int, encrypt: Boolean): ByteArray {
@@ -345,15 +298,25 @@ private object TEA {
 
     private fun fail(): Nothing = throw DecryptionFailedException()
 
-    @PublishedApi
+    /**
+     * 使用 [key] 加密 [source]
+     *
+     * @param key 长度至少为 16
+     * @throws DecryptionFailedException 解密错误时
+     */
     @JvmStatic
-    internal fun encrypt(source: ByteArray, key: ByteArray, sourceLength: Int = source.size): ByteArray =
-        doOption(source, key, sourceLength, true)
+    fun encrypt(source: ByteArray, key: ByteArray, length: Int = source.size): ByteArray =
+        doOption(source, key, length, true)
 
-    @PublishedApi
+    /**
+     * 使用 [key] 解密 [source]
+     *
+     * @param key 长度至少为 16
+     * @throws DecryptionFailedException 解密错误时
+     */
     @JvmStatic
-    internal fun decrypt(source: ByteArray, key: ByteArray, sourceLength: Int = source.size): ByteArray =
-        doOption(source, key, sourceLength, false)
+    fun decrypt(source: ByteArray, key: ByteArray, length: Int = source.size): ByteArray =
+        doOption(source, key, length, false)
 
     private fun ByteArray.pack(offset: Int, len: Int): Long {
         var result: Long = 0

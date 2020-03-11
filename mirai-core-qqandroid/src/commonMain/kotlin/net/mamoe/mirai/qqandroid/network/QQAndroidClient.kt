@@ -7,12 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.toByteArray
+import kotlinx.io.core.*
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.RawAccountIdUse
 import net.mamoe.mirai.data.OnlineStatus
@@ -20,12 +21,10 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
-import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.qqandroid.utils.NetworkType
-import net.mamoe.mirai.utils.SystemDeviceInfo
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.cryptor.ECDH
-import net.mamoe.mirai.utils.cryptor.decryptBy
+import net.mamoe.mirai.utils.cryptor.TEA
 import net.mamoe.mirai.utils.io.*
 
 /*
@@ -41,7 +40,7 @@ import net.mamoe.mirai.utils.io.*
  DOMAINS
  Pskey: "openmobile.qq.com"
  */
-@UseExperimental(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
+@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
 @PublishedApi
 internal open class QQAndroidClient(
     context: Context,
@@ -72,7 +71,7 @@ internal open class QQAndroidClient(
     internal inline fun <R> tryDecryptOrNull(data: ByteArray, size: Int = data.size, mapper: (ByteArray) -> R): R? {
         keys.forEach { (key, value) ->
             kotlin.runCatching {
-                return mapper(data.decryptBy(value, size).also { PacketLogger.verbose { "成功使用 $key 解密" } })
+                return mapper(TEA.decrypt(data, value, size).also { PacketLogger.verbose { "成功使用 $key 解密" } })
             }
         }
         return null
@@ -101,8 +100,8 @@ internal open class QQAndroidClient(
 
     var openAppId: Long = 715019303L
 
-    val apkVersionName: ByteArray get() = "8.2.0".toByteArray()
-    val buildVer: String get() = "8.2.0.1296"
+    val apkVersionName: ByteArray get() = "8.2.7".toByteArray()
+    val buildVer: String get() = "8.2.7.4410"
 
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
@@ -113,7 +112,7 @@ internal open class QQAndroidClient(
     private val highwayDataTransSequenceIdForGroup: AtomicInt = atomic(87017)
     internal fun nextHighwayDataTransSequenceIdForGroup(): Int = highwayDataTransSequenceIdForGroup.getAndAdd(2)
 
-    private val highwayDataTransSequenceIdForFriend: AtomicInt = atomic(40717)
+    private val highwayDataTransSequenceIdForFriend: AtomicInt = atomic(43973)
     internal fun nextHighwayDataTransSequenceIdForFriend(): Int = highwayDataTransSequenceIdForFriend.getAndAdd(2)
 
     val appClientVersion: Int = 0
@@ -123,7 +122,7 @@ internal open class QQAndroidClient(
     val apkSignatureMd5: ByteArray = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D".hexToBytes()
 
     /**
-     * 协议版本?, 8.2.0 的为 8001
+     * 协议版本?, 8.2.7 的为 8001
      */
     val protocolVersion: Short = 8001
 
@@ -159,16 +158,18 @@ internal open class QQAndroidClient(
      */
     val uin: Long get() = _uin
 
-    @UseExperimental(RawAccountIdUse::class)
-    @Suppress("PropertyName")
+    @OptIn(RawAccountIdUse::class)
+    @Suppress("PropertyName", "DEPRECATION_ERROR")
     internal var _uin: Long = bot.account.id
 
     var t530: ByteArray? = null
     var t528: ByteArray? = null
+
     /**
      * t108 时更新
      */
-    var ksid: ByteArray = "|454001228437590|A8.2.0.27f6ea96".toByteArray()
+    var ksid: ByteArray = "|454001228437590|A8.2.7.27f6ea96".toByteArray()
+
     /**
      * t186
      */
@@ -190,8 +191,9 @@ internal open class QQAndroidClient(
     lateinit var t104: ByteArray
 }
 
+@OptIn(MiraiInternalAPI::class)
 internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
-    md5(getRandomByteArray(16) + guid)
+    MiraiPlatformUtils.md5(getRandomByteArray(16) + guid)
 
 
 internal class ReserveUinInfo(
@@ -313,6 +315,10 @@ internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) :
 
 internal typealias PSKeyMap = MutableMap<String, PSKey>
 internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
+
+internal inline fun Input.readUShortLVString(): String = kotlinx.io.core.String(this.readUShortLVByteArray())
+
+internal inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
 internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, expireTime: Long, outPSKeyMap: PSKeyMap, outPt4TokenMap: Pt4TokenMap) =
     data.read {

@@ -7,12 +7,19 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.contact.nameCardOrNick
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
 
 /**
@@ -20,25 +27,33 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  *
  * @see AtAll 全体成员
  */
-class At @MiraiInternalAPI constructor(val target: Long, val display: String) : Message {
-    @UseExperimental(MiraiInternalAPI::class)
-    constructor(member: Member) : this(member.id, "@${member.nick}")
+class At
+private constructor(val target: Long, val display: String) : Message, MessageContent {
+
+    /**
+     * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
+     */
+    constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
 
     override fun toString(): String = display
 
-    companion object Key : Message.Key<At>
-
-    override fun eq(other: Message): Boolean {
-        return other is At && other.target == this.target
+    companion object Key : Message.Key<At> {
+        /**
+         * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
+         */
+        @Suppress("FunctionName")
+        @JvmStatic
+        @LowLevelAPI
+        fun _lowLevelConstructAtInstance(target: Long, display: String): At = At(target, display)
     }
 
     // 自动为消息补充 " "
 
-    override fun followedBy(tail: Message): MessageChain {
-        if(tail is PlainText && tail.stringValue.startsWith(' ')){
-            return super.followedBy(tail)
+    override fun followedBy(tail: Message): CombinedMessage {
+        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
+            return super<MessageContent>.followedBy(tail)
         }
-        return super.followedBy(PlainText(" ")) + tail
+        return super<MessageContent>.followedBy(PlainText(" ")) + tail
     }
 }
 
