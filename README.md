@@ -13,7 +13,7 @@
 Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持的高效率机器人框架
 
 这个项目的名字来源于
-     <p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>作品<a href = "https://www.bilibili.com/bangumi/media/md3365/?from=search&seid=14448313700764690387">《境界的彼方》</a>的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a></p>
+     <p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>作品<a href = "https://zh.moegirl.org/zh-hans/%E5%A2%83%E7%95%8C%E7%9A%84%E5%BD%BC%E6%96%B9">《境界的彼方》</a>的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a></p>
      <p><a href = "https://www.crypton.co.jp/">CRYPTON</a>以<a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>为代表的创作与活动<a href = "https://magicalmirai.com/2019/index_en.html">(Magical <b>Mirai</b>)</a></p>
 图标以及形象由画师<a href = "">DazeCake</a>绘制
 </div>
@@ -33,7 +33,7 @@ mirai 既可以作为你项目中的 QQ 协议支持库, 也可以作为单独�
 加入 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), 或加入 QQ 群: 655057127
 
 
-## 开始使用Mirai
+## 开始
 
 Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。
 
@@ -41,7 +41,7 @@ Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他�
 
 ### 开发者
 
-了解 mirai 架构： [Wiki](https://github.com/mamoe/mirai/wiki/Home) 
+**了解 mirai 架构**： [Wiki](https://github.com/mamoe/mirai/wiki/Home) 
 
 #### 使用 mirai 作为服务器，为 mirai 开发插件
 
@@ -49,7 +49,7 @@ Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他�
 - （社区）`C`, `C++` 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
 - （社区）`Python`: [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
 - （社区）`JavaScript`(`NodeJS`) [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
-- （官方）其他任意语言： [mirai HTTP 接口](https://github.com/mamoe/mirai/tree/master/mirai-api-http) 进行接入
+- （官方）其他任意语言： [mirai HTTP 接口](https://github.com/mamoe/mirai-api-http) 进行接入
 
 #### 使用 mirai 为第三方依赖库引入项目
 
@@ -65,7 +65,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ### 我是其他平台的使用者
 
-#### 酷Q平台用户: 
+#### 酷 Q 平台用户: 
 
 - 酷Q的插件可以在 mirai 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
 - 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
@@ -75,35 +75,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 * 在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
 * 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
 
-
-
-## 模块
-
-### mirai-core
-
-通用 API 模块，一套 API 适配两套协议。
-**请参考此模块的 API**  
-
-### mirai-core-qqandroid
-
-  QQ for Android （8.2.7 版本，2020 年 3 月）协议的实现，目前完成大部分。
-
-  - 高兼容性：协议仅含极少部分为硬编码，其余全部随官方方式动态生成
-  - 高安全性：密匙随机，ECDH 动态计算
-  - 已支持大部分使用场景, 详情请在[Project](https://github.com/mamoe/mirai/projects/3)查看
-
-### mirai-core-timpc
-
-TIM PC （2.3.2 版本，2019 年 8 月）协议的实现  
-支持的功能： 
-
-- 消息收发：图片文字复合消息，图片消息
-- 群管功能：群员列表，禁言
-  （目前不再更新此协议，请关注上文的安卓协议）
-
-
-
-## 加入开发
+## [贡献](https://github.com/mamoe/mirai/blob/master/CONTRIBUTING.md)
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 mirai 的开发。  
@@ -112,6 +84,20 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
+### 贡献者
+感谢以下全体开发者对 mirai 的贡献（排名不分先后）
+
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/12100985?s=60&v=4" />](https://github.com/Him188)
+[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/24618776?s=60&v=4" />](https://github.com/liujiahua123123)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/28707253?s=60&v=4" />](https://github.com/ryoii)
+[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/11070535?s=60&v=4" />](https://github.com/jasonczc)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/13656668?s=60&v=4" />](https://github.com/PeratX)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/18532671?s=60&v=4" />](https://github.com/uebian)
+[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/10308687?s=60&v=4" />](https://github.com/Freedom0925)
+[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/16398479?s=60&v=4" />](https://github.com/ice1000)
+[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/20042607?s=60&v=4" />](https://github.com/PragmaTwice)
+[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/25280943?s=60&v=4" />](https://github.com/HoshinoTented)
+[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/40517459?s=60&v=4" />](https://github.com/Cyenoch)
 
 
 ## 鸣谢
@@ -125,17 +111,10 @@ TIM PC （2.3.2 版本，2019 年 8 月）协议的实现
 - [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
 - [kotlin-reflect](https://github.com/JetBrains/kotlin)
-- [pcap4j](https://github.com/kaitoy/pcap4j)
 - [atomicfu](https://github.com/Kotlin/kotlinx.atomicfu)
 - [ktor](https://github.com/ktorio/ktor)
-- [tornadofx](https://github.com/edvin/tornadofx)
-- [javafx](https://github.com/openjdk/jfx)
 - [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
 - [bouncycastle](https://www.bouncycastle.org/java.html)
-- [lanterna](https://github.com/mabe02/lanterna/tree/master)
-- [fastjson](https://github.com/alibaba/fastjson)
-- [toml4j](https://github.com/mwanji/toml4j)
-- [snakeyaml](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
 
 
 
