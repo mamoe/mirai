@@ -30,17 +30,17 @@ class MessageSequence(private var messages: Array<SingleMessage>, reversed: Bool
     var reversed: Boolean = reversed
         private set
 
-    fun get(): SingleMessage {
+    fun peek(): SingleMessage {
         if (isEmpty()) throw IndexOutOfBoundsException()
         return messages[if (reversed) index-- else index++]
     }
 
-    fun get(predict: (SingleMessage) -> Boolean): SingleMessage? {
-        while (isNotEmpty()) get().run { if (predict(this)) return this }
+    inline fun peek(predict: (SingleMessage) -> Boolean): SingleMessage? {
+        while (isNotEmpty()) peek().run { if (predict(this)) return this }
         return null
     }
 
-    fun put(msg: SingleMessage) {
+    fun push(msg: SingleMessage) {
         if (msg is PlainText) {
             if (msg.stringValue.isEmpty()) return
             if (isNotEmpty()) {
@@ -75,24 +75,33 @@ class MessageSequence(private var messages: Array<SingleMessage>, reversed: Bool
     }
 
     /**
-     * 判断自己能否与 [matchers] 中的任意一个匹配。匹配成功的结果将被加入到 [result] 中（如果 [result] 不为 null 的话）。
+     * 判断自己能否与 [matcher] 匹配。
      * 该方法不会对 this 对象造成改动。
+     *
+     * @return 消息解析结果。若消息不匹配（解析失败）返回 null
      *
      * @see consume
      */
     fun match(
-        matchers: Iterable<MessageMatcher>,
-        result: MutableMap<String, Any>? = null
-    ): Boolean {
-        val extra = if (result == null) null else mutableMapOf<String, Any>()
-        for (i in matchers) {
-            if (match(i, extra)) {
-                result?.putAll(extra!!)
-                return true
-            }
-            extra?.clear()
-        }
-        return false
+        matcher: MessageMatcher
+    ): Map<String, Any>? {
+        val ret = mutableMapOf<String, Any>()
+        return if (matchTo(matcher, ret)) ret else null
+    }
+
+    /**
+     * 判断自己能否与 [matchers] 中的任意一个匹配。
+     * 该方法不会对 this 对象造成改动。
+     *
+     * @return 消息解析结果。若消息不匹配（解析失败）返回 null
+     *
+     * @see consume
+     */
+    fun match(
+        matchers: Iterable<MessageMatcher>
+    ): Map<String, Any>? {
+        val ret = mutableMapOf<String, Any>()
+        return if (matchTo(matchers, ret)) ret else null
     }
 
     /**
@@ -101,10 +110,31 @@ class MessageSequence(private var messages: Array<SingleMessage>, reversed: Bool
      *
      * @see consume
      */
-    fun match(
+    fun matchTo(
         matcher: MessageMatcher,
         result: MutableMap<String, Any>? = null
     ): Boolean = clone().run { consume(matcher, result) && isEmpty() }
+
+    /**
+     * 判断自己能否与 [matchers] 中匹配。匹配成功的结果将被加入到 [result] 中（如果 [result] 不为 null 的话）。
+     * 该方法不会对 this 对象造成改动。
+     *
+     * @see consume
+     */
+    fun matchTo(
+        matchers: Iterable<MessageMatcher>,
+        result: MutableMap<String, Any>? = null
+    ): Boolean {
+        val extra = if (result == null) null else mutableMapOf<String, Any>()
+        for (i in matchers) {
+            if (matchTo(i, extra)) {
+                result!!.putAll(extra!!)
+                return true
+            }
+            extra?.clear()
+        }
+        return false
+    }
 
     /**
      * 将自己赋值为另一个 [MessageSequence]。**只是浅层拷贝，并不做clone**
@@ -129,11 +159,11 @@ class MessageSequence(private var messages: Array<SingleMessage>, reversed: Bool
 }
 
 fun MessageSequence.firstNotEmptyPlainText(): PlainText? {
-    val message = get { if (it is PlainText) it.stringValue.isNotEmpty() else true } ?: return null
-    if (message is PlainText) return message
+    val message = peek { if (it is PlainText) it.stringValue.isNotEmpty() else true } ?: return null
+    return if (message is PlainText) message
     else {
-        put(message)
-        return null
+        push(message)
+        null
     }
 }
 
@@ -183,7 +213,7 @@ class MessageMatcher(val elements: List<Element<*>>) {
         protected inline fun <reified T : SingleMessage> Element<T>.getByType(messages: MessageSequence): T? {
             val message = messages.first() ?: return null
             if (message !is T) {
-                messages.put(message)
+                messages.push(message)
                 return null
             }
             return message
@@ -216,8 +246,8 @@ class MessageMatcher(val elements: List<Element<*>>) {
     }
 }
 
-fun <R> MessageMatcher(lambda: MessageMatcherBuilder.() -> R): MessageMatcher =
-    MessageMatcher(MessageMatcherBuilder().apply { lambda() }.messages)
+inline fun MessageMatcher(lambda: MessageMatcherBuilder.() -> Unit): MessageMatcher =
+    MessageMatcher(MessageMatcherBuilder().apply(lambda).elements)
 
 fun Iterable<SingleMessage>.matchFromBegin(
     matcher: MessageMatcher,
@@ -232,14 +262,22 @@ fun Iterable<SingleMessage>.matchFromEnd(
     MessageSequence(this, true).consume(matcher, result)
 
 fun Iterable<SingleMessage>.match(
-    matchers: Iterable<MessageMatcher>,
-    result: MutableMap<String, Any>? = null
-): Boolean = MessageSequence(this).match(matchers, result)
+    matchers: MessageMatcher
+): Map<String, Any>? = MessageSequence(this).match(matchers)
 
 fun Iterable<SingleMessage>.match(
+    matchers: Iterable<MessageMatcher>
+): Map<String, Any>? = MessageSequence(this).match(matchers)
+
+fun Iterable<SingleMessage>.matchTo(
     matcher: MessageMatcher,
     result: MutableMap<String, Any>? = null
-): Boolean = MessageSequence(this).match(matcher, result)
+): Boolean = MessageSequence(this).matchTo(matcher, result)
+
+fun Iterable<SingleMessage>.matchTo(
+    matchers: Iterable<MessageMatcher>,
+    result: MutableMap<String, Any>? = null
+): Boolean = MessageSequence(this).matchTo(matchers, result)
 
 private fun String.remove(len: Int, reversed: Boolean): String =
     if (reversed) substring(0, length - len) else substring(len)
@@ -274,7 +312,7 @@ class WrappedMessageMatcherElement<T : Any>(val delegate: MessageMatcher.Element
     }
 }
 
-infix fun <T : Any> MessageMatcher.Element<T>.withRange(timeRange: IntRange): WrappedMessageMatcherElement<T> =
+fun <T : Any> MessageMatcher.Element<T>.withRange(timeRange: IntRange): WrappedMessageMatcherElement<T> =
     WrappedMessageMatcherElement(this, timeRange)
 
 
@@ -299,8 +337,8 @@ open class CharMessageMatcherElement(argumentName: String? = null, private val p
         if (ret) {
             matchedMessage = PlainText(ch.toString())
             setResult(resultMap, ch)
-            messages.put(PlainText(message.stringValue.remove(1, messages.reversed)))
-        } else messages.put(message)
+            messages.push(PlainText(message.stringValue.remove(1, messages.reversed)))
+        } else messages.push(message)
         return ret
     }
 }
@@ -309,7 +347,7 @@ open class CharMessageMatcherElement(argumentName: String? = null, private val p
  * 用于匹配一个或多个字符串。
  * 注：这里并不是顺序匹配，而是只要出现了任意一个在 [strings] 中的字符串就算匹配成功
  */
-open class StringMessageMatcherElement(private val strings: Set<String>, argumentName: String? = null) :
+open class StringMessageMatcherElement(private val strings: Collection<String>, argumentName: String? = null) :
     MessageMatcher.Element<String>(argumentName) {
     constructor(vararg strings: String, argumentName: String? = null) : this(strings.toSet(), argumentName)
 
@@ -338,8 +376,8 @@ open class StringMessageMatcherElement(private val strings: Set<String>, argumen
         if (ret) {
             matchedMessage = PlainText(matched)
             setResult(resultMap, matched)
-            messages.put(PlainText(stringValue.remove(matched.length, messages.reversed)))
-        }
+            messages.push(PlainText(stringValue.remove(matched.length, messages.reversed)))
+        } else messages.push(message)
         return ret
     }
 }
@@ -365,26 +403,26 @@ inline fun <reified T : SingleMessage> TypedMessageMatcherElementWithPredict(
         consumeByPredictAndType(predict, messages, resultMap)
 }
 
+private fun Char.isDigit(): Boolean = this in '0'..'9'
+
 /**
  * 匹配对一个人的引用，支持"你"、"我"、QQ号和At
  */
 open class PersonMessageMatcherElement(argumentName: String? = null) :
     MessageMatcher.Element<PersonMessageMatcherElement.PersonReference>(argumentName) {
     sealed class PersonReference(val display: String) {
-        class Specific(private val uin: Long, display: String) : PersonReference(display) {
-            override fun getUIN(packet: MessagePacket<*, *>?): Long = uin
+        class Specific(private val id: Long, display: String) : PersonReference(display) {
+            override fun getId(packet: MessagePacket<*, *>?): Long = id
         }
 
         class Pronoun(private val me: Boolean) : PersonReference(if (me) "你" else "我") {
-            override fun getUIN(packet: MessagePacket<*, *>?): Long =
+            override fun getId(packet: MessagePacket<*, *>?): Long =
                 if (packet == null) throw IllegalStateException()
                 else (if (me) packet.sender.id else packet.bot.uin)
         }
 
-        abstract fun getUIN(packet: MessagePacket<*, *>?): Long
+        abstract fun getId(packet: MessagePacket<*, *>?): Long
     }
-
-    private fun Char.isDigit(): Boolean = this in '0'..'9'
 
     override fun consume(messages: MessageSequence, resultMap: MutableMap<String, Any>?): Boolean {
         val message = messages.first() ?: return false
@@ -401,7 +439,7 @@ open class PersonMessageMatcherElement(argumentName: String? = null) :
                 if (ch == '你' || ch == '我') {
                     matchedMessage = PlainText(ch.toString())
                     setResult(resultMap, lazy { PersonReference.Pronoun(ch == '我') })
-                    messages.put(PlainText(stringValue.remove(1, reversed)))
+                    messages.push(PlainText(stringValue.remove(1, reversed)))
                 } else if (ch.isDigit()) {
                     val uinString =
                         if (reversed) stringValue.takeLastWhile { it.isDigit() }
@@ -410,7 +448,7 @@ open class PersonMessageMatcherElement(argumentName: String? = null) :
                         val uin = uinString.toLong()
                         matchedMessage = PlainText(uinString)
                         setResult(resultMap, lazy { PersonReference.Specific(uin, uinString) })
-                        messages.put(PlainText(stringValue.remove(uinString.length, reversed)))
+                        messages.push(PlainText(stringValue.remove(uinString.length, reversed)))
                         return true
                     } catch (e: NumberFormatException) {
                         return false
@@ -423,20 +461,20 @@ open class PersonMessageMatcherElement(argumentName: String? = null) :
     }
 }
 
-infix fun <R : Any> MessageMatcher.Element<R>.names(name: String): MessageMatcher.Element<R> =
+fun <R : Any> MessageMatcher.Element<R>.named(name: String): MessageMatcher.Element<R> =
     also { argumentName = name }
 
 /**
  * 匹配一段空白字符（也可以没有）
  */
-val BlankMessageMatcherElement = CharMessageMatcherElement { it.isWhitespace() } withRange 0..Int.MAX_VALUE
+val BlankMessageMatcherElement = CharMessageMatcherElement { it.isWhitespace() }.withRange(0..Int.MAX_VALUE)
 
 class MessageMatcherBuilder {
-    val messages = mutableListOf<MessageMatcher.Element<*>>()
+    val elements = mutableListOf<MessageMatcher.Element<*>>()
 
-    fun add(element: MessageMatcher.Element<*>) = messages.add(element)
+    fun add(element: MessageMatcher.Element<*>) = elements.add(element)
     fun Char.toElement() = CharMessageMatcherElement { it == this }
-    fun Set<Char>.toElement() = CharMessageMatcherElement { it in this }
+    fun Collection<Char>.toElement() = CharMessageMatcherElement { it in this }
     fun String.toElement() = StringMessageMatcherElement(this)
-    fun Set<String>.toElement() = StringMessageMatcherElement(this)
+    fun Collection<String>.toElement() = StringMessageMatcherElement(this)
 }
