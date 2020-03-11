@@ -23,27 +23,27 @@ internal object BotManagers {
     val BOT_MANAGERS: ConfigSection by config.withDefaultWriteSave { ConfigSectionImpl() }
 }
 
-internal fun Bot.addManager(long: Long) {
+fun Bot.addManager(long: Long) {
     BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
     BOT_MANAGERS[this.uin.toString()] =
         (BOT_MANAGERS.getLongList(this.uin.toString()) as MutableList<Long>).apply { add(long) }
     BotManagers.config.save()
 }
 
-internal fun Bot.removeManager(long: Long) {
+fun Bot.removeManager(long: Long) {
     BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
     BOT_MANAGERS[this.uin.toString()] =
         (BOT_MANAGERS.getLongList(this.uin.toString()) as MutableList<Long>).apply { add(long) }
     BotManagers.config.save()
 }
 
-internal val Bot.managers: List<Long>
+val Bot.managers: List<Long>
     get() {
         BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
         return BOT_MANAGERS.getLongList(this.uin.toString())
     }
 
-internal fun Bot.checkManager(long: Long): Boolean {
+fun Bot.checkManager(long: Long): Boolean {
     return this.managers.contains(long)
 }
 
