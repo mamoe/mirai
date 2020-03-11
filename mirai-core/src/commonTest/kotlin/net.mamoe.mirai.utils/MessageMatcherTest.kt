@@ -47,9 +47,9 @@ class MessageMatcherTest {
     @Test
     fun testMessageMatcherBuilder() {
         val matcher = MessageMatcher {
-            add("我是".toElement())
+            add("我是")
             add('弟'.toElement().withRange(1..2))
-            add("，你呢".toElement())
+            add("，你呢")
             add('？'.toElement().withRange(0..1))
             add(PersonMessageMatcherElement().named("target"))
         }
@@ -72,7 +72,7 @@ class MessageMatcherTest {
     @Test
     fun testBothSideMatch() {
         val matcher = MessageMatcher {
-            add("你好".toElement())
+            add("你好")
             add('！'.toElement().withRange(0..1))
         }
         assertTrue(PlainText("你好！我是xxx").asMessageChain().matchFromBegin(matcher))

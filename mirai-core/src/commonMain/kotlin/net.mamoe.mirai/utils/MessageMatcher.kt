@@ -14,6 +14,7 @@ import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
+import kotlin.jvm.JvmName
 
 /**
  * [SingleMessage] 的序列，支持获取和替换等操作，用于 [MessageMatcher] 匹配消息。
@@ -473,6 +474,14 @@ class MessageMatcherBuilder {
     val elements = mutableListOf<MessageMatcher.Element<*>>()
 
     fun add(element: MessageMatcher.Element<*>) = elements.add(element)
+    fun add(char: Char) = elements.add(char.toElement())
+    @JvmName("addChars")
+    fun add(chars: Collection<Char>) = elements.add(chars.toElement())
+
+    fun add(string: String) = elements.add(string.toElement())
+    @JvmName("addStrings")
+    fun add(strings: Collection<String>) = elements.add(strings.toElement())
+
     fun Char.toElement() = CharMessageMatcherElement { it == this }
     fun Collection<Char>.toElement() = CharMessageMatcherElement { it in this }
     fun String.toElement() = StringMessageMatcherElement(this)
