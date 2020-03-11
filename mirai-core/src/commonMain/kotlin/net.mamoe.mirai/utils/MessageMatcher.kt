@@ -283,6 +283,8 @@ infix fun <T : Any> MessageMatcher.Element<T>.withRange(timeRange: IntRange): Wr
  */
 open class CharMessageMatcherElement(argumentName: String? = null, private val predict: (Char) -> Boolean) :
     MessageMatcher.Element<Char>(argumentName) {
+    constructor(vararg chars: Char, argumentName: String? = null) : this(argumentName, { it in chars })
+
     override fun consume(messages: MessageSequence, resultMap: MutableMap<String, Any>?): Boolean {
         val message = messages.firstNotEmptyPlainText() ?: return false
         val ret: Boolean

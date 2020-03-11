@@ -9,25 +9,40 @@ import kotlin.test.assertTrue
 
 class MessageMatcherTest {
     @Test
-    fun testMessageMatcher() {
-        val matcher = MessageMatcher(
+    fun testBaseMatch() {
+        MessageMatcher(
             StringMessageMatcherElement("把"),
             BlankMessageMatcherElement,
             PersonMessageMatcherElement("target"),
             BlankMessageMatcherElement,
             StringMessageMatcherElement("禁言"),
             StringMessageMatcherElement("喽") withRange 0..1
-        )
-        val resultMap = mutableMapOf<String, Any>()
-        assertTrue(PlainText("把 233禁言").asMessageChain().match(matcher, resultMap))
-        assertEquals("233", (resultMap["target"] as PersonMessageMatcherElement.PersonReference).display)
-        resultMap.clear()
-        assertTrue(PlainText("把 你  禁言喽").asMessageChain().match(matcher, resultMap))
-        // 对方说你，指的是机器人（我）
-        assertEquals("我", (resultMap["target"] as PersonMessageMatcherElement.PersonReference).display)
-        resultMap.clear()
-        assertFalse(PlainText("把 我  禁言喽喽喽").asMessageChain().match(matcher, resultMap))
-        resultMap.clear()
+        ).run {
+            val resultMap = mutableMapOf<String, Any>()
+            assertTrue(PlainText("把 233禁言").asMessageChain().match(this, resultMap))
+            assertEquals("233", (resultMap["target"] as PersonMessageMatcherElement.PersonReference).display)
+            resultMap.clear()
+            assertTrue(PlainText("把 你  禁言喽").asMessageChain().match(this, resultMap))
+            // 对方说你，指的是机器人（我）
+            assertEquals("我", (resultMap["target"] as PersonMessageMatcherElement.PersonReference).display)
+            resultMap.clear()
+            assertFalse(PlainText("把 我  禁言喽喽喽").asMessageChain().match(this, resultMap))
+            resultMap.clear()
+        }
+        MessageMatcher(
+            StringMessageMatcherElement("管理员都"),
+            CharMessageMatcherElement('有', '是'),
+            CharMessageMatcherElement('谁'),
+            CharMessageMatcherElement('啊') withRange 0..1,
+            CharMessageMatcherElement('?', '？') withRange 0..1
+        ).run {
+            for (i in setOf(
+                "管理员都有谁啊？",
+                "管理员都是谁啊",
+                "管理员都是谁",
+                "管理员都有谁?"
+            )) assertTrue(PlainText(i).asMessageChain().match(this))
+        }
     }
 
     @Test
@@ -53,5 +68,15 @@ class MessageMatcherTest {
             assertEquals(display, "2333")
         }
         resultMap.clear()
+    }
+
+    @Test
+    fun testBothSideMatch() {
+        val matcher = MessageMatcher {
+            add("你好".toElement())
+            '！'.toElement() withRange 0..1
+        }
+        assertTrue(PlainText("你好！我是xxx").asMessageChain().matchFromBegin(matcher))
+        assertTrue(PlainText("我是xxx！你好").asMessageChain().matchFromEnd(matcher))
     }
 }
