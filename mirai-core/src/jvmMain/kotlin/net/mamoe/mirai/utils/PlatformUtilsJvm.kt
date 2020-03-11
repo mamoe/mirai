@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils.io.ByteArrayPool
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.InetAddress
+import java.net.Inet4Address
 import java.security.MessageDigest
 import java.util.zip.Deflater
 import java.util.zip.Inflater
@@ -82,7 +82,7 @@ actual object MiraiPlatformUtils {
      * Localhost 解析
      */
     actual fun localIpAddress(): String = runCatching {
-        InetAddress.getLocalHost().hostAddress
+        Inet4Address.getLocalHost().hostAddress
     }.getOrElse { "192.168.1.123" }
 
     fun md5(stream: InputStream): ByteArray {
