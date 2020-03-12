@@ -299,7 +299,7 @@ interface ConfigSection : Config, MutableMap<String, Any> {
     }
 
     override fun getStringList(key: String): List<String> {
-        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).map { it.toString() }
+        return ((get(key) ?: throw NoSuchElementException(key)) as List<*>).filterNotNull().map { it.toString() }
     }
 
     override fun getIntList(key: String): List<Int> {
