@@ -120,7 +120,7 @@ abstract class PluginBase
      * 这个 [Config] 是 read-only 的
      */
     fun getResourcesConfig(fileName: String): Config {
-        if (fileName.contains(".")) {
+        if (!fileName.contains(".")) {
             error("Unknown Config Type")
         }
         return Config.load(getResources(fileName) ?: error("No such file: $fileName"), fileName.substringAfter('.'))
