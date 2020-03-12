@@ -100,7 +100,7 @@ object DefaultCommands {
 
         registerCommand {
             name = "login"
-            description = "机器人登陆"
+            description = "机器人登录"
             onCommand {
                 if (this !is ConsoleCommandSender) {
                     sendMessage("请在后台使用该指令")
