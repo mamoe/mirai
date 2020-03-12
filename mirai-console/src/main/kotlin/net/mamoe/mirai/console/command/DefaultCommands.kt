@@ -245,7 +245,7 @@ object DefaultCommands {
             alias = listOf("commands", "help", "helps")
             description = "获取指令列表"
             onCommand {
-                CommandManager.commands.let { commands ->
+                CommandManager.commands.toSet().let { commands ->
                     var size = 0
                     appendMessage("")//\n
                     commands.forEach {
