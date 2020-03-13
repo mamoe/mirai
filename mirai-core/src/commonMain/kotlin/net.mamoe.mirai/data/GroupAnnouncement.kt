@@ -26,7 +26,8 @@ data class GroupAnnouncement(
     @SerialName("pubt") val time: Long = 0,
     @SerialName("read_num") val readNum: Int = 0,
     @SerialName("is_read") val isRead: Int = 0,
-    val pinned: Int = 0
+    val pinned: Int = 0,
+    val fid:String? = null      //公告的id
 )
 
 @Serializable

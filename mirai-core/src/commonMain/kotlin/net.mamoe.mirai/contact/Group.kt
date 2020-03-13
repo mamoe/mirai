@@ -158,14 +158,23 @@ expect abstract class Group() : Contact, CoroutineScope {
      *
      * */
     @MiraiExperimentalAPI
-    abstract suspend fun getAnnouncements(page: Int = 1, amount: Int = 10):GroupAnnouncementList?
+    abstract suspend fun getAnnouncements(page: Int = 1, amount: Int = 10): GroupAnnouncementList?
 
     /**
      * 发送群公告
      *
      * */
     @MiraiExperimentalAPI
-    abstract suspend fun sendAnnouncement(announcement: GroupAnnouncement)
+    abstract suspend fun sendAnnouncement(announcement: GroupAnnouncement): String
+
+
+    /**
+     * 删除群公告
+     * fid可以通过发送公告的返回值得到或者获取列表得到
+     * */
+
+    @MiraiExperimentalAPI
+    abstract suspend fun deleteAnnouncement(fid: String)
 
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败

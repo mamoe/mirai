@@ -21,6 +21,7 @@ import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.long
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -600,9 +601,9 @@ internal class GroupImpl(
 
 
     @MiraiExperimentalAPI
-    override suspend fun sendAnnouncement(announcement: GroupAnnouncement) {
+    override suspend fun sendAnnouncement(announcement: GroupAnnouncement): String {
         val json = Json(JsonConfiguration.Stable)
-        bot.network.launch {
+        val rep = bot.network.async {
             HttpClient().post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
                 body = MultiPartFormDataContent(formData {
@@ -610,7 +611,13 @@ internal class GroupImpl(
                     append("bkn", getBkn())
                     append("text", announcement.msg.text)
                     append("pinned", announcement.pinned)
-                    append("settings", json.stringify(GroupAnnouncementSettings.serializer(), announcement.settings?:GroupAnnouncementSettings()))
+                    append(
+                        "settings",
+                        json.stringify(
+                            GroupAnnouncementSettings.serializer(),
+                            announcement.settings ?: GroupAnnouncementSettings()
+                        )
+                    )
                     append("format", "json")
                 })
                 headers {
@@ -622,12 +629,40 @@ internal class GroupImpl(
                                 " p_skey=${bot.client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
                     )
                 }
-            }.also {
-                val jsonObj  = json.parseJson(it)
-                if (jsonObj.jsonObject["ec"]?.int ?:1  != 0){
-                    throw IllegalStateException("Send Announcement fail group:$id msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
+            }
+        }
+        val jsonObj = json.parseJson(rep.await())
+        return jsonObj.jsonObject["new_fid"]?.primitive?.content
+            ?: throw throw IllegalStateException("Send Announcement fail group:$id msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
+    }
+
+    @MiraiExperimentalAPI
+    override suspend fun deleteAnnouncement(fid: String) {
+        val json = Json(JsonConfiguration.Stable)
+        val rep = bot.network.async {
+            HttpClient().post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
+                body = MultiPartFormDataContent(formData {
+                    append("qid", id)
+                    append("bkn", getBkn())
+                    append("fid", fid)
+                    append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${bot.selfQQ.id};" +
+                                " skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${bot.selfQQ.id};" +
+                                " p_skey=${bot.client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                    )
                 }
             }
+        }
+        val data = rep.await()
+        val jsonObj  = json.parseJson(data)
+        if (jsonObj.jsonObject["ec"]?.int ?: 1 != 0){
+            throw throw IllegalStateException("delete Announcement fail group:$id msg:${jsonObj.jsonObject["em"]} fid:$fid")
         }
     }
 
