@@ -5,12 +5,16 @@ import kotlinx.serialization.Serializable
 
 /**
  * 群公告数据类
+ * getGroupAnnouncementList时，如果page=1，那么你可以在inst里拿到一些置顶公告
  *
  *
  */
 @Serializable
 data class GroupAnnouncementList(
-    val feeds: List<GroupAnnouncement>
+    val ec: Int,  //状态码 0 是正常的
+    @SerialName("em") val msg:String,   //信息
+    val feeds: List<GroupAnnouncement>?,   //群公告列表
+    val inst: List<GroupAnnouncement>?  //置顶列表？
 )
 
 @Serializable

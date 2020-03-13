@@ -157,7 +157,7 @@ expect abstract class Group() : Contact, CoroutineScope {
      *
      * */
     @MiraiExperimentalAPI
-    abstract suspend fun getAnnouncements(page: Int = 1, amount: Int = 10):GroupAnnouncementList
+    abstract suspend fun getAnnouncements(page: Int = 1, amount: Int = 10):GroupAnnouncementList?
 
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败

@@ -72,11 +72,6 @@ kotlin {
                 api(kotlinx("io", kotlinXIoVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-core", coroutinesVersion))
-
-                api(ktor("client-core", ktorVersion))
-
-                implementation(ktor("client-json",ktorVersion))
-                implementation(ktor("client-serialization",ktorVersion))
             }
         }
         commonMain {

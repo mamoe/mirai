@@ -10,14 +10,17 @@
 package net.mamoe.mirai.qqandroid
 
 import io.ktor.client.HttpClient
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.Closeable
+import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import kotlinx.serialization.json.int
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -567,25 +570,33 @@ internal class GroupImpl(
     }
 
     @MiraiExperimentalAPI
-    override suspend fun getAnnouncements(page: Int, amount: Int): GroupAnnouncementList {
+    override suspend fun getAnnouncements(page: Int, amount: Int): GroupAnnouncementList? {
+        val json = Json(JsonConfiguration(ignoreUnknownKeys = true))
         val data = bot.network.async {
-            HttpClient { install(JsonFeature) { serializer = KotlinxSerializer() } }.post<GroupAnnouncementList> {
+            HttpClient().post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
-                formData {
+                body = MultiPartFormDataContent(formData {
                     append("qid", id)
                     append("bkn", getBkn())
                     append("ft", 23)  //好像是一个用来识别应用的参数
-                    append("s", -page)  // 第一页这里的参数应该是-1
+                    append("s", if (page ==1) 0 else -(page*amount+1))  // 第一页这里的参数应该是-1
                     append("n", amount)
+                    append("ni",if (page ==1) 1 else 0)
                     append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${bot.selfQQ.id}; skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${bot.selfQQ.id};"
+                    )
                 }
-                header(
-                    "cookie",
-                    "uin=o${bot.selfQQ.id}; skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${bot.selfQQ.id};"
-                )
             }
         }
-        return data.await()
+
+        val rep = data.await()
+        bot.network.logger.error(rep)
+
+            return json.parse(GroupAnnouncementList.serializer(), rep)
     }
 
 

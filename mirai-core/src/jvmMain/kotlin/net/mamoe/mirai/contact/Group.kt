@@ -153,7 +153,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      *
      * */
     @MiraiExperimentalAPI
-    actual suspend abstract fun getAnnouncements(page: Int, amount: Int ):GroupAnnouncementList
+    actual suspend abstract fun getAnnouncements(page: Int, amount: Int ):GroupAnnouncementList?
 
     /**
      * 检查此 id 的群成员是否存在
