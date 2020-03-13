@@ -9,6 +9,12 @@
 
 package net.mamoe.mirai.qqandroid
 
+import io.ktor.client.HttpClient
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.formData
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.Closeable
@@ -35,6 +41,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -559,6 +566,29 @@ internal class GroupImpl(
         TODO("not implemented")
     }
 
+    @MiraiExperimentalAPI
+    override suspend fun getAnnouncements(page: Int, amount: Int): GroupAnnouncementList {
+        val data = bot.network.async {
+            HttpClient { install(JsonFeature) { serializer = KotlinxSerializer() } }.post<GroupAnnouncementList> {
+                url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
+                formData {
+                    append("qid", id)
+                    append("bkn", getBkn())
+                    append("ft", 23)  //好像是一个用来识别应用的参数
+                    append("s", -page)  // 第一页这里的参数应该是-1
+                    append("n", amount)
+                    append("format", "json")
+                }
+                header(
+                    "cookie",
+                    "uin=o${bot.selfQQ.id}; skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${bot.selfQQ.id};"
+                )
+            }
+        }
+        return data.await()
+    }
+
+
     @OptIn(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
@@ -718,5 +748,17 @@ internal class GroupImpl(
         if (other !is Contact) return false
         if (this::class != other::class) return false
         return this.id == other.id && this.bot == other.bot
+    }
+
+    /*
+    * 获取 获取群公告 所需的bkn参数
+    * */
+    fun getBkn(): Int {
+        val str = bot.client.wLoginSigInfo.sKey.data.encodeToString()
+        var magic = 5381
+        for (i in str) {
+            magic += magic.shl(5) + i.toInt()
+        }
+        return Int.MAX_VALUE.and(magic)
     }
 }

@@ -72,6 +72,11 @@ kotlin {
                 api(kotlinx("io", kotlinXIoVersion))
                 api(kotlinx("coroutines-io", coroutinesIoVersion))
                 api(kotlinx("coroutines-core", coroutinesVersion))
+
+                api(ktor("client-core", ktorVersion))
+
+                implementation(ktor("client-json",ktorVersion))
+                implementation(ktor("client-serialization",ktorVersion))
             }
         }
         commonMain {
@@ -110,6 +115,7 @@ kotlin {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 api(kotlinx("serialization-runtime", serializationVersion))
                 //api(kotlinx("serialization-protobuf", serializationVersion))
+
             }
         }
 

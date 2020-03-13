@@ -602,6 +602,7 @@ internal class WtLogin {
                         userA5 = UserA5(tlvMap119.getOrEmpty(0x10b), creationTime),
                         userA8 = UserA8(tlvMap119.getOrEmpty(0x102), creationTime, expireTime)
                     )
+                    //bot.network.logger.error(client.wLoginSigInfo.sKey.data.encodeToString())
                 }
             }
 

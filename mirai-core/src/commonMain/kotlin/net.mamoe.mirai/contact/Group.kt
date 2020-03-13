@@ -12,7 +12,11 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.SerialInfo
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.data.GroupAnnouncementList
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
@@ -147,6 +151,13 @@ expect abstract class Group() : Contact, CoroutineScope {
      * 检查此 id 的群成员是否存在
      */
     abstract operator fun contains(id: Long): Boolean
+
+    /**
+     * 获取群公告列表
+     *
+     * */
+    @MiraiExperimentalAPI
+    abstract suspend fun getAnnouncements(page: Int = 1, amount: Int = 10):GroupAnnouncementList
 
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
