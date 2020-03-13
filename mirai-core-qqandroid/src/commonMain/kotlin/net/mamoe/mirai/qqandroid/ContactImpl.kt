@@ -579,9 +579,9 @@ internal class GroupImpl(
                     append("qid", id)
                     append("bkn", getBkn())
                     append("ft", 23)  //好像是一个用来识别应用的参数
-                    append("s", if (page ==1) 0 else -(page*amount+1))  // 第一页这里的参数应该是-1
+                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
                     append("n", amount)
-                    append("ni",if (page ==1) 1 else 0)
+                    append("ni", if (page == 1) 1 else 0)
                     append("format", "json")
                 })
                 headers {
@@ -594,11 +594,42 @@ internal class GroupImpl(
         }
 
         val rep = data.await()
-        bot.network.logger.error(rep)
-
-            return json.parse(GroupAnnouncementList.serializer(), rep)
+//        bot.network.logger.error(rep)
+        return json.parse(GroupAnnouncementList.serializer(), rep)
     }
 
+
+    @MiraiExperimentalAPI
+    override suspend fun sendAnnouncement(announcement: GroupAnnouncement) {
+        val json = Json(JsonConfiguration.Stable)
+        bot.network.launch {
+            HttpClient().post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
+                body = MultiPartFormDataContent(formData {
+                    append("qid", id)
+                    append("bkn", getBkn())
+                    append("text", announcement.msg.text)
+                    append("pinned", announcement.pinned)
+                    append("settings", json.stringify(GroupAnnouncementSettings.serializer(), announcement.settings?:GroupAnnouncementSettings()))
+                    append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${bot.selfQQ.id};" +
+                                " skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${bot.selfQQ.id};" +
+                                " p_skey=${bot.client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                    )
+                }
+            }.also {
+                val jsonObj  = json.parseJson(it)
+                if (jsonObj.jsonObject["ec"]?.int ?:1  != 0){
+                    throw IllegalStateException("Send Announcement fail group:$id msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
+                }
+            }
+        }
+    }
 
     @OptIn(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
@@ -761,10 +792,10 @@ internal class GroupImpl(
         return this.id == other.id && this.bot == other.bot
     }
 
-    /*
-    * 获取 获取群公告 所需的bkn参数
-    * */
-    fun getBkn(): Int {
+    /**
+     * 获取 获取群公告 所需的bkn参数
+     * */
+    private fun getBkn(): Int {
         val str = bot.client.wLoginSigInfo.sKey.data.encodeToString()
         var magic = 5381
         for (i in str) {

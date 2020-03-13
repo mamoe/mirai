@@ -11,6 +11,7 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.data.GroupAnnouncement
 import net.mamoe.mirai.data.GroupAnnouncementList
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
@@ -153,7 +154,14 @@ actual abstract class Group : Contact(), CoroutineScope {
      *
      * */
     @MiraiExperimentalAPI
-    actual suspend abstract fun getAnnouncements(page: Int, amount: Int ):GroupAnnouncementList?
+    actual suspend abstract fun getAnnouncements(page: Int, amount: Int): GroupAnnouncementList?
+
+
+    /**
+    * 发送群公告
+    * */
+    @MiraiExperimentalAPI
+    actual suspend abstract fun sendAnnouncement(announcement: GroupAnnouncement)
 
     /**
      * 检查此 id 的群成员是否存在
