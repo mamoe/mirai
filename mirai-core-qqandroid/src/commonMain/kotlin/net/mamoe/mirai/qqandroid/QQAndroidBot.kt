@@ -67,6 +67,10 @@ internal abstract class QQAndroidBotBase constructor(
     internal var firstLoginSucceed: Boolean = false
     override val uin: Long get() = client.uin
 
+    companion object {
+        val json = Json(JsonConfiguration(ignoreUnknownKeys = true, encodeDefaults = true))
+    }
+
     @Deprecated(
         "use friends instead",
         level = DeprecationLevel.ERROR,
@@ -206,7 +210,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @OptIn(LowLevelAPI::class)
+    @LowLevelAPI
     override suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
@@ -218,17 +222,15 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
 
-
-    @OptIn(LowLevelAPI::class)
+    @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelGetAnnouncements(groupId:Long, page: Int, amount: Int): GroupAnnouncementList? {
-        val json = Json(JsonConfiguration(ignoreUnknownKeys = true))
+    override suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int, amount: Int): GroupAnnouncementList {
         val data = network.async {
             HttpClient().post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
-                    append("bkn", getBkn())
+                    append("bkn", bkn)
                     append("ft", 23)  //好像是一个用来识别应用的参数
                     append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
                     append("n", amount)
@@ -249,16 +251,15 @@ internal abstract class QQAndroidBotBase constructor(
         return json.parse(GroupAnnouncementList.serializer(), rep)
     }
 
-    @OptIn(LowLevelAPI::class)
+    @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelSendAnnouncement(groupId:Long, announcement: GroupAnnouncement): String {
-        val json = Json(JsonConfiguration.Stable)
+    override suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String {
         val rep = network.async {
             HttpClient().post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
-                    append("bkn", getBkn())
+                    append("bkn", bkn)
                     append("text", announcement.msg.text)
                     append("pinned", announcement.pinned)
                     append(
@@ -285,16 +286,16 @@ internal abstract class QQAndroidBotBase constructor(
         return jsonObj.jsonObject["new_fid"]?.primitive?.content
             ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
     }
-    @OptIn(LowLevelAPI::class)
+
+    @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelDeleteAnnouncement(groupId:Long, fid: String) {
-        val json = Json(JsonConfiguration.Stable)
+    override suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String) {
         val rep = network.async {
             HttpClient().post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
-                    append("bkn", getBkn())
+                    append("bkn", bkn)
                     append("fid", fid)
                     append("format", "json")
                 })
@@ -310,8 +311,8 @@ internal abstract class QQAndroidBotBase constructor(
             }
         }
         val data = rep.await()
-        val jsonObj  = json.parseJson(data)
-        if (jsonObj.jsonObject["ec"]?.int ?: 1 != 0){
+        val jsonObj = json.parseJson(data)
+        if (jsonObj.jsonObject["ec"]?.int ?: 1 != 0) {
             throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
         }
     }
@@ -319,13 +320,12 @@ internal abstract class QQAndroidBotBase constructor(
     @OptIn(LowLevelAPI::class)
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement {
-        val json = Json(JsonConfiguration(ignoreUnknownKeys = true))
         val data = network.async {
             HttpClient().post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
-                    append("bkn", getBkn())
+                    append("bkn", bkn)
                     append("fid", fid)
                     append("format", "json")
                 })
@@ -363,14 +363,15 @@ internal abstract class QQAndroidBotBase constructor(
     /**
      * 获取 获取群公告 所需的bkn参数
      * */
-    private fun getBkn(): Int {
-        val str = client.wLoginSigInfo.sKey.data.encodeToString()
-        var magic = 5381
-        for (i in str) {
-            magic += magic.shl(5) + i.toInt()
+    val bkn: Int
+        get() {
+            val str = client.wLoginSigInfo.sKey.data.encodeToString()
+            var magic = 5381
+            for (i in str) {
+                magic += magic.shl(5) + i.toInt()
+            }
+            return Int.MAX_VALUE.and(magic)
         }
-        return Int.MAX_VALUE.and(magic)
-    }
 }
 
 @Suppress("DEPRECATION")

@@ -99,7 +99,7 @@ interface LowLevelBotAPIAccessor {
      * */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int = 1, amount: Int = 10): GroupAnnouncementList?
+    suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int = 1, amount: Int = 10): GroupAnnouncementList
 
     /**
      * 发送群公告
@@ -108,7 +108,7 @@ interface LowLevelBotAPIAccessor {
      * */
     @LowLevelAPI
     @MiraiExperimentalAPI
-     suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String
+    suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String
 
 
     /**
@@ -117,7 +117,7 @@ interface LowLevelBotAPIAccessor {
      * */
     @LowLevelAPI
     @MiraiExperimentalAPI
-     suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String)
+    suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String)
 
     /**
      * 获取一条群公告
@@ -125,7 +125,7 @@ interface LowLevelBotAPIAccessor {
      * */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelGetAnnouncement(groupId: Long,fid:String):GroupAnnouncement
+    suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement
 
 }
 
