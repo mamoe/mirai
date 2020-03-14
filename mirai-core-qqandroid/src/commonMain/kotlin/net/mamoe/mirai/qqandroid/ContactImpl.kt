@@ -570,102 +570,6 @@ internal class GroupImpl(
         TODO("not implemented")
     }
 
-    @MiraiExperimentalAPI
-    override suspend fun getAnnouncements(page: Int, amount: Int): GroupAnnouncementList? {
-        val json = Json(JsonConfiguration(ignoreUnknownKeys = true))
-        val data = bot.network.async {
-            HttpClient().post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", id)
-                    append("bkn", getBkn())
-                    append("ft", 23)  //好像是一个用来识别应用的参数
-                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
-                    append("n", amount)
-                    append("ni", if (page == 1) 1 else 0)
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${bot.selfQQ.id}; skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${bot.selfQQ.id};"
-                    )
-                }
-            }
-        }
-
-        val rep = data.await()
-//        bot.network.logger.error(rep)
-        return json.parse(GroupAnnouncementList.serializer(), rep)
-    }
-
-
-    @MiraiExperimentalAPI
-    override suspend fun sendAnnouncement(announcement: GroupAnnouncement): String {
-        val json = Json(JsonConfiguration.Stable)
-        val rep = bot.network.async {
-            HttpClient().post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", id)
-                    append("bkn", getBkn())
-                    append("text", announcement.msg.text)
-                    append("pinned", announcement.pinned)
-                    append(
-                        "settings",
-                        json.stringify(
-                            GroupAnnouncementSettings.serializer(),
-                            announcement.settings ?: GroupAnnouncementSettings()
-                        )
-                    )
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${bot.selfQQ.id};" +
-                                " skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${bot.selfQQ.id};" +
-                                " p_skey=${bot.client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                    )
-                }
-            }
-        }
-        val jsonObj = json.parseJson(rep.await())
-        return jsonObj.jsonObject["new_fid"]?.primitive?.content
-            ?: throw throw IllegalStateException("Send Announcement fail group:$id msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
-    }
-
-    @MiraiExperimentalAPI
-    override suspend fun deleteAnnouncement(fid: String) {
-        val json = Json(JsonConfiguration.Stable)
-        val rep = bot.network.async {
-            HttpClient().post<String> {
-                url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
-                body = MultiPartFormDataContent(formData {
-                    append("qid", id)
-                    append("bkn", getBkn())
-                    append("fid", fid)
-                    append("format", "json")
-                })
-                headers {
-                    append(
-                        "cookie",
-                        "uin=o${bot.selfQQ.id};" +
-                                " skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${bot.selfQQ.id};" +
-                                " p_skey=${bot.client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
-                    )
-                }
-            }
-        }
-        val data = rep.await()
-        val jsonObj  = json.parseJson(data)
-        if (jsonObj.jsonObject["ec"]?.int ?: 1 != 0){
-            throw throw IllegalStateException("delete Announcement fail group:$id msg:${jsonObj.jsonObject["em"]} fid:$fid")
-        }
-    }
-
     @OptIn(MiraiExperimentalAPI::class)
     override fun Member(memberInfo: MemberInfo): Member {
         return MemberImpl(
@@ -827,15 +731,5 @@ internal class GroupImpl(
         return this.id == other.id && this.bot == other.bot
     }
 
-    /**
-     * 获取 获取群公告 所需的bkn参数
-     * */
-    private fun getBkn(): Int {
-        val str = bot.client.wLoginSigInfo.sKey.data.encodeToString()
-        var magic = 5381
-        for (i in str) {
-            magic += magic.shl(5) + i.toInt()
-        }
-        return Int.MAX_VALUE.and(magic)
-    }
+
 }

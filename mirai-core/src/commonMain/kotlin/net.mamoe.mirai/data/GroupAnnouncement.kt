@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * 群公告数据类
  * getGroupAnnouncementList时，如果page=1，那么你可以在inst里拿到一些置顶公告
  *
- * 发公告时只需要填写text，
+ * 发公告时只需要填写text，其他参数可为默认值
  *
  */
 @Serializable

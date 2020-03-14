@@ -150,26 +150,6 @@ actual abstract class Group : Contact(), CoroutineScope {
 
 
     /**
-     * 获取群公告列表
-     *
-     * */
-    @MiraiExperimentalAPI
-    actual suspend abstract fun getAnnouncements(page: Int, amount: Int): GroupAnnouncementList?
-
-    /**
-     * 删除群公告
-     * fid可以通过发送公告的返回值得到或者获取列表得到
-     * */
-    @MiraiExperimentalAPI
-    actual abstract suspend fun deleteAnnouncement(fid: String)
-
-    /**
-    * 发送群公告
-    * */
-    @MiraiExperimentalAPI
-    actual suspend abstract fun sendAnnouncement(announcement: GroupAnnouncement):String
-
-    /**
      * 检查此 id 的群成员是否存在
      */
     actual abstract operator fun contains(id: Long): Boolean

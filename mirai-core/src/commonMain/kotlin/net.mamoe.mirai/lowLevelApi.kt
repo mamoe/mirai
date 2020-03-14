@@ -12,9 +12,7 @@ package net.mamoe.mirai
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.data.FriendInfo
-import net.mamoe.mirai.data.GroupInfo
-import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -94,6 +92,41 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long)
+
+    /**
+     * 获取群公告列表
+     * @param page 页码
+     * */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int = 1, amount: Int = 10): GroupAnnouncementList?
+
+    /**
+     * 发送群公告
+     *
+     * @return 公告的fid
+     * */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+     suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String
+
+
+    /**
+     * 删除群公告
+     * @param fid [GroupAnnouncement.fid]
+     * */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+     suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String)
+
+    /**
+     * 获取一条群公告
+     * @param fid [GroupAnnouncement.fid]
+     * */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    suspend fun _lowLevelGetAnnouncement(groupId: Long,fid:String):GroupAnnouncement
+
 }
 
 /**
