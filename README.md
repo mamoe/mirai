@@ -99,7 +99,6 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 [<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/25280943?s=60&v=4" />](https://github.com/HoshinoTented)
 [<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/40517459?s=60&v=4" />](https://github.com/Cyenoch)
 
-
 ## 鸣谢
 
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  

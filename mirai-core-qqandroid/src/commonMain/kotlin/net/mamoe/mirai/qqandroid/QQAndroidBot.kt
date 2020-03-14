@@ -9,18 +9,25 @@
 
 package net.mamoe.mirai.qqandroid
 
+import io.ktor.client.HttpClient
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.request.post
+import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import kotlinx.serialization.json.int
 import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.AddFriendResult
-import net.mamoe.mirai.data.FriendInfo
-import net.mamoe.mirai.data.GroupInfo
-import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
@@ -33,6 +40,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.encodeToString
 import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext
 
@@ -58,6 +66,10 @@ internal abstract class QQAndroidBotBase constructor(
         )
     internal var firstLoginSucceed: Boolean = false
     override val uin: Long get() = client.uin
+
+    companion object {
+        val json = Json(JsonConfiguration(ignoreUnknownKeys = true, encodeDefaults = true))
+    }
 
     @Deprecated(
         "use friends instead",
@@ -198,7 +210,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @OptIn(LowLevelAPI::class)
+    @LowLevelAPI
     override suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long) {
         network.run {
             val response: PbMessageSvc.PbMsgWithDraw.Response =
@@ -207,6 +219,129 @@ internal abstract class QQAndroidBotBase constructor(
 
             check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${messageId}: $response" }
         }
+    }
+
+
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int, amount: Int): GroupAnnouncementList {
+        val data = network.async {
+            HttpClient().post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
+                body = MultiPartFormDataContent(formData {
+                    append("qid", groupId)
+                    append("bkn", bkn)
+                    append("ft", 23)  //好像是一个用来识别应用的参数
+                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
+                    append("n", amount)
+                    append("ni", if (page == 1) 1 else 0)
+                    append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                    )
+                }
+            }
+        }
+
+        val rep = data.await()
+//        bot.network.logger.error(rep)
+        return json.parse(GroupAnnouncementList.serializer(), rep)
+    }
+
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String {
+        val rep = network.async {
+            HttpClient().post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice")
+                body = MultiPartFormDataContent(formData {
+                    append("qid", groupId)
+                    append("bkn", bkn)
+                    append("text", announcement.msg.text)
+                    append("pinned", announcement.pinned)
+                    append(
+                        "settings",
+                        json.stringify(
+                            GroupAnnouncementSettings.serializer(),
+                            announcement.settings ?: GroupAnnouncementSettings()
+                        )
+                    )
+                    append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${selfQQ.id};" +
+                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${selfQQ.id};" +
+                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                    )
+                }
+            }
+        }
+        val jsonObj = json.parseJson(rep.await())
+        return jsonObj.jsonObject["new_fid"]?.primitive?.content
+            ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
+    }
+
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String) {
+        val rep = network.async {
+            HttpClient().post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
+                body = MultiPartFormDataContent(formData {
+                    append("qid", groupId)
+                    append("bkn", bkn)
+                    append("fid", fid)
+                    append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${selfQQ.id};" +
+                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${selfQQ.id};" +
+                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                    )
+                }
+            }
+        }
+        val data = rep.await()
+        val jsonObj = json.parseJson(data)
+        if (jsonObj.jsonObject["ec"]?.int ?: 1 != 0) {
+            throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
+        }
+    }
+
+    @OptIn(LowLevelAPI::class)
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement {
+        val data = network.async {
+            HttpClient().post<String> {
+                url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
+                body = MultiPartFormDataContent(formData {
+                    append("qid", groupId)
+                    append("bkn", bkn)
+                    append("fid", fid)
+                    append("format", "json")
+                })
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                    )
+                }
+            }
+        }
+
+        val rep = data.await()
+//        bot.network.logger.error(rep)
+        return json.parse(GroupAnnouncement.serializer(), rep)
+
     }
 
     override suspend fun queryImageUrl(image: Image): String = when (image) {
@@ -224,6 +359,19 @@ internal abstract class QQAndroidBotBase constructor(
     override suspend fun openChannel(image: Image): ByteReadChannel {
         return MiraiPlatformUtils.Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
     }
+
+    /**
+     * 获取 获取群公告 所需的bkn参数
+     * */
+    val bkn: Int
+        get() {
+            val str = client.wLoginSigInfo.sKey.data.encodeToString()
+            var magic = 5381
+            for (i in str) {
+                magic += magic.shl(5) + i.toInt()
+            }
+            return Int.MAX_VALUE.and(magic)
+        }
 }
 
 @Suppress("DEPRECATION")

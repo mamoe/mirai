@@ -11,6 +11,8 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.data.GroupAnnouncement
+import net.mamoe.mirai.data.GroupAnnouncementList
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
@@ -145,6 +147,7 @@ actual abstract class Group : Contact(), CoroutineScope {
      * 获取群成员实例, 不存在则 null
      */
     actual abstract fun getOrNull(id: Long): Member?
+
 
     /**
      * 检查此 id 的群成员是否存在

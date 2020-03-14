@@ -9,9 +9,19 @@
 
 package net.mamoe.mirai.qqandroid
 
+import io.ktor.client.HttpClient
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.Closeable
+import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.long
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -35,6 +45,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -719,4 +730,6 @@ internal class GroupImpl(
         if (this::class != other::class) return false
         return this.id == other.id && this.bot == other.bot
     }
+
+
 }
