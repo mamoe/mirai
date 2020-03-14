@@ -18,9 +18,9 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 - mirai 为多平台项目, 请务必考虑多平台兼容性
 - mirai 为全协程实现, 请在有必要的时候考虑并发安全性
 - 尽量不要引用新的库
-- 遵守 Kotlin 代码规范（提交前使用 IDE 格式化代码）
+- 遵守 Kotlin 代码规范（提交前使用 IDE 格式化代码 (commit 时勾选 'Reformat code')）
 - 熟悉 [`PacketFactory`](https://github.com/mamoe/mirai/blob/master/mirai-core-qqandroid/src/commonMain/kotlin/net/mamoe/mirai/qqandroid/network/protocol/packet/PacketFactory.kt) 架构
-- 不要手动拆解数据包. 请一定使用 `kotlinx.serialization` 拆解 ProtoBuf 和使用 mirai 的 `Jce` 序列化器拆解 Jce 数据包
+- 不要手动拆解数据包. 请一定使用 `kotlinx.serialization` 拆解 ProtoBuf, 使用 mirai 的 `Jce` 序列化器拆解 Jce 数据包, 使用 `kotlinx.serialization` 拆解 Json 数据.
 - 必须保证高代码效率（使用 `ByteArrayPool`，`WeakRef` 等）
 
 ## 社区
