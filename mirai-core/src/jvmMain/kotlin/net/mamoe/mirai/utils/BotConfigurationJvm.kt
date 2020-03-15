@@ -49,11 +49,15 @@ class DefaultLoginSolver(
             }
 
             tempFile.inputStream().use {
-                val img = ImageIO.read(it)
-                if (img == null) {
-                    logger.info("无法创建字符图片. 请查看文件")
-                } else {
-                    logger.info(img.createCharImg())
+                try {
+                    val img = ImageIO.read(it)
+                    if (img == null) {
+                        logger.info("无法创建字符图片. 请查看文件")
+                    } else {
+                        logger.info(img.createCharImg())
+                    }
+                } catch (throwable: Throwable) {
+                    logger.info("创建字符图片时出错(${throwable.toString()})。请查看文件")
                 }
             }
         }
