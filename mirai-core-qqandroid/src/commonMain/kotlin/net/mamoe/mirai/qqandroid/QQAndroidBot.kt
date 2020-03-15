@@ -10,12 +10,9 @@
 package net.mamoe.mirai.qqandroid
 
 import io.ktor.client.HttpClient
+import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.get
-import io.ktor.client.request.headers
-import io.ktor.client.request.post
-import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
@@ -317,7 +314,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @OptIn(LowLevelAPI::class)
+    @LowLevelAPI
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement {
         val data = network.async {
@@ -342,6 +339,26 @@ internal abstract class QQAndroidBotBase constructor(
 //        bot.network.logger.error(rep)
         return json.parse(GroupAnnouncement.serializer(), rep)
 
+    }
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData {
+        val data = network.async {
+            HttpClient().get<String> {
+                url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
+                parameter("bkn",bkn)
+                parameter("gc",groupId)
+
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                    )
+                }
+            }
+        }
+        val rep = data.await()
+        return json.parse(GroupActiveData.serializer(), rep)
     }
 
     override suspend fun queryImageUrl(image: Image): String = when (image) {
