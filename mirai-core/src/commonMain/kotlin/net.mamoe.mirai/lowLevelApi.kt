@@ -132,6 +132,14 @@ interface LowLevelBotAPIAccessor {
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement
 
+
+    /**
+     * 获取群活跃信息
+     *
+     * */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData
 }
 
 /**
