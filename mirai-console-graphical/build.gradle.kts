@@ -44,6 +44,8 @@ dependencies {
 
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
     api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
+
+    testApi(group = "org.yaml", name = "snakeyaml", version = "1.25")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
