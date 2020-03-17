@@ -59,19 +59,19 @@ object WrapperMain {
                 CoreUpdator.versionCheck()
             }
             launch {
-                ConsoleUpdator.versionCheck(type)
+                ConsoleUpdater.versionCheck(type)
             }
         }
         println("Version check complete, starting Mirai")
         println("Core    :" + CoreUpdator.getCore()!!)
         println("Protocol:" + CoreUpdator.getProtocolLib()!!)
-        println("Console :" + ConsoleUpdator.getFile()!! )
+        println("Console :" + ConsoleUpdater.getFile()!! )
         println("Root    :" + System.getProperty("user.dir") + "/")
 
         val loader = MiraiClassLoader(
             CoreUpdator.getCore()!!,
             CoreUpdator.getProtocolLib()!!,
-            ConsoleUpdator.getFile()!!,
+            ConsoleUpdater.getFile()!!,
             this.javaClass.classLoader
         )
         when(type) {
@@ -80,7 +80,7 @@ object WrapperMain {
                 loader.loadClass(
                     "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
                 ).getMethod("load", String::class.java,String::class.java)
-                    .invoke(null,CoreUpdator.getCurrentVersion(),ConsoleUpdator.getCurrentVersion())
+                    .invoke(null,CoreUpdator.getCurrentVersion(),ConsoleUpdater.getCurrentVersion())
             }
         }
     }

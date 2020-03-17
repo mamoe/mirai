@@ -24,6 +24,7 @@ import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -82,6 +83,11 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
         if (identity == screens[currentScreenId]) {
             drawLog(message)
         }
+    }
+
+    // 修改interface之后用来暂时占位
+    override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
+        this.pushLog(identity, message)
     }
 
     override fun prePushBot(identity: Long) {

@@ -15,8 +15,10 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.pure.MiraiConsoleUIPure
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
+import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import java.io.File
 import java.io.InputStream
 import java.net.URLClassLoader
@@ -85,7 +87,7 @@ abstract class PluginBase
         this.coroutineContext[Job]!!.cancelChildren(throwable)
         try {
             this.onDisable()
-        }catch (e:Exception){
+        } catch (e: Exception) {
             logger.info(e)
         }
     }
@@ -93,10 +95,11 @@ abstract class PluginBase
     internal var pluginName: String = ""
 
     val logger: MiraiLogger by lazy {
-        SimpleLogger("Plugin $pluginName") { _, message, e ->
-            MiraiConsole.logger("[${pluginName}]", 0, message)
+        SimpleLogger("Plugin $pluginName") { priority, message, e ->
+            val identityString = "[${pluginName}]"
+            MiraiConsole.logger(priority, identityString, 0, message)
             if (e != null) {
-                MiraiConsole.logger("[${pluginName}]", 0, e)
+                MiraiConsole.logger(priority, identityString, 0, e)
             }
         }
     }

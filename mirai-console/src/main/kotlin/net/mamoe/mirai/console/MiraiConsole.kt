@@ -19,6 +19,7 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
+import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import net.mamoe.mirai.utils.cryptor.ECDH
 
 
@@ -27,7 +28,7 @@ object MiraiConsole {
      * 发布的版本名
      */
     const val build = "Pkmon"
-    lateinit var version:String
+    lateinit var version: String
 
     /**
      * 获取从Console登陆上的Bot, Bots
@@ -162,15 +163,28 @@ object MiraiConsole {
             )
         }
 
+        operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, any: Any? = null) {
+            if (any != null) {
+                frontEnd.pushLog(priority, identityStr, identity, "$any")
+            }
+        }
+
+        operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, e: Exception? = null) {
+            if (e != null) {
+                frontEnd.pushLog(priority, identityStr, identity, "${e.stackTrace}")
+            }
+        }
+
+        // 设置默认的pushLog输出为 INFO 类型
         operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
             if (any != null) {
-                frontEnd.pushLog(identity, "$identityStr: $any")
+                frontEnd.pushLog(LogPriority.INFO, identityStr, identity, "$any")
             }
         }
 
         operator fun invoke(identityStr: String, identity: Long, e: Exception? = null) {
             if (e != null) {
-                frontEnd.pushLog(identity, "$identityStr: ${e.stackTrace}")
+                frontEnd.pushLog(LogPriority.INFO, identityStr, identity, "${e.stackTrace}")
             }
         }
     }

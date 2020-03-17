@@ -11,24 +11,26 @@ const val CONSOLE_TERMINAL = "Terminal"
 const val CONSOLE_GRAPHICAL = "Graphical"
 
 
-object ConsoleUpdator{
+object ConsoleUpdater {
 
     @Suppress("SpellCheckingInspection")
-    private object Links:HashMap<String,Map<String,String>>() {
-       init {
-           put(CONSOLE_PURE, mapOf(
-               "version" to "/net/mamoe/mirai-console/"
-           ))
-       }
+    private object Links : HashMap<String, Map<String, String>>() {
+        init {
+            put(
+                CONSOLE_PURE, mapOf(
+                    "version" to "/net/mamoe/mirai-console/"
+                )
+            )
+        }
     }
 
 
     var consoleType = CONSOLE_PURE
 
-    fun getFile():File?{
+    fun getFile(): File? {
         contentPath.listFiles()?.forEach { file ->
             if (file != null && file.extension == "jar") {
-                if(file.name.contains("mirai-console")) {
+                if (file.name.contains("mirai-console")) {
                     when (consoleType) {
                         CONSOLE_PURE -> {
                             return file
@@ -40,7 +42,7 @@ object ConsoleUpdator{
         return null
     }
 
-    suspend fun versionCheck(type:String) {
+    suspend fun versionCheck(type: String) {
         this.consoleType = type
         println("Fetching Newest Console Version of $type")
         val newest = getNewestVersion()
@@ -55,23 +57,23 @@ object ConsoleUpdator{
     }
 
 
-    private suspend fun getNewestVersion():String{
+    private suspend fun getNewestVersion(): String {
         try {
             return """>([0-9])*\.([0-9])*\.([0-9])*/""".toRegex().findAll(
-                Http.get<String> {
-                    url {
-                        protocol = URLProtocol.HTTPS
-                        host = "jcenter.bintray.com"
-                        path(Links[consoleType]!!["version"] ?: error("Unknown Console Type"))
+                    Http.get<String> {
+                        url {
+                            protocol = URLProtocol.HTTPS
+                            host = "jcenter.bintray.com"
+                            path(Links[consoleType]!!["version"] ?: error("Unknown Console Type"))
+                        }
                     }
-                }
-            ).asSequence()
+                ).asSequence()
                 .map { it.value.drop(1).dropLast(1) }
                 .maxBy {
-                it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                    acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
-                }
-            }!!
+                    it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
+                        acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
+                    }
+                }!!
         } catch (e: Exception) {
             println("Failed to fetch newest Console version, please seek for help")
             e.printStackTrace()
@@ -80,9 +82,9 @@ object ConsoleUpdator{
         }
     }
 
-    fun getCurrentVersion():String{
+    fun getCurrentVersion(): String {
         val file = getFile()
-        if(file != null) {
+        if (file != null) {
             val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value
             if (numberVersion != null) {
                 return numberVersion + file.name.substringAfter(numberVersion).substringBefore(".jar")
@@ -91,7 +93,7 @@ object ConsoleUpdator{
         return "0.0.0"
     }
 
-    private fun getProjectName():String{
+    private fun getProjectName(): String {
         return if (consoleType == CONSOLE_PURE) {
             "mirai-console"
         } else {
@@ -99,12 +101,12 @@ object ConsoleUpdator{
         }
     }
 
-    private suspend fun downloadConsole(version:String){
-        tryNTimesOrQuit(3,"Failed to download Console, please seek for help") {
-            Http.downloadMavenArchive("net/mamoe",getProjectName(),version)
+    private suspend fun downloadConsole(version: String) {
+        tryNTimesOrQuit(3, "Failed to download Console, please seek for help") {
+            Http.downloadMavenArchive("net/mamoe", getProjectName(), version)
                 .saveToContent("${getProjectName()}-$version.jar")
         }
         LibManager.clearLibs()
-        LibManager.addDependencyRequest("net/mamoe",getProjectName(),version)
+        LibManager.addDependencyRequest("net/mamoe", getProjectName(), version)
     }
 }

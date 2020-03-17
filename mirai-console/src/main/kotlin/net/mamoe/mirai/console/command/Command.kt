@@ -19,14 +19,17 @@ import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 
 interface CommandSender {
     /**
      * 立刻发送一条Message
      */
+
     suspend fun sendMessage(messageChain: MessageChain)
 
     suspend fun sendMessage(message: String)
+
     /**
      * 写入要发送的内容 所有内容最后会被以一条发出
      */
