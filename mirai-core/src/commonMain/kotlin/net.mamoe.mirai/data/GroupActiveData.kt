@@ -24,13 +24,13 @@ data class GroupActiveData(
     val errCode: Int?,
 
     @SerialName("ginfo")
-    val info: Ginfo? = null,
+    val info: GInfo? = null,
 
     @SerialName("role")
     val role: Int?
 ) {
     @Serializable
-    data class Ginfo(
+    data class GInfo(
 
 
         @SerialName("g_act_num")
