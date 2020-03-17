@@ -75,8 +75,7 @@ actual object MiraiPlatformUtils {
      * Ktor HttpClient. 不同平台使用不同引擎.
      */
     @OptIn(KtorExperimentalAPI::class)
-    actual val Http: HttpClient
-        get() = HttpClient(CIO)
+    actual val Http: HttpClient = HttpClient(CIO)
 
     /**
      * Localhost 解析

@@ -43,7 +43,7 @@ interface LowLevelBotAPIAccessor {
     @MiraiExperimentalAPI
     @LowLevelAPI
     @MiraiInternalAPI
-    abstract val account: BotAccount
+    val account: BotAccount
 
     /**
      * 构造一个 [_lowLevelNewQQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
