@@ -77,39 +77,42 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
 
     override val fingerprint: ByteArray get() = Build.FINGERPRINT.toByteArray()
     override val procVersion: ByteArray
-        get() = kotlin.runCatching { File("/proc/version").useLines { it.firstOrNull() ?: "" }.toByteArray() }.getOrElse { byteArrayOf() }
+        get() = kotlin.runCatching { File("/proc/version").useLines { it.firstOrNull() ?: "" }.toByteArray() }
+            .getOrElse { byteArrayOf() }
     override val bootId: ByteArray
-        get() = File("/proc/sys/kernel/random/boot_id").useLines { it.firstOrNull() ?: "" }.toByteArray()
+        get() = kotlin.runCatching {
+            File("/proc/sys/kernel/random/boot_id").useLines { it.firstOrNull() ?: "" }.toByteArray()
+        }.getOrEmpty()
     override val version: DeviceInfo.Version get() = Version
 
     override val simInfo: ByteArray
-        get() {
-            return kotlin.runCatching {
-                val telephonyManager = context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-                if (telephonyManager.simState == 5) {
-                    telephonyManager.simOperatorName.toByteArray()
-                } else byteArrayOf()
-            }.getOrElse { byteArrayOf() }
-        }
+        get() = kotlin.runCatching {
+            val telephonyManager =
+                context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            if (telephonyManager.simState == 5) {
+                telephonyManager.simOperatorName.toByteArray()
+            } else byteArrayOf()
+        }.getOrEmpty()
 
     override val osType: ByteArray = "android".toByteArray()
     override val macAddress: ByteArray get() = "02:00:00:00:00:00".toByteArray()
     override val wifiBSSID: ByteArray?
         get() = kotlin.runCatching {
             (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo.bssid.toByteArray()
-        }.getOrElse { byteArrayOf() }
+        }.getOrEmpty()
 
     override val wifiSSID: ByteArray?
         get() = kotlin.runCatching {
             (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo.ssid.toByteArray()
-        }.getOrElse { byteArrayOf() }
+        }.getOrEmpty()
 
     @OptIn(MiraiInternalAPI::class)
     override val imsiMd5: ByteArray
         @SuppressLint("HardwareIds")
         get() = md5(kotlin.runCatching {
             (context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).subscriberId.toByteArray()
-        }.getOrElse { byteArrayOf() })
+        }.getOrEmpty())
+
     override val imei: String
         @SuppressLint("HardwareIds")
         get() = kotlin.runCatching {
@@ -122,7 +125,10 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
         }.getOrElse { "" }
 
     @OptIn(MiraiInternalAPI::class)
-    override val ipAddress: ByteArray get() = localIpAddress().split(".").map { it.toByte() }.takeIf { it.size == 4 }?.toByteArray() ?: byteArrayOf()
+    override val ipAddress: ByteArray
+        get() = kotlin.runCatching {
+            localIpAddress().split(".").map { it.toByte() }.takeIf { it.size == 4 }?.toByteArray() ?: ByteArray(4)
+        }.getOrElse { ByteArray(4) }
     override val androidId: ByteArray get() = Build.ID.toByteArray()
     override val apn: ByteArray get() = "wifi".toByteArray()
 
@@ -134,3 +140,8 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
         override val sdk: Int get() = Build.VERSION.SDK_INT
     }
 }
+
+private val EMPTY_BYTE_ARRAY: ByteArray = ByteArray(0)
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun Result<ByteArray>.getOrEmpty() = this.getOrNull() ?: EMPTY_BYTE_ARRAY
