@@ -16,6 +16,7 @@ import net.mamoe.mirai.data.*
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRef
 
 /**
@@ -97,6 +98,7 @@ interface LowLevelBotAPIAccessor {
      * 获取群公告列表
      * @param page 页码
      * */
+    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int = 1, amount: Int = 10): GroupAnnouncementList
@@ -106,6 +108,7 @@ interface LowLevelBotAPIAccessor {
      *
      * @return 公告的fid
      * */
+    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String
@@ -115,6 +118,7 @@ interface LowLevelBotAPIAccessor {
      * 删除群公告
      * @param fid [GroupAnnouncement.fid]
      * */
+    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String)
@@ -123,6 +127,7 @@ interface LowLevelBotAPIAccessor {
      * 获取一条群公告
      * @param fid [GroupAnnouncement.fid]
      * */
+    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement
