@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid.io.serialization.jce
 
 import kotlinx.io.core.Output
+import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerialInfo
 
 
@@ -57,8 +58,15 @@ internal data class JceTagCommon(
     override val id: Int
 ) : JceTag()
 
-fun JceHead.checkType(type: Byte) {
-    check(this.type == type) { "type mismatch. Expected $type, actual ${this.type}" }
+internal fun JceHead.checkType(type: Byte, message: String, tag: JceTag, descriptor: SerialDescriptor) {
+    check(this.type == type) {
+        "type mismatch. " +
+                "Expected ${JceHead.findJceTypeName(type)}, " +
+                "actual ${JceHead.findJceTypeName(this.type)} for $message. " +
+                "Tag info: " +
+                "id=${tag.id}, " +
+                "name=${descriptor.getElementName(tag.id)} " +
+                "in ${descriptor.serialName}" }
 }
 
 @PublishedApi
@@ -83,23 +91,28 @@ inline class JceHead(private val value: Long) {
     val type: Byte get() = value.toUInt().toByte()
 
     override fun toString(): String {
-        val typeString = when (type) {
-            Jce.BYTE -> "Byte"
-            Jce.DOUBLE -> "Double"
-            Jce.FLOAT -> "Float"
-            Jce.INT -> "Int"
-            Jce.LIST -> "List"
-            Jce.LONG -> "Long"
-            Jce.MAP -> "Map"
-            Jce.SHORT -> "Short"
-            Jce.SIMPLE_LIST -> "SimpleList"
-            Jce.STRING1 -> "String1"
-            Jce.STRING4 -> "String4"
-            Jce.STRUCT_BEGIN -> "StructBegin"
-            Jce.STRUCT_END -> "StructEnd"
-            Jce.ZERO_TYPE -> "Zero"
-            else -> error("illegal jce type: $type")
+        return "JceHead(tag=$tag, type=$type(${findJceTypeName(type)}))"
+    }
+
+    companion object {
+        fun findJceTypeName(type: Byte): String {
+            return when (type) {
+                Jce.BYTE -> "Byte"
+                Jce.DOUBLE -> "Double"
+                Jce.FLOAT -> "Float"
+                Jce.INT -> "Int"
+                Jce.LIST -> "List"
+                Jce.LONG -> "Long"
+                Jce.MAP -> "Map"
+                Jce.SHORT -> "Short"
+                Jce.SIMPLE_LIST -> "SimpleList"
+                Jce.STRING1 -> "String1"
+                Jce.STRING4 -> "String4"
+                Jce.STRUCT_BEGIN -> "StructBegin"
+                Jce.STRUCT_END -> "StructEnd"
+                Jce.ZERO_TYPE -> "Zero"
+                else -> error("illegal jce type: $type")
+            }
         }
-        return "JceHead(tag=$tag, type=$type($typeString))"
     }
 }

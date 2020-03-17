@@ -181,8 +181,9 @@ internal class JceDecoder(
 
             StructureKind.MAP -> {
                 //println("!! MAP")
-                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) {
-                    it.checkType(Jce.MAP)
+                val tag = popTag()
+                return jce.skipToHeadAndUseIfPossibleOrFail(tag.id) {
+                    it.checkType(Jce.MAP, "beginStructure", tag, descriptor)
                     MapReader
                 }
             }
@@ -191,6 +192,8 @@ internal class JceDecoder(
                 //println("decoderTag: $currentTagOrNull")
                 //println("jceHead: " + jce.currentHeadOrNull)
                 return jce.skipToHeadAndUseIfPossibleOrFail(currentTag.id) {
+                    // don't check type. it's polymorphic
+
                     //println("listHead: $it")
                     when (it.type) {
                         Jce.SIMPLE_LIST -> {
@@ -209,8 +212,9 @@ internal class JceDecoder(
                 //println("!! CLASS")
                 //println("decoderTag: $currentTag")
                 //println("jceHead: " + jce.currentHeadOrNull)
-                return jce.skipToHeadAndUseIfPossibleOrFail(popTag().id) { jceHead ->
-                    jceHead.checkType(Jce.STRUCT_BEGIN)
+                val tag = popTag()
+                return jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jceHead ->
+                    jceHead.checkType(Jce.STRUCT_BEGIN, "beginStructure", tag, descriptor)
 
                     repeat(descriptor.elementsCount) {
                         pushTag(descriptor.getTag(descriptor.elementsCount - it - 1)) // better performance
