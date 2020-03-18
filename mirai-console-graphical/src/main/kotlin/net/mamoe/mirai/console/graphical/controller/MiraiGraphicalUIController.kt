@@ -5,18 +5,17 @@ import javafx.collections.ObservableList
 import javafx.stage.Modality
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.graphical.model.BotModel
-import net.mamoe.mirai.console.graphical.model.ConsoleInfo
-import net.mamoe.mirai.console.graphical.model.PluginModel
-import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
+import net.mamoe.mirai.console.graphical.model.*
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import tornadofx.*
 
 class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
+    private val settingModel = find<GlobalSettingModel>()
     private val loginSolver = GraphicalLoginSolver()
     private val cache = mutableMapOf<Long, BotModel>()
     val mainLog = observableListOf<String>()
@@ -34,10 +33,29 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     fun sendCommand(command: String) = MiraiConsole.CommandProcessor.runConsoleCommandBlocking(command)
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
-        when (identity) {
-            0L -> mainLog.add(message)
-            else -> cache[identity]?.logHistory?.add(message)
+        fun ObservableList<*>.trim() {
+            println(size)
+            println(settingModel.item.maxLongNum)
+            if (size > settingModel.item.maxLongNum) {
+                this.removeAt(0)
+            }
         }
+
+        when (identity) {
+            0L -> mainLog.apply {
+                add(message)
+                mainLog.trim()
+            }
+            else -> cache[identity]?.logHistory?.apply {
+                add(message)
+                trim()
+            }
+        }
+    }
+
+    // 修改interface之后用来暂时占位
+    override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
+        this.pushLog(identity, message)
     }
 
     override fun prePushBot(identity: Long) = Platform.runLater {

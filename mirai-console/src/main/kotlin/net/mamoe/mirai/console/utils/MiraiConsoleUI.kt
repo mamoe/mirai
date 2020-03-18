@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.utils
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 
 /**
  * 只需要实现一个这个 传入MiraiConsole 就可以绑定UI层与Console层
@@ -24,6 +25,13 @@ interface MiraiConsoleUI {
      * identity：log所属的screen, Main=0; Bot=Bot.uin
      */
     fun pushLog(
+        identity: Long,
+        message: String
+    )
+
+    fun pushLog(
+        priority: LogPriority,
+        identityStr: String,
         identity: Long,
         message: String
     )
