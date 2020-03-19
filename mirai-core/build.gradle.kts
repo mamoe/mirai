@@ -8,6 +8,8 @@ plugins {
     id("com.jfrog.bintray") version "1.8.4-jetbrains-3"
 }
 
+apply(plugin = "com.github.johnrengelman.shadow")
+
 val kotlinVersion: String by rootProject.ext
 val atomicFuVersion: String by rootProject.ext
 val coroutinesVersion: String by rootProject.ext
