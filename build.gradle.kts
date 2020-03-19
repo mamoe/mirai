@@ -17,7 +17,7 @@ buildscript {
 
         classpath("com.android.tools.build:gradle:3.5.3")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
+        // classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
         classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
     }
