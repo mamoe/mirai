@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.message
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
@@ -255,6 +257,20 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
 }
 
 /**
+ * @see nextMessage
+ */
+inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
+    timeoutMillis: Long = -1,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Deferred<MessageChain> {
+    return this.bot.async(coroutineContext) {
+        subscribingGet<P, P>(timeoutMillis) {
+            takeIf { this.isContextIdenticalWith(this@nextMessageAsync) }
+        }.message
+    }
+}
+
+/**
  * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
@@ -270,6 +286,20 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
     return subscribingGetOrNull<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }
     }?.message
+}
+
+/**
+ * @see nextMessageOrNull
+ */
+inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNullAsync(
+    timeoutMillis: Long = -1,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Deferred<MessageChain?> {
+    return this.bot.async(coroutineContext) {
+        subscribingGetOrNull<P, P>(timeoutMillis) {
+            takeIf { this.isContextIdenticalWith(this@nextMessageOrNullAsync) }
+        }?.message
+    }
 }
 
 /**
@@ -289,6 +319,18 @@ suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaini
     }.message.first()
 }
 
+inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingAsync(
+    timeoutMillis: Long = -1,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Deferred<M> {
+    return this.bot.async(coroutineContext) {
+        @Suppress("RemoveExplicitTypeArguments")
+        subscribingGet<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+            takeIf { this.isContextIdenticalWith(this@nextMessageContainingAsync) }
+        }.message.first<M>()
+    }
+}
+
 /**
  * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同并含有 [M] 类型的消息的 [MessagePacket]
  *
@@ -306,3 +348,15 @@ suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaini
         takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNull) }
     }?.message?.first()
 }
+
+inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingOrNullAsync(
+    timeoutMillis: Long = -1,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Deferred<M?> {
+    return this.bot.async(coroutineContext) {
+        subscribingGetOrNull<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+            takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNullAsync) }
+        }?.message?.first<M>()
+    }
+}
+
