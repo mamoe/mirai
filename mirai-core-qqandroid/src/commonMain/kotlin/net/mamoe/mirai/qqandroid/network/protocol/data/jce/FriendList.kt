@@ -156,7 +156,10 @@ internal class FriendInfo(
 
 @Serializable
 internal class VipBaseInfo(
-    @JceId(0) val mOpenInfo: Map<Int, VipOpenInfo>? = null // 原本是 0
+    @JceId(0) val mOpenInfo: Map<Int, VipOpenInfo>? = null,
+    // 1, 2 are since 8.2.7
+    @JceId(1) val iNameplateVipType: Int? = 0,
+    @JceId(2) val iGrayNameplateFlag: Int? = 0
 ) : JceStruct
 
 @Serializable
