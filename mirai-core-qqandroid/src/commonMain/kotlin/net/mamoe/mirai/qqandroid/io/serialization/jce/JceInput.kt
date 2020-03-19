@@ -126,6 +126,7 @@ internal class JceInput(
         Jce.STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
         Jce.STRING4 -> this.input.discardExact(this.input.readInt())
         Jce.MAP -> { // map
+            //println("skip map!")
             nextHead()
             repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping map" }) {
                 readJceIntValue(it)
@@ -136,6 +137,7 @@ internal class JceInput(
             }
         }
         Jce.LIST -> { // list
+            JceDecoder.println {"skip list!"}
             nextHead()
             repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping list" }) {
                 readJceIntValue(it)
@@ -146,26 +148,28 @@ internal class JceInput(
             }
         }
         Jce.STRUCT_BEGIN -> {
+            JceDecoder.println {"skip struct!"}
             fun skipToStructEnd() {
                 var head: JceHead
                 do {
                     head = nextHead()
                     skipField(head.type)
-                } while (head.type.toInt() != 11)
+                } while (head.type != Jce.STRUCT_END)
             }
             skipToStructEnd()
         }
         Jce.STRUCT_END, Jce.ZERO_TYPE -> {
-
+            Unit
         }
         Jce.SIMPLE_LIST -> {
-            val head = nextHead()
-            check(head.type.toInt() == 0) { "skipField with invalid type, type value: " + type + ", " + head.type }
-            this.input.discardExact(
-                skipToHeadAndUseIfPossibleOrFail(0) {
-                    readJceIntValue(it)
-                }
-            )
+            JceDecoder.println { "skip simple list!" }
+            var head = nextHead()
+            check(head.type == Jce.BYTE) { "bad simple list element type: " + head.type }
+            check(head.tag == 0) { "simple list element tag must be 0, but was ${head.tag}" }
+
+            head = nextHead()
+            check(head.tag == 0) { "tag for size for simple list must be 0, but was ${head.tag}" }
+            this.input.discardExact(readJceIntValue(head))
         }
         else -> error("invalid type: $type")
     }

@@ -7,6 +7,7 @@ import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceInput
@@ -41,6 +42,48 @@ internal const val ZERO_TYPE: Byte = 12
  */
 @Suppress("INVISIBLE_MEMBER") // bug
 internal class JceInputTest {
+
+    @Test
+    fun testIntToStructMap() {
+        @Serializable
+        data class VipOpenInfo(
+            @JceId(0) val open: Boolean? = false,
+            @JceId(1) val iVipType: Int = -1,
+            @JceId(2) val iVipLevel: Int = -1,
+            @JceId(3) val iVipFlag: Int? = null,
+            @JceId(4) val nameplateId: Long? = null
+        ) : JceStruct
+
+        @Serializable
+        data class VipBaseInfo(
+            @JceId(0) val mOpenInfo: Map<Int, VipOpenInfo>? = null
+        ) : JceStruct
+
+
+        @Serializable
+        data class FriendInfo(
+            @JceId(0) val friendUin: Long,
+            @JceId(14) val nick: String = "",
+            @JceId(19) val oVipInfo: VipBaseInfo? = null, //? bad
+            @JceId(20) val network: Byte? = null
+        ) : JceStruct
+
+        val value = FriendInfo(
+            friendUin = 123,
+            nick = "h",
+            oVipInfo = VipBaseInfo(
+                mapOf(
+                    1 to VipOpenInfo(true, -1),
+                    999999999 to VipOpenInfo(true, -1)
+                )
+            ),
+            network = 1
+        )
+        assertEquals(
+            value.toString(),
+            Jce.UTF_8.load(FriendInfo.serializer(), value.toByteArray(FriendInfo.serializer())).toString()
+        )
+    }
 
     @Test
     fun testSkippingMap() {

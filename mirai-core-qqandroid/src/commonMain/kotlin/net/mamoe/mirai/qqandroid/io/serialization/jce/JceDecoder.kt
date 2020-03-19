@@ -35,8 +35,8 @@ internal class JceDecoder(
     }
 
     private fun SerialDescriptor.getJceTagId(index: Int): Int {
-        //println("getTag: ${getElementName(index)}")
-        return getElementAnnotations(index).filterIsInstance<JceId>().singleOrNull()?.id
+        // higher performance, don't use filterIsInstance
+        return (getElementAnnotations(index).first { it is JceId } as? JceId)?.id
             ?: error("missing @JceId for ${getElementName(index)} in ${this.serialName}")
     }
 
@@ -119,11 +119,15 @@ internal class JceDecoder(
             this@JceDecoder.endStructure(descriptor)
         }
 
-        private var state: Boolean = true
-
         override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-            this@JceDecoder.pushTag(if (jce.currentHead.tag == 0) JceTagMapEntryKey else JceTagMapEntryValue)
-            state = !state
+            println { "MapReader.beginStructure: ${jce.currentHead}" }
+            this@JceDecoder.pushTag(
+                when (jce.currentHead.tag) {
+                    0 -> JceTagMapEntryKey
+                    1 -> JceTagMapEntryValue
+                    else -> error("illegal map entry head: ${jce.currentHead.tag}")
+                }
+            )
             return this@JceDecoder.beginStructure(descriptor, *typeParams)
         }
 
@@ -140,7 +144,7 @@ internal class JceDecoder(
         override fun decodeString(): String = jce.useHead { jce.readJceStringValue(it) }
 
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
-            //println("decodeCollectionSize in MapReader: ${descriptor.serialName}")
+            println { "decodeCollectionSize in MapReader: ${descriptor.serialName}" }
             // 不读下一个 head
             return jce.useHead { jce.readJceIntValue(it) }
         }
@@ -148,7 +152,8 @@ internal class JceDecoder(
 
 
     override fun endStructure(descriptor: SerialDescriptor) {
-        //println("endStructure: $descriptor")
+        structureHierarchy--
+        println { "endStructure: ${descriptor.serialName}" }
         if (currentTagOrNull?.isSimpleByteArray == true) {
             jce.prepareNextHead() // read to next head
         }
@@ -173,9 +178,31 @@ internal class JceDecoder(
         }
     }
 
+
+    companion object {
+        @Suppress("MemberVisibilityCanBePrivate")
+        val debuggingMode: Boolean by lazy { false }
+
+        private var structureHierarchy: Int = 0
+
+        inline fun println(value: () -> String) {
+            if (debuggingMode) {
+                kotlin.io.println("    ".repeat(structureHierarchy) + value())
+            }
+        }
+
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun println(value: Any? = "") {
+            if (debuggingMode) {
+                kotlin.io.println("    ".repeat(structureHierarchy) + value)
+            }
+        }
+    }
+
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        //println()
-        //println("beginStructure: ${descriptor.serialName}")
+        println()
+        println { "beginStructure: ${descriptor.serialName}" }
+        structureHierarchy++
         return when (descriptor.kind) {
             is PrimitiveKind -> this@JceDecoder
 
@@ -198,7 +225,7 @@ internal class JceDecoder(
                     when (it.type) {
                         Jce.SIMPLE_LIST -> {
                             currentTag.isSimpleByteArray = true
-                            jce.prepareNextHead() // 无用的元素类型
+                            jce.nextHead() // 无用的元素类型
                             SimpleByteArrayReader
                         }
                         Jce.LIST -> ListReader
@@ -232,23 +259,29 @@ internal class JceDecoder(
     override fun decodeSequentially(): Boolean = false
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         var jceHead = jce.currentHeadOrNull ?: return CompositeDecoder.READ_DONE
-        if (jceHead.type == Jce.STRUCT_END) {
-            return CompositeDecoder.READ_DONE
-        }
 
-        while (!jce.input.endOfInput){
+        println { "decodeElementIndex: ${jce.currentHead}" }
+        while (!jce.input.endOfInput) {
+            if (jceHead.type == Jce.STRUCT_END) {
+                println { "decodeElementIndex: ${jce.currentHead}" }
+                return CompositeDecoder.READ_DONE
+            }
+
             repeat(descriptor.elementsCount) {
                 val tag = descriptor.getJceTagId(it)
                 if (tag == jceHead.tag) {
+                    println { "name=" + descriptor.getElementName(it) }
                     return it
                 }
             }
 
             jce.skipField(jceHead.type)
             if (!jce.prepareNextHead()) {
+                println { "decodeElementIndex EOF" }
                 break
             }
             jceHead = jce.currentHead
+            println { "next! $jceHead" }
         }
 
         return CompositeDecoder.READ_DONE // optional support

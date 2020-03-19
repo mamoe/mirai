@@ -114,7 +114,7 @@ internal class FriendInfo(
     @JceId(16) val vecIMGroupID: ByteArray? = null,
     @JceId(17) val vecMSFGroupID: ByteArray? = null,
     @JceId(18) val iTermType: Int? = null,
-    @JceId(19) val oVipInfo: VipBaseInfo? = null,
+    @JceId(19) val oVipInfo: VipBaseInfo? = null, //? bad
     @JceId(20) val network: Byte? = null,
     @JceId(21) val vecRing: ByteArray? = null,
     @JceId(22) val uAbiFlag: Long? = null,
@@ -156,12 +156,12 @@ internal class FriendInfo(
 
 @Serializable
 internal class VipBaseInfo(
-    @JceId(0) val mOpenInfo: Map<Int, VipOpenInfo>
+    @JceId(0) val mOpenInfo: Map<Int, VipOpenInfo>? = null // 原本是 0
 ) : JceStruct
 
 @Serializable
 internal class VipOpenInfo(
-    @JceId(0) val open: Boolean,
+    @JceId(0) val open: Boolean? = false,
     @JceId(1) val iVipType: Int = -1,
     @JceId(2) val iVipLevel: Int = -1,
     @JceId(3) val iVipFlag: Int? = null,
