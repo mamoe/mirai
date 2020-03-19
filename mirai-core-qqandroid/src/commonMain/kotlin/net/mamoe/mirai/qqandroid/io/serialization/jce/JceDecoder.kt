@@ -231,16 +231,24 @@ internal class JceDecoder(
 
     override fun decodeSequentially(): Boolean = false
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        val jceHead = jce.currentHeadOrNull ?: return CompositeDecoder.READ_DONE
+        var jceHead = jce.currentHeadOrNull ?: return CompositeDecoder.READ_DONE
         if (jceHead.type == Jce.STRUCT_END) {
             return CompositeDecoder.READ_DONE
         }
 
-        repeat(descriptor.elementsCount) {
-            val tag = descriptor.getJceTagId(it)
-            if (tag == jceHead.tag) {
-                return it
+        while (!jce.input.endOfInput){
+            repeat(descriptor.elementsCount) {
+                val tag = descriptor.getJceTagId(it)
+                if (tag == jceHead.tag) {
+                    return it
+                }
             }
+
+            jce.skipField(jceHead.type)
+            if (!jce.prepareNextHead()) {
+                break
+            }
+            jceHead = jce.currentHead
         }
 
         return CompositeDecoder.READ_DONE // optional support
