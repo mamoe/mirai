@@ -181,9 +181,9 @@ internal class JceDecoder(
 
     companion object {
         @Suppress("MemberVisibilityCanBePrivate")
-        val debuggingMode: Boolean by lazy { false }
+        var debuggingMode: Boolean = false
 
-        private var structureHierarchy: Int = 0
+        var structureHierarchy: Int = 0
 
         inline fun println(value: () -> String) {
             if (debuggingMode) {
@@ -258,7 +258,10 @@ internal class JceDecoder(
 
     override fun decodeSequentially(): Boolean = false
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        var jceHead = jce.currentHeadOrNull ?: return CompositeDecoder.READ_DONE
+        var jceHead = jce.currentHeadOrNull ?: kotlin.run {
+            println("decodeElementIndex: currentHead == null")
+            return CompositeDecoder.READ_DONE
+        }
 
         println { "decodeElementIndex: ${jce.currentHead}" }
         while (!jce.input.endOfInput) {

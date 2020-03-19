@@ -8,10 +8,7 @@ import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce
-import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
-import net.mamoe.mirai.qqandroid.io.serialization.jce.JceInput
-import net.mamoe.mirai.qqandroid.io.serialization.jce.writeJceHead
+import net.mamoe.mirai.qqandroid.io.serialization.jce.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -42,6 +39,9 @@ internal const val ZERO_TYPE: Byte = 12
  */
 @Suppress("INVISIBLE_MEMBER") // bug
 internal class JceInputTest {
+    init {
+        JceDecoder.debuggingMode = true
+    }
 
     @Test
     fun testIntToStructMap() {
@@ -109,31 +109,33 @@ internal class JceInputTest {
         val input = buildPacket {
             writeJceHead(MAP, 0) // TestSerializableClassB
             writeJceHead(BYTE, 0)
-            writeByte(1)
+            writeByte(1);
 
-            writeJceHead(STRUCT_BEGIN, 0);
             {
-                writeJceHead(INT, 0)
-                writeInt(123)
+                writeJceHead(STRUCT_BEGIN, 0);
+                {
+                    writeJceHead(INT, 0)
+                    writeInt(123)
 
-                writeJceHead(STRUCT_BEGIN, 123); // TestSerializableClassC
+                    writeJceHead(STRUCT_BEGIN, 123); // TestSerializableClassC
+                    {
+                        writeJceHead(INT, 5)
+                        writeInt(123123)
+                    }()
+                    writeJceHead(STRUCT_END, 0)
+
+                    writeJceHead(INT, 5)
+                    writeInt(9)
+                }()
+                writeJceHead(STRUCT_END, 0)
+
+                writeJceHead(STRUCT_BEGIN, 1);
                 {
                     writeJceHead(INT, 5)
                     writeInt(123123)
                 }()
                 writeJceHead(STRUCT_END, 0)
-
-                writeJceHead(INT, 5)
-                writeInt(9)
             }()
-            writeJceHead(STRUCT_END, 0)
-
-            writeJceHead(STRUCT_BEGIN, 1);
-            {
-                writeJceHead(INT, 5)
-                writeInt(123123)
-            }()
-            writeJceHead(STRUCT_END, 0)
 
             writeJceHead(STRING1, 1)
             writeByte(1)

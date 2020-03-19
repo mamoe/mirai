@@ -116,62 +116,69 @@ internal class JceInput(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     @PublishedApi
-    internal fun skipField(type: Byte): Unit = when (type) {
-        Jce.BYTE -> this.input.discardExact(1)
-        Jce.SHORT -> this.input.discardExact(2)
-        Jce.INT -> this.input.discardExact(4)
-        Jce.LONG -> this.input.discardExact(8)
-        Jce.FLOAT -> this.input.discardExact(4)
-        Jce.DOUBLE -> this.input.discardExact(8)
-        Jce.STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
-        Jce.STRING4 -> this.input.discardExact(this.input.readInt())
-        Jce.MAP -> { // map
-            //println("skip map!")
-            nextHead()
-            repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping map" }) {
-                readJceIntValue(it)
-            } * 2) {
-                val currentHead = currentHead
-                prepareNextHead()
-                skipField(currentHead.type)
+    internal fun skipField(type: Byte): Unit {
+        JceDecoder.println { "skipping ${JceHead.findJceTypeName(type)}" }
+        when (type) {
+            Jce.BYTE -> this.input.discardExact(1)
+            Jce.SHORT -> this.input.discardExact(2)
+            Jce.INT -> println("readInt=" + this.input.readInt())
+            Jce.LONG -> this.input.discardExact(8)
+            Jce.FLOAT -> this.input.discardExact(4)
+            Jce.DOUBLE -> this.input.discardExact(8)
+            Jce.STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
+            Jce.STRING4 -> this.input.discardExact(this.input.readInt())
+            Jce.MAP -> { // map
+                JceDecoder.structureHierarchy++
+                var count: Int = 0
+                nextHead() // avoid shadowing, don't remove
+                repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping map" }) {
+                    readJceIntValue(it).also { count = it * 2 }
+                } * 2) {
+                    skipField(currentHead.type)
+                    if (it != count - 1) { // don't read last head
+                        nextHead()
+                    }
+                }
+                JceDecoder.structureHierarchy--
             }
-        }
-        Jce.LIST -> { // list
-            JceDecoder.println {"skip list!"}
-            nextHead()
-            repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping list" }) {
-                readJceIntValue(it)
-            }) {
-                val currentHead = currentHead
-                prepareNextHead()
-                skipField(currentHead.type)
+            Jce.LIST -> { // list
+                JceDecoder.structureHierarchy++
+                var count: Int = 0
+                nextHead() // avoid shadowing, don't remove
+                repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping list" }) { head ->
+                    readJceIntValue(head).also { count = it }
+                }) {
+                    skipField(currentHead.type)
+                    if (it != count - 1) { // don't read last head
+                        nextHead()
+                    }
+                }
+                JceDecoder.structureHierarchy--
             }
-        }
-        Jce.STRUCT_BEGIN -> {
-            JceDecoder.println {"skip struct!"}
-            fun skipToStructEnd() {
+            Jce.STRUCT_BEGIN -> {
+                JceDecoder.structureHierarchy++
                 var head: JceHead
                 do {
                     head = nextHead()
                     skipField(head.type)
                 } while (head.type != Jce.STRUCT_END)
+                JceDecoder.structureHierarchy--
             }
-            skipToStructEnd()
-        }
-        Jce.STRUCT_END, Jce.ZERO_TYPE -> {
-            Unit
-        }
-        Jce.SIMPLE_LIST -> {
-            JceDecoder.println { "skip simple list!" }
-            var head = nextHead()
-            check(head.type == Jce.BYTE) { "bad simple list element type: " + head.type }
-            check(head.tag == 0) { "simple list element tag must be 0, but was ${head.tag}" }
+            Jce.STRUCT_END, Jce.ZERO_TYPE -> {
+            }
+            Jce.SIMPLE_LIST -> {
+                JceDecoder.structureHierarchy++
+                var head = nextHead()
+                check(head.type == Jce.BYTE) { "bad simple list element type: " + head.type }
+                check(head.tag == 0) { "simple list element tag must be 0, but was ${head.tag}" }
 
-            head = nextHead()
-            check(head.tag == 0) { "tag for size for simple list must be 0, but was ${head.tag}" }
-            this.input.discardExact(readJceIntValue(head))
+                head = nextHead()
+                check(head.tag == 0) { "tag for size for simple list must be 0, but was ${head.tag}" }
+                this.input.discardExact(readJceIntValue(head))
+                JceDecoder.structureHierarchy--
+            }
+            else -> error("invalid type: $type")
         }
-        else -> error("invalid type: $type")
     }
 
     // region readers
