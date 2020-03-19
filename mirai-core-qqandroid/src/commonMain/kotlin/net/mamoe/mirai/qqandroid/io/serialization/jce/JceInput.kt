@@ -126,17 +126,23 @@ internal class JceInput(
         Jce.STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
         Jce.STRING4 -> this.input.discardExact(this.input.readInt())
         Jce.MAP -> { // map
-            repeat(skipToHeadAndUseIfPossibleOrFail(0) {
+            nextHead()
+            repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping map" }) {
                 readJceIntValue(it)
             } * 2) {
-                useHead { skipField(it.type) }
+                val currentHead = currentHead
+                prepareNextHead()
+                skipField(currentHead.type)
             }
         }
         Jce.LIST -> { // list
-            repeat(skipToHeadAndUseIfPossibleOrFail(0) {
+            nextHead()
+            repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping list" }) {
                 readJceIntValue(it)
             }) {
-                useHead { skipField(it.type) }
+                val currentHead = currentHead
+                prepareNextHead()
+                skipField(currentHead.type)
             }
         }
         Jce.STRUCT_BEGIN -> {
