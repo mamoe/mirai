@@ -34,8 +34,6 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         fun ObservableList<*>.trim() {
-            println(size)
-            println(settingModel.item.maxLongNum)
             if (size > settingModel.item.maxLongNum) {
                 this.removeAt(0)
             }
