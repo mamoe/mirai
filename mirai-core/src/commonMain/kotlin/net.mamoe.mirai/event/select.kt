@@ -102,7 +102,7 @@ suspend inline fun <reified T : MessagePacket<*, *>, R> T.selectMessages(
 internal val SELECT_MESSAGE_STUB = Any()
 
 @SinceMirai("0.29.0")
-class MessageSelectBuilder<M : MessagePacket<*, *>, R>(
+class MessageSelectBuilder<M : MessagePacket<*, *>, R> internal constructor(
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
 ) : MessageSubscribersBuilder<M, Unit, R, Any?>(stub, subscriber)
