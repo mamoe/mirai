@@ -16,6 +16,7 @@ import tornadofx.*
 class PrimaryView : View() {
 
     private val controller = find<MiraiGraphicalUIController>()
+    private lateinit var mainTabPane : TabPane
 
     override val root = borderpane {
 
@@ -71,14 +72,21 @@ class PrimaryView : View() {
 
         center = jfxTabPane {
 
-            tab("Login").content = find<LoginView>().root
+            logTab("Main", controller.mainLog)
 
             tab("Plugins").content = find<PluginsView>().root
 
             tab("Settings").content = find<SettingsView>().root
 
-            logTab("Main", controller.mainLog)
+            tab("Login").content = find<LoginView>().root
+
+            mainTabPane = this
         }
+    }
+
+    fun Tab.select() = apply {
+        if (!mainTabPane.tabs.contains(this)) mainTabPane.tabs.add(this)
+        mainTabPane.selectionModel.select(this)
     }
 }
 
@@ -87,13 +95,21 @@ private fun TabPane.logTab(
     logs: ObservableList<String>,
     op: Tab.() -> Unit = {}
 ) = tab(text) {
-    listview(logs) {
 
-        fitToParentSize()
-        cellFormat {
-            graphic = label(it) {
-                maxWidthProperty().bind(this@listview.widthProperty())
-                isWrapText = true
+    vbox {
+        buttonbar {
+            button("导出日志").action {  }
+            button("关闭").action { close() }
+        }
+
+        listview(logs) {
+
+            fitToParentSize()
+            cellFormat {
+                graphic = label(it) {
+                    maxWidthProperty().bind(this@listview.widthProperty())
+                    isWrapText = true
+                }
             }
         }
     }
