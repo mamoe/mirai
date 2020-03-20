@@ -24,11 +24,15 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.js.JsName
+import kotlin.jvm.JvmName
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
@@ -39,19 +43,22 @@ import kotlin.coroutines.EmptyCoroutineContext
 fun <R> CoroutineScope.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
+    listeners: MessageSubscribersBuilder<MessagePacket<*, *>, Listener<MessagePacket<*, *>>, Unit, Unit>.() -> R
 ): R {
     // contract 可帮助 IDE 进行类型推断. 无实际代码作用.
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
 
-    return MessageSubscribersBuilder { messageListener: MessageListener<MessagePacket<*, *>> ->
+    return MessageSubscribersBuilder<MessagePacket<*, *>, Listener<MessagePacket<*, *>>, Unit, Unit>(Unit)
+    { filter, messageListener: MessageListener<MessagePacket<*, *>, Unit> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
         // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
         subscribeAlways(coroutineContext, concurrencyKind) {
-            messageListener.invoke(this, this.message.toString())
             // this.message.toString() 即为 messageListener 中 it 接收到的值
+            val toString = this.message.toString()
+            if (filter.invoke(this, toString))
+                messageListener.invoke(this, toString)
         }
     }.run(listeners)
 }
@@ -65,14 +72,16 @@ fun <R> CoroutineScope.subscribeMessages(
 fun <R> CoroutineScope.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
+    listeners: MessageSubscribersBuilder<GroupMessage, Listener<GroupMessage>, Unit, Unit>.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    return MessageSubscribersBuilder<GroupMessage> { listener ->
+    return MessageSubscribersBuilder<GroupMessage, Listener<GroupMessage>, Unit, Unit>(Unit) { filter, listener ->
         subscribeAlways(coroutineContext, concurrencyKind) {
-            listener(this, this.message.toString())
+            val toString = this.message.toString()
+            if (filter(this, toString))
+                listener(this, toString)
         }
     }.run(listeners)
 }
@@ -86,14 +95,16 @@ fun <R> CoroutineScope.subscribeGroupMessages(
 fun <R> CoroutineScope.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
+    listeners: MessageSubscribersBuilder<FriendMessage, Listener<FriendMessage>, Unit, Unit>.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    return MessageSubscribersBuilder<FriendMessage> { listener ->
+    return MessageSubscribersBuilder<FriendMessage, Listener<FriendMessage>, Unit, Unit>(Unit) { filter, listener ->
         subscribeAlways(coroutineContext, concurrencyKind) {
-            listener(this, this.message.toString())
+            val toString = this.message.toString()
+            if (filter(this, toString))
+                listener(this, toString)
         }
     }.run(listeners)
 }
@@ -107,14 +118,16 @@ fun <R> CoroutineScope.subscribeFriendMessages(
 fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessageSubscribersBuilder<MessagePacket<*, *>>.() -> R
+    listeners: MessageSubscribersBuilder<MessagePacket<*, *>, Listener<MessagePacket<*, *>>, Unit, Unit>.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    return MessageSubscribersBuilder<MessagePacket<*, *>> { listener ->
+    return MessageSubscribersBuilder<MessagePacket<*, *>, Listener<MessagePacket<*, *>>, Unit, Unit>(Unit) { filter, listener ->
         this.subscribeAlways(coroutineContext, concurrencyKind) {
-            listener(this, this.message.toString())
+            val toString = this.message.toString()
+            if (filter(this, toString))
+                listener(this, toString)
         }
     }.run(listeners)
 }
@@ -130,14 +143,16 @@ fun <R> Bot.subscribeMessages(
 fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessageSubscribersBuilder<GroupMessage>.() -> R
+    listeners: MessageSubscribersBuilder<GroupMessage, Listener<GroupMessage>, Unit, Unit>.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    return MessageSubscribersBuilder<GroupMessage> { listener ->
+    return MessageSubscribersBuilder<GroupMessage, Listener<GroupMessage>, Unit, Unit>(Unit) { filter, listener ->
         this.subscribeAlways(coroutineContext, concurrencyKind) {
-            listener(this, this.message.toString())
+            val toString = this.message.toString()
+            if (filter(this, toString))
+                listener(this, toString)
         }
     }.run(listeners)
 }
@@ -151,14 +166,16 @@ fun <R> Bot.subscribeGroupMessages(
 fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessageSubscribersBuilder<FriendMessage>.() -> R
+    listeners: MessageSubscribersBuilder<FriendMessage, Listener<FriendMessage>, Unit, Unit>.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
-    return MessageSubscribersBuilder<FriendMessage> { listener ->
+    return MessageSubscribersBuilder<FriendMessage, Listener<FriendMessage>, Unit, Unit>(Unit) { filter, listener ->
         this.subscribeAlways(coroutineContext, concurrencyKind) {
-            listener(this, this.message.toString())
+            val toString = this.message.toString()
+            if (filter(this, toString))
+                listener(this, toString)
         }
     }.run(listeners)
 }
@@ -225,28 +242,33 @@ inline fun <reified E : BotEvent> Bot.incoming(
  * 接受者 T 为 [MessagePacket]
  * 参数 String 为 转为字符串了的消息 ([Message.toString])
  */
-typealias MessageListener<T> = @MessageDsl suspend T.(String) -> Unit
+typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
 
 /**
  * 消息订阅构造器
+ *
+ * @param M 消息类型
+ * @param R 消息监听器内部的返回值
+ * @param Ret 每个 DSL 函数创建监听器之后的返回值
  *
  * @see subscribeFriendMessages
  * @sample demo.subscribe.messageDSL
  */
 // TODO: 2019/12/23 应定义为 inline, 但这会导致一个 JVM run-time VerifyError. 等待 kotlin 修复 bug (Kotlin 1.3.61)
-@Suppress("unused")
+@Suppress("unused", "DSL_SCOPE_VIOLATION_WARNING")
 @MessageDsl
-class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
+open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, RR>(
+    val stub: RR,
     /**
      * invoke 这个 lambda 时, 它将会把 [消息事件的处理器][MessageListener] 注册给事件, 并返回注册完成返回的监听器.
      */
-    val subscriber: (MessageListener<T>) -> Listener<T>
+    val subscriber: (M.(String) -> Boolean, MessageListener<M, RR>) -> Ret
 ) {
     /**
      * 监听的条件
      */
     open inner class ListeningFilter(
-        val filter: T.(String) -> Boolean
+        val filter: M.(String) -> Boolean
     ) {
         /**
          * 进行逻辑 `or`.
@@ -282,34 +304,34 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
          * 启动事件监听.
          */
         // do not inline due to kotlin (1.3.61) bug: java.lang.IllegalAccessError
-        operator fun invoke(onEvent: MessageListener<T>): Listener<T> {
+        operator fun invoke(onEvent: MessageListener<M, R>): Ret {
             return content(filter, onEvent)
         }
 
-        infix fun reply(toReply: String): Listener<T> {
-            return content(filter) { reply(toReply) }
+        infix fun reply(toReply: String): Ret {
+            return content(filter) { reply(toReply);stub }
         }
 
-        infix fun reply(message: Message): Listener<T> {
-            return content(filter) { reply(message) }
+        infix fun reply(message: Message): Ret {
+            return content(filter) { reply(message);stub }
         }
 
-        infix fun reply(replier: (@MessageDsl suspend T.(String) -> Any?)): Listener<T> {
+        infix fun reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
             return content(filter) {
                 @Suppress("DSL_SCOPE_VIOLATION_WARNING")
                 executeAndReply(replier)
             }
         }
 
-        infix fun quoteReply(toReply: String): Listener<T> {
-            return content(filter) { quoteReply(toReply) }
+        infix fun quoteReply(toReply: String): Ret {
+            return content(filter) { quoteReply(toReply);stub }
         }
 
-        infix fun quoteReply(message: Message): Listener<T> {
-            return content(filter) { quoteReply(message) }
+        infix fun quoteReply(message: Message): Ret {
+            return content(filter) { quoteReply(message);stub }
         }
 
-        infix fun quoteReply(replier: (@MessageDsl suspend T.(String) -> Any?)): Listener<T> {
+        infix fun quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
             return content(filter) {
                 @Suppress("DSL_SCOPE_VIOLATION_WARNING")
                 executeAndQuoteReply(replier)
@@ -323,7 +345,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 无任何触发条件.
      */
     @MessageDsl
-    fun always(onEvent: MessageListener<T>): Listener<T> = subscriber(onEvent)
+    fun always(onEvent: MessageListener<M, RR>): Ret = subscriber({ true }, onEvent)
 
     /**
      * 如果消息内容 `==` [equals]
@@ -365,8 +387,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         equals: String,
         ignoreCase: Boolean = false,
         trim: Boolean = true,
-        onEvent: @MessageDsl suspend T.(String) -> Unit
-    ): Listener<T> {
+        onEvent: MessageListener<M, R>
+    ): Ret {
         val toCheck = if (trim) equals.trim() else equals
         return content({ (if (trim) it.trim() else it).equals(toCheck, ignoreCase = ignoreCase) }, {
             onEvent(this, this.message.toString())
@@ -388,8 +410,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         sub: String,
         ignoreCase: Boolean = false,
         trim: Boolean = true,
-        onEvent: MessageListener<T>
-    ): Listener<T> {
+        onEvent: MessageListener<M, R>
+    ): Ret {
         return if (trim) {
             val toCheck = sub.trim()
             content({ it.contains(toCheck, ignoreCase = ignoreCase) }, {
@@ -417,8 +439,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         vararg sub: String,
         ignoreCase: Boolean = false,
         trim: Boolean = true,
-        onEvent: MessageListener<T>
-    ): Listener<T> {
+        onEvent: MessageListener<M, R>
+    ): Ret {
         return if (trim) {
             val list = sub.map { it.trim() }
             content({
@@ -450,8 +472,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         vararg sub: String,
         ignoreCase: Boolean = false,
         trim: Boolean = true,
-        onEvent: MessageListener<T>
-    ): Listener<T> {
+        onEvent: MessageListener<M, R>
+    ): Ret {
         return if (trim) {
             val list = sub.map { it.trim() }
             content({
@@ -488,8 +510,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         prefix: String,
         removePrefix: Boolean = true,
         trim: Boolean = true,
-        onEvent: @MessageDsl suspend T.(String) -> Unit
-    ): Listener<T> {
+        onEvent: @MessageDsl suspend M.(String) -> R
+    ): Ret {
         return if (trim) {
             val toCheck = prefix.trim()
             content({ it.trimStart().startsWith(toCheck) }, {
@@ -519,8 +541,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
         suffix: String,
         removeSuffix: Boolean = true,
         trim: Boolean = true,
-        onEvent: @MessageDsl suspend T.(String) -> Unit
-    ): Listener<T> {
+        onEvent: @MessageDsl suspend M.(String) -> R
+    ): Ret {
         return if (trim) {
             val toCheck = suffix.trim()
             content({ it.trimEnd().endsWith(toCheck) }, {
@@ -546,7 +568,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是这个人发的消息. 消息目前只会是群消息
      */
     @MessageDsl
-    fun sentBy(name: String, onEvent: MessageListener<T>): Listener<T> =
+    fun sentBy(name: String, onEvent: MessageListener<M, R>): Ret =
         content({ this is GroupMessage && this.senderName == name }, onEvent)
 
     /**
@@ -560,14 +582,14 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是这个人发的消息. 消息可以是好友消息也可以是群消息
      */
     @MessageDsl
-    fun sentBy(qq: Long, onEvent: MessageListener<T>): Listener<T> =
+    fun sentBy(qq: Long, onEvent: MessageListener<M, R>): Ret =
         content({ this.sender.id == qq }, onEvent)
 
     /**
      * 如果是好友发来的消息
      */
     @MessageDsl
-    fun sentByFriend(onEvent: MessageListener<FriendMessage>): Listener<T> =
+    fun sentByFriend(onEvent: MessageListener<FriendMessage, R>): Ret =
         content({ this is FriendMessage }) {
             onEvent(this as FriendMessage, it)
         }
@@ -589,7 +611,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是管理员或群主发的消息
      */
     @MessageDsl
-    fun sentByOperator(onEvent: MessageListener<T>): Listener<T> =
+    fun sentByOperator(onEvent: MessageListener<M, R>): Ret =
         content({ this is GroupMessage && this.sender.isOperator() }, onEvent)
 
     /**
@@ -603,7 +625,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是管理员发的消息
      */
     @MessageDsl
-    fun sentByAdministrator(onEvent: MessageListener<T>): Listener<T> =
+    fun sentByAdministrator(onEvent: MessageListener<M, R>): Ret =
         content({ this is GroupMessage && this.sender.isAdministrator() }, onEvent)
 
     /**
@@ -617,7 +639,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是群主发的消息
      */
     @MessageDsl
-    fun sentByOwner(onEvent: MessageListener<T>): Listener<T> =
+    fun sentByOwner(onEvent: MessageListener<M, R>): Ret =
         content({ this is GroupMessage && this.sender.isOwner() }, onEvent)
 
     /**
@@ -631,7 +653,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果是来自这个群的消息, 就执行 [onEvent]
      */
     @MessageDsl
-    fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage>): Listener<T> =
+    fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage, R>): Ret =
         content({ this is GroupMessage && this.group.id == groupId }) {
             onEvent(this as GroupMessage, it)
         }
@@ -647,14 +669,14 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent]
      */
     @MessageDsl
-    inline fun <reified M : Message> has(noinline onEvent: MessageListener<T>): Listener<T> =
-        content({ message.any { it is M } }, onEvent)
+    inline fun <reified N : Message> has(noinline onEvent: MessageListener<M, R>): Ret =
+        content({ message.any { it is N } }, onEvent)
 
     /**
      * 如果 [filter] 返回 `true`
      */
     @MessageDsl
-    fun content(filter: T.(String) -> Boolean): ListeningFilter =
+    fun content(filter: M.(String) -> Boolean): ListeningFilter =
         ListeningFilter(filter)
 
     /**
@@ -662,12 +684,10 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      */
     @MessageDsl
     fun content(
-        filter: T.(String) -> Boolean,
-        onEvent: MessageListener<T>
-    ): Listener<T> =
-        subscriber {
-            if (filter(this, it)) onEvent(this, it)
-        }
+        filter: M.(String) -> Boolean,
+        onEvent: MessageListener<M, RR>
+    ): Ret =
+        subscriber(filter) { onEvent(this, it) }
 
     /**
      * 如果消息内容可由正则表达式匹配([Regex.matchEntire])
@@ -676,13 +696,15 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     fun matching(regex: Regex): ListeningFilter =
         content { regex.matchEntire(it) != null }
 
+
+    // TODO: 2020/3/20 支持新泛型
     /**
      * 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent`
      */
     @MessageDsl
-    fun matching(regex: Regex, onEvent: @MessageDsl suspend T.(MatchResult) -> Unit): Listener<T> =
+    fun matching(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
         always {
-            val find = regex.matchEntire(it) ?: return@always
+            val find = regex.matchEntire(it) ?: return@always stub
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
             this.executeAndReply {
                 onEvent.invoke(this, find)
@@ -700,9 +722,9 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 如果消息内容可由正则表达式查找([Regex.find]), 就执行 `onEvent`
      */
     @MessageDsl
-    fun finding(regex: Regex, onEvent: @MessageDsl suspend T.(MatchResult) -> Unit): Listener<T> =
+    fun finding(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
         always {
-            val find = regex.find(it) ?: return@always
+            val find = regex.find(it) ?: return@always stub
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
             this.executeAndReply {
                 onEvent.invoke(this, find)
@@ -714,8 +736,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * 若消息内容包含 [this] 则回复 [reply]
      */
     @MessageDsl
-    infix fun String.containsReply(reply: String): Listener<T> =
-        content({ this@containsReply in it }, { reply(reply) })
+    infix fun String.containsReply(reply: String): Ret =
+        content({ this@containsReply in it }, { reply(reply); stub })
 
     /**
      * 若消息内容包含 [this] 则执行 [replier] 并将其返回值回复给发信对象.
@@ -725,7 +747,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    infix fun String.containsReply(replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> =
+    infix fun String.containsReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret =
         content({ this@containsReply in it }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
             this.executeAndReply(replier)
@@ -739,9 +761,9 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    infix fun Regex.matchingReply(replier: @MessageDsl suspend T.(MatchResult) -> Any?): Listener<T> =
+    infix fun Regex.matchingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
         always {
-            val find = this@matchingReply.matchEntire(it) ?: return@always
+            val find = this@matchingReply.matchEntire(it) ?: return@always stub
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
             this.executeAndReply {
                 replier.invoke(this, find)
@@ -756,9 +778,9 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    infix fun Regex.findingReply(replier: @MessageDsl suspend T.(MatchResult) -> Any?): Listener<T> =
+    infix fun Regex.findingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
         always {
-            val find = this@findingReply.find(it) ?: return@always
+            val find = this@findingReply.find(it) ?: return@always stub
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
             this.executeAndReply {
                 replier.invoke(this, find)
@@ -779,7 +801,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他类型则 [Any.toString] 后回复
      */
     @MessageDsl
-    infix fun String.startsWithReply(replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> {
+    infix fun String.startsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimStart()
         return content({ it.trim().startsWith(toCheck) }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
@@ -803,7 +825,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他情况则 [Any.toString] 后回复
      */
     @MessageDsl
-    infix fun String.endsWithReply(replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> {
+    infix fun String.endsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimEnd()
         return content({ it.trim().endsWith(toCheck) }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
@@ -814,19 +836,19 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     }
 
     @MessageDsl
-    infix fun String.reply(reply: String): Listener<T> {
+    infix fun String.reply(reply: String): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply) })
+        return content({ it.trim() == toCheck }, { reply(reply);stub })
     }
 
     @MessageDsl
-    infix fun String.reply(reply: Message): Listener<T> {
+    infix fun String.reply(reply: Message): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply) })
+        return content({ it.trim() == toCheck }, { reply(reply);stub })
     }
 
     @MessageDsl
-    infix fun String.reply(replier: @MessageDsl suspend T.(String) -> Any?): Listener<T> {
+    infix fun String.reply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
@@ -837,8 +859,8 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
     }
 
     @PublishedApi
-    @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE") // false positive
-    internal suspend inline fun T.executeAndReply(replier: suspend T.(String) -> Any?) {
+    @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
+    internal suspend inline fun M.executeAndReply(replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(this, this.message.toString())) {
             is Message -> this.reply(message)
             is Unit -> {
@@ -846,11 +868,12 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
             }
             else -> this.reply(message.toString())
         }
+        return stub
     }
 
     @PublishedApi
-    @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE") // false positive
-    internal suspend inline fun T.executeAndQuoteReply(replier: suspend T.(String) -> Any?) {
+    @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
+    internal suspend inline fun M.executeAndQuoteReply(replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(this, this.message.toString())) {
             is Message -> this.quoteReply(message)
             is Unit -> {
@@ -858,6 +881,7 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
             }
             else -> this.quoteReply(message.toString())
         }
+        return stub
     }
 /* 易产生迷惑感
  fun replyCase(equals: String, trim: Boolean = true, replier: MessageReplier<T>) = case(equals, trim) { reply(replier(this)) }
