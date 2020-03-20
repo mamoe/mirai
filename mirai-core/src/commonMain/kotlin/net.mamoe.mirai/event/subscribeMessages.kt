@@ -344,6 +344,19 @@ class MessageSubscribersBuilder<T : MessagePacket<*, *>>(
 
     /**
      * 如果消息内容 `==` [equals]
+     */
+    @MiraiExperimentalAPI
+    @MessageDsl
+    @JvmName("case1")
+    @JsName("case1")
+    @SinceMirai("0.29.0")
+    @Suppress("INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS")
+    infix fun String.`->`(block: MessageListener<M, R>): Ret {
+        return case(this, onEvent = block)
+    }
+
+    /**
+     * 如果消息内容 `==` [equals]
      * @param trim `true` 则删除首尾空格后比较
      * @param ignoreCase `true` 则不区分大小写
      */
