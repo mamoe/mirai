@@ -22,6 +22,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
@@ -106,21 +107,24 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     @Volatile
     var requesting = false
     private var requestResult: String? = null
-    override suspend fun requestInput(): String {
+    override suspend fun requestInput(hint:String): String {
+        if(hint.isNotEmpty()){
+            this.pushLog(0, hint)
+        }
         requesting = true
         while (requesting) {
-            delay(100)//不然会卡死 迷惑吧
+            delay(100)
         }
         return requestResult!!
     }
 
 
-    private suspend fun provideInput(input: String) {
+    private fun provideInput(input: String) {
         if (requesting) {
             requestResult = input
             requesting = false
         } else {
-            MiraiConsole.CommandProcessor.runConsoleCommand(commandBuilder.toString())
+            CommandManager.runConsoleCommand(commandBuilder.toString())
         }
     }
 
@@ -152,8 +156,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                     val img = ImageIO.read(it)
                     toLog += img?.createCharImg((terminal.terminalSize.columns / 1.5).toInt()) ?: "无法创建字符图片. 请查看文件\n"
                 }
-                pushLog(0, "$toLog[Login Solver]请输验证码. ${tempFile.absolutePath}")
-                return requestInput()
+                return requestInput("$toLog[Login Solver]请输验证码. ${tempFile.absolutePath}")
                     .takeUnless { it.isEmpty() || it.length != 4 }
                     .also {
                         pushLog(0, "[Login Solver]正在提交[$it]中...")
@@ -163,9 +166,8 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
                 pushLog(0, "[Login Solver]需要滑动验证码")
                 pushLog(0, "[Login Solver]请在任意浏览器中打开以下链接并完成验证码. ")
-                pushLog(0, "[Login Solver]完成后请输入任意字符 ")
                 pushLog(0, url)
-                return requestInput().also {
+                return requestInput("[Login Solver]完成后请输入任意字符 ").also {
                     pushLog(0, "[Login Solver]正在提交中")
                 }
             }
@@ -177,7 +179,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                 pushLog(0, "[Login Solver]请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
                 pushLog(0, "[Login Solver]这步操作将在后续的版本中优化")
                 pushLog(0, url)
-                return requestInput().also {
+                return requestInput("").also {
                     pushLog(0, "[Login Solver]正在提交中...")
                 }
             }
@@ -320,9 +322,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
                             update()
                         }
                         KeyType.Enter -> {
-                            runBlocking {
-                                provideInput(commandBuilder.toString())
-                            }
+                            provideInput(commandBuilder.toString())
                             emptyCommand()
                         }
                         KeyType.Escape -> {

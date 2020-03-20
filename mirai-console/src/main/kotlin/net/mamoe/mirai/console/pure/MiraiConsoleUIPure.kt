@@ -66,28 +66,26 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
     override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
         var priorityStr = "[${priority.name}]"
         val _message = message + COLOR_RESET
-        if (MiraiConsole.frontEnd is MiraiConsoleUIPure) {
-            /**
-             * 通过ANSI控制码添加颜色
-             * 更多的颜色定义在 [MiraiConsoleUIPure] 的  companion
-             */
-            priorityStr = when (priority) {
-                LogPriority.ERROR
-                -> COLOR_RED + priorityStr + COLOR_RESET
+        /**
+         * 通过ANSI控制码添加颜色
+         * 更多的颜色定义在 [MiraiConsoleUIPure] 的  companion
+         */
+        priorityStr = when (priority) {
+            LogPriority.ERROR
+            -> COLOR_RED + priorityStr + COLOR_RESET
 
-                LogPriority.WARNING
-                -> COLOR_RED + priorityStr + COLOR_RESET
+            LogPriority.WARNING
+            -> COLOR_RED + priorityStr + COLOR_RESET
 
-                LogPriority.VERBOSE
-                -> COLOR_NAVY + priorityStr + COLOR_RESET
+            LogPriority.VERBOSE
+            -> COLOR_NAVY + priorityStr + COLOR_RESET
 
-                LogPriority.DEBUG
-                -> COLOR_PINK + priorityStr + COLOR_RESET
+            LogPriority.DEBUG
+            -> COLOR_PINK + priorityStr + COLOR_RESET
 
-                else -> priorityStr
-            }
-            println("\u001b[0m " + sdf.format(Date()) + " $priorityStr $identityStr $_message")
+            else -> priorityStr
         }
+        println("\u001b[0m " + sdf.format(Date()) + " $priorityStr $identityStr $_message")
     }
 
     override fun prePushBot(identity: Long) {
@@ -102,7 +100,10 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
 
     }
 
-    override suspend fun requestInput(): String {
+    override suspend fun requestInput(hint:String): String {
+        if(hint.isNotEmpty()){
+            println("\u001b[0m " + sdf.format(Date()) + COLOR_PINK + " $hint")
+        }
         requesting = true
         while (true) {
             delay(50)
@@ -119,7 +120,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
     override fun createLoginSolver(): LoginSolver {
         return DefaultLoginSolver(
             input = suspend {
-                requestInput()
+                requestInput("")
             }
         )
     }

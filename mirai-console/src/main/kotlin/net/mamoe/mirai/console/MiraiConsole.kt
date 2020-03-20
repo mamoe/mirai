@@ -145,7 +145,9 @@ object MiraiConsole {
         )
         fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking { runCommand(sender, command) }
     }
+
 }
+
 
 /**
  * Mirai Console的logger

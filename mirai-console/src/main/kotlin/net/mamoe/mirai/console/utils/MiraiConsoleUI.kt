@@ -60,9 +60,8 @@ interface MiraiConsoleUI {
     /**
      * 让UI层提供一个Input
      * 这个Input 不 等于 Command
-     *
      */
-    suspend fun requestInput(): String
+    suspend fun requestInput(hint:String): String
 
 
     /**
