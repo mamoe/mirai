@@ -198,8 +198,9 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
 /**
  * 判断两个 [MessagePacket] 的 [MessagePacket.sender] 和 [MessagePacket.subject] 是否相同
  */
+@SinceMirai("0.29.0")
 fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Boolean {
-    return this.sender == another.sender && this.subject == another.subject
+    return this.sender == another.sender && this.subject == another.subject && this.bot == another.bot
 }
 
 /**
