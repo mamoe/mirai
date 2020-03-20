@@ -100,7 +100,7 @@ interface Listener<in E : Event> : CompletableJob {
  * ```
  *
  *
- * 要创建一个全局都存在的监听, 即守护协程, 请在 [GlobalScope] 下调用本函数:
+ * 要创建一个全局都存在的监听（不推荐）, 即守护协程, 请在 [GlobalScope] 下调用本函数:
  * ```kotlin
  * GlobalScope.subscribe<Event> { /* 会收到来自全部 Bot 的事件和与 Bot 不相关的事件 */ }
  * ```
@@ -122,6 +122,8 @@ interface Listener<in E : Event> : CompletableJob {
  *
  * @see subscribingGet 监听一个事件, 并尝试从这个事件中获取一个值.
  * @see subscribingGetAsync 异步监听一个事件, 并尝试从这个事件中获取一个值.
+ *
+ * @see whileSelectMessages 挂起当前协程, 等待任意一个事件监听器返回 `false` 后返回.
  *
  * @see subscribeAlways 一直监听
  * @see subscribeOnce   只监听一次

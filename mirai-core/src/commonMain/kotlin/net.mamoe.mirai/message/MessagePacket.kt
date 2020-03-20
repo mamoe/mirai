@@ -21,8 +21,10 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.selectMessages
 import net.mamoe.mirai.event.subscribingGet
 import net.mamoe.mirai.event.subscribingGetOrNull
+import net.mamoe.mirai.event.whileSelectMessages
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recall
 import net.mamoe.mirai.recallIn
@@ -212,7 +214,7 @@ fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Bo
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
     timeoutMillis: Long = -1,
-    crossinline filter: P.(P) -> Boolean
+    crossinline filter: suspend P.(P) -> Boolean
 ): MessageChain {
     return subscribingGet<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
@@ -232,7 +234,7 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
  */
 suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
     timeoutMillis: Long = -1,
-    crossinline filter: P.(P) -> Boolean
+    crossinline filter: suspend P.(P) -> Boolean
 ): MessageChain? {
     return subscribingGetOrNull<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }?.takeIf { filter(it, it) }
@@ -266,6 +268,22 @@ inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
     return this.bot.async(coroutineContext) {
         subscribingGet<P, P>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageAsync) }
+        }.message
+    }
+}
+
+/**
+ * @see nextMessage
+ */
+inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
+    timeoutMillis: Long = -1,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline filter: suspend P.(P) -> Boolean
+): Deferred<MessageChain> {
+    return this.bot.async(coroutineContext) {
+        subscribingGet<P, P>(timeoutMillis) {
+            takeIf { this.isContextIdenticalWith(this@nextMessageAsync) }
+                .takeIf { filter(this, this) }
         }.message
     }
 }
@@ -310,6 +328,8 @@ inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNullAsync(
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  *
  * @see subscribingGet
+ * @see whileSelectMessages
+ * @see selectMessages
  */
 suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaining(
     timeoutMillis: Long = -1
@@ -359,4 +379,3 @@ inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingOrNull
         }?.message?.first<M>()
     }
 }
-

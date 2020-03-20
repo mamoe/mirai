@@ -244,6 +244,11 @@ inline fun <reified E : BotEvent> Bot.incoming(
  */
 typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
 
+
+// TODO: 2020/3/21 抽象消息构造器, 以在 select 时不可访问 `reply` 等函数
+
+// TODO: 2020/3/21 引入 TypeAlias 或新的类型以缩短类型参数
+
 /**
  * 消息订阅构造器
  *
