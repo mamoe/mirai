@@ -10,12 +10,9 @@
 package net.mamoe.mirai.console
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole.CommandProcessor.processNextCommandLine
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
@@ -42,7 +39,7 @@ object MiraiConsole {
     /**
      * 与前端交互所使用的Logger
      */
-    var logger = MiraiConsoleLogger
+    internal var logger = MiraiConsoleLogger
 
     /**
      * Console运行路径
@@ -55,12 +52,12 @@ object MiraiConsole {
     lateinit var frontEnd: MiraiConsoleUI
 
 
-    /**
-     * 启动Console
-     */
     var start = false
 
 
+    /**
+     * 启动Console
+     */
     fun start(
         frontEnd: MiraiConsoleUI,
         coreVersion: String = "0.0.0",
@@ -91,7 +88,7 @@ object MiraiConsole {
         /* 依次启用功能 */
         DefaultCommands()
         PluginManager.loadPlugins()
-        CommandProcessor.start()
+        CommandManager.start()
 
         /* 通知启动完成 */
         logger("Mirai-console 启动完成")
@@ -99,6 +96,9 @@ object MiraiConsole {
         logger("\"/login qq号 qq密码 \" 来登录一个BOT")
     }
 
+    /**
+     * 关闭Console
+     */
     fun stop() {
         PluginManager.disableAllPlugins()
         try {
@@ -110,85 +110,82 @@ object MiraiConsole {
         }
     }
 
-
-    object CommandProcessor : Job by {
-        GlobalScope.launch(start = CoroutineStart.LAZY) {
-            processNextCommandLine()
-        }
-    }() {
-
-        internal class FullCommand(
-            val sender: CommandSender,
-            val commandStr: String
+    @Deprecated("Please use CommandManager directly, this will be removed in later release")
+    object CommandProcessor{
+        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+            "CommandManager.runConsoleCommand(command)",
+            "net.mamoe.mirai.console.command.CommandManager"
         )
-
-        private val commandChannel: Channel<FullCommand> = Channel()
-
+        )
         suspend fun runConsoleCommand(command: String) {
-            commandChannel.send(
-                FullCommand(ConsoleCommandSender, command)
-            )
+            CommandManager.runConsoleCommand(command)
         }
-
+        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+            "CommandManager.runCommand(sender, command)",
+            "net.mamoe.mirai.console.command.CommandManager"
+        )
+        )
         suspend fun runCommand(sender: CommandSender, command: String) {
-            commandChannel.send(
-                FullCommand(sender, command)
-            )
+            CommandManager.runCommand(sender,command)
         }
 
-        fun runConsoleCommandBlocking(command: String) = runBlocking { runConsoleCommand(command) }
+        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+            "CommandManager.runConsoleCommand(command)",
+            "net.mamoe.mirai.console.command.CommandManager"
+        )
+        )
+        fun runConsoleCommandBlocking(command: String) = runBlocking { runConsoleCommand(command)}
+
 
         @Suppress("unused")
+        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+            "CommandManager.runCommand(sender, command)",
+            "net.mamoe.mirai.console.command.CommandManager"
+        )
+        )
         fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking { runCommand(sender, command) }
+    }
+}
 
-        private suspend fun processNextCommandLine() {
-            for (command in commandChannel) {
-                var commandStr = command.commandStr
-                if (!commandStr.startsWith("/")) {
-                    commandStr = "/$commandStr"
-                }
-                if (!CommandManager.runCommand(command.sender, commandStr)) {
-                    command.sender.sendMessage("未知指令 $commandStr")
-                }
-            }
+/**
+ * Mirai Console的logger
+ * 它用于适配不同的Console前段
+ */
+internal object MiraiConsoleLogger {
+    operator fun invoke(any: Any? = null) {
+        invoke(
+            "[Mirai ${MiraiConsole.version} ${MiraiConsole.build}]",
+            0L,
+            any
+        )
+    }
+
+    operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, any: Any? = null) {
+        if (any != null) {
+            MiraiConsole.frontEnd.pushLog(priority, identityStr, identity, "$any")
         }
     }
 
-    object MiraiConsoleLogger {
-        operator fun invoke(any: Any? = null) {
-            invoke(
-                "[Mirai $version $build]",
-                0L,
-                any
-            )
-        }
-
-        operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, any: Any? = null) {
-            if (any != null) {
-                frontEnd.pushLog(priority, identityStr, identity, "$any")
-            }
-        }
-
-        operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, e: Exception? = null) {
-            if (e != null) {
-                frontEnd.pushLog(priority, identityStr, identity, "${e.stackTrace}")
-            }
-        }
-
-        // 设置默认的pushLog输出为 INFO 类型
-        operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
-            if (any != null) {
-                frontEnd.pushLog(LogPriority.INFO, identityStr, identity, "$any")
-            }
-        }
-
-        operator fun invoke(identityStr: String, identity: Long, e: Exception? = null) {
-            if (e != null) {
-                frontEnd.pushLog(LogPriority.INFO, identityStr, identity, "${e.stackTrace}")
-            }
+    operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, e: Exception? = null) {
+        if (e != null) {
+            MiraiConsole.frontEnd.pushLog(priority, identityStr, identity, "${e.stackTrace}")
         }
     }
 
+    // 设置默认的pushLog输出为 INFO 类型
+    operator fun invoke(identityStr: String, identity: Long, any: Any? = null) {
+        if (any != null) {
+            MiraiConsole.frontEnd.pushLog(LogPriority.INFO, identityStr, identity, "$any")
+        }
+    }
+
+    operator fun invoke(identityStr: String, identity: Long, e: Exception? = null) {
+        if (e != null) {
+            MiraiConsole.frontEnd.pushLog(LogPriority.INFO, identityStr, identity, "${e.stackTrace}")
+        }
+
+
+    }
 }
 
 
