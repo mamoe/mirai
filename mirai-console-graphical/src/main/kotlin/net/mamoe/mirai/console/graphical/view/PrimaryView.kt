@@ -6,6 +6,7 @@ import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
+import javafx.stage.FileChooser
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.BotModel
@@ -16,11 +17,9 @@ import tornadofx.*
 class PrimaryView : View() {
 
     private val controller = find<MiraiGraphicalUIController>()
+    private lateinit var mainTabPane: TabPane
 
     override val root = borderpane {
-
-        prefWidth = 1000.0
-        prefHeight = 650.0
 
         left = vbox {
 
@@ -71,29 +70,66 @@ class PrimaryView : View() {
 
         center = jfxTabPane {
 
-            tab("Login").content = find<LoginView>().root
+            logTab("Main", controller.mainLog, closeable = false)
 
             tab("Plugins").content = find<PluginsView>().root
 
             tab("Settings").content = find<SettingsView>().root
 
-            logTab("Main", controller.mainLog)
+            tab("Login").content = find<LoginView>().root
+
+            mainTabPane = this
         }
+    }
+
+    fun Tab.select() = apply {
+        if (!mainTabPane.tabs.contains(this)) mainTabPane.tabs.add(this)
+        mainTabPane.selectionModel.select(this)
     }
 }
 
 private fun TabPane.logTab(
     text: String? = null,
     logs: ObservableList<String>,
+    closeable: Boolean = true,
     op: Tab.() -> Unit = {}
 ) = tab(text) {
-    listview(logs) {
 
-        fitToParentSize()
-        cellFormat {
-            graphic = label(it) {
-                maxWidthProperty().bind(this@listview.widthProperty())
-                isWrapText = true
+    vbox {
+        buttonbar {
+
+            button("导出日志").action {
+                val path = chooseFile(
+                    "选择保存路径",
+                    arrayOf(FileChooser.ExtensionFilter("日志", "txt")),
+                    FileChooserMode.Save
+                ) {
+                    initialFileName = "$text.txt"
+                }
+                runAsyncWithOverlay {
+                    path.firstOrNull()?.run {
+                        if (!exists()) createNewFile()
+                        writer().use {
+                            logs.forEach { log -> it.appendln(log) }
+                        }
+                        true
+                    } ?: false
+                }.ui {// isSucceed: Boolean ->
+                    // notify something
+                }
+
+                if (closeable) button("关闭").action { close() }
+            }
+        }
+
+        listview(logs) {
+
+            fitToParentSize()
+            cellFormat {
+                graphic = label(it) {
+                    maxWidthProperty().bind(this@listview.widthProperty())
+                    isWrapText = true
+                }
             }
         }
     }

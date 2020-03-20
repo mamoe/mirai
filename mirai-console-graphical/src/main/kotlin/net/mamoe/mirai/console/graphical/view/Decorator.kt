@@ -5,5 +5,8 @@ import tornadofx.View
 
 class Decorator : View() {
 
-    override val root = JFXDecorator(primaryStage, find<PrimaryView>().root)
+    override val root = JFXDecorator(primaryStage, find<PrimaryView>().root).apply {
+        prefWidth = 1000.0
+        prefHeight = 650.0
+    }
 }

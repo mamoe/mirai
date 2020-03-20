@@ -3,12 +3,15 @@ package net.mamoe.mirai.console.graphical.controller
 import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.stage.Modality
+import javafx.stage.StageStyle
+import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.graphical.model.*
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
+import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import tornadofx.*
@@ -34,8 +37,6 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         fun ObservableList<*>.trim() {
-            println(size)
-            println(settingModel.item.maxLongNum)
             if (size > settingModel.item.maxLongNum) {
                 this.removeAt(0)
             }
@@ -99,7 +100,27 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
 class GraphicalLoginSolver : LoginSolver() {
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val code = VerificationCodeModel(VerificationCode(data))
+
+        // 界面需要运行在主线程
+        Platform.runLater {
+            find<VerificationCodeFragment>(Scope(code)).openModal(
+                stageStyle = StageStyle.UNDECORATED,
+                escapeClosesWindow = false,
+                modality = Modality.NONE,
+                resizable = false,
+                block = true
+            )
+        }
+
+        // 阻塞协程直到验证码已经输入
+        while (code.isDirty || code.code.value == null) {
+            delay(1000)
+            if (code.code.value === VerificationCodeFragment.MAGIC_KEY) {
+                throw WrongPasswordException("取消登录")
+            }
+        }
+        return code.code.value
     }
 
 
