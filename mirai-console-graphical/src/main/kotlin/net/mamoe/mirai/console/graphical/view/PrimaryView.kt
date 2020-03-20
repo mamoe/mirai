@@ -21,9 +21,6 @@ class PrimaryView : View() {
 
     override val root = borderpane {
 
-        prefWidth = 1000.0
-        prefHeight = 650.0
-
         left = vbox {
 
             imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png")))
