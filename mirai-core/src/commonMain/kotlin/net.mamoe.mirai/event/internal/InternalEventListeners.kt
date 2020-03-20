@@ -34,21 +34,32 @@ fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L
 @Suppress("FunctionName")
 internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind,
     handler: suspend (E) -> ListeningStatus
 ): Handler<E> {
     @OptIn(ExperimentalCoroutinesApi::class) // don't remove
     val context = this.newCoroutineContext(coroutineContext)
-    return Handler(context[Job], context, handler)
+    return Handler(context[Job], context, handler, concurrencyKind)
 }
 
-private inline fun inline(block: () -> Unit) = block()
 /**
  * 事件处理器.
  */
 @PublishedApi
 internal class Handler<in E : Event>
-@PublishedApi internal constructor(parentJob: Job?, private val subscriberContext: CoroutineContext, @JvmField val handler: suspend (E) -> ListeningStatus) :
+@PublishedApi internal constructor(
+    parentJob: Job?,
+    private val subscriberContext: CoroutineContext,
+    @JvmField val handler: suspend (E) -> ListeningStatus,
+    override val concurrencyKind: Listener.ConcurrencyKind
+) :
     Listener<E>, CompletableJob by Job(parentJob) {
+
+    @MiraiInternalAPI
+    val lock: Mutex? = when (concurrencyKind) {
+        Listener.ConcurrencyKind.CONCURRENT -> null
+        Listener.ConcurrencyKind.LOCKED -> Mutex()
+    }
 
     @OptIn(MiraiDebugAPI::class)
     override suspend fun onEvent(event: E): ListeningStatus {
@@ -60,7 +71,7 @@ internal class Handler<in E : Event>
         } catch (e: Throwable) {
             subscriberContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
                 ?: coroutineContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
-                ?: inline {
+                ?: kotlin.run {
                     @Suppress("DEPRECATION")
                     MiraiLogger.warning(
                         """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
@@ -75,9 +86,6 @@ internal class Handler<in E : Event>
             ListeningStatus.LISTENING
         }
     }
-
-    @MiraiInternalAPI
-    override val lock: Mutex = Mutex()
 }
 
 /**
@@ -161,7 +169,13 @@ private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(event: E, listene
     listeners.forEachNode { node ->
         launch {
             val listener = node.nodeValue
-            listener.lock.withLock {
+            if (listener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
+                (listener as Handler).lock!!.withLock {
+                    if (!node.isRemoved() && listener.onEvent(event) == ListeningStatus.STOPPED) {
+                        listeners.remove(listener) // atomic remove
+                    }
+                }
+            } else {
                 if (!node.isRemoved() && listener.onEvent(event) == ListeningStatus.STOPPED) {
                     listeners.remove(listener) // atomic remove
                 }

@@ -52,11 +52,23 @@ enum class ListeningStatus {
  * 取消监听: [complete]
  */
 interface Listener<in E : Event> : CompletableJob {
+
+    enum class ConcurrencyKind {
+        /**
+         * 并发地同时处理多个事件, 但无法保证 [onEvent] 返回 [ListeningStatus.STOPPED] 后立即停止事件监听.
+         */
+        CONCURRENT,
+
+        /**
+         * 使用 [Mutex] 保证同一时刻只处理一个事件.
+         */
+        LOCKED
+    }
+
     /**
-     * [onEvent] 的锁
+     * 并发类型
      */
-    @MiraiInternalAPI
-    val lock: Mutex
+    val concurrencyKind: ConcurrencyKind
 
     suspend fun onEvent(event: E): ListeningStatus
 }
@@ -121,9 +133,10 @@ interface Listener<in E : Event> : CompletableJob {
 @OptIn(MiraiInternalAPI::class)
 inline fun <reified E : Event> CoroutineScope.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     noinline handler: suspend E.(E) -> ListeningStatus
 ): Listener<E> =
-    E::class.subscribeInternal(Handler(coroutineContext) { it.handler(it); })
+    E::class.subscribeInternal(Handler(coroutineContext, concurrency) { it.handler(it); })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
@@ -139,12 +152,17 @@ inline fun <reified E : Event> CoroutineScope.subscribe(
 @OptIn(MiraiInternalAPI::class, ExperimentalContracts::class)
 inline fun <reified E : Event> CoroutineScope.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     noinline listener: suspend E.(E) -> Unit
 ): Listener<E> {
     contract {
         callsInPlace(listener, InvocationKind.UNKNOWN)
     }
-    return E::class.subscribeInternal(Handler(coroutineContext) { it.listener(it); ListeningStatus.LISTENING })
+    return E::class.subscribeInternal(
+        Handler(
+            coroutineContext,
+            concurrency
+        ) { it.listener(it); ListeningStatus.LISTENING })
 }
 
 /**
@@ -163,7 +181,11 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnce(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit
 ): Listener<E> =
-    E::class.subscribeInternal(Handler(coroutineContext) { it.listener(it); ListeningStatus.STOPPED })
+    E::class.subscribeInternal(
+        Handler(
+            coroutineContext,
+            Listener.ConcurrencyKind.LOCKED
+        ) { it.listener(it); ListeningStatus.STOPPED })
 
 
 //
@@ -187,9 +209,14 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnce(
 @OptIn(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     noinline handler: suspend E.(E) -> ListeningStatus
 ): Listener<E> =
-    E::class.subscribeInternal(Handler(coroutineContext) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING })
+    E::class.subscribeInternal(
+        Handler(
+            coroutineContext,
+            concurrency
+        ) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING })
 
 
 /**
@@ -207,9 +234,14 @@ inline fun <reified E : BotEvent> Bot.subscribe(
 @OptIn(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     noinline listener: suspend E.(E) -> Unit
 ): Listener<E> {
-    return E::class.subscribeInternal(Handler(coroutineContext) { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING })
+    return E::class.subscribeInternal(
+        Handler(
+            coroutineContext,
+            concurrency
+        ) { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING })
 }
 
 /**
@@ -229,7 +261,7 @@ inline fun <reified E : BotEvent> Bot.subscribeOnce(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit
 ): Listener<E> =
-    E::class.subscribeInternal(Handler(coroutineContext) {
+    E::class.subscribeInternal(Handler(coroutineContext, Listener.ConcurrencyKind.LOCKED) {
         if (it.bot === this) {
             it.listener(it)
             ListeningStatus.STOPPED

@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.event.internal
 
 import kotlinx.coroutines.CoroutineScope
@@ -21,11 +23,19 @@ import kotlin.coroutines.EmptyCoroutineContext
 @MiraiInternalAPI
 @Suppress("FunctionName")
 fun <E : Event> Class<E>._subscribeEventForJaptOnly(scope: CoroutineScope, onEvent: Function<E, ListeningStatus>): Listener<E> {
-    return this.kotlin.subscribeInternal(scope.Handler(EmptyCoroutineContext) { onEvent.apply(it) })
+    return this.kotlin.subscribeInternal(
+        scope.Handler(
+            EmptyCoroutineContext,
+            Listener.ConcurrencyKind.CONCURRENT
+        ) { onEvent.apply(it) })
 }
 
 @MiraiInternalAPI
 @Suppress("FunctionName")
 fun <E : Event> Class<E>._subscribeEventForJaptOnly(scope: CoroutineScope, onEvent: Consumer<E>): Listener<E> {
-    return this.kotlin.subscribeInternal(scope.Handler(EmptyCoroutineContext) { onEvent.accept(it); ListeningStatus.LISTENING; })
+    return this.kotlin.subscribeInternal(
+        scope.Handler(
+            EmptyCoroutineContext,
+            Listener.ConcurrencyKind.CONCURRENT
+        ) { onEvent.accept(it); ListeningStatus.LISTENING; })
 }
