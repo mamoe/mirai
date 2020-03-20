@@ -29,11 +29,10 @@ import kotlin.coroutines.EmptyCoroutineContext
 @MiraiExperimentalAPI
 suspend inline fun <reified E : Event, R : Any> subscribingGet(
     timeoutMillis: Long = -1,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
-    return subscribingGetOrNull(timeoutMillis, coroutineContext, mapper) ?: error("timeout subscribingGet")
+    return subscribingGetOrNull(timeoutMillis, mapper) ?: error("timeout subscribingGet")
 }
 
 /**
@@ -50,52 +49,19 @@ suspend inline fun <reified E : Event, R : Any> subscribingGet(
 @MiraiExperimentalAPI
 suspend inline fun <reified E : Event, R : Any> subscribingGetOrNull(
     timeoutMillis: Long = -1,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): R? {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
-    var result: R? = null
-    var resultThrowable: Throwable? = null
 
-    if (timeoutMillis == -1L) {
-        @Suppress("DuplicatedCode") // for better performance
+    return if (timeoutMillis == -1L) {
         coroutineScope {
-            var listener: Listener<E>? = null
-            listener = this.subscribe(coroutineContext) {
-                val value = try {
-                    mapper.invoke(this, it)
-                } catch (e: Exception) {
-                    resultThrowable = e
-                    return@subscribe ListeningStatus.STOPPED.also { listener!!.complete() }
-                }
-
-                if (value != null) {
-                    result = value
-                    return@subscribe ListeningStatus.STOPPED.also { listener!!.complete() }
-                } else return@subscribe ListeningStatus.LISTENING
-            }
+            subscribingGetOrNullImpl<E, R>(this, mapper)
         }
     } else {
         withTimeoutOrNull(timeoutMillis) {
-            var listener: Listener<E>? = null
-            @Suppress("DuplicatedCode") // for better performance
-            listener = this.subscribe(coroutineContext) {
-                val value = try {
-                    mapper.invoke(this, it)
-                } catch (e: Exception) {
-                    resultThrowable = e
-                    return@subscribe ListeningStatus.STOPPED.also { listener!!.complete() }
-                }
-
-                if (value != null) {
-                    result = value
-                    return@subscribe ListeningStatus.STOPPED.also { listener!!.complete() }
-                } else return@subscribe ListeningStatus.LISTENING
-            }
+            subscribingGetOrNullImpl<E, R>(this, mapper)
         }
     }
-    resultThrowable?.let { throw it }
-    return result
 }
 
 /**
@@ -114,5 +80,34 @@ inline fun <reified E : Event, R : Any> CoroutineScope.subscribingGetAsync(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): Deferred<R> = this.async(coroutineContext) {
-    subscribingGet(timeoutMillis, this.coroutineContext, mapper)
+    subscribingGet(timeoutMillis, mapper)
+}
+
+
+@PublishedApi
+internal suspend inline fun <reified E : Event, R> subscribingGetOrNullImpl(
+    coroutineScope: CoroutineScope,
+    noinline mapper: suspend E.(E) -> R?
+): R {
+    var result: Result<R?> = Result.success(null) // stub
+    var listener: Listener<E>? = null
+    @Suppress("DuplicatedCode") // for better performance
+    listener = coroutineScope.subscribe {
+        val value = try {
+            mapper.invoke(this, it)
+        } catch (e: Exception) {
+            result = Result.failure(e)
+            listener!!.complete()
+            return@subscribe ListeningStatus.STOPPED
+        }
+
+        if (value != null) {
+            result = Result.success(value)
+            listener!!.complete()
+            return@subscribe ListeningStatus.STOPPED
+        } else return@subscribe ListeningStatus.LISTENING
+    }
+    listener.join()
+
+    return result.getOrThrow()!!
 }
