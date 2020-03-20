@@ -42,7 +42,7 @@ object MiraiConsole {
     /**
      * 与前端交互所使用的Logger
      */
-    var logger = UIPushLogger
+    var logger = MiraiConsoleLogger
 
     /**
      * Console运行路径
@@ -154,7 +154,7 @@ object MiraiConsole {
         }
     }
 
-    object UIPushLogger {
+    object MiraiConsoleLogger {
         operator fun invoke(any: Any? = null) {
             invoke(
                 "[Mirai $version $build]",
