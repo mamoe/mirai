@@ -23,7 +23,9 @@ class PrimaryView : View() {
 
         left = vbox {
 
-            imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png")))
+            imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png"))) {
+                isPreserveRatio = true
+            }
 
             // bot list
             jfxListView(controller.botList) {

@@ -1,21 +1,39 @@
 package net.mamoe.mirai.console.graphical.styleSheet
 
-import tornadofx.*
+import tornadofx.box
+import tornadofx.c
+import tornadofx.cssclass
+import tornadofx.px
 
-class PrimaryStyleSheet : Stylesheet() {
+class PrimaryStyleSheet : BaseStyleSheet() {
     companion object {
+        // window
         val jfxTitle by cssclass("jfx-decorator-buttons-container")
         val container by cssclass("jfx-decorator-content-container")
+
+        // tab
+        val tabPane by cssclass("tab-header-background")
     }
 
     init {
+        /*
+         * window
+         */
         jfxTitle {
-            backgroundColor += c("00BCD4")
+            backgroundColor += c(primaryColor)
         }
 
         container {
-            borderColor += box(c("00BCD4"))
+            borderColor += box(c(primaryColor))
             borderWidth += box(0.px, 4.px, 4.px, 4.px)
+        }
+
+
+        /*
+         * tab pane
+         */
+        tabPane {
+            backgroundColor += c(primaryColor)
         }
     }
 }
