@@ -36,9 +36,8 @@ abstract class PluginBase
      * 插件被分配的数据目录。数据目录会与插件名称同名。
      */
     val dataFolder: File by lazy {
-        File(PluginManager.pluginsPath + "/" + pluginName).also {
-            it.mkdir()
-        }
+        File(PluginManager.pluginsPath + "/" + PluginManager.lastPluginName)
+            .also { it.mkdir() }
     }
 
     /**

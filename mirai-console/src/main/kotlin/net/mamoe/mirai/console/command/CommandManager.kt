@@ -133,7 +133,7 @@ object CommandManager : Job by {
                 e.printStackTrace()
                 false
             } finally {
-                (sender as CommandSenderImpl).flushMessage()
+                (sender as AbstractCommandSender).flushMessage()
             }
         } ?: throw UnknownCommandException(commandHead)
     }

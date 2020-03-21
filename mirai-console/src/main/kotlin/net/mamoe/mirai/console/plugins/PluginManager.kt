@@ -24,9 +24,6 @@ import java.util.jar.JarFile
 
 
 object PluginManager {
-    @Volatile
-    internal var lastPluginName: String = ""
-
     internal val pluginsPath = (System.getProperty("user.dir") + "/plugins/").replace("//", "/").also {
         File(it).mkdirs()
     }
@@ -40,11 +37,11 @@ object PluginManager {
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
     private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
 
-    fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
+    internal fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.onCommand(command, sender, args)
-            }catch (e:Throwable){
+            } catch (e: Throwable) {
                 logger.info(e)
             }
         }
@@ -63,6 +60,10 @@ object PluginManager {
     fun getAllPluginDescriptions(): Collection<PluginDescription> {
         return pluginDescriptions.values
     }
+
+
+    @Volatile
+    internal var lastPluginName: String = ""
 
     /**
      * 尝试加载全部插件
@@ -153,27 +154,37 @@ object PluginManager {
 
             //real load
             logger.info("loading plugin " + description.name)
-            lastPluginName = description.name
 
             try {
                 val pluginClass = try {
                     PluginClassLoader(
                         (pluginsLocation[description.name]!!),
                         this.javaClass.classLoader
-                    )
-                        .loadClass(description.basePath)
+                    ).loadClass(description.basePath)
                 } catch (e: ClassNotFoundException) {
                     logger.info("failed to find Main: " + description.basePath + " checking if it's kotlin's path")
                     PluginClassLoader(
                         (pluginsLocation[description.name]!!),
                         this.javaClass.classLoader
-                    )
-                        .loadClass("${description.basePath}Kt")
+                    ).loadClass("${description.basePath}Kt")
                 }
+
                 return try {
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
+
+                    lastPluginName = description.name
                     val plugin: PluginBase =
-                        subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
+                        subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().apply {
+                            try {
+                                trySetAccessible() // Java 9+
+                            } catch (e: Throwable) {
+                                kotlin.runCatching {
+                                    isAccessible = true // Java 9-
+                                }.exceptionOrNull()?.printStackTrace()
+                            }
+                        }.newInstance()
+                    plugin.dataFolder // initialize right now
+
                     description.loaded = true
                     logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
                     logger.info(description.info)
