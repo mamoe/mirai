@@ -9,10 +9,11 @@
 
 package net.mamoe.mirai.console
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
@@ -45,14 +46,16 @@ object MiraiConsole {
      * Console运行路径
      */
     var path: String = System.getProperty("user.dir")
+        internal set
 
     /**
      * Console前端接口
      */
     lateinit var frontEnd: MiraiConsoleUI
+        internal set
 
 
-    var start = false
+    private var started = false
 
 
     /**
@@ -63,10 +66,10 @@ object MiraiConsole {
         coreVersion: String = "0.0.0",
         consoleVersion: String = "0.0.0"
     ) {
-        if (start) {
+        if (started) {
             return
         }
-        start = true
+        started = true
 
         /* 初始化前端 */
         this.version = consoleVersion
@@ -110,49 +113,55 @@ object MiraiConsole {
         }
     }
 
+    @Suppress("RedundantSuspendModifier") // binary compatibility
     @Deprecated("Please use CommandManager directly, this will be removed in later release")
-    object CommandProcessor{
-        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-            "CommandManager.runConsoleCommand(command)",
-            "net.mamoe.mirai.console.command.CommandManager"
-        )
+    object CommandProcessor {
+        @Deprecated(
+            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+                "CommandManager.runConsoleCommand(command)",
+                "net.mamoe.mirai.console.command.CommandManager"
+            ), level = DeprecationLevel.ERROR
         )
         suspend fun runConsoleCommand(command: String) {
-            CommandManager.runConsoleCommand(command)
-        }
-        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-            "CommandManager.runCommand(sender, command)",
-            "net.mamoe.mirai.console.command.CommandManager"
-        )
-        )
-        suspend fun runCommand(sender: CommandSender, command: String) {
-            CommandManager.runCommand(sender,command)
+            CommandManager.runCommand(ConsoleCommandSender, command)
         }
 
-        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-            "CommandManager.runConsoleCommand(command)",
-            "net.mamoe.mirai.console.command.CommandManager"
+        @Deprecated(
+            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+                "CommandManager.runCommand(sender, command)",
+                "net.mamoe.mirai.console.command.CommandManager"
+            ), level = DeprecationLevel.ERROR
         )
+        suspend fun runCommand(sender: CommandSender, command: String) {
+            CommandManager.runCommand(sender, command)
+        }
+
+        @Deprecated(
+            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+                "CommandManager.runCommand(command)",
+                "net.mamoe.mirai.console.command.CommandManager",
+                "net.mamoe.mirai.console.command.ConsoleCommandSender"
+            ), level = DeprecationLevel.ERROR
         )
-        fun runConsoleCommandBlocking(command: String) = runBlocking { runConsoleCommand(command)}
+        fun runConsoleCommandBlocking(command: String) =
+            runBlocking { CommandManager.runCommand(ConsoleCommandSender, command) }
 
 
         @Suppress("unused")
-        @Deprecated("Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-            "CommandManager.runCommand(sender, command)",
-            "net.mamoe.mirai.console.command.CommandManager"
+        @Deprecated(
+            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
+                "CommandManager.runCommand(sender, command)",
+                "net.mamoe.mirai.console.command.CommandManager"
+            )
         )
-        )
-        fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking { runCommand(sender, command) }
+        fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking {
+            CommandManager.runCommand(sender, command)
+        }
     }
 
 }
 
 
-/**
- * Mirai Console的logger
- * 它用于适配不同的Console前段
- */
 internal object MiraiConsoleLogger {
     operator fun invoke(any: Any? = null) {
         invoke(

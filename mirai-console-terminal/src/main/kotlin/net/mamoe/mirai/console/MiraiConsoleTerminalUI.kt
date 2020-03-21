@@ -23,6 +23,7 @@ import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
 import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
 import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
@@ -124,7 +125,7 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
             requestResult = input
             requesting = false
         } else {
-            CommandManager.runConsoleCommand(commandBuilder.toString())
+            CommandManager.runCommand(ConsoleCommandSender, commandBuilder.toString())
         }
     }
 
