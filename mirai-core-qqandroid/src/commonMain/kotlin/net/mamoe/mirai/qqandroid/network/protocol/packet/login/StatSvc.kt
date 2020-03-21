@@ -11,17 +11,17 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
 import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestMSFForceOffline
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RspMSFForceOffline
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.SvcReqRegister
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.StatSvcGetOnline
-import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
-import net.mamoe.mirai.qqandroid.network.protocol.packet.buildLoginOutgoingPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.writeSsoPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiPlatformUtils
@@ -81,7 +81,6 @@ internal class StatSvc {
         }
     }
 
-
     internal object Register : OutgoingPacketFactory<Register.Response>("StatSvc.register") {
 
         internal object Response : Packet {
@@ -140,9 +139,10 @@ internal class StatSvc {
                                 strOSVer = client.device.version.release.encodeToString(),
 
                                 uOldSSOIp = 0,
-                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().split(".").foldIndexed(0L) { index: Int, acc: Long, s: String ->
-                                    acc or ((s.toLong() shl (index * 16)))
-                                },
+                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().split(".")
+                                    .foldIndexed(0L) { index: Int, acc: Long, s: String ->
+                                        acc or ((s.toLong() shl (index * 16)))
+                                    },
                                 strVendorName = "MIUI",
                                 strVendorOSName = "?ONEPLUS A5000_23_17",
                                 // register 时还需要
@@ -176,6 +176,45 @@ internal class StatSvc {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             return Response
+        }
+    }
+
+    internal object ReqMSFOffline :
+        IncomingPacketFactory<BotOfflineEvent.Dropped>("StatSvc.ReqMSFOffline", "StatSvc.RspMSFForceOffline") {
+
+        internal data class MsfOfflineToken(
+            val uin: Long,
+            val seq: Long,
+            val const: Byte
+        ) : Packet, RuntimeException("dropped by StatSvc.ReqMSFOffline")
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): BotOfflineEvent.Dropped {
+            val decodeUniPacket = decodeUniPacket(RequestMSFForceOffline.serializer())
+            return BotOfflineEvent.Dropped(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.Dropped, sequenceId: Int): OutgoingPacket? {
+            val cause = packet.cause
+            check(cause is MsfOfflineToken) { "internal error: handling $packet in StatSvc.ReqMSFOffline" }
+            return buildResponseUniPacket(client) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        sServantName = "StatSvc",
+                        sFuncName = "RspMSFForceOffline",
+                        iRequestId = 0,
+                        sBuffer = jceRequestSBuffer(
+                            "RspMSFForceOffline",
+                            RspMSFForceOffline.serializer(),
+                            RspMSFForceOffline(
+                                cause.uin,
+                                cause.seq,
+                                cause.const
+                            )
+                        )
+                    )
+                )
+            }
         }
     }
 }
