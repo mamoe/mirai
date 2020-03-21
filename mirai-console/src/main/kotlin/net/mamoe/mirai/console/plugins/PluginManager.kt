@@ -19,6 +19,8 @@ import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
 import java.io.InputStream
+import java.lang.reflect.Constructor
+import java.lang.reflect.Method
 import java.net.URL
 import java.util.jar.JarFile
 
@@ -175,13 +177,7 @@ object PluginManager {
                     lastPluginName = description.name
                     val plugin: PluginBase =
                         subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().apply {
-                            try {
-                                trySetAccessible() // Java 9+
-                            } catch (e: Throwable) {
-                                kotlin.runCatching {
-                                    isAccessible = true // Java 9-
-                                }.exceptionOrNull()?.printStackTrace()
-                            }
+                            againstPermission()
                         }.newInstance()
                     plugin.dataFolder // initialize right now
 
@@ -211,8 +207,8 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.onLoad()
-            }catch (ignored  : Throwable){
-                if(ignored is CancellationException) {
+            } catch (ignored: Throwable) {
+                if (ignored is CancellationException) {
                     logger.info(ignored)
                     logger.info(it.pluginName + " failed to load, disabling it")
                     it.disable(ignored)
@@ -223,10 +219,10 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.enable()
-            }catch (ignored : Throwable){
+            } catch (ignored: Throwable) {
                 logger.info(ignored)
                 logger.info(it.pluginName + " failed to enable, disabling it")
-                if(ignored is CancellationException) {
+                if (ignored is CancellationException) {
                     it.disable(ignored)
                 }
             }
@@ -249,7 +245,7 @@ object PluginManager {
      */
     fun getJarFileByName(pluginName: String): File? {
         File(pluginsPath).listFiles()?.forEach { file ->
-           if (file != null && file.extension == "jar") {
+            if (file != null && file.extension == "jar") {
                 val jar = JarFile(file)
                 val pluginYml =
                     jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
@@ -281,4 +277,18 @@ object PluginManager {
         return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
 
+
+}
+
+
+private val trySetAccessibleMethod: Method? = runCatching {
+    Class.forName("java.lang.reflect.AccessibleObject").getMethod("trySetAccessible")
+}.getOrNull()
+
+private fun Constructor<out PluginBase>.againstPermission() {
+    trySetAccessibleMethod?.let { it.invoke(this, true) }
+        ?: kotlin.runCatching {
+            @Suppress("DEPRECATED")
+            this.isAccessible = true
+        }
 }
