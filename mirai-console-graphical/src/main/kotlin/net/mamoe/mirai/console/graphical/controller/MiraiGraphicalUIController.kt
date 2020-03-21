@@ -6,7 +6,7 @@ import javafx.stage.Modality
 import javafx.stage.StageStyle
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.graphical.model.*
 import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
 import net.mamoe.mirai.console.plugins.PluginManager
@@ -30,10 +30,10 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     val consoleInfo = ConsoleInfo()
 
     fun login(qq: String, psd: String) {
-        MiraiConsole.CommandProcessor.runConsoleCommandBlocking("/login $qq $psd")
+        CommandManager.runConsoleCommand("/login $qq $psd")
     }
 
-    fun sendCommand(command: String) = MiraiConsole.CommandProcessor.runConsoleCommandBlocking(command)
+    fun sendCommand(command: String) = CommandManager.runConsoleCommand(command)
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         fun ObservableList<*>.trim() {

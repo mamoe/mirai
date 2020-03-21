@@ -15,10 +15,8 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.pure.MiraiConsoleUIPure
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
-import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import java.io.File
 import java.io.InputStream
 import java.net.URLClassLoader
@@ -63,7 +61,9 @@ abstract class PluginBase
     }
 
     /**
-     * 当任意指令被使用
+     * 当任意指令被使用时调用.
+     *
+     * 指令调用将优先触发 [Command.onCommand], 若该函数返回 `false`, 则不会调用 [PluginBase.onCommand]
      */
     open fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
 

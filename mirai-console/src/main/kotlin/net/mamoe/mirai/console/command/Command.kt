@@ -7,90 +7,53 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.PluginBase
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.sendMessage
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 
-interface CommandSender {
-    /**
-     * 立刻发送一条Message
-     */
-
-    suspend fun sendMessage(messageChain: MessageChain)
-
-    suspend fun sendMessage(message: String)
-
-    /**
-     * 写入要发送的内容 所有内容最后会被以一条发出
-     */
-    fun appendMessage(message: String)
-
-    fun sendMessageBlocking(messageChain: MessageChain) = runBlocking { sendMessage(messageChain) }
-    fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
-}
-
-abstract class CommandSenderImpl : CommandSender {
-    internal val builder = StringBuilder()
-
-    override fun appendMessage(message: String) {
-        builder.append(message).append("\n")
-    }
-
-    internal open suspend fun flushMessage() {
-        if (!builder.isEmpty()) {
-            sendMessage(builder.toString().removeSuffix("\n"))
-        }
-    }
-}
-
-object ConsoleCommandSender : CommandSenderImpl() {
-    override suspend fun sendMessage(messageChain: MessageChain) {
-        MiraiConsole.logger("[Command]", 0, messageChain.toString())
-    }
-
-    override suspend fun sendMessage(message: String) {
-        MiraiConsole.logger("[Command]", 0, message)
-    }
-
-    override suspend fun flushMessage() {
-        super.flushMessage()
-        builder.clear()
-    }
-}
-
-open class ContactCommandSender(val contact: Contact) : CommandSenderImpl() {
-    override suspend fun sendMessage(messageChain: MessageChain) {
-        contact.sendMessage(messageChain)
-    }
-
-    override suspend fun sendMessage(message: String) {
-        contact.sendMessage(message)
-    }
-}
-
+/**
+ * 指令
+ *
+ * @see register 注册这个指令
+ * @see registerCommand 注册指令 DSL
+ */
 interface Command {
+    /**
+     * 指令主名称
+     */
     val name: String
+
+    /**
+     * 别名
+     */
     val alias: List<String>
+
+    /**
+     * 描述, 将会显示在 "/help" 指令中
+     */
     val description: String
+
+    /**
+     * 用法说明
+     */
     val usage: String
 
     suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean
 }
 
+/**
+ * 注册这个指令
+ */
 inline fun Command.register() = CommandManager.register(this)
 
-
-fun registerCommand(builder: CommandBuilder.() -> Unit): Command {
+/**
+ * 构造并注册一个指令
+ */
+inline fun registerCommand(builder: CommandBuilder.() -> Unit): Command {
     return CommandBuilder().apply(builder).register()
 }
 
@@ -104,8 +67,9 @@ abstract class BlockingCommand(
     override val usage: String = ""
 ) : Command {
     /**
-     * 最高优先级监听器
-     * 如果 return `false`, 这次指令不会被 [PluginBase] 的全局 onCommand 监听器监听
+     * 最高优先级监听器.
+     *
+     * 指令调用将优先触发 [Command.onCommand], 若该函数返回 `false`, 则不会调用 [PluginBase.onCommand]
      * */
     final override suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
         return withContext(Dispatchers.IO) {
@@ -116,7 +80,27 @@ abstract class BlockingCommand(
     abstract fun onCommandBlocking(sender: CommandSender, args: List<String>): Boolean
 }
 
-class AnonymousCommand internal constructor(
+/**
+ * @see registerCommand
+ */
+class CommandBuilder @PublishedApi internal constructor() {
+    var name: String? = null
+    var alias: List<String>? = null
+    var description: String = ""
+    var usage: String = "use /help for help"
+
+    internal var onCommand: (suspend CommandSender.(args: List<String>) -> Boolean)? = null
+
+    fun onCommand(commandProcess: suspend CommandSender.(args: List<String>) -> Boolean) {
+        onCommand = commandProcess
+    }
+}
+
+
+// internal
+
+
+internal class AnonymousCommand internal constructor(
     override val name: String,
     override val alias: List<String>,
     override val description: String,
@@ -128,19 +112,8 @@ class AnonymousCommand internal constructor(
     }
 }
 
-class CommandBuilder internal constructor() {
-    var name: String? = null
-    var alias: List<String>? = null
-    var description: String = ""
-    var usage: String = "use /help for help"
-    internal var onCommand: (suspend CommandSender.(args: List<String>) -> Boolean)? = null
-
-    fun onCommand(commandProcess: suspend CommandSender.(args: List<String>) -> Boolean) {
-        onCommand = commandProcess
-    }
-}
-
-private fun CommandBuilder.register(): AnonymousCommand {
+@PublishedApi
+internal fun CommandBuilder.register(): AnonymousCommand {
     if (name == null || onCommand == null) {
         error("CommandBuilder not complete")
     }

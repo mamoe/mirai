@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
@@ -49,7 +49,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
                     requestStr = input
                     requesting = false
                 } else {
-                    MiraiConsole.CommandProcessor.runConsoleCommandBlocking(input)
+                    CommandManager.runConsoleCommand(input)
                 }
             }
         }
