@@ -9,7 +9,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.graphical.model.*
-import net.mamoe.mirai.console.graphical.view.VerificationCodeFragment
+import net.mamoe.mirai.console.graphical.view.dialog.InputDialog
+import net.mamoe.mirai.console.graphical.view.dialog.VerificationCodeFragment
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.network.WrongPasswordException
@@ -80,13 +81,14 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     }
 
     override suspend fun requestInput(hint: String): String {
-        // TODO: 2020/3/21 HINT
-        val model = VerificationCodeModel()
-        find<VerificationCodeFragment>(Scope(model)).openModal(
-            modality = Modality.APPLICATION_MODAL,
-            resizable = false
-        )
-        return model.code.value
+        var ret: String? = null
+
+        // UI必须在UI线程执行，requestInput在协程种被调用
+        Platform.runLater {
+            ret = InputDialog(hint).open()
+        }
+        while (ret == null) { delay(1000) }
+        return ret!!
     }
 
     override fun pushBotAdminStatus(identity: Long, admins: List<Long>) = Platform.runLater {
@@ -104,7 +106,7 @@ class GraphicalLoginSolver : LoginSolver() {
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
         val code = VerificationCodeModel(VerificationCode(data))
 
-        // 界面需要运行在主线程
+        // UI必须在UI线程执行，requestInput在协程种被调用
         Platform.runLater {
             find<VerificationCodeFragment>(Scope(code)).openModal(
                 stageStyle = StageStyle.UNDECORATED,

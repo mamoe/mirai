@@ -1,4 +1,4 @@
-package net.mamoe.mirai.console.graphical.view
+package net.mamoe.mirai.console.graphical.view.dialog
 
 import javafx.scene.image.Image
 import net.mamoe.mirai.console.graphical.model.VerificationCodeModel
@@ -30,7 +30,8 @@ class VerificationCodeFragment : Fragment() {
                     this@VerificationCodeFragment.close()
                 }
                 button("取消").action {
-                    code.code.value = MAGIC_KEY
+                    code.code.value =
+                        MAGIC_KEY
                     code.commit()
                     this@VerificationCodeFragment.close()
                 }

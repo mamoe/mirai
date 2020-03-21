@@ -7,7 +7,7 @@ import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
-class LoginViewStyleSheet : Stylesheet() {
+class LoginViewStyleSheet : BaseStyleSheet() {
 
     companion object {
         val vBox by csselement("VBox")
@@ -15,11 +15,14 @@ class LoginViewStyleSheet : Stylesheet() {
 
     init {
 
+        /*
+         * center box
+         */
         vBox {
             maxWidth = 500.px
             maxHeight = 500.px
 
-            backgroundColor += c("39c5BB", 0.3)
+            backgroundColor += c(primaryColor, 0.3)
             backgroundRadius += box(15.px)
 
             padding = box(50.px, 100.px)
@@ -35,8 +38,11 @@ class LoginViewStyleSheet : Stylesheet() {
             fontWeight = FontWeight.BOLD
         }
 
+        /*
+         * login button
+         */
         button {
-            backgroundColor += c("00BCD4", 0.8)
+            backgroundColor += c(stressColor, 0.8)
             padding = box(10.px, 0.px)
             prefWidth = 500.px
             textFill = Color.WHITE

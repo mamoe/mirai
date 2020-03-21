@@ -23,7 +23,9 @@ class PrimaryView : View() {
 
         left = vbox {
 
-            imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png")))
+            imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png"))) {
+                isPreserveRatio = true
+            }
 
             // bot list
             jfxListView(controller.botList) {
@@ -70,13 +72,15 @@ class PrimaryView : View() {
 
         center = jfxTabPane {
 
+            tabClosingPolicy = TabPane.TabClosingPolicy.ALL_TABS
+
             logTab("Main", controller.mainLog, closeable = false)
 
-            tab("Plugins").content = find<PluginsView>().root
+            tab("Plugins").apply { isClosable = false }.content = find<PluginsView>().root
 
-            tab("Settings").content = find<SettingsView>().root
+            tab("Settings").apply { isClosable = false }.content = find<SettingsView>().root
 
-            tab("Login").content = find<LoginView>().root
+            tab("Login").apply { isClosable = false }.content = find<LoginView>().root
 
             mainTabPane = this
         }
@@ -94,6 +98,8 @@ private fun TabPane.logTab(
     closeable: Boolean = true,
     op: Tab.() -> Unit = {}
 ) = tab(text) {
+
+    this.isClosable = closeable
 
     vbox {
         buttonbar {
@@ -117,8 +123,6 @@ private fun TabPane.logTab(
                 }.ui {// isSucceed: Boolean ->
                     // notify something
                 }
-
-                if (closeable) button("关闭").action { close() }
             }
         }
 

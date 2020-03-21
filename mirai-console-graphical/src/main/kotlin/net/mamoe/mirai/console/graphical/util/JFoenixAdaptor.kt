@@ -8,12 +8,11 @@ import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ListView
-import javafx.scene.control.TabPane
 import tornadofx.SortedFilteredList
 import tornadofx.attachTo
 import tornadofx.bind
 
-internal fun EventTarget.jfxTabPane(op: TabPane.() -> Unit = {}) = JFXTabPane().attachTo(this, op)
+internal fun EventTarget.jfxTabPane(op: JFXTabPane.() -> Unit = {}) = JFXTabPane().attachTo(this, op)
 
 internal fun EventTarget.jfxButton(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}) =
     JFXButton(text).attachTo(this, op) {
