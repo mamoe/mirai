@@ -26,7 +26,12 @@ val EventLogger: MiraiLoggerWithSwitch = DefaultLogger("Event").withSwitch(false
 
 @MiraiInternalAPI
 fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
-    this.listeners().addLast(listener)
+    with(this.listeners()) {
+        addLast(listener)
+        listener.invokeOnCompletion {
+            this.remove(listener)
+        }
+    }
     return listener
 }
 
