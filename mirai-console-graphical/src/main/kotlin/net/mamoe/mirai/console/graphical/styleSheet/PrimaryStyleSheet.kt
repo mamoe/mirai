@@ -1,9 +1,8 @@
 package net.mamoe.mirai.console.graphical.styleSheet
 
-import tornadofx.box
-import tornadofx.c
-import tornadofx.cssclass
-import tornadofx.px
+import javafx.scene.Cursor
+import javafx.scene.paint.Color
+import tornadofx.*
 
 class PrimaryStyleSheet : BaseStyleSheet() {
     companion object {
@@ -12,7 +11,8 @@ class PrimaryStyleSheet : BaseStyleSheet() {
         val container by cssclass("jfx-decorator-content-container")
 
         // tab
-        val tabPane by cssclass("tab-header-background")
+        val jfxTabPane by cssclass("tab-header-background")
+        val closeButton by cssclass("tab-close-button")
     }
 
     init {
@@ -32,8 +32,20 @@ class PrimaryStyleSheet : BaseStyleSheet() {
         /*
          * tab pane
          */
-        tabPane {
+        jfxTabPane {
             backgroundColor += c(primaryColor)
+        }
+
+        // 去除JFoenix默认样式
+        tab {
+            and(":closable") {
+                borderWidth += box(0.px)
+                borderInsets += box(6.px, 0.px)
+            }
+
+            closeButton {
+                and(hover) { cursor = Cursor.HAND }
+            }
         }
     }
 }
