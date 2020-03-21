@@ -76,11 +76,11 @@ class PrimaryView : View() {
 
             logTab("Main", controller.mainLog, closeable = false)
 
-            tab("Plugins").apply { isClosable = false }.content = find<PluginsView>().root
+            fixedTab("Plugins").content = find<PluginsView>().root
 
-            tab("Settings").apply { isClosable = false }.content = find<SettingsView>().root
+            fixedTab("Settings").content = find<SettingsView>().root
 
-            tab("Login").apply { isClosable = false }.content = find<LoginView>().root
+            fixedTab("Login").content = find<LoginView>().root
 
             mainTabPane = this
         }
@@ -91,6 +91,8 @@ class PrimaryView : View() {
         mainTabPane.selectionModel.select(this)
     }
 }
+
+private fun TabPane.fixedTab(title: String) = tab(title) { isClosable = false }
 
 private fun TabPane.logTab(
     text: String? = null,
