@@ -28,6 +28,9 @@ class TypeConversionTest {
         assertEquals("7F", ubyteArrayOf(0x7fu).toUHexString())
         assertTrue { 1994701021.toByteArray().contentEquals("76 E4 B8 DD".hexToBytes()) }
         assertEquals(byteArrayOf(0, 0, 0, 0x01).toUHexString(), 1.toByteArray().toUHexString())
-        assertEquals(ubyteArrayOf(0x7fu, 0xffu, 0xffu, 0xffu).toByteArray().toUHexString(), Int.MAX_VALUE.toByteArray().toUHexString())
+        assertEquals(
+            ubyteArrayOf(0x7fu, 0xffu, 0xffu, 0xffu).toByteArray().toUHexString(),
+            Int.MAX_VALUE.toByteArray().toUHexString()
+        )
     }
 }

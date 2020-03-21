@@ -11,11 +11,9 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.test.shouldBeEqualTo
-import kotlin.system.exitProcess
+import net.mamoe.mirai.test.runBlocking
 import kotlin.test.Test
-
+import kotlin.test.assertTrue
 
 class TestEvent : Event {
     var triggered = false
@@ -29,7 +27,7 @@ class EventTests {
                 triggered = true
             }
 
-            TestEvent().broadcast().triggered shouldBeEqualTo true
+            assertTrue(TestEvent().broadcast().triggered)
             subscriber.complete()
         }
     }
@@ -41,7 +39,7 @@ class EventTests {
                 triggered = true
             }
 
-            TestEvent().broadcast().triggered shouldBeEqualTo true
+            assertTrue(TestEvent().broadcast().triggered)
         }
     }
 
@@ -61,7 +59,8 @@ class EventTests {
             job = subscribeAlways<ParentEvent> {
                 triggered = true
             }
-            ChildEvent().broadcast().triggered shouldBeEqualTo true
+
+            assertTrue(ChildEvent().broadcast().triggered)
             job.complete()
         }
     }
@@ -73,16 +72,8 @@ class EventTests {
             job = subscribeAlways<ParentEvent> {
                 triggered = true
             }
-            ChildChildEvent().broadcast().triggered shouldBeEqualTo true
+            assertTrue(ChildChildEvent().broadcast().triggered)
             job.complete()
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            EventTests().`broadcast ChildChild to Parent`()
-            exitProcess(0)
         }
     }
 }

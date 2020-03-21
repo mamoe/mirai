@@ -112,7 +112,7 @@ internal class CombinedMessageTest {
     }
 }
 
-public fun <T> Iterator<T>.joinToString(
+fun <T> Iterator<T>.joinToString(
     separator: CharSequence = ", ",
     prefix: CharSequence = "",
     postfix: CharSequence = "",
@@ -123,7 +123,7 @@ public fun <T> Iterator<T>.joinToString(
     return joinTo(StringBuilder(), separator, prefix, postfix, limit, truncated, transform).toString()
 }
 
-public fun <T, A : Appendable> Iterator<T>.joinTo(
+fun <T, A : Appendable> Iterator<T>.joinTo(
     buffer: A,
     separator: CharSequence = ", ",
     prefix: CharSequence = "",

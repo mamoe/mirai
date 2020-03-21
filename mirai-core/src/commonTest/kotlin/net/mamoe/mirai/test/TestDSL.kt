@@ -11,6 +11,9 @@
 
 package net.mamoe.mirai.test
 
+import kotlinx.coroutines.CoroutineScope
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
@@ -30,3 +33,8 @@ infix fun <E> E.shouldBeEqualTo(another: E) = assertEquals(another, this)
 
 @TestDSL
 infix fun <E> E.shouldNotBeEqualTo(another: E) = assertNotEquals(another, this)
+
+internal expect fun <R> runBlocking(
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend CoroutineScope.() -> R
+): R
