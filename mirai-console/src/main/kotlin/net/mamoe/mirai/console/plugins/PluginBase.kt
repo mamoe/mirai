@@ -23,7 +23,9 @@ import java.net.URLClassLoader
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-
+/**
+ * 所有插件的基类
+ */
 abstract class PluginBase
 @JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope {
 
@@ -34,7 +36,7 @@ abstract class PluginBase
      * 插件被分配的数据目录。数据目录会与插件名称同名。
      */
     val dataFolder: File by lazy {
-        File(PluginManager.pluginsPath + "/" + PluginManager.lastPluginName).also {
+        File(PluginManager.pluginsPath + "/" + pluginName).also {
             it.mkdir()
         }
     }
@@ -69,30 +71,12 @@ abstract class PluginBase
 
     }
 
-
-    internal fun enable() {
-        this.onEnable()
-    }
-
     /**
-     * 加载一个data folder中的Config
-     * 这个config是read-write的
+     * 加载一个 [dataFolder] 中的 [Config]
      */
     fun loadConfig(fileName: String): Config {
         return Config.load(dataFolder.absolutePath + "/" + fileName)
     }
-
-    @JvmOverloads
-    internal fun disable(throwable: CancellationException? = null) {
-        this.coroutineContext[Job]!!.cancelChildren(throwable)
-        try {
-            this.onDisable()
-        } catch (e: Exception) {
-            logger.info(e)
-        }
-    }
-
-    internal var pluginName: String = ""
 
     val logger: MiraiLogger by lazy {
         SimpleLogger("Plugin $pluginName") { priority, message, e ->
@@ -120,16 +104,34 @@ abstract class PluginBase
 
     /**
      * 加载 resource 中的 [Config]
-     * 这个 [Config] 是 read-only 的
+     * 这个 [Config] 是只读的
      */
     fun getResourcesConfig(fileName: String): Config {
-        if (!fileName.contains(".")) {
-            error("Unknown Config Type")
-        }
+        require(fileName.contains(".")) { "Unknown Config Type" }
         return Config.load(getResources(fileName) ?: error("No such file: $fileName"), fileName.substringAfter('.'))
     }
+
+    // internal
+
+    internal fun enable() {
+        this.onEnable()
+    }
+
+    internal fun disable(throwable: CancellationException? = null) {
+        this.coroutineContext[Job]!!.cancelChildren(throwable)
+        try {
+            this.onDisable()
+        } catch (e: Exception) {
+            logger.info(e)
+        }
+    }
+
+    internal var pluginName: String = ""
 }
 
+/**
+ * 插件描述
+ */
 class PluginDescription(
     val name: String,
     val author: String,

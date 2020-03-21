@@ -17,6 +17,8 @@ import net.mamoe.mirai.message.data.Message
 
 /**
  * 指令发送者
+ *
+ * @see AbstractCommandSender 请继承于该抽象类
  */
 interface CommandSender {
     /**
@@ -35,7 +37,7 @@ interface CommandSender {
     fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
 }
 
-abstract class CommandSenderImpl : CommandSender {
+abstract class AbstractCommandSender : CommandSender {
     internal val builder = StringBuilder()
 
     override fun appendMessage(message: String) {
@@ -52,7 +54,7 @@ abstract class CommandSenderImpl : CommandSender {
 /**
  * 控制台指令执行者. 代表由控制台执行指令
  */
-object ConsoleCommandSender : CommandSenderImpl() {
+object ConsoleCommandSender : AbstractCommandSender() {
     override suspend fun sendMessage(messageChain: Message) {
         MiraiConsole.logger("[Command]", 0, messageChain.toString())
     }
@@ -71,7 +73,7 @@ object ConsoleCommandSender : CommandSenderImpl() {
  * 联系人指令执行者. 代表由一个 QQ 用户执行指令
  */
 @Suppress("MemberVisibilityCanBePrivate")
-open class ContactCommandSender(val contact: Contact) : CommandSenderImpl() {
+open class ContactCommandSender(val contact: Contact) : AbstractCommandSender() {
     override suspend fun sendMessage(messageChain: Message) {
         contact.sendMessage(messageChain)
     }
