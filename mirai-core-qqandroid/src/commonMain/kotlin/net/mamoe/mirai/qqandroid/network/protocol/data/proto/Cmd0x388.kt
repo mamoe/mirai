@@ -147,7 +147,7 @@ internal class Cmd0x388 : ProtoBuf {
 
     @Suppress("ArrayInDataClass")
     @Serializable
-    data class ImgInfo(
+    class ImgInfo(
         @ProtoId(1) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val fileType: Int = 0,
         @ProtoId(3) val fileSize: Long = 0L,

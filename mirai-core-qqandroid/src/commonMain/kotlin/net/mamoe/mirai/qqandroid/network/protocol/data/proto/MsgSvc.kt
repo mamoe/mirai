@@ -112,7 +112,7 @@ internal class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    internal data class MsgSendInfo(
+    internal class MsgSendInfo(
         @ProtoId(1) val receiver: Int = 0
     ) : ProtoBuf
 
@@ -456,7 +456,7 @@ internal class MsgSvc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    internal data class PbSendMsgResp(
+    internal class PbSendMsgResp(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val errmsg: String = "",
         @ProtoId(3) val sendTime: Int = 0,

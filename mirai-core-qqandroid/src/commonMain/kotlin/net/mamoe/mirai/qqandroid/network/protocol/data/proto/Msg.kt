@@ -664,7 +664,7 @@ internal class ImMsgBody : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable // 非官方.
-    internal data class PbReserve(
+    internal class PbReserve(
         @ProtoId(1) val unknown1: Int = 1,
         @ProtoId(2) val unknown2: Int = 0,
         @ProtoId(6) val unknown3: Int = 0,
@@ -1142,7 +1142,7 @@ internal class ImReceipt : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    internal data class ReceiptResp(
+    internal class ReceiptResp(
         @ProtoId(1) val command: Int /* enum */ = 1,
         @ProtoId(2) val receiptInfo: ReceiptInfo? = null
     ) : ProtoBuf

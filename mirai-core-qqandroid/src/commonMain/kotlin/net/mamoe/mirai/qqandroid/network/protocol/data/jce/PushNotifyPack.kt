@@ -17,7 +17,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Suppress("ArrayInDataClass")
 @Serializable
-internal data class RequestPushNotify(
+internal class RequestPushNotify(
     @JceId(0) val uin: Long? = 0L,
     @JceId(1) val ctype: Byte = 0,
     @JceId(2) val strService: String?,

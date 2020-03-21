@@ -103,7 +103,7 @@ internal class NetSegConf(
 
 @Suppress("ArrayInDataClass")
 @Serializable
-internal data class PushReq(
+internal class PushReq(
     @JceId(1) val type: Int,
     @JceId(2) val jcebuf: ByteArray,
     @JceId(3) val seq: Long
