@@ -42,4 +42,3 @@ local.properties
 # Maven publishing credits
 keys.properties
 /plugins/
-/mirai-core-qqandroid/src/jvmTest/kotlin/
