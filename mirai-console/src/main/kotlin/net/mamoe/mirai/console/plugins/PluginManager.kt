@@ -14,7 +14,9 @@ package net.mamoe.mirai.console.plugins
 import kotlinx.coroutines.CancellationException
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
@@ -236,6 +238,9 @@ object PluginManager {
     }
 
 
+    /**
+     * 请注意 这个方法不会移除该指令已注册的指令
+     */
     fun disablePlugin(
         plugin:PluginBase,
         exception: CancellationException? = null
@@ -253,6 +258,7 @@ object PluginManager {
         }
         nameToPluginBaseMap.clear()
         pluginDescriptions.clear()
+        CommandManager.reload()
     }
 
 

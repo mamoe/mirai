@@ -195,7 +195,6 @@ internal object MiraiConsoleLogger {
         if (e != null) {
             MiraiConsole.frontEnd.pushLog(LogPriority.INFO, identityStr, identity, e.stackTrace.joinToString("\n"))
         }
-
     }
 }
 

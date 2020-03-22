@@ -24,8 +24,12 @@ object CommandManager : Job by {
     }
 }() {
     private val registeredCommand: MutableMap<String, Command> = mutableMapOf()
-
     val commands: Collection<Command> get() = registeredCommand.values
+
+    fun reload(){
+        registeredCommand.clear()
+        DefaultCommands()
+    }
 
     /**
      * 注册这个指令.
