@@ -10,7 +10,7 @@
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.message.data
 
@@ -25,6 +25,7 @@ import net.mamoe.mirai.utils.io.chunkedHexToBytes
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 自定义表情 (收藏的表情), 图片
@@ -42,6 +43,9 @@ interface Image : Message, MessageContent {
     val imageId: String
 }
 
+/**
+ * 请查看 `ExternalImageJvm` 获取更多创建 [Image] 的方法
+ */
 @Suppress("FunctionName")
 @JsName("newImage")
 @JvmName("newImage")
@@ -101,11 +105,15 @@ interface OfflineImage : Image
 /**
  * 原图下载链接. 包含域名
  */
-suspend fun OfflineImage.queryOriginUrl(): String {
+@JvmSynthetic
+suspend fun OfflineImage.queryUrl(): String {
     @OptIn(MiraiInternalAPI::class)
     return BotImpl.instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
 }
 
+@Deprecated("use queryUrl() instead", ReplaceWith("queryUrl()"), level = DeprecationLevel.ERROR)
+@JvmSynthetic
+suspend inline fun OfflineImage.queryOriginUrl(): String = queryUrl()
 // endregion 离线图片
 
 // region 群图片

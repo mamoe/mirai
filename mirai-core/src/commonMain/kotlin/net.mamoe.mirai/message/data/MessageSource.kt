@@ -17,6 +17,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.LazyProperty
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 消息源, 它存在于 [MessageChain] 中, 用于表示这个消息的来源.
@@ -81,13 +82,17 @@ interface MessageSource : Message, MessageMetadata {
  * 序列号. 若是机器人发出去的消息, 请先 [确保 sequenceId 可用][MessageSource.ensureSequenceIdAvailable]
  * @see MessageSource.id
  */
-val MessageSource.sequenceId: Int get() = (this.id shr 32).toInt()
+@get:JvmSynthetic
+inline val MessageSource.sequenceId: Int
+    get() = (this.id shr 32).toInt()
 
 /**
  * 消息随机数. 由服务器或客户端指定后不能更改. 它是消息 id 的一部分.
  * @see MessageSource.id
  */
-val MessageSource.messageRandom: Int get() = this.id.toInt()
+@get:JvmSynthetic
+inline val MessageSource.messageRandom: Int
+    get() = this.id.toInt()
 
 // For MessageChain
 
@@ -95,16 +100,22 @@ val MessageSource.messageRandom: Int get() = this.id.toInt()
  * 消息 id.
  * @see MessageSource.id
  */
-val MessageChain.id: Long get() = this[MessageSource].id
+@get:JvmSynthetic
+inline val MessageChain.id: Long
+    get() = this[MessageSource].id
 
 /**
  * 消息序列号, 可能来自服务器也可以发送时赋值, 不唯一.
  * @see MessageSource.id
  */
-val MessageChain.sequenceId: Int get() = this[MessageSource].sequenceId
+@get:JvmSynthetic
+inline val MessageChain.sequenceId: Int
+    get() = this[MessageSource].sequenceId
 
 /**
  * 消息随机数. 由服务器或客户端指定后不能更改. 它是消息 id 的一部分.
  * @see MessageSource.id
  */
-val MessageChain.messageRandom: Int get() = this[MessageSource].messageRandom
+@get:JvmSynthetic
+inline val MessageChain.messageRandom: Int
+    get() = this[MessageSource].messageRandom

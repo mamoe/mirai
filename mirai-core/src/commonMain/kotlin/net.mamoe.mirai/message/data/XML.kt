@@ -18,6 +18,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * XML 消息, 如分享, 卡片等.
@@ -37,6 +38,7 @@ class XmlMessage constructor(override val content: String) : RichMessage {
 /**
  * 构造一条 XML 消息
  */
+@JvmSynthetic
 @SinceMirai("0.27.0")
 @MiraiExperimentalAPI
 inline fun buildXMLMessage(block: @XMLDsl XMLMessageBuilder.() -> Unit): XmlMessage =

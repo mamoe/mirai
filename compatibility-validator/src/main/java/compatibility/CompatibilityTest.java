@@ -2,6 +2,7 @@ package compatibility;
 
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactoryJvm;
+import net.mamoe.mirai.message.data.MessageUtils;
 
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
@@ -15,6 +16,9 @@ public class CompatibilityTest {
     public static void main(String[] args) {
         Bot bot = BotFactoryJvm.newBot(Long.parseLong(System.getenv("qq")), System.getenv("password"));
 
+        bot.getFriend(123).sendMessage(MessageUtils.newChain("")
+                .plus("")
+                .plus(MessageUtils.newImage("")));
         bot.getFriend(123).sendMessage("");
     }
 }

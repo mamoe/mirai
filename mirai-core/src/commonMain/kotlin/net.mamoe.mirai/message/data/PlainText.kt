@@ -16,6 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 纯文本. 可含 emoji 表情.
@@ -48,5 +49,6 @@ inline class PlainText(val stringValue: String) : Message, MessageContent {
 /**
  * 构造 [PlainText]
  */
+@JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
 inline fun String.toMessage(): PlainText = PlainText(this)

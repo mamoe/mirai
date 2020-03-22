@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -60,5 +61,6 @@ private constructor(val target: Long, val display: String) : Message, MessageCon
 /**
  * At 这个成员
  */
+@JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
 inline fun Member.at(): At = At(this)
