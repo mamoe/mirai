@@ -208,10 +208,12 @@ object PluginManager {
             try {
                 it.onLoad()
             } catch (ignored: Throwable) {
+                logger.info(ignored)
+                logger.info(it.pluginName + " failed to load, disabling it")
                 if (ignored is CancellationException) {
-                    logger.info(ignored)
-                    logger.info(it.pluginName + " failed to load, disabling it")
-                    it.disable(ignored)
+                    disablePlugin(it,ignored)
+                }else{
+                    disablePlugin(it)
                 }
             }
         }
@@ -223,7 +225,9 @@ object PluginManager {
                 logger.info(ignored)
                 logger.info(it.pluginName + " failed to enable, disabling it")
                 if (ignored is CancellationException) {
-                    it.disable(ignored)
+                    disablePlugin(it,ignored)
+                }else{
+                    disablePlugin(it)
                 }
             }
         }
