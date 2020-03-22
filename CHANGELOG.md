@@ -2,6 +2,49 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.29.0` 2020/3/22
+- 引入新消息监听 DSL: `whileSelectMessages`, 简化连续监听过程
+```kotlin
+bot.subscribeMessages {
+    "开启复读模式" `->` {
+        reply("成功开启")
+        whileSelectMessages {
+            "stop" `->` {
+                reply("已关闭复读")
+                false // 停止循环
+            }
+            default {
+                reply(message)
+                true // 继续循环
+            }
+        }
+        reply("复读模式结束")
+    }
+}
+```
+- 引入新消息监听 DSL: `selectMessages`, 简化筛选监听过程
+```kotlin
+bot.subscribeMessages {
+    "test" `->` {
+        reply("choose option: 'hello', 'hi'")
+        val value: String = selectMessages {
+            "hello" `->` { "123" }
+            "hi" `->` { "222" }
+            default { "default value" }
+        }
+        reply(value)
+    }
+}
+```
+
+- 监听消息的 DSL 新增 `infix fun String.->(block)`
+- 处理 `StatSvc.ReqMSFOffline` (#150)
+- `Contact.sendMessage` 现在接受 `Message` 参数, 而不是 `MessageChain` 以兼容 `CombinedMessage`
+- `Member.sendMessage` 现在返回 `MessageReceipt<Member>` 而不是 QQ 泛型
+- 调整 JVM `MessageUtils` 中一些方法的可见性 (`@JvmSynthetic`)
+- 调整命名: `OfflineImage.queryOriginUrl` 改为 `OfflineImage.queryUrl`
+- 允许手动重新初始化 `Bot` (`BotNetworkHandler.init`), 确保重初始化资源释放
+
 ## `0.28.0` 2020/3/19
 - 修复 Jce 反序列化在部分情况下出错的问题, 修复 #145
 - 新增群公告低级 API
