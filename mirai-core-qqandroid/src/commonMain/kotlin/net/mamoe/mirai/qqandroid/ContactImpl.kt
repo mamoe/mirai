@@ -77,7 +77,7 @@ internal class QQImpl(
     }
 
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    override suspend fun sendMessage(message: MessageChain) {
+    override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> {
         return this.sendMessage(message as Message)
     }
 
