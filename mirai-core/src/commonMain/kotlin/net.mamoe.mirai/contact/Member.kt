@@ -152,7 +152,7 @@ expect abstract class Member() : MemberJavaHappyAPI {
     @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
+    abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
 
 }
 
