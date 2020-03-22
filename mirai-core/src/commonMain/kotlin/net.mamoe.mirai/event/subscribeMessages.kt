@@ -32,6 +32,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessagePacket<*, *>, Listener<MessagePacket<*, *>>, Unit, Unit>
 
@@ -315,17 +316,17 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
 
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        open infix fun reply(toReply: String): Ret {
+        internal open infix fun reply(toReply: String): Ret {
             return content(filter) { reply(toReply);stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        open infix fun reply(message: Message): Ret {
+        internal open infix fun reply(message: Message): Ret {
             return content(filter) { reply(message);stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        open infix fun reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
+        internal open infix fun reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
             return content(filter) {
                 @Suppress("DSL_SCOPE_VIOLATION_WARNING")
                 executeAndReply(replier)
@@ -333,26 +334,34 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        open infix fun quoteReply(toReply: String): Ret {
+        internal open infix fun quoteReply(toReply: String): Ret {
             return content(filter) { quoteReply(toReply);stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        open infix fun quoteReply(message: Message): Ret {
+        internal open infix fun quoteReply(message: Message): Ret {
             return content(filter) { quoteReply(message);stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        open infix fun quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
+        internal open infix fun quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
             return content(filter) {
                 @Suppress("DSL_SCOPE_VIOLATION_WARNING")
                 executeAndQuoteReply(replier)
             }
         }
 
+        @JvmSynthetic
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        @JvmName("invoke")
+        internal fun invoke0(onEvent: MessageListener<M, R>): Listener<*> {
+            return content(filter, onEvent) as Listener<*>
+        }
+
         /**
          * 启动事件监听.
          */
+        @JvmName("invoke1")
         // do not inline due to kotlin (1.3.61) bug: java.lang.IllegalAccessError
         operator fun invoke(onEvent: MessageListener<M, R>): Ret {
             return content(filter, onEvent)
