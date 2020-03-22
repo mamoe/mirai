@@ -62,7 +62,7 @@ object CommandManager : Job by {
      *
      * 返回一个指令是否执行成功
      */
-    internal suspend fun processCommand(sender: CommandSender, fullCommand: String):Boolean {
+    private suspend fun processCommand(sender: CommandSender, fullCommand: String):Boolean {
         return withContext(commandDispatcher) {
             _processCommand(sender, fullCommand)
         }
@@ -148,7 +148,6 @@ object CommandManager : Job by {
     }
 
     suspend fun dispatchConsoleCommand(command: String):Boolean = dispatchCommand(ConsoleCommandSender,command)
-
 
     fun dispatchCommandBlocking(sender: CommandSender,command: String):Boolean = runBlocking { dispatchCommand(sender, command) }
 
