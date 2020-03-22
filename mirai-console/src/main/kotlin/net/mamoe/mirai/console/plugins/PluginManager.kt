@@ -232,12 +232,25 @@ object PluginManager {
     }
 
 
+    fun disablePlugin(
+        plugin:PluginBase,
+        exception: CancellationException? = null
+    ){
+        nameToPluginBaseMap.remove(plugin.pluginName)
+        pluginDescriptions.remove(plugin.pluginName)
+        plugin.disable(exception)
+    }
+
+
     @JvmOverloads
     fun disableAllPlugins(throwable: CancellationException? = null) {
         nameToPluginBaseMap.values.forEach {
             it.disable(throwable)
         }
+        nameToPluginBaseMap.clear()
+        pluginDescriptions.clear()
     }
+
 
     /**
      * 根据插件名字找Jar的文件
