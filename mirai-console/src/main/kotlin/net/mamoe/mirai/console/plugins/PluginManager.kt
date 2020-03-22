@@ -30,9 +30,9 @@ object PluginManager {
         File(it).mkdirs()
     }
 
-    private val logger = SimpleLogger("Plugin Manager") { _, message, e ->
-        MiraiConsole.logger("[Plugin Manager]", 0, message)
-        MiraiConsole.logger("[Plugin Manager]", 0, e)
+    private val logger = SimpleLogger("Plugin Manager") { p, message, e ->
+        MiraiConsole.logger(p, "[Plugin Manager]", 0, message)
+        MiraiConsole.logger(p, "[Plugin Manager]", 0, e)
     }
 
     //已完成加载的
