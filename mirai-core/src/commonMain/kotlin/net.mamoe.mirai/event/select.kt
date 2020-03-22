@@ -26,6 +26,8 @@ import kotlin.jvm.JvmSynthetic
  *
  * 创建的所有事件监听器都会判断发送人信息 ([isContextIdenticalWith]), 监听之后的所有消息.
  *
+ * [selectBuilder] DSL 类似于 [subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
+ *
  * ```kotlin
  * reply("开启复读模式")
  *
@@ -34,7 +36,8 @@ import kotlin.jvm.JvmSynthetic
  *         reply("已关闭复读")
  *         false // 停止循环
  *     }
- *     always {
+ *     // 也可以使用 startsWith("") { true } 等 DSL
+ *     default {
  *         reply(message)
  *         true // 继续循环
  *     }
@@ -110,11 +113,14 @@ suspend inline fun <reified T : MessagePacket<*, *>> T.selectMessagesUnit(
  *
  * 创建的所有事件监听器都会判断发送人信息 ([isContextIdenticalWith]), 监听之后的所有消息.
  *
+ * [selectBuilder] DSL 类似于 [subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
+ *
  * ```kotlin
  * val value: String = selectMessages {
  *   "hello" `->` { "111" }
  *   "hi" `->` { "222" }
  *   startsWith("/") { it }
+ *   default { "default" }
  * }
  * ```
  *
