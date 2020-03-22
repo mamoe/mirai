@@ -93,7 +93,7 @@ object PluginManager {
                         pluginsFound[description.name] = description
                         pluginsLocation[description.name] = file
                     } catch (e: Exception) {
-                        logger.info(e.message)
+                        logger.info(e)
                     }
                 }
             }

@@ -178,9 +178,9 @@ internal object MiraiConsoleLogger {
         }
     }
 
-    operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, e: Exception? = null) {
+    operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, e: Throwable? = null) {
         if (e != null) {
-            MiraiConsole.frontEnd.pushLog(priority, identityStr, identity, "${e.stackTrace}")
+            MiraiConsole.frontEnd.pushLog(priority, identityStr, identity, e.stackTrace.joinToString("\n"))
         }
     }
 
@@ -191,11 +191,10 @@ internal object MiraiConsoleLogger {
         }
     }
 
-    operator fun invoke(identityStr: String, identity: Long, e: Exception? = null) {
+    operator fun invoke(identityStr: String, identity: Long, e: Throwable? = null) {
         if (e != null) {
-            MiraiConsole.frontEnd.pushLog(LogPriority.INFO, identityStr, identity, "${e.stackTrace}")
+            MiraiConsole.frontEnd.pushLog(LogPriority.INFO, identityStr, identity, e.stackTrace.joinToString("\n"))
         }
-
 
     }
 }
