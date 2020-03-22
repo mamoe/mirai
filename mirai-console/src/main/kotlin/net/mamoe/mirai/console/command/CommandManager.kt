@@ -154,7 +154,9 @@ object CommandManager : Job by {
         } catch (e: Throwable) {//should never happen
             e.printStackTrace()
         }
-        processCommandQueue()
+        if(isActive) {
+            processCommandQueue()
+        }
     }
 }
 
