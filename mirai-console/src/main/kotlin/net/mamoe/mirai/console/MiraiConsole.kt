@@ -103,7 +103,7 @@ object MiraiConsole {
     }
 
     /**
-     * 关闭Console
+     * 关闭 Console
      */
     fun stop() {
         PluginManager.disablePlugins()
@@ -118,7 +118,14 @@ object MiraiConsole {
     }
 
     @Suppress("RedundantSuspendModifier") // binary compatibility
-    @Deprecated("Please use CommandManager directly, this will be removed in later release")
+    @Deprecated(
+        "Please use CommandManager directly, this will be removed in later release",
+        ReplaceWith(
+            "CommandManager",
+            "net.mamoe.mirai.console.command.CommandManager"
+        ),
+        level = DeprecationLevel.ERROR
+    )
     object CommandProcessor {
         @Deprecated(
             "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
@@ -156,7 +163,7 @@ object MiraiConsole {
             "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
                 "CommandManager.runCommand(sender, command)",
                 "net.mamoe.mirai.console.command.CommandManager"
-            )
+            ), level = DeprecationLevel.ERROR
         )
         fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking {
             CommandManager.runCommand(sender, command)
