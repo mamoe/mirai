@@ -23,6 +23,7 @@ rootProject.name = 'mirai'
 
 include(':mirai-core')
 include(':mirai-core-qqandroid')
+include(':compatibility-validator')
 
 // include(':mirai-api-http')
 enableFeaturePreview('GRADLE_METADATA')
