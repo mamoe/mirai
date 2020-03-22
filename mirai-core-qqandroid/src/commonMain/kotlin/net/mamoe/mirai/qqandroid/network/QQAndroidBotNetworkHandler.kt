@@ -180,6 +180,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     // caches
     private val _pendingEnabled = atomic(true)
     internal val pendingEnabled get() = _pendingEnabled.value
+    @Volatile
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()
 
@@ -191,118 +192,123 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         bot.friends.delegate.clear()
         bot.groups.delegate.clear()
 
-        val friendListJob = launch {
-            lateinit var loadFriends: suspend () -> Unit
-            // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
-            loadFriends = suspend loadFriends@{
-                logger.info("开始加载好友信息")
-                var currentFriendCount = 0
-                var totalFriendCount: Short
-                while (true) {
-                    val data = runCatching {
-                        FriendList.GetFriendGroupList(
-                            bot.client,
-                            currentFriendCount,
-                            150,
-                            0,
-                            0
-                        ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
-                    }.getOrElse {
-                        logger.error("无法加载好友列表", it)
-                        this@QQAndroidBotNetworkHandler.launch { delay(10.secondsToMillis); loadFriends() }
-                        logger.error("稍后重试加载好友列表")
-                        return@loadFriends
-                    }
-                    totalFriendCount = data.totalFriendCount
-                    data.friendList.forEach {
-                        // atomic add
-                        bot.friends.delegate.addLast(
-                            QQImpl(
-                                bot,
-                                bot.coroutineContext,
-                                it.friendUin,
-                                FriendInfoImpl(it)
-                            )
-                        ).also {
-                            currentFriendCount++
-                        }
-                    }
-                    logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
-                    if (currentFriendCount >= totalFriendCount) {
-                        break
-                    }
-                    // delay(200)
-                }
-                logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
-            }
-
-            loadFriends()
+        if (!pendingEnabled) {
+            pendingIncomingPackets = LockFreeLinkedList()
+            _pendingEnabled.value = true
         }
 
-        val groupJob = launch {
-            try {
-                logger.info("开始加载群组列表与群成员列表")
-                val troopListData = FriendList.GetTroopListSimplify(bot.client)
-                    .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
-
-                troopListData.groups.forEach { troopNum ->
-                    // 别用 fun, 别 val, 编译失败警告
-                    lateinit var loadGroup: suspend () -> Unit
-
-                    loadGroup = suspend {
-                        tryNTimesOrException(3) {
-                            bot.groups.delegate.addLast(
-                                @Suppress("DuplicatedCode")
-                                (GroupImpl(
-                                    bot = bot,
-                                    coroutineContext = bot.coroutineContext,
-                                    id = troopNum.groupCode,
-                                    groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
-                                        this as GroupInfoImpl
-
-                                        if (this.delegate.groupName == null) {
-                                            this.delegate.groupName = troopNum.groupName
-                                        }
-
-                                        if (this.delegate.groupMemo == null) {
-                                            this.delegate.groupMemo = troopNum.groupMemo
-                                        }
-
-                                        if (this.delegate.groupUin == null) {
-                                            this.delegate.groupUin = troopNum.groupUin
-                                        }
-
-                                        this.delegate.groupCode = troopNum.groupCode
-                                    },
-                                    members = bot._lowLevelQueryGroupMemberList(
-                                        troopNum.groupUin,
-                                        troopNum.groupCode,
-                                        troopNum.dwGroupOwnerUin
-                                    )
-                                ))
-                            )
-                        }?.let {
-                            logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
-                            logger.error(it)
-                            this@QQAndroidBotNetworkHandler.launch {
-                                delay(10_000)
-                                loadGroup()
+        coroutineScope {
+            launch {
+                lateinit var loadFriends: suspend () -> Unit
+                // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
+                loadFriends = suspend loadFriends@{
+                    logger.info("开始加载好友信息")
+                    var currentFriendCount = 0
+                    var totalFriendCount: Short
+                    while (true) {
+                        val data = runCatching {
+                            FriendList.GetFriendGroupList(
+                                bot.client,
+                                currentFriendCount,
+                                150,
+                                0,
+                                0
+                            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+                        }.getOrElse {
+                            logger.error("无法加载好友列表", it)
+                            this@QQAndroidBotNetworkHandler.launch { delay(10.secondsToMillis); loadFriends() }
+                            logger.error("稍后重试加载好友列表")
+                            return@loadFriends
+                        }
+                        totalFriendCount = data.totalFriendCount
+                        data.friendList.forEach {
+                            // atomic add
+                            bot.friends.delegate.addLast(
+                                QQImpl(
+                                    bot,
+                                    bot.coroutineContext,
+                                    it.friendUin,
+                                    FriendInfoImpl(it)
+                                )
+                            ).also {
+                                currentFriendCount++
                             }
                         }
-                        Unit // 别删, 编译失败警告
+                        logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
+                        if (currentFriendCount >= totalFriendCount) {
+                            break
+                        }
+                        // delay(200)
                     }
-                    launch {
-                        loadGroup()
-                    }
+                    logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
                 }
-                logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
-            } catch (e: Exception) {
-                logger.error { "加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表" }
-                logger.error(e)
+
+                loadFriends()
+            }
+
+            launch {
+                try {
+                    logger.info("开始加载群组列表与群成员列表")
+                    val troopListData = FriendList.GetTroopListSimplify(bot.client)
+                        .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
+
+                    troopListData.groups.forEach { troopNum ->
+                        // 别用 fun, 别 val, 编译失败警告
+                        lateinit var loadGroup: suspend () -> Unit
+
+                        loadGroup = suspend {
+                            tryNTimesOrException(3) {
+                                bot.groups.delegate.addLast(
+                                    @Suppress("DuplicatedCode")
+                                    (GroupImpl(
+                                        bot = bot,
+                                        coroutineContext = bot.coroutineContext,
+                                        id = troopNum.groupCode,
+                                        groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
+                                            this as GroupInfoImpl
+
+                                            if (this.delegate.groupName == null) {
+                                                this.delegate.groupName = troopNum.groupName
+                                            }
+
+                                            if (this.delegate.groupMemo == null) {
+                                                this.delegate.groupMemo = troopNum.groupMemo
+                                            }
+
+                                            if (this.delegate.groupUin == null) {
+                                                this.delegate.groupUin = troopNum.groupUin
+                                            }
+
+                                            this.delegate.groupCode = troopNum.groupCode
+                                        },
+                                        members = bot._lowLevelQueryGroupMemberList(
+                                            troopNum.groupUin,
+                                            troopNum.groupCode,
+                                            troopNum.dwGroupOwnerUin
+                                        )
+                                    ))
+                                )
+                            }?.let {
+                                logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
+                                logger.error(it)
+                                this@QQAndroidBotNetworkHandler.launch {
+                                    delay(10_000)
+                                    loadGroup()
+                                }
+                            }
+                            Unit // 别删, 编译失败警告
+                        }
+                        launch {
+                            loadGroup()
+                        }
+                    }
+                    logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
+                } catch (e: Exception) {
+                    logger.error { "加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表" }
+                    logger.error(e)
+                }
             }
         }
-
-        joinAll(friendListJob, groupJob)
 
         withTimeoutOrNull(5000) {
             lateinit var listener: Listener<PacketReceivedEvent>
