@@ -14,6 +14,10 @@ package net.mamoe.mirai.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaHappyAPI
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
+import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
 
@@ -100,6 +104,21 @@ actual abstract class Member : MemberJavaHappyAPI() {
     @JvmName("unmuteSuspend")
     @JvmSynthetic
     actual abstract suspend fun unmute()
+
+    /**
+     * 向这个对象发送消息.
+     *
+     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
+     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     *
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     *
+     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
+     */
+    @JvmName("sendMessageSuspend")
+    @JvmSynthetic
+    actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
     /**
      * 踢出该成员.

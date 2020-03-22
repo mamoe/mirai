@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
@@ -34,38 +36,32 @@ enum class MemberPermission {
 /**
  * 是群主
  */
-@Suppress("NOTHING_TO_INLINE")
 inline fun MemberPermission.isOwner(): Boolean = this == MemberPermission.OWNER
 
 /**
  * 是管理员
  */
-@Suppress("NOTHING_TO_INLINE")
 inline fun MemberPermission.isAdministrator(): Boolean = this == MemberPermission.ADMINISTRATOR
 
 /**
  * 是管理员或群主
  */
-@Suppress("NOTHING_TO_INLINE")
 inline fun MemberPermission.isOperator(): Boolean = isAdministrator() || isOwner()
 
 
 /**
  * 是群主
  */
-@Suppress("NOTHING_TO_INLINE")
 inline fun Member.isOwner(): Boolean = this.permission.isOwner()
 
 /**
  * 是管理员
  */
-@Suppress("NOTHING_TO_INLINE")
 inline fun Member.isAdministrator(): Boolean = this.permission.isAdministrator()
 
 /**
  * 是管理员或群主
  */
-@Suppress("NOTHING_TO_INLINE")
 inline fun Member.isOperator(): Boolean = this.permission.isOperator()
 
 

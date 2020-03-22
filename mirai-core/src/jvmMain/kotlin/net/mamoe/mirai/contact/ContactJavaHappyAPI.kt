@@ -58,12 +58,12 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<Contact> {
+    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<out Contact> {
         return runBlocking { sendMessage(message) }
     }
 
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<Contact> {
+    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<out Contact> {
         return runBlocking { sendMessage(message) }
     }
 
@@ -137,7 +137,7 @@ actual abstract class ContactJavaHappyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<Contact>> {
+    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<out Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -146,7 +146,7 @@ actual abstract class ContactJavaHappyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<Contact>> {
+    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<out Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -225,7 +225,7 @@ actual abstract class MemberJavaHappyAPI : QQ() {
      *
      * 管理员可禁言成员, 群主可禁言管理员和群员.
      *
-     * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
+     * @param seconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
      *
      * @see Int.minutesToSeconds
@@ -286,7 +286,7 @@ actual abstract class MemberJavaHappyAPI : QQ() {
      *
      * 管理员可禁言成员, 群主可禁言管理员和群员.
      *
-     * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
+     * @param seconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
      *
      * @see Int.minutesToSeconds

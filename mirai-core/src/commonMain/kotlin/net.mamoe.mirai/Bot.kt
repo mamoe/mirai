@@ -266,7 +266,7 @@ suspend inline fun Bot.recall(message: MessageChain) = this.recall(message[Messa
  * @param coroutineContext 额外的 [CoroutineContext]
  * @see recall
  */
-fun Bot.recallIn(
+inline fun Bot.recallIn(
     source: MessageSource,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -282,7 +282,7 @@ fun Bot.recallIn(
  * @param coroutineContext 额外的 [CoroutineContext]
  * @see recall
  */
-fun Bot.recallIn(
+inline fun Bot.recallIn(
     message: MessageChain,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext

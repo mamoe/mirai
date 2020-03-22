@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.utils.ExternalImage
@@ -178,6 +179,10 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmName("sendMessageSuspend")
+    @JvmSynthetic
+    actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<Group>
+
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>
 

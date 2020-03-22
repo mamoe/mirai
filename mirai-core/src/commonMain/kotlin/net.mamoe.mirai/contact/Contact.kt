@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.contact
 
@@ -69,6 +69,10 @@ expect abstract class Contact() : CoroutineScope, ContactJavaHappyAPI {
      */
     @JvmName("sendMessageSuspend")
     @JvmSynthetic
+    abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
+
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
     abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
 
     /**
@@ -120,7 +124,7 @@ suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(sourc
  * @see Bot.recallIn
  */
 @MiraiExperimentalAPI
-fun Contact.recallIn(
+inline fun Contact.recallIn(
     message: MessageChain,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -129,7 +133,7 @@ fun Contact.recallIn(
 /**
  * @see Bot.recallIn
  */
-fun Contact.recallIn(
+inline fun Contact.recallIn(
     source: MessageSource,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -139,11 +143,5 @@ fun Contact.recallIn(
  * @see Contact.sendMessage
  */
 @Suppress("UNCHECKED_CAST")
-suspend inline fun <C : Contact> C.sendMessage(message: Message): MessageReceipt<C> =
-    sendMessage(message.asMessageChain()) as? MessageReceipt<C> ?: error("Internal class cast mistake")
-
-/**
- * @see Contact.sendMessage
- */
-@Suppress("UNCHECKED_CAST")
-suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> = sendMessage(plain.toMessage())
+suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> =
+    sendMessage(plain.toMessage()) as? MessageReceipt<C> ?: error("Internal class cast mistake")

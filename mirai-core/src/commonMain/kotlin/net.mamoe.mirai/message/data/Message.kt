@@ -12,7 +12,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.MessageReceipt
 import kotlin.jvm.JvmSynthetic
 
@@ -109,8 +108,9 @@ interface Message {
     operator fun plus(another: CharSequence): CombinedMessage = this.followedBy(another.toString().toMessage())
 }
 
+@Suppress("UNCHECKED_CAST")
 suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
-    return contact.sendMessage(this)
+    return contact.sendMessage(this) as MessageReceipt<C>
 }
 
 fun Message.repeat(count: Int): MessageChain {

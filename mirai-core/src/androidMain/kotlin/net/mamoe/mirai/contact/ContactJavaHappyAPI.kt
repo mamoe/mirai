@@ -58,12 +58,14 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<Contact> {
-        return runBlocking { sendMessage(message) }
+    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<out Contact> {
+        return runBlocking {
+            sendMessage(message)
+        }
     }
 
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<Contact> {
+    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<out Contact> {
         return runBlocking { sendMessage(message) }
     }
 
@@ -137,7 +139,7 @@ actual abstract class ContactJavaHappyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<Contact>> {
+    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<out Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -146,7 +148,7 @@ actual abstract class ContactJavaHappyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<Contact>> {
+    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<out Contact>> {
         return future { sendMessage(message) }
     }
 

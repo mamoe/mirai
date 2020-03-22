@@ -18,6 +18,7 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.id
@@ -64,6 +65,10 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
      */
     @JvmName("sendMessageSuspend")
     @JvmSynthetic
+    actual abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
+
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     actual abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
 
     /**
