@@ -36,6 +36,7 @@ import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmName
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
 internal inline class FriendInfoImpl(
@@ -55,6 +56,7 @@ internal class QQImpl(
     override val nick: String
         get() = friendInfo.nick
 
+    @JvmName("sendMessageSuspend")
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<QQ> {
         val event = FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
@@ -76,11 +78,13 @@ internal class QQImpl(
         return MessageReceipt(source, this, null)
     }
 
+    @JvmName("sendMessageSuspend")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<QQ> {
         return this.sendMessage(message as Message)
     }
 
+    @JvmName("uploadImageSuspend")
     @OptIn(MiraiInternalAPI::class)
     override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
@@ -233,6 +237,7 @@ internal class MemberImpl(
         return MessageReceipt(source, this, null)
     }
 
+    @JvmName("sendMessageSuspend")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ> {
         return this.sendMessage(message as Message)
@@ -633,6 +638,7 @@ internal class GroupImpl(
         return MessageReceipt(source, this, botAsMember)
     }
 
+    @JvmName("sendMessageSuspend")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group> {
         return this.sendMessage(message as Message)
