@@ -11,6 +11,7 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.message.MessagePacket
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -50,7 +51,6 @@ import kotlin.jvm.JvmSynthetic
  */
 @SinceMirai("0.29.0")
 @Suppress("unused")
-@MiraiExperimentalAPI
 suspend inline fun <reified T : MessagePacket<*, *>> T.whileSelectMessages(
     timeoutMillis: Long = -1,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
@@ -122,7 +122,6 @@ suspend inline fun <reified T : MessagePacket<*, *>> T.selectMessagesUnit(
  *
  * @see nextMessage 挂起协程并等待下一条消息
  */
-@MiraiExperimentalAPI
 @SinceMirai("0.29.0")
 @Suppress("unused") // false positive
 @OptIn(ExperimentalTypeInference::class)
@@ -165,10 +164,69 @@ suspend inline fun <reified T : MessagePacket<*, *>, R> T.selectMessages(
 }
 
 @SinceMirai("0.29.0")
-class MessageSelectBuilder<M : MessagePacket<*, *>, R> @PublishedApi internal constructor(
+open class MessageSelectBuilder<M : MessagePacket<*, *>, R> @PublishedApi internal constructor(
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
-) : MessageSubscribersBuilder<M, Unit, R, Any?>(stub, subscriber)
+) : MessageSubscribersBuilder<M, Unit, R, Any?>(stub, subscriber) {
+    /**
+     * 无任何触发条件.
+     */
+    @MessageDsl
+    fun default(onEvent: MessageListener<M, R>): Unit = subscriber({ true }, onEvent)
+
+    @Deprecated("Use `default` instead", level = DeprecationLevel.HIDDEN)
+    override fun always(onEvent: MessageListener<M, Any?>) {
+        super.always(onEvent)
+    }
+
+    // 这些函数无法获取返回值. 必须屏蔽.
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun String.containsReply(reply: String): Nothing = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun String.containsReply(replier: suspend M.(String) -> Any?) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun Regex.matchingReply(replier: suspend M.(MatchResult) -> Any?) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun Regex.findingReply(replier: suspend M.(MatchResult) -> Any?) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun String.startsWithReply(replier: suspend M.(String) -> Any?) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun String.endsWithReply(replier: suspend M.(String) -> Any?) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun String.reply(reply: String) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun String.reply(reply: Message) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun String.reply(replier: suspend M.(String) -> Any?) = error("prohibited")
+
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun ListeningFilter.reply(toReply: String) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun ListeningFilter.reply(message: Message) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun ListeningFilter.reply(replier: suspend M.(String) -> Any?) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun ListeningFilter.quoteReply(toReply: String) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun ListeningFilter.quoteReply(message: Message) = error("prohibited")
+
+    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
+    override fun ListeningFilter.quoteReply(replier: suspend M.(String) -> Any?) = error("prohibited")
+}
 
 @JvmSynthetic
 @PublishedApi
