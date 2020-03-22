@@ -14,6 +14,7 @@ package net.mamoe.mirai.utils
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
+import kotlin.jvm.JvmOverloads
 
 /**
  * Collect all the elements into a [MutableList] then cast it as a [List]
@@ -306,14 +307,16 @@ open class LockFreeLinkedList<E> {
         }
     }
 
+    @JvmOverloads
     @Suppress("unused")
-    open fun clear() {
+    open fun clear(onEach: ((E) -> Unit)? = null) {
         val first = head.nextNode
         head.nextNode = tail
         first.childIterateReturnFirstUnsatisfying({
             val n = it.nextNode
             it.nextNode = tail
             it.removed.value = true
+            onEach?.invoke(n.nodeValue)
             n
         }, { it !== tail }) // clear the link structure, help GC.
     }
