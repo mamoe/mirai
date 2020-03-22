@@ -30,7 +30,7 @@ import java.util.*
 
 object DefaultCommands {
     operator fun invoke() {
-        registerCommand {
+        registerConsoleCommands {
             name = "manager"
             description = "Add a manager"
             onCommand { it ->
@@ -98,7 +98,7 @@ object DefaultCommands {
             }
         }
 
-        registerCommand {
+        registerConsoleCommands{
             name = "login"
             description = "机器人登录"
             onCommand {
@@ -158,7 +158,7 @@ object DefaultCommands {
             }
         }
 
-        registerCommand {
+        registerConsoleCommands {
             name = "status"
             description = "获取状态"
             onCommand { args ->
@@ -188,7 +188,7 @@ object DefaultCommands {
         }
 
 
-        registerCommand {
+        registerConsoleCommands {
             name = "say"
             description = "聊天功能演示"
             onCommand {
@@ -225,7 +225,7 @@ object DefaultCommands {
         }
 
 
-        registerCommand {
+        registerConsoleCommands {
             name = "plugins"
             alias = listOf("plugin")
             description = "获取插件列表"
@@ -240,7 +240,7 @@ object DefaultCommands {
             }
         }
 
-        registerCommand {
+        registerConsoleCommands {
             name = "command"
             alias = listOf("commands", "help", "helps")
             description = "获取指令列表"
@@ -258,7 +258,7 @@ object DefaultCommands {
             }
         }
 
-        registerCommand {
+        registerConsoleCommands {
             name = "about"
             description = "About Mirai-Console"
             onCommand {
@@ -271,7 +271,7 @@ object DefaultCommands {
             }
         }
 
-        registerCommand {
+        registerConsoleCommands {
             name = "reload"
             alias = listOf("reloadPlugins")
             description = "重新加载全部插件"

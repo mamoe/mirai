@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
@@ -212,6 +211,7 @@ object PluginManager {
             } catch (ignored: Throwable) {
                 logger.info(ignored)
                 logger.info(it.pluginName + " failed to load, disabling it")
+                logger.info(it.pluginName + " 推荐立即删除/替换并重启")
                 if (ignored is CancellationException) {
                     disablePlugin(it,ignored)
                 }else{
@@ -226,6 +226,7 @@ object PluginManager {
             } catch (ignored: Throwable) {
                 logger.info(ignored)
                 logger.info(it.pluginName + " failed to enable, disabling it")
+                logger.info(it.pluginName + " 推荐立即删除/替换并重启")
                 if (ignored is CancellationException) {
                     disablePlugin(it,ignored)
                 }else{
@@ -237,28 +238,25 @@ object PluginManager {
         logger.info("""加载了${nameToPluginBaseMap.size}个插件""")
     }
 
-
-    /**
-     * 请注意 这个方法不会移除该指令已注册的指令
-     */
-    fun disablePlugin(
+    private fun disablePlugin(
         plugin:PluginBase,
         exception: CancellationException? = null
     ){
+        CommandManager.clearPluginCommands(plugin)
+        plugin.disable(exception)
         nameToPluginBaseMap.remove(plugin.pluginName)
         pluginDescriptions.remove(plugin.pluginName)
-        plugin.disable(exception)
     }
 
 
     @JvmOverloads
     fun disablePlugins(throwable: CancellationException? = null) {
+        CommandManager.clearPluginsCommands()
         nameToPluginBaseMap.values.forEach {
             it.disable(throwable)
         }
         nameToPluginBaseMap.clear()
         pluginDescriptions.clear()
-        CommandManager.reload()
     }
 
 

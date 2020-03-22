@@ -48,13 +48,25 @@ interface Command {
 /**
  * 注册这个指令
  */
-inline fun Command.register() = CommandManager.register(this)
+inline fun Command.register(commandOwner: CommandOwner) = CommandManager.register(commandOwner,this)
+
 
 /**
  * 构造并注册一个指令
  */
+@Deprecated("this will be removed in next few release")
+object AnonymousCommandOwner:CommandOwner
+@Deprecated("this will become internal in next few release, please use PluginBase.registerCommand() for plugin")
 inline fun registerCommand(builder: CommandBuilder.() -> Unit): Command {
-    return CommandBuilder().apply(builder).register()
+    return CommandBuilder().apply(builder).register(AnonymousCommandOwner)
+}
+
+internal inline fun registerConsoleCommands(builder: CommandBuilder.() -> Unit):Command{
+    return CommandBuilder().apply(builder).register(ConsoleCommandOwner)
+}
+
+inline fun PluginBase.registerCommand(builder: CommandBuilder.() -> Unit):Command{
+    return CommandBuilder().apply(builder).register(this.asCommandOwner())
 }
 
 
@@ -113,7 +125,7 @@ internal class AnonymousCommand internal constructor(
 }
 
 @PublishedApi
-internal fun CommandBuilder.register(): AnonymousCommand {
+internal fun CommandBuilder.register(commandOwner: CommandOwner): AnonymousCommand {
     if (name == null || onCommand == null) {
         error("CommandBuilder not complete")
     }
@@ -126,5 +138,5 @@ internal fun CommandBuilder.register(): AnonymousCommand {
         description,
         usage,
         onCommand!!
-    ).also { it.register() }
+    ).also { it.register(commandOwner) }
 }

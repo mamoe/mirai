@@ -18,6 +18,13 @@ import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.console.plugins.PluginManager
 import java.util.concurrent.Executors
 
+interface CommandOwner
+
+class PluginCommandOwner(val pluginBase: PluginBase):CommandOwner
+internal object ConsoleCommandOwner:CommandOwner
+fun PluginBase.asCommandOwner() = PluginCommandOwner(this)
+
+
 object CommandManager : Job by {
     GlobalScope.launch(start = CoroutineStart.LAZY) {
         processCommandQueue()
@@ -25,10 +32,24 @@ object CommandManager : Job by {
 }() {
     private val registeredCommand: MutableMap<String, Command> = mutableMapOf()
     val commands: Collection<Command> get() = registeredCommand.values
+    private val pluginCommands:MutableMap<PluginBase,MutableCollection<Command>> = mutableMapOf()
 
-    fun reload(){
-        registeredCommand.clear()
-        DefaultCommands()
+    internal fun clearPluginsCommands(){
+        pluginCommands.values.forEach {a ->
+            a.forEach{
+                unregister(it)
+            }
+        }
+        pluginCommands.clear()
+    }
+
+    internal fun clearPluginCommands(
+        pluginBase: PluginBase
+    ){
+        pluginCommands[pluginBase]?.run {
+            this.forEach { unregister(it) }
+            this.clear()
+        }
     }
 
     /**
@@ -36,7 +57,7 @@ object CommandManager : Job by {
      *
      * @throws IllegalStateException 当已注册的指令与 [command] 重名时
      */
-    fun register(command: Command) {
+    fun register(commandOwner: CommandOwner, command: Command) {
         val allNames = mutableListOf(command.name).also { it.addAll(command.alias) }
         allNames.forEach {
             if (registeredCommand.containsKey(it)) {
@@ -45,6 +66,10 @@ object CommandManager : Job by {
         }
         allNames.forEach {
             registeredCommand[it] = command
+        }
+        if(commandOwner is PluginCommandOwner){
+            pluginCommands.putIfAbsent(commandOwner.pluginBase, mutableSetOf())
+            pluginCommands[commandOwner.pluginBase]!!.add(command)
         }
     }
 
