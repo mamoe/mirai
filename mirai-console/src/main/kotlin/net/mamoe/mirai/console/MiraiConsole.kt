@@ -103,7 +103,7 @@ object MiraiConsole {
      * 关闭Console
      */
     fun stop() {
-        PluginManager.disableAllPlugins()
+        PluginManager.disablePlugins()
         CommandManager.cancel()
         try {
             bots.forEach {

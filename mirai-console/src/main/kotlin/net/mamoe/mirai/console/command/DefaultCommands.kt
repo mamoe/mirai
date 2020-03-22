@@ -271,5 +271,17 @@ object DefaultCommands {
             }
         }
 
+        registerCommand {
+            name = "reload"
+            alias = listOf("reloadPlugins")
+            description = "重新加载全部插件"
+            onCommand{
+                PluginManager.disablePlugins()
+                PluginManager.loadPlugins()
+                sendMessage("重新加载完成")
+                true
+            }
+        }
+
     }
 }

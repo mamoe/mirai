@@ -243,7 +243,7 @@ object PluginManager {
 
 
     @JvmOverloads
-    fun disableAllPlugins(throwable: CancellationException? = null) {
+    fun disablePlugins(throwable: CancellationException? = null) {
         nameToPluginBaseMap.values.forEach {
             it.disable(throwable)
         }
