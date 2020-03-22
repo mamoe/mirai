@@ -180,6 +180,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     // caches
     private val _pendingEnabled = atomic(true)
     internal val pendingEnabled get() = _pendingEnabled.value
+
     @Volatile
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()
@@ -189,8 +190,10 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         check(bot.isActive) { "bot is dead therefore network can't init" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
 
-        bot.friends.delegate.clear()
-        bot.groups.delegate.clear()
+        CancellationException("re-init").let { reInitCancellationException ->
+            bot.friends.delegate.clear { it.cancel(reInitCancellationException) }
+            bot.groups.delegate.clear { it.cancel(reInitCancellationException) }
+        }
 
         if (!pendingEnabled) {
             pendingIncomingPackets = LockFreeLinkedList()

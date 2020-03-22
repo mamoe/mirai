@@ -35,9 +35,14 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     val configuration: BotConfiguration
 ) : Bot(), CoroutineScope {
     private val botJob = SupervisorJob(configuration.parentCoroutineContext[Job])
-    override val coroutineContext: CoroutineContext =
+    final override val coroutineContext: CoroutineContext =
         configuration.parentCoroutineContext + botJob + (configuration.parentCoroutineContext[CoroutineExceptionHandler]
-            ?: CoroutineExceptionHandler { _, e -> logger.error("An exception was thrown under a coroutine of Bot", e) })
+            ?: CoroutineExceptionHandler { _, e ->
+                logger.error(
+                    "An exception was thrown under a coroutine of Bot",
+                    e
+                )
+            })
     override val context: Context by context.unsafeWeakRef()
 
     @OptIn(LowLevelAPI::class)
@@ -173,25 +178,28 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     // endregion
 
+
+    init {
+        coroutineContext[Job]!!.invokeOnCompletion { throwable ->
+            network.close(throwable)
+            offlineListener.cancel(CancellationException("bot cancelled", throwable))
+
+            groups.delegate.clear() // job is cancelled, so child jobs are to be cancelled
+            friends.delegate.clear()
+            instances.removeIf { it.get()?.uin == this.uin }
+        }
+    }
+
     @OptIn(MiraiInternalAPI::class)
     override fun close(cause: Throwable?) {
         if (!this.botJob.isActive) {
             // already cancelled
             return
         }
-        kotlin.runCatching {
-            if (cause == null) {
-                this.botJob.cancel()
-                network.close()
-                offlineListener.cancel()
-            } else {
-                this.botJob.cancel(CancellationException("bot cancelled", cause))
-                network.close(cause)
-                offlineListener.cancel(CancellationException("bot cancelled", cause))
-            }
+        if (cause == null) {
+            this.botJob.cancel()
+        } else {
+            this.botJob.cancel(CancellationException("bot cancelled", cause))
         }
-        groups.delegate.clear()
-        friends.delegate.clear()
-        instances.removeIf { it.get()?.uin == this.uin }
     }
 }

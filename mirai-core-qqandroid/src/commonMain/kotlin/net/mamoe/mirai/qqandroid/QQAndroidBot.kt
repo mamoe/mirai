@@ -14,10 +14,8 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.statement.HttpResponse
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -342,14 +340,15 @@ internal abstract class QQAndroidBotBase constructor(
         return json.parse(GroupAnnouncement.serializer(), rep)
 
     }
+
     @LowLevelAPI
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData {
         val data = network.async {
             HttpClient().get<String> {
                 url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
-                parameter("bkn",bkn)
-                parameter("gc",groupId)
+                parameter("bkn", bkn)
+                parameter("gc", groupId)
 
                 headers {
                     append(
