@@ -36,6 +36,14 @@ fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L
 }
 
 @PublishedApi
+@Suppress("FunctionName", "unused")
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+internal fun <E : Event> CoroutineScope.Handler(
+    coroutineContext: CoroutineContext,
+    handler: suspend (E) -> ListeningStatus
+): Handler<E> = Handler(coroutineContext, concurrencyKind = Listener.ConcurrencyKind.LOCKED, handler = handler)
+
+@PublishedApi
 @Suppress("FunctionName")
 internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
@@ -60,12 +68,22 @@ internal class Handler<in E : Event>
 ) :
     Listener<E>, CompletableJob by Job(parentJob) {
 
+    @Suppress("unused")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @PublishedApi
+    internal constructor(
+        parentJob: Job?,
+        subscriberContext: CoroutineContext,
+        handler: suspend (E) -> ListeningStatus
+    ) : this(parentJob, subscriberContext, handler, Listener.ConcurrencyKind.LOCKED)
+
     @MiraiInternalAPI
     val lock: Mutex? = when (concurrencyKind) {
         Listener.ConcurrencyKind.CONCURRENT -> null
         Listener.ConcurrencyKind.LOCKED -> Mutex()
     }
 
+    @Suppress("unused")
     @OptIn(MiraiDebugAPI::class)
     override suspend fun onEvent(event: E): ListeningStatus {
         if (isCompleted || isCancelled) return ListeningStatus.STOPPED
@@ -80,8 +98,7 @@ internal class Handler<in E : Event>
                     @Suppress("DEPRECATION")
                     MiraiLogger.warning(
                         """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
-                        either in coroutineContext from Handler job, or in subscriberContext""".trimIndent()
-                        , e
+                        either in coroutineContext from Handler job, or in subscriberContext""".trimIndent(), e
                     )
                 }
             // this.complete() // do not `completeExceptionally`, otherwise parentJob will fai`l.

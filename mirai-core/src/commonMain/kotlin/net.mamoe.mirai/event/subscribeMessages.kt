@@ -270,7 +270,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
      */
     val subscriber: (M.(String) -> Boolean, MessageListener<M, RR>) -> Ret
 ) {
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     open fun newListeningFilter(filter: M.(String) -> Boolean): ListeningFilter = ListeningFilter(filter)
 
     /**
@@ -278,7 +278,8 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
      */
     open inner class ListeningFilter @Deprecated(
         "use newListeningFilter instead",
-        ReplaceWith("newListeningFilter(filter)")
+        ReplaceWith("newListeningFilter(filter)"),
+        level = DeprecationLevel.ERROR
     ) constructor(
         val filter: M.(String) -> Boolean
     ) {
@@ -312,6 +313,43 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         fun not(): ListeningFilter =
             newListeningFilter { !filter.invoke(this, it) }
 
+
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        open infix fun reply(toReply: String): Ret {
+            return content(filter) { reply(toReply);stub }
+        }
+
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        open infix fun reply(message: Message): Ret {
+            return content(filter) { reply(message);stub }
+        }
+
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        open infix fun reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
+            return content(filter) {
+                @Suppress("DSL_SCOPE_VIOLATION_WARNING")
+                executeAndReply(replier)
+            }
+        }
+
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        open infix fun quoteReply(toReply: String): Ret {
+            return content(filter) { quoteReply(toReply);stub }
+        }
+
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        open infix fun quoteReply(message: Message): Ret {
+            return content(filter) { quoteReply(message);stub }
+        }
+
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        open infix fun quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
+            return content(filter) {
+                @Suppress("DSL_SCOPE_VIOLATION_WARNING")
+                executeAndQuoteReply(replier)
+            }
+        }
+
         /**
          * 启动事件监听.
          */
@@ -321,16 +359,19 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         }
     }
 
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(toReply: String): Ret {
         return content(filter) { reply(toReply);stub }
     }
 
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(message: Message): Ret {
         return content(filter) { reply(message);stub }
     }
 
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
@@ -339,16 +380,19 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         }
     }
 
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(toReply: String): Ret {
         return content(filter) { quoteReply(toReply);stub }
     }
 
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(message: Message): Ret {
         return content(filter) { quoteReply(message);stub }
     }
 
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
@@ -915,3 +959,40 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 @DslMarker
 annotation class MessageDsl
+
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+fun <R> CoroutineScope.subscribeMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    listeners: MessagePacketSubscribersBuilder.() -> R
+): R = subscribeMessages(coroutineContext, listeners = listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+fun <R> CoroutineScope.subscribeGroupMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    listeners: GroupMessageSubscribersBuilder.() -> R
+): R = subscribeGroupMessages(coroutineContext, listeners = listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+fun <R> CoroutineScope.subscribeFriendMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    listeners: FriendMessageSubscribersBuilder.() -> R
+): R = subscribeFriendMessages(coroutineContext, listeners = listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+fun <R> Bot.subscribeMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    listeners: MessagePacketSubscribersBuilder.() -> R
+): R = subscribeMessages(coroutineContext, listeners = listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+fun <R> Bot.subscribeGroupMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    listeners: GroupMessageSubscribersBuilder.() -> R
+): R = subscribeGroupMessages(coroutineContext, listeners = listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+fun <R> Bot.subscribeFriendMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    listeners: FriendMessageSubscribersBuilder.() -> R
+): R = subscribeFriendMessages(coroutineContext, listeners = listeners)
