@@ -67,6 +67,7 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
     @JvmSynthetic
     actual abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
 
+    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     actual abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>

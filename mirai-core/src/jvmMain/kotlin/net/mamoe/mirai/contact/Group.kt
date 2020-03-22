@@ -183,6 +183,7 @@ actual abstract class Group : Contact(), CoroutineScope {
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<Group>
 
+    @JvmName("sendMessageSuspend")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>

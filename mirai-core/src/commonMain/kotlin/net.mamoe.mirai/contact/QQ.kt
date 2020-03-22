@@ -101,6 +101,7 @@ expect abstract class QQ() : Contact, CoroutineScope {
     @JvmName("sendMessageSuspend")
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<out QQ>
 
+    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>

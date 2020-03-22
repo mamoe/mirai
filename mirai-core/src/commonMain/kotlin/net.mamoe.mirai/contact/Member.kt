@@ -16,6 +16,7 @@ import net.mamoe.mirai.JavaHappyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmName
@@ -147,6 +148,12 @@ expect abstract class Member() : MemberJavaHappyAPI {
     @JvmSynthetic
     @JvmName("sendMessageSuspend")
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
+
+    @JvmName("sendMessageSuspend")
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
+
 }
 
 /**
