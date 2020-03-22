@@ -11,7 +11,7 @@ const val CONSOLE_TERMINAL = "Terminal"
 const val CONSOLE_GRAPHICAL = "Graphical"
 
 
-object ConsoleUpdater {
+internal object ConsoleUpdater {
 
     @Suppress("SpellCheckingInspection")
     private object Links : HashMap<String, Map<String, String>>() {

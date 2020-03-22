@@ -9,7 +9,10 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 package net.mamoe.mirai.console.wrapper
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*
@@ -56,31 +59,31 @@ object WrapperMain {
         println("Starting version check...")
         runBlocking {
             launch {
-                CoreUpdator.versionCheck()
+                CoreUpdater.versionCheck()
             }
             launch {
                 ConsoleUpdater.versionCheck(type)
             }
         }
         println("Version check complete, starting Mirai")
-        println("Core    :" + CoreUpdator.getCore()!!)
-        println("Protocol:" + CoreUpdator.getProtocolLib()!!)
-        println("Console :" + ConsoleUpdater.getFile()!! )
+        println("Core    :" + CoreUpdater.getCore()!!)
+        println("Protocol:" + CoreUpdater.getProtocolLib()!!)
+        println("Console :" + ConsoleUpdater.getFile()!!)
         println("Root    :" + System.getProperty("user.dir") + "/")
 
         val loader = MiraiClassLoader(
-            CoreUpdator.getCore()!!,
-            CoreUpdator.getProtocolLib()!!,
+            CoreUpdater.getCore()!!,
+            CoreUpdater.getProtocolLib()!!,
             ConsoleUpdater.getFile()!!,
             this.javaClass.classLoader
         )
-        when(type) {
+        when (type) {
             CONSOLE_PURE -> {
                 loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
                 loader.loadClass(
-                    "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
-                ).getMethod("load", String::class.java,String::class.java)
-                    .invoke(null,CoreUpdator.getCurrentVersion(),ConsoleUpdater.getCurrentVersion())
+                        "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
+                    ).getMethod("load", String::class.java, String::class.java)
+                    .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
             }
         }
     }

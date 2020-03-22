@@ -19,32 +19,31 @@ import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
 import java.io.InputStream
+import java.lang.reflect.Constructor
+import java.lang.reflect.Method
 import java.net.URL
 import java.util.jar.JarFile
 
 
 object PluginManager {
-    @Volatile
-    internal var lastPluginName: String = ""
-
     internal val pluginsPath = (System.getProperty("user.dir") + "/plugins/").replace("//", "/").also {
         File(it).mkdirs()
     }
 
-    private val logger = SimpleLogger("Plugin Manager") { _, message, e ->
-        MiraiConsole.logger("[Plugin Manager]", 0, message)
-        MiraiConsole.logger("[Plugin Manager]", 0, e)
+    private val logger = SimpleLogger("Plugin Manager") { p, message, e ->
+        MiraiConsole.logger(p, "[Plugin Manager]", 0, message)
+        MiraiConsole.logger(p, "[Plugin Manager]", 0, e)
     }
 
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
     private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
 
-    fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
+    internal fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.onCommand(command, sender, args)
-            }catch (e:Throwable){
+            } catch (e: Throwable) {
                 logger.info(e)
             }
         }
@@ -63,6 +62,10 @@ object PluginManager {
     fun getAllPluginDescriptions(): Collection<PluginDescription> {
         return pluginDescriptions.values
     }
+
+
+    @Volatile
+    internal var lastPluginName: String = ""
 
     /**
      * 尝试加载全部插件
@@ -153,27 +156,31 @@ object PluginManager {
 
             //real load
             logger.info("loading plugin " + description.name)
-            lastPluginName = description.name
 
             try {
                 val pluginClass = try {
                     PluginClassLoader(
                         (pluginsLocation[description.name]!!),
                         this.javaClass.classLoader
-                    )
-                        .loadClass(description.basePath)
+                    ).loadClass(description.basePath)
                 } catch (e: ClassNotFoundException) {
                     logger.info("failed to find Main: " + description.basePath + " checking if it's kotlin's path")
                     PluginClassLoader(
                         (pluginsLocation[description.name]!!),
                         this.javaClass.classLoader
-                    )
-                        .loadClass("${description.basePath}Kt")
+                    ).loadClass("${description.basePath}Kt")
                 }
+
                 return try {
                     val subClass = pluginClass.asSubclass(PluginBase::class.java)
+
+                    lastPluginName = description.name
                     val plugin: PluginBase =
-                        subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().newInstance()
+                        subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().apply {
+                            againstPermission()
+                        }.newInstance()
+                    plugin.dataFolder // initialize right now
+
                     description.loaded = true
                     logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
                     logger.info(description.info)
@@ -200,8 +207,8 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.onLoad()
-            }catch (ignored  : Throwable){
-                if(ignored is CancellationException) {
+            } catch (ignored: Throwable) {
+                if (ignored is CancellationException) {
                     logger.info(ignored)
                     logger.info(it.pluginName + " failed to load, disabling it")
                     it.disable(ignored)
@@ -212,10 +219,10 @@ object PluginManager {
         nameToPluginBaseMap.values.forEach {
             try {
                 it.enable()
-            }catch (ignored : Throwable){
+            } catch (ignored: Throwable) {
                 logger.info(ignored)
                 logger.info(it.pluginName + " failed to enable, disabling it")
-                if(ignored is CancellationException) {
+                if (ignored is CancellationException) {
                     it.disable(ignored)
                 }
             }
@@ -238,7 +245,7 @@ object PluginManager {
      */
     fun getJarFileByName(pluginName: String): File? {
         File(pluginsPath).listFiles()?.forEach { file ->
-           if (file != null && file.extension == "jar") {
+            if (file != null && file.extension == "jar") {
                 val jar = JarFile(file)
                 val pluginYml =
                     jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
@@ -270,4 +277,18 @@ object PluginManager {
         return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
 
+
+}
+
+
+private val trySetAccessibleMethod: Method? = runCatching {
+    Class.forName("java.lang.reflect.AccessibleObject").getMethod("trySetAccessible")
+}.getOrNull()
+
+private fun Constructor<out PluginBase>.againstPermission() {
+    trySetAccessibleMethod?.let { it.invoke(this, true) }
+        ?: kotlin.runCatching {
+            @Suppress("DEPRECATED")
+            this.isAccessible = true
+        }
 }

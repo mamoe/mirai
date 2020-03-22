@@ -20,7 +20,7 @@ import java.net.URLClassLoader
 import kotlin.math.pow
 import kotlin.system.exitProcess
 
-object CoreUpdator {
+internal object CoreUpdater {
 
     fun getProtocolLib(): File? {
         contentPath.listFiles()?.forEach { file ->

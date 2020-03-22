@@ -143,7 +143,7 @@ object DefaultCommands {
                         startsWith("/") { message ->
                             if (bot.checkManager(this.sender.id)) {
                                 val sender = ContactCommandSender(this.subject)
-                                MiraiConsole.CommandProcessor.runCommand(
+                                CommandManager.runCommand(
                                     sender, message
                                 )
                             }

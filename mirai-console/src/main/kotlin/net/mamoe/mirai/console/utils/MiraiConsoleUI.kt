@@ -14,15 +14,14 @@ import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 
 /**
- * 只需要实现一个这个 传入MiraiConsole 就可以绑定UI层与Console层
- * 注意线程
+ * 只需要实现一个这个传入 MiraiConsole 就可以绑定 UI 层与 Console 层
+ * 需要保证线程安全
  */
-
 interface MiraiConsoleUI {
     /**
-     * 让UI层展示一条log
+     * 让 UI 层展示一条 log
      *
-     * identity：log所属的screen, Main=0; Bot=Bot.uin
+     * identity：log 所属的 screen, Main=0; Bot=Bot.uin
      */
     fun pushLog(
         identity: Long,
@@ -37,14 +36,14 @@ interface MiraiConsoleUI {
     )
 
     /**
-     * 让UI层准备接受新增的一个BOT
+     * 让 UI 层准备接受新增的一个BOT
      */
     fun prePushBot(
         identity: Long
     )
 
     /**
-     * 让UI层接受一个新的bot
+     * 让 UI 层接受一个新的bot
      * */
     fun pushBot(
         bot: Bot
@@ -58,14 +57,13 @@ interface MiraiConsoleUI {
     )
 
     /**
-     * 让UI层提供一个Input
-     * 这个Input 不 等于 Command
+     * 让 UI 层提供一个输入, 相当于 [readLine]
      */
-    suspend fun requestInput(hint:String): String
+    suspend fun requestInput(hint: String): String
 
 
     /**
-     * 让UI层更新BOT管理员的数据
+     * 让 UI 层更新 bot 管理员的数据
      */
     fun pushBotAdminStatus(
         identity: Long,
@@ -73,7 +71,7 @@ interface MiraiConsoleUI {
     )
 
     /**
-     * 由UI层创建一个LoginSolver
+     * 由 UI 层创建一个 [LoginSolver]
      */
     fun createLoginSolver(): LoginSolver
 

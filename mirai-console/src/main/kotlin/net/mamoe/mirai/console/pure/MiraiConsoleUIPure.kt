@@ -11,7 +11,8 @@ package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
@@ -49,7 +50,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
                     requestStr = input
                     requesting = false
                 } else {
-                    MiraiConsole.CommandProcessor.runConsoleCommandBlocking(input)
+                    CommandManager.runCommand(ConsoleCommandSender, input)
                 }
             }
         }
@@ -65,8 +66,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
 
     override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
         var priorityStr = "[${priority.name}]"
-        val _message = message + COLOR_RESET
-        /**
+        /*
          * 通过ANSI控制码添加颜色
          * 更多的颜色定义在 [MiraiConsoleUIPure] 的  companion
          */
@@ -85,7 +85,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
 
             else -> priorityStr
         }
-        println("\u001b[0m " + sdf.format(Date()) + " $priorityStr $identityStr $_message")
+        println("\u001b[0m " + sdf.format(Date()) + " $priorityStr $identityStr ${message + COLOR_RESET}")
     }
 
     override fun prePushBot(identity: Long) {
