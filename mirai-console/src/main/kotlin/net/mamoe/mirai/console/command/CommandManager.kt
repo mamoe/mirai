@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.processCommandQueue
 import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.console.plugins.PluginManager
@@ -159,7 +160,7 @@ object CommandManager : Job by {
                 }
             } catch (e: Exception) {
                 sender.sendMessage("在运行指令时出现了未知错误")
-                e.printStackTrace()
+                MiraiConsole.logger(e)
                 false
             } finally {
                 (sender as AbstractCommandSender).flushMessage()
@@ -181,7 +182,7 @@ object CommandManager : Job by {
         } catch (e: UnknownCommandException) {
             command.sender.sendMessage("未知指令 " + command.commandStr)
         } catch (e: Throwable) {//should never happen
-            e.printStackTrace()
+            MiraiConsole.logger(e)
         }
         if(isActive) {
             processCommandQueue()

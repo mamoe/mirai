@@ -123,8 +123,7 @@ object DefaultCommands {
                             SimpleLogger("BOT $qqNumber]") { _, message, e ->
                                 MiraiConsole.logger("[BOT $qqNumber]", qqNumber, message)
                                 if (e != null) {
-                                    MiraiConsole.logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
-                                    e.printStackTrace()
+                                    MiraiConsole.logger("[NETWORK ERROR]", qqNumber, e)//因为在一页 所以可以不打QQ
                                 }
                             }
                         }
@@ -132,8 +131,7 @@ object DefaultCommands {
                             SimpleLogger("BOT $qqNumber") { _, message, e ->
                                 MiraiConsole.logger("[NETWORK]", qqNumber, message)//因为在一页 所以可以不打QQ
                                 if (e != null) {
-                                    MiraiConsole.logger("[NETWORK ERROR]", qqNumber, e.toString())//因为在一页 所以可以不打QQ
-                                    e.printStackTrace()
+                                    MiraiConsole.logger("[NETWORK ERROR]", qqNumber, e)//因为在一页 所以可以不打QQ
                                 }
                             }
                         }

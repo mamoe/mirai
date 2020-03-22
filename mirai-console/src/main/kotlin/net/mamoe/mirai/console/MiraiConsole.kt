@@ -19,6 +19,9 @@ import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import net.mamoe.mirai.utils.cryptor.ECDH
+import net.mamoe.mirai.utils.io.encodeToString
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 
 
 object MiraiConsole {
@@ -164,11 +167,19 @@ object MiraiConsole {
 
 
 internal object MiraiConsoleLogger {
-    operator fun invoke(any: Any? = null) {
+    operator fun invoke(any: Any?) {
         invoke(
             "[Mirai ${MiraiConsole.version} ${MiraiConsole.build}]",
             0L,
             any
+        )
+    }
+
+    operator fun invoke(e: Throwable?) {
+        invoke(
+            "[Mirai ${MiraiConsole.version} ${MiraiConsole.build}]",
+            0L,
+            e
         )
     }
 
@@ -180,7 +191,7 @@ internal object MiraiConsoleLogger {
 
     operator fun invoke(priority: LogPriority, identityStr: String, identity: Long, e: Throwable? = null) {
         if (e != null) {
-            MiraiConsole.frontEnd.pushLog(priority, identityStr, identity, e.stackTrace.joinToString("\n"))
+            MiraiConsole.frontEnd.pushLog(priority, identityStr, identity, e.stacktraceString)
         }
     }
 
@@ -193,9 +204,13 @@ internal object MiraiConsoleLogger {
 
     operator fun invoke(identityStr: String, identity: Long, e: Throwable? = null) {
         if (e != null) {
-            MiraiConsole.frontEnd.pushLog(LogPriority.INFO, identityStr, identity, e.stackTrace.joinToString("\n"))
+            MiraiConsole.frontEnd.pushLog(LogPriority.INFO, identityStr, identity, e.stacktraceString)
         }
     }
 }
 
-
+internal val Throwable.stacktraceString: String
+    get() =
+        ByteArrayOutputStream().apply {
+            printStackTrace(PrintStream(this))
+        }.use { it.toByteArray().encodeToString() }
