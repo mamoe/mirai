@@ -11,6 +11,7 @@ package net.mamoe.mirai.utils.cryptor
 
 import android.annotation.SuppressLint
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.MiraiPlatformUtils.md5
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -40,28 +41,40 @@ actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
         actual val isECDHAvailable: Boolean get() = _isECDHAvailable
 
         init {
-            kotlin.runCatching {
-                @SuppressLint("PrivateApi")
-                val clazz = Class.forName(
-                    "com.android.org.bouncycastle.jce.provider.BouncyCastleProvider",
-                    true,
-                    ClassLoader.getSystemClassLoader()
-                )
-
-                val providerName = clazz.getDeclaredField("PROVIDER_NAME").get(null) as String
-
-                if (Security.getProvider(providerName) != null) {
-                    Security.removeProvider(providerName)
+            fun testECDH() {
+                ECDHKeyPairImpl(
+                    KeyPairGenerator.getInstance("ECDH")
+                        .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                        .genKeyPair()).let {
+                    calculateShareKey(it.privateKey, it.publicKey)
                 }
-                Security.addProvider(clazz.newInstance() as Provider)
-                generateKeyPair()
-                _isECDHAvailable = true
-            }.exceptionOrNull()?.let {
-                throw IllegalStateException("cannot init BouncyCastle", it)
             }
-            _isECDHAvailable = false
-        }
 
+            @SuppressLint("PrivateApi")
+            if (kotlin.runCatching { testECDH() }.isFailure) {
+                kotlin.runCatching {
+                    val providerName = "BC"
+
+                    if (Security.getProvider(providerName) != null) {
+                        Security.removeProvider(providerName)
+                    }
+                    @Suppress("SpellCheckingInspection")
+                    Security.addProvider(
+                        Class.forName(
+                            "com.android.org.bouncycastle.jce.provider.BouncyCastleProvider",
+                            true,
+                            ClassLoader.getSystemClassLoader()
+                        ).newInstance() as Provider
+                    )
+                    testECDH()
+                    _isECDHAvailable = true
+                }.exceptionOrNull()?.let {
+                    _isECDHAvailable = false
+                    @Suppress("DEPRECATION")
+                    MiraiLogger.error(it)
+                }
+            }
+        }
 
         actual fun generateKeyPair(): ECDHKeyPair {
             if (!isECDHAvailable) {

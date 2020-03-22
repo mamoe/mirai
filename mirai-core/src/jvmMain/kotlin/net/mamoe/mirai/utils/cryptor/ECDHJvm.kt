@@ -35,20 +35,30 @@ actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
-        @Suppress("ObjectPropertyName")
-        private val _isECDHAvailable: Boolean = kotlin.runCatching {
-            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
-                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
-            }
-            Security.addProvider(BouncyCastleProvider())
-            ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
-                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
-                .genKeyPair()).let {
-                calculateShareKey(it.privateKey, it.publicKey)
-            } // try if it is working
-        }.isSuccess
+        actual val isECDHAvailable: Boolean
 
-        actual val isECDHAvailable: Boolean get() = _isECDHAvailable
+        init {
+            isECDHAvailable = kotlin.runCatching {
+                fun testECDH() {
+                    ECDHKeyPairImpl(
+                        KeyPairGenerator.getInstance("ECDH")
+                            .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                            .genKeyPair()).let {
+                        calculateShareKey(it.privateKey, it.publicKey)
+                    }
+                }
+
+                if (kotlin.runCatching { testECDH() }.isSuccess) {
+                    return@runCatching
+                }
+
+                if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+                    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
+                }
+                Security.addProvider(BouncyCastleProvider())
+                testECDH()
+            }.isSuccess
+        }
 
         actual fun generateKeyPair(): ECDHKeyPair {
             if (!isECDHAvailable) {
