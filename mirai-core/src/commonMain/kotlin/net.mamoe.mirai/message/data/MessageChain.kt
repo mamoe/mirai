@@ -127,6 +127,10 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
     AtAll -> first<AtAll>()
     PlainText -> first<PlainText>()
     Image -> first<Image>()
+    OnlineImage -> first<OnlineImage>()
+    OfflineImage -> first<OfflineImage>()
+    GroupImage -> first<GroupImage>()
+    FriendImage -> first<FriendImage>()
     Face -> first<Face>()
     QuoteReply -> first<QuoteReply>()
     MessageSource -> first<MessageSource>()
@@ -360,7 +364,7 @@ fun Message.flatten(): Sequence<SingleMessage> {
 }
 
 fun CombinedMessage.flatten(): Sequence<SingleMessage> {
-    if (this.isFlat()){
+    if (this.isFlat()) {
         @Suppress("UNCHECKED_CAST")
         return (this as Iterable<SingleMessage>).asSequence()
     } else return this.asSequence().flatten()

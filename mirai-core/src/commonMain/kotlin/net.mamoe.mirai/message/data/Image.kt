@@ -85,6 +85,8 @@ abstract class AbstractImage internal constructor() : Image {
  * 一般由 [Contact.uploadImage] 得到
  */
 interface OnlineImage : Image {
+    companion object Key : Message.Key<OnlineImage>
+
     /**
      * 原图下载链接. 包含域名
      */
@@ -115,7 +117,9 @@ suspend fun Image.queryUrl(): String {
  * 一般由 [Contact.uploadImage] 得到
  * @see queryOriginUrl
  */
-interface OfflineImage : Image
+interface OfflineImage : Image {
+    companion object Key : Message.Key<OfflineImage>
+}
 
 /**
  * 原图下载链接. 包含域名
@@ -142,6 +146,8 @@ suspend inline fun OfflineImage.queryOriginUrl(): String = queryUrl()
 // CustomFace
 @OptIn(MiraiInternalAPI::class)
 sealed class GroupImage : AbstractImage() {
+    companion object Key : Message.Key<GroupImage>
+
     abstract val filepath: String
     abstract val fileId: Int
     abstract val serverIp: Int
@@ -213,6 +219,8 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
  */ // NotOnlineImage
 @OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {
+    companion object Key : Message.Key<FriendImage>
+
     abstract val resourceId: String
     abstract val md5: ByteArray
     abstract val filepath: String
