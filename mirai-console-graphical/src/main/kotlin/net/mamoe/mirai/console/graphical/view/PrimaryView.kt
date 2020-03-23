@@ -2,6 +2,7 @@ package net.mamoe.mirai.console.graphical.view
 
 import com.jfoenix.controls.JFXListCell
 import javafx.collections.ObservableList
+import javafx.geometry.Pos
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
@@ -10,8 +11,10 @@ import javafx.stage.FileChooser
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.BotModel
+import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxListView
 import net.mamoe.mirai.console.graphical.util.jfxTabPane
+import net.mamoe.mirai.console.graphical.util.myButtonBar
 import tornadofx.*
 
 class PrimaryView : View() {
@@ -104,13 +107,14 @@ private fun TabPane.logTab(
     this.isClosable = closeable
 
     vbox {
-        buttonbar {
+        myButtonBar(alignment = Pos.BASELINE_RIGHT) {
 
-            button("导出日志").action {
+            jfxButton("导出日志").action {
                 val path = chooseFile(
                     "选择保存路径",
                     arrayOf(FileChooser.ExtensionFilter("日志", "txt")),
-                    FileChooserMode.Save
+                    FileChooserMode.Save,
+                    owner = FX.primaryStage
                 ) {
                     initialFileName = "$text.txt"
                 }
