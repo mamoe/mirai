@@ -143,7 +143,7 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
  */
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
+inline fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
     firstOrNull(key) ?: throw NoSuchElementException("no such element: $key")
 
 /**
@@ -151,7 +151,7 @@ fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
  */
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(key) != null
+inline fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(key) != null
 
 // endregion accessors
 
@@ -238,27 +238,27 @@ fun Message.asMessageChain(): MessageChain = when (this) {
  * 直接将 [this] 委托为一个 [MessageChain]
  */
 @JvmSynthetic
-fun Collection<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByCollection(this)
+inline fun Collection<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByCollection(this)
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
 @JvmName("newChain")
 // @JsName("newChain")
-fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+inline fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
  * 直接将 [this] 委托为一个 [MessageChain]
  */
 @JvmSynthetic
-fun Iterable<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByIterable(this)
+inline fun Iterable<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByIterable(this)
 
 @JvmSynthetic
 inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
 @JvmSynthetic
 fun CombinedMessage.asMessageChain(): MessageChain {
-    if (left is SingleMessage && this.element is SingleMessage) {
+    if (left is SingleMessage && this.tail is SingleMessage) {
         @Suppress("UNCHECKED_CAST")
         return (this as Iterable<SingleMessage>).asMessageChain()
     }
@@ -270,20 +270,20 @@ fun CombinedMessage.asMessageChain(): MessageChain {
  */
 @JvmName("newChain")
 // @JsName("newChain")
-fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+inline fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
  * 直接将 [this] 委托为一个 [MessageChain]
  */
 @JvmSynthetic
-fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
+inline fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
 @JvmName("newChain")
 // @JsName("newChain")
-fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+inline fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
  * 构造一个 [MessageChain]
@@ -317,12 +317,12 @@ fun _____newChain______(messages: String): MessageChain {
  * A <- B <- C <- D <- E <- F <- G
  * ```
  */
-fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
+inline fun Iterable<Message>.flatten(): Sequence<SingleMessage> = asSequence().flatten()
 
 // @JsName("flatten1")
 @JvmName("flatten1")// avoid platform declare clash
 @JvmSynthetic
-fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
+inline fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
 /**
  * 扁平化消息序列.
@@ -336,12 +336,12 @@ fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence
  * A <- B <- C <- D <- E <- F <- G
  * ```
  */
-fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.flatten() }
+inline fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.flatten() }
 
 @JsName("flatten1") // avoid platform declare clash
 @JvmName("flatten1")
 @JvmSynthetic
-fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
+inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
 
 /**
  * 扁平化 [Message]
@@ -366,7 +366,7 @@ fun CombinedMessage.flatten(): Sequence<SingleMessage> {
     } else return this.asSequence().flatten()
 }
 
-fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
+inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
 // endregion converters
 
@@ -387,7 +387,7 @@ object NullMessageChain : MessageChain {
     override fun toString(): String = "NullMessageChain"
     override fun equals(other: Any?): Boolean = other === this
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
-    override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, element = tail)
+    override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, tail = tail)
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
 
