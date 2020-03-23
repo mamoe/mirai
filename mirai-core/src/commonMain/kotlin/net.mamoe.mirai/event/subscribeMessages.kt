@@ -24,6 +24,7 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.first
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -729,18 +730,31 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         }
 
     /**
-     * 如果消息内容包含 [M] 类型的 [Message]
+     * 如果消息内容包含 [N] 类型的 [Message]
      */
     @MessageDsl
-    inline fun <reified M : Message> has(): ListeningFilter =
-        content { message.any { it is M } }
+    inline fun <reified N : Message> has(): ListeningFilter =
+        content { message.any { it is N } }
 
     /**
      * 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent]
      */
     @MessageDsl
-    inline fun <reified N : Message> has(noinline onEvent: MessageListener<M, R>): Ret =
-        content({ message.any { it is N } }, onEvent)
+    @SinceMirai("0.30.0")
+    inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
+        content({ message.any { it is N } }, { onEvent.invoke(this, message.first<N>()) })
+
+    /**
+     * 如果 [mapper] 返回值非空, 就执行 [onEvent]
+     */
+    @MessageDsl
+    @SinceMirai("0.30.0")
+    open fun <N : Any> mapping(
+        mapper: M.(String) -> N?,
+        onEvent: @MessageDsl suspend M.(N) -> R
+    ): Ret = always {
+        onEvent.invoke(this, mapper.invoke(this, message.toString()) ?: return@always stub)
+    }
 
     /**
      * 如果 [filter] 返回 `true`
