@@ -90,7 +90,6 @@ actual abstract class Member : MemberJavaHappyAPI() {
      * @see MemberMuteEvent 成员被禁言事件
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("muteSuspend")
     @JvmSynthetic
     actual abstract suspend fun mute(durationSeconds: Int)
 
@@ -102,7 +101,6 @@ actual abstract class Member : MemberJavaHappyAPI() {
      * @see MemberUnmuteEvent 成员被取消禁言事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("unmuteSuspend")
     @JvmSynthetic
     actual abstract suspend fun unmute()
 
@@ -117,11 +115,9 @@ actual abstract class Member : MemberJavaHappyAPI() {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
@@ -134,7 +130,6 @@ actual abstract class Member : MemberJavaHappyAPI() {
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("kickSuspend")
     @JvmSynthetic
     actual abstract suspend fun kick(message: String)
 

@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -96,7 +95,6 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see MemberMuteEvent 成员被禁言事件
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("muteSuspend")
     @JvmSynthetic
     abstract suspend fun mute(durationSeconds: Int)
 
@@ -108,7 +106,6 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see MemberUnmuteEvent 成员被取消禁言事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("unmuteSuspend")
     @JvmSynthetic
     abstract suspend fun unmute()
 
@@ -120,7 +117,6 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmName("kickSuspend")
     @JvmSynthetic
     abstract suspend fun kick(message: String = "")
 
@@ -146,10 +142,8 @@ expect abstract class Member() : MemberJavaHappyAPI {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    @JvmName("sendMessageSuspend")
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>

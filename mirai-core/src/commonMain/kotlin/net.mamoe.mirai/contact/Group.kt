@@ -154,7 +154,6 @@ expect abstract class Group() : Contact, CoroutineScope {
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
      */
-    @JvmName("quitSuspend")
     @JvmSynthetic
     @MiraiExperimentalAPI("还未支持")
     abstract suspend fun quit(): Boolean
@@ -179,11 +178,9 @@ expect abstract class Group() : Contact, CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<Group>
 
-    @JvmName("sendMessageSuspend")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>
@@ -197,7 +194,6 @@ expect abstract class Group() : Contact, CoroutineScope {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
 

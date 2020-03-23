@@ -115,7 +115,6 @@ actual open class MessageReceipt<C : Contact> actual constructor(
      * 引用这条消息并回复.
      * @see MessageChain.quote 引用一条消息
      */
-    @JvmName("quoteReplySuspend")
     @JvmSynthetic
     actual suspend fun quoteReply(message: MessageChain) {
         target.sendMessage(this.quote() + message)

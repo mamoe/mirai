@@ -178,11 +178,9 @@ actual abstract class Group : Contact(), CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<Group>
 
-    @JvmName("sendMessageSuspend")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group>
@@ -196,7 +194,6 @@ actual abstract class Group : Contact(), CoroutineScope {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     actual abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
 

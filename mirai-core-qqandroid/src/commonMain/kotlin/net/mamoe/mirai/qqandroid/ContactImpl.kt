@@ -59,7 +59,6 @@ internal class QQImpl(
     override val nick: String
         get() = friendInfo.nick
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<out QQ> {
@@ -82,14 +81,12 @@ internal class QQImpl(
         return MessageReceipt(source, this, null)
     }
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ> {
         return this.sendMessage(message as Message)
     }
 
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     @OptIn(MiraiInternalAPI::class)
     override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
@@ -222,7 +219,6 @@ internal class MemberImpl(
     @MiraiExperimentalAPI
     override suspend fun queryRemark(): FriendNameRemark = qq.queryRemark()
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
@@ -245,14 +241,12 @@ internal class MemberImpl(
         return MessageReceipt(source, this, null)
     }
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ> {
         return this.sendMessage(message as Message)
     }
 
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = qq.uploadImage(image)
     // endregion
@@ -317,7 +311,6 @@ internal class MemberImpl(
 
     override val bot: QQAndroidBot get() = qq.bot
 
-    @JvmName("muteSuspend")
     @JvmSynthetic
     override suspend fun mute(durationSeconds: Int) {
         if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
@@ -337,7 +330,6 @@ internal class MemberImpl(
         net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
     }
 
-    @JvmName("unmuteSuspend")
     @JvmSynthetic
     override suspend fun unmute() {
         if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
@@ -357,7 +349,6 @@ internal class MemberImpl(
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
     }
 
-    @JvmName("kickSuspend")
     @JvmSynthetic
     override suspend fun kick(message: String) {
         if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
@@ -631,7 +622,6 @@ internal class GroupImpl(
         return members.delegate.filteringGetOrNull { it.id == id }
     }
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
@@ -657,7 +647,6 @@ internal class GroupImpl(
         return MessageReceipt(source, this, botAsMember)
     }
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group> {
@@ -665,7 +654,6 @@ internal class GroupImpl(
     }
 
 
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {

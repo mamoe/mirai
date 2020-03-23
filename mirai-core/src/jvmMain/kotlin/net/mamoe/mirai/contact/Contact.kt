@@ -62,11 +62,9 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     actual abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     actual abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
@@ -80,7 +78,6 @@ actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     actual abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
 

@@ -28,7 +28,6 @@ import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.OverFileSizeMaxException
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -98,10 +97,8 @@ expect abstract class QQ() : Contact, CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    @JvmName("sendMessageSuspend")
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<out QQ>
 
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
@@ -115,7 +112,6 @@ expect abstract class QQ() : Contact, CoroutineScope {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     abstract override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage
 }

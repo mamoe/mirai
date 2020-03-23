@@ -27,7 +27,6 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -159,7 +158,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     /**
      * 挂起协程直到 [Bot] 下线.
      */
-    @JvmName("joinSuspend")
     @JvmSynthetic
     suspend inline fun join()
 
@@ -174,7 +172,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * @throws LoginFailedException
      * @see alsoLogin
      */
-    @JvmName("loginSuspend")
     @JvmSynthetic
     abstract suspend fun login()
     // endregion
@@ -196,14 +193,12 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * @see _lowLevelRecallFriendMessage 低级 API
      * @see _lowLevelRecallGroupMessage 低级 API
      */
-    @JvmName("recallSuspend")
     @JvmSynthetic
     abstract suspend fun recall(source: MessageSource)
 
     /**
      * 获取图片下载链接
      */
-    @JvmName("queryImageUrlSuspend")
     @JvmSynthetic
     abstract suspend fun queryImageUrl(image: Image): String
 
@@ -213,7 +208,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * @see ByteReadChannel.copyAndClose
      * @see ByteReadChannel.copyTo
      */
-    @JvmName("openChannelSuspend")
     @JvmSynthetic
     abstract suspend fun openChannel(image: Image): ByteReadChannel
 
@@ -223,7 +217,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * @param message 若需要验证请求时的验证消息.
      * @param remark 好友备注
      */
-    @JvmName("addFriendSuspend")
     @JvmSynthetic
     @MiraiExperimentalAPI("未支持")
     abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult

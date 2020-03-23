@@ -27,7 +27,6 @@ import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 
@@ -67,11 +66,9 @@ expect abstract class Contact() : CoroutineScope, ContactJavaHappyAPI {
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    @JvmName("sendMessageSuspend")
     @JvmSynthetic
     abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
 
-    @JvmName("sendMessageSuspend")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
@@ -85,7 +82,6 @@ expect abstract class Contact() : CoroutineScope, ContactJavaHappyAPI {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
-    @JvmName("uploadImageSuspend")
     @JvmSynthetic
     abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
 
