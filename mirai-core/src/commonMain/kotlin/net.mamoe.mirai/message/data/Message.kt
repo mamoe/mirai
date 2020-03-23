@@ -95,7 +95,7 @@ interface Message {
      */
     @JvmSynthetic // in java they should use `plus` instead
     fun followedBy(tail: Message): CombinedMessage {
-        return CombinedMessage(tail, this)
+        return CombinedMessage(left = this, tail = tail)
     }
 
     /**
@@ -109,6 +109,9 @@ interface Message {
     override fun toString(): String
 
     operator fun plus(another: Message): CombinedMessage = this.followedBy(another)
+
+    // avoid resolution ambiguity
+    operator fun plus(another: SingleMessage): CombinedMessage = this.followedBy(another)
 
     operator fun plus(another: String): CombinedMessage = this.followedBy(another.toMessage())
 

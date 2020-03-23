@@ -24,7 +24,7 @@ import kotlin.jvm.JvmName
  */
 class CombinedMessage(
     val left: Message,
-    val element: Message
+    val tail: Message
 ) : Iterable<Message>, Message {
 
     // 不要把它用作 local function, 会编译错误
@@ -32,16 +32,26 @@ class CombinedMessage(
         when (message) {
             is CombinedMessage -> {
                 // fast path, 避免创建新的 iterator, 也不会挂起协程
-                yieldCombinedOrElements(message.element)
                 yieldCombinedOrElements(message.left)
+                yieldCombinedOrElements(message.tail)
             }
-            is MessageChain -> {
+            is Iterable<*> -> {
                 // 更好的性能, 因为协程不会挂起.
                 // 这可能会导致爆栈 (十万个元素), 但作为消息序列足够了.
-                message.forEach { yieldCombinedOrElements(it) }
+                message.forEach {
+                    yieldCombinedOrElements(
+                        it as? Message ?: error(
+                            "A Message implementing Iterable must implement Iterable<Message>, " +
+                                    "whereas got ${it!!::class.simpleName}"
+                        )
+                    )
+                }
             }
             else -> {
-                check(message is SingleMessage) { "unsupported Message type. DO NOT CREATE YOUR OWN Message TYPE!" }
+                check(message is SingleMessage) {
+                    "unsupported Message type. " +
+                            "A Message must be a CombinedMessage, a Iterable<Message> or a SingleMessage"
+                }
                 yield(message)
             }
         }
@@ -56,10 +66,10 @@ class CombinedMessage(
     }
 
     override fun toString(): String {
-        return element.toString() + left.toString()
+        return tail.toString() + left.toString()
     }
 
     fun isFlat(): Boolean {
-        return element is SingleMessage && left is SingleMessage
+        return tail is SingleMessage && left is SingleMessage
     }
 }
