@@ -3,8 +3,10 @@ package net.mamoe.mirai.console.graphical.view
 import com.jfoenix.controls.JFXTreeTableColumn
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.PluginModel
+import net.mamoe.mirai.console.graphical.styleSheet.PluginViewStyleSheet
 import net.mamoe.mirai.console.graphical.util.jfxTreeTableView
 import tornadofx.View
+import tornadofx.addStylesheet
 
 class PluginsView : View() {
 
@@ -12,6 +14,9 @@ class PluginsView : View() {
     val plugins = controller.pluginList
 
     override val root = jfxTreeTableView(plugins) {
+
+        addStylesheet(PluginViewStyleSheet::class)
+
         isShowRoot = false
         columns.addAll(
             JFXTreeTableColumn<PluginModel, String>("插件名").apply {

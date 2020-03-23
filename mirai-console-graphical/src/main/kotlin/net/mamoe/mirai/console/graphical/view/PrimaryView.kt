@@ -2,6 +2,7 @@ package net.mamoe.mirai.console.graphical.view
 
 import com.jfoenix.controls.JFXListCell
 import javafx.collections.ObservableList
+import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
@@ -24,15 +25,19 @@ class PrimaryView : View() {
 
     override val root = borderpane {
 
+        addClass("root-pane")
+
         left = vbox {
 
             imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png"))) {
+                fitHeight = 40.0
+                alignment = Pos.CENTER
                 isPreserveRatio = true
             }
 
             // bot list
             jfxListView(controller.botList) {
-                fitToParentSize()
+                fitToParentHeight()
 
                 setCellFactory {
                     object : JFXListCell<BotModel>() {
@@ -40,7 +45,7 @@ class PrimaryView : View() {
 
                         init {
                             onDoubleClick {
-                                tab?.select() ?: (center as TabPane).logTab(
+                                tab?.select() ?: (mainTabPane as TabPane).logTab(
                                     text = item.uin.toString(),
                                     logs = item.logHistory
                                 ).select().also { tab = it }
