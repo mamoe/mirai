@@ -68,6 +68,9 @@ class PrimaryView : View() {
 
             // command input
             textfield {
+
+                promptText = "在这里输出命令"
+
                 setOnKeyPressed {
                     if (it.code == KeyCode.ENTER) {
                         runAsync {
