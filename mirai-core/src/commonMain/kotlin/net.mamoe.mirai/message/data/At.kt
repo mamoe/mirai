@@ -29,7 +29,10 @@ import kotlin.jvm.JvmSynthetic
  * @see AtAll 全体成员
  */
 class At
-private constructor(val target: Long, val display: String) : Message, MessageContent {
+private constructor(val target: Long, val display: String) :
+    MessageContent,
+    CharSequence by display,
+    Comparable<String> by display {
 
     /**
      * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
@@ -52,9 +55,9 @@ private constructor(val target: Long, val display: String) : Message, MessageCon
 
     override fun followedBy(tail: Message): CombinedMessage {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
-            return super<MessageContent>.followedBy(tail)
+            return super.followedBy(tail)
         }
-        return super<MessageContent>.followedBy(PlainText(" ")) + tail
+        return super.followedBy(PlainText(" ")) + tail
     }
 }
 

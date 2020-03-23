@@ -44,6 +44,9 @@ interface Image : Message, MessageContent {
 }
 
 /**
+ * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
+ * 这个图片必须是服务器已经存在的图片.
+ *
  * 请查看 `ExternalImageJvm` 获取更多创建 [Image] 的方法
  */
 @Suppress("FunctionName")
@@ -57,9 +60,21 @@ fun Image(imageId: String): Image = when (imageId.length) {
 
 @MiraiInternalAPI("使用 Image")
 abstract class AbstractImage internal constructor() : Image {
-    final override fun toString(): String {
-        return "[mirai:$imageId]"
-    }
+
+    private var _stringValue: String? = null
+        get() {
+            return field ?: kotlin.run {
+                field = "[mirai:$imageId]"
+                field
+            }
+        }
+    override val length: Int get() = _stringValue!!.length
+    override fun get(index: Int): Char = _stringValue!![index]
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+        _stringValue!!.subSequence(startIndex, endIndex)
+
+    override fun compareTo(other: String): Int = _stringValue!!.compareTo(other)
+    final override fun toString(): String = _stringValue!!
 }
 
 // region 在线图片
@@ -120,7 +135,9 @@ suspend inline fun OfflineImage.queryOriginUrl(): String = queryUrl()
 
 
 /**
- * 群图片
+ * 群图片.
+ *
+ * [imageId] 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png` (42 长度)
  */
 // CustomFace
 @OptIn(MiraiInternalAPI::class)
@@ -191,6 +208,8 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
 
 /**
  * 好友图片
+ *
+ * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)
  */ // NotOnlineImage
 @OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {

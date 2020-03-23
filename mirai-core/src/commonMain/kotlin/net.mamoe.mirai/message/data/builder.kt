@@ -7,15 +7,22 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
+
 package net.mamoe.mirai.message.data
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 构建一个 [MessageChain]
  *
  * @see MessageChainBuilder
  */
+@JvmSynthetic
 inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChain {
     return MessageChainBuilder().apply(block).asMessageChain()
 }
@@ -25,6 +32,7 @@ inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChai
  *
  * @see MessageChainBuilder
  */
+@JvmSynthetic
 inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> Unit): MessageChain {
     return MessageChainBuilder(initialSize).apply(block).asMessageChain()
 }
@@ -34,6 +42,7 @@ inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> 
  *
  * @see MessageChainBuilder
  */
+@JvmSynthetic
 inline fun buildMessageChain(
     container: MutableCollection<Message>,
     block: MessageChainBuilder.() -> Unit

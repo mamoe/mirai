@@ -29,10 +29,10 @@ import kotlin.jvm.JvmName
  * 总是使用 [quote] 来构造这个实例.
  */
 open class QuoteReply
-@MiraiInternalAPI constructor(val source: MessageSource) : Message, MessageContent {
+@MiraiInternalAPI constructor(val source: MessageSource) : Message, MessageMetadata {
     companion object Key : Message.Key<QuoteReply>
 
-    override fun toString(): String = ""
+    final override fun toString(): String = ""
 }
 
 /**

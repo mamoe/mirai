@@ -98,6 +98,14 @@ interface Message {
         return CombinedMessage(tail, this)
     }
 
+    /**
+     * 转换为易辨识的字符串.
+     *
+     * 各个 [SingleMessage] 的转换示例:
+     * [PlainText]: "Hello"
+     * [GroupImage]: "[mirai:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png]"
+     * [FriendImage]: ""
+     */
     override fun toString(): String
 
     operator fun plus(another: Message): CombinedMessage = this.followedBy(another)
@@ -121,24 +129,17 @@ fun Message.repeat(count: Int): MessageChain {
 
 inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
-interface SingleMessage : Message
+interface SingleMessage : Message, CharSequence, Comparable<String>
 
 /**
  * 消息元数据, 即不含内容的元素.
  * 包括: [MessageSource]
  */
 interface MessageMetadata : SingleMessage {
-    /*
-    fun iterator(): Iterator<Message> {
-        return object : Iterator<Message> {
-            var visited: Boolean = false
-            override fun hasNext(): Boolean = !visited
-            override fun next(): Message {
-                if (visited) throw NoSuchElementException()
-                return this@MessageMetadata.also { visited = true }
-            }
-        }
-    }*/
+    override val length: Int get() = 0
+    override fun get(index: Int): Char = ""[index] // produce uniform exception
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = "".subSequence(startIndex, endIndex)
+    override fun compareTo(other: String): Int = "".compareTo(other)
 }
 
 /**
