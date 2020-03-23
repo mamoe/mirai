@@ -4,6 +4,7 @@ plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
     id("kotlinx-serialization")
+    id("org.jetbrains.dokka")
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.4-jetbrains-3"
 }
@@ -145,5 +146,15 @@ kotlin {
 //tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 //    kotlinOptions.jvmTarget = "1.8"
 //}
+tasks {
+    val dokka by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
+        outputFormat = "html"
+        outputDirectory = "$buildDir/dokka"
+    }
+    val dokkaMarkdown by creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+        outputFormat = "markdown"
+        outputDirectory = "$buildDir/dokka-markdown"
+    }
+}
 
 apply(from = rootProject.file("gradle/publish.gradle"))
