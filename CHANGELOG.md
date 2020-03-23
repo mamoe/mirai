@@ -2,6 +2,51 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.30.0`  -
+此版本为二进制不兼容更新, 全部使用者都需要重新编译.
+
+源码兼容的优化:
+- 删除全部 `@Depreacted` 兼容
+- 删除全部多余的 `@JvmName` 以兼容将来的改变 (新 MPP 模块等级制架构)
+- 调整部分函数的 JVM 可见性
+- 内联部分 `MessageChain` 工具函数
+
+消息部分:
+- `SingleMessage` 现在实现接口 `CharSequence` 和 `Comparable<String>`
+- 为 `FriendImage`, `GroupImage`, `OnlineImage`, `OfflineImage` 增加 `companion object Key`
+- 调整 `RichMessage`, 将所有子类聚合到一个文件
+- 移动 `XmlMessageHelper` 为 `RichMessage.Compation`
+- 命名调整: `buildXMLMessage` 改为 `buildXmlMessage`
+
+事件部分:
+- 加强 `selectMessages`, 增加回复, 引用回复, 默认值, 超时支持:
+原处理方式:
+```kotlin
+val message = nextMessageOrNull(10.secondsToMillis) ?: kotlin.run {
+    quoteReply("请在 10 秒内发送一张图片")
+    return@case
+}
+val image = message.getOrNull(OnlineImage) ?: kotlin.run {
+    reply(message.quote() + "请发送一张图片")
+    return@case
+}
+reply(message.quote() + image.originUrl)
+```
+使用 `selectMessages` DSL:
+```kotlin
+selectMessagesUnit {
+    has<OnlineImage>() quoteReply {
+        message[OnlineImage].originUrl
+    }
+    timeout(10.secondsToMillis) quoteReply {
+        "请在 10 秒内发送图片以获取链接"
+    }
+    defaultQuoteReply {
+        "请发送一张图片"
+    }
+}
+```
+
 ## `0.29.1` 2020/3/22
 - 确保二进制兼容, #155
 - 修复 Android 上 ECDH init 失败问题, #154
