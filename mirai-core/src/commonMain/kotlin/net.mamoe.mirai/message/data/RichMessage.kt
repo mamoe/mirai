@@ -7,19 +7,24 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file: JvmName("MessageUtils")
+@file:JvmMultifileClass
+
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
 /**
  * XML 消息等富文本消息
  *
- * @see XmlMessage
- * @see JsonMessage
- * @see LightApp
+ * @see XmlMessage XML
+ * @see JsonMessage JSON
+ * @see LightApp 小程序 (JSON)
  */
 // not using sealed class for customized implementations
 @SinceMirai("0.27.0")
@@ -31,7 +36,7 @@ interface RichMessage : MessageContent {
         @MiraiExperimentalAPI
         @SinceMirai("0.30.0")
         fun share(url: String, title: String? = null, content: String? = null, coverUrl: String? = null): XmlMessage =
-            buildXMLMessage {
+            buildXmlMessage {
                 templateId = 12345
                 serviceId = 1
                 action = "web"
@@ -75,7 +80,7 @@ class JsonMessage(override val content: String) : RichMessage {
 }
 
 /**
- * 小程序分享, 如音乐分享
+ * 小程序, 如音乐分享
  */
 @OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.27.0")
@@ -90,7 +95,7 @@ class LightApp constructor(override val content: String) : RichMessage {
 /**
  * XML 消息, 如分享, 卡片等.
  *
- * @see buildXMLMessage
+ * @see buildXmlMessage
  */
 @SinceMirai("0.27.0")
 @OptIn(MiraiExperimentalAPI::class)
@@ -108,8 +113,8 @@ class XmlMessage constructor(override val content: String) : RichMessage {
 @JvmSynthetic
 @SinceMirai("0.27.0")
 @MiraiExperimentalAPI
-inline fun buildXMLMessage(block: @XMLDsl XMLMessageBuilder.() -> Unit): XmlMessage =
-    XmlMessage(XMLMessageBuilder().apply(block).text)
+inline fun buildXmlMessage(block: @XMLDsl XmlMessageBuilder.() -> Unit): XmlMessage =
+    XmlMessage(XmlMessageBuilder().apply(block).text)
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
 @DslMarker
@@ -117,7 +122,7 @@ annotation class XMLDsl
 
 @Suppress("MemberVisibilityCanBePrivate")
 @XMLDsl
-class XMLMessageBuilder(
+class XmlMessageBuilder(
     var templateId: Int = 1,
     var serviceId: Int = 1,
     var action: String = "plugin",
