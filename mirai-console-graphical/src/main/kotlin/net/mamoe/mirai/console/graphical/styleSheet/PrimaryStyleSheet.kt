@@ -1,9 +1,6 @@
 package net.mamoe.mirai.console.graphical.styleSheet
 
 import javafx.scene.Cursor
-import javafx.scene.effect.BlurType
-import javafx.scene.effect.DropShadow
-import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
@@ -40,7 +37,7 @@ class PrimaryStyleSheet : BaseStyleSheet() {
          * bot list
          */
         rootPane {
-            child(vbox) {
+            child(vBox) {
 
                 backgroundColor += c(primaryColor)
 //                这个padding有bug，十分神奇
@@ -75,7 +72,7 @@ class PrimaryStyleSheet : BaseStyleSheet() {
         jfxTabPane {
 
             // 日志列表样式
-            vbox {
+            vBox {
                 padding = box(15.px)
                 spacing = 15.px
             }

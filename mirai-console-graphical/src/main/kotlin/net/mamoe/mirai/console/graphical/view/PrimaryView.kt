@@ -45,7 +45,7 @@ class PrimaryView : View() {
 
                         init {
                             onDoubleClick {
-                                tab?.select() ?: (mainTabPane as TabPane).logTab(
+                                tab?.select() ?: mainTabPane.logTab(
                                     text = item.uin.toString(),
                                     logs = item.logHistory
                                 ).select().also { tab = it }

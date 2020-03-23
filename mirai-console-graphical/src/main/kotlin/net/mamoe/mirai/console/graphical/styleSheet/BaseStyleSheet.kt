@@ -1,14 +1,14 @@
 package net.mamoe.mirai.console.graphical.styleSheet
 
-import javafx.scene.layout.BackgroundPosition
 import javafx.scene.layout.BackgroundRepeat
-import javafx.scene.layout.BackgroundSize
 import javafx.scene.paint.Color
 import net.mamoe.mirai.console.MiraiConsole
-import tornadofx.*
+import tornadofx.Stylesheet
+import tornadofx.cssclass
+import tornadofx.csselement
 import java.io.File
+import kotlin.random.Random
 
-@OptIn(ExperimentalStdlibApi::class)
 open class BaseStyleSheet : Stylesheet() {
 
     companion object {
@@ -23,7 +23,7 @@ open class BaseStyleSheet : Stylesheet() {
         val jfxTabPane by cssclass("jfx-tab-pane")
         val myButtonBar by cssclass("my-button-bar")
 
-        val vbox by csselement("VBox")
+        val vBox by csselement("VBox")
     }
 
     init {
@@ -35,8 +35,10 @@ open class BaseStyleSheet : Stylesheet() {
 
             jfxTabPane {
                 val bg = File(MiraiConsole.path, "background")
-                if (bg.exists() && bg.isDirectory) {
-                    bg.listFiles()!!.randomOrNull()?.also {
+                if (!bg.exists()) bg.mkdir()
+                if (bg.isDirectory) {
+                    bg.listFiles()!!.filter { file -> file.extension in listOf("jpg", "jpeg", "png", "gif") }
+                        .randomElement()?.also {
                         backgroundImage += it.toURI()
                         backgroundRepeat += BackgroundRepeat.REPEAT to BackgroundRepeat.REPEAT
                     }
@@ -52,4 +54,10 @@ open class BaseStyleSheet : Stylesheet() {
             }
         }
     }
+}
+
+fun <T> Collection<T>.randomElement(): T? {
+    if (isEmpty())
+        return null
+    return elementAt(Random.nextInt(size))
 }

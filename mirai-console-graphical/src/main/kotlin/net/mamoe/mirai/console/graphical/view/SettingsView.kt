@@ -38,6 +38,17 @@ class SettingsView : View() {
                 }
             }
 
+            fieldset("背景目录") {
+                field {
+                    jfxTextfield((System.getProperty("user.dir") + "/background/").replace("//", "/")) { isEditable = false }
+                    jfxButton("打开目录").action {
+                        (System.getProperty("user.dir") + "/background/").replace("//", "/").also { path ->
+                            Desktop.getDesktop().takeIf { it.isSupported(Desktop.Action.OPEN) }?.open(File(path))
+                        }
+                    }
+                }
+            }
+
             fieldset("最大日志容量") {
                 field {
                     jfxTextfield().bind(settingModel.maxLogNum)
