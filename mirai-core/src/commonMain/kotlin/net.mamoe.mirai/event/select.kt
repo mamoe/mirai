@@ -386,12 +386,15 @@ internal suspend inline fun <reified T : MessagePacket<*, *>, R> T.selectMessage
     val defaultListeners: MutableList<MessageListener<T, Any?>> = mutableListOf()
 
     if (isUnit) {
+        // https://youtrack.jetbrains.com/issue/KT-37716
+        val outside = { filter: T.(String) -> Boolean, listener: MessageListener<T, Any?> ->
+            listeners += filter to listener
+        }
         object : MessageSelectBuilderUnit<T, R>(
             this@selectMessagesImpl,
             SELECT_MESSAGE_STUB,
-            { filter: T.(String) -> Boolean, listener: MessageListener<T, Any?> ->
-                listeners += filter to listener
-            }) {
+            outside
+        ) {
             override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
             override fun obtainCurrentDeferred(): CompletableDeferred<R>? = deferred
             override fun default(onEvent: MessageListener<T, R>) {
@@ -399,12 +402,15 @@ internal suspend inline fun <reified T : MessagePacket<*, *>, R> T.selectMessage
             }
         }
     } else {
+        // https://youtrack.jetbrains.com/issue/KT-37716
+        val outside = { filter: T.(String) -> Boolean, listener: MessageListener<T, Any?> ->
+            listeners += filter to listener
+        }
         object : MessageSelectBuilder<T, R>(
             this@selectMessagesImpl,
             SELECT_MESSAGE_STUB,
-            { filter: T.(String) -> Boolean, listener: MessageListener<T, Any?> ->
-                listeners += filter to listener
-            }) {
+            outside
+        ) {
             override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
             override fun obtainCurrentDeferred(): CompletableDeferred<R>? = deferred
             override fun default(onEvent: MessageListener<T, R>) {
@@ -414,7 +420,7 @@ internal suspend inline fun <reified T : MessagePacket<*, *>, R> T.selectMessage
     }.apply(selectBuilder)
 
     // we don't have any way to reduce duplication yet,
-    // until local functions is supported in inline functions
+    // until local functions are supported in inline functions
     @Suppress("DuplicatedCode")
     subscribeAlways<T> { event ->
         if (!this.isContextIdenticalWith(this@selectMessagesImpl))
@@ -470,12 +476,15 @@ internal suspend inline fun <reified T : MessagePacket<*, *>> T.whileSelectMessa
         val listeners: MutableList<Pair<T.(String) -> Boolean, MessageListener<T, Any?>>> = mutableListOf()
         val defaltListeners: MutableList<MessageListener<T, Any?>> = mutableListOf()
 
+        // https://youtrack.jetbrains.com/issue/KT-37716
+        val outside = { filter: T.(String) -> Boolean, listener: MessageListener<T, Any?> ->
+            listeners += filter to listener
+        }
         object : MessageSelectBuilder<T, Boolean>(
             this@whileSelectMessagesImpl,
             SELECT_MESSAGE_STUB,
-            { filter: T.(String) -> Boolean, listener: MessageListener<T, Any?> ->
-                listeners += filter to listener
-            }) {
+            outside
+        ) {
             override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
             override fun obtainCurrentDeferred(): CompletableDeferred<Boolean>? = deferred
             override fun default(onEvent: MessageListener<T, Boolean>) {

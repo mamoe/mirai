@@ -33,7 +33,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessagePacket<*, *>, Listener<MessagePacket<*, *>>, Unit, Unit>
 
@@ -260,7 +259,6 @@ typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  * @param Ret 每个 DSL 函数创建监听器之后的返回值
  *
  * @see subscribeFriendMessages
- * @sample demo.subscribe.messageDSL
  */
 @Suppress("unused", "DSL_SCOPE_VIOLATION_WARNING")
 @MessageDsl
@@ -277,7 +275,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     /**
      * 监听的条件
      */
-    open inner class ListeningFilter @Deprecated(
+    open inner class ListeningFilter @Deprecated( // keep it for development warning
         "use newListeningFilter instead",
         ReplaceWith("newListeningFilter(filter)"),
         level = DeprecationLevel.ERROR
@@ -314,93 +312,42 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         fun not(): ListeningFilter =
             newListeningFilter { !filter.invoke(this, it) }
 
-
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        internal open infix fun reply(toReply: String): Ret {
-            return content(filter) { reply(toReply);this@MessageSubscribersBuilder.stub }
-        }
-
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        internal open infix fun reply(message: Message): Ret {
-            return content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
-        }
-
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        internal open infix fun reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
-            return content(filter) {
-                this@MessageSubscribersBuilder.executeAndReply(this, replier)
-            }
-        }
-
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        internal open infix fun quoteReply(toReply: String): Ret {
-            return content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
-        }
-
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        internal open infix fun quoteReply(message: Message): Ret {
-            return content(filter) { quoteReply(message);this@MessageSubscribersBuilder.stub }
-        }
-
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        internal open infix fun quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
-            return content(filter) {
-                @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-                this@MessageSubscribersBuilder.executeAndQuoteReply(this, replier)
-            }
-        }
-
-        @JvmSynthetic
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        @JvmName("invoke")
-        internal fun invoke0(onEvent: MessageListener<M, R>): Listener<*> {
-            return content(filter, onEvent) as Listener<*>
-        }
-
         /**
          * 启动事件监听.
          */
-        @JvmName("invoke1")
         // do not inline due to kotlin (1.3.61) bug: java.lang.IllegalAccessError
         operator fun invoke(onEvent: MessageListener<M, R>): Ret {
             return content(filter, onEvent)
         }
     }
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(toReply: String): Ret {
         return content(filter) { reply(toReply);this@MessageSubscribersBuilder.stub }
     }
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(message: Message): Ret {
         return content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
     }
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
             this@MessageSubscribersBuilder.executeAndReply(this, replier)
         }
     }
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(toReply: String): Ret {
         return content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
     }
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(message: Message): Ret {
         return content(filter) { quoteReply(message);this@MessageSubscribersBuilder.stub }
     }
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
@@ -440,7 +387,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @JvmName("case1")
     @JsName("case1")
     @SinceMirai("0.29.0")
-    @Suppress("INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS")
+    @Suppress("INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
     infix fun String.`->`(block: MessageListener<M, R>): Ret {
         return case(this, onEvent = block)
     }
@@ -739,7 +686,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @MessageDsl
     @SinceMirai("0.30.0")
     inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
-        content({ message.any { it is N } }, { onEvent.invoke(this, message.first<N>()) })
+        content({ message.any { it is N } }, { onEvent.invoke(this, message.first()) })
 
     /**
      * 如果 [mapper] 返回值非空, 就执行 [onEvent]
@@ -974,40 +921,3 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 @DslMarker
 annotation class MessageDsl
-
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-fun <R> CoroutineScope.subscribeMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listeners: MessagePacketSubscribersBuilder.() -> R
-): R = subscribeMessages(coroutineContext, listeners = listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-fun <R> CoroutineScope.subscribeGroupMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listeners: GroupMessageSubscribersBuilder.() -> R
-): R = subscribeGroupMessages(coroutineContext, listeners = listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-fun <R> CoroutineScope.subscribeFriendMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listeners: FriendMessageSubscribersBuilder.() -> R
-): R = subscribeFriendMessages(coroutineContext, listeners = listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-fun <R> Bot.subscribeMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listeners: MessagePacketSubscribersBuilder.() -> R
-): R = subscribeMessages(coroutineContext, listeners = listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-fun <R> Bot.subscribeGroupMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listeners: GroupMessageSubscribersBuilder.() -> R
-): R = subscribeGroupMessages(coroutineContext, listeners = listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-fun <R> Bot.subscribeFriendMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listeners: FriendMessageSubscribersBuilder.() -> R
-): R = subscribeFriendMessages(coroutineContext, listeners = listeners)
