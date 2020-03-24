@@ -115,24 +115,9 @@ internal class Handler<in E : Event>
  */
 internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
 
-internal class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>>() {
+internal expect class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>> {
     @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
-    val supertypes: Set<KClass<out Event>> by lazy {
-        val supertypes = mutableSetOf<KClass<out Event>>()
-
-        fun addSupertypes(clazz: KClass<out Event>) {
-            clazz.supertypes.forEach {
-                val classifier = it.classifier as? KClass<out Event>
-                if (classifier != null) {
-                    supertypes.add(classifier)
-                    addSupertypes(classifier)
-                }
-            }
-        }
-        addSupertypes(clazz)
-
-        supertypes
-    }
+    val supertypes: Set<KClass<out Event>>
 }
 
 internal expect class MiraiAtomicBoolean(initial: Boolean) {

@@ -285,7 +285,7 @@ abstract class MessageSelectBuilderUnit<M : MessagePacket<*, *>, R> @PublishedAp
      * 在超时后引用回复原消息
      *
      * 当 [block] 返回值为 [Unit] 时不回复, 为 [Message] 时回复 [Message], 其他将 [toString] 后回复为 [PlainText]
-
+     *
      * @see timeout
      * @see reply
      */
@@ -304,8 +304,7 @@ abstract class MessageSelectBuilderUnit<M : MessagePacket<*, *>, R> @PublishedAp
      */
     @MessageDsl
     fun defaultReply(block: suspend () -> Any?): Unit = subscriber({ true }, {
-        @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false positive
-        executeAndReply(block)
+        this@MessageSelectBuilderUnit.executeAndReply(block)
     })
 
 
@@ -316,8 +315,7 @@ abstract class MessageSelectBuilderUnit<M : MessagePacket<*, *>, R> @PublishedAp
      */
     @MessageDsl
     fun defaultQuoteReply(block: suspend () -> Any?): Unit = subscriber({ true }, {
-        @Suppress("DSL_SCOPE_VIOLATION_WARNING") // false positive
-        executeAndQuoteReply(block)
+        this@MessageSelectBuilderUnit.executeAndQuoteReply(block)
     })
 
     private suspend inline fun executeAndReply(noinline block: suspend () -> Any?) {

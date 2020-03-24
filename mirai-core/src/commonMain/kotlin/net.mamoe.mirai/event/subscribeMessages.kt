@@ -262,7 +262,6 @@ typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  * @see subscribeFriendMessages
  * @sample demo.subscribe.messageDSL
  */
-// TODO: 2019/12/23 应定义为 inline, 但这会导致一个 JVM run-time VerifyError. 等待 kotlin 修复 bug (Kotlin 1.3.61)
 @Suppress("unused", "DSL_SCOPE_VIOLATION_WARNING")
 @MessageDsl
 open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, RR>(
@@ -318,37 +317,36 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
         internal open infix fun reply(toReply: String): Ret {
-            return content(filter) { reply(toReply);stub }
+            return content(filter) { reply(toReply);this@MessageSubscribersBuilder.stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
         internal open infix fun reply(message: Message): Ret {
-            return content(filter) { reply(message);stub }
+            return content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
         internal open infix fun reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
             return content(filter) {
-                @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-                executeAndReply(replier)
+                this@MessageSubscribersBuilder.executeAndReply(this, replier)
             }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
         internal open infix fun quoteReply(toReply: String): Ret {
-            return content(filter) { quoteReply(toReply);stub }
+            return content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
         internal open infix fun quoteReply(message: Message): Ret {
-            return content(filter) { quoteReply(message);stub }
+            return content(filter) { quoteReply(message);this@MessageSubscribersBuilder.stub }
         }
 
         @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
         internal open infix fun quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
             return content(filter) {
                 @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-                executeAndQuoteReply(replier)
+                this@MessageSubscribersBuilder.executeAndQuoteReply(this, replier)
             }
         }
 
@@ -372,13 +370,13 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(toReply: String): Ret {
-        return content(filter) { reply(toReply);stub }
+        return content(filter) { reply(toReply);this@MessageSubscribersBuilder.stub }
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(message: Message): Ret {
-        return content(filter) { reply(message);stub }
+        return content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
@@ -386,20 +384,20 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     open infix fun ListeningFilter.reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            executeAndReply(replier)
+            this@MessageSubscribersBuilder.executeAndReply(this, replier)
         }
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(toReply: String): Ret {
-        return content(filter) { quoteReply(toReply);stub }
+        return content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.quoteReply(message: Message): Ret {
-        return content(filter) { quoteReply(message);stub }
+        return content(filter) { quoteReply(message);this@MessageSubscribersBuilder.stub }
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // binary compatibility
@@ -407,11 +405,10 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     open infix fun ListeningFilter.quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            executeAndQuoteReply(replier)
+            this@MessageSubscribersBuilder.executeAndQuoteReply(this, replier)
         }
     }
 
-    // TODO: 2020/3/6 这些 lambda 都应该 crossinline, 但这会导致异常时的 stacktrace 不准确 (Kotlin 1.3.70) 待 Kotlin 修复此问题后恢复 inline 结构
 
     /**
      * 无任何触发条件.
@@ -753,7 +750,10 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         mapper: M.(String) -> N?,
         onEvent: @MessageDsl suspend M.(N) -> R
     ): Ret = always {
-        onEvent.invoke(this, mapper.invoke(this, message.toString()) ?: return@always stub)
+        onEvent.invoke(
+            this,
+            mapper.invoke(this, message.toString()) ?: return@always this@MessageSubscribersBuilder.stub
+        )
     }
 
     /**
@@ -781,16 +781,14 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         content { regex.matchEntire(it) != null }
 
 
-    // TODO: 2020/3/20 支持新泛型
     /**
      * 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent`
      */
     @MessageDsl
     fun matching(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
         always {
-            val find = regex.matchEntire(it) ?: return@always stub
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply {
+            val find = regex.matchEntire(it) ?: return@always this@MessageSubscribersBuilder.stub
+            this@MessageSubscribersBuilder.executeAndReply(this) {
                 onEvent.invoke(this, find)
             }
         }
@@ -808,9 +806,8 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @MessageDsl
     fun finding(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
         always {
-            val find = regex.find(it) ?: return@always stub
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply {
+            val find = regex.find(it) ?: return@always this@MessageSubscribersBuilder.stub
+            this@MessageSubscribersBuilder.executeAndReply(this) {
                 onEvent.invoke(this, find)
             }
         }
@@ -821,7 +818,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
      */
     @MessageDsl
     open infix fun String.containsReply(reply: String): Ret =
-        content({ this@containsReply in it }, { reply(reply); stub })
+        content({ this@containsReply in it }, { reply(reply); this@MessageSubscribersBuilder.stub })
 
     /**
      * 若消息内容包含 [this] 则执行 [replier] 并将其返回值回复给发信对象.
@@ -833,8 +830,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @MessageDsl
     open infix fun String.containsReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret =
         content({ this@containsReply in it }, {
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply(replier)
+            this@MessageSubscribersBuilder.executeAndReply(this, replier)
         })
 
     /**
@@ -847,9 +843,8 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @MessageDsl
     open infix fun Regex.matchingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
         always {
-            val find = this@matchingReply.matchEntire(it) ?: return@always stub
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply {
+            val find = this@matchingReply.matchEntire(it) ?: return@always this@MessageSubscribersBuilder.stub
+            this@MessageSubscribersBuilder.executeAndReply(this) {
                 replier.invoke(this, find)
             }
         }
@@ -864,9 +859,8 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @MessageDsl
     open infix fun Regex.findingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
         always {
-            val find = this@findingReply.find(it) ?: return@always stub
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply {
+            val find = this@findingReply.find(it) ?: return@always this@MessageSubscribersBuilder.stub
+            this@MessageSubscribersBuilder.executeAndReply(this) {
                 replier.invoke(this, find)
             }
         }
@@ -888,8 +882,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     open infix fun String.startsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimStart()
         return content({ it.trim().startsWith(toCheck) }, {
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply {
+            this@MessageSubscribersBuilder.executeAndReply(this) {
                 replier(this, it.trim().removePrefix(toCheck))
             }
         })
@@ -912,8 +905,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     open infix fun String.endsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimEnd()
         return content({ it.trim().endsWith(toCheck) }, {
-            @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply {
+            this@MessageSubscribersBuilder.executeAndReply(this) {
                 replier(this, it.trim().removeSuffix(toCheck))
             }
         })
@@ -922,13 +914,13 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
     @MessageDsl
     open infix fun String.reply(reply: String): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply);stub })
+        return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
     }
 
     @MessageDsl
     open infix fun String.reply(reply: Message): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply);stub })
+        return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
     }
 
     @MessageDsl
@@ -936,7 +928,7 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this.executeAndReply {
+            this@MessageSubscribersBuilder.executeAndReply(this) {
                 replier(this, it.trim())
             }
         })
@@ -944,26 +936,26 @@ open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, R
 
     @PublishedApi
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
-    internal suspend inline fun M.executeAndReply(replier: suspend M.(String) -> Any?): RR {
-        when (val message = replier(this, this.message.toString())) {
-            is Message -> this.reply(message)
+    internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
+        when (val message = replier(m, m.message.toString())) {
+            is Message -> m.reply(message)
             is Unit -> {
 
             }
-            else -> this.reply(message.toString())
+            else -> m.reply(message.toString())
         }
         return stub
     }
 
     @PublishedApi
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
-    internal suspend inline fun M.executeAndQuoteReply(replier: suspend M.(String) -> Any?): RR {
-        when (val message = replier(this, this.message.toString())) {
-            is Message -> this.quoteReply(message)
+    internal suspend inline fun executeAndQuoteReply(m: M, replier: suspend M.(String) -> Any?): RR {
+        when (val message = replier(m, m.message.toString())) {
+            is Message -> m.quoteReply(message)
             is Unit -> {
 
             }
-            else -> this.quoteReply(message.toString())
+            else -> m.quoteReply(message.toString())
         }
         return stub
     }

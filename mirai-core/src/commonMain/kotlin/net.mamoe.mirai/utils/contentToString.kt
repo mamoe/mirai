@@ -13,7 +13,9 @@ package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
+import kotlin.reflect.KType
 
 private val indent: String = " ".repeat(4)
 
@@ -127,8 +129,14 @@ fun Any?._miraiContentToString(prefix: String = ""): String = when (this) {
 
 internal expect fun KProperty1<*, *>.getValueAgainstPermission(receiver: Any): Any?
 
+private val KProperty1<*, *>.isConst: Boolean get() = false // on JVM, it will be resolved to member function
+private val KClass<*>.isData: Boolean get() = false // on JVM, it will be resolved to member function
+
 @MiraiDebugAPI
-private fun Any.contentToStringReflectively(prefix: String, filter: ((name: String, value: Any?) -> Boolean)? = null): String {
+private fun Any.contentToStringReflectively(
+    prefix: String,
+    filter: ((name: String, value: Any?) -> Boolean)? = null
+): String {
     val newPrefix = "$prefix    "
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +
             this.allMembersFromSuperClassesMatching { it.qualifiedName?.startsWith("net.mamoe.mirai") == true }
@@ -155,11 +163,14 @@ private fun Any.contentToStringReflectively(prefix: String, filter: ((name: Stri
                 } + "\n$prefix}"
 }
 
+private val <T : Any> KClass<T>.supertypes: List<KType> get() = listOf() // on JVM, it will be resolved to member function
+
 private fun KClass<out Any>.thisClassAndSuperclassSequence(): Sequence<KClass<out Any>> {
     return sequenceOf(this) +
             this.supertypes.asSequence()
                 .mapNotNull { type -> type.classifier?.takeIf { it is KClass<*> }?.takeIf { it != Any::class } as? KClass<out Any> }.flatMap { it.thisClassAndSuperclassSequence() }
 }
+private val <T : Any> KClass<T>.members: List<KProperty<*>> get() = listOf() // on JVM, it will be resolved to member function
 
 @Suppress("UNCHECKED_CAST")
 private fun Any.allMembersFromSuperClassesMatching(classFilter: (KClass<out Any>) -> Boolean): Sequence<KProperty1<Any, *>> {
