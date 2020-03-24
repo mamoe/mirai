@@ -3,14 +3,13 @@ package net.mamoe.mirai.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.utils.SinceMirai
 
 
 /**
  * 群统计信息
- *
- *
- * */
-
+ */
+@SinceMirai("0.28.0")
 @Serializable
 data class GroupActiveData(
 

@@ -97,7 +97,7 @@ interface LowLevelBotAPIAccessor {
     /**
      * 获取群公告列表
      * @param page 页码
-     * */
+     */
     @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
@@ -107,7 +107,7 @@ interface LowLevelBotAPIAccessor {
      * 发送群公告
      *
      * @return 公告的fid
-     * */
+     */
     @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
@@ -117,7 +117,7 @@ interface LowLevelBotAPIAccessor {
     /**
      * 删除群公告
      * @param fid [GroupAnnouncement.fid]
-     * */
+     */
     @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
@@ -126,7 +126,7 @@ interface LowLevelBotAPIAccessor {
     /**
      * 获取一条群公告
      * @param fid [GroupAnnouncement.fid]
-     * */
+     */
     @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
@@ -135,8 +135,7 @@ interface LowLevelBotAPIAccessor {
 
     /**
      * 获取群活跃信息
-     *
-     * */
+     */
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData

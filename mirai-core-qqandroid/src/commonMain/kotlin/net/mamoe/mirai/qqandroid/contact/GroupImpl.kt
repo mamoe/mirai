@@ -39,11 +39,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 
 @OptIn(ExperimentalContracts::class)
-internal fun GroupImpl.Companion.checkIsInstance(expression: Boolean) {
+internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     contract {
-        returns() implies expression
+        returns() implies (instance is GroupImpl)
     }
-    check(expression) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
+    check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
 @Suppress("PropertyName")

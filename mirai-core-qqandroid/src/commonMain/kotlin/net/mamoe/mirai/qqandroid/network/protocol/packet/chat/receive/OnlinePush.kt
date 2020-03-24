@@ -197,7 +197,7 @@ internal class OnlinePush {
                         when (msgInfo.shMsgType.toInt()) {
                             732 -> {
                                 val group = bot.getGroup(this.readUInt().toLong())
-                                GroupImpl.checkIsInstance(group is GroupImpl)
+                                GroupImpl.checkIsInstance(group)
 
                                 when (val internalType = this.readByte().toInt().also { this.discardExact(1) }) {
                                     0x0c -> { // mute
@@ -215,7 +215,7 @@ internal class OnlinePush {
                                             if (time == 0) {
                                                 return@flatMap sequenceOf(
                                                     GroupMuteAllEvent(
-                                                        origin = group.isMuteAll.also { group._muteAll = false },
+                                                        origin = group.settings.isMuteAll.also { group._muteAll = false },
                                                         new = false,
                                                         operator = operator,
                                                         group = group
@@ -224,7 +224,7 @@ internal class OnlinePush {
                                             } else {
                                                 return@flatMap sequenceOf(
                                                     GroupMuteAllEvent(
-                                                        origin = group.isMuteAll.also { group._muteAll = true },
+                                                        origin = group.settings.isMuteAll.also { group._muteAll = true },
                                                         new = true,
                                                         operator = operator,
                                                         group = group
@@ -283,7 +283,7 @@ internal class OnlinePush {
                                         val switch = this.readInt() == 0
                                         return@flatMap sequenceOf(
                                             GroupAllowAnonymousChatEvent(
-                                                origin = group.isAnonymousChatEnabled.also {
+                                                origin = group.settings.isAnonymousChatEnabled.also {
                                                     group._anonymousChat = switch
                                                 },
                                                 new = switch,
@@ -312,7 +312,7 @@ internal class OnlinePush {
                                                 "管理员已关闭群聊坦白说" -> {
                                                     return@flatMap sequenceOf(
                                                         GroupAllowConfessTalkEvent(
-                                                            origin = group.isConfessTalkEnabled.also {
+                                                            origin = group.settings.isConfessTalkEnabled.also {
                                                                 group._confessTalk = false
                                                             },
                                                             new = false,
@@ -324,7 +324,7 @@ internal class OnlinePush {
                                                 "管理员已开启群聊坦白说" -> {
                                                     return@flatMap sequenceOf(
                                                         GroupAllowConfessTalkEvent(
-                                                            origin = group.isConfessTalkEnabled.also {
+                                                            origin = group.settings.isConfessTalkEnabled.also {
                                                                 group._confessTalk = true
                                                             },
                                                             new = true,
