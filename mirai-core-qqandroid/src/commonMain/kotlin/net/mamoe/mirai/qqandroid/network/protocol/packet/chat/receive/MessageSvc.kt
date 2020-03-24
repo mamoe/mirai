@@ -198,7 +198,7 @@ internal class MessageSvc {
                                 if (group.members.contains(msg.msgHead.authUin)) {
                                     return@mapNotNull null
                                 }
-                                return@mapNotNull MemberJoinEvent(group.Member(object : MemberInfo {
+                                return@mapNotNull MemberJoinEvent(group.newMember(object : MemberInfo {
                                     override val nameCard: String get() = ""
                                     override val permission: MemberPermission get() = MemberPermission.MEMBER
                                     override val specialTitle: String get() = ""

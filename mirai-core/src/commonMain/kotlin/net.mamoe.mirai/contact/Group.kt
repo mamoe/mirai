@@ -99,7 +99,7 @@ expect abstract class Group() : Contact, CoroutineScope {
     abstract val owner: Member
 
     /**
-     * [Bot] 在群内的 [Member] 实例
+     * [Bot] 在群内的 [newMember] 实例
      */
     @MiraiExperimentalAPI
     abstract val botAsMember: Member
@@ -158,13 +158,13 @@ expect abstract class Group() : Contact, CoroutineScope {
     abstract suspend fun quit(): Boolean
 
     /**
-     * 构造一个 [Member].
+     * 构造一个 [newMember].
      * 非特殊情况请不要使用这个函数. 优先使用 [get].
      */
     @MiraiExperimentalAPI("dangerous")
     @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName")
     @JvmName("newMember")
-    abstract fun Member(memberInfo: MemberInfo): Member
+    abstract fun newMember(memberInfo: MemberInfo): Member
 
     /**
      * 向这个对象发送消息.
@@ -203,9 +203,46 @@ expect abstract class Group() : Contact, CoroutineScope {
     fun toFullString(): String
 }
 
+internal object CommonGroupCalculations {
+    /**
+     * by @kar98k
+     */
+    fun calculateGroupUinByGroupCode(groupCode: Long): Long {
+        var left: Long = groupCode / 1000000L
+
+        when (left) {
+            in 0..10 -> left += 202
+            in 11..19 -> left += 480 - 11
+            in 20..66 -> left += 2100 - 20
+            in 67..156 -> left += 2010 - 67
+            in 157..209 -> left += 2147 - 157
+            in 210..309 -> left += 4100 - 210
+            in 310..499 -> left += 3800 - 310
+        }
+
+        return left * 1000000L + groupCode % 1000000L
+    }
+
+    fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
+        var left: Long = groupUin / 1000000L
+
+        when (left) {
+            in 0 + 202..10 + 202 -> left -= 202
+            in 11 + 480 - 11..19 + 480 - 11 -> left -= 480 - 11
+            in 20 + 2100 - 20..66 + 2100 - 20 -> left -= 2100 - 20
+            in 67 + 2010 - 67..156 + 2010 - 67 -> left -= 2010 - 67
+            in 157 + 2147 - 157..209 + 2147 - 157 -> left -= 2147 - 157
+            in 210 + 4100 - 210..309 + 4100 - 210 -> left -= 4100 - 210
+            in 310 + 3800 - 310..499 + 3800 - 310 -> left -= 3800 - 310
+        }
+
+        return left * 1000000L + groupUin % 1000000L
+    }
+}
+
 /**
  * 返回机器人是否正在被禁言
  *
  * @see Group.botMuteRemaining 剩余禁言时间
  */
-val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
+inline val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0

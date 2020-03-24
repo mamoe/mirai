@@ -36,7 +36,6 @@ import kotlin.jvm.JvmSynthetic
  * @author Him188moe
  */ // 不要删除多平台结构 !!! kotlin bug
 @OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
-@Suppress("INAPPLICABLE_JVM_NAME")
 expect abstract class Contact() : CoroutineScope, ContactJavaHappyAPI {
     /**
      * 这个联系人所属 [Bot].

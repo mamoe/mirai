@@ -31,7 +31,6 @@ import net.mamoe.mirai.utils.WeakRefProperty
  *
  * @author Him188moe
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
 actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
     /**

@@ -25,7 +25,6 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
 actual abstract class Group : Contact(), CoroutineScope {
     /**
      * 群名称.
@@ -101,7 +100,7 @@ actual abstract class Group : Contact(), CoroutineScope {
     actual abstract val owner: Member
 
     /**
-     * [Bot] 在群内的 [Member] 实例
+     * [Bot] 在群内的 [newMember] 实例
      */
     @MiraiExperimentalAPI
     actual abstract val botAsMember: Member
@@ -158,13 +157,12 @@ actual abstract class Group : Contact(), CoroutineScope {
     actual abstract suspend fun quit(): Boolean
 
     /**
-     * 构造一个 [Member].
+     * 构造一个 [newMember].
      * 非特殊情况请不要使用这个函数. 优先使用 [get].
      */
-    @JvmName("newMember")
-    @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName")
+    @Suppress("FunctionName")
     @MiraiExperimentalAPI("dangerous")
-    actual abstract fun Member(memberInfo: MemberInfo): Member
+    actual abstract fun newMember(memberInfo: MemberInfo): Member
 
     /**
      * 向这个对象发送消息.
@@ -193,40 +191,11 @@ actual abstract class Group : Contact(), CoroutineScope {
     actual abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
 
     actual companion object {
-        /**
-         * by @kar98k
-         */
-        actual fun calculateGroupUinByGroupCode(groupCode: Long): Long {
-            var left: Long = groupCode / 1000000L
+        actual fun calculateGroupUinByGroupCode(groupCode: Long): Long =
+            CommonGroupCalculations.calculateGroupUinByGroupCode(groupCode)
 
-            when (left) {
-                in 0..10 -> left += 202
-                in 11..19 -> left += 480 - 11
-                in 20..66 -> left += 2100 - 20
-                in 67..156 -> left += 2010 - 67
-                in 157..209 -> left += 2147 - 157
-                in 210..309 -> left += 4100 - 210
-                in 310..499 -> left += 3800 - 310
-            }
-
-            return left * 1000000L + groupCode % 1000000L
-        }
-
-        actual fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
-            var left: Long = groupUin / 1000000L
-
-            when (left) {
-                in 0 + 202..10 + 202 -> left -= 202
-                in 11 + 480 - 11..19 + 480 - 11 -> left -= 480 - 11
-                in 20 + 2100 - 20..66 + 2100 - 20 -> left -= 2100 - 20
-                in 67 + 2010 - 67..156 + 2010 - 67 -> left -= 2010 - 67
-                in 157 + 2147 - 157..209 + 2147 - 157 -> left -= 2147 - 157
-                in 210 + 4100 - 210..309 + 4100 - 210 -> left -= 4100 - 210
-                in 310 + 3800 - 310..499 + 3800 - 310 -> left -= 3800 - 310
-            }
-
-            return left * 1000000L + groupUin % 1000000L
-        }
+        actual fun calculateGroupCodeByGroupUin(groupUin: Long): Long =
+            CommonGroupCalculations.calculateGroupCodeByGroupUin(groupUin)
     }
 
     @MiraiExperimentalAPI
