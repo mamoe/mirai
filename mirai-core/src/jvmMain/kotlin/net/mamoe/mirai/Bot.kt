@@ -93,14 +93,6 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
     actual abstract val friends: ContactList<QQ>
 
     /**
-     * 判断是否有这个 id 的好友或群.
-     * 在一些情况下这可能会造成歧义. 请考虑后使用.
-     */
-    actual operator fun contains(id: Long): Boolean {
-        return this.friends.contains(id) || this.groups.contains(id)
-    }
-
-    /**
      * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
      */
     actual fun getFriend(id: Long): QQ {

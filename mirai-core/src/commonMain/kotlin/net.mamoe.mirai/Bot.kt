@@ -104,11 +104,6 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     abstract val friends: ContactList<QQ>
 
     /**
-     * 判断是否有这个 id 的好友或群.
-     */
-    operator fun contains(id: Long): Boolean
-
-    /**
      * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
      */
     fun getFriend(id: Long): QQ
