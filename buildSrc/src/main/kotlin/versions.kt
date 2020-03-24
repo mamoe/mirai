@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.DependencyHandlerScope
+
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -36,7 +38,7 @@ object Versions {
 }
 
 @Suppress("unused")
-fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
+fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
 @Suppress("unused")
-fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
+fun DependencyHandlerScope.ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
