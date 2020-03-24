@@ -5,7 +5,7 @@ plugins {
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     `maven-publish`
-    id("com.jfrog.bintray")
+    id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
 
 description = "QQ protocol library"

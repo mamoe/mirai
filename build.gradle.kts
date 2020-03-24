@@ -20,7 +20,7 @@ buildscript {
 
 plugins {
     id("org.jetbrains.dokka") version Versions.Kotlin.dokka apply false
-    id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
+   // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
 }
 
 runCatching {
@@ -36,7 +36,7 @@ runCatching {
 
 allprojects {
     group = "net.mamoe"
-    version = getProperty("miraiVersion")
+    version = Versions.Mirai.version
 
     repositories {
         maven(url = "https://mirrors.huaweicloud.com/repository/maven")
