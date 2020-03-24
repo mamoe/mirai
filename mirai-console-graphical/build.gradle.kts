@@ -1,15 +1,15 @@
 plugins {
     id("kotlinx-serialization")
-    id("org.openjfx.javafxplugin") version "0.0.8"
+//    id("org.openjfx.javafxplugin") version "0.0.8"
     id("kotlin")
     id("java")
 }
 
-javafx {
-    version = "13.0.2"
-    modules = listOf("javafx.controls")
-    //mainClassName = "Application"
-}
+//javafx {
+//    version = "13.0.2"
+//    modules = listOf("javafx.controls")
+//    //mainClassName = "Application"
+//}
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
@@ -43,7 +43,7 @@ dependencies {
     api(project(":mirai-console"))
 
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
-    api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
+    api(group = "com.jfoenix", name = "jfoenix", version = "8.0.8")
 
     testApi(group = "org.yaml", name = "snakeyaml", version = "1.25")
 }
