@@ -1,7 +1,13 @@
 package net.mamoe.mirai.console.graphical.styleSheet
 
+import javafx.scene.layout.BackgroundRepeat
+import javafx.scene.paint.Color
+import net.mamoe.mirai.console.MiraiConsole
 import tornadofx.Stylesheet
-import tornadofx.c
+import tornadofx.cssclass
+import tornadofx.csselement
+import java.io.File
+import kotlin.random.Random
 
 open class BaseStyleSheet : Stylesheet() {
 
@@ -10,6 +16,48 @@ open class BaseStyleSheet : Stylesheet() {
         const val stressColor = "35867C"
         const val secondaryColor = "32CABA"
         const val lightColor ="9FD1CC"
-        const val FontColor = "FFFFFF"
+        const val fontColor = "FFFFFF"
+        val TRANSPARENT: Color = Color.TRANSPARENT
+
+        val rootPane by cssclass("root-pane")
+        val jfxTabPane by cssclass("jfx-tab-pane")
+        val myButtonBar by cssclass("my-button-bar")
+
+        val vBox by csselement("VBox")
     }
+
+    init {
+
+        rootPane {
+
+            child(imageView) {}
+
+
+            jfxTabPane {
+                val bg = File(MiraiConsole.path, "background")
+                if (!bg.exists()) bg.mkdir()
+                if (bg.isDirectory) {
+                    bg.listFiles()!!.filter { file -> file.extension in listOf("jpg", "jpeg", "png", "gif") }
+                        .randomElement()?.also {
+                        backgroundImage += it.toURI()
+                        backgroundRepeat += BackgroundRepeat.REPEAT to BackgroundRepeat.REPEAT
+                    }
+                }
+            }
+        }
+
+        listView {
+            backgroundColor += TRANSPARENT
+
+            listCell {
+                backgroundColor += TRANSPARENT
+            }
+        }
+    }
+}
+
+fun <T> Collection<T>.randomElement(): T? {
+    if (isEmpty())
+        return null
+    return elementAt(Random.nextInt(size))
 }

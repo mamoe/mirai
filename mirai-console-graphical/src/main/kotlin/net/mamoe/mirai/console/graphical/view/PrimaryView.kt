@@ -2,6 +2,8 @@ package net.mamoe.mirai.console.graphical.view
 
 import com.jfoenix.controls.JFXListCell
 import javafx.collections.ObservableList
+import javafx.geometry.Insets
+import javafx.geometry.Pos
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
@@ -10,8 +12,10 @@ import javafx.stage.FileChooser
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.BotModel
+import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxListView
 import net.mamoe.mirai.console.graphical.util.jfxTabPane
+import net.mamoe.mirai.console.graphical.util.myButtonBar
 import tornadofx.*
 
 class PrimaryView : View() {
@@ -21,15 +25,19 @@ class PrimaryView : View() {
 
     override val root = borderpane {
 
+        addClass("root-pane")
+
         left = vbox {
 
             imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png"))) {
+                fitHeight = 40.0
+                alignment = Pos.CENTER
                 isPreserveRatio = true
             }
 
             // bot list
             jfxListView(controller.botList) {
-                fitToParentSize()
+                fitToParentHeight()
 
                 setCellFactory {
                     object : JFXListCell<BotModel>() {
@@ -37,7 +45,7 @@ class PrimaryView : View() {
 
                         init {
                             onDoubleClick {
-                                tab?.select() ?: (center as TabPane).logTab(
+                                tab?.select() ?: mainTabPane.logTab(
                                     text = item.uin.toString(),
                                     logs = item.logHistory
                                 ).select().also { tab = it }
@@ -60,6 +68,9 @@ class PrimaryView : View() {
 
             // command input
             textfield {
+
+                promptText = "在这里输出命令"
+
                 setOnKeyPressed {
                     if (it.code == KeyCode.ENTER) {
                         runAsync {
@@ -76,11 +87,11 @@ class PrimaryView : View() {
 
             logTab("Main", controller.mainLog, closeable = false)
 
-            tab("Plugins").apply { isClosable = false }.content = find<PluginsView>().root
+            fixedTab("Plugins").content = find<PluginsView>().root
 
-            tab("Settings").apply { isClosable = false }.content = find<SettingsView>().root
+            fixedTab("Settings").content = find<SettingsView>().root
 
-            tab("Login").apply { isClosable = false }.content = find<LoginView>().root
+            fixedTab("Login").content = find<LoginView>().root
 
             mainTabPane = this
         }
@@ -92,6 +103,8 @@ class PrimaryView : View() {
     }
 }
 
+private fun TabPane.fixedTab(title: String) = tab(title) { isClosable = false }
+
 private fun TabPane.logTab(
     text: String? = null,
     logs: ObservableList<String>,
@@ -102,13 +115,14 @@ private fun TabPane.logTab(
     this.isClosable = closeable
 
     vbox {
-        buttonbar {
+        myButtonBar(alignment = Pos.BASELINE_RIGHT) {
 
-            button("导出日志").action {
+            jfxButton("导出日志").action {
                 val path = chooseFile(
                     "选择保存路径",
                     arrayOf(FileChooser.ExtensionFilter("日志", "txt")),
-                    FileChooserMode.Save
+                    FileChooserMode.Save,
+                    owner = FX.primaryStage
                 ) {
                     initialFileName = "$text.txt"
                 }
