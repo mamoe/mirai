@@ -47,7 +47,7 @@ internal suspend inline fun HttpClient.downloadRequest(url: String): ByteReadCha
     }
 }
 
-private val jcenterPath = "https://jcenter.bintray.com/{group}/{project}/{version}/:{project}-{version}.{extension}"
+private val jcenterPath = "https://jcenter.bintray.com/{group}/{project}/{version}/{project}-{version}.{extension}"
 private val aliyunPath =
     "https://maven.aliyun.com/nexus/content/repositories/jcenter/{group}/{project}/{version}/{project}-{version}.{extension}"
 
