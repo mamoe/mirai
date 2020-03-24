@@ -99,11 +99,10 @@ suspend inline fun <reified T : MessagePacket<*, *>> T.selectMessagesUnit(
  */
 @SinceMirai("0.29.0")
 @Suppress("unused") // false positive
-@OptIn(ExperimentalTypeInference::class)
-@BuilderInference
+// @BuilderInference // https://youtrack.jetbrains.com/issue/KT-37716
 suspend inline fun <reified T : MessagePacket<*, *>, R> T.selectMessages(
     timeoutMillis: Long = -1,
-    @BuilderInference
+    // @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, R>.() -> Unit
 ): R = selectMessagesImpl(timeoutMillis, false) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
 
