@@ -19,7 +19,7 @@ import kotlinx.serialization.SerialInfo
  */
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
-annotation class JceId(val id: Int)
+internal annotation class JceId(val id: Int)
 
 /**
  * 类中元素的 tag

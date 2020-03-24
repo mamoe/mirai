@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
-/**
- * TROOP仍然不知道是什么
- */
-enum class ChatType(val internalID: Int) {
+internal enum class ChatType(val internalID: Int) {
 
     FRIEND(2),//可以为任何数字
 

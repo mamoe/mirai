@@ -93,7 +93,7 @@ _400Height=0x000000EB(235)
 pbReserve=<Empty ByteArray>
 }
  */
-val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
+internal val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
 
 internal fun Face.toJceData(): ImMsgBody.Face {
     return ImMsgBody.Face(

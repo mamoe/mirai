@@ -42,7 +42,7 @@ internal fun extractParameters(desc: SerialDescriptor, index: Int, zeroBasedDefa
  * 代码复制自 kotlinx.serialization. 修改部分已进行标注 (详见 "MIRAI MODIFY START")
  */
 @OptIn(InternalSerializationApi::class)
-class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModule) : SerialFormat, BinaryFormat {
+internal class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModule) : SerialFormat, BinaryFormat {
 
     internal open inner class ProtobufWriter(private val encoder: ProtobufEncoder) : TaggedEncoder<ProtoDesc>() {
         override val context

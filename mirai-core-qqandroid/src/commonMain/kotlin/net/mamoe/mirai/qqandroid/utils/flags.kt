@@ -15,7 +15,7 @@ package net.mamoe.mirai.qqandroid.utils
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
-inline class MacOrAndroidIdChangeFlag(val value: Long = 0) {
+internal inline class MacOrAndroidIdChangeFlag(val value: Long = 0) {
     fun macChanged(): MacOrAndroidIdChangeFlag =
         MacOrAndroidIdChangeFlag(this.value or 0x1)
 

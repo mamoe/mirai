@@ -1,12 +1,14 @@
 package net.mamoe.mirai.data
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.LowLevelAPI
 
 /**
  * 群资料.
  *
  * 通过 [Bot._lowLevelQueryGroupInfo] 得到
  */
+@LowLevelAPI
 interface GroupInfo {
     /**
      * Uin

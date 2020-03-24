@@ -10,8 +10,8 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 

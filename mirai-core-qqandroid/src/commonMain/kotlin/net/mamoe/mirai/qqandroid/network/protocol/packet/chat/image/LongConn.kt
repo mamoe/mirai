@@ -10,10 +10,10 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.GetImgUrlReq

@@ -43,22 +43,22 @@ internal interface EncryptMethodSessionKey : EncryptMethod {
         }
 }
 
-inline class EncryptMethodSessionKeyLoginState2(override val sessionKey: ByteArray) :
+internal class EncryptMethodSessionKeyLoginState2(override val sessionKey: ByteArray) :
     EncryptMethodSessionKey {
     override val currentLoginState: Int get() = 2
 }
 
-inline class EncryptMethodSessionKeyLoginState3(override val sessionKey: ByteArray) :
+internal class EncryptMethodSessionKeyLoginState3(override val sessionKey: ByteArray) :
     EncryptMethodSessionKey {
     override val currentLoginState: Int get() = 3
 }
 
-internal inline class EncryptMethodECDH135(override val ecdh: ECDH) :
+internal class EncryptMethodECDH135(override val ecdh: ECDH) :
     EncryptMethodECDH {
     override val id: Int get() = 135
 }
 
-internal inline class EncryptMethodECDH7(override val ecdh: ECDH) :
+internal class EncryptMethodECDH7(override val ecdh: ECDH) :
     EncryptMethodECDH {
     override val id: Int get() = 7
 }

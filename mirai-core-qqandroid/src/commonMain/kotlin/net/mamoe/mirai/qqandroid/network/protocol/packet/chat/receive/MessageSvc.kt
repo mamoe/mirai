@@ -7,17 +7,20 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file: OptIn(LowLevelAPI::class)
+
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.data.MultiPacketByIterable
-import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent

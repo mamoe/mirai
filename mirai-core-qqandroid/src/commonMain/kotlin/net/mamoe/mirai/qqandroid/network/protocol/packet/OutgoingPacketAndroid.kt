@@ -34,6 +34,7 @@ internal class OutgoingPacket constructor(
 internal val KEY_16_ZEROS = ByteArray(16)
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
+@Suppress("DuplicatedCode")
 @OptIn(MiraiInternalAPI::class)
 internal inline fun OutgoingPacketFactory<*>.buildOutgoingUniPacket(
     client: QQAndroidClient,
@@ -77,6 +78,7 @@ internal inline fun IncomingPacketFactory<*>.buildResponseUniPacket(
     sequenceId: Int = client.nextSsoSequenceId(),
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacket {
+    @Suppress("DuplicatedCode")
     return OutgoingPacket(name, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x0B)

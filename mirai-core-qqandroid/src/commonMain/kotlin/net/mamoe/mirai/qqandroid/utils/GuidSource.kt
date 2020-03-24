@@ -25,7 +25,7 @@ import kotlin.jvm.JvmStatic
  * 17: 以前没保存但现在生成成功;
  */
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-inline class GuidSource private constructor(val id: Long) { // uint actually
+internal inline class GuidSource private constructor(val id: Long) { // uint actually
     companion object {
         /**
          * 初始值

@@ -14,7 +14,7 @@ import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.utils.currentTimeSeconds
 
-interface ImgReq : ProtoBuf
+internal interface ImgReq : ProtoBuf
 
 // cmd0x352$ReqBody
 

@@ -2,6 +2,7 @@ package net.mamoe.mirai.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
  * 群公告数据类
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * 发公告时只需要填写text，其他参数可为默认值
  *
  */
+@MiraiExperimentalAPI
 @Serializable
 data class GroupAnnouncementList(
     val ec: Int,  //状态码 0 是正常的
@@ -18,6 +20,7 @@ data class GroupAnnouncementList(
     val inst: List<GroupAnnouncement>? = null  //置顶列表？
 )
 
+@MiraiExperimentalAPI
 @Serializable
 data class GroupAnnouncement(
     @SerialName("u") val sender: Long = 0,
@@ -30,6 +33,7 @@ data class GroupAnnouncement(
     val fid:String? = null      //公告的id
 )
 
+@MiraiExperimentalAPI
 @Serializable
 data class GroupAnnouncementMsg(
     val text: String,
@@ -37,6 +41,7 @@ data class GroupAnnouncementMsg(
     val title: String? = null
 )
 
+@MiraiExperimentalAPI
 @Serializable
 data class GroupAnnouncementSettings(
     @SerialName("is_show_edit_card") val isShowEditCard: Int = 0,

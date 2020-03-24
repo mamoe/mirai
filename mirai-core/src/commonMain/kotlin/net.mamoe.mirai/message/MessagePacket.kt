@@ -19,13 +19,13 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.selectMessages
 import net.mamoe.mirai.event.subscribingGet
 import net.mamoe.mirai.event.subscribingGetOrNull
 import net.mamoe.mirai.event.whileSelectMessages
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.recall
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.*

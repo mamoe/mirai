@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network
 
-class Ticket(
+internal class Ticket(
     val id: Int,
     val data: ByteArray,
     val key: ByteArray?,

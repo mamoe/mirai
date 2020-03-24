@@ -13,9 +13,9 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.data.MultiPacketBySequence
-import net.mamoe.mirai.data.NoPacket
-import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
+import net.mamoe.mirai.qqandroid.network.NoPacket
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.GroupMessage

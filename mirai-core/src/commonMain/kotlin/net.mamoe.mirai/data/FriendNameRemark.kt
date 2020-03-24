@@ -9,7 +9,10 @@
 
 package net.mamoe.mirai.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+
 /**
  * 给好友设置的备注
  */
-inline class FriendNameRemark(val value: String) : Packet
+@MiraiExperimentalAPI
+inline class FriendNameRemark(val value: String)

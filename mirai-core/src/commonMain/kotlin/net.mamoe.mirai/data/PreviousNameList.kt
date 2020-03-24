@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+
 /**
  * 曾用名列表
  *
@@ -16,8 +18,9 @@ package net.mamoe.mirai.data
  * - 昵称
  * - 共同群内的群名片
  */
+@MiraiExperimentalAPI
 class PreviousNameList(
     list: List<String>
-) : Packet, List<String> by list {
+) : List<String> by list {
     override fun toString(): String = this.joinToString(prefix = "PreviousNameList(", postfix = ")", separator = ", ")
 }

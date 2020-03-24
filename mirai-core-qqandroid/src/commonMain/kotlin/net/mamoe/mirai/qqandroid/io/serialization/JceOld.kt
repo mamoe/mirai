@@ -48,7 +48,7 @@ internal val CharsetGBK = Charset.forName("GBK")
 @PublishedApi
 internal val CharsetUTF8 = Charset.forName("UTF8")
 
-enum class JceCharset(val kotlinCharset: Charset) {
+internal enum class JceCharset(val kotlinCharset: Charset) {
     GBK(Charset.forName("GBK")),
     UTF8(Charset.forName("UTF8"))
 }
@@ -60,7 +60,7 @@ internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAn
  */
 @Suppress("DEPRECATION_ERROR")
 @OptIn(InternalSerializationApi::class)
-class JceOld private constructor(private val charset: JceCharset, override val context: SerialModule = EmptyModule) :
+internal class JceOld private constructor(private val charset: JceCharset, override val context: SerialModule = EmptyModule) :
     SerialFormat, BinaryFormat {
 
     private inner class ListWriter(

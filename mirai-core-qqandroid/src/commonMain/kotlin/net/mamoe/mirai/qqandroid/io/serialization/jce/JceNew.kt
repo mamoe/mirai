@@ -26,7 +26,7 @@ import net.mamoe.mirai.utils.io.toReadPacket
  *
  * @author Him188
  */
-class Jce(
+internal class Jce(
     override val context: SerialModule,
     val charset: JceCharset
 ) : SerialFormat, IOFormat, BinaryFormat {

@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.coroutines.launch
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.MemberInfo
@@ -30,9 +31,9 @@ import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 
-
+@OptIn(LowLevelAPI::class)
 @Suppress("MemberVisibilityCanBePrivate")
-internal class MemberImpl(
+internal class MemberImpl  constructor(
     val qq: QQImpl, // 不要 WeakRef
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
@@ -212,6 +213,7 @@ internal class MemberImpl(
     }
 }
 
+@OptIn(LowLevelAPI::class)
 internal class MemberInfoImpl(
     jceInfo: StTroopMemberInfo,
     groupOwnerId: Long

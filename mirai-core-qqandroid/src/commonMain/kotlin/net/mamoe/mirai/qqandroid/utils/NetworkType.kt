@@ -12,7 +12,7 @@ package net.mamoe.mirai.qqandroid.utils
 /**
  * 连接类型
  */
-inline class NetworkType(val value: Int) {
+internal inline class NetworkType(val value: Int) {
     companion object {
         /**
          * 移动网络

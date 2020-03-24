@@ -9,8 +9,10 @@
 
 package net.mamoe.mirai.data
 
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.MemberPermission
 
+@LowLevelAPI
 interface MemberInfo : FriendInfo {
     val nameCard: String
 

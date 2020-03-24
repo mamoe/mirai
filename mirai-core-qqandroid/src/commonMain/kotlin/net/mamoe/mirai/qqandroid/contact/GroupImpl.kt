@@ -7,7 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file: Suppress("INAPPLICABLE_JVM_NAME")
+@file:Suppress("INAPPLICABLE_JVM_NAME")
+@file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 
 package net.mamoe.mirai.qqandroid.contact
 
@@ -47,7 +48,6 @@ internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
 }
 
 @Suppress("PropertyName")
-@OptIn(MiraiInternalAPI::class)
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
     override val id: Long,

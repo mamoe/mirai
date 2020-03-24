@@ -18,8 +18,6 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
-import net.mamoe.mirai.data.MultiPacket
-import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent

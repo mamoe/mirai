@@ -13,9 +13,10 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -30,7 +31,8 @@ import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.data.GroupInfo as MiraiGroupInfo
 
-internal inline class GroupInfoImpl(
+@OptIn(LowLevelAPI::class)
+internal class GroupInfoImpl(
     internal val delegate: Oidb0x88d.GroupInfo
 ) : MiraiGroupInfo, Packet {
     override val uin: Long get() = delegate.groupUin ?: error("cannot find groupUin")

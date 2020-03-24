@@ -9,4 +9,4 @@
 
 package net.mamoe.mirai.qqandroid.io
 
-interface JceStruct
+internal interface JceStruct

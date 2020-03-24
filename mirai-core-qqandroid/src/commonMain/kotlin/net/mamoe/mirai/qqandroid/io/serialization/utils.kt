@@ -31,11 +31,11 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 
-fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {
+internal fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {
     return Jce.byCharSet(c).load(deserializer, this.toReadPacket())
 }
 
-fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
+internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
     struct: T,
     charset: JceCharset = JceCharset.GBK
@@ -43,7 +43,7 @@ fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     Jce.byCharSet(charset).dumpTo(serializer, struct, this)
 }
 
-fun <T : JceStruct> ByteReadPacket.readJceStruct(
+internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
     serializer: DeserializationStrategy<T>,
     charset: JceCharset = JceCharset.UTF8,
     length: Int = this.remaining.toInt()
@@ -55,7 +55,7 @@ fun <T : JceStruct> ByteReadPacket.readJceStruct(
 /**
  * 先解析为 [RequestPacket], 即 `UniRequest`, 再按版本解析 map, 再找出指定数据并反序列化
  */
-fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
+internal fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
@@ -67,7 +67,7 @@ fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: Deserialization
 /**
  * 先解析为 [RequestPacket], 即 `UniRequest`, 再按版本解析 map, 再找出指定数据并反序列化
  */
-fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
+internal fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
@@ -76,7 +76,7 @@ fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationS
     }
 }
 
-fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
+internal fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
     val request = this.readJceStruct(RequestPacket.serializer())
 
     return block(if (name == null) when (request.iVersion?.toInt() ?: 3) {
@@ -91,31 +91,31 @@ fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null
     })
 }
 
-fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray =
+internal fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray =
     Jce.byCharSet(c).dump(serializer, this)
 
-fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
+internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
     this.writeFully(v.toByteArray(serializer))
 }
 
 /**
  * dump
  */
-fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
+internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
     return ProtoBufWithNullableSupport.dump(serializer, this)
 }
 
 /**
  * load
  */
-fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
+internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
     return ProtoBufWithNullableSupport.load(deserializer, this)
 }
 
 /**
  * load
  */
-fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
+internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
 ): T {
@@ -125,11 +125,11 @@ fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
 /**
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]
  */
-fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: SerializationStrategy<T>, jceStruct: T): ByteArray {
+internal fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: SerializationStrategy<T>, jceStruct: T): ByteArray {
     return jceRequestSBuffer(name, serializer, jceStruct, JceCharset.GBK)
 }
 
-fun <T : JceStruct> jceRequestSBuffer(
+internal fun <T : JceStruct> jceRequestSBuffer(
     name: String,
     serializer: SerializationStrategy<T>,
     jceStruct: T,

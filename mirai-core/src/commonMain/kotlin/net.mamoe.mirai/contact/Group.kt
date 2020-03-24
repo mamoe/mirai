@@ -13,6 +13,7 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
@@ -121,8 +122,8 @@ expect abstract class Group() : Contact, CoroutineScope {
      * 构造一个 [newMember].
      * 非特殊情况请不要使用这个函数. 优先使用 [get].
      */
+    @LowLevelAPI
     @MiraiExperimentalAPI("dangerous")
-    @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName")
     abstract fun newMember(memberInfo: MemberInfo): Member
 
     /**

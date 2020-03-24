@@ -7,7 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.data
+package net.mamoe.mirai.qqandroid.network
+
+/*
+
+// moved to `mirai-core`
 
 /**
  * 从服务器收到的包解析之后的结构化数据.
@@ -19,8 +23,9 @@ interface Packet {
      */
     interface NoLog
 }
+*/
 
-object NoPacket : Packet {
+internal object NoPacket : Packet {
     override fun toString(): String {
         return "NoPacket"
     }
@@ -29,14 +34,15 @@ object NoPacket : Packet {
 /**
  * PacketFactory 可以一次解析多个包出来. 它们将会被分别广播.
  */
-interface MultiPacket<out P : Packet> : Packet, Iterable<P>
+internal interface MultiPacket<out P : Packet> : Packet, Iterable<P>
 
-open class MultiPacketByIterable<out P : Packet>(internal val delegate: Iterable<P>) : MultiPacket<P>,
+internal open class MultiPacketByIterable<out P : Packet>(internal val delegate: Iterable<P>) : MultiPacket<P>,
     Iterable<P> by delegate {
     override fun toString(): String = "MultiPacketByIterable"
 }
 
-open class MultiPacketBySequence<out P : Packet>(internal val delegate: Sequence<P>) : MultiPacket<P> {
+internal open class MultiPacketBySequence<out P : Packet>(internal val delegate: Sequence<P>) :
+    MultiPacket<P> {
     override operator fun iterator(): Iterator<P> = delegate.iterator()
 
     override fun toString(): String = "MultiPacketBySequence"

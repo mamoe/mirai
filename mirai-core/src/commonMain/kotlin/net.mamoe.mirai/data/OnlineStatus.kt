@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.data
 
 /**
@@ -21,14 +23,17 @@ enum class OnlineStatus(val id: Int) {
      * 离线
      */
     OFFLINE(21),
+
     /**
      * 离开
      */
     AWAY(31),
+
     /**
      * 隐身
      */
-    INVISIABLE(41),
+    INVISIBLE(41),
+
     /**
      * 忙碌
      */

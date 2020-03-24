@@ -13,10 +13,12 @@
 
 package net.mamoe.mirai.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 
+@MiraiExperimentalAPI
 @Suppress("ClassName")
 sealed class AddFriendResult {
     abstract class DONE internal constructor() : AddFriendResult() {

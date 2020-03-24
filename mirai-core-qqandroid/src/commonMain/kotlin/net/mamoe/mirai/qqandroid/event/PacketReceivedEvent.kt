@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.event
 
-import net.mamoe.mirai.data.Packet
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.event.AbstractCancellableEvent
 import net.mamoe.mirai.event.Event
 
