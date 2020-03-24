@@ -65,6 +65,7 @@ internal inline fun registerConsoleCommands(builder: CommandBuilder.() -> Unit):
     return CommandBuilder().apply(builder).register(ConsoleCommandOwner)
 }
 
+
 inline fun PluginBase.registerCommand(builder: CommandBuilder.() -> Unit):Command{
     return CommandBuilder().apply(builder).register(this.asCommandOwner())
 }
