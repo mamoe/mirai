@@ -7,11 +7,6 @@ plugins {
 
 description = "Binary and source compatibility validator for mirai-core and mirai-core-qqandroid"
 
-val kotlinVersion: String by rootProject.ext
-val coroutinesVersion: String by rootProject.ext
-
-fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
-
 kotlin {
     sourceSets {
         all {
@@ -23,7 +18,7 @@ kotlin {
             dependencies {
                 api(kotlin("stdlib"))
                 api(project(":mirai-core-qqandroid"))
-                api(kotlinx("coroutines-core", coroutinesVersion))
+                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
             }
         }
     }

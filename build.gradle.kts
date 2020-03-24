@@ -5,26 +5,22 @@ buildscript {
     repositories {
         mavenLocal()
         maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
-        // mavenCentral()
         google()
-        // maven (url="https://dl.bintray.com/kotlin/kotlin-eap")
     }
 
     dependencies {
-        val kotlinVersion: String by project
-        val atomicFuVersion: String by project
-
-        classpath("com.android.tools.build:gradle:3.5.3")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        // classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
+        classpath("com.android.tools.build:gradle:${Versions.Android.androidGradlePlugin}")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.stdlib}")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:${Versions.Kotlin.stdlib}")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.Kotlin.atomicFU}")
     }
 }
 
 plugins {
-    id("org.jetbrains.dokka") version "0.10.1" apply false
+    id("org.jetbrains.dokka") version Versions.Kotlin.dokka apply false
+    id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
 }
 
 runCatching {
@@ -43,11 +39,9 @@ allprojects {
     version = getProperty("miraiVersion")
 
     repositories {
-        mavenLocal()
         maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
-        // mavenCentral()
         google()
-        // maven (url="https://dl.bintray.com/kotlin/kotlin-eap")
     }
 }

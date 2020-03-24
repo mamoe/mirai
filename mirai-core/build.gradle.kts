@@ -3,34 +3,15 @@
 plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
-    id("kotlinx-serialization")
+    kotlin("plugin.serialization")
     id("org.jetbrains.dokka")
     `maven-publish`
-    id("com.jfrog.bintray") version "1.8.4-jetbrains-3"
+    id("com.jfrog.bintray")
 }
-
-val kotlinVersion: String by rootProject.ext
-val atomicFuVersion: String by rootProject.ext
-val coroutinesVersion: String by rootProject.ext
-val kotlinXIoVersion: String by rootProject.ext
-val coroutinesIoVersion: String by rootProject.ext
-
-
-val ktorVersion: String by rootProject.ext
-
-val serializationVersion: String by rootProject.ext
-
-fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
-
-fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
-
 
 description = "QQ protocol library"
 
 val isAndroidSDKAvailable: Boolean by project
-
-val miraiVersion: String by project
-version = miraiVersion
 
 kotlin {
     if (isAndroidSDKAvailable) {
@@ -63,22 +44,22 @@ kotlin {
 
         commonMain {
             dependencies {
-                api(kotlin("stdlib", kotlinVersion))
-                api(kotlin("serialization", kotlinVersion))
-                api(kotlin("reflect", kotlinVersion))
+                api(kotlin("stdlib"))
+                api(kotlin("serialization"))
+                api(kotlin("reflect"))
 
-                api(kotlinx("coroutines-core-common", coroutinesVersion))
-                api(kotlinx("serialization-runtime-common", serializationVersion))
-                api(kotlinx("serialization-protobuf-common", serializationVersion))
-                api(kotlinx("io", kotlinXIoVersion))
-                api(kotlinx("coroutines-io", coroutinesIoVersion))
-                api(kotlinx("coroutines-core", coroutinesVersion))
+                api(kotlinx("coroutines-core-common", Versions.Kotlin.coroutines))
+                api(kotlinx("serialization-runtime-common", Versions.Kotlin.serialization))
+                api(kotlinx("serialization-protobuf-common", Versions.Kotlin.serialization))
+                api(kotlinx("io", Versions.Kotlin.io))
+                api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
+                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
-                api("org.jetbrains.kotlinx:atomicfu-common:$atomicFuVersion")
+                api("org.jetbrains.kotlinx:atomicfu-common:${Versions.Kotlin.atomicFU}")
 
-                api(ktor("client-cio", ktorVersion))
-                api(ktor("client-core", ktorVersion))
-                api(ktor("network", ktorVersion))
+                api(ktor("client-cio", Versions.Kotlin.ktor))
+                api(ktor("client-core", Versions.Kotlin.ktor))
+                api(ktor("network", Versions.Kotlin.ktor))
             }
         }
         commonTest {
@@ -91,22 +72,22 @@ kotlin {
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 dependencies {
-                    api(kotlin("reflect", kotlinVersion))
+                    api(kotlin("reflect"))
 
-                    api(kotlinx("io-jvm", kotlinXIoVersion))
-                    api(kotlinx("serialization-runtime", serializationVersion))
-                    api(kotlinx("serialization-protobuf", serializationVersion))
-                    api(kotlinx("coroutines-android", coroutinesVersion))
-                    api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
+                    api(kotlinx("io-jvm", Versions.Kotlin.io))
+                    api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+                    api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
+                    api(kotlinx("coroutines-android", Versions.Kotlin.coroutines))
+                    api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
 
-                    api(ktor("client-android", ktorVersion))
+                    api(ktor("client-android", Versions.Kotlin.ktor))
                 }
             }
 
             val androidTest by getting {
                 dependencies {
-                    implementation(kotlin("test", kotlinVersion))
-                    implementation(kotlin("test-junit", kotlinVersion))
+                    implementation(kotlin("test"))
+                    implementation(kotlin("test-junit"))
                     implementation(kotlin("test-annotations-common"))
                     implementation(kotlin("test-common"))
                 }
@@ -115,16 +96,16 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                //api(kotlin("stdlib-jdk8", kotlinVersion))
-                //api(kotlin("stdlib-jdk7", kotlinVersion))
-                api(kotlin("reflect", kotlinVersion))
+                //api(kotlin("stdlib-jdk8"))
+                //api(kotlin("stdlib-jdk7"))
+                api(kotlin("reflect"))
 
-                api(ktor("client-core-jvm", ktorVersion))
-                api(kotlinx("io-jvm", kotlinXIoVersion))
-                api(kotlinx("serialization-runtime", serializationVersion))
-                api(kotlinx("serialization-protobuf", serializationVersion))
-                api(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
-                api(kotlinx("coroutines-core", coroutinesVersion))
+                api(ktor("client-core-jvm", Versions.Kotlin.ktor))
+                api(kotlinx("io-jvm", Versions.Kotlin.io))
+                api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+                api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
+                api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
@@ -133,8 +114,8 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation(kotlin("test", kotlinVersion))
-                implementation(kotlin("test-junit", kotlinVersion))
+                implementation(kotlin("test"))
+                implementation(kotlin("test-junit"))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
 
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
@@ -142,10 +123,7 @@ kotlin {
         }
     }
 }
-//
-//tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-//    kotlinOptions.jvmTarget = "1.8"
-//}
+
 tasks {
     val dokka by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
         outputFormat = "html"
