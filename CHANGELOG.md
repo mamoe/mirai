@@ -5,18 +5,24 @@
 ## `0.30.0`  -
 此版本为二进制不兼容更新, 全部使用者都需要重新编译.
 
-源码兼容的优化:
+源码兼容的改变:
 - 删除全部 `@Depreacted` 兼容
 - 删除全部多余的 `@JvmName` 以兼容将来的改变 (新 MPP 模块等级制架构)
 - 调整部分函数的 JVM 可见性
 - 内联部分 `MessageChain` 工具函数
+- 更新到 Kotlin 1.4-M1
+
+源码不兼容的改变:
+- 群设置由 `Group` 移动到独立的 `GroupSettings`
+- 调整 API 可见性: 将除 `BotFactory` 外 `mirai-core-qqandroid` 中全部 API 改为 `internal`
 
 消息部分:
-- `SingleMessage` 现在实现接口 `CharSequence` 和 `Comparable<String>`
+- `SingleMessage` 实现接口 `CharSequence` 和 `Comparable<String>`
 - 为 `FriendImage`, `GroupImage`, `OnlineImage`, `OfflineImage` 增加 `companion object Key`
 - 调整 `RichMessage`, 将所有子类聚合到一个文件
 - 移动 `XmlMessageHelper` 为 `RichMessage.Compation`
 - 命名调整: `buildXMLMessage` 改为 `buildXmlMessage`
+- 修复 `CombinedMessage` 中错误的 `left` 和 `element`
 
 事件部分:
 - 加强 `selectMessages`, 增加回复, 引用回复, 默认值, 超时支持:
