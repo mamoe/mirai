@@ -12,7 +12,7 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaHappyAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
@@ -26,7 +26,7 @@ import kotlin.time.ExperimentalTime
  * 群成员.
  */ // 不要删除多平台结构, kotlin bug
 @Suppress("INAPPLICABLE_JVM_NAME")
-@OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
+@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
 expect abstract class Member() : MemberJavaFriendlyAPI {
     /**
      * 所在的群.

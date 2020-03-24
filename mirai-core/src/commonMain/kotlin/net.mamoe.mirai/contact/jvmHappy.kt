@@ -9,19 +9,19 @@
 
 package net.mamoe.mirai.contact
 
-import net.mamoe.mirai.JavaHappyAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * [Contact] 中为了让 `Java` 更容易调用的 API
  */
 @MiraiInternalAPI
-@JavaHappyAPI
+@JavaFriendlyAPI
 expect abstract class ContactJavaFriendlyAPI
 
 /**
  * [Member] 中为了让 `Java` 更容易调用的 API
  */
 @MiraiInternalAPI
-@JavaHappyAPI
+@JavaFriendlyAPI
 expect abstract class MemberJavaFriendlyAPI : QQ

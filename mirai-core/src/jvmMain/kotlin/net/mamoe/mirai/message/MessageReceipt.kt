@@ -6,7 +6,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaHappyAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
@@ -113,19 +113,19 @@ actual open class MessageReceipt<C : Contact> actual constructor(
     }
 
 
-    @JavaHappyAPI
+    @JavaFriendlyAPI
     @JvmName("quoteReply")
     fun __quoteReplyBlockingForJava__(message: Message) {
         runBlocking { quoteReply(message) }
     }
 
-    @JavaHappyAPI
+    @JavaFriendlyAPI
     @JvmName("recall")
     fun __recallBlockingForJava__() {
         runBlocking { recall() }
     }
 
-    @JavaHappyAPI
+    @JavaFriendlyAPI
     @JvmName("quote")
     fun __quoteBlockingForJava__() {
         runBlocking { quote() }

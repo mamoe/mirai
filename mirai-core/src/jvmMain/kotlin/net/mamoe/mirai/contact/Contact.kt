@@ -11,7 +11,7 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaHappyAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
@@ -31,7 +31,7 @@ import net.mamoe.mirai.utils.WeakRefProperty
  *
  * @author Him188moe
  */
-@OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
+@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
 actual abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI() {
     /**
      * 这个联系人所属 [Bot].

@@ -17,14 +17,14 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 @MiraiInternalAPI
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION, AnnotationTarget.TYPE, AnnotationTarget.CLASS)
-annotation class JavaHappyAPI
+annotation class JavaFriendlyAPI
 
 /**
  * [Bot] 中为了让 Java 使用者调用更方便的 API 列表.
  */
 @MiraiInternalAPI
 @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME", "unused")
-expect abstract class BotJavaHappyAPI() { // 不要使用 interface, 会无法添加默认实现
+expect abstract class BotJavaFriendlyAPI() { // 不要使用 interface, 会无法添加默认实现
 }
 
 // 保留多平台结构, 以避免在 Android 和 JVM 都定义这个类 ---- 这会造成代码重复.

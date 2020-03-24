@@ -12,7 +12,7 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaHappyAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.WeakRefProperty
  * 群成员.
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
+@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
 actual abstract class Member : MemberJavaFriendlyAPI() {
     /**
      * 所在的群.

@@ -25,9 +25,9 @@ import net.mamoe.mirai.utils.*
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(
-    MiraiInternalAPI::class, LowLevelAPI::class, MiraiExperimentalAPI::class, JavaHappyAPI::class
+    MiraiInternalAPI::class, LowLevelAPI::class, MiraiExperimentalAPI::class, JavaFriendlyAPI::class
 )
-actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIAccessor, BotJavaHappyAPI() {
+actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI() {
     actual companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.
@@ -46,7 +46,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
         /**
          * 遍历每一个 [Bot] 实例
          */
-        @JavaHappyAPI
+        @JavaFriendlyAPI
         @JvmName("forEachInstance")
         @Suppress("FunctionName")
         fun __forEachInstanceForJava__(block: (Bot) -> Unit) = forEachInstance(block)

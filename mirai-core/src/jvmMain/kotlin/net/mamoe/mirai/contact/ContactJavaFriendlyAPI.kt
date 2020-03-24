@@ -12,7 +12,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.io.core.Input
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaHappyAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
@@ -31,7 +31,7 @@ import java.net.URL
 import java.util.concurrent.Future
 
 @MiraiInternalAPI
-@JavaHappyAPI
+@JavaFriendlyAPI
 @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused")
 actual abstract class ContactJavaFriendlyAPI {
 
@@ -204,7 +204,7 @@ actual abstract class ContactJavaFriendlyAPI {
 
 @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused", "unused")
 @MiraiInternalAPI
-@JavaHappyAPI
+@JavaFriendlyAPI
 actual abstract class MemberJavaFriendlyAPI : QQ() {
     private inline fun <R> runBlocking(crossinline block: suspend Member.() -> R): R {
         @Suppress("CAST_NEVER_SUCCEEDS")

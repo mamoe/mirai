@@ -20,14 +20,14 @@ import java.util.concurrent.TimeoutException
  */
 @MiraiInternalAPI
 @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME", "unused")
-actual abstract class BotJavaHappyAPI actual constructor() {
+actual abstract class BotJavaFriendlyAPI actual constructor() {
     init {
         @Suppress("LeakingThis")
         assert(this is Bot)
     }
 
     private inline fun <R> runBlocking(crossinline block: suspend Bot.() -> R): R {
-        return kotlinx.coroutines.runBlocking { block(this@BotJavaHappyAPI as Bot) }
+        return kotlinx.coroutines.runBlocking { block(this@BotJavaFriendlyAPI as Bot) }
     }
 
     private inline fun <R> future(crossinline block: suspend Bot.() -> R): Future<R> {

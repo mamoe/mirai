@@ -14,7 +14,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaHappyAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
@@ -35,7 +35,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * @author Him188moe
  */ // 不要删除多平台结构 !!! kotlin bug
-@OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
+@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
 expect abstract class Contact() : CoroutineScope, ContactJavaFriendlyAPI {
     /**
      * 这个联系人所属 [Bot].
