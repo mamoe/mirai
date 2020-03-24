@@ -23,13 +23,11 @@ import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.OverFileSizeMaxException
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
 expect abstract class Group() : Contact, CoroutineScope {
     /**
      * 群名称.
@@ -163,7 +161,6 @@ expect abstract class Group() : Contact, CoroutineScope {
      */
     @MiraiExperimentalAPI("dangerous")
     @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName")
-    @JvmName("newMember")
     abstract fun newMember(memberInfo: MemberInfo): Member
 
     /**

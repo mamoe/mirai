@@ -202,5 +202,4 @@ actual abstract class Group : Contact(), CoroutineScope {
     actual fun toFullString(): String {
         return "Group(id=${this.id}, name=$name, owner=${owner.id}, members=${members.idContentString})"
     }
-
 }
