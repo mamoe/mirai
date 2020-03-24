@@ -32,12 +32,13 @@ import net.mamoe.mirai.utils.WeakRefProperty
  * @author Him188moe
  */
 @OptIn(MiraiInternalAPI::class, JavaHappyAPI::class)
-actual abstract class Contact : CoroutineScope, ContactJavaHappyAPI() {
+actual abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI() {
     /**
      * 这个联系人所属 [Bot].
      */
     @WeakRefProperty
     actual abstract val bot: Bot
+
     /**
      * 可以是 QQ 号码或者群号码.
      *

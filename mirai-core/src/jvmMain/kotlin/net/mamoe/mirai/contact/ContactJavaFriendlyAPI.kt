@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.contact
 
-import android.graphics.Bitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.io.core.Input
 import net.mamoe.mirai.Bot
@@ -25,6 +24,7 @@ import net.mamoe.mirai.message.uploadImage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.OverFileSizeMaxException
+import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -33,11 +33,11 @@ import java.util.concurrent.Future
 @MiraiInternalAPI
 @JavaHappyAPI
 @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused")
-actual abstract class ContactJavaHappyAPI {
+actual abstract class ContactJavaFriendlyAPI {
 
     private inline fun <R> runBlocking(crossinline block: suspend Contact.() -> R): R {
         @Suppress("CAST_NEVER_SUCCEEDS")
-        return kotlinx.coroutines.runBlocking { block(this@ContactJavaHappyAPI as Contact) }
+        return kotlinx.coroutines.runBlocking { block(this@ContactJavaFriendlyAPI as Contact) }
     }
 
     private inline fun <R> future(crossinline block: suspend Contact.() -> R): Future<R> {
@@ -59,9 +59,7 @@ actual abstract class ContactJavaHappyAPI {
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
     open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<out Contact> {
-        return runBlocking {
-            sendMessage(message)
-        }
+        return runBlocking { sendMessage(message) }
     }
 
     @JvmName("sendMessage")
@@ -130,7 +128,7 @@ actual abstract class ContactJavaHappyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: Bitmap): Image {
+    open fun __uploadImageBlockingForJava__(image: BufferedImage): Image {
         return runBlocking { uploadImage(image) }
     }
 
@@ -199,7 +197,7 @@ actual abstract class ContactJavaHappyAPI {
      * 在 [Dispatchers.IO] 中将图片上传, 但不发送. 不会保存临时文件
      */
     @JvmName("uploadImageAsync")
-    open fun __uploadImageAsyncForJava__(image: Bitmap): Future<Image> {
+    open fun __uploadImageAsyncForJava__(image: BufferedImage): Future<Image> {
         return future { uploadImage(image) }
     }
 }
@@ -207,10 +205,10 @@ actual abstract class ContactJavaHappyAPI {
 @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused", "unused")
 @MiraiInternalAPI
 @JavaHappyAPI
-actual abstract class MemberJavaHappyAPI : QQ() {
+actual abstract class MemberJavaFriendlyAPI : QQ() {
     private inline fun <R> runBlocking(crossinline block: suspend Member.() -> R): R {
         @Suppress("CAST_NEVER_SUCCEEDS")
-        return kotlinx.coroutines.runBlocking { block(this@MemberJavaHappyAPI as Member) }
+        return kotlinx.coroutines.runBlocking { block(this@MemberJavaFriendlyAPI as Member) }
     }
 
     private inline fun <R> future(crossinline block: suspend Member.() -> R): Future<R> {
@@ -227,7 +225,7 @@ actual abstract class MemberJavaHappyAPI : QQ() {
      *
      * 管理员可禁言成员, 群主可禁言管理员和群员.
      *
-     * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
+     * @param seconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
      *
      * @see Int.minutesToSeconds
@@ -239,7 +237,7 @@ actual abstract class MemberJavaHappyAPI : QQ() {
      */
     @JvmName("mute")
     open fun __muteBlockingForJava__(seconds: Int) {
-        return runBlocking { mute(seconds) }
+        runBlocking { mute(seconds) }
     }
 
     /**
@@ -252,7 +250,7 @@ actual abstract class MemberJavaHappyAPI : QQ() {
      */
     @JvmName("unmute")
     open fun __unmuteBlockingForJava__() {
-        return runBlocking { unmute() }
+        runBlocking { unmute() }
     }
 
     /**
@@ -265,7 +263,7 @@ actual abstract class MemberJavaHappyAPI : QQ() {
      */
     @JvmName("kick")
     open fun __kickBlockingForJava__(message: String) {
-        return runBlocking { kick() }
+        runBlocking { kick() }
     }
 
     /**
@@ -288,7 +286,7 @@ actual abstract class MemberJavaHappyAPI : QQ() {
      *
      * 管理员可禁言成员, 群主可禁言管理员和群员.
      *
-     * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
+     * @param seconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
      *
      * @see Int.minutesToSeconds
