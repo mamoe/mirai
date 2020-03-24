@@ -38,7 +38,6 @@ import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
@@ -79,12 +78,6 @@ internal class QQImpl(
             ) { "send message failed" }
         }
         return MessageReceipt(source, this, null)
-    }
-
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ> {
-        return this.sendMessage(message as Message)
     }
 
     @JvmSynthetic
@@ -239,12 +232,6 @@ internal class MemberImpl(
             ) { "send message failed" }
         }
         return MessageReceipt(source, this, null)
-    }
-
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ> {
-        return this.sendMessage(message as Message)
     }
 
     @JvmSynthetic
@@ -646,13 +633,6 @@ internal class GroupImpl(
 
         return MessageReceipt(source, this, botAsMember)
     }
-
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    override suspend fun sendMessage(message: MessageChain): MessageReceipt<Group> {
-        return this.sendMessage(message as Message)
-    }
-
 
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {

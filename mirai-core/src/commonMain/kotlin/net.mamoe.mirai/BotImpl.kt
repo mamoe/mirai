@@ -52,6 +52,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @OptIn(RawAccountIdUse::class)
     override val uin: Long
         get() = this.account.id
+
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
     init {

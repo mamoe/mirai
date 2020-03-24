@@ -183,12 +183,3 @@ class XmlMessageBuilder(
         }
     }
 }
-
-@Deprecated(
-    "for source compatibility",
-    replaceWith = ReplaceWith("RichMessage.Templates", "net.mamoe.mirai.message.data.RichMessage"),
-    level = DeprecationLevel.ERROR
-)
-@Suppress("unused")
-// in bytecode it's public
-internal typealias XmlMessageHelper = RichMessage.Templates

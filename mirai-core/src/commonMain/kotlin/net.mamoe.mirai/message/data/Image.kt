@@ -115,7 +115,6 @@ suspend fun Image.queryUrl(): String {
  * 不能直接获取它在服务器上的链接. 需要通过 [Bot.queryImageUrl] 查询
  *
  * 一般由 [Contact.uploadImage] 得到
- * @see queryOriginUrl
  */
 interface OfflineImage : Image {
     companion object Key : Message.Key<OfflineImage>
@@ -130,9 +129,6 @@ suspend fun OfflineImage.queryUrl(): String {
     return BotImpl.instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
 }
 
-@Deprecated("use queryUrl() instead", ReplaceWith("queryUrl()"), level = DeprecationLevel.ERROR)
-@JvmSynthetic
-suspend inline fun OfflineImage.queryOriginUrl(): String = queryUrl()
 // endregion 离线图片
 
 // region 群图片

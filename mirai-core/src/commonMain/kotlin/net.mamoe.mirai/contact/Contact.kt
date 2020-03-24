@@ -69,10 +69,6 @@ expect abstract class Contact() : CoroutineScope, ContactJavaHappyAPI {
     @JvmSynthetic
     abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
 
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    abstract suspend fun sendMessage(message: MessageChain): MessageReceipt<out Contact>
-
     /**
      * 上传一个图片以备发送.
      *

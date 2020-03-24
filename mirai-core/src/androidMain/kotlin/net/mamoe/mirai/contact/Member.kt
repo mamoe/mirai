@@ -18,7 +18,6 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
 
@@ -33,12 +32,14 @@ actual abstract class Member : MemberJavaHappyAPI() {
      */
     @WeakRefProperty
     actual abstract val group: Group
+
     /**
      * 成员的权限, 动态更新.
      *
      * @see MemberPermissionChangeEvent 权限变更事件. 由群主或机器人的操作触发.
      */
     actual abstract val permission: MemberPermission
+
     /**
      * 群名片. 可能为空.
      *
@@ -52,6 +53,7 @@ actual abstract class Member : MemberJavaHappyAPI() {
      * @throws PermissionDeniedException 无权限修改时
      */
     actual abstract var nameCard: String
+
     /**
      * 群头衔.
      *
@@ -63,6 +65,7 @@ actual abstract class Member : MemberJavaHappyAPI() {
      * @throws PermissionDeniedException 无权限修改时
      */
     actual abstract var specialTitle: String
+
     /**
      * 被禁言剩余时长. 单位为秒.
      *
@@ -117,10 +120,6 @@ actual abstract class Member : MemberJavaHappyAPI() {
      */
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
-
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
 
     /**
      * 踢出该成员.

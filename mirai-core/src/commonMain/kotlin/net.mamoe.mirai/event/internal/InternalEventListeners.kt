@@ -36,14 +36,6 @@ fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L
 }
 
 @PublishedApi
-@Suppress("FunctionName", "unused")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-internal fun <E : Event> CoroutineScope.Handler(
-    coroutineContext: CoroutineContext,
-    handler: suspend (E) -> ListeningStatus
-): Handler<E> = Handler(coroutineContext, concurrencyKind = Listener.ConcurrencyKind.LOCKED, handler = handler)
-
-@PublishedApi
 @Suppress("FunctionName")
 internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
@@ -67,15 +59,6 @@ internal class Handler<in E : Event>
     override val concurrencyKind: Listener.ConcurrencyKind
 ) :
     Listener<E>, CompletableJob by Job(parentJob) {
-
-    @Suppress("unused")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @PublishedApi
-    internal constructor(
-        parentJob: Job?,
-        subscriberContext: CoroutineContext,
-        handler: suspend (E) -> ListeningStatus
-    ) : this(parentJob, subscriberContext, handler, Listener.ConcurrencyKind.LOCKED)
 
     @MiraiInternalAPI
     val lock: Mutex? = when (concurrencyKind) {

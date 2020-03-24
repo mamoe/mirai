@@ -33,8 +33,6 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
 
     operator fun get(id: Long): C = delegate[id]
     fun getOrNull(id: Long): C? = delegate.getOrNull(id)
-    @Deprecated("Use contains instead", ReplaceWith("contains(id)"))
-    fun containsId(id: Long): Boolean = contains(id)
 
     val size: Int get() = delegate.size
     operator fun contains(element: C): Boolean = delegate.contains(element)

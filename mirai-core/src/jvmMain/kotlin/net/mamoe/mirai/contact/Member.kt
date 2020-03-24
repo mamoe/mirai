@@ -18,7 +18,6 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
 
@@ -128,10 +127,6 @@ actual abstract class Member : MemberJavaHappyAPI() {
      */
     @JvmSynthetic
     actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
-
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    actual abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
 
     /**
      * 当且仅当 `[other] is [Member] && [other].id == this.id && [other].group == this.group` 时为 true

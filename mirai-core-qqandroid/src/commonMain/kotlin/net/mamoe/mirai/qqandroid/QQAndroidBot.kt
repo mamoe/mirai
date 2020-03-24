@@ -69,13 +69,6 @@ internal abstract class QQAndroidBotBase constructor(
         val json = Json(JsonConfiguration(ignoreUnknownKeys = true, encodeDefaults = true))
     }
 
-    @Deprecated(
-        "use friends instead",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("this.friends")
-    )
-    override val qqs: ContactList<QQ>
-        get() = friends
     override val friends: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
     override val selfQQ: QQ by lazy {

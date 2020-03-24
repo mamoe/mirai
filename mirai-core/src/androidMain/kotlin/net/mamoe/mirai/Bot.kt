@@ -80,29 +80,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
     /**
      * 机器人的好友列表. 它将与服务器同步更新
      */
-    @Deprecated(
-        "use friends instead",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("this.friends")
-    )
-    actual abstract val qqs: ContactList<QQ>
-
-    /**
-     * 机器人的好友列表. 它将与服务器同步更新
-     */
     actual abstract val friends: ContactList<QQ>
-
-    /**
-     * 获取一个好友或一个群.
-     */
-    @Deprecated(
-        "use getFriend or getGroup instead",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("this.qqs.getOrNull(id) ?: this.groups.getOrNull(id) ?: throw NoSuchElementException(\"contact id \$id\")")
-    )
-    actual operator fun get(id: Long): Contact {
-        return this.friends.getOrNull(id) ?: this.groups.getOrNull(id) ?: throw NoSuchElementException("contact id $id")
-    }
 
     /**
      * 判断是否有这个 id 的好友或群.

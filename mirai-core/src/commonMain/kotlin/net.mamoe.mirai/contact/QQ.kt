@@ -23,7 +23,6 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -98,10 +97,6 @@ expect abstract class QQ() : Contact, CoroutineScope {
      */
     @JvmSynthetic
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<out QQ>
-
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    abstract override suspend fun sendMessage(message: MessageChain): MessageReceipt<out QQ>
 
     /**
      * 上传一个图片以备发送.

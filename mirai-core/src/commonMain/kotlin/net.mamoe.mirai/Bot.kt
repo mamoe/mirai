@@ -101,28 +101,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     /**
      * 机器人的好友列表. 它将与服务器同步更新
      */
-    @Deprecated(
-        "use friends instead",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("this.friends")
-    )
-    abstract val qqs: ContactList<QQ>
-
-    /**
-     * 机器人的好友列表. 它将与服务器同步更新
-     */
     abstract val friends: ContactList<QQ>
-
-    /**
-     * 获取一个好友或一个群.
-     * 在一些情况下这可能会造成歧义. 请考虑后使用.
-     */
-    @Deprecated(
-        "use getFriend or getGroup instead",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("this.qqs.getOrNull(id) ?: this.groups.getOrNull(id) ?: throw NoSuchElementException(\"contact id \$id\")")
-    )
-    operator fun get(id: Long): Contact
 
     /**
      * 判断是否有这个 id 的好友或群.
