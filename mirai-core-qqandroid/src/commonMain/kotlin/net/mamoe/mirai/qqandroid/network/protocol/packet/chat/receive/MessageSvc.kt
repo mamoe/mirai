@@ -24,7 +24,7 @@ import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.qqandroid.GroupImpl
+import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf

@@ -25,10 +25,10 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.WrongPasswordException
-import net.mamoe.mirai.qqandroid.FriendInfoImpl
-import net.mamoe.mirai.qqandroid.GroupImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.QQImpl
+import net.mamoe.mirai.qqandroid.contact.FriendInfoImpl
+import net.mamoe.mirai.qqandroid.contact.GroupImpl
+import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
@@ -264,32 +264,32 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                 bot.groups.delegate.addLast(
                                     @Suppress("DuplicatedCode")
                                     (GroupImpl(
-                                        bot = bot,
-                                        coroutineContext = bot.coroutineContext,
-                                        id = troopNum.groupCode,
-                                        groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
-                                            this as GroupInfoImpl
+        bot = bot,
+        coroutineContext = bot.coroutineContext,
+        id = troopNum.groupCode,
+        groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
+            this as GroupInfoImpl
 
-                                            if (this.delegate.groupName == null) {
-                                                this.delegate.groupName = troopNum.groupName
-                                            }
+            if (this.delegate.groupName == null) {
+                this.delegate.groupName = troopNum.groupName
+            }
 
-                                            if (this.delegate.groupMemo == null) {
-                                                this.delegate.groupMemo = troopNum.groupMemo
-                                            }
+            if (this.delegate.groupMemo == null) {
+                this.delegate.groupMemo = troopNum.groupMemo
+            }
 
-                                            if (this.delegate.groupUin == null) {
-                                                this.delegate.groupUin = troopNum.groupUin
-                                            }
+            if (this.delegate.groupUin == null) {
+                this.delegate.groupUin = troopNum.groupUin
+            }
 
-                                            this.delegate.groupCode = troopNum.groupCode
-                                        },
-                                        members = bot._lowLevelQueryGroupMemberList(
-                                            troopNum.groupUin,
-                                            troopNum.groupCode,
-                                            troopNum.dwGroupOwnerUin
-                                        )
-                                    ))
+            this.delegate.groupCode = troopNum.groupCode
+        },
+        members = bot._lowLevelQueryGroupMemberList(
+            troopNum.groupUin,
+            troopNum.groupCode,
+            troopNum.dwGroupOwnerUin
+        )
+    ))
                                 )
                             }?.let {
                                 logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }

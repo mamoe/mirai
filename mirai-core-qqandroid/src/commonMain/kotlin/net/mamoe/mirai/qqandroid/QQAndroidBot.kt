@@ -28,6 +28,8 @@ import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
+import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
 import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler

@@ -19,10 +19,10 @@ import net.mamoe.mirai.data.Packet
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.GroupMessage
-import net.mamoe.mirai.qqandroid.GroupImpl
-import net.mamoe.mirai.qqandroid.MemberImpl
+import net.mamoe.mirai.qqandroid.contact.GroupImpl
+import net.mamoe.mirai.qqandroid.contact.MemberImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.checkIsInstance
+import net.mamoe.mirai.qqandroid.contact.checkIsInstance
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.message.toMessageChain
