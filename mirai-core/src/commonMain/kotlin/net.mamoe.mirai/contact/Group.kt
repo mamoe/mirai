@@ -40,50 +40,11 @@ expect abstract class Group() : Contact, CoroutineScope {
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     abstract var name: String
+
     /**
-     * 入群公告, 没有时为空字符串.
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see GroupEntranceAnnouncementChangeEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     * 群设置
      */
-    abstract var entranceAnnouncement: String
-    /**
-     * 全体禁言状态. `true` 为开启.
-     *
-     * 当前仅能修改状态.
-     *
-     * @see GroupMuteAllEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
-     */
-    abstract var isMuteAll: Boolean
-    /**
-     * 坦白说状态. `true` 为允许.
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see GroupAllowConfessTalkEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
-     */
-    abstract var isConfessTalkEnabled: Boolean
-    /**
-     * 允许群员邀请好友入群的状态. `true` 为允许
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see GroupAllowMemberInviteEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
-     */
-    abstract var isAllowMemberInvite: Boolean
-    /**
-     * 自动加群审批
-     */
-    abstract val isAutoApproveEnabled: Boolean
-    /**
-     * 匿名聊天
-     */
-    abstract val isAnonymousChatEnabled: Boolean
+    abstract val settings: GroupSettings
 
     /**
      * 同为 groupCode, 用户看到的群号码.
@@ -200,38 +161,63 @@ expect abstract class Group() : Contact, CoroutineScope {
     fun toFullString(): String
 }
 
-internal object CommonGroupCalculations {
+/**
+ * 群设置
+ *
+ * @see Group.settings 获取群设置
+ */
+@SinceMirai("0.30.0")
+interface GroupSettings {
     /**
-     * by @kar98k
+     * 入群公告, 没有时为空字符串.
+     *
+     * 在修改时将会异步上传至服务器.
+     *
+     * @see GroupEntranceAnnouncementChangeEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    fun calculateGroupUinByGroupCode(groupCode: Long): Long {
-        var left: Long = groupCode / 1000000L
+    var entranceAnnouncement: String
 
-        when (left) {
-            in 0..10 -> left += 202
-            in 11..19 -> left += 480 - 11
-            in 20..66 -> left += 2100 - 20
-            in 67..156 -> left += 2010 - 67
-            in 157..209 -> left += 2147 - 157
-            in 210..309 -> left += 4100 - 210
-            in 310..499 -> left += 3800 - 310
-        }
+    /**
+     * 全体禁言状态. `true` 为开启.
+     *
+     * 当前仅能修改状态.
+     *
+     * @see GroupMuteAllEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     */
+    var isMuteAll: Boolean
 
-        return left * 1000000L + groupCode % 1000000L
-    }
+    /**
+     * 坦白说状态. `true` 为允许.
+     *
+     * 在修改时将会异步上传至服务器.
+     *
+     * @see GroupAllowConfessTalkEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     */
+    var isConfessTalkEnabled: Boolean
 
-    fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
-        var left: Long = groupUin / 1000000L
+    /**
+     * 允许群员邀请好友入群的状态. `true` 为允许
+     *
+     * 在修改时将会异步上传至服务器.
+     *
+     * @see GroupAllowMemberInviteEvent
+     * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     */
+    var isAllowMemberInvite: Boolean
 
-        when (left) {
-            in 0 + 202..10 + 202 -> left -= 202
-            in 11 + 480 - 11..19 + 480 - 11 -> left -= 480 - 11
-            in 20 + 2100 - 20..66 + 2100 - 20 -> left -= 2100 - 20
-            in 67 + 2010 - 67..156 + 2010 - 67 -> left -= 2010 - 67
-            in 157 + 2147 - 157..209 + 2147 - 157 -> left -= 2147 - 157
-            in 210 + 4100 - 210..309 + 4100 - 210 -> left -= 4100 - 210
-            in 310 + 3800 - 310..499 + 3800 - 310 -> left -= 3800 - 310
-        }
+    /**
+     * 自动加群审批
+     */
+    val isAutoApproveEnabled: Boolean
+
+    /**
+     * 匿名聊天
+     */
+    val isAnonymousChatEnabled: Boolean
+}
 
 
 /**

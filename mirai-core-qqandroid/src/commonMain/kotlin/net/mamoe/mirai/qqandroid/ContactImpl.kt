@@ -412,7 +412,7 @@ internal class GroupImpl(
 
     @OptIn(MiraiExperimentalAPI::class)
     override val botAsMember: Member by lazy {
-        Member(object : MemberInfo {
+        newMember(object : MemberInfo {
             override val nameCard: String
                 get() = bot.nick // TODO: 2020/2/21 机器人在群内的昵称获取
             override val permission: MemberPermission
@@ -447,7 +447,7 @@ internal class GroupImpl(
                 owner = botAsMember
             }
             null
-        } else Member(it).also { member ->
+        } else newMember(it).also { member ->
             if (member.permission == MemberPermission.OWNER) {
                 owner = member
             }
@@ -465,7 +465,7 @@ internal class GroupImpl(
     override var name: String
         get() = _name
         set(newValue) {
-            this.checkBotPermissionOperator()
+            checkBotPermissionOperator()
             if (_name != newValue) {
                 val oldValue = _name
                 _name = newValue
@@ -482,101 +482,104 @@ internal class GroupImpl(
             }
         }
 
-    override var entranceAnnouncement: String
-        get() = _announcement
-        set(newValue) {
-            this.checkBotPermissionOperator()
-            if (_announcement != newValue) {
-                val oldValue = _announcement
-                _announcement = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.memo(
-                            client = bot.client,
-                            groupCode = id,
-                            newMemo = newValue
-                        ).sendWithoutExpect()
+    override val settings: GroupSettings = object : GroupSettings{
+
+        override var entranceAnnouncement: String
+            get() = _announcement
+            set(newValue) {
+                checkBotPermissionOperator()
+                if (_announcement != newValue) {
+                    val oldValue = _announcement
+                    _announcement = newValue
+                    launch {
+                        bot.network.run {
+                            TroopManagement.GroupOperation.memo(
+                                client = bot.client,
+                                groupCode = id,
+                                newMemo = newValue
+                            ).sendWithoutExpect()
+                        }
+                        GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                    GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
-        }
 
 
-    override var isAllowMemberInvite: Boolean
-        get() = _allowMemberInvite
-        set(newValue) {
-            this.checkBotPermissionOperator()
-            if (_allowMemberInvite != newValue) {
-                val oldValue = _allowMemberInvite
-                _allowMemberInvite = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.allowMemberInvite(
-                            client = bot.client,
-                            groupCode = id,
-                            switch = newValue
-                        ).sendWithoutExpect()
+        override var isAllowMemberInvite: Boolean
+            get() = _allowMemberInvite
+            set(newValue) {
+                checkBotPermissionOperator()
+                if (_allowMemberInvite != newValue) {
+                    val oldValue = _allowMemberInvite
+                    _allowMemberInvite = newValue
+                    launch {
+                        bot.network.run {
+                            TroopManagement.GroupOperation.allowMemberInvite(
+                                client = bot.client,
+                                groupCode = id,
+                                switch = newValue
+                            ).sendWithoutExpect()
+                        }
+                        GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                    GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
-        }
 
-    override var isAutoApproveEnabled: Boolean
-        get() = _autoApprove
-        @Suppress("UNUSED_PARAMETER")
-        set(newValue) {
-            TODO()
-        }
+        override var isAutoApproveEnabled: Boolean
+            get() = _autoApprove
+            @Suppress("UNUSED_PARAMETER")
+            set(newValue) {
+                TODO()
+            }
 
-    override var isAnonymousChatEnabled: Boolean
-        get() = _anonymousChat
-        @Suppress("UNUSED_PARAMETER")
-        set(newValue) {
-            TODO()
-        }
+        override var isAnonymousChatEnabled: Boolean
+            get() = _anonymousChat
+            @Suppress("UNUSED_PARAMETER")
+            set(newValue) {
+                TODO()
+            }
 
-    override var isConfessTalkEnabled: Boolean
-        get() = _confessTalk
-        set(newValue) {
-            this.checkBotPermissionOperator()
-            if (_confessTalk != newValue) {
-                val oldValue = _confessTalk
-                _confessTalk = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.confessTalk(
-                            client = bot.client,
-                            groupCode = id,
-                            switch = newValue
-                        ).sendWithoutExpect()
+        override var isConfessTalkEnabled: Boolean
+            get() = _confessTalk
+            set(newValue) {
+                checkBotPermissionOperator()
+                if (_confessTalk != newValue) {
+                    val oldValue = _confessTalk
+                    _confessTalk = newValue
+                    launch {
+                        bot.network.run {
+                            TroopManagement.GroupOperation.confessTalk(
+                                client = bot.client,
+                                groupCode = id,
+                                switch = newValue
+                            ).sendWithoutExpect()
+                        }
+                        GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
                     }
-                    GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
                 }
             }
-        }
 
 
-    override var isMuteAll: Boolean
-        get() = _muteAll
-        set(newValue) {
-            this.checkBotPermissionOperator()
-            if (_muteAll != newValue) {
-                val oldValue = _muteAll
-                _muteAll = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.muteAll(
-                            client = bot.client,
-                            groupCode = id,
-                            switch = newValue
-                        ).sendWithoutExpect()
+        override var isMuteAll: Boolean
+            get() = _muteAll
+            set(newValue) {
+                checkBotPermissionOperator()
+                if (_muteAll != newValue) {
+                    val oldValue = _muteAll
+                    _muteAll = newValue
+                    launch {
+                        bot.network.run {
+                            TroopManagement.GroupOperation.muteAll(
+                                client = bot.client,
+                                groupCode = id,
+                                switch = newValue
+                            ).sendWithoutExpect()
+                        }
+                        GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                    GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
-        }
+    }
 
     @MiraiExperimentalAPI
     override suspend fun quit(): Boolean {
@@ -585,7 +588,7 @@ internal class GroupImpl(
     }
 
     @OptIn(MiraiExperimentalAPI::class)
-    override fun Member(memberInfo: MemberInfo): Member {
+    override fun newMember(memberInfo: MemberInfo): Member {
         return MemberImpl(
             @OptIn(LowLevelAPI::class)
             bot._lowLevelNewQQ(memberInfo) as QQImpl,

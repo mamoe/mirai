@@ -38,54 +38,9 @@ actual abstract class Group : Contact(), CoroutineScope {
     actual abstract var name: String
 
     /**
-     * 入群公告, 没有时为空字符串.
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see GroupEntranceAnnouncementChangeEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
+     * 群设置
      */
-    actual abstract var entranceAnnouncement: String
-
-    /**
-     * 全体禁言状态. `true` 为开启.
-     *
-     * 当前仅能修改状态.
-     *
-     * @see GroupMuteAllEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
-     */
-    actual abstract var isMuteAll: Boolean
-
-    /**
-     * 坦白说状态. `true` 为允许.
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see GroupAllowConfessTalkEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
-     */
-    actual abstract var isConfessTalkEnabled: Boolean
-
-    /**
-     * 允许群员邀请好友入群的状态. `true` 为允许
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see GroupAllowMemberInviteEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
-     */
-    actual abstract var isAllowMemberInvite: Boolean
-
-    /**
-     * 自动加群审批
-     */
-    actual abstract val isAutoApproveEnabled: Boolean
-
-    /**
-     * 匿名聊天
-     */
-    actual abstract val isAnonymousChatEnabled: Boolean
+    actual abstract val settings: GroupSettings
 
     /**
      * 同为 groupCode, 用户看到的群号码.
