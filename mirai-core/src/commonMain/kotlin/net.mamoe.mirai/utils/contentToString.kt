@@ -129,7 +129,10 @@ fun Any?._miraiContentToString(prefix: String = ""): String = when (this) {
 
 internal expect fun KProperty1<*, *>.getValueAgainstPermission(receiver: Any): Any?
 
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 private val KProperty1<*, *>.isConst: Boolean get() = false // on JVM, it will be resolved to member function
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 private val KClass<*>.isData: Boolean get() = false // on JVM, it will be resolved to member function
 
 @MiraiDebugAPI
@@ -163,14 +166,23 @@ private fun Any.contentToStringReflectively(
                 } + "\n$prefix}"
 }
 
-private val <T : Any> KClass<T>.supertypes: List<KType> get() = listOf() // on JVM, it will be resolved to member function
+// on JVM, it will be resolved to member function
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+private val <T : Any> KClass<T>.supertypes: List<KType>
+    get() = listOf()
 
 private fun KClass<out Any>.thisClassAndSuperclassSequence(): Sequence<KClass<out Any>> {
     return sequenceOf(this) +
             this.supertypes.asSequence()
-                .mapNotNull { type -> type.classifier?.takeIf { it is KClass<*> }?.takeIf { it != Any::class } as? KClass<out Any> }.flatMap { it.thisClassAndSuperclassSequence() }
+                .mapNotNull { type ->
+                    type.classifier?.takeIf { it is KClass<*> }?.takeIf { it != Any::class } as? KClass<out Any>
+                }.flatMap { it.thisClassAndSuperclassSequence() }
 }
-private val <T : Any> KClass<T>.members: List<KProperty<*>> get() = listOf() // on JVM, it will be resolved to member function
+
+// on JVM, it will be resolved to member function
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+private val <T : Any> KClass<T>.members: List<KProperty<*>>
+    get() = listOf()
 
 @Suppress("UNCHECKED_CAST")
 private fun Any.allMembersFromSuperClassesMatching(classFilter: (KClass<out Any>) -> Boolean): Sequence<KProperty1<Any, *>> {
