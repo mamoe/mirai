@@ -21,6 +21,7 @@ import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 群. 在 QQ Android 中叫做 "Troop"
@@ -40,6 +41,7 @@ actual abstract class Group : Contact(), CoroutineScope {
     /**
      * 群设置
      */
+    @SinceMirai("0.30.0")
     actual abstract val settings: GroupSettings
 
     /**
