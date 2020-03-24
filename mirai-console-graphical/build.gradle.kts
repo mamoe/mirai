@@ -13,6 +13,8 @@ plugins {
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
+version = Versions.Mirai.console
+
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
     manifest {
         attributes["Main-Class"] = "net.mamoe.mirai.console.graphical.MiraiGraphicalLoader"

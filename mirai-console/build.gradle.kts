@@ -1,32 +1,14 @@
 import java.util.*
 
 plugins {
-    id("kotlinx-serialization")
-    id("kotlin")
+    kotlin("jvm")
+    kotlin("plugin.serialization")
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
 }
 
-
 apply(plugin = "com.github.johnrengelman.shadow")
-
-val kotlinVersion: String by rootProject.ext
-val atomicFuVersion: String by rootProject.ext
-val coroutinesVersion: String by rootProject.ext
-val kotlinXIoVersion: String by rootProject.ext
-val coroutinesIoVersion: String by rootProject.ext
-
-val klockVersion: String by rootProject.ext
-val ktorVersion: String by rootProject.ext
-
-val serializationVersion: String by rootProject.ext
-
-fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
-
-fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
-
-val miraiVersion: String by rootProject.ext
 
 kotlin {
     sourceSets {
@@ -39,8 +21,8 @@ kotlin {
     }
 }
 dependencies {
-    compileOnly("net.mamoe:mirai-core-jvm:$miraiVersion")
-    compileOnly("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
+    compileOnly("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core-qqandroid-jvm:${Versions.Mirai.core}")
 
 
     compileOnly(group = "com.alibaba", name = "fastjson", version = "1.2.62")
@@ -48,23 +30,23 @@ dependencies {
     compileOnly(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
 
 
-    compileOnly(kotlin("stdlib", kotlinVersion))
-    compileOnly(kotlin("serialization", kotlinVersion))
-    compileOnly(kotlin("reflect", kotlinVersion))
+    compileOnly(kotlin("stdlib", Versions.Kotlin.stdlib))
+    compileOnly(kotlin("serialization", Versions.Kotlin.stdlib))
+    compileOnly(kotlin("reflect", Versions.Kotlin.stdlib))
 
-    compileOnly(kotlinx("coroutines-io-jvm", coroutinesIoVersion))
-    compileOnly(kotlinx("coroutines-core", coroutinesVersion))
-    compileOnly(kotlinx("serialization-runtime", serializationVersion))
-    compileOnly("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+    compileOnly(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+    compileOnly(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
+    compileOnly(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+    compileOnly("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
 
     compileOnly("org.bouncycastle:bcprov-jdk15on:1.64")
 
-    compileOnly(ktor("http-cio", ktorVersion))
-    compileOnly(ktor("http-jvm", ktorVersion))
-    compileOnly(ktor("io-jvm", ktorVersion))
-    compileOnly(ktor("client-core-jvm", ktorVersion))
-    compileOnly(ktor("client-cio", ktorVersion))
-    compileOnly(ktor("network", ktorVersion))
+    compileOnly(ktor("http-cio"))
+    compileOnly(ktor("http-jvm"))
+    compileOnly(ktor("io-jvm"))
+    compileOnly(ktor("client-core-jvm"))
+    compileOnly(ktor("client-cio"))
+    compileOnly(ktor("network"))
 }
 
 val miraiConsoleVersion: String by project.ext
