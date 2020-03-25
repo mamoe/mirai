@@ -91,10 +91,13 @@ subprojects {
                         runCatching {
                             upload.GitHub.upload(
                                 file,
-                                "https://api.github.com/repositories/249670490/contents/shadow/${project.name}/$filename"
+                                "https://api.github.com/repos/mamoe/mirai-repo/contents/shadow/${project.name}/$filename",
+                                project
                             )
                         }.exceptionOrNull()?.let {
                             System.err.println("Upload failed")
+                            it.printStackTrace() // force show stacktrace
+                            throw it
                         }
                     }
             }
