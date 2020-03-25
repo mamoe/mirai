@@ -24,9 +24,9 @@ jobs:
       - name: Gradle build
         run: ./gradlew build
       - name: Gradle :mirai-core:githubUpload
-        run: ./gradlew :mirai-core:githubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
+        run: ./gradlew :mirai-core:githubUpload -Dgithub_token=${{ secrets.GITHUB_TOKEN }} -Pgithub_token=${{ secrets.GITHUB_TOKEN }}
       - name: Gradle :mirai-core-qqandroid:githubUpload
-        run: ./gradlew :mirai-core-qqandroid:githubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
+        run: ./gradlew :mirai-core-qqandroid:githubUpload -Dgithub_token=${{ secrets.GITHUB_TOKEN }} -Pgithub_token=${{ secrets.GITHUB_TOKEN }}
 
 
 #      - name: Upload artifact
