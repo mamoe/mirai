@@ -81,11 +81,11 @@ subprojects {
                             acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
                         }
                     }?.let { (_, file) ->
-                        val filename = file.nameWithoutExtension.substringAfterLast('-')
+                        val filename = file.name
                         println("filename=$filename")
                         upload.GitToken.upload(
                             file,
-                            "https://api.github.com/repos/mamoe/mirai/contents/shdaow/${project.name}/$filename"
+                            "https://api.github.com/repos/mamoe/mirai-repo/contents/shdaow/${project.name}/$filename"
                         )
                     }
             }
