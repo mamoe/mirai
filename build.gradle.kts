@@ -1,3 +1,6 @@
+@file:Suppress("UnstableApiUsage")
+
+import java.time.Duration
 import java.util.*
 import kotlin.math.pow
 
@@ -69,6 +72,7 @@ subprojects {
             dependsOn(shadowJvmJar)
 
             doFirst {
+                timeout.set(Duration.ofMinutes(10))
                 File(projectDir, "build/libs").walk()
                     .filter { it.isFile }
                     .onEach { println("all files=$it") }
@@ -82,11 +86,15 @@ subprojects {
                         }
                     }?.let { (_, file) ->
                         val filename = file.name
-                        println("filename=$filename")
-                        upload.GitToken.upload(
-                            file,
-                            "https://api.github.com/repos/mamoe/mirai-repo/contents/shdaow/${project.name}/$filename"
-                        )
+                        println("Uploading file $filename")
+                        runCatching {
+                            upload.GitToken.upload(
+                                file,
+                                "https://api.github.com/repositories/249670490/contents/shadow/${project.name}/$filename"
+                            )
+                        }.exceptionOrNull()?.let {
+                            System.err.println("Upload failed")
+                        }
                     }
             }
 

@@ -22,7 +22,14 @@ object GitToken {
 
     fun upload(file: File, url: String) = runBlocking {
         HttpClient(CIO) {
-            install(HttpTimeout)
+            engine {
+                requestTimeout = 600_000
+            }
+            install(HttpTimeout) {
+                connectTimeoutMillis = 600_000
+                requestTimeoutMillis = 600_000
+                socketTimeoutMillis = 600_000
+            }
         }.put<String>("""$url?access_token=${getGitToken()}""") {
             timeout {
                 connectTimeoutMillis = 600_000
