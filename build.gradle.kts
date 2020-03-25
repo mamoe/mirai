@@ -1,5 +1,5 @@
-import java.lang.System.getProperty
 import java.util.*
+import kotlin.math.pow
 
 buildscript {
     repositories {
@@ -11,6 +11,7 @@ buildscript {
     }
 
     dependencies {
+        classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
         classpath("com.android.tools.build:gradle:${Versions.Android.androidGradlePlugin}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.stdlib}")
         classpath("org.jetbrains.kotlin:kotlin-serialization:${Versions.Kotlin.stdlib}")
@@ -20,7 +21,7 @@ buildscript {
 
 plugins {
     id("org.jetbrains.dokka") version Versions.Kotlin.dokka apply false
-   // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
+    // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
 }
 
 runCatching {
@@ -44,4 +45,52 @@ allprojects {
         jcenter()
         google()
     }
+}
+
+subprojects {
+    afterEvaluate {
+        apply(plugin = "com.github.johnrengelman.shadow")
+        val kotlin =
+            (this as ExtensionAware).extensions.getByName("kotlin") as? org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+                ?: return@afterEvaluate
+
+        val shadowJvmJar by tasks.creating(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
+            group = "mirai"
+
+            val compilation = kotlin.targets.getByName("jvm").compilations["main"]
+
+            dependsOn(compilation.compileKotlinTask)
+
+            configurations = mutableListOf(compilation.compileDependencyFiles as Configuration)
+        }
+
+        val uploadGitHub by tasks.creating {
+            group = "mirai"
+            dependsOn(shadowJvmJar)
+
+            doFirst {
+                File(projectDir, "build/libs").walk()
+                    .filter { it.isFile }
+                    .onEach { println("all files=$it") }
+                    .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*\.jar""")) }
+                    .onEach { println("matched file: ${it.name}") }
+                    .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
+                    .onEach { println("versions: $it") }
+                    .maxBy {
+                        it.key.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
+                            acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
+                        }
+                    }?.let { (_, file) ->
+                        val filename = file.nameWithoutExtension.substringAfterLast('-')
+                        println("filename=$filename")
+                        upload.GitToken.upload(
+                            file,
+                            "https://api.github.com/repos/mamoe/mirai/contents/shdaow/${project.name}/$filename"
+                        )
+                    }
+            }
+
+        }
+    }
+
 }

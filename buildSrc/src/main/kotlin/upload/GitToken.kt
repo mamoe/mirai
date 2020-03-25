@@ -8,7 +8,7 @@ import java.util.*
 object GitToken {
 
     private fun getGitToken(): String {
-        with(System.getProperty("user.dir") + "/token.txt") {
+        with(File(System.getProperty("user.dir")).parent + "/token.txt") {
             println("reading token file in $this")
             return File(this).readText()
         }
