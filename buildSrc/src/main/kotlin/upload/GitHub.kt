@@ -4,7 +4,7 @@ package upload
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.header
+import io.ktor.client.features.HttpTimeout
 import io.ktor.client.request.put
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.Project
@@ -51,8 +51,13 @@ object GitHub {
             engine {
                 requestTimeout = 600_000
             }
-        }.put<String>(url) {
-            header("token", token)
+            install(HttpTimeout) {
+                socketTimeoutMillis = 600_000
+                requestTimeoutMillis = 600_000
+                connectTimeoutMillis = 600_000
+            }
+        }.put<String>("$url?access_token=$token") {
+            //header("token", token)
             val content = String(Base64.getEncoder().encode(file.readBytes()))
             body = """
                     {
