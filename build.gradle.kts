@@ -95,6 +95,7 @@ subprojects {
                             )
                         }.exceptionOrNull()?.let {
                             System.err.println("Upload failed")
+                            it.printStackTrace()
                         }
                     }
             }
