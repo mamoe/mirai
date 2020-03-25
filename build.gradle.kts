@@ -96,7 +96,8 @@ subprojects {
                             )
                         }.exceptionOrNull()?.let {
                             System.err.println("Upload failed")
-                            it.printStackTrace()
+                            it.printStackTrace() // force show stacktrace
+                            throw it
                         }
                     }
             }
