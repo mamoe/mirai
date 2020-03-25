@@ -41,7 +41,7 @@ abstract class AbstractCommandSender : CommandSender {
     internal val builder = StringBuilder()
 
     override fun appendMessage(message: String) {
-        builder.append(message).append("\n")
+        builder.appendln(message)
     }
 
     internal open suspend fun flushMessage() {
