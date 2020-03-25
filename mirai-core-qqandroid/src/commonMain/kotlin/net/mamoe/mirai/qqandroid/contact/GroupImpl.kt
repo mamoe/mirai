@@ -47,6 +47,14 @@ internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
+@OptIn(ExperimentalContracts::class)
+internal fun Group.checkIsGroupImpl() {
+    contract {
+        returns() implies (this@checkIsGroupImpl is GroupImpl)
+    }
+    GroupImpl.checkIsInstance(this)
+}
+
 @Suppress("PropertyName")
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
@@ -133,7 +141,7 @@ internal class GroupImpl(
             }
         }
 
-    override val settings: GroupSettings = object : GroupSettings{
+    override val settings: GroupSettings = object : GroupSettings {
 
         override var entranceAnnouncement: String
             get() = _announcement

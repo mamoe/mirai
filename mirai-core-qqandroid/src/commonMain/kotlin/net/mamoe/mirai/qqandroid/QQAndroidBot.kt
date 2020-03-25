@@ -14,8 +14,10 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.statement.HttpResponse
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -30,6 +32,7 @@ import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
+import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
 import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
 import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
@@ -99,11 +102,11 @@ internal abstract class QQAndroidBotBase constructor(
 
     // internally visible only
     fun getGroupByUin(uin: Long): Group {
-        return groups.delegate.getOrNull(uin) ?: throw NoSuchElementException("Can not found group with ID=${uin}")
+        return getGroupByUinOrNull(uin) ?: throw NoSuchElementException("Group $uin not found")
     }
 
     fun getGroupByUinOrNull(uin: Long): Group? {
-        return groups.delegate.getOrNull(uin)
+        return groups.asSequence().firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
     }
 
     @OptIn(LowLevelAPI::class)
