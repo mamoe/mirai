@@ -1,5 +1,6 @@
 plugins {
-    id("kotlin")
+    kotlin("jvm")
+    kotlin("plugin.serialization")
 }
 
 apply(plugin = "com.github.johnrengelman.shadow")
@@ -57,7 +58,7 @@ dependencies {
     api(kotlinx("serialization-runtime", serializationVersion))
 
     //for slf4j[ktor used]
-   // api(group = "org.apache.cassandra", name = "cassandra-all", version = "0.8.1")
+    // api(group = "org.apache.cassandra", name = "cassandra-all", version = "0.8.1")
 
     //mirai-console
     api(group = "com.alibaba", name = "fastjson", version = "1.2.62")
