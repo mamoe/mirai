@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE")
 
 import java.time.Duration
 import java.util.*
@@ -60,14 +60,15 @@ subprojects {
         val shadowJvmJar by tasks.creating(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
             group = "mirai"
 
-            val compilation = kotlin.targets.getByName("jvm").compilations["main"]
+            val compilation =
+                kotlin.targets.first { it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm }.compilations["main"]
 
             dependsOn(compilation.compileKotlinTask)
 
             configurations = mutableListOf(compilation.compileDependencyFiles as Configuration)
         }
 
-        val uploadGitHub by tasks.creating {
+        val githubUpload by tasks.creating {
             group = "mirai"
             dependsOn(shadowJvmJar)
 
@@ -88,7 +89,7 @@ subprojects {
                         val filename = file.name
                         println("Uploading file $filename")
                         runCatching {
-                            upload.GitToken.upload(
+                            upload.GitHub.upload(
                                 file,
                                 "https://api.github.com/repositories/249670490/contents/shadow/${project.name}/$filename"
                             )
