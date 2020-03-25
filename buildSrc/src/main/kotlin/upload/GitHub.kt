@@ -4,7 +4,7 @@ package upload
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.HttpTimeout
+import io.ktor.client.request.header
 import io.ktor.client.request.put
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.Project
@@ -21,7 +21,7 @@ object GitHub {
             return github_token
         }
 
-        System.getProperty("github_token", "~")?.let {
+        System.getProperty("github_token", null)?.let {
             return it.trim()
         }
 
@@ -45,23 +45,23 @@ object GitHub {
     }
 
     fun upload(file: File, url: String, project: Project) = runBlocking {
+        val token = getGithubToken(project)
+        println("token.length=${token.length}")
         HttpClient(CIO) {
             engine {
                 requestTimeout = 600_000
             }
-            install(HttpTimeout) {
-                connectTimeoutMillis = 600_000
-                requestTimeoutMillis = 600_000
-                socketTimeoutMillis = 600_000
-            }
-        }.put<String>("""$url?access_token=${getGithubToken(project)}""") {
+        }.put<String>(url) {
+            header("token", token)
             val content = String(Base64.getEncoder().encode(file.readBytes()))
             body = """
                     {
-                      "message": "automatic upload",
+                      "message": "automatically upload on release",
                       "content": "$content"
                     }
                 """.trimIndent()
+        }.let {
+            println("Upload response: $it")
         }
     }
 }
