@@ -80,6 +80,8 @@ dependencies {
     api(group = "org.yaml", name = "snakeyaml", version = "1.25")
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
 
+    api(group = "com.github.tomas-langer.cli", name="cli-progress", version="1.0.0")
+
 }
 
 val miraiConsoleWrapperVersion: String by project.ext

@@ -65,21 +65,26 @@ object WrapperMain {
                 ConsoleUpdater.versionCheck(type)
             }
         }
+
+        runBlocking {
+            MiraiDownloader.downloadIfNeed()
+        }
+
         println("Version check complete, starting Mirai")
-        println("Core    :" + CoreUpdater.getCore()!!)
-        println("Protocol:" + CoreUpdater.getProtocolLib()!!)
-        println("Console :" + ConsoleUpdater.getFile()!!)
-        println("Root    :" + System.getProperty("user.dir") + "/")
+        println("shadow-Protocol:" + CoreUpdater.getProtocolLib()!!)
+        println("Console        :" + ConsoleUpdater.getFile()!!)
+        println("Root           :" + System.getProperty("user.dir") + "/")
 
         val loader = MiraiClassLoader(
-            CoreUpdater.getCore()!!,
             CoreUpdater.getProtocolLib()!!,
             ConsoleUpdater.getFile()!!,
             this.javaClass.classLoader
         )
+
+        loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
+
         when (type) {
             CONSOLE_PURE -> {
-                loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
                 loader.loadClass(
                         "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
                     ).getMethod("load", String::class.java, String::class.java)
@@ -90,12 +95,10 @@ object WrapperMain {
 }
 
 class MiraiClassLoader(
-    core:File,
     protocol: File,
     console: File,
     parent: ClassLoader
 ): URLClassLoader(arrayOf(
-    core.toURI().toURL(),
     protocol.toURI().toURL(),
     console.toURI().toURL()
 ), parent)

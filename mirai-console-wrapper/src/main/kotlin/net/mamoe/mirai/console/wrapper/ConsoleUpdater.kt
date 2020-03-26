@@ -51,8 +51,9 @@ internal object ConsoleUpdater {
         if (current != newest) {
             println("Updating Console-$type from V$current -> V$newest, this is a force update")
             this.getFile()?.delete()
-            downloadConsole(newest)
-            println("Download Console complete")
+            MiraiDownloader.addTask(
+                "https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/${getProjectName()}/${getProjectName()}-$newest.jar",getContent("${getProjectName()}-$newest.jar")
+            )
         }
     }
 
@@ -102,11 +103,12 @@ internal object ConsoleUpdater {
     }
 
     private suspend fun downloadConsole(version: String) {
+
+        /*
         tryNTimesOrQuit(3, "Failed to download Console, please seek for help") {
             Http.downloadMavenArchive("net/mamoe", getProjectName(), version)
                 .saveToContent("${getProjectName()}-$version.jar")
         }
-        LibManager.clearLibs()
-        LibManager.addDependencyRequest("net/mamoe", getProjectName(), version)
+         */
     }
 }

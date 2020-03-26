@@ -13,10 +13,7 @@ package net.mamoe.mirai.console.wrapper
 
 import io.ktor.client.request.get
 import io.ktor.http.URLProtocol
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import java.io.File
-import java.net.URLClassLoader
 import kotlin.math.pow
 import kotlin.system.exitProcess
 
@@ -31,15 +28,6 @@ internal object CoreUpdater {
         return null
     }
 
-    fun getCore(): File? {
-        contentPath.listFiles()?.forEach { file ->
-            if (file != null && file.extension == "jar" && file.name.contains("core") && (!file.name.contains("qqandroid"))) {
-                return file
-            }
-        }
-        return null
-    }
-
 
     suspend fun versionCheck() {
         println("Fetching Newest Core Version .. ")
@@ -47,17 +35,11 @@ internal object CoreUpdater {
         val current = getCurrentVersion()
         println("Local Core Version: $current | Newest Core Version: $newest")
         if (current != newest) {
-            println("Updating Core/Lib from V$current -> V$newest, this is a force update")
-            cleanCoreAndLib()
-            downloadCoreAndLib(newest)
-            println("Download Core/Lib complete")
+            println("Updating shadowed-core from V$current -> V$newest, this is a force update")
+            this.getProtocolLib()?.delete()
+            MiraiDownloader
+                .addTask("https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/mirai-core-qqandroid/mirai-core-qqandroid-$newest.jar", getContent("mirai-core-qqandroid-jvm-$newest.jar"))
         }
-    }
-
-    fun loadCore() {
-        println("Loading Core")
-        loadCoreAndLib()
-        println("Mirai Core and Libraries Loaded")
     }
 
     /**
@@ -93,8 +75,7 @@ internal object CoreUpdater {
      * 默认返回 "0.0.0"
      */
     fun getCurrentVersion(): String {
-        val file = getProtocolLib()
-        if (file == null || getCore() == null) return "0.0.0"
+        val file = getProtocolLib() ?: return "0.0.0"
         val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value
         if (numberVersion != null) {
             return numberVersion + file.name.substringAfter(numberVersion).substringBefore(".jar")
@@ -103,13 +84,16 @@ internal object CoreUpdater {
     }
 
 
-    private fun cleanCoreAndLib() {
-        this.getCore()?.delete()
-        this.getProtocolLib()?.delete()
-    }
+
+    /*
+    private suspend fun downloadCore(version: String) {
+        /**
+         * from github
+         */
 
 
-    private suspend fun downloadCoreAndLib(version: String) {
+        /**
+         * from jcenter
         coroutineScope {
             launch {
                 tryNTimesOrQuit(3, "Failed to download newest Protocol lib, please seek for help") {
@@ -124,48 +108,13 @@ internal object CoreUpdater {
                         .saveToContent("mirai-core-jvm-$version.jar")
                 }
             }
-
-            launch {
-                LibManager.clearLibs()
-                LibManager.addDependencyRequest("net/mamoe", "mirai-core-jvm", version)
-                LibManager.addDependencyRequest("net/mamoe", "mirai-core-qqandroid-jvm", version)
-            }
         }
+        */
 
     }
 
 
-    private fun loadCoreAndLib() {
-        try {
-
-            val coreFile = getCore()!!
-            val protocolFile = getProtocolLib()!!
-
-            println("Core: $coreFile")
-            println("Protocol: $protocolFile")
-
-            val classloader = URLClassLoader(
-                arrayOf(coreFile.toURI().toURL(), protocolFile.toURI().toURL()),
-                this.javaClass.classLoader
-            )
-            ClassLoader.getSystemClassLoader()
-            // this.javaClass.classLoader.
-            println(classloader.loadClass("net.mamoe.mirai.BotFactory"))
-            println(classloader.loadClass("net.mamoe.mirai.qqandroid.QQAndroid"))
-            println(classloader.loadClass("net.mamoe.mirai.utils.cryptor.ECDHJvmKt"))
-
-            val a = classloader.loadClass("net.mamoe.mirai.qqandroid.QQAndroid").kotlin.objectInstance!!
-            println(a::class.java)
-
-            println(Class.forName("net.mamoe.mirai.qqandroid.QQAndroid"))
-
-        } catch (e: ClassNotFoundException) {
-            println("Failed to load core, please seek for help")
-            e.printStackTrace()
-            println("Failed to load core, please seek for help")
-            exitProcess(1)
-        }
-    }
+     */
 
 
 }

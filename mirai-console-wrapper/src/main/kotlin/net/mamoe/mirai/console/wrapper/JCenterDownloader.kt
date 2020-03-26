@@ -17,7 +17,6 @@ internal val Http: HttpClient = HttpClient(CIO)
 
 internal inline fun <R> tryNTimesOrQuit(repeat: Int, errorHint: String, block: (Int) -> R) {
     var lastException: Throwable? = null
-
     repeat(repeat) {
         try {
             block(it)
@@ -33,7 +32,6 @@ internal inline fun <R> tryNTimesOrQuit(repeat: Int, errorHint: String, block: (
     println(errorHint)
     exitProcess(1)
 }
-
 
 internal suspend inline fun HttpClient.downloadRequest(url: String): ByteReadChannel {
     return with(this.get<HttpResponse>(url)) {
@@ -140,3 +138,6 @@ internal suspend fun ByteReadChannel.saveToContent(filepath: String) {
 
 
 
+internal fun getContent(filepath: String):File{
+    return File(contentPath.absolutePath + "/" + filepath)
+}
