@@ -66,6 +66,11 @@ subprojects {
             dependsOn(compilation.compileKotlinTask)
 
             configurations = mutableListOf(compilation.compileDependencyFiles as Configuration)
+
+            this.exclude { file ->
+                file.name.endsWith(".sf", ignoreCase = true)
+                    .also { if (it) println("excluded ${file.name}") }
+            }
         }
 
         val githubUpload by tasks.creating {
