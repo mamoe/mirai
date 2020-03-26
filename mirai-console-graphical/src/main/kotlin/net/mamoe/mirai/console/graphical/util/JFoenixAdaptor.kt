@@ -17,6 +17,7 @@ internal fun EventTarget.jfxTabPane(op: JFXTabPane.() -> Unit = {}) = JFXTabPane
 internal fun EventTarget.jfxButton(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}) =
     JFXButton(text).attachTo(this, op) {
         if (graphic != null) it.graphic = graphic
+        it.buttonType = JFXButton.ButtonType.RAISED
     }
 
 fun EventTarget.jfxTextfield(value: String? = null, op: JFXTextField.() -> Unit = {}) =
