@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file: OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class, LowLevelAPI::class, ExperimentalUnsignedTypes::class)
 
 package net.mamoe.mirai.qqandroid.message
 
@@ -218,6 +219,8 @@ private val atAllData = ImMsgBody.Elem(
     )
 )
 
+private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
+
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
@@ -233,31 +236,49 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
 
 
     fun transformOneMessage(it: Message) {
+        if (it is RichMessage) {
+            val content = MiraiPlatformUtils.zip(it.content.toByteArray())
+            when (it) {
+                is LightApp -> elements.add(
+                    ImMsgBody.Elem(
+                        lightApp = ImMsgBody.LightAppElem(
+                            data = byteArrayOf(1) + content
+                        )
+                    )
+                )
+                is MergedForwardedMessage -> {
+                    elements.add(
+                        ImMsgBody.Elem(
+                            richMsg = ImMsgBody.RichMsg(
+                                serviceId = 35,
+                                template1 = byteArrayOf(1) + content
+                            )
+                        )
+                    )
+                    transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN) // required
+                }
+                else -> elements.add(
+                    ImMsgBody.Elem(
+                        richMsg = ImMsgBody.RichMsg(
+                            serviceId = when (it) {
+                                is XmlMessage -> 60
+                                is JsonMessage -> 1
+                                is MergedForwardedMessage -> 35
+                                else -> error("unsupported RichMessage: ${it::class.simpleName}")
+                            },
+                            template1 = byteArrayOf(1) + content
+                        )
+                    )
+                )
+            }
+        }
+
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
             is At -> {
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
                 elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
             }
-            is LightApp -> elements.add(
-                ImMsgBody.Elem(
-                    lightApp = ImMsgBody.LightAppElem(
-                        data = byteArrayOf(1) + MiraiPlatformUtils.zip(it.content.toByteArray())
-                    )
-                )
-            )
-            is RichMessage -> elements.add(
-                ImMsgBody.Elem(
-                    richMsg = ImMsgBody.RichMsg(
-                        serviceId = when (it) {
-                            is XmlMessage -> 60
-                            is JsonMessage -> 1
-                            else -> error("unsupported RichMessage")
-                        },
-                        template1 = byteArrayOf(1) + MiraiPlatformUtils.zip(it.content.toByteArray())
-                    )
-                )
-            )
             is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
@@ -267,16 +288,17 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
             is QuoteReplyToSend -> {
                 if (forGroup) {
                     check(it is QuoteReplyToSend.ToGroup) {
-                        "sending a quote to group using QuoteReplyToSend.ToFriend"
+                        "sending a quote to group using QuoteReplyToSend.ToFriend is prohibited"
                     }
                     if (it.sender is Member) {
                         transformOneMessage(it.createAt())
                     }
-                    transformOneMessage(" ".toMessage())
+                    transformOneMessage(PlainText(" "))
                 }
             }
             is QuoteReply,
-            is MessageSource -> {
+            is MessageSource,
+            -> {
 
             }
             else -> error("unsupported message type: ${it::class.simpleName}")
@@ -358,7 +380,7 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     return buildMessageChain(elements.size + 1) {
         +MessageSourceFromMsg(delegate = this@toMessageChain)
         elements.joinToMessageChain(this)
-    }.removeAtIfHasQuoteReply()
+    }.cleanupRubbishMessageElements()
 }
 
 // These two functions are not identical, dont combine.
@@ -369,11 +391,31 @@ internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     return buildMessageChain(elements.size + 1) {
         +MessageSourceFromServer(delegate = this@toMessageChain)
         elements.joinToMessageChain(this)
-    }.removeAtIfHasQuoteReply()
+    }.cleanupRubbishMessageElements()
 }
 
-private fun MessageChain.removeAtIfHasQuoteReply(): MessageChain =
-    this
+private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
+    var last: SingleMessage? = null
+    return buildMessageChain(initialSize = this.count()) {
+        this@cleanupRubbishMessageElements.forEach { element ->
+            if (last == null) {
+                last = element
+                return@forEach
+            } else {
+                if (last is MergedForwardedMessage && element is PlainText) {
+                    if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
+                        last = element
+                        return@forEach
+                    }
+                }
+            }
+
+            add(element)
+            last = element
+        }
+    }
+}
+
 /*
     if (this.any<QuoteReply>()) {
         var removed = false
@@ -387,9 +429,6 @@ private fun MessageChain.removeAtIfHasQuoteReply(): MessageChain =
         }.asMessageChain()
     } else this*/
 
-@OptIn(
-    MiraiInternalAPI::class, ExperimentalUnsignedTypes::class, MiraiDebugAPI::class, LowLevelAPI::class
-)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
     this.forEach {
         when {
@@ -425,6 +464,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                 when (it.richMsg.serviceId) {
                     1 -> message.add(JsonMessage(content))
                     60 -> message.add(XmlMessage(content))
+                    35 -> message.add(MergedForwardedMessage(content))
                     else -> {
                         @Suppress("DEPRECATION")
                         MiraiLogger.debug {

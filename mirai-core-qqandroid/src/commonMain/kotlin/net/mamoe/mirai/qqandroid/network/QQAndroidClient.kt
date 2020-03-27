@@ -101,7 +101,7 @@ internal open class QQAndroidClient(
     var openAppId: Long = 715019303L
 
     val apkVersionName: ByteArray get() = "8.2.7".toByteArray()
-    val buildVer: String get() = "8.2.7.4410"
+    val buildVer: String get() = "8.2.7.4410" // 8.2.0.1296
 
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)

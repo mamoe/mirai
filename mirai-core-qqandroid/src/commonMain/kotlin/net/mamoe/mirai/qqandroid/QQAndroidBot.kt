@@ -33,11 +33,13 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
+import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendFriend
 import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
 import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
@@ -45,6 +47,8 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.encodeToString
 import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 @OptIn(MiraiInternalAPI::class)
 internal expect class QQAndroidBot constructor(
@@ -358,6 +362,34 @@ internal abstract class QQAndroidBotBase constructor(
         }
         val rep = data.await()
         return json.parse(GroupActiveData.serializer(), rep)
+    }
+
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelSendLongMessage(groupCode: Long, message: Message) {
+        val source = MessageSourceFromSendFriend(
+            messageRandom = Random.nextInt().absoluteValue,
+            senderId = client.uin,
+            toUin = Group.calculateGroupUinByGroupCode(groupCode),
+            time = currentTimeSeconds,
+            groupId = groupCode,
+            originalMessage = message.asMessageChain(),
+            sequenceId = 0
+            //   sourceMessage = message
+        )
+
+        // TODO: 2020/3/26 util 方法来添加单例元素
+        val toSend = buildMessageChain {
+            source.originalMessage.filter { it !is MessageSource }.forEach {
+                add(it)
+            }
+            add(source)
+        }
+        network.run {
+            val response = MultiMsg.ApplyUp.createForLongMessage(this@QQAndroidBotBase.client, toSend, groupCode)
+                .sendAndExpect<MultiMsg.ApplyUp.Response>()
+            println(response._miraiContentToString())
+        }
     }
 
     override suspend fun queryImageUrl(image: Image): String = when (image) {

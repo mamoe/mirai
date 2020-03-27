@@ -33,6 +33,40 @@ interface RichMessage : MessageContent {
     @SinceMirai("0.30.0")
     companion object Templates : Message.Key<RichMessage> {
 
+        /**
+         * 合并转发.
+         */
+        @MiraiExperimentalAPI
+        fun mergedForward(): Nothing {
+            TODO()
+        }
+
+        /**
+         * 长消息.
+         *
+         * @param brief 消息内容纯文本, 显示在图片的前面
+         */
+        @MiraiExperimentalAPI
+        fun longMessage(brief: String, resId: String, time: Long): XmlMessage {
+            val template = """
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<msg serviceID="35" templateID="1" action="viewMultiMsg"
+     brief="$brief"
+     m_resid="$resId"
+     m_fileName="$time" sourceMsgId="0" url=""
+     flag="3" adverSign="0" multiMsgFlag="1">
+    <item layout="1">
+        <title>$brief…</title>
+        <hr hidden="false" style="0"/>
+        <summary>点击查看完整消息</summary>
+    </item>
+    <source name="聊天记录" icon="" action="" appid="-1"/>
+</msg>
+            """
+
+            return XmlMessage(template)
+        }
+
         @MiraiExperimentalAPI
         @SinceMirai("0.30.0")
         fun share(url: String, title: String? = null, content: String? = null, coverUrl: String? = null): XmlMessage =
@@ -106,6 +140,19 @@ class XmlMessage constructor(override val content: String) : RichMessage {
 
     override fun toString(): String = content
 }
+
+/**
+ * 合并转发消息
+ */
+@SinceMirai("0.31.0")
+@MiraiExperimentalAPI
+class MergedForwardedMessage(override val content: String) : RichMessage {
+    companion object Key : Message.Key<XmlMessage>
+
+    // serviceId = 35
+    override fun toString(): String = content
+}
+
 
 /**
  * 构造一条 XML 消息

@@ -254,7 +254,7 @@ internal class MessageSourceFromSendGroup(
     override val groupId: Long,
     override val originalMessage: MessageChain
 ) : MessageSourceFromSend() {
-    private lateinit var sequenceIdDeferred: Deferred<Int>
+    internal lateinit var sequenceIdDeferred: Deferred<Int>
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val id: Long

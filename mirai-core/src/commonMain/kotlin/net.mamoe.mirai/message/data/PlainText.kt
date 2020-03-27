@@ -15,7 +15,6 @@ package net.mamoe.mirai.message.data
 
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -28,26 +27,13 @@ class PlainText(val stringValue: String) :
     Comparable<String> by stringValue,
     CharSequence by stringValue {
 
+    @Suppress("unused")
     constructor(charSequence: CharSequence) : this(charSequence.toString())
 
     override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
 
-    companion object Key : Message.Key<PlainText> {
-        @JvmStatic
-        val Empty = PlainText("")
-
-        @JvmStatic
-        val Null = PlainText("null")
-
-        inline fun of(value: String): PlainText {
-            return PlainText(value)
-        }
-
-        inline fun of(value: CharSequence): PlainText {
-            return PlainText(value)
-        }
-    }
+    companion object Key : Message.Key<PlainText>
 }
 
 /**
