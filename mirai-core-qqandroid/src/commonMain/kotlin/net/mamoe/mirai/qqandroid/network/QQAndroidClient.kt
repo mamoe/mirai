@@ -22,9 +22,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
 import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.qqandroid.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.cryptor.ECDH
-import net.mamoe.mirai.utils.cryptor.TEA
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.utils.io.*
 
 /*

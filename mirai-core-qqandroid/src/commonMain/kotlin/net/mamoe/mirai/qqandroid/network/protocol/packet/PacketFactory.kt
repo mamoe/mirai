@@ -27,9 +27,13 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.network.readUShortLVByteArray
+import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
+import net.mamoe.mirai.qqandroid.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.useBytes
+import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.cryptor.TEA
-import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
+import net.mamoe.mirai.qqandroid.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.io.*
 import kotlin.jvm.JvmName
 

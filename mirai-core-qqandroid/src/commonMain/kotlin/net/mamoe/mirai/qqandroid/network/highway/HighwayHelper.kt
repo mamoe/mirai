@@ -33,7 +33,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.copyAndClose
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
-import net.mamoe.mirai.utils.io.withUse
+import net.mamoe.mirai.qqandroid.utils.io.withUse
 import kotlinx.serialization.InternalSerializationApi
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)

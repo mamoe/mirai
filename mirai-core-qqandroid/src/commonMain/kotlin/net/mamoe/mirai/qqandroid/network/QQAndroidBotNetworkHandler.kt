@@ -39,8 +39,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
-import net.mamoe.mirai.utils.io.readPacketExact
-import net.mamoe.mirai.utils.io.useBytes
+import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
+import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime

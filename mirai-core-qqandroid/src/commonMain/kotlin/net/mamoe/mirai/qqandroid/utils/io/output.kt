@@ -11,12 +11,12 @@
 @file:JvmMultifileClass
 @file:JvmName("Utils")
 
-package net.mamoe.mirai.utils.io
+package net.mamoe.mirai.qqandroid.utils.io
 
 import kotlinx.io.core.*
+import net.mamoe.mirai.qqandroid.utils.coerceAtMostOrFail
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.coerceAtMostOrFail
-import net.mamoe.mirai.utils.cryptor.TEA
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 

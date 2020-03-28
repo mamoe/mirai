@@ -408,7 +408,6 @@ internal abstract class QQAndroidBotBase constructor(
             when (response) {
                 is MultiMsg.ApplyUp.Response.MessageTooLarge ->
                     error("message is too large")
-                }
                 is MultiMsg.ApplyUp.Response.RequireUpload -> {
                     resId = response.proto.msgResid
 

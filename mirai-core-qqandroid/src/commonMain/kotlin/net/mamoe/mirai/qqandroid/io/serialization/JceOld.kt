@@ -18,10 +18,8 @@ import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
-import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce
 import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.BYTE
 import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.DOUBLE
 import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.FLOAT
@@ -39,7 +37,7 @@ import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRUCT_END
 import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.ZERO_TYPE
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceHead
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
-import net.mamoe.mirai.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.utils.io.toReadPacket
 
 @PublishedApi

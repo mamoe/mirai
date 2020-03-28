@@ -10,7 +10,7 @@
 @file:JvmMultifileClass
 @file:JvmName("Utils")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.qqandroid.utils
 
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
