@@ -10,7 +10,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.system.exitProcess
 
-
 internal object MiraiDownloader{
     private val tasks = mutableMapOf<String,File>()
 
@@ -21,19 +20,30 @@ internal object MiraiDownloader{
         tasks[fromUrl] = to
     }
 
-    suspend fun downloadIfNeed(){
+    suspend fun downloadIfNeed(isUI:Boolean){
         if(tasks.isNotEmpty()){
-            MiraiDownloaderImpl(EmptyCoroutineContext, tasks).waitUntilFinish()
+            if(!isUI) {
+                MiraiDownloaderImpl(EmptyCoroutineContext, tasks, false, MiraiDownloaderProgressBarInTerminal()).waitUntilFinish()
+            }else{
+                MiraiDownloaderImpl(EmptyCoroutineContext, tasks, false, MiraiDownloaderProgressBarInUI()).waitUntilFinish()
+            }
         }
     }
 }
 
+//background => any print
 private class MiraiDownloaderImpl(
     override val coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    tasks: Map<String, File>
+    tasks: Map<String, File>,
+    val background:Boolean,
+    val bar:MiraiDownloadProgressBar
 ):CoroutineScope {
 
-    val bar = MiraiDownloaderProgressBar()
+    fun log(any:Any?){
+        if(!background && any != null){
+            println(background)
+        }
+    }
 
     var totalDownload = AtomicInteger(0)
     var totalSize     = AtomicInteger(0)
@@ -41,8 +51,7 @@ private class MiraiDownloaderImpl(
     private var isDownloadFinish: Job
 
     init {
-        println("Mirai Downloader")
-        println("[Mirai国内镜像] 感谢崔Cloud慷慨提供免费的国内储存分发")
+        bar.ad()
         isDownloadFinish = this.async {
             tasks.forEach {
                 this.launch {
@@ -90,15 +99,26 @@ private class MiraiDownloaderImpl(
 }
 
 
-class MiraiDownloaderProgressBar(){
+interface MiraiDownloadProgressBar{
+    fun reset()
+    fun update(rate: Float, message: String)
+    fun complete()
+    fun ad()
+}
 
-    private fun reset() {
+class MiraiDownloaderProgressBarInTerminal(): MiraiDownloadProgressBar{
+
+    override fun reset() {
         print('\r')
     }
 
+    override fun ad(){
+        println("Mirai Downloader")
+        println("[Mirai国内镜像] 感谢崔Cloud慷慨提供免费的国内储存分发")
+    }
     private val barLen = 40
 
-    fun update(rate: Float, message: String) {
+    override fun update(rate: Float, message: String) {
         reset()
         print("Progress: ")
         val len =  (rate * barLen).toInt()
@@ -111,12 +131,39 @@ class MiraiDownloaderProgressBar(){
         print("  | $message")
     }
 
-    fun complete(){
+    override fun complete(){
         println()
     }
 }
 
+class MiraiDownloaderProgressBarInUI(): MiraiDownloadProgressBar{
 
+    override fun reset() {
+        WrapperMain.uiBarOutput.clear()
+    }
 
+    override fun ad(){
+        WrapperMain.uiLog("[Mirai国内镜像] 感谢崔Cloud慷慨提供更新服务器")
+    }
+    private val barLen = 20
+
+    override fun update(rate: Float, message: String) {
+        reset()
+        WrapperMain.uiBarOutput.append("Progress: ")
+        val len =  (rate * barLen).toInt()
+        for (i in 0 until len) {
+            WrapperMain.uiBarOutput.append("#")
+        }
+        for (i in 0 until barLen - len) {
+            WrapperMain.uiBarOutput.append(" ")
+        }
+        WrapperMain.uiBarOutput.append("  | $message")
+    }
+
+    override fun complete() {
+        TODO("Not yet implemented")
+    }
+
+}
 
 

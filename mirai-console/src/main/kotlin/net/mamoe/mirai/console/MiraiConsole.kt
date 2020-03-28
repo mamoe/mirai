@@ -90,7 +90,6 @@ object MiraiConsole {
         }
         //Security.removeProvider("BC")
 
-
         /* 依次启用功能 */
         DefaultCommands()
         PluginManager.loadPlugins()
@@ -107,14 +106,12 @@ object MiraiConsole {
      */
     fun stop() {
         PluginManager.disablePlugins()
-        CommandManager.cancel()
+            CommandManager.cancel()
         try {
             bots.forEach {
                 it.get()?.close()
             }
-        } catch (ignored: Exception) {
-
-        }
+        } catch (ignored: Exception) { }
     }
 
     @Suppress("RedundantSuspendModifier") // binary compatibility
@@ -169,7 +166,6 @@ object MiraiConsole {
             CommandManager.runCommand(sender, command)
         }
     }
-
 }
 
 
