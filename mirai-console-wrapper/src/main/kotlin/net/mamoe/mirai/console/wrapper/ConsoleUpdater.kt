@@ -51,8 +51,13 @@ internal object ConsoleUpdater {
         if (current != newest) {
             println("Updating Console-$type from V$current -> V$newest, this is a force update")
             this.getFile()?.delete()
+            /**
             MiraiDownloader.addTask(
                 "https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/${getProjectName()}/${getProjectName()}-$newest.jar",getContent("${getProjectName()}-$newest.jar")
+            )
+            */
+            MiraiDownloader.addTask(
+                "https://pan.jasonczc.cn/?/mirai/${getProjectName()}/${getProjectName()}-$newest.pdf", getContent("${getProjectName()}-$newest.jar")
             )
         }
     }
