@@ -288,9 +288,12 @@ internal class GroupImpl(
                 source = it
                 source.startWaitingSequenceId(this)
             }.sendAndExpect()
-            check(
-                response is MessageSvc.PbSendMsg.Response.SUCCESS
-            ) { "send message failed: $response" }
+            if (response is MessageSvc.PbSendMsg.Response.Failed) {
+                when (response.errorCode) {
+                    120 -> error("bot is being muted.")
+                    else -> error("send message failed: $response")
+                }
+            }
         }
 
         return MessageReceipt(source, this, botAsMember)
