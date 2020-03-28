@@ -38,6 +38,11 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     fun sendCommand(command: String) = CommandManager.runCommand(ConsoleCommandSender, command)
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
+        this.pushLog(LogPriority.INFO, "", identity, message)
+    }
+
+    // 修改interface之后用来暂时占位
+    override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
         fun ObservableList<*>.trim() {
             if (size > settingModel.item.maxLongNum) {
                 this.removeAt(0)
@@ -46,19 +51,14 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
         when (identity) {
             0L -> mainLog.apply {
-                add(message)
+                add("$identityStr $message")
                 mainLog.trim()
             }
             else -> cache[identity]?.logHistory?.apply {
-                add(message)
+                add("$identityStr $message")
                 trim()
             }
         }
-    }
-
-    // 修改interface之后用来暂时占位
-    override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
-        this.pushLog(identity, message)
     }
 
     override fun prePushBot(identity: Long) = Platform.runLater {
