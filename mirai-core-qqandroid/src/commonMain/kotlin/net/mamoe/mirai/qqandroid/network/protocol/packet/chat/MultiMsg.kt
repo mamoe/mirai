@@ -170,10 +170,6 @@ internal class MultiMsg {
             }
 
             object MessageTooLarge : Response()
-
-            data class OK(
-                val resId: String
-            ) : Response()
         }
 
         // captured from group
