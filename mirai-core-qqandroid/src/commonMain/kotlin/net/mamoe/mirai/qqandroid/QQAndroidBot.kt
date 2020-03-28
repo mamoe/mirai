@@ -370,7 +370,7 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     override suspend fun _lowLevelSendLongMessage(groupCode: Long, message: Message) {
         val chain = message.asMessageChain()
-        check(chain.toString().length <= 3000 && chain.count { it is Image } <= 10) { "message is too large" }
+        check(chain.toString().length <= 4500 && chain.count { it is Image } <= 50) { "message is too large" }
         val group = getGroup(groupCode)
 
         val source = MessageSourceFromSendFriend(
@@ -385,9 +385,9 @@ internal abstract class QQAndroidBotBase constructor(
         )
 
         // TODO: 2020/3/26 util 方法来添加单例元素
-        val toSend = buildMessageChain(chain) {
+        val toSend = buildMessageChain(chain.size) {
             source.originalMessage.forEach {
-                if (it !is MessageSource){
+                if (it !is MessageSource) {
                     add(it)
                 }
             }
@@ -398,7 +398,7 @@ internal abstract class QQAndroidBotBase constructor(
             val data = toSend.calculateValidationDataForGroup(group)
 
             val response =
-                MultiMsg.ApplyUp.createForLongMessage(
+                MultiMsg.ApplyUp.createForGroupLongMessage(
                     client = this@QQAndroidBotBase.client,
                     messageData = data,
                     dstUin = Group.calculateGroupUinByGroupCode(groupCode)
@@ -446,7 +446,7 @@ internal abstract class QQAndroidBotBase constructor(
 
             group.sendMessage(
                 RichMessage.longMessage(
-                    brief = toSend.joinToString {
+                    brief = toSend.joinToString(limit = 30) {
                         when (it) {
                             is PlainText -> it.stringValue
                             is At -> it.toString()
@@ -457,8 +457,6 @@ internal abstract class QQAndroidBotBase constructor(
                     timeSeconds = source.time
                 )
             )
-
-            println(response._miraiContentToString())
         }
     }
 

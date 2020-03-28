@@ -177,7 +177,7 @@ internal class MultiMsg {
         }
 
         // captured from group
-        fun createForLongMessage(
+        fun createForGroupLongMessage(
             client: QQAndroidClient,
             messageData: MessageValidationData,
             dstUin: Long // group uin
