@@ -1,4 +1,4 @@
-package net.mamoe.mirai.console.graphical.styleSheet
+package net.mamoe.mirai.console.graphical.stylesheet
 
 import javafx.scene.Cursor
 import javafx.scene.text.FontWeight
@@ -50,13 +50,10 @@ class PrimaryStyleSheet : BaseStyleSheet() {
                         backgroundColor += c(100, 100, 100, 0.4)
                         backgroundRadius += box(5.px)
 
-                            textFill = c(fontColor)
-                            fontWeight = FontWeight.BOLD
+                        textFill = c(fontColor)
+                        fontWeight = FontWeight.BOLD
 
                     }
-                }
-
-                textField {
                 }
             }
         }

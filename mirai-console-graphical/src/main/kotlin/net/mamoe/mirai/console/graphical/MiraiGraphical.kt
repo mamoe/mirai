@@ -11,11 +11,10 @@ package net.mamoe.mirai.console.graphical
 
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
-import net.mamoe.mirai.console.graphical.styleSheet.PrimaryStyleSheet
+import net.mamoe.mirai.console.graphical.stylesheet.PrimaryStyleSheet
 import net.mamoe.mirai.console.graphical.view.Decorator
 import tornadofx.App
 import tornadofx.find
-import tornadofx.launch
 
 //object MiraiGraphicalLoader {
 //    @JvmStatic

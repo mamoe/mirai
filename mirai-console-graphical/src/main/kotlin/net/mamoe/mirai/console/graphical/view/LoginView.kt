@@ -5,7 +5,7 @@ import javafx.geometry.Pos
 import javafx.scene.image.Image
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
-import net.mamoe.mirai.console.graphical.styleSheet.LoginViewStyleSheet
+import net.mamoe.mirai.console.graphical.stylesheet.LoginViewStyleSheet
 import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxPasswordfield
 import net.mamoe.mirai.console.graphical.util.jfxTextfield

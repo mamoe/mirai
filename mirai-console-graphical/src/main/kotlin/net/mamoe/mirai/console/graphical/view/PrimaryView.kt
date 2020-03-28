@@ -65,6 +65,26 @@ class PrimaryView : View() {
                     }
                 }
             }
+        }
+
+        center = vbox {
+
+            jfxTabPane {
+
+                fitToParentHeight()
+
+                tabClosingPolicy = TabPane.TabClosingPolicy.ALL_TABS
+
+                logTab("Main", controller.mainLog, closeable = false)
+
+                fixedTab("Plugins").content = find<PluginsView>().root
+
+                fixedTab("Settings").content = find<SettingsView>().root
+
+                fixedTab("Login").content = find<LoginView>().root
+
+                mainTabPane = this
+            }
 
             // command input
             textfield {
@@ -79,21 +99,6 @@ class PrimaryView : View() {
                     }
                 }
             }
-        }
-
-        center = jfxTabPane {
-
-            tabClosingPolicy = TabPane.TabClosingPolicy.ALL_TABS
-
-            logTab("Main", controller.mainLog, closeable = false)
-
-            fixedTab("Plugins").content = find<PluginsView>().root
-
-            fixedTab("Settings").content = find<SettingsView>().root
-
-            fixedTab("Login").content = find<LoginView>().root
-
-            mainTabPane = this
         }
     }
 
