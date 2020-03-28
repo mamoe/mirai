@@ -40,12 +40,11 @@ try{
             javaVersionNum = javaVersion.substring(0, versionPos).toInteger()
         }
     }
-    if (javaVersionNum <= 8) {
+    if (javaVersionNum >= 9) {
         include(':mirai-console-graphical')
     } else {
         println("jdk版本为 "+ javaVersionNum)
-        println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  模块 `:mirai-console-graphical`不支持JDK 9+\n" +
-                "请使用OracleJDK 1.8 或使用OpenJDK 1.8并添加Java Fx依赖")
+        println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用JDK 9以上版本引入模块 `:mirai-console-graphical`\n")
     }
 
 }catch(Exception ignored){
