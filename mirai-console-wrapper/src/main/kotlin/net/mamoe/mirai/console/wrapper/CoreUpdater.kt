@@ -38,7 +38,9 @@ internal object CoreUpdater {
             println("Updating shadowed-core from V$current -> V$newest, this is a force update")
             this.getProtocolLib()?.delete()
             MiraiDownloader
-                .addTask("https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/mirai-core-qqandroid/mirai-core-qqandroid-$newest.jar", getContent("mirai-core-qqandroid-jvm-$newest.jar"))
+                .addTask("https://pan.jasonczc.cn/?/mirai/mirai-core-qqandroid/mirai-core-qqandroid-$newest.pdf",getContent("mirai-core-qqandroid-jvm-$newest.jar"))
+                //.addTask("https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/mirai-core-qqandroid/mirai-core-qqandroid-$newest.jar", getContent("mirai-core-qqandroid-jvm-$newest.jar"))
+
         }
     }
 

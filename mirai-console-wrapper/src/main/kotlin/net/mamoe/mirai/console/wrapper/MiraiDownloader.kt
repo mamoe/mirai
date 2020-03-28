@@ -3,7 +3,6 @@ package net.mamoe.mirai.console.wrapper
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
@@ -29,7 +28,6 @@ internal object MiraiDownloader{
     }
 }
 
-
 private class MiraiDownloaderImpl(
     override val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     tasks: Map<String, File>
@@ -44,6 +42,7 @@ private class MiraiDownloaderImpl(
 
     init {
         println("Mirai Downloader")
+        println("[Mirai国内镜像] 感谢崔Cloud慷慨提供免费的国内储存分发")
         isDownloadFinish = this.async {
             tasks.forEach {
                 this.launch {
@@ -67,17 +66,15 @@ private class MiraiDownloaderImpl(
     private suspend fun downloadTask(fromUrl: String, file: File) {
         withContext(Dispatchers.IO) {
             try {
-                val url = URL(fromUrl)
-                val con: HttpURLConnection = url.openConnection() as HttpURLConnection
-                val input: InputStream = con.inputStream
+                val con = URL(fromUrl).openConnection() as HttpURLConnection
+                val input= con.inputStream
                 totalSize.addAndGet(con.contentLength)
                 val outputStream = FileOutputStream(file)
-
                 var len = -1
                 val buff = ByteArray(1024)
                 while (input.read(buff).also { len = it } != -1) {
-                    totalDownload.addAndGet(len)
-                    outputStream.write(buff, 0, len);
+                    totalDownload.addAndGet(buff.size)
+                    outputStream.write(buff, 0, len)
                 }
             }catch (e: Exception){
                 bar.update(1F,"Failed")
@@ -90,10 +87,7 @@ private class MiraiDownloaderImpl(
             }
         }
     }
-
 }
-
-
 
 
 class MiraiDownloaderProgressBar(){

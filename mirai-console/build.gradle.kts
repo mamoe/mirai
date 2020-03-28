@@ -25,28 +25,9 @@ dependencies {
     compileOnly("net.mamoe:mirai-core-qqandroid-jvm:${Versions.Mirai.core}")
 
 
-    compileOnly(group = "com.alibaba", name = "fastjson", version = "1.2.62")
-    compileOnly(group = "org.yaml", name = "snakeyaml", version = "1.25")
-    compileOnly(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
-
-
-    compileOnly(kotlin("stdlib", Versions.Kotlin.stdlib))
-    compileOnly(kotlin("serialization", Versions.Kotlin.stdlib))
-    compileOnly(kotlin("reflect", Versions.Kotlin.stdlib))
-
-    compileOnly(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
-    compileOnly(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
-    compileOnly(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
-    compileOnly("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
-
-    compileOnly("org.bouncycastle:bcprov-jdk15on:1.64")
-
-    compileOnly(ktor("http-cio"))
-    compileOnly(ktor("http-jvm"))
-    compileOnly(ktor("io-jvm"))
-    compileOnly(ktor("client-core-jvm"))
-    compileOnly(ktor("client-cio"))
-    compileOnly(ktor("network"))
+    implementation(group = "com.alibaba", name = "fastjson", version = "1.2.62")
+    implementation(group = "org.yaml", name = "snakeyaml", version = "1.25")
+    implementation(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
 }
 
 val miraiConsoleVersion: String by project.ext
