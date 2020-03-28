@@ -14,10 +14,10 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.utils.cryptor.ECDH
-import net.mamoe.mirai.utils.cryptor.ECDHKeyPair
-import net.mamoe.mirai.utils.io.encryptAndWrite
-import net.mamoe.mirai.utils.io.writeShortLVByteArray
+import net.mamoe.mirai.qqandroid.utils.cryptor.ECDH
+import net.mamoe.mirai.qqandroid.utils.cryptor.ECDHKeyPair
+import net.mamoe.mirai.qqandroid.utils.io.encryptAndWrite
+import net.mamoe.mirai.qqandroid.utils.io.writeShortLVByteArray
 
 @OptIn(ExperimentalUnsignedTypes::class)
 internal interface EncryptMethod {

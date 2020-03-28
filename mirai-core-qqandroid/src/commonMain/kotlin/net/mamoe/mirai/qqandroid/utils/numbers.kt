@@ -10,7 +10,7 @@
 @file:JvmMultifileClass
 @file:JvmName("Utils")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.qqandroid.utils
 
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -18,8 +18,8 @@ import kotlin.jvm.JvmName
 /**
  * 要求 [this] 最小为 [min].
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun Int.coerceAtLeastOrFail(min: Int): Int {
+@PublishedApi
+internal fun Int.coerceAtLeastOrFail(min: Int): Int {
     require(this >= min)
     return this
 }
@@ -27,8 +27,8 @@ inline fun Int.coerceAtLeastOrFail(min: Int): Int {
 /**
  * 要求 [this] 最小为 [min].
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun Long.coerceAtLeastOrFail(min: Long): Long {
+@PublishedApi
+internal fun Long.coerceAtLeastOrFail(min: Long): Long {
     require(this >= min)
     return this
 }
@@ -36,12 +36,12 @@ inline fun Long.coerceAtLeastOrFail(min: Long): Long {
 /**
  * 要求 [this] 最大为 [max].
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun Int.coerceAtMostOrFail(max: Int): Int =
+@PublishedApi
+internal fun Int.coerceAtMostOrFail(max: Int): Int =
     if (this >= max) error("value is greater than its expected maximum value $max")
     else this
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Long.coerceAtMostOrFail(max: Long): Long =
+@PublishedApi
+internal fun Long.coerceAtMostOrFail(max: Long): Long =
     if (this >= max) error("value is greater than its expected maximum value $max")
     else this

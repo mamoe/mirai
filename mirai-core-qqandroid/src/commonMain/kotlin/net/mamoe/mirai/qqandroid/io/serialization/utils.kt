@@ -25,7 +25,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.readPacketExact
+import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName

@@ -17,6 +17,7 @@ import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.protocol.LoginType
 import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.qqandroid.utils.io.*
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.currentTimeMillis

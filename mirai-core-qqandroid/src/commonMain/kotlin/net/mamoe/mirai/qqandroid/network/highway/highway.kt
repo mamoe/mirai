@@ -36,7 +36,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
     dataFlag: Int = 4096,
     commandId: Int,
     localId: Int = 2052,
-    uKey: ByteArray,
+    ticket: ByteArray,
 
     data: Any,
     dataSize: Int,
@@ -45,7 +45,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
 ): Flow<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }
-    require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
+ //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
     require(data !is ByteReadPacket || data.remaining.toInt() == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
 
     val flow = when (data) {
@@ -64,8 +64,12 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                     version = 1,
                     uin = client.uin.toString(),
                     command = command,
-                    seq = if (commandId == 2) client.nextHighwayDataTransSequenceIdForGroup()
-                    else client.nextHighwayDataTransSequenceIdForFriend(),
+                    seq = when (commandId) {
+                        2 -> client.nextHighwayDataTransSequenceIdForGroup()
+                        1 -> client.nextHighwayDataTransSequenceIdForFriend()
+                        27 -> client.nextHighwayDataTransSequenceIdForApplyUp()
+                        else -> error("illegal commandId: $commandId")
+                    },
                     retryTimes = 0,
                     appid = appId,
                     dataflag = dataFlag,
@@ -77,7 +81,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                     datalength = chunkedInput.bufferSize,
                     dataoffset = offset,
                     filesize = dataSize.toLong(),
-                    serviceticket = uKey,
+                    serviceticket = ticket,
                     md5 = MiraiPlatformUtils.md5(chunkedInput.buffer, 0, chunkedInput.bufferSize),
                     fileMd5 = fileMd5,
                     flag = 0,

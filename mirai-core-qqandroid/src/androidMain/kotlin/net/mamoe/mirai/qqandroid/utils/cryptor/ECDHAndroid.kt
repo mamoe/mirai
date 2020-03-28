@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.cryptor
+package net.mamoe.mirai.qqandroid.utils.cryptor
 
 import android.annotation.SuppressLint
 import net.mamoe.mirai.utils.MiraiInternalAPI

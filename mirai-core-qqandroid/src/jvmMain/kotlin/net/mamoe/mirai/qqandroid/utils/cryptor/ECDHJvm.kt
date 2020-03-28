@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.cryptor
+package net.mamoe.mirai.qqandroid.utils.cryptor
 
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiPlatformUtils
@@ -27,11 +27,13 @@ internal actual class ECDHKeyPairImpl(
     override val privateKey: ECDHPrivateKey get() = delegate.private
     override val publicKey: ECDHPublicKey get() = delegate.public
 
-    override val initialShareKey: ByteArray = ECDH.calculateShareKey(privateKey, initialPublicKey)
+    override val initialShareKey: ByteArray =
+        ECDH.calculateShareKey(privateKey, initialPublicKey)
 }
 
 @Suppress("FunctionName")
-actual fun ECDH() = ECDH(ECDH.generateKeyPair())
+actual fun ECDH() =
+    ECDH(ECDH.generateKeyPair())
 
 actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {

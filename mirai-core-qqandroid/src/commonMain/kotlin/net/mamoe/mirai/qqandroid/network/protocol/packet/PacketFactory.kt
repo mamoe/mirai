@@ -11,9 +11,10 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet
 
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.Packet
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
@@ -26,9 +27,13 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.network.readUShortLVByteArray
+import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
+import net.mamoe.mirai.qqandroid.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.useBytes
+import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.cryptor.TEA
-import net.mamoe.mirai.utils.cryptor.adjustToPublicKey
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
+import net.mamoe.mirai.qqandroid.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.utils.io.*
 import kotlin.jvm.JvmName
 
@@ -144,7 +149,8 @@ internal object KnownPacketFactories {
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,
         Heartbeat.Alive,
-        PbMessageSvc.PbMsgWithDraw
+        PbMessageSvc.PbMsgWithDraw,
+        MultiMsg.ApplyUp
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

@@ -16,6 +16,7 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.message.data.NullMessageChain.equals
 import net.mamoe.mirai.message.data.NullMessageChain.toString
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -44,6 +45,12 @@ import kotlin.reflect.KProperty
 interface MessageChain : Message, Iterable<SingleMessage> {
     override operator fun contains(sub: String): Boolean
     override fun toString(): String
+
+    /**
+     * 元素数量
+     */
+    @SinceMirai("0.31.1")
+    val size: Int
 
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例
@@ -374,7 +381,6 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 
 // endregion converters
 
-// region implementations
 
 /**
  * 不含任何元素的 [MessageChain]
@@ -389,19 +395,25 @@ object EmptyMessageChain : MessageChain by MessageChainImplByIterable(emptyList(
  */
 object NullMessageChain : MessageChain {
     override fun toString(): String = "NullMessageChain"
+    override val size: Int get() = 0
     override fun equals(other: Any?): Boolean = other === this
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
     override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, tail = tail)
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
 
+
+// region implementations
+
+
 /**
  * 使用 [Iterable] 作为委托的 [MessageChain]
  */
 @PublishedApi
-internal inline class MessageChainImplByIterable constructor(
+internal class MessageChainImplByIterable constructor(
     private val delegate: Iterable<SingleMessage>
 ) : Message, Iterable<SingleMessage>, MessageChain {
+    override val size: Int by lazy { delegate.count() }
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
     override fun toString(): String = this.delegate.joinToString("") { it.toString() }
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
@@ -411,9 +423,10 @@ internal inline class MessageChainImplByIterable constructor(
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
 @PublishedApi
-internal inline class MessageChainImplByCollection constructor(
+internal class MessageChainImplByCollection constructor(
     private val delegate: Collection<SingleMessage>
 ) : Message, Iterable<SingleMessage>, MessageChain {
+    override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
     override fun toString(): String = this.delegate.joinToString("") { it.toString() }
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
@@ -426,11 +439,12 @@ internal inline class MessageChainImplByCollection constructor(
 internal class MessageChainImplBySequence constructor(
     delegate: Sequence<SingleMessage>
 ) : Message, Iterable<SingleMessage>, MessageChain {
+    override val size: Int by lazy { collected.size }
+
     /**
      * [Sequence] 可能只能消耗一遍, 因此需要先转为 [List]
      */
     private val collected: List<SingleMessage> by lazy { delegate.toList() }
-
     override fun iterator(): Iterator<SingleMessage> = collected.iterator()
     override fun toString(): String = this.collected.joinToString("") { it.toString() }
     override operator fun contains(sub: String): Boolean = collected.any { it.contains(sub) }
@@ -440,9 +454,10 @@ internal class MessageChainImplBySequence constructor(
  * 单个 [SingleMessage] 作为 [MessageChain]
  */
 @PublishedApi
-internal inline class SingleMessageChainImpl constructor(
+internal class SingleMessageChainImpl constructor(
     private val delegate: SingleMessage
 ) : Message, Iterable<SingleMessage>, MessageChain {
+    override val size: Int get() = 1
     override fun toString(): String = this.delegate.toString()
     override fun iterator(): Iterator<SingleMessage> = iterator { yield(delegate) }
     override operator fun contains(sub: String): Boolean = sub in delegate

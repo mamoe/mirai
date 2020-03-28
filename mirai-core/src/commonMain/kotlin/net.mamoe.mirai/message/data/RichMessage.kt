@@ -13,6 +13,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -32,6 +33,48 @@ interface RichMessage : MessageContent {
 
     @SinceMirai("0.30.0")
     companion object Templates : Message.Key<RichMessage> {
+
+        /**
+         * 合并转发.
+         */
+        @MiraiExperimentalAPI
+        fun mergedForward(): Nothing {
+            TODO()
+        }
+
+        /**
+         * 长消息.
+         *
+         * @param brief 消息内容纯文本, 显示在图片的前面
+         */
+        @SinceMirai("0.31.0")
+        @OptIn(MiraiInternalAPI::class)
+        @MiraiExperimentalAPI
+        fun longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
+            val limited: String = if (brief.length > 30) {
+                brief.take(30) + "…"
+            } else {
+                brief
+            }
+
+            val template = """
+                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+                <msg serviceID="35" templateID="1" action="viewMultiMsg"
+                     brief="$limited"
+                     m_resid="$resId"
+                     m_fileName="$timeSeconds" sourceMsgId="0" url=""
+                     flag="3" adverSign="0" multiMsgFlag="1">
+                    <item layout="1">
+                        <title>$limited</title>
+                        <hr hidden="false" style="0"/>
+                        <summary>点击查看完整消息</summary>
+                    </item>
+                    <source name="聊天记录" icon="" action="" appid="-1"/>
+                </msg>
+            """.trimIndent()
+
+            return LongMessage(template, resId)
+        }
 
         @MiraiExperimentalAPI
         @SinceMirai("0.30.0")
@@ -106,6 +149,20 @@ class XmlMessage constructor(override val content: String) : RichMessage {
 
     override fun toString(): String = content
 }
+
+/**
+ * 长消息
+ */
+@SinceMirai("0.31.0")
+@MiraiExperimentalAPI
+@MiraiInternalAPI
+class LongMessage(override val content: String, val resId: String) : RichMessage {
+    companion object Key : Message.Key<XmlMessage>
+
+    // serviceId = 35
+    override fun toString(): String = content
+}
+
 
 /**
  * 构造一条 XML 消息

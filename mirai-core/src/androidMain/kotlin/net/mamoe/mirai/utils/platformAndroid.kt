@@ -21,6 +21,8 @@ import java.io.InputStream
 import java.net.Inet4Address
 import java.security.MessageDigest
 import java.util.zip.Deflater
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import java.util.zip.Inflater
 
 
@@ -63,6 +65,7 @@ actual object MiraiPlatformUtils {
         }
     }
 
+
     actual fun md5(data: ByteArray, offset: Int, length: Int): ByteArray {
         data.checkOffsetAndLength(offset, length)
         return MessageDigest.getInstance("MD5").apply { update(data, offset, length) }.digest()
@@ -98,5 +101,19 @@ actual object MiraiPlatformUtils {
         while (this.read().also { read = it } != -1) {
             block(read)
         }
+    }
+
+    actual fun gzip(data: ByteArray, offset: Int, length: Int): ByteArray {
+        ByteArrayOutputStream().use { buf ->
+            GZIPOutputStream(buf).use { gzip ->
+                data.inputStream(offset, length).use { t -> t.copyTo(gzip) }
+            }
+            buf.flush()
+            return buf.toByteArray()
+        }
+    }
+
+    actual fun ungzip(data: ByteArray, offset: Int, length: Int): ByteArray {
+        return GZIPInputStream(data.inputStream(offset, length)).use { it.readBytes() }
     }
 }

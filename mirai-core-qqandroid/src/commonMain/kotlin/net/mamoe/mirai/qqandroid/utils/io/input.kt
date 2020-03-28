@@ -11,7 +11,7 @@
 @file:JvmMultifileClass
 @file:JvmName("Utils")
 
-package net.mamoe.mirai.utils.io
+package net.mamoe.mirai.qqandroid.utils.io
 
 import kotlinx.io.OutputStream
 import kotlinx.io.charsets.Charset
@@ -27,6 +27,9 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlinx.serialization.InternalSerializationApi
+import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.toReadPacket
+import net.mamoe.mirai.utils.io.toUHexString
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 fun ByteReadPacket.copyTo(outputStream: OutputStream) {

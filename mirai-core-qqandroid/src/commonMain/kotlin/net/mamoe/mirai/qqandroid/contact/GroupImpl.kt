@@ -65,6 +65,8 @@ internal class GroupImpl(
     companion object;
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
+
+    @OptIn(LowLevelAPI::class)
     val uin: Long = groupInfo.uin
 
     override lateinit var owner: Member
@@ -288,9 +290,13 @@ internal class GroupImpl(
                 source = it
                 source.startWaitingSequenceId(this)
             }.sendAndExpect()
-            check(
-                response is MessageSvc.PbSendMsg.Response.SUCCESS
-            ) { "send message failed: $response" }
+            if (response is MessageSvc.PbSendMsg.Response.Failed) {
+                when (response.resultType) {
+                    120 -> error("bot is being muted.")
+                    34 -> error("internal error: send message failed, illegal arguments: $response")
+                    else -> error("send message failed: $response")
+                }
+            }
         }
 
         return MessageReceipt(source, this, botAsMember)
@@ -349,7 +355,7 @@ internal class GroupImpl(
                             imageInput = image.input,
                             inputSize = image.inputSize.toInt(),
                             fileMd5 = image.md5,
-                            uKey = response.uKey,
+                            ticket = response.uKey,
                             commandId = 2
                         )
                     } ?: error("timeout uploading image: ${image.filename}")

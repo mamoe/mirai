@@ -20,8 +20,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.utils.GuidSource
 import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.qqandroid.utils.guidFlag
+import net.mamoe.mirai.qqandroid.utils.io.*
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.cryptor.TEA
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.utils.io.*
 
 internal class WtLogin {

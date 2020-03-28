@@ -38,7 +38,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.utils.io.toUHexString
 
 internal class OnlinePush {

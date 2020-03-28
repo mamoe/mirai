@@ -22,9 +22,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
 import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.qqandroid.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.cryptor.ECDH
-import net.mamoe.mirai.utils.cryptor.TEA
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.utils.io.*
 
 /*
@@ -101,7 +101,7 @@ internal open class QQAndroidClient(
     var openAppId: Long = 715019303L
 
     val apkVersionName: ByteArray get() = "8.2.7".toByteArray()
-    val buildVer: String get() = "8.2.7.4410"
+    val buildVer: String get() = "8.2.7.4410" // 8.2.0.1296
 
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
@@ -114,6 +114,9 @@ internal open class QQAndroidClient(
 
     private val highwayDataTransSequenceIdForFriend: AtomicInt = atomic(43973)
     internal fun nextHighwayDataTransSequenceIdForFriend(): Int = highwayDataTransSequenceIdForFriend.getAndAdd(2)
+
+    private val highwayDataTransSequenceIdForApplyUp: AtomicInt = atomic(77918)
+    internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     val appClientVersion: Int = 0
 

@@ -14,7 +14,7 @@ package net.mamoe.mirai.utils
 import io.ktor.client.HttpClient
 
 /**
- * 时间戳
+ * 时间戳.
  */
 expect val currentTimeMillis: Long
 
@@ -29,6 +29,10 @@ expect object MiraiPlatformUtils {
     fun unzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
 
     fun zip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+
+    fun gzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+
+    fun ungzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
 
 
     fun md5(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
