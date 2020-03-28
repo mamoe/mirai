@@ -28,6 +28,7 @@ dependencies {
     api(kotlin("reflect", Versions.Kotlin.stdlib))
 
     api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
+    api(kotlinx("coroutines-swing",Versions.Kotlin.coroutines))
 
     api(ktor("client-cio", Versions.Kotlin.ktor))
     api(ktor("client-core", Versions.Kotlin.ktor))

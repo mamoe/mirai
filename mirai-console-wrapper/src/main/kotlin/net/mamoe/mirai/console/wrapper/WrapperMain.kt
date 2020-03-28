@@ -9,11 +9,13 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 package net.mamoe.mirai.console.wrapper
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import java.awt.Frame
+import java.awt.Panel
+import java.awt.TextArea
+import java.awt.Toolkit
 import java.io.File
+import java.lang.StringBuilder
 import java.net.URLClassLoader
 import java.util.*
 
@@ -27,16 +29,70 @@ val contentPath by lazy {
 }
 
 object WrapperMain {
+    internal var uiBarOutput = StringBuilder()
+    private val uilog = StringBuilder()
+    internal fun uiLog(any: Any?){
+        if(any!=null) {
+            uilog.append(any)
+        }
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
-        GlobalScope.launch{
-            while (true) {
-                delay(1000*60*5)
-                System.gc()
-            }
-        }
-        println("You are running Mirai-Console-Wrapper under " + System.getProperty("user.dir"))
+        gc()
+        if(args.contains("native") || args.contains("-native")){
 
+            val f = Frame("Mirai-Console Version Check")
+            f.isResizable = false
+            val srcSize= Toolkit.getDefaultToolkit().screenSize
+
+            val width = 300
+            val height = 200
+
+            val p = Panel()
+            val textArea = TextArea()
+            textArea.isEditable = false
+            p.add(textArea)
+            p.isVisible = true
+
+            f.setLocation((srcSize.width-width)/2, (srcSize.height-height)/2)
+            f.setSize(width, height)
+            f.add(p)
+            f.isVisible = true
+
+            uiLog("正在进行版本检查\n")
+
+            var uiOpen = true
+            GlobalScope.launch {
+                while (isActive && uiOpen){
+                    delay(16)//60 fps
+                    withContext(Dispatchers.Main){
+                        textArea.text = uilog.toString() + "\n" + uiBarOutput.toString()
+                    }
+                }
+            }
+            runBlocking {
+                launch {
+                    CoreUpdater.versionCheck()
+                }
+                launch {
+                    ConsoleUpdater.versionCheck(CONSOLE_GRAPHICAL)
+                }
+            }
+            uiLog("版本检查完成\n")
+            runBlocking {
+                MiraiDownloader.downloadIfNeed(true)
+            }
+            start(CONSOLE_GRAPHICAL)
+
+        }else{
+            preStartInNonNative()
+        }
+    }
+
+
+    private fun preStartInNonNative(){
+        println("You are running Mirai-Console-Wrapper under " + System.getProperty("user.dir"))
         var type = WrapperProperties.determineConsoleType(WrapperProperties.content)
         if(type!=null){
             println("Starting Mirai Console $type, reset by clear /content/")
@@ -55,7 +111,6 @@ object WrapperMain {
             }
             WrapperProperties.content = type
         }
-
         println("Starting version check...")
         runBlocking {
             launch {
@@ -67,7 +122,7 @@ object WrapperMain {
         }
 
         runBlocking {
-            MiraiDownloader.downloadIfNeed()
+            MiraiDownloader.downloadIfNeed(false)
         }
 
         println("Version check complete, starting Mirai")
@@ -75,6 +130,10 @@ object WrapperMain {
         println("Console        :" + ConsoleUpdater.getFile()!!)
         println("Root           :" + System.getProperty("user.dir") + "/")
 
+        start(type)
+    }
+
+    private fun start(type: String){
         val loader = MiraiClassLoader(
             CoreUpdater.getProtocolLib()!!,
             ConsoleUpdater.getFile()!!,
@@ -94,7 +153,9 @@ object WrapperMain {
     }
 }
 
-class MiraiClassLoader(
+
+
+private class MiraiClassLoader(
     protocol: File,
     console: File,
     parent: ClassLoader
@@ -104,7 +165,7 @@ class MiraiClassLoader(
 ), parent)
 
 
-object WrapperProperties{
+private object WrapperProperties{
     val contentFile by lazy{
         File(contentPath.absolutePath + "/.wrapper.txt").also {
             if(!it.exists())it.createNewFile()
@@ -117,12 +178,20 @@ object WrapperProperties{
 
 
     fun determineConsoleType(
-        type:String
+        type: String
     ):String?{
         if(type == CONSOLE_PURE || type == CONSOLE_GRAPHICAL || type == CONSOLE_TERMINAL){
             return type
         }
         return null
     }
+}
 
+private fun gc(){
+    GlobalScope.launch{
+        while (true) {
+            delay(1000*60*5)
+            System.gc()
+        }
+    }
 }
