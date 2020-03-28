@@ -14,11 +14,16 @@ import net.mamoe.mirai.utils.io.encodeToString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(MiraiInternalAPI::class)
 internal class PlatformUtilsTest {
 
-    @OptIn(MiraiInternalAPI::class)
     @Test
     fun testZip() {
         assertEquals("test", MiraiPlatformUtils.unzip(MiraiPlatformUtils.zip("test".toByteArray())).encodeToString())
+    }
+
+    @Test
+    fun testGZip() {
+        assertEquals("test", MiraiPlatformUtils.ungzip(MiraiPlatformUtils.gzip("test".toByteArray())).encodeToString())
     }
 }

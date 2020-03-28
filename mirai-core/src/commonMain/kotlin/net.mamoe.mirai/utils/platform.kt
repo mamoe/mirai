@@ -30,6 +30,10 @@ expect object MiraiPlatformUtils {
 
     fun zip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
 
+    fun gzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+
+    fun ungzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+
 
     fun md5(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
 

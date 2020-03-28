@@ -22,6 +22,8 @@ import java.io.OutputStream
 import java.net.Inet4Address
 import java.security.MessageDigest
 import java.util.zip.Deflater
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import java.util.zip.Inflater
 
 /**
@@ -62,6 +64,20 @@ actual object MiraiPlatformUtils {
         ByteArrayPool.useInstance {
             return it.take(deflater.deflate(it)).toByteArray().also { deflater.end() }
         }
+    }
+
+    actual fun gzip(data: ByteArray, offset: Int, length: Int): ByteArray {
+        ByteArrayOutputStream().use { buf ->
+            GZIPOutputStream(buf).use { gzip ->
+                data.inputStream(offset, length).use { t -> t.copyTo(gzip) }
+            }
+            buf.flush()
+            return buf.toByteArray()
+        }
+    }
+
+    actual fun ungzip(data: ByteArray, offset: Int, length: Int): ByteArray {
+        return GZIPInputStream(data.inputStream(offset, length)).use { it.readBytes() }
     }
 
     actual fun md5(data: ByteArray, offset: Int, length: Int): ByteArray {
