@@ -14,7 +14,7 @@ package net.mamoe.mirai.utils
 import io.ktor.client.HttpClient
 
 /**
- * 时间戳
+ * 时间戳.
  */
 expect val currentTimeMillis: Long
 

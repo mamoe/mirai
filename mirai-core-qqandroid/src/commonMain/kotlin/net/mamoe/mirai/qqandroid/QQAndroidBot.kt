@@ -33,18 +33,20 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
+import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendFriend
 import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
 import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.encodeToString
+import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.absoluteValue
@@ -367,27 +369,95 @@ internal abstract class QQAndroidBotBase constructor(
     @LowLevelAPI
     @MiraiExperimentalAPI
     override suspend fun _lowLevelSendLongMessage(groupCode: Long, message: Message) {
+        val chain = message.asMessageChain()
+        check(chain.toString().length <= 3000 && chain.count { it is Image } <= 10) { "message is too large" }
+        val group = getGroup(groupCode)
+
         val source = MessageSourceFromSendFriend(
             messageRandom = Random.nextInt().absoluteValue,
             senderId = client.uin,
             toUin = Group.calculateGroupUinByGroupCode(groupCode),
             time = currentTimeSeconds,
             groupId = groupCode,
-            originalMessage = message.asMessageChain(),
-            sequenceId = 0
+            originalMessage = chain,
+            sequenceId = client.atomicNextMessageSequenceId()
             //   sourceMessage = message
         )
 
         // TODO: 2020/3/26 util 方法来添加单例元素
-        val toSend = buildMessageChain {
-            source.originalMessage.filter { it !is MessageSource }.forEach {
-                add(it)
+        val toSend = buildMessageChain(chain) {
+            source.originalMessage.forEach {
+                if (it !is MessageSource){
+                    add(it)
+                }
             }
             add(source)
         }
+
         network.run {
-            val response = MultiMsg.ApplyUp.createForLongMessage(this@QQAndroidBotBase.client, toSend, groupCode)
-                .sendAndExpect<MultiMsg.ApplyUp.Response>()
+            val data = toSend.calculateValidationDataForGroup(group)
+
+            val response =
+                MultiMsg.ApplyUp.createForLongMessage(
+                    client = this@QQAndroidBotBase.client,
+                    messageData = data,
+                    dstUin = Group.calculateGroupUinByGroupCode(groupCode)
+                ).sendAndExpect<MultiMsg.ApplyUp.Response>()
+
+            val resId: String
+            when (response) {
+                is MultiMsg.ApplyUp.Response.MessageTooLarge ->
+                    error("message is too large")
+                is MultiMsg.ApplyUp.Response.OK -> {
+                    resId = response.resId
+                }
+                is MultiMsg.ApplyUp.Response.RequireUpload -> {
+                    resId = response.proto.msgResid
+
+                    val body = LongMsg.ReqBody(
+                        subcmd = 1,
+                        platformType = 9,
+                        termType = 5,
+                        msgUpReq = listOf(
+                            LongMsg.MsgUpReq(
+                                msgType = 3, // group
+                                dstUin = Group.calculateGroupUinByGroupCode(groupCode),
+                                msgId = 0,
+                                msgUkey = response.proto.msgUkey,
+                                needCache = 0,
+                                storeType = 2,
+                                msgContent = data.data
+                            )
+                        )
+                    ).toByteArray(LongMsg.ReqBody.serializer())
+
+                    HighwayHelper.uploadImage(
+                        client,
+                        serverIp = response.proto.uint32UpIp!!.first().toIpV4AddressString(),
+                        serverPort = response.proto.uint32UpPort!!.first(),
+                        ticket = response.proto.msgSig, // 104
+                        imageInput = body.toReadPacket(),
+                        inputSize = body.size,
+                        fileMd5 = MiraiPlatformUtils.md5(body),
+                        commandId = 27 // long msg
+                    )
+                }
+            }
+
+            group.sendMessage(
+                RichMessage.longMessage(
+                    brief = toSend.joinToString {
+                        when (it) {
+                            is PlainText -> it.stringValue
+                            is At -> it.toString()
+                            else -> ""
+                        }
+                    },
+                    resId = resId,
+                    timeSeconds = source.time
+                )
+            )
+
             println(response._miraiContentToString())
         }
     }

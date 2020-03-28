@@ -115,6 +115,9 @@ internal open class QQAndroidClient(
     private val highwayDataTransSequenceIdForFriend: AtomicInt = atomic(43973)
     internal fun nextHighwayDataTransSequenceIdForFriend(): Int = highwayDataTransSequenceIdForFriend.getAndAdd(2)
 
+    private val highwayDataTransSequenceIdForApplyUp: AtomicInt = atomic(77918)
+    internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
+
     val appClientVersion: Int = 0
 
     var networkType: NetworkType = NetworkType.WIFI

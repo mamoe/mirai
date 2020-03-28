@@ -44,7 +44,7 @@ internal class MultiMsg : ProtoBuf {
     @Serializable
     class MultiMsgApplyUpRsp(
         @ProtoId(1) val result: Int = 0,
-        @ProtoId(2) val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) val msgResid: String = "",
         @ProtoId(3) val msgUkey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(4) val uint32UpIp: List<Int>? = null,
         @ProtoId(5) val uint32UpPort: List<Int>? = null,

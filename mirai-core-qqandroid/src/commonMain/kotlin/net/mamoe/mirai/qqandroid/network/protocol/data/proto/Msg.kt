@@ -467,7 +467,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoId(4) val rpId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(5) val prpFold: Int = 0,
         @ProtoId(6) val longTextFlag: Int = 0,
-        @ProtoId(7) val longTextResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(7) val longTextResid: String = "",
         @ProtoId(8) val groupType: Int = 0,
         @ProtoId(9) val toUinFlag: Int = 0,
         @ProtoId(10) val glamourLevel: Int = 0,

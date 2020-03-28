@@ -101,7 +101,7 @@ internal object HighwayHelper {
         client: QQAndroidClient,
         serverIp: String,
         serverPort: Int,
-        uKey: ByteArray,
+        ticket: ByteArray,
         imageInput: Any,
         inputSize: Int,
         fileMd5: ByteArray,
@@ -109,8 +109,8 @@ internal object HighwayHelper {
     ) {
         require(imageInput is Input || imageInput is InputStream || imageInput is ByteReadChannel) { "unsupported imageInput: ${imageInput::class.simpleName}" }
         require(fileMd5.size == 16) { "bad md5. Required size=16, got ${fileMd5.size}" }
-        require(uKey.size == 128) { "bad uKey. Required size=128, got ${uKey.size}" }
-        require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
+      //  require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
+       // require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
 
         val socket = PlatformSocket()
         socket.connect(serverIp, serverPort)
@@ -119,7 +119,7 @@ internal object HighwayHelper {
                 client = client,
                 command = "PicUp.DataUp",
                 commandId = commandId,
-                uKey = uKey,
+                ticket = ticket,
                 data = imageInput,
                 dataSize = inputSize,
                 fileMd5 = fileMd5

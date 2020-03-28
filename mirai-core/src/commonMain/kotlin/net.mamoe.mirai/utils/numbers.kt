@@ -18,6 +18,7 @@ import kotlin.jvm.JvmName
 /**
  * 要求 [this] 最小为 [min].
  */
+@PublishedApi
 internal fun Int.coerceAtLeastOrFail(min: Int): Int {
     require(this >= min)
     return this
@@ -26,6 +27,7 @@ internal fun Int.coerceAtLeastOrFail(min: Int): Int {
 /**
  * 要求 [this] 最小为 [min].
  */
+@PublishedApi
 internal fun Long.coerceAtLeastOrFail(min: Long): Long {
     require(this >= min)
     return this
@@ -34,10 +36,12 @@ internal fun Long.coerceAtLeastOrFail(min: Long): Long {
 /**
  * 要求 [this] 最大为 [max].
  */
+@PublishedApi
 internal fun Int.coerceAtMostOrFail(max: Int): Int =
     if (this >= max) error("value is greater than its expected maximum value $max")
     else this
 
+@PublishedApi
 internal fun Long.coerceAtMostOrFail(max: Long): Long =
     if (this >= max) error("value is greater than its expected maximum value $max")
     else this

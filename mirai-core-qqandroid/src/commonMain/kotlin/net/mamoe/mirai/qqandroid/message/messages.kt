@@ -234,11 +234,25 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
         }
     }
 
+    var longTextResId: String? = null
 
     fun transformOneMessage(it: Message) {
         if (it is RichMessage) {
             val content = MiraiPlatformUtils.zip(it.content.toByteArray())
             when (it) {
+                is LongMessage -> {
+                    check(longTextResId == null) { "There must be no more than one LongMessage element in the message chain" }
+                    elements.add(
+                        ImMsgBody.Elem(
+                            richMsg = ImMsgBody.RichMsg(
+                                serviceId = 35, // ok
+                                template1 = byteArrayOf(1) + content
+                            )
+                        )
+                    )
+                    transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN)
+                    longTextResId = it.resId
+                }
                 is LightApp -> elements.add(
                     ImMsgBody.Elem(
                         lightApp = ImMsgBody.LightAppElem(
@@ -246,24 +260,13 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
                         )
                     )
                 )
-                is MergedForwardedMessage -> {
-                    elements.add(
-                        ImMsgBody.Elem(
-                            richMsg = ImMsgBody.RichMsg(
-                                serviceId = 35,
-                                template1 = byteArrayOf(1) + content
-                            )
-                        )
-                    )
-                    transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN) // required
-                }
                 else -> elements.add(
                     ImMsgBody.Elem(
                         richMsg = ImMsgBody.RichMsg(
                             serviceId = when (it) {
                                 is XmlMessage -> 60
                                 is JsonMessage -> 1
-                                is MergedForwardedMessage -> 35
+                                //   is MergedForwardedMessage -> 35
                                 else -> error("unsupported RichMessage: ${it::class.simpleName}")
                             },
                             template1 = byteArrayOf(1) + content
@@ -296,8 +299,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
                     transformOneMessage(PlainText(" "))
                 }
             }
-            is QuoteReply,
-            is MessageSource,
+            is QuoteReply, // already transformed above
+            is MessageSource, // mirai only
+            is RichMessage, // already transformed above
             -> {
 
             }
@@ -306,10 +310,24 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
     }
     this.forEach(::transformOneMessage)
 
-    if (this.any<RichMessage>()) {
-        // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
-        elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes())))
-    } else elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
+    when {
+        longTextResId != null -> {
+            elements.add(
+                ImMsgBody.Elem(
+                    generalFlags = ImMsgBody.GeneralFlags(
+                        longTextFlag = 1,
+                        longTextResid = longTextResId!!,
+                        pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
+                    ),
+                )
+            )
+        }
+        this.any<RichMessage>() -> {
+            // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
+            elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes())))
+        }
+        else -> elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
+    }
 
     return elements
 }
@@ -402,7 +420,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                 last = element
                 return@forEach
             } else {
-                if (last is MergedForwardedMessage && element is PlainText) {
+                if (last is LongMessage && element is PlainText) {
                     if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
                         last = element
                         return@forEach
@@ -414,6 +432,15 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             last = element
         }
     }
+}
+
+internal inline fun <reified R> Iterable<*>.firstIsInstance(): R {
+    this.forEach {
+        if (it is R) {
+            return it
+        }
+    }
+    throw NoSuchElementException("Collection contains no element matching the predicate.")
 }
 
 /*
@@ -464,7 +491,12 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                 when (it.richMsg.serviceId) {
                     1 -> message.add(JsonMessage(content))
                     60 -> message.add(XmlMessage(content))
-                    35 -> message.add(MergedForwardedMessage(content))
+                    35 -> message.add(
+                        LongMessage(
+                            content,
+                            this.firstIsInstance<ImMsgBody.GeneralFlags>().longTextResid
+                        )
+                    )
                     else -> {
                         @Suppress("DEPRECATION")
                         MiraiLogger.debug {

@@ -12,7 +12,7 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
@@ -29,6 +29,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MultiMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
+import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiPlatformUtils
@@ -44,8 +45,8 @@ internal class MessageValidationData @OptIn(MiraiInternalAPI::class) constructor
 }
 
 @OptIn(MiraiInternalAPI::class)
-internal fun MessageChain.calculateValidationData(
-    bot: Bot
+internal fun MessageChain.calculateValidationDataForGroup(
+    group: Group
 ): MessageValidationData {
     // top_package.akkv#method_42702
     val source: MessageSource by this.orElse { error("internal error: calculateValidationData: cannot find MessageSource, chain=${this._miraiContentToString()}") }
@@ -55,37 +56,39 @@ internal fun MessageChain.calculateValidationData(
     }
 
     val richTextElems = this.toRichTextElems(source is MessageSourceFromSendGroup)
+        .filterNot { it.generalFlags != null }
 
     val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
         msg = listOf(
             MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
-                    fromUin = source.senderId,
+                    fromUin = group.bot.uin,
                     msgSeq = source.sequenceId,
                     msgTime = source.time.toInt(),
-                    msgUid = source.messageRandom.toLong(), // TODO: 2020/3/26 CHECK IT
+                    msgUid = 0x01000000000000000L or source.messageRandom.toLong(), // TODO: 2020/3/26 CHECK IT
                     mutiltransHead = MsgComm.MutilTransHead(
                         status = 0,
                         msgId = 1
                     ),
                     msgType = 82, // troop
                     groupInfo = MsgComm.GroupInfo(
-                        groupCode = source.toUin,
-                        groupCard = bot.nick,
+                        groupCode = group.id,
+                        groupCard = "Cinnamon"// group.botAsMember.nameCard, // Cinnamon
                     ),
+                    isSrcMsg = false
                 ),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = richTextElems
+                        elems = richTextElems.toMutableList()
                     )
-                )
-            )
+                ),
+            ),
         )
     )
 
     val bytes = msgTransmit.toByteArray(MsgTransmit.PbMultiMsgTransmit.serializer())
 
-    return MessageValidationData(MiraiPlatformUtils.zip(bytes))
+    return MessageValidationData(MiraiPlatformUtils.gzip(bytes))
 }
 
 /*
@@ -154,18 +157,27 @@ Packet 20:02:50 : =======================共有 0 个包=======================
 internal class MultiMsg {
 
     object ApplyUp : OutgoingPacketFactory<ApplyUp.Response>("MultiMsg.ApplyUp") {
-        class Response(
-            val proto: MultiMsg.MultiMsgApplyUpRsp
-        ) : Packet
+        sealed class Response : Packet {
+            data class RequireUpload(
+                val proto: MultiMsg.MultiMsgApplyUpRsp
+            ) : Response() {
+                override fun toString(): String {
+                    if (PacketLogger.isEnabled) {
+                        return _miraiContentToString()
+                    }
+                    return "MultiMsg.ApplyUp.Response.RequireUpload(proto=$proto)"
+                }
+            }
 
-        fun createForLongMessage(
-            client: QQAndroidClient,
-            message: MessageChain,
-            dstUin: Long, // group uin
-        ): OutgoingPacket = createForLongMessage(client, message.calculateValidationData(client.bot), dstUin)
+            object MessageTooLarge : Response()
+
+            data class OK(
+                val resId: String
+            ) : Response()
+        }
 
         // captured from group
-        private fun createForLongMessage(
+        fun createForLongMessage(
             client: QQAndroidClient,
             messageData: MessageValidationData,
             dstUin: Long // group uin
@@ -173,21 +185,24 @@ internal class MultiMsg {
             writeProtoBuf(
                 MultiMsg.ReqBody.serializer(),
                 MultiMsg.ReqBody(
-                    subcmd = 1,
-                    termType = 5,
-                    platformType = 9,
-                    netType = 3, // wifi=3, wap=5
-                    buildVer = client.buildVer,
                     buType = 1,
+                    buildVer = "8.2.0.1296",
                     multimsgApplyupReq = listOf(
                         MultiMsg.MultiMsgApplyUpReq(
                             applyId = 0,
                             dstUin = dstUin,
                             msgMd5 = messageData.md5,
-                            msgSize = messageData.data.size.toLong(),
+                            msgSize = messageData.data.size.toLong().also {
+                                println("data.size = $it")
+                            },
                             msgType = 3 // TODO 3 for group?
-                        )
-                    )
+                        ),
+                    ),
+                    netType = 3, // wifi=3, wap=5
+                    platformType = 9,
+                    subcmd = 1,
+                    termType = 5,
+                    reqChannelType = 0,
                 )
             )
         }
@@ -210,13 +225,18 @@ internal class MultiMsg {
     }
          */
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            val response = readProtoBuf(MultiMsg.MultiMsgApplyUpRsp.serializer())
-            check(response.result == 0) {
-                kotlin.run {
-                    println(response._miraiContentToString())
-                }.let { "Protocol error: MultiMsg.ApplyUp failed with result ${response.result}" }
+            val body = readProtoBuf(MultiMsg.RspBody.serializer())
+            val response = body.multimsgApplyupRsp!!.first()
+            return when (response.result) {
+                0 -> Response.RequireUpload(response)
+                193 -> Response.MessageTooLarge
+                //1 -> Response.OK(resId = response.msgResid)
+                else -> {
+                    error(kotlin.run {
+                        println(response._miraiContentToString())
+                    }.let { "Protocol error: MultiMsg.ApplyUp failed with result ${response.result}" })
+                }
             }
-            return Response(response)
         }
     }
 }

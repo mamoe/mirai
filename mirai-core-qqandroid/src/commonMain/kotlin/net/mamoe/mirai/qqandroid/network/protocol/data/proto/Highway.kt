@@ -17,7 +17,7 @@ import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
-class BdhExtinfo : ProtoBuf {
+internal class BdhExtinfo : ProtoBuf {
     @Serializable
     class CommFileExtReq(
         @ProtoId(1) val actionType: Int = 0,
@@ -140,7 +140,7 @@ class BdhExtinfo : ProtoBuf {
 }
 
 @Serializable
-class CSDataHighwayHead : ProtoBuf {
+internal class CSDataHighwayHead : ProtoBuf {
     @Serializable
     class C2CCommonExtendinfo(
         @ProtoId(1) val infoId: Int = 0,
@@ -283,7 +283,7 @@ class CSDataHighwayHead : ProtoBuf {
 }
 
 @Serializable
-class HwConfigPersistentPB : ProtoBuf {
+internal class HwConfigPersistentPB : ProtoBuf {
     @Serializable
     class HwConfigItemPB(
         @ProtoId(1) val ingKey: String = "",
@@ -315,7 +315,7 @@ class HwConfigPersistentPB : ProtoBuf {
 }
 
 @Serializable
-class HwSessionInfoPersistentPB : ProtoBuf {
+internal class HwSessionInfoPersistentPB : ProtoBuf {
     @Serializable
     class HwSessionInfoPB(
         @ProtoId(1) val httpconnSigSession: ByteArray = EMPTY_BYTE_ARRAY,
@@ -324,7 +324,7 @@ class HwSessionInfoPersistentPB : ProtoBuf {
 }
 
 @Serializable
-class Subcmd0x501 : ProtoBuf {
+internal class Subcmd0x501 : ProtoBuf {
     @Serializable
     class ReqBody(
         @ProtoId(1281) val msgSubcmd0x501ReqBody: SubCmd0x501ReqBody? = null
