@@ -14,7 +14,7 @@ import tornadofx.bind
 
 internal fun EventTarget.jfxTabPane(op: JFXTabPane.() -> Unit = {}) = JFXTabPane().attachTo(this, op)
 
-internal fun EventTarget.jfxButton(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}) =
+internal fun EventTarget.jfxButton(text: String = "", graphic: Node? = null, op: JFXButton.() -> Unit = {}) =
     JFXButton(text).attachTo(this, op) {
         if (graphic != null) it.graphic = graphic
         it.buttonType = JFXButton.ButtonType.RAISED

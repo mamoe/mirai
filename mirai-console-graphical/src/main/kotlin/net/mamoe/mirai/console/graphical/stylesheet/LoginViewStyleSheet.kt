@@ -1,4 +1,4 @@
-package net.mamoe.mirai.console.graphical.styleSheet
+package net.mamoe.mirai.console.graphical.stylesheet
 
 import javafx.scene.Cursor
 import javafx.scene.effect.BlurType

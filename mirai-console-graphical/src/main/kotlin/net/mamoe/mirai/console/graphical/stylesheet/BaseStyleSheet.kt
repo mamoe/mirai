@@ -1,4 +1,4 @@
-package net.mamoe.mirai.console.graphical.styleSheet
+package net.mamoe.mirai.console.graphical.stylesheet
 
 import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.paint.Color

@@ -1,6 +1,7 @@
-package net.mamoe.mirai.console.graphical.styleSheet
+package net.mamoe.mirai.console.graphical.stylesheet
 
 import javafx.scene.Cursor
+import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
@@ -46,17 +47,32 @@ class PrimaryStyleSheet : BaseStyleSheet() {
 
                 jfxListView {
 
+                    // placeholder
+                    vBox {
+                        spacing = 15.px
+
+                        label {
+                            textFill = c(fontColor)
+                            fontWeight = FontWeight.BOLD
+                        }
+
+                        button {
+                            textFill = c(fontColor)
+                            fontWeight = FontWeight.BOLD
+                            backgroundColor += c(secondaryColor, 0.8)
+                            padding = box(2.px, 10.px)
+                            cursor = Cursor.HAND
+                        }
+                    }
+
                     jfxListCell {
                         backgroundColor += c(100, 100, 100, 0.4)
                         backgroundRadius += box(5.px)
 
-                            textFill = c(fontColor)
-                            fontWeight = FontWeight.BOLD
+                        textFill = c(fontColor)
+                        fontWeight = FontWeight.BOLD
 
                     }
-                }
-
-                textField {
                 }
             }
         }
