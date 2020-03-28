@@ -1,5 +1,6 @@
 package net.mamoe.mirai.console.graphical.view
 
+import com.jfoenix.controls.JFXButton
 import com.jfoenix.controls.JFXListCell
 import javafx.collections.ObservableList
 import javafx.geometry.Insets
@@ -38,6 +39,20 @@ class PrimaryView : View() {
             // bot list
             jfxListView(controller.botList) {
                 fitToParentHeight()
+
+                placeholder = vbox {
+
+                    alignment = Pos.CENTER
+
+                    label("Bot列表为空，请登录一个Bot")
+
+                    jfxButton("登录") {
+                        buttonType = JFXButton.ButtonType.FLAT
+                    }.action {
+                        // select login pane
+                        mainTabPane.selectionModel.select(3)
+                    }
+                }
 
                 setCellFactory {
                     object : JFXListCell<BotModel>() {
