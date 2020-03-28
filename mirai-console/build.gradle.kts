@@ -25,9 +25,9 @@ dependencies {
     compileOnly("net.mamoe:mirai-core-qqandroid-jvm:${Versions.Mirai.core}")
 
 
-    compileOnly(group = "com.alibaba", name = "fastjson", version = "1.2.62")
-    compileOnly(group = "org.yaml", name = "snakeyaml", version = "1.25")
-    compileOnly(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
+    implementation(group = "com.alibaba", name = "fastjson", version = "1.2.62")
+    implementation(group = "org.yaml", name = "snakeyaml", version = "1.25")
+    implementation(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
 
 
     compileOnly(kotlin("stdlib", Versions.Kotlin.stdlib))
