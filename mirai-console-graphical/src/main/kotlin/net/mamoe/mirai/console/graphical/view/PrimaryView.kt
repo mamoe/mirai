@@ -30,6 +30,8 @@ class PrimaryView : View() {
 
         left = vbox {
 
+            addClass("left-pane")
+
             imageview(Image(PrimaryView::class.java.classLoader.getResourceAsStream("logo.png"))) {
                 fitHeight = 40.0
                 alignment = Pos.CENTER

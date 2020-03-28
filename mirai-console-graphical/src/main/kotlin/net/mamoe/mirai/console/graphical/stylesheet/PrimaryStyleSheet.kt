@@ -38,7 +38,7 @@ class PrimaryStyleSheet : BaseStyleSheet() {
          * bot list
          */
         rootPane {
-            child(vBox) {
+            leftPane {
 
                 backgroundColor += c(primaryColor)
 //                这个padding有bug，十分神奇
