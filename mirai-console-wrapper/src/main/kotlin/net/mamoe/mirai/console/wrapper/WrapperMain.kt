@@ -137,7 +137,7 @@ object WrapperMain {
         val loader = MiraiClassLoader(
             CoreUpdater.getProtocolLib()!!,
             ConsoleUpdater.getFile()!!,
-            this.javaClass.classLoader
+            null
         )
 
         loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
@@ -158,7 +158,7 @@ object WrapperMain {
 private class MiraiClassLoader(
     protocol: File,
     console: File,
-    parent: ClassLoader
+    parent: ClassLoader?
 ): URLClassLoader(arrayOf(
     protocol.toURI().toURL(),
     console.toURI().toURL()
