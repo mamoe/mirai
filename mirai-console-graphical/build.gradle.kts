@@ -27,7 +27,7 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
 }
  */
 
-version = Versions.Mirai.console
+version = Versions.Mirai.consoleGraphical
 
 description = "Console Graphical Version with plugin support for mirai"
 bintray {
@@ -73,7 +73,6 @@ dependencies {
     api(project(":mirai-console"))
 
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
-    api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
     api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
 
     testApi(group = "org.yaml", name = "snakeyaml", version = "1.25")
