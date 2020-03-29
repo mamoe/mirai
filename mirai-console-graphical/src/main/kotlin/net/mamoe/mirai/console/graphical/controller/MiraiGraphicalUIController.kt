@@ -107,8 +107,6 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
 
     private fun ObservableList<*>.trim() {
-        println(size)
-        println(settingModel.item.maxLongNum)
         while (size > settingModel.item.maxLongNum) {
             this.removeAt(0)
         }
