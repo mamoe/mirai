@@ -16,8 +16,8 @@ import kotlin.concurrent.thread
 
 class MiraiConsoleGraphicalLoader {
      companion object {
-         internal lateinit var coreVersion   :String
-         internal lateinit var consoleVersion: String
+         internal var coreVersion   :String = "0.0.0"
+         internal var consoleVersion: String = "0.0.0"
          @JvmStatic
          fun load(
             coreVersion: String,
