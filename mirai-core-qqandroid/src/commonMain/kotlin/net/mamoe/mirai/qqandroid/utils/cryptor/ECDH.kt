@@ -21,7 +21,7 @@ expect interface ECDHPublicKey {
 
 internal expect class ECDHKeyPairImpl : ECDHKeyPair
 
-interface ECDHKeyPair {
+internal interface ECDHKeyPair {
     val privateKey: ECDHPrivateKey
     val publicKey: ECDHPublicKey
 
@@ -43,7 +43,7 @@ interface ECDHKeyPair {
 /**
  * 椭圆曲线密码, ECDH 加密
  */
-expect class ECDH(keyPair: ECDHKeyPair) {
+internal expect class ECDH(keyPair: ECDHKeyPair) {
     val keyPair: ECDHKeyPair
 
     /**
@@ -74,9 +74,9 @@ expect class ECDH(keyPair: ECDHKeyPair) {
 }
 
 @Suppress("FunctionName")
-expect fun ECDH(): ECDH
+internal expect fun ECDH(): ECDH
 
-val initialPublicKey
+internal val initialPublicKey
     get() = ECDH.constructPublicKey("3046301006072A8648CE3D020106052B8104001F03320004928D8850673088B343264E0C6BACB8496D697799F37211DEB25BB73906CB089FEA9639B4E0260498B51A992D50813DA8".chunkedHexToBytes())
 private val commonHeadFor02 = "302E301006072A8648CE3D020106052B8104001F031A00".chunkedHexToBytes()
 private val commonHeadForNot02 = "3046301006072A8648CE3D020106052B8104001F033200".chunkedHexToBytes()
@@ -86,7 +86,7 @@ private val byteArray_04 = byteArrayOf(0x04)
 
 private val head1 = "302E301006072A8648CE3D020106052B8104001F031A00".chunkedHexToBytes()
 private val head2 = "3046301006072A8648CE3D020106052B8104001F03320004".chunkedHexToBytes()
-fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
+internal fun ByteArray.adjustToPublicKey(): ECDHPublicKey {
     val head = if (this.size < 30) head1 else head2
 
     return ECDH.constructPublicKey(head + this)

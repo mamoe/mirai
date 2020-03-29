@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
-fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLength: Int) {
+internal fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLength: Int) {
     if (array.size <= maxLength) {
         writeShort(array.size.toShort())
         writeFully(array)
@@ -32,13 +32,13 @@ fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLe
     }
 }
 
-inline fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray): Int {
+internal inline fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray): Int {
     this.writeShort(byteArray.size.toShort())
     this.writeFully(byteArray)
     return byteArray.size
 }
 
-inline fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
+internal inline fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
         val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
@@ -47,7 +47,7 @@ inline fun BytePacketBuilder.writeIntLVPacket(tag: UByte? = null, lengthOffset: 
         return length.toInt()
     }
 
-inline fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
+internal inline fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset: ((Long) -> Long) = {it}, builder: BytePacketBuilder.() -> Unit): Int =
     BytePacketBuilder().apply(builder).build().use {
         if (tag != null) writeUByte(tag)
         val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
@@ -56,18 +56,16 @@ inline fun BytePacketBuilder.writeShortLVPacket(tag: UByte? = null, lengthOffset
         return length.toInt()
     }
 
-inline fun BytePacketBuilder.writeShortLVString(str: String) = writeShortLVByteArray(str.toByteArray())
+internal inline fun BytePacketBuilder.writeShortLVString(str: String) = writeShortLVByteArray(str.toByteArray())
 
-fun BytePacketBuilder.writeHex(uHex: String) {
+internal fun BytePacketBuilder.writeHex(uHex: String) {
     uHex.split(" ").forEach {
         if (it.isNotBlank()) {
             writeUByte(it.toUByte(16))
         }
     }
 }
-/**
- * 会使用 [ByteArrayPool] 缓存
- */
+
 @OptIn(MiraiInternalAPI::class)
-inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
+internal inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
     TEA.encrypt(BytePacketBuilder().apply(encoder).build(), key) { decrypted -> writeFully(decrypted) }

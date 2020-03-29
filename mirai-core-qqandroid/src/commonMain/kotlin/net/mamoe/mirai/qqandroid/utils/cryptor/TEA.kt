@@ -23,7 +23,7 @@ import kotlin.random.Random
 /**
  * 解密错误
  */
-class DecryptionFailedException : Exception {
+internal class DecryptionFailedException : Exception {
     constructor() : super()
     constructor(message: String?) : super(message)
 }
@@ -34,7 +34,7 @@ class DecryptionFailedException : Exception {
  * **注意**: 此为 Mirai 内部 API. 它可能会在任何时刻被改变.
  */
 @MiraiInternalAPI
-object TEA {
+internal object TEA {
     // TODO: 2020/2/28 使用 stream 式输入以避免缓存
 
     /**

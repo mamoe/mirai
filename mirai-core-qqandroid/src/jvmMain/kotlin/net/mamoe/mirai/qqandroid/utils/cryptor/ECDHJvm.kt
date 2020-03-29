@@ -32,10 +32,10 @@ internal actual class ECDHKeyPairImpl(
 }
 
 @Suppress("FunctionName")
-actual fun ECDH() =
+internal actual fun ECDH() =
     ECDH(ECDH.generateKeyPair())
 
-actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
+internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
         actual val isECDHAvailable: Boolean
 

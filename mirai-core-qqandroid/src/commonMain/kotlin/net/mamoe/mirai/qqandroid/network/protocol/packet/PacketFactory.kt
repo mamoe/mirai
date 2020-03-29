@@ -27,14 +27,17 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.network.readUShortLVByteArray
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
+import net.mamoe.mirai.qqandroid.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
-import net.mamoe.mirai.qqandroid.utils.cryptor.adjustToPublicKey
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.io.ByteArrayPool
+import net.mamoe.mirai.utils.io.toInt
+import net.mamoe.mirai.utils.io.toReadPacket
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.jvm.JvmName
 
 
@@ -171,9 +174,6 @@ internal object KnownPacketFactories {
             ?: IncomingFactories.firstOrNull { it.receivingCommandName == commandName }
     }
 
-    /**
-     * full packet without length
-     */
     // do not inline. Exceptions thrown will not be reported correctly
     @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
@@ -183,22 +183,12 @@ internal object KnownPacketFactories {
             val flag1 = readInt()
 
             PacketLogger.verbose { "开始处理一个包" }
-            PacketLogger.verbose { "flag1(0A/0B) = ${flag1.toUByte().toUHexString()}" }
 
             val flag2 = readByte().toInt()
-            PacketLogger.verbose {
-                "包类型(flag2) = $flag2. (可能是 ${when (flag2) {
-                    2 -> "OicqRequest"
-                    1 -> "Uni/ProtoBuf"
-                    0 -> "Heartbeat"
-                    else -> "未知"
-                }})"
-            }
-
             val flag3 = readByte().toInt()
             check(flag3 == 0) {
-                "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. Remaining=${this.readBytes()
-                    .toUHexString()}"
+                "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. " +
+                        "Remaining=${this.readBytes().toUHexString()}"
             }
 
             readString(readInt() - 4)// uinAccount
@@ -209,14 +199,11 @@ internal object KnownPacketFactories {
                 kotlin.runCatching {
                     when (flag2) {
                         2 -> TEA.decrypt(data, DECRYPTER_16_ZERO, size)
-                            .also { PacketLogger.verbose { "成功使用 16 zero 解密" } }
                         1 -> TEA.decrypt(data, bot.client.wLoginSigInfo.d2Key, size)
-                            .also { PacketLogger.verbose { "成功使用 d2Key 解密" } }
                         0 -> data
                         else -> error("")
                     }
                 }.getOrElse {
-                    PacketLogger.verbose { "失败, 尝试其他各种key" }
                     bot.client.tryDecryptOrNull(data, size) { it }
                 }?.toReadPacket()?.let { decryptedData ->
                     when (flag1) {
@@ -236,7 +223,7 @@ internal object KnownPacketFactories {
                     } else {
                         handleIncomingPacket(it, bot, flag2, consumer)
                     }
-                } ?: inline {
+                } ?: kotlin.run {
                     PacketLogger.error { "任何key都无法解密: ${data.take(size).toUHexString()}" }
                     return
                 }
@@ -294,8 +281,6 @@ internal object KnownPacketFactories {
             }
         }
     }
-
-    private inline fun <R> inline(block: () -> R): R = block()
 
     class IncomingPacket<T : Packet?>(
         val packetFactory: PacketFactory<T>?,
@@ -358,9 +343,7 @@ internal object KnownPacketFactories {
                     }
                 }
             }
-            8 -> {
-                input
-            }
+            8 -> input
             else -> error("unknown dataCompressed flag: $dataCompressed")
         }
 

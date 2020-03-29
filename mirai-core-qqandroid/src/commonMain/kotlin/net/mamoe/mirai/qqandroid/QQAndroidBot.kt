@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.qqandroid
 
 import io.ktor.client.HttpClient
@@ -34,7 +36,6 @@ import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendFriend
 import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
 import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
@@ -373,29 +374,17 @@ internal abstract class QQAndroidBotBase constructor(
         check(chain.toString().length <= 4500 && chain.count { it is Image } <= 50) { "message is too large. Allow up to 4500 chars or 50 images" }
         val group = getGroup(groupCode)
 
-        val source = MessageSourceFromSendFriend(
-            messageRandom = Random.nextInt().absoluteValue,
-            senderId = client.uin,
-            toUin = Group.calculateGroupUinByGroupCode(groupCode),
-            time = currentTimeSeconds,
-            groupId = groupCode,
-            originalMessage = chain,
-            sequenceId = client.atomicNextMessageSequenceId()
-            //   sourceMessage = message
-        )
-
         // TODO: 2020/3/26 util 方法来添加单例元素
-        val toSend = buildMessageChain(chain.size) {
-            source.originalMessage.forEach {
-                if (it !is MessageSource) {
-                    add(it)
-                }
-            }
-            add(source)
-        }
+
+        val time = currentTimeSeconds
 
         network.run {
-            val data = toSend.calculateValidationDataForGroup(group)
+            val data = chain.calculateValidationDataForGroup(
+                sequenceId = client.atomicNextMessageSequenceId(),
+                time = time.toInt(),
+                random = Random.nextInt().absoluteValue.toULong().toLong(),
+                group
+            )
 
             val response =
                 MultiMsg.ApplyUp.createForGroupLongMessage(
@@ -443,7 +432,7 @@ internal abstract class QQAndroidBotBase constructor(
 
             group.sendMessage(
                 RichMessage.longMessage(
-                    brief = toSend.joinToString(limit = 30) {
+                    brief = chain.joinToString(limit = 30) {
                         when (it) {
                             is PlainText -> it.stringValue
                             is At -> it.toString()
@@ -451,7 +440,7 @@ internal abstract class QQAndroidBotBase constructor(
                         }
                     },
                     resId = resId,
-                    timeSeconds = source.time
+                    timeSeconds = time
                 )
             )
         }

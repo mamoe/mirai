@@ -32,9 +32,9 @@ internal actual class ECDHKeyPairImpl(
 }
 
 @Suppress("FunctionName")
-actual fun ECDH() = ECDH(ECDH.generateKeyPair())
+internal actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
-actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
+internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
         @Suppress("ObjectPropertyName")
         private var _isECDHAvailable: Boolean = false // because `runCatching` has no contract.
