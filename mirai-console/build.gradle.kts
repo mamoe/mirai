@@ -1,4 +1,5 @@
 import java.util.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
@@ -28,10 +29,16 @@ dependencies {
     implementation(group = "com.alibaba", name = "fastjson", version = "1.2.62")
     implementation(group = "org.yaml", name = "snakeyaml", version = "1.25")
     implementation(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
+    implementation(kotlin("stdlib-jdk8"))
+
+
+    testApi(ktor("client-cio", Versions.Kotlin.ktor))
+    testApi(ktor("client-core", Versions.Kotlin.ktor))
+    testApi(ktor("network", Versions.Kotlin.ktor))
+    testApi("org.jsoup:jsoup:1.12.1")
 }
 
-val miraiConsoleVersion: String by project.ext
-version = miraiConsoleVersion
+version = Versions.Mirai.console
 
 description = "Console with plugin support for mirai"
 bintray {
@@ -74,7 +81,7 @@ publishing {
 
             groupId = rootProject.group.toString()
             artifactId = "mirai-console"
-            version = miraiConsoleVersion
+            version = version
 
             pom.withXml {
                 val root = asNode()
@@ -87,4 +94,16 @@ publishing {
             artifact(sourcesJar.get())
         }
     }
+}
+repositories {
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    mavenCentral()
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }

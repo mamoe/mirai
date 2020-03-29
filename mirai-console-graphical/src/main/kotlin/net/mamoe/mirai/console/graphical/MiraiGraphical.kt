@@ -27,8 +27,7 @@ class MiraiGraphicalUI : App(Decorator::class, PrimaryStyleSheet::class) {
 
     override fun init() {
         super.init()
-
-        MiraiConsole.start(find<MiraiGraphicalUIController>())
+        MiraiConsole.start(find<MiraiGraphicalUIController>(),MiraiConsoleGraphicalLoader.coreVersion,MiraiConsoleGraphicalLoader.consoleVersion)
     }
 
     override fun stop() {

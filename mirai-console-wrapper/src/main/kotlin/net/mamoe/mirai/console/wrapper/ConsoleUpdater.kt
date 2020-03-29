@@ -21,6 +21,11 @@ internal object ConsoleUpdater {
                     "version" to "/net/mamoe/mirai-console/"
                 )
             )
+            put(
+                CONSOLE_GRAPHICAL, mapOf(
+                    "version" to "/net/mamoe/mirai-console-graphical/"
+                )
+            )
         }
     }
 
@@ -33,7 +38,14 @@ internal object ConsoleUpdater {
                 if (file.name.contains("mirai-console")) {
                     when (consoleType) {
                         CONSOLE_PURE -> {
-                            return file
+                            if(!file.name.contains("graphical")) {
+                                return file
+                            }
+                        }
+                        CONSOLE_GRAPHICAL -> {
+                            if(file.name.contains("graphical")) {
+                                return file
+                            }
                         }
                     }
                 }
@@ -57,7 +69,7 @@ internal object ConsoleUpdater {
             )
             */
             MiraiDownloader.addTask(
-                "https://pan.jasonczc.cn/?/mirai/${getProjectName()}/${getProjectName()}-$newest.pdf", getContent("${getProjectName()}-$newest.jar")
+                "https://pan.jasonczc.cn/?/mirai/${getProjectName()}/${getProjectName()}-$newest.mp4", getContent("${getProjectName()}-$newest.jar")
             )
         }
     }
@@ -103,7 +115,7 @@ internal object ConsoleUpdater {
         return if (consoleType == CONSOLE_PURE) {
             "mirai-console"
         } else {
-            "mirai-console-$consoleType"
+            "mirai-console-${consoleType.toLowerCase()}"
         }
     }
 

@@ -7,17 +7,16 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 @file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.console.wrapper
 
 import kotlinx.coroutines.*
-import java.awt.Frame
-import java.awt.Panel
 import java.awt.TextArea
-import java.awt.Toolkit
 import java.io.File
-import java.lang.StringBuilder
 import java.net.URLClassLoader
 import java.util.*
+import javax.swing.JFrame
+import javax.swing.JPanel
 
 
 val contentPath by lazy {
@@ -31,8 +30,8 @@ val contentPath by lazy {
 object WrapperMain {
     internal var uiBarOutput = StringBuilder()
     private val uilog = StringBuilder()
-    internal fun uiLog(any: Any?){
-        if(any!=null) {
+    internal fun uiLog(any: Any?) {
+        if (any != null) {
             uilog.append(any)
         }
     }
@@ -40,33 +39,27 @@ object WrapperMain {
     @JvmStatic
     fun main(args: Array<String>) {
         gc()
-        if(args.contains("native") || args.contains("-native")){
-
-            val f = Frame("Mirai-Console Version Check")
+        if (args.contains("native") || args.contains("-native")) {
+            val f = JFrame("Mirai-Console Version Check")
+            f.setSize(500, 200)
+            f.setLocationRelativeTo(null)
             f.isResizable = false
-            val srcSize= Toolkit.getDefaultToolkit().screenSize
 
-            val width = 300
-            val height = 200
-
-            val p = Panel()
-            val textArea = TextArea()
-            textArea.isEditable = false
-            p.add(textArea)
-            p.isVisible = true
-
-            f.setLocation((srcSize.width-width)/2, (srcSize.height-height)/2)
-            f.setSize(width, height)
+            val p = JPanel()
             f.add(p)
+            val textArea = TextArea()
+            p.add(textArea)
+            textArea.isEditable = false
+
             f.isVisible = true
 
             uiLog("正在进行版本检查\n")
 
             var uiOpen = true
             GlobalScope.launch {
-                while (isActive && uiOpen){
+                while (isActive && uiOpen) {
                     delay(16)//60 fps
-                    withContext(Dispatchers.Main){
+                    withContext(Dispatchers.Main) {
                         textArea.text = uilog.toString() + "\n" + uiBarOutput.toString()
                     }
                 }
@@ -85,27 +78,27 @@ object WrapperMain {
             }
             start(CONSOLE_GRAPHICAL)
 
-        }else{
+        } else {
             preStartInNonNative()
         }
     }
 
 
-    private fun preStartInNonNative(){
+    private fun preStartInNonNative() {
         println("You are running Mirai-Console-Wrapper under " + System.getProperty("user.dir"))
         var type = WrapperProperties.determineConsoleType(WrapperProperties.content)
-        if(type!=null){
+        if (type != null) {
             println("Starting Mirai Console $type, reset by clear /content/")
-        }else{
+        } else {
             println("Please select Console Type")
             println("请选择 Console 版本")
             println("=> Pure       : pure console")
-            println("=> Graphical  : [Not Supported Yet] graphical UI except unix")
+            println("=> Graphical  : graphical UI except unix")
             println("=> Terminal   : [Not Supported Yet] console in unix")
             val scanner = Scanner(System.`in`)
-            while (type == null){
-                var input =  scanner.next()
-                input  = input.toUpperCase()[0] + input.toLowerCase().substring(1)
+            while (type == null) {
+                var input = scanner.next()
+                input = input.toUpperCase()[0] + input.toLowerCase().substring(1)
                 println("Selecting $input")
                 type = WrapperProperties.determineConsoleType(input)
             }
@@ -133,11 +126,11 @@ object WrapperMain {
         start(type)
     }
 
-    private fun start(type: String){
+    private fun start(type: String) {
         val loader = MiraiClassLoader(
             CoreUpdater.getProtocolLib()!!,
             ConsoleUpdater.getFile()!!,
-            this.javaClass.classLoader
+            null
         )
 
         loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
@@ -149,26 +142,33 @@ object WrapperMain {
                     ).getMethod("load", String::class.java, String::class.java)
                     .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
             }
+            CONSOLE_GRAPHICAL -> {
+                loader.loadClass(
+                        "net.mamoe.mirai.console.graphical.MiraiConsoleGraphicalLoader"
+                    ).getMethod("load", String::class.java, String::class.java)
+                    .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
+            }
         }
     }
 }
 
 
-
 private class MiraiClassLoader(
     protocol: File,
     console: File,
-    parent: ClassLoader
-): URLClassLoader(arrayOf(
-    protocol.toURI().toURL(),
-    console.toURI().toURL()
-), parent)
+    parent: ClassLoader?
+) : URLClassLoader(
+    arrayOf(
+        protocol.toURI().toURL(),
+        console.toURI().toURL()
+    ), parent
+)
 
 
-private object WrapperProperties{
-    val contentFile by lazy{
+private object WrapperProperties {
+    val contentFile by lazy {
         File(contentPath.absolutePath + "/.wrapper.txt").also {
-            if(!it.exists())it.createNewFile()
+            if (!it.exists()) it.createNewFile()
         }
     }
 
@@ -179,18 +179,18 @@ private object WrapperProperties{
 
     fun determineConsoleType(
         type: String
-    ):String?{
-        if(type == CONSOLE_PURE || type == CONSOLE_GRAPHICAL || type == CONSOLE_TERMINAL){
+    ): String? {
+        if (type == CONSOLE_PURE || type == CONSOLE_GRAPHICAL || type == CONSOLE_TERMINAL) {
             return type
         }
         return null
     }
 }
 
-private fun gc(){
-    GlobalScope.launch{
+private fun gc() {
+    GlobalScope.launch {
         while (true) {
-            delay(1000*60*5)
+            delay(1000 * 60 * 5)
             System.gc()
         }
     }

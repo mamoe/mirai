@@ -18,7 +18,6 @@ import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
-import net.mamoe.mirai.utils.cryptor.ECDH
 import net.mamoe.mirai.utils.io.encodeToString
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -82,13 +81,6 @@ object MiraiConsole {
         logger("Get news in github: https://github.com/mamoe/mirai")
         logger("Mirai为开源项目，请自觉遵守开源项目协议")
         logger("Powered by Mamoe Technologies and contributors")
-
-        /* 加载ECDH */
-        try {
-            ECDH()
-        } catch (ignored: Exception) {
-        }
-        //Security.removeProvider("BC")
 
         /* 依次启用功能 */
         DefaultCommands()
