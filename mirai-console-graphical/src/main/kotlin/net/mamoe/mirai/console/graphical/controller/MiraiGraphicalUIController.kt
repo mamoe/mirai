@@ -49,14 +49,16 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
             }
         }
 
-        when (identity) {
-            0L -> mainLog.apply {
-                add("$identityStr $message")
-                mainLog.trim()
-            }
-            else -> cache[identity]?.logHistory?.apply {
-                add("$identityStr $message")
-                trim()
+        Platform.runLater {
+            when (identity) {
+                0L -> mainLog.apply {
+                    add("$identityStr $message")
+                    trim()
+                }
+                else -> cache[identity]?.logHistory?.apply {
+                    add("$identityStr $message")
+                    trim()
+                }
             }
         }
     }
