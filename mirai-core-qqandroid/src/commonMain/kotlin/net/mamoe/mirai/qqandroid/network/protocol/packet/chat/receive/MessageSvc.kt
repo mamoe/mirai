@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
+import kotlinx.atomicfu.loop
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.io.core.ByteReadPacket
@@ -19,16 +20,15 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.contact.GroupImpl
+import net.mamoe.mirai.qqandroid.contact.checkIsQQImpl
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
@@ -37,6 +37,8 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendFriend
 import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.message.toRichTextElems
+import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushNotify
@@ -195,9 +197,8 @@ internal class MessageSvc {
                                 bot.groups.delegate.addLast(newGroup)
                                 return@mapNotNull BotJoinGroupEvent(newGroup)
                             } else {
-                                if (group == null) {
-                                    return@mapNotNull null
-                                }
+                                group ?: return@mapNotNull null
+
                                 if (group.members.contains(msg.msgHead.authUin)) {
                                     return@mapNotNull null
                                 }
@@ -207,21 +208,30 @@ internal class MessageSvc {
                                     override val specialTitle: String get() = ""
                                     override val muteTimestamp: Int get() = 0
                                     override val uin: Long get() = msg.msgHead.authUin
-                                    override val nick: String
-                                        get() = msg.msgHead.authNick.takeIf { it.isNotEmpty() }
-                                            ?: msg.msgHead.fromNick
+                                    override val nick: String = msg.msgHead.authNick.takeIf { it.isNotEmpty() }
+                                        ?: msg.msgHead.fromNick
                                 }).also { group.members.delegate.addLast(it) })
                             }
                         }
                         166 -> {
                             val friend = bot.getFriendOrNull(msg.msgHead.fromUin) ?: return@mapNotNull null
-                            return@mapNotNull when {
-                                msg.msgHead.fromUin == bot.uin -> null
-                                !bot.firstLoginSucceed -> null
-                                else -> FriendMessage(
-                                    friend,
-                                    msg.toMessageChain()
-                                )
+                            friend.checkIsQQImpl()
+
+                            if (msg.msgHead.fromUin == bot.uin || !bot.firstLoginSucceed) {
+                                return@mapNotNull null
+                            }
+
+                            friend.lastMessageSequence.loop { instant ->
+                                if (msg.msgHead.msgSeq > instant) {
+                                    println("bigger")
+                                    if (friend.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
+                                        println("set ok")
+                                        return@mapNotNull FriendMessage(
+                                            friend,
+                                            msg.toMessageChain()
+                                        )
+                                    }
+                                } else return@mapNotNull null
                             }
                         }
                         else -> return@mapNotNull null
@@ -319,7 +329,7 @@ internal class MessageSvc {
                     contentHead = MsgComm.ContentHead(pkgNum = 1),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(
-                            elems = message.toRichTextElems(false)
+                            elems = message.toRichTextElems(false, true)
                         )
                     ),
                     msgSeq = source.sequenceId,
@@ -372,7 +382,7 @@ internal class MessageSvc {
                     contentHead = MsgComm.ContentHead(pkgNum = 1),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(
-                            elems = message.toRichTextElems(true)
+                            elems = message.toRichTextElems(true, true)
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),

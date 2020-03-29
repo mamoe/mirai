@@ -7,6 +7,7 @@ import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.ExperimentalMessageSource
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -152,6 +153,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * @see _lowLevelRecallFriendMessage 低级 API
      * @see _lowLevelRecallGroupMessage 低级 API
      */
+    @ExperimentalMessageSource
     @JvmSynthetic
     actual abstract suspend fun recall(source: MessageSource)
 

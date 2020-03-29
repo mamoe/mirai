@@ -127,6 +127,7 @@ inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
+@OptIn(ExperimentalMessageSource::class)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {
@@ -415,7 +416,10 @@ internal class MessageChainImplByIterable constructor(
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int by lazy { delegate.count() }
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
-    override fun toString(): String = this.delegate.joinToString("") { it.toString() }
+    var toStringTemp: String? = null
+    override fun toString(): String =
+        toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
+
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
 }
 
@@ -428,7 +432,10 @@ internal class MessageChainImplByCollection constructor(
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
-    override fun toString(): String = this.delegate.joinToString("") { it.toString() }
+    var toStringTemp: String? = null
+    override fun toString(): String =
+        toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
+
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
 }
 
@@ -446,7 +453,10 @@ internal class MessageChainImplBySequence constructor(
      */
     private val collected: List<SingleMessage> by lazy { delegate.toList() }
     override fun iterator(): Iterator<SingleMessage> = collected.iterator()
-    override fun toString(): String = this.collected.joinToString("") { it.toString() }
+    var toStringTemp: String? = null
+    override fun toString(): String =
+        toStringTemp ?: this.collected.joinToString("") { it.toString() }.also { toStringTemp = it }
+
     override operator fun contains(sub: String): Boolean = collected.any { it.contains(sub) }
 }
 

@@ -5,6 +5,7 @@ import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.recall
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.ExperimentalMessageSource
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -61,6 +62,7 @@ actual abstract class BotJavaFriendlyAPI actual constructor() {
      *
      * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
      */
+    @ExperimentalMessageSource
     @JvmName("recall")
     fun __recallBlockingForJava__(source: MessageSource) {
         runBlocking { recall(source) }
@@ -88,6 +90,7 @@ actual abstract class BotJavaFriendlyAPI actual constructor() {
      * @param millis 延迟的时间, 单位为毫秒
      * @see recall
      */
+    @ExperimentalMessageSource
     @JvmName("recallIn")
     fun __recallIn_MemberForJava__(source: MessageSource, millis: Long) {
         runBlocking { recallIn(source, millis) }
@@ -148,6 +151,7 @@ actual abstract class BotJavaFriendlyAPI actual constructor() {
     /**
      * 异步调用 [__recallBlockingForJava__]
      */
+    @ExperimentalMessageSource
     @JvmName("recallAsync")
     fun __recallAsyncForJava__(source: MessageSource): Future<Unit> {
         return future { recall(source) }

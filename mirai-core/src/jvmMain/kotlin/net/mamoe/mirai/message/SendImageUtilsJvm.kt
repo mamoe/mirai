@@ -116,7 +116,7 @@ suspend fun InputStream.uploadAsImage(contact: Contact): OfflineImage =
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun File.uploadAsImage(contact: Contact): OfflineImage {
-    require(this.exists() && this.canRead())
+    require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
     return withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 }
 

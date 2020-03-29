@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.coroutines.launch

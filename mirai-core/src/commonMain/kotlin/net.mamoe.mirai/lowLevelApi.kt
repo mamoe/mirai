@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.*
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -137,6 +138,7 @@ interface LowLevelBotAPIAccessor {
     /**
      * 获取群活跃信息
      */
+    @SinceMirai("0.29.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData
@@ -147,7 +149,7 @@ interface LowLevelBotAPIAccessor {
     @SinceMirai("0.31.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSendLongMessage(groupCode: Long, message: Message)
+    suspend fun _lowLevelSendLongGroupMessage(groupCode: Long, message: Message): MessageReceipt<Group>
 }
 
 /**

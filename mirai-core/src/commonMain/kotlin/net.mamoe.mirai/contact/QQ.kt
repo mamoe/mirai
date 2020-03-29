@@ -87,6 +87,8 @@ expect abstract class QQ() : Contact, CoroutineScope {
     /**
      * 向这个对象发送消息.
      *
+     * 单条消息最大可发送 4500 字符或 50 张图片.
+     *
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      *

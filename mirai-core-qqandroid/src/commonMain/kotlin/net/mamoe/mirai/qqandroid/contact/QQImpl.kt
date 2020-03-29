@@ -8,9 +8,12 @@
  */
 
 @file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.qqandroid.contact
 
+import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.atomic
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Contact
@@ -36,6 +39,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.toUHexString
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 
@@ -46,12 +51,23 @@ internal inline class FriendInfoImpl(
     override val uin: Long get() = jceFriendInfo.friendUin
 }
 
+@OptIn(ExperimentalContracts::class)
+internal fun QQ.checkIsQQImpl(): QQImpl {
+    contract {
+        returns() implies (this@checkIsQQImpl is QQImpl)
+    }
+    check(this is QQImpl) { "A QQ instance is not instance of QQImpl. Don't interlace two protocol implementations together!" }
+    return this
+}
+
 internal class QQImpl(
     bot: QQAndroidBot,
     override val coroutineContext: CoroutineContext,
     override val id: Long,
     private val friendInfo: FriendInfo
 ) : QQ() {
+    var lastMessageSequence: AtomicInt = atomic(-1)
+
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val nick: String
         get() = friendInfo.nick
@@ -67,12 +83,12 @@ internal class QQImpl(
         bot.network.run {
             check(
                 MessageSvc.PbSendMsg.ToFriend(
-                    bot.client,
-                    id,
-                    event.message
-                ) {
-                    source = it
-                }
+                        bot.client,
+                        id,
+                        event.message
+                    ) {
+                        source = it
+                    }
                     .sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }

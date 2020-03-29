@@ -7,6 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 @file: OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class, LowLevelAPI::class, ExperimentalUnsignedTypes::class)
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.qqandroid.message
 
@@ -56,44 +57,6 @@ internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
     )
 }
 
-/*
-CustomFace#24412994 {
-guid=<Empty ByteArray>
-filePath={01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-shortcut=
-buffer=<Empty ByteArray>
-flag=00 00 00 00
-oldData=15 36 20 39 32 6B 41 31 00 38 37 32 66 30 36 36 30 33 61 65 31 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 30 31 45 39 34 35 31 42 2D 37 30 45 44 2D 45 41 45 33 2D 42 33 37 43 2D 31 30 31 46 31 45 45 42 46 35 42 35 7D 2E 70 6E 67 41
-fileId=0x872F0660(-2026961312)
-serverIp=0x3AE103B7(987825079)
-serverPort=0x00000050(80)
-fileType=0x00000000(0)
-signature=<Empty ByteArray>
-useful=0x00000001(1)
-md5=01 E9 45 1B 70 ED EA E3 B3 7C 10 1F 1E EB F5 B5
-thumbUrl=/gchatpic_new/1040400290/1041235568-2268005984-01E9451B70EDEAE3B37C101F1EEBF5B5/198?term=2
-bigUrl=
-origUrl=/gchatpic_new/1040400290/1041235568-2268005984-01E9451B70EDEAE3B37C101F1EEBF5B5/0?term=2
-bizType=0x00000000(0)
-repeatIndex=0x00000000(0)
-repeatImage=0x00000000(0)
-imageType=0x00000000(0)
-index=0x00000000(0)
-width=0x0000015F(351)
-height=0x000000EB(235)
-source=0x00000000(0)
-size=0x0000057C(1404)
-origin=0x00000000(0)
-thumbWidth=0x000000C6(198)
-thumbHeight=0x00000084(132)
-showLen=0x00000000(0)
-downloadLen=0x00000000(0)
-_400Url=/gchatpic_new/1040400290/1041235568-2268005984-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2
-_400Width=0x0000015F(351)
-_400Height=0x000000EB(235)
-pbReserve=<Empty ByteArray>
-}
- */
 internal val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
 
 internal fun Face.toJceData(): ImMsgBody.Face {
@@ -133,76 +96,6 @@ internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
 private val oldData: ByteArray =
     "15 36 20 39 32 6B 41 31 00 38 37 32 66 30 36 36 30 33 61 65 31 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 30 31 45 39 34 35 31 42 2D 37 30 45 44 2D 45 41 45 33 2D 42 33 37 43 2D 31 30 31 46 31 45 45 42 46 35 42 35 7D 2E 70 6E 67 41".hexToBytes()
 
-/*
-customFace=CustomFace#2050019814 {
-        guid=<Empty ByteArray>
-        filePath=5F6C522DEAC4F36C0ED8EF362660EFD6.png
-        shortcut=
-        buffer=<Empty ByteArray>
-        flag=<Empty ByteArray>
-        oldData=<Empty ByteArray>
-        fileId=0xB40AF10E(-1274351346)
-        serverIp=0xB703E13A(-1224482502)
-        serverPort=0x00000050(80)
-        fileType=0x00000042(66)
-        signature=6B 44 61 76 72 79 68 79 57 67 70 52 41 45 78 49
-        useful=0x00000001(1)
-        md5=5F 6C 52 2D EA C4 F3 6C 0E D8 EF 36 26 60 EF D6
-        thumbUrl=
-        bigUrl=
-        origUrl=
-        bizType=0x00000005(5)
-        repeatIndex=0x00000000(0)
-        repeatImage=0x00000000(0)
-        imageType=0x000003E9(1001)
-        index=0x00000000(0)
-        width=0x0000005F(95)
-        height=0x00000054(84)
-        source=0x00000067(103)
-        size=0x000006E2(1762)
-        origin=0x00000000(0)
-        thumbWidth=0x00000000(0)
-        thumbHeight=0x00000000(0)
-        showLen=0x00000000(0)
-        downloadLen=0x00000000(0)
-        _400Url=
-        _400Width=0x00000000(0)
-        _400Height=0x00000000(0)
-        pbReserve=08 01 10 00 32 00 4A 0E 5B E5 8A A8 E7 94 BB E8 A1 A8 E6 83 85 5D 50 00 78 05
-}
-
-notOnlineImage=NotOnlineImage#2050019814 {
-        filePath=41AEF2D4B5BD24CF3791EFC5FEB67D60.jpg
-        fileLen=0x00000350(848)
-        downloadPath=/f2b7e5c0-acb3-4e83-aa5c-c8383840cc91
-        oldVerSendFile=<Empty ByteArray>
-        imgType=0x000003E8(1000)
-        previewsImage=<Empty ByteArray>
-        picMd5=41 AE F2 D4 B5 BD 24 CF 37 91 EF C5 FE B6 7D 60
-        picHeight=0x00000032(50)
-        picWidth=0x00000033(51)
-        resId=/f2b7e5c0-acb3-4e83-aa5c-c8383840cc91
-        flag=<Empty ByteArray>
-        thumbUrl=
-        original=0x00000000(0)
-        bigUrl=
-        origUrl=
-        bizType=0x00000005(5)
-        result=0x00000000(0)
-        index=0x00000000(0)
-        opFaceBuf=<Empty ByteArray>
-        oldPicMd5=false
-        thumbWidth=0x00000000(0)
-        thumbHeight=0x00000000(0)
-        fileId=0x00000000(0)
-        showLen=0x00000000(0)
-        downloadLen=0x00000000(0)
-        _400Url=
-        _400Width=0x00000000(0)
-        _400Height=0x00000000(0)
-        pbReserve=08 01 10 00 32 00 42 0E 5B E5 8A A8 E7 94 BB E8 A1 A8 E6 83 85 5D 50 00 78 05
-}
- */
 
 private val atAllData = ImMsgBody.Elem(
     text = ImMsgBody.Text(
@@ -222,7 +115,7 @@ private val atAllData = ImMsgBody.Elem(
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
-internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgBody.Elem> {
+internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
 
     if (this.any<QuoteReply>()) {
@@ -310,27 +203,33 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean): MutableList<ImMsgB
     }
     this.forEach(::transformOneMessage)
 
-    when {
-        longTextResId != null -> {
-            elements.add(
-                ImMsgBody.Elem(
-                    generalFlags = ImMsgBody.GeneralFlags(
-                        longTextFlag = 1,
-                        longTextResid = longTextResId!!,
-                        pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
-                    ),
+    if (withGeneralFlags) {
+        when {
+            longTextResId != null -> {
+                elements.add(
+                    ImMsgBody.Elem(
+                        generalFlags = ImMsgBody.GeneralFlags(
+                            longTextFlag = 1,
+                            longTextResid = longTextResId!!,
+                            pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
+                        ),
+                    )
                 )
-            )
+            }
+            this.any<RichMessage>() -> {
+                // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
+                elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_RICH_MESSAGE)))
+            }
+            else -> elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE)))
         }
-        this.any<RichMessage>() -> {
-            // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
-            elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes())))
-        }
-        else -> elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes())))
     }
 
     return elements
 }
+
+private val PB_RESERVE_FOR_RICH_MESSAGE =
+    "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes()
+private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
@@ -416,15 +315,10 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
-            if (last == null) {
-                last = element
-                return@forEach
-            } else {
-                if (last is LongMessage && element is PlainText) {
-                    if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
-                        last = element
-                        return@forEach
-                    }
+            if (last is LongMessage && element is PlainText) {
+                if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
+                    last = element
+                    return@forEach
                 }
             }
 
@@ -443,19 +337,6 @@ internal inline fun <reified R> Iterable<*>.firstIsInstance(): R {
     throw NoSuchElementException("Collection contains no element matching the predicate.")
 }
 
-/*
-    if (this.any<QuoteReply>()) {
-        var removed = false
-        this.filter {
-            if (it is At && !removed) {
-                false
-            } else {
-                removed = true
-                true
-            }
-        }.asMessageChain()
-    } else this*/
-
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
     this.forEach {
         when {
@@ -467,9 +348,6 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                 if (it.text.attr6Buf.isEmpty()) {
                     message.add(it.text.str.toMessage())
                 } else {
-                    // 00 01 00 00 00 05 01 00 00 00 00 00 00 all
-                    // 00 01 00 00 00 0A 00 3E 03 3F A2 00 00 one/nick
-                    // 00 01 00 00 00 07 00 44 71 47 90 00 00 one/groupCard
                     val id: Long
                     it.text.attr6Buf.read {
                         discardExact(7)

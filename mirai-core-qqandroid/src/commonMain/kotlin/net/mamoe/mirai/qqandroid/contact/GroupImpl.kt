@@ -23,9 +23,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineGroupImage
-import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
@@ -273,13 +271,25 @@ internal class GroupImpl(
         return members.delegate.filteringGetOrNull { it.id == id }
     }
 
+    @OptIn(MiraiExperimentalAPI::class)
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
         val event = GroupMessageSendEvent(this, message.asMessageChain()).broadcast()
         if (event.isCancelled) {
-            throw EventCancelledException("cancelled by FriendMessageSendEvent")
+            throw EventCancelledException("cancelled by GroupMessageSendEvent")
         }
+
+        if (message !is LongMessage) {
+            val length = event.message.toString().length
+            if (length > 4000
+                || event.message.count { it is Image } > 3
+                || (event.message.any<QuoteReply>() && (event.message.any<Image>() || length > 100))
+            ) {
+                return bot._lowLevelSendLongGroupMessage(this.id, message)
+            }
+        }
+
         lateinit var source: MessageSourceFromSendGroup
         bot.network.run {
             val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(

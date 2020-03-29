@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.message
 
@@ -153,6 +153,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     /**
      * 引用这个消息
      */
+    @ExperimentalMessageSource
     inline fun MessageChain.quote(): QuoteReplyToSend = this.quote(sender)
 
     operator fun <M : Message> get(at: Message.Key<M>): M {

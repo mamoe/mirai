@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_OVERRIDE")
+
 package net.mamoe.mirai.qqandroid.message
 
 import kotlinx.coroutines.CoroutineScope
@@ -146,7 +148,7 @@ internal abstract class MessageSourceFromSend : MessageSource {
     }
 
     private val elems by lazy {
-        originalMessage.toRichTextElems(groupId != 0L)
+        originalMessage.toRichTextElems(groupId != 0L, true)
     }
 
     private fun toJceDataImplForFriend(): ImMsgBody.SourceMsg {

@@ -37,7 +37,7 @@ interface Image : Message, MessageContent {
      * 图片的 id. 只需要有这个 id 即可发送图片.
      *
      * 示例:
-     * 好友图片的 id: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
+     * 好友图片的 id: `/f8f1ab55-bf8e-4236-b55e-955848d7069f` 或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
      * 群图片的 id: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png`
      */
     val imageId: String
@@ -53,7 +53,7 @@ interface Image : Message, MessageContent {
 @JsName("newImage")
 @JvmName("newImage")
 fun Image(imageId: String): Image = when (imageId.length) {
-    37 -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
+    54, 37 -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
     42 -> OfflineGroupImage(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
     else -> throw IllegalArgumentException("Bad imageId, expecting length=37 or 42, got ${imageId.length}")
 }
@@ -211,7 +211,7 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
 /**
  * 好友图片
  *
- * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)
+ * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
  */ // NotOnlineImage
 @OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {
