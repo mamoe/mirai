@@ -17,6 +17,8 @@ import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import tornadofx.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
@@ -30,6 +32,10 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     val pluginList: ObservableList<PluginModel> by lazy(::getPluginsFromConsole)
 
     val consoleInfo = ConsoleInfo()
+
+    val sdf by lazy {
+        SimpleDateFormat("HH:mm:ss")
+    }
 
     fun login(qq: String, psd: String) {
         CommandManager.runCommand(ConsoleCommandSender, "/login $qq $psd")
@@ -50,13 +56,16 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         }
 
         Platform.runLater {
+
+            val time = sdf.format(Date())
+
             when (identity) {
                 0L -> mainLog.apply {
-                    add("$identityStr $message")
+                    add("[$time] $identityStr $message")
                     trim()
                 }
                 else -> cache[identity]?.logHistory?.apply {
-                    add("$identityStr $message")
+                    add("[$time] $identityStr $message")
                     trim()
                 }
             }
