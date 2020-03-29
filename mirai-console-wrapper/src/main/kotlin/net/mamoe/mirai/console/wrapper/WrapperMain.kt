@@ -100,7 +100,7 @@ object WrapperMain {
             println("Please select Console Type")
             println("请选择 Console 版本")
             println("=> Pure       : pure console")
-            println("=> Graphical  : [Not Supported Yet] graphical UI except unix")
+            println("=> Graphical  : graphical UI except unix")
             println("=> Terminal   : [Not Supported Yet] console in unix")
             val scanner = Scanner(System.`in`)
             while (type == null){
@@ -146,6 +146,12 @@ object WrapperMain {
             CONSOLE_PURE -> {
                 loader.loadClass(
                         "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
+                    ).getMethod("load", String::class.java, String::class.java)
+                    .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
+            }
+            CONSOLE_GRAPHICAL  -> {
+                loader.loadClass(
+                        "net.mamoe.mirai.console.graphical.MiraiConsoleGraphicalLoader"
                     ).getMethod("load", String::class.java, String::class.java)
                     .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
             }

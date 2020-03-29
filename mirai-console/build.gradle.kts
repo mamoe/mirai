@@ -30,6 +30,12 @@ dependencies {
     implementation(group = "org.yaml", name = "snakeyaml", version = "1.25")
     implementation(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
     implementation(kotlin("stdlib-jdk8"))
+
+
+    testApi(ktor("client-cio", Versions.Kotlin.ktor))
+    testApi(ktor("client-core", Versions.Kotlin.ktor))
+    testApi(ktor("network", Versions.Kotlin.ktor))
+    testApi("org.jsoup:jsoup:1.12.1")
 }
 
 val miraiConsoleVersion: String by project.ext
