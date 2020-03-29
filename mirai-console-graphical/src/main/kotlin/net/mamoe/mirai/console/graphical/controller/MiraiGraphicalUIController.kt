@@ -49,25 +49,17 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     // 修改interface之后用来暂时占位
     override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
-        fun ObservableList<*>.trim() {
-            if (size > settingModel.item.maxLongNum) {
-                this.removeAt(0)
-            }
-        }
-
         Platform.runLater {
 
             val time = sdf.format(Date())
 
-            when (identity) {
-                0L -> mainLog.apply {
-                    add("[$time] $identityStr $message")
-                    trim()
-                }
-                else -> cache[identity]?.logHistory?.apply {
-                    add("[$time] $identityStr $message")
-                    trim()
-                }
+            if (identity == 0L) {
+                mainLog
+            } else {
+                cache[identity]?.logHistory
+            }?.apply {
+                add("[$time] $identityStr $message")
+                trim()
             }
         }
     }
@@ -98,7 +90,9 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         Platform.runLater {
             ret = InputDialog(hint).open()
         }
-        while (ret == null) { delay(1000) }
+        while (ret == null) {
+            delay(1000)
+        }
         return ret!!
     }
 
@@ -110,6 +104,15 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     private fun getPluginsFromConsole(): ObservableList<PluginModel> =
         PluginManager.getAllPluginDescriptions().map(::PluginModel).toObservable()
+
+
+    private fun ObservableList<*>.trim() {
+        println(size)
+        println(settingModel.item.maxLongNum)
+        while (size > settingModel.item.maxLongNum) {
+            this.removeAt(0)
+        }
+    }
 
 }
 
