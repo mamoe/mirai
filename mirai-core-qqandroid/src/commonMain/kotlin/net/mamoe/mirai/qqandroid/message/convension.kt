@@ -11,108 +11,25 @@
 
 package net.mamoe.mirai.qqandroid.message
 
-import kotlinx.io.core.*
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readUInt
+import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.qqandroid.io.serialization.loadAs
+import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.utils.io.hexToBytes
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.utils.io.toByteArray
 
-internal fun At.toJceData(): ImMsgBody.Text {
-    val text = this.toString()
-    return ImMsgBody.Text(
-        str = text,
-        attr6Buf = buildPacket {
-            // MessageForText$AtTroopMemberInfo
-            writeShort(1) // const
-            writeShort(0) // startPos
-            writeShort(text.length.toShort()) // textLen
-            writeByte(0) // flag, may=1
-            writeInt(target.toInt()) // uin
-            writeShort(0) // const
-        }.readBytes()
-    )
-}
-
-internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
-    return ImMsgBody.NotOnlineImage(
-        filePath = this.filepath,
-        resId = this.resourceId,
-        oldPicMd5 = false,
-        picMd5 = this.md5,
-        fileLen = this.fileLength,
-        picHeight = this.height,
-        picWidth = this.width,
-        bizType = this.bizType,
-        imgType = this.imageType,
-        downloadPath = this.downloadPath,
-        original = this.original,
-        fileId = this.fileId,
-        pbReserve = byteArrayOf(0x78, 0x02)
-    )
-}
-
-internal val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
-
-internal fun Face.toJceData(): ImMsgBody.Face {
-    return ImMsgBody.Face(
-        index = this.id,
-        old = (0x1445 - 4 + this.id).toShort().toByteArray(),
-        buf = FACE_BUF
-    )
-}
-
-internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
-    return ImMsgBody.CustomFace(
-        filePath = this.filepath,
-        fileId = this.fileId,
-        serverIp = this.serverIp,
-        serverPort = this.serverPort,
-        fileType = this.fileType,
-        signature = this.signature,
-        useful = this.useful,
-        md5 = this.md5,
-        bizType = this.bizType,
-        imageType = this.imageType,
-        width = this.width,
-        height = this.height,
-        source = this.source,
-        size = this.size,
-        origin = this.original,
-        pbReserve = this.pbReserve,
-        flag = ByteArray(4),
-        //_400Height = 235,
-        //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
-        //_400Width = 351,
-        oldData = oldData
-    )
-}
-
-private val oldData: ByteArray =
-    "15 36 20 39 32 6B 41 31 00 38 37 32 66 30 36 36 30 33 61 65 31 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 30 31 45 39 34 35 31 42 2D 37 30 45 44 2D 45 41 45 33 2D 42 33 37 43 2D 31 30 31 46 31 45 45 42 46 35 42 35 7D 2E 70 6E 67 41".hexToBytes()
-
-
-private val atAllData = ImMsgBody.Elem(
-    text = ImMsgBody.Text(
-        str = "@全体成员",
-        attr6Buf = buildPacket {
-            // MessageForText$AtTroopMemberInfo
-            writeShort(1) // const
-            writeShort(0) // startPos
-            writeShort("@全体成员".length.toShort()) // textLen
-            writeByte(1) // flag, may=1
-            writeInt(0) // uin
-            writeShort(0) // const
-        }.readBytes()
-    )
-)
 
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
+private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最新版手机QQ体验新功能。")
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
@@ -175,6 +92,21 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
                 elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
             }
+            is PokeMessage -> {
+                elements.add(
+                    ImMsgBody.Elem(
+                        commonElem = ImMsgBody.CommonElem(
+                            serviceType = 2,
+                            businessType = it.type,
+                            pbElem = HummerCommelem.MsgElemInfoServtype2(
+                                pokeType = it.type,
+                                vaspokeId = it.id
+                            ).toByteArray(HummerCommelem.MsgElemInfoServtype2.serializer())
+                        )
+                    )
+                )
+                transformOneMessage(UNSUPPORTED_POKE_MESSAGE_PLAIN)
+            }
             is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
@@ -231,65 +163,6 @@ private val PB_RESERVE_FOR_RICH_MESSAGE =
     "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes()
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
-internal class OnlineGroupImageImpl(
-    internal val delegate: ImMsgBody.CustomFace
-) : OnlineGroupImage() {
-    override val filepath: String = delegate.filePath
-    override val fileId: Int get() = delegate.fileId
-    override val serverIp: Int get() = delegate.serverIp
-    override val serverPort: Int get() = delegate.serverPort
-    override val fileType: Int get() = delegate.fileType
-    override val signature: ByteArray get() = delegate.signature
-    override val useful: Int get() = delegate.useful
-    override val md5: ByteArray get() = delegate.md5
-    override val bizType: Int get() = delegate.bizType
-    override val imageType: Int get() = delegate.imageType
-    override val width: Int get() = delegate.width
-    override val height: Int get() = delegate.height
-    override val source: Int get() = delegate.source
-    override val size: Int get() = delegate.size
-    override val original: Int get() = delegate.origin
-    override val pbReserve: ByteArray get() = delegate.pbReserve
-    override val imageId: String = ExternalImage.generateImageId(delegate.md5, imageType)
-    override val originUrl: String
-        get() = "http://gchat.qpic.cn" + delegate.origUrl
-
-    override fun equals(other: Any?): Boolean {
-        return other is OnlineGroupImageImpl && other.filepath == this.filepath && other.md5.contentEquals(this.md5)
-    }
-
-    override fun hashCode(): Int {
-        return imageId.hashCode() + 31 * md5.hashCode()
-    }
-}
-
-internal class OnlineFriendImageImpl(
-    internal val delegate: ImMsgBody.NotOnlineImage
-) : OnlineFriendImage() {
-    override val resourceId: String get() = delegate.resId
-    override val md5: ByteArray get() = delegate.picMd5
-    override val filepath: String get() = delegate.filePath
-    override val fileLength: Int get() = delegate.fileLen
-    override val height: Int get() = delegate.picHeight
-    override val width: Int get() = delegate.picWidth
-    override val bizType: Int get() = delegate.bizType
-    override val imageType: Int get() = delegate.imgType
-    override val downloadPath: String get() = delegate.downloadPath
-    override val fileId: Int get() = delegate.fileId
-    override val original: Int get() = delegate.original
-    override val originUrl: String
-        get() = "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
-
-    override fun equals(other: Any?): Boolean {
-        return other is OnlineFriendImageImpl && other.resourceId == this.resourceId && other.md5
-            .contentEquals(this.md5)
-    }
-
-    override fun hashCode(): Int {
-        return imageId.hashCode() + 31 * md5.hashCode()
-    }
-}
-
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     val elements = this.msgBody.richText.elems
@@ -337,6 +210,7 @@ internal inline fun <reified R> Iterable<*>.firstIsInstance(): R {
     throw NoSuchElementException("Collection contains no element matching the predicate.")
 }
 
+@OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
     this.forEach {
         when {
@@ -382,6 +256,22 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                         }
                     }
                 }
+            }
+            it.elemFlags2 != null
+                    || it.extraInfo != null
+                    || it.generalFlags != null -> {
+
+            }
+            it.commonElem != null -> {
+                when (it.commonElem.serviceType) {
+                    2 -> {
+                        val proto = it.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
+                        message.add(PokeMessage(proto.pokeType, proto.vaspokeId))
+                    }
+                }
+            }
+            else -> {
+                println(it._miraiContentToString())
             }
         }
     }

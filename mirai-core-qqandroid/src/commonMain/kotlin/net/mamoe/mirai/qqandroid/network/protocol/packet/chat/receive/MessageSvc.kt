@@ -223,9 +223,7 @@ internal class MessageSvc {
 
                             friend.lastMessageSequence.loop { instant ->
                                 if (msg.msgHead.msgSeq > instant) {
-                                    println("bigger")
                                     if (friend.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
-                                        println("set ok")
                                         return@mapNotNull FriendMessage(
                                             friend,
                                             msg.toMessageChain()

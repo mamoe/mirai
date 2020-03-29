@@ -15,6 +15,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.NullMessageChain.equals
 import net.mamoe.mirai.message.data.NullMessageChain.toString
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
@@ -44,6 +45,10 @@ import kotlin.reflect.KProperty
  */
 interface MessageChain : Message, Iterable<SingleMessage> {
     override operator fun contains(sub: String): Boolean
+
+    /**
+     * 得到易读的字符串
+     */
     override fun toString(): String
 
     /**
@@ -127,25 +132,27 @@ inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-@OptIn(ExperimentalMessageSource::class)
+@OptIn(ExperimentalMessageSource::class, MiraiExperimentalAPI::class)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {
-    At -> first<At>()
-    AtAll -> first<AtAll>()
-    PlainText -> first<PlainText>()
-    Image -> first<Image>()
-    OnlineImage -> first<OnlineImage>()
-    OfflineImage -> first<OfflineImage>()
-    GroupImage -> first<GroupImage>()
-    FriendImage -> first<FriendImage>()
-    Face -> first<Face>()
-    QuoteReply -> first<QuoteReply>()
-    MessageSource -> first<MessageSource>()
-    XmlMessage -> first<XmlMessage>()
-    JsonMessage -> first<JsonMessage>()
-    RichMessage -> first<RichMessage>()
-    LightApp -> first<LightApp>()
+    At -> firstOrNull<At>()
+    AtAll -> firstOrNull<AtAll>()
+    PlainText -> firstOrNull<PlainText>()
+    Image -> firstOrNull<Image>()
+    OnlineImage -> firstOrNull<OnlineImage>()
+    OfflineImage -> firstOrNull<OfflineImage>()
+    GroupImage -> firstOrNull<GroupImage>()
+    FriendImage -> firstOrNull<FriendImage>()
+    Face -> firstOrNull<Face>()
+    QuoteReply -> firstOrNull<QuoteReply>()
+    MessageSource -> firstOrNull<MessageSource>()
+    XmlMessage -> firstOrNull<XmlMessage>()
+    JsonMessage -> firstOrNull<JsonMessage>()
+    RichMessage -> firstOrNull<RichMessage>()
+    LightApp -> firstOrNull<LightApp>()
+    PokeMessage -> firstOrNull<PokeMessage>()
+    HummerMessage -> firstOrNull<HummerMessage>()
     else -> null
 } as M?
 

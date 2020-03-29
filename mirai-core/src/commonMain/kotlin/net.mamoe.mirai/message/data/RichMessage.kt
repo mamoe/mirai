@@ -163,6 +163,13 @@ class LongMessage(override val content: String, val resId: String) : RichMessage
     override fun toString(): String = content
 }
 
+/*
+commonElem=CommonElem#750141174 {
+        businessType=0x00000001(1)
+        pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
+        serviceType=0x00000002(2)
+}
+ */
 
 /**
  * 构造一条 XML 消息
