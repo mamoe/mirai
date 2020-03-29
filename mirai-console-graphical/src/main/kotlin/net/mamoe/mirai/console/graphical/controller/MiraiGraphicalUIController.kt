@@ -17,6 +17,8 @@ import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import tornadofx.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
@@ -31,6 +33,10 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     val consoleInfo = ConsoleInfo()
 
+    val sdf by lazy {
+        SimpleDateFormat("HH:mm:ss")
+    }
+
     fun login(qq: String, psd: String) {
         CommandManager.runCommand(ConsoleCommandSender, "/login $qq $psd")
     }
@@ -43,22 +49,17 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     // 修改interface之后用来暂时占位
     override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
-        fun ObservableList<*>.trim() {
-            if (size > settingModel.item.maxLongNum) {
-                this.removeAt(0)
-            }
-        }
-
         Platform.runLater {
-            when (identity) {
-                0L -> mainLog.apply {
-                    add("$identityStr $message")
-                    trim()
-                }
-                else -> cache[identity]?.logHistory?.apply {
-                    add("$identityStr $message")
-                    trim()
-                }
+
+            val time = sdf.format(Date())
+
+            if (identity == 0L) {
+                mainLog
+            } else {
+                cache[identity]?.logHistory
+            }?.apply {
+                add("[$time] $identityStr $message")
+                trim()
             }
         }
     }
@@ -89,7 +90,9 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         Platform.runLater {
             ret = InputDialog(hint).open()
         }
-        while (ret == null) { delay(1000) }
+        while (ret == null) {
+            delay(1000)
+        }
         return ret!!
     }
 
@@ -101,6 +104,15 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     private fun getPluginsFromConsole(): ObservableList<PluginModel> =
         PluginManager.getAllPluginDescriptions().map(::PluginModel).toObservable()
+
+
+    private fun ObservableList<*>.trim() {
+        println(size)
+        println(settingModel.item.maxLongNum)
+        while (size > settingModel.item.maxLongNum) {
+            this.removeAt(0)
+        }
+    }
 
 }
 
