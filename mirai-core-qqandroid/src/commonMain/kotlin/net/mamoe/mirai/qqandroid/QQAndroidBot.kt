@@ -163,6 +163,7 @@ internal abstract class QQAndroidBotBase constructor(
         TODO("not implemented")
     }
 
+    @ExperimentalMessageSource
     override suspend fun recall(source: MessageSource) {
         if (source.senderId != uin && source.groupId != 0L) {
             getGroup(source.groupId).checkBotPermissionOperator()
@@ -382,8 +383,9 @@ internal abstract class QQAndroidBotBase constructor(
             val data = chain.calculateValidationDataForGroup(
                 sequenceId = client.atomicNextMessageSequenceId(),
                 time = time.toInt(),
-                random = Random.nextInt().absoluteValue.toULong().toLong(),
-                group
+                random = Random.nextInt().absoluteValue.toUInt(),
+                groupCode,
+                group.botAsMember.nameCardOrNick
             )
 
             val response =

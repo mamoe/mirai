@@ -15,11 +15,15 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recallIn
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 发送消息后得到的回执. 可用于撤回.
  *
  * 此对象持有 [Contact] 的弱引用, [Bot] 离线后将会释放引用, 届时 [target] 将无法访问.
+ *
+ * @param source 指代发送出去的消息
+ * @param target 消息发送对象
  *
  * @see Group.sendMessage 发送群消息, 返回回执（此对象）
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
@@ -28,11 +32,15 @@ import net.mamoe.mirai.recallIn
  * @see MessageReceipt.sourceSequenceId 源序列号
  * @see MessageReceipt.sourceTime 源时间
  */
-expect open class MessageReceipt<C : Contact>(
+expect open class MessageReceipt<C : Contact> @OptIn(ExperimentalMessageSource::class) constructor(
     source: MessageSource,
     target: C,
     botAsMember: Member?
 ) {
+    /**
+     * 指代发送出去的消息
+     */
+    @ExperimentalMessageSource
     val source: MessageSource
 
     /**
@@ -90,6 +98,8 @@ expect open class MessageReceipt<C : Contact>(
  *
  * @see MessageSource.id
  */
+@get:JvmSynthetic
+@ExperimentalMessageSource
 inline val MessageReceipt<*>.sourceId: Long get() = this.source.id
 
 /**
@@ -97,6 +107,8 @@ inline val MessageReceipt<*>.sourceId: Long get() = this.source.id
  *
  * @see MessageSource.sequenceId
  */
+@get:JvmSynthetic
+@ExperimentalMessageSource
 inline val MessageReceipt<*>.sourceSequenceId: Int get() = this.source.sequenceId
 
 /**
@@ -104,6 +116,8 @@ inline val MessageReceipt<*>.sourceSequenceId: Int get() = this.source.sequenceI
  *
  * @see MessageSource.time
  */
+@get:JvmSynthetic
+@ExperimentalMessageSource
 inline val MessageReceipt<*>.sourceTime: Long get() = this.source.time
 
 suspend inline fun MessageReceipt<out Contact>.quoteReply(message: Message) {

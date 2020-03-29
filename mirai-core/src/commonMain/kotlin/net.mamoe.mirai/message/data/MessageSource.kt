@@ -20,6 +20,12 @@ import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
+ * MessageSource 正计划于 0.32 或 0.33 或之后进行 API 不兼容的重写.
+ */
+@RequiresOptIn(message = "MessageSource 正计划于 0.32 或 0.33 或之后进行 API 不兼容的重写", level = RequiresOptIn.Level.WARNING)
+annotation class ExperimentalMessageSource
+
+/**
  * 消息源, 它存在于 [MessageChain] 中, 用于表示这个消息的来源.
  *
  * 消息源只用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
@@ -29,6 +35,7 @@ import kotlin.jvm.JvmSynthetic
  * @see Bot.recall 撤回一条消息
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  */
+@ExperimentalMessageSource
 interface MessageSource : Message, MessageMetadata {
     companion object Key : Message.Key<MessageSource>
 
@@ -82,6 +89,7 @@ interface MessageSource : Message, MessageMetadata {
  * 序列号. 若是机器人发出去的消息, 请先 [确保 sequenceId 可用][MessageSource.ensureSequenceIdAvailable]
  * @see MessageSource.id
  */
+@ExperimentalMessageSource
 @get:JvmSynthetic
 inline val MessageSource.sequenceId: Int
     get() = (this.id shr 32).toInt()
@@ -90,6 +98,7 @@ inline val MessageSource.sequenceId: Int
  * 消息随机数. 由服务器或客户端指定后不能更改. 它是消息 id 的一部分.
  * @see MessageSource.id
  */
+@ExperimentalMessageSource
 @get:JvmSynthetic
 inline val MessageSource.messageRandom: Int
     get() = this.id.toInt()
@@ -98,24 +107,33 @@ inline val MessageSource.messageRandom: Int
 
 /**
  * 消息 id.
+ *
+ * 仅接收到的消息才可以获取这个 id.
+ *
  * @see MessageSource.id
  */
+@ExperimentalMessageSource
 @get:JvmSynthetic
 inline val MessageChain.id: Long
     get() = this[MessageSource].id
 
 /**
  * 消息序列号, 可能来自服务器也可以发送时赋值, 不唯一.
+ *
+ * 仅接收到的消息才可以获取这个序列号.
+ *
  * @see MessageSource.id
  */
+@ExperimentalMessageSource
 @get:JvmSynthetic
 inline val MessageChain.sequenceId: Int
-    get() = this[MessageSource].sequenceId
+    get() = this.getOrNull(MessageSource)?.sequenceId ?: error("Only MessageChain from server has sequenceId")
 
 /**
  * 消息随机数. 由服务器或客户端指定后不能更改. 它是消息 id 的一部分.
  * @see MessageSource.id
  */
+@ExperimentalMessageSource
 @get:JvmSynthetic
 inline val MessageChain.messageRandom: Int
-    get() = this[MessageSource].messageRandom
+    get() = this.getOrNull(MessageSource)?.messageRandom ?: error("Only MessageChain from server has sequenceId")

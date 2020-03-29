@@ -278,7 +278,7 @@ internal class GroupImpl(
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
         val event = GroupMessageSendEvent(this, message.asMessageChain()).broadcast()
         if (event.isCancelled) {
-            throw EventCancelledException("cancelled by FriendMessageSendEvent")
+            throw EventCancelledException("cancelled by GroupMessageSendEvent")
         }
         lateinit var source: MessageSourceFromSendGroup
         bot.network.run {

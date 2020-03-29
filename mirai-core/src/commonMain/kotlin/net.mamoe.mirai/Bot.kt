@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.ExperimentalMessageSource
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -33,6 +34,7 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 登录, 返回 [this]
  */
+@JvmSynthetic
 suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
 // 任何人都能看到这个方法
 
@@ -167,6 +169,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * @see _lowLevelRecallFriendMessage 低级 API
      * @see _lowLevelRecallGroupMessage 低级 API
      */
+    @ExperimentalMessageSource
     @JvmSynthetic
     abstract suspend fun recall(source: MessageSource)
 
@@ -223,6 +226,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
  * @see Bot.recall
  */
+@JvmSynthetic
 suspend inline fun Bot.recall(message: MessageChain) = this.recall(message[MessageSource])
 
 /**
@@ -233,6 +237,7 @@ suspend inline fun Bot.recall(message: MessageChain) = this.recall(message[Messa
  * @param coroutineContext 额外的 [CoroutineContext]
  * @see recall
  */
+@JvmSynthetic
 inline fun Bot.recallIn(
     source: MessageSource,
     millis: Long,
@@ -249,6 +254,7 @@ inline fun Bot.recallIn(
  * @param coroutineContext 额外的 [CoroutineContext]
  * @see recall
  */
+@JvmSynthetic
 inline fun Bot.recallIn(
     message: MessageChain,
     millis: Long,
@@ -265,15 +271,20 @@ inline fun Bot.recallIn(
  *
  * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
  */
+@JvmSynthetic
 suspend inline fun Bot.closeAndJoin(cause: Throwable? = null) {
     close(cause)
     coroutineContext[Job]?.join()
 }
 
+@JvmSynthetic
 inline fun Bot.containsFriend(id: Long): Boolean = this.friends.contains(id)
 
+@JvmSynthetic
 inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
 
+@JvmSynthetic
 inline fun Bot.getFriendOrNull(id: Long): QQ? = this.friends.getOrNull(id)
 
+@JvmSynthetic
 inline fun Bot.getGroupOrNull(id: Long): Group? = this.groups.getOrNull(id)

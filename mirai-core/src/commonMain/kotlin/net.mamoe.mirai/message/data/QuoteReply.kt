@@ -29,6 +29,7 @@ import kotlin.jvm.JvmName
  * 总是使用 [quote] 来构造这个实例.
  */
 open class QuoteReply
+@OptIn(ExperimentalMessageSource::class)
 @MiraiInternalAPI constructor(val source: MessageSource) : Message, MessageMetadata {
     companion object Key : Message.Key<QuoteReply>
 
@@ -39,7 +40,7 @@ open class QuoteReply
  * 用于发送的引用回复.
  * 总是使用 [quote] 来构造实例.
  */
-@OptIn(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, ExperimentalMessageSource::class)
 sealed class QuoteReplyToSend
 @MiraiInternalAPI constructor(source: MessageSource) : QuoteReply(source) {
     class ToGroup(source: MessageSource, val sender: QQ) : QuoteReplyToSend(source) {
@@ -53,7 +54,7 @@ sealed class QuoteReplyToSend
  * 引用这条消息.
  * @see sender 消息发送人.
  */
-@OptIn(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, ExperimentalMessageSource::class)
 fun MessageChain.quote(sender: QQ?): QuoteReplyToSend {
     this.firstOrNull<MessageSource>()?.let {
         return it.quote(sender)
@@ -65,6 +66,7 @@ fun MessageChain.quote(sender: QQ?): QuoteReplyToSend {
  * 引用这条消息.
  * @see from 消息来源. 若是好友发送
  */
+@ExperimentalMessageSource
 @OptIn(MiraiInternalAPI::class)
 fun MessageSource.quote(from: QQ?): QuoteReplyToSend {
     return if (this.groupId != 0L) {

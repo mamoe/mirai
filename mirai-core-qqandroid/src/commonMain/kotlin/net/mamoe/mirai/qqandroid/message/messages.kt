@@ -7,6 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 @file: OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class, LowLevelAPI::class, ExperimentalUnsignedTypes::class)
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.qqandroid.message
 

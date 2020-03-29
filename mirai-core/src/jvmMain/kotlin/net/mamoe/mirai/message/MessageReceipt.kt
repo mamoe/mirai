@@ -29,7 +29,8 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  */
 @Suppress("FunctionName")
 @OptIn(MiraiInternalAPI::class)
-actual open class MessageReceipt<C : Contact> actual constructor(
+actual open class MessageReceipt<C : Contact> @OptIn(ExperimentalMessageSource::class)
+actual constructor(
     actual val source: MessageSource,
     target: C,
     private val botAsMember: Member?
@@ -56,6 +57,7 @@ actual open class MessageReceipt<C : Contact> actual constructor(
      * @see Bot.recall
      * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
      */
+    @OptIn(ExperimentalMessageSource::class)
     actual suspend fun recall() {
         @Suppress("BooleanLiteralArgument")
         if (_isRecalled.compareAndSet(false, true)) {
@@ -84,6 +86,7 @@ actual open class MessageReceipt<C : Contact> actual constructor(
      * [确保 sequenceId可用][MessageSource.ensureSequenceIdAvailable] 然后引用这条消息.
      * @see MessageChain.quote 引用一条消息
      */
+    @OptIn(ExperimentalMessageSource::class)
     actual open suspend fun quote(): QuoteReplyToSend {
         this.source.ensureSequenceIdAvailable()
         @OptIn(LowLevelAPI::class)
@@ -97,6 +100,7 @@ actual open class MessageReceipt<C : Contact> actual constructor(
      *
      * @see MessageChain.quote 引用一条消息
      */
+    @OptIn(ExperimentalMessageSource::class)
     @LowLevelAPI
     @Suppress("FunctionName")
     actual fun _unsafeQuote(): QuoteReplyToSend {
