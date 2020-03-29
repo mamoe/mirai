@@ -21,6 +21,11 @@ internal object ConsoleUpdater {
                     "version" to "/net/mamoe/mirai-console/"
                 )
             )
+            put(
+                CONSOLE_GRAPHICAL, mapOf(
+                    "version" to "/net/mamoe/mirai-console-graphical/"
+                )
+            )
         }
     }
 
