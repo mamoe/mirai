@@ -17,7 +17,6 @@ import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmField
 
 @SinceMirai("0.31.0")
-@MiraiExperimentalAPI
 sealed class HummerMessage : MessageContent {
     companion object Key : Message.Key<HummerMessage>
 }
@@ -25,8 +24,8 @@ sealed class HummerMessage : MessageContent {
 /**
  * 戳一戳
  */
-@MiraiExperimentalAPI
 @SinceMirai("0.31.0")
+@MiraiExperimentalAPI
 @OptIn(MiraiInternalAPI::class)
 class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") constructor(
     val type: Int,
@@ -59,6 +58,7 @@ class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") 
         val FangDaZhao = PokeMessage(6, -1)
     }
 
+    @OptIn(MiraiExperimentalAPI::class)
     private val stringValue = "[mirai:Poke($type, $id)]"
 
     override fun toString(): String = stringValue
