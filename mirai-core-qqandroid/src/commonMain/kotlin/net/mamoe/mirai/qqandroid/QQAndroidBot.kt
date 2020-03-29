@@ -370,7 +370,7 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     override suspend fun _lowLevelSendLongMessage(groupCode: Long, message: Message) {
         val chain = message.asMessageChain()
-        check(chain.toString().length <= 4500 && chain.count { it is Image } <= 50) { "message is too large" }
+        check(chain.toString().length <= 4500 && chain.count { it is Image } <= 50) { "message is too large. Allow up to 4500 chars or 50 images" }
         val group = getGroup(groupCode)
 
         val source = MessageSourceFromSendFriend(
