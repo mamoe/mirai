@@ -34,39 +34,27 @@ class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") 
     val id: Int
 ) : HummerMessage() {
     companion object Types : Message.Key<PokeMessage> {
-        /**
-         * 戳一戳
-         */
+        /** 戳一戳 */
         @JvmField
         val Poke = PokeMessage(1, -1)
 
-        /**
-         * 比心
-         */
+        /** 比心 */
         @JvmField
         val ShowLove = PokeMessage(2, -1)
 
-        /**
-         * 点赞
-         */
+        /** 点赞  */
         @JvmField
         val Like = PokeMessage(3, -1)
 
-        /**
-         * 心碎
-         */
+        /** 心碎 */
         @JvmField
         val Heartbroken = PokeMessage(4, -1)
 
-        /**
-         * 666
-         */
+        /** 666 */
         @JvmField
         val SixSixSix = PokeMessage(5, -1)
 
-        /**
-         * 放大招
-         */
+        /** 放大招 */
         @JvmField
         val FangDaZhao = PokeMessage(6, -1)
     }
