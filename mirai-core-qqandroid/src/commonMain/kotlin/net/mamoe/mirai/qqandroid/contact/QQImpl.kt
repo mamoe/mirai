@@ -66,7 +66,7 @@ internal class QQImpl(
     override val id: Long,
     private val friendInfo: FriendInfo
 ) : QQ() {
-    var lastMessageSequence: AtomicInt = atomic(-1)
+    val lastMessageSequence: AtomicInt = atomic(-1)
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val nick: String
