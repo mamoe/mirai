@@ -54,7 +54,8 @@ sealed class QuoteReplyToSend
  * 引用这条消息.
  * @see sender 消息发送人.
  */
-@OptIn(MiraiInternalAPI::class, ExperimentalMessageSource::class)
+@ExperimentalMessageSource
+@OptIn(MiraiInternalAPI::class)
 fun MessageChain.quote(sender: QQ?): QuoteReplyToSend {
     this.firstOrNull<MessageSource>()?.let {
         return it.quote(sender)

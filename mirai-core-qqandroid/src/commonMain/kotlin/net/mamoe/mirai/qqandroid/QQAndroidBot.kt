@@ -31,6 +31,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.MessageRecallEvent
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
@@ -370,12 +371,10 @@ internal abstract class QQAndroidBotBase constructor(
 
     @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelSendLongMessage(groupCode: Long, message: Message) {
+    override suspend fun _lowLevelSendLongGroupMessage(groupCode: Long, message: Message): MessageReceipt<Group> {
         val chain = message.asMessageChain()
         check(chain.toString().length <= 4500 && chain.count { it is Image } <= 50) { "message is too large. Allow up to 4500 chars or 50 images" }
         val group = getGroup(groupCode)
-
-        // TODO: 2020/3/26 util 方法来添加单例元素
 
         val time = currentTimeSeconds
 
@@ -432,14 +431,12 @@ internal abstract class QQAndroidBotBase constructor(
                 }
             }
 
-            group.sendMessage(
+            return group.sendMessage(
                 RichMessage.longMessage(
-                    brief = chain.joinToString(limit = 30) {
-                        when (it) {
-                            is PlainText -> it.stringValue
-                            is At -> it.toString()
-                            else -> ""
-                        }
+                    brief = chain.toString().let { // already cached
+                        if (it.length > 27) {
+                            it.take(27) + "..."
+                        } else it
                     },
                     resId = resId,
                     timeSeconds = time

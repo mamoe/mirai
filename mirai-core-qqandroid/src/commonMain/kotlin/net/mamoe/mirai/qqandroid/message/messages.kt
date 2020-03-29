@@ -315,15 +315,10 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
-            if (last == null) {
-                last = element
-                return@forEach
-            } else {
-                if (last is LongMessage && element is PlainText) {
-                    if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
-                        last = element
-                        return@forEach
-                    }
+            if (last is LongMessage && element is PlainText) {
+                if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
+                    last = element
+                    return@forEach
                 }
             }
 
