@@ -54,7 +54,9 @@ object WrapperMain {
             f.isVisible = true
 
             uiLog("正在进行版本检查\n")
-
+            val dic = System.getProperty("user.dir")
+            uiLog("工作目录: ${dic}\n")
+            uiLog("若无法启动, 请尝试清除工作目录下/content/文件夹\n")
             var uiOpen = true
             GlobalScope.launch {
                 while (isActive && uiOpen) {
@@ -73,6 +75,7 @@ object WrapperMain {
                 }
             }
             uiLog("版本检查完成, 启动中\n")
+
             runBlocking {
                 MiraiDownloader.downloadIfNeed(true)
             }
