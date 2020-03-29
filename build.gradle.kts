@@ -60,12 +60,18 @@ subprojects {
         val shadowJvmJar by tasks.creating(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
             group = "mirai"
 
-            val compilation =
-                kotlin.targets.first { it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm }.compilations["main"]
+            val compilations =
+                kotlin.targets.filter { it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm }
+                    .map { it.compilations["main"] }
 
-            dependsOn(compilation.compileKotlinTask)
+            compilations.forEach {
+                dependsOn(it.compileKotlinTask)
+            }
 
-            configurations = mutableListOf(compilation.compileDependencyFiles as Configuration)
+            compilations.forEach {
+                from(it.output)
+            }
+            configurations = compilations.map { it.compileDependencyFiles as Configuration }
 
             this.exclude { file ->
                 file.name.endsWith(".sf", ignoreCase = true)
