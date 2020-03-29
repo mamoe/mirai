@@ -25,9 +25,9 @@ sealed class HummerMessage : MessageContent {
  * 戳一戳
  */
 @SinceMirai("0.31.0")
-@MiraiExperimentalAPI
 @OptIn(MiraiInternalAPI::class)
 class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") constructor(
+    @MiraiExperimentalAPI
     val type: Int,
     @MiraiExperimentalAPI
     val id: Int
