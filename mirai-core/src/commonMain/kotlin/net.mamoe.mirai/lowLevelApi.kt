@@ -137,6 +137,7 @@ interface LowLevelBotAPIAccessor {
     /**
      * 获取群活跃信息
      */
+    @SinceMirai("0.29.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData
