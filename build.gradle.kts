@@ -79,35 +79,63 @@ subprojects {
 
             doFirst {
                 timeout.set(Duration.ofMinutes(10))
-                File(projectDir, "build/libs").walk()
-                    .filter { it.isFile }
-                    .onEach { println("all files=$it") }
-                    .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*\.jar""")) }
-                    .onEach { println("matched file: ${it.name}") }
-                    .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
-                    .onEach { println("versions: $it") }
-                    .maxBy {
-                        it.key.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                            acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
-                        }
-                    }?.let { (_, file) ->
-                        val filename = file.name
-                        println("Uploading file $filename")
-                        runCatching {
-                            upload.GitHub.upload(
-                                file,
-                                "https://api.github.com/repos/mamoe/mirai-repo/contents/shadow/${project.name}/$filename",
-                                project
-                            )
-                        }.exceptionOrNull()?.let {
-                            System.err.println("Upload failed")
-                            it.printStackTrace() // force show stacktrace
-                            throw it
-                        }
+                findLatestFile()?.let { (_, file) ->
+                    val filename = file.name
+                    println("Uploading file $filename")
+                    runCatching {
+                        upload.GitHub.upload(
+                            file,
+                            "https://api.github.com/repos/mamoe/mirai-repo/contents/shadow/${project.name}/$filename",
+                            project
+                        )
+                    }.exceptionOrNull()?.let {
+                        System.err.println("GitHub Upload failed")
+                        it.printStackTrace() // force show stacktrace
+                        throw it
                     }
+                }
+            }
+        }
+
+        val cuiCloudUpload by tasks.creating {
+            group = "mirai"
+            dependsOn(shadowJvmJar)
+
+            doFirst {
+                timeout.set(Duration.ofMinutes(10))
+                findLatestFile()?.let { (_, file) ->
+                    val filename = file.name
+                    println("Uploading file $filename")
+                    runCatching {
+                        upload.CuiCloud.upload(
+                            file,
+                            project
+                        )
+                    }.exceptionOrNull()?.let {
+                        System.err.println("CuiCloud Upload failed")
+                        it.printStackTrace() // force show stacktrace
+                        throw it
+                    }
+                }
             }
 
         }
     }
 
+}
+
+
+fun findLatestFile(): Map.Entry<String, File>? {
+    return File(projectDir, "build/libs").walk()
+        .filter { it.isFile }
+        .onEach { println("all files=$it") }
+        .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*\.jar""")) }
+        .onEach { println("matched file: ${it.name}") }
+        .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
+        .onEach { println("versions: $it") }
+        .maxBy {
+            it.key.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
+                acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
+            }
+        }
 }
