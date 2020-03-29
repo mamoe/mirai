@@ -194,6 +194,12 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
+            if (last is PokeMessage && element is PlainText) {
+                if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
+                    last = element
+                    return@forEach
+                }
+            }
 
             add(element)
             last = element
