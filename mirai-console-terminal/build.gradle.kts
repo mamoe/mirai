@@ -31,7 +31,7 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 
-val miraiVersion: String by rootProject.ext
+val miraiVersion =  Versions.Mirai.core
 
 dependencies {
     implementation("net.mamoe:mirai-core-jvm:$miraiVersion")

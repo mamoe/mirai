@@ -38,8 +38,7 @@ dependencies {
     testApi("org.jsoup:jsoup:1.12.1")
 }
 
-val miraiConsoleVersion: String by project.ext
-version = miraiConsoleVersion
+version = Versions.Mirai.console
 
 description = "Console with plugin support for mirai"
 bintray {
@@ -82,7 +81,7 @@ publishing {
 
             groupId = rootProject.group.toString()
             artifactId = "mirai-console"
-            version = miraiConsoleVersion
+            version = version
 
             pom.withXml {
                 val root = asNode()

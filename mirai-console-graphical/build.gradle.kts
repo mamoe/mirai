@@ -18,7 +18,6 @@ javafx {
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
-version = Versions.Mirai.console
 
 /*
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
@@ -28,8 +27,7 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
 }
  */
 
-val miraiConsoleGraphicalVersion: String by project.ext
-version = miraiConsoleGraphicalVersion
+version = Versions.Mirai.console
 
 description = "Console Graphical Version with plugin support for mirai"
 bintray {
@@ -67,7 +65,7 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
-val miraiVersion: String by rootProject.ext
+val miraiVersion = Versions.Mirai.core
 
 dependencies {
     implementation("net.mamoe:mirai-core-jvm:$miraiVersion")
@@ -91,6 +89,7 @@ val sourcesJar by tasks.registering(Jar::class) {
     from(sourceSets.main.get().allSource)
 }
 
+
 publishing {
     /*
     repositories {
@@ -105,7 +104,7 @@ publishing {
 
             groupId = rootProject.group.toString()
             artifactId = "mirai-console-graphical"
-            version = miraiConsoleGraphicalVersion
+            version = Versions.Mirai.consoleGraphical
 
             pom.withXml {
                 val root = asNode()

@@ -38,7 +38,14 @@ internal object ConsoleUpdater {
                 if (file.name.contains("mirai-console")) {
                     when (consoleType) {
                         CONSOLE_PURE -> {
-                            return file
+                            if(!file.name.contains("graphical")) {
+                                return file
+                            }
+                        }
+                        CONSOLE_GRAPHICAL -> {
+                            if(file.name.contains("graphical")) {
+                                return file
+                            }
                         }
                     }
                 }
@@ -108,7 +115,7 @@ internal object ConsoleUpdater {
         return if (consoleType == CONSOLE_PURE) {
             "mirai-console"
         } else {
-            "mirai-console-$consoleType"
+            "mirai-console-${consoleType.toLowerCase()}"
         }
     }
 
