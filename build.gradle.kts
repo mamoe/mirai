@@ -131,7 +131,7 @@ subprojects {
 }
 
 
-fun findLatestFile(): Map.Entry<String, File>? {
+fun Project.findLatestFile(): Map.Entry<String, File>? {
     return File(projectDir, "build/libs").walk()
         .filter { it.isFile }
         .onEach { println("all files=$it") }
