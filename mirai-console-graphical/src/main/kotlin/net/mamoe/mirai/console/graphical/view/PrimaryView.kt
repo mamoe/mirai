@@ -151,7 +151,7 @@ private fun TabPane.fixedTab(title: String) = tab(title) { isClosable = false }
 
 private fun TabPane.logTab(
     text: String? = null,
-    logs: ObservableList<String>,
+    logs: ObservableList<Pair<String, String>>,
     closeable: Boolean = true,
     op: Tab.() -> Unit = {}
 ) = tab(text) {
@@ -174,7 +174,7 @@ private fun TabPane.logTab(
                     path.firstOrNull()?.run {
                         if (!exists()) createNewFile()
                         writer().use {
-                            logs.forEach { log -> it.appendln(log) }
+                            logs.forEach { log -> it.appendln(log.first) }
                         }
                         true
                     } ?: false
@@ -188,7 +188,10 @@ private fun TabPane.logTab(
 
             fitToParentSize()
             cellFormat {
-                graphic = label(it) {
+
+                addPseudoClass(it.second)
+
+                graphic = label(it.first) {
                     maxWidthProperty().bind(this@listview.widthProperty())
                     isWrapText = true
                 }

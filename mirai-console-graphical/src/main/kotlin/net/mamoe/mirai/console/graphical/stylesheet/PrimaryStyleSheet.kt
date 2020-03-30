@@ -124,6 +124,15 @@ class PrimaryStyleSheet : BaseStyleSheet() {
                 }
 
                 listCell {
+
+                    and(":WARNING") {
+                        backgroundColor += c("FFFF00", 0.3) // Yellow
+                    }
+
+                    and(":ERROR") {
+                        backgroundColor += c("FF0000", 0.3) // Red
+                    }
+
                     and(":selected") {
                         backgroundColor += c(stressColor, 1.0)
                     }

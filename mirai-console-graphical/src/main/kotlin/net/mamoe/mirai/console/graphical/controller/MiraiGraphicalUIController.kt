@@ -27,7 +27,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     private val settingModel = find<GlobalSettingModel>()
     private val loginSolver = GraphicalLoginSolver()
     private val cache = mutableMapOf<Long, BotModel>()
-    val mainLog = observableListOf<String>()
+    val mainLog = observableListOf<Pair<String, String>>()
 
 
     val botList = observableListOf<BotModel>()
@@ -69,7 +69,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
             } else {
                 cache[identity]?.logHistory
             }?.apply {
-                add("[$time] $identityStr $message")
+                add("[$time] $identityStr $message" to priority.name)
                 trim()
             }
         }
