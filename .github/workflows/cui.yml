@@ -22,7 +22,7 @@ jobs:
       - name: Gradle clean
         run: ./gradlew clean
       - name: Gradle build
-        run: ./gradlew build
+        run: ./gradlew build # if test's failed, don't publish
       - name: Gradle :mirai-core:cuiCloudUpload
         run: ./gradlew :mirai-core:cuiCloudUpload -Dcui_cloud_key=${{ secrets.CUI_CLOUD_KEY }} -Pcui_cloud_key=${{ secrets.CUI_CLOUD_KEY }} -Dcui_cloud_url=${{ secrets.CUI_CLOUD_URL }} -Pcui_cloud_url=${{ secrets.CUI_CLOUD_URL }}
       - name: Gradle :mirai-core-qqandroid:cuiCloudUpload
