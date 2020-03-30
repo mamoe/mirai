@@ -368,6 +368,7 @@ internal inline fun <reified T:Any> ConfigSection.smartGet(key:String):T{
 
 @Serializable
 open class ConfigSectionImpl : ConcurrentHashMap<String, Any>(),
+
     ConfigSection {
     override fun set(key: String, value: Any) {
         super.put(key, value)
