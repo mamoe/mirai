@@ -109,7 +109,7 @@ IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后�
 <br>
 <br>
 
-###下一步
+## 下一步
 
 Java  玩家->[我的第一个插件](https://github.com/mamoe/mirai-console/PluginDocs/java/MyFirstPlugin.MD)
 Kotlin玩家->[我的第一个插件](https://github.com/mamoe/mirai-console/PluginDocs/kotlin/MyFirstPlugin.MD)
