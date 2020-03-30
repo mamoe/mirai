@@ -30,6 +30,8 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.utils.chineseLength
+import net.mamoe.mirai.qqandroid.utils.sumUpTo
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
@@ -271,7 +273,7 @@ internal class GroupImpl(
         return members.delegate.filteringGetOrNull { it.id == id }
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
@@ -281,11 +283,14 @@ internal class GroupImpl(
         }
 
         if (message !is LongMessage) {
-            val length = event.message.toString().length
-            if (length > 4000
-                || event.message.count { it is Image } > 3
-                || (event.message.any<QuoteReply>() && (event.message.any<Image>() || length > 100))
-            ) {
+            if (event.message.sumUpTo(800) { it, upTo ->
+                    when (it) {
+                        is QuoteReply -> 700
+                        is Image -> 300
+                        is PlainText -> it.stringValue.chineseLength(upTo)
+                        else -> it.toString().length
+                    }
+                } >= 800) {
                 return bot._lowLevelSendLongGroupMessage(this.id, message)
             }
         }

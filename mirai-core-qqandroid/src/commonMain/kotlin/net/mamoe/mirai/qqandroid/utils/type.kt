@@ -29,3 +29,29 @@ internal fun Int.toIpV4AddressString(): String {
         }
     }
 }
+
+internal fun String.chineseLength(upTo: Int): Int {
+    return this.sumUpTo(upTo) { if (it in '\u0391'..'\uFFE5') 3 else 1 }
+}
+
+internal inline fun <T> Iterable<T>.sumUpTo(upTo: Int, selector: (T, remaining: Int) -> Int): Int {
+    var sum = 0
+    for (element in this) {
+        if (sum >= upTo) {
+            return sum
+        }
+        sum += selector(element, (upTo - sum).coerceAtLeast(0))
+    }
+    return sum
+}
+
+internal inline fun CharSequence.sumUpTo(upTo: Int, selector: (Char) -> Int): Int {
+    var sum: Int = 0
+    for (element in this) {
+        sum += selector(element)
+        if (sum >= upTo) {
+            return sum
+        }
+    }
+    return sum
+}
