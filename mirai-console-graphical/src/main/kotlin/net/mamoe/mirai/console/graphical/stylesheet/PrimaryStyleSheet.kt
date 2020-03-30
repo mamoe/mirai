@@ -69,9 +69,21 @@ class PrimaryStyleSheet : BaseStyleSheet() {
                         backgroundColor += c(100, 100, 100, 0.4)
                         backgroundRadius += box(5.px)
 
-                        textFill = c(fontColor)
-                        fontWeight = FontWeight.BOLD
+                        label {
+                            textFill = c(fontColor)
+                            fontWeight = FontWeight.BOLD
+                        }
 
+                        button {
+                            opacity = 0.0
+                            backgroundRadius += box(10.px)
+                            backgroundColor += c(fontColor, 0.1)
+                            cursor = Cursor.HAND
+
+                            and(hover) {
+                                opacity = 1.0
+                            }
+                        }
                     }
                 }
             }
@@ -112,6 +124,15 @@ class PrimaryStyleSheet : BaseStyleSheet() {
                 }
 
                 listCell {
+
+                    and(":WARNING") {
+                        backgroundColor += c("FFFF00", 0.3) // Yellow
+                    }
+
+                    and(":ERROR") {
+                        backgroundColor += c("FF0000", 0.3) // Red
+                    }
+
                     and(":selected") {
                         backgroundColor += c(stressColor, 1.0)
                     }
