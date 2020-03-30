@@ -12,6 +12,7 @@
 package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.Bot
@@ -240,9 +241,9 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
 /**
  * 挂起当前协程, 等待下一条 [MessagePacket.sender] 和 [MessagePacket.subject] 与 [this] 相同的 [MessagePacket]
  *
- * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
- *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ *
+ * @throws TimeoutCancellationException
  *
  * @see subscribingGet
  */
@@ -256,6 +257,7 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
 
 /**
  * @see nextMessage
+ * @throws TimeoutCancellationException
  */
 inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
     timeoutMillis: Long = -1,
