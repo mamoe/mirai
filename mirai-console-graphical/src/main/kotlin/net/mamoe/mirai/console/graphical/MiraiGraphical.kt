@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.graphical.stylesheet.PrimaryStyleSheet
 import net.mamoe.mirai.console.graphical.view.Decorator
 import tornadofx.App
 import tornadofx.find
+import kotlin.system.exitProcess
 
 //object MiraiGraphicalLoader {
 //    @JvmStatic
@@ -33,5 +34,6 @@ class MiraiGraphicalUI : App(Decorator::class, PrimaryStyleSheet::class) {
     override fun stop() {
         super.stop()
         MiraiConsole.stop()
+        exitProcess(0)
     }
 }

@@ -5,8 +5,10 @@ import javafx.collections.ObservableList
 import javafx.stage.Modality
 import javafx.stage.StageStyle
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandManager.runCommand
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.graphical.model.*
 import net.mamoe.mirai.console.graphical.view.dialog.InputDialog
@@ -25,7 +27,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     private val settingModel = find<GlobalSettingModel>()
     private val loginSolver = GraphicalLoginSolver()
     private val cache = mutableMapOf<Long, BotModel>()
-    val mainLog = observableListOf<String>()
+    val mainLog = observableListOf<Pair<String, String>>()
 
 
     val botList = observableListOf<BotModel>()
@@ -41,7 +43,16 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         CommandManager.runCommand(ConsoleCommandSender, "/login $qq $psd")
     }
 
-    fun sendCommand(command: String) = CommandManager.runCommand(ConsoleCommandSender, command)
+    fun logout(qq: Long) {
+        cache.remove(qq)?.apply {
+            botList.remove(this)
+            if (botProperty.value != null && bot.isActive) {
+                bot.close()
+            }
+        }
+    }
+
+    fun sendCommand(command: String) = runCommand(ConsoleCommandSender, command)
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         this.pushLog(LogPriority.INFO, "", identity, message)
@@ -58,16 +69,18 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
             } else {
                 cache[identity]?.logHistory
             }?.apply {
-                add("[$time] $identityStr $message")
+                add("[$time] $identityStr $message" to priority.name)
                 trim()
             }
         }
     }
 
     override fun prePushBot(identity: Long) = Platform.runLater {
-        BotModel(identity).also {
-            cache[identity] = it
-            botList.add(it)
+        if (!cache.containsKey(identity)) {
+            BotModel(identity).also {
+                cache[identity] = it
+                botList.add(it)
+            }
         }
     }
 

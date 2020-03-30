@@ -5,19 +5,24 @@ import com.jfoenix.controls.JFXListCell
 import javafx.collections.ObservableList
 import javafx.geometry.Insets
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
+import javafx.scene.control.ButtonType
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
+import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
+import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.BotModel
+import net.mamoe.mirai.console.graphical.util.*
 import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxListView
 import net.mamoe.mirai.console.graphical.util.jfxTabPane
-import net.mamoe.mirai.console.graphical.util.myButtonBar
 import tornadofx.*
+import tornadofx.Stylesheet.Companion.contextMenu
 
 class PrimaryView : View() {
 
@@ -72,8 +77,27 @@ class PrimaryView : View() {
                         override fun updateItem(item: BotModel?, empty: Boolean) {
                             super.updateItem(item, empty)
                             if (item != null && !empty) {
-                                graphic = null
-                                text = item.uin.toString()
+                                graphic = hbox {
+
+                                    alignment = Pos.CENTER_LEFT
+
+                                    label(item.uin.toString())
+                                    pane {
+                                        hgrow = Priority.ALWAYS
+                                    }
+                                    jfxButton(graphic = SVG.close) {
+                                        buttonType = JFXButton.ButtonType.FLAT
+                                        tooltip("退出登录")
+                                    }.action {
+                                        alert(Alert.AlertType.CONFIRMATION, "${item.uin}将会退出登录，是否确认") {
+                                            if (it == ButtonType.OK) {
+                                                tab?.close()
+                                                controller.logout(item.uin)
+                                            }
+                                        }
+                                    }
+                                }
+                                text = ""
                             } else {
                                 graphic = null
                                 text = ""
@@ -129,7 +153,7 @@ private fun TabPane.fixedTab(title: String) = tab(title) { isClosable = false }
 
 private fun TabPane.logTab(
     text: String? = null,
-    logs: ObservableList<String>,
+    logs: ObservableList<Pair<String, String>>,
     closeable: Boolean = true,
     op: Tab.() -> Unit = {}
 ) = tab(text) {
@@ -152,7 +176,7 @@ private fun TabPane.logTab(
                     path.firstOrNull()?.run {
                         if (!exists()) createNewFile()
                         writer().use {
-                            logs.forEach { log -> it.appendln(log) }
+                            logs.forEach { log -> it.appendln(log.first) }
                         }
                         true
                     } ?: false
@@ -166,9 +190,22 @@ private fun TabPane.logTab(
 
             fitToParentSize()
             cellFormat {
-                graphic = label(it) {
+
+                addPseudoClass(it.second)
+
+                graphic = label(it.first) {
                     maxWidthProperty().bind(this@listview.widthProperty())
                     isWrapText = true
+
+
+                    contextmenu {
+                        item("复制").action {
+                            Clipboard.getSystemClipboard().putString(it.first)
+                        }
+                        item("删除").action {
+                            logs.remove(it)
+                        }
+                    }
                 }
             }
         }
