@@ -393,7 +393,7 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 /**
  * 不含任何元素的 [MessageChain]
  */
-object EmptyMessageChain : MessageChain by MessageChainImplByIterable(emptyList())
+object EmptyMessageChain : MessageChain by MessageChainImplByCollection(emptyList())
 
 /**
  * Null 的 [MessageChain].
@@ -423,7 +423,7 @@ internal class MessageChainImplByIterable constructor(
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int by lazy { delegate.count() }
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
-    var toStringTemp: String? = null
+    private var toStringTemp: String? = null
     override fun toString(): String =
         toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
 
@@ -439,7 +439,7 @@ internal class MessageChainImplByCollection constructor(
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
-    var toStringTemp: String? = null
+    private var toStringTemp: String? = null
     override fun toString(): String =
         toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
 
@@ -460,7 +460,7 @@ internal class MessageChainImplBySequence constructor(
      */
     private val collected: List<SingleMessage> by lazy { delegate.toList() }
     override fun iterator(): Iterator<SingleMessage> = collected.iterator()
-    var toStringTemp: String? = null
+    private var toStringTemp: String? = null
     override fun toString(): String =
         toStringTemp ?: this.collected.joinToString("") { it.toString() }.also { toStringTemp = it }
 
