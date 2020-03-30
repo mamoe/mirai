@@ -12,10 +12,11 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
-private const val display = "@全体成员"
+private const val displayA = "@全体成员"
 
 /**
  * "@全体成员".
@@ -27,8 +28,11 @@ private const val display = "@全体成员"
 object AtAll :
     Message.Key<AtAll>,
     MessageContent,
-    CharSequence by display,
-    Comparable<String> by display {
+    CharSequence by displayA,
+    Comparable<String> by displayA {
+
+    @SinceMirai("0.31.2")
+    const val display = displayA
 
     @Suppress("SpellCheckingInspection")
     override fun toString(): String = "[mirai:atall]"
