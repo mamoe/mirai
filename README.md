@@ -49,6 +49,7 @@ Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他�
 - （社区）`C`, `C++` 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行
 - （社区）`Python`: [python-mirai](https://github.com/Chenwe-i-lin/python-mirai) 基于`Mirai-http-api`的 Mirai Framework for Python
 - （社区）`JavaScript`(`NodeJS`) [node-mirai](https://github.com/RedBeanN/node-mirai) Mirai的NodeJs SDK
+- （社区）`Go` [gomirai](https://github.com/Logiase/gomirai) 适配MiraiHttpApi与Mirai的Go SDK
 - （官方）其他任意语言： [mirai HTTP 接口](https://github.com/mamoe/mirai-api-http) 进行接入
 
 #### 使用 mirai 为第三方依赖库引入项目
