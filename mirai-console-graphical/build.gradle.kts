@@ -1,4 +1,3 @@
-import Versions.Publishing.bintray
 import java.util.*
 
 plugins {
@@ -65,16 +64,14 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
-val miraiVersion = Versions.Mirai.core
-
 dependencies {
-    implementation("net.mamoe:mirai-core-jvm:$miraiVersion")
-    implementation("net.mamoe:mirai-core-qqandroid-jvm:$miraiVersion")
-    api(project(":mirai-console"))
+    compileOnly("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
+    compileOnly(project(":mirai-console"))
 
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
     api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
 
+    testApi(project(":mirai-console"))
     testApi(group = "org.yaml", name = "snakeyaml", version = "1.25")
 }
 
