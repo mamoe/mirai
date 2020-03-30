@@ -18,7 +18,6 @@ import com.moandjiezana.toml.TomlWriter
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils._miraiContentToString
 import net.mamoe.mirai.utils.io.encodeToString
 import org.yaml.snakeyaml.Yaml
 import java.io.File
@@ -57,7 +56,13 @@ interface Config {
     operator fun get(key: String): Any?
     operator fun contains(key: String): Boolean
     fun exist(key: String): Boolean
-    fun setIfAbsent(key: String, value: Any)
+    /**
+     * 设置 key = value (如果value不存在则valueInitializer会被调用)
+     * 之后返回当前key对应的值
+     * */
+    fun <T:Any> setIfAbsent(key: String, value: T)
+    fun <T:Any> setIfAbsent(key: String, valueInitializer: Config.() -> T)
+
     fun asMap(): Map<String, Any>
     fun save()
 
@@ -256,6 +261,16 @@ internal fun <T : Any> Config.smartCastInternal(propertyName: String, _class: KC
 
 
 interface ConfigSection : Config, MutableMap<String, Any> {
+    companion object{
+        fun create():ConfigSection{
+            return ConfigSectionImpl()
+        }
+
+        fun new():ConfigSection{
+            return this.create()
+        }
+    }
+
     override fun getConfigSection(key: String): ConfigSection {
         val content = get(key) ?: throw NoSuchElementException(key)
         if (content is ConfigSection) {
@@ -336,9 +351,19 @@ interface ConfigSection : Config, MutableMap<String, Any> {
         return get(key) != null
     }
 
-    override fun setIfAbsent(key: String, value: Any) {
-        if (!exist(key)) set(key, value)
+    override fun <T : Any> setIfAbsent(key: String, value: T) {
+        putIfAbsent(key, value)
     }
+
+    override fun <T : Any> setIfAbsent(key: String, valueInitializer: Config.() -> T) {
+        if(this.exist(key)){
+            put(key,valueInitializer.invoke(this))
+        }
+    }
+}
+
+internal inline fun <reified T:Any> ConfigSection.smartGet(key:String):T{
+    return this.smartCastInternal(key,T::class)
 }
 
 @Serializable
@@ -367,10 +392,6 @@ open class ConfigSectionImpl : ConcurrentHashMap<String, Any>(),
 
     override fun save() {
 
-    }
-
-    override fun setIfAbsent(key: String, value: Any) {
-        this.putIfAbsent(key, value)//atomic
     }
 }
 
