@@ -69,9 +69,21 @@ class PrimaryStyleSheet : BaseStyleSheet() {
                         backgroundColor += c(100, 100, 100, 0.4)
                         backgroundRadius += box(5.px)
 
-                        textFill = c(fontColor)
-                        fontWeight = FontWeight.BOLD
+                        label {
+                            textFill = c(fontColor)
+                            fontWeight = FontWeight.BOLD
+                        }
 
+                        button {
+                            opacity = 0.0
+                            backgroundRadius += box(10.px)
+                            backgroundColor += c(fontColor, 0.1)
+                            cursor = Cursor.HAND
+
+                            and(hover) {
+                                opacity = 1.0
+                            }
+                        }
                     }
                 }
             }

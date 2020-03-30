@@ -5,6 +5,7 @@ import javafx.collections.ObservableList
 import javafx.stage.Modality
 import javafx.stage.StageStyle
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.runCommand
@@ -40,6 +41,15 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     fun login(qq: String, psd: String) {
         CommandManager.runCommand(ConsoleCommandSender, "/login $qq $psd")
+    }
+
+    fun logout(qq: Long) {
+        cache.remove(qq)?.apply {
+            botList.remove(this)
+            if (botProperty.value != null && bot.isActive) {
+                bot.close()
+            }
+        }
     }
 
     fun sendCommand(command: String) = runCommand(ConsoleCommandSender, command)
