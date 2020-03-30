@@ -151,7 +151,7 @@ object PluginManager {
                 }
                 val depend = pluginsFound[dependent]!!
 
-                if (loadPlugin(depend)) {
+                if (!loadPlugin(depend)) {
                     logger.error("Failed to load plugin " + description.name + " because " + dependent + " as dependency failed to load")
                     return false
                 }
