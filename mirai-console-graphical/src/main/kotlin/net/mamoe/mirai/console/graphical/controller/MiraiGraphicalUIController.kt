@@ -7,6 +7,7 @@ import javafx.stage.StageStyle
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandManager.runCommand
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.graphical.model.*
 import net.mamoe.mirai.console.graphical.view.dialog.InputDialog
@@ -41,7 +42,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         CommandManager.runCommand(ConsoleCommandSender, "/login $qq $psd")
     }
 
-    fun sendCommand(command: String) = CommandManager.runCommand(ConsoleCommandSender, command)
+    fun sendCommand(command: String) = runCommand(ConsoleCommandSender, command)
 
     override fun pushLog(identity: Long, message: String) = Platform.runLater {
         this.pushLog(LogPriority.INFO, "", identity, message)
@@ -65,9 +66,11 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     }
 
     override fun prePushBot(identity: Long) = Platform.runLater {
-        BotModel(identity).also {
-            cache[identity] = it
-            botList.add(it)
+        if (!cache.containsKey(identity)) {
+            BotModel(identity).also {
+                cache[identity] = it
+                botList.add(it)
+            }
         }
     }
 
