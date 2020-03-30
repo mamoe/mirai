@@ -63,8 +63,8 @@ object GitHub {
                 connectTimeoutMillis = 600_000
             }
         }.put<String>("$url?access_token=$token") {
-            val sha = getGithubSha("mirai-repo", "${project.name}/${file.name}", "master", project)
-            //header("token", token)
+            val sha = getGithubSha("mirai-repo", "shadow/${project.name}/${file.name}", "master", project)
+            println("sha=$sha")
             val content = String(Base64.getEncoder().encode(file.readBytes()))
             body = """
                     {
