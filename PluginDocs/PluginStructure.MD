@@ -7,11 +7,11 @@
 ### Plugin.yml
 你应当有一个plugin.yml, 放置在resources文件夹下<br>
 ```
-name: "Example"
-author: "你的名字"
+name: "插件名字"
+author: "作者名字"
 version: "0.1.0"
 main: "my_package_name.ExamplePluginBase"
-info: "My info"
+info: "插件介绍"
 depends: []
 ```
 其中main指向 你的PluginBase
