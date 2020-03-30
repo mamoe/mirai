@@ -119,7 +119,7 @@ class JsonMessage(override val content: String) : RichMessage {
     companion object Key : Message.Key<JsonMessage>
 
     // serviceId = 1
-    override fun toString(): String = content
+    override fun toString(): String = "[mirai:json:$content]"
 }
 
 /**
@@ -131,7 +131,7 @@ class LightApp constructor(override val content: String) : RichMessage {
 
     companion object Key : Message.Key<LightApp>
 
-    override fun toString(): String = content
+    override fun toString(): String = "[mirai:app:$content]"
 }
 
 
@@ -147,7 +147,7 @@ class XmlMessage constructor(override val content: String) : RichMessage {
 
     // override val serviceId: Int get() = 60
 
-    override fun toString(): String = content
+    override fun toString(): String = "[mirai:xml:$content]"
 }
 
 /**
@@ -160,7 +160,7 @@ class LongMessage(override val content: String, val resId: String) : RichMessage
     companion object Key : Message.Key<XmlMessage>
 
     // serviceId = 35
-    override fun toString(): String = content
+    override fun toString(): String = "[mirai:long:$content]"
 }
 
 /*

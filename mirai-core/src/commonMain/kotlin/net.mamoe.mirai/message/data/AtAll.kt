@@ -30,7 +30,8 @@ object AtAll :
     CharSequence by display,
     Comparable<String> by display {
 
-    override fun toString(): String = display
+    @Suppress("SpellCheckingInspection")
+    override fun toString(): String = "[mirai:atall]"
 
     // 自动为消息补充 " "
 

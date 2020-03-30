@@ -63,7 +63,7 @@ abstract class AbstractImage internal constructor() : Image {
     private var _stringValue: String? = null
         get() {
             return field ?: kotlin.run {
-                field = "[mirai:$imageId]"
+                field = "[mirai:image:$imageId]"
                 field
             }
         }
