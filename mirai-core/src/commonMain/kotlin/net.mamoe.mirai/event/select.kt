@@ -128,6 +128,9 @@ abstract class MessageSelectBuilder<M : MessagePacket<*, *>, R> @PublishedApi in
         onEvent: @MessageDsl suspend M.(N) -> R
     ) = error("prohibited")
 
+    @Deprecated("Use `default` instead", level = DeprecationLevel.HIDDEN)
+    override fun always(onEvent: MessageListener<M, Any?>) = error("prohibited")
+
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override infix fun MessageSelectionTimeoutChecker.reply(block: suspend () -> Any?): Nothing = error("prohibited")
 
@@ -203,9 +206,7 @@ abstract class MessageSelectBuilderUnit<M : MessagePacket<*, *>, R> @PublishedAp
     abstract fun default(onEvent: MessageListener<M, R>) // 需要后置默认监听器
 
     @Deprecated("Use `default` instead", level = DeprecationLevel.HIDDEN)
-    override fun always(onEvent: MessageListener<M, Any?>) {
-        super.always(onEvent)
-    }
+    override fun always(onEvent: MessageListener<M, Any?>) = error("prohibited")
 
     /**
      * 限制本次 select 的最长等待时间, 当超时后抛出 [TimeoutCancellationException]
