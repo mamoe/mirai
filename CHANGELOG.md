@@ -2,6 +2,12 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.31.2`  2020/3/30
+- 修复长文本长度检测, 提高判断性能
+- 修复特殊的好友图片 ID 无法构造为消息
+- 新增 `AtAll.display`
+- 所有消息元素统一 `toString`: `[mirai:image:ID]`, `[mirai:face:ID]`, `[mirai:at:TARGET]`, `[mirai:poke:TYPE,ID]`, `[mirai:quote:ID]` 等 (仍为实验性)
+
 ## `0.31.1`  2020/3/29
 - 修复重复解析禁言事件的问题 (#83)
 
