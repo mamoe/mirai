@@ -307,9 +307,11 @@ private val trySetAccessibleMethod: Method? = runCatching {
 }.getOrNull()
 
 private fun Constructor<out PluginBase>.againstPermission() {
-    trySetAccessibleMethod?.let { it.invoke(this, true) }
-        ?: kotlin.runCatching {
-            @Suppress("DEPRECATED")
-            this.isAccessible = true
-        }
+    kotlin.runCatching {
+        trySetAccessibleMethod?.let { it.invoke(this) }
+            ?: kotlin.runCatching {
+                @Suppress("DEPRECATED")
+                this.isAccessible = true
+            }
+    }
 }
