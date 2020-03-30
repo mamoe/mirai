@@ -173,7 +173,8 @@ internal fun MsgComm.Msg.toMessageChain(): MessageChain {
     }.cleanupRubbishMessageElements()
 }
 
-// These two functions are not identical, dont combine.
+// These two functions have difference method signature, don't combine.
+
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
     val elements = this.elems!!
@@ -218,6 +219,7 @@ internal inline fun <reified R> Iterable<*>.firstIsInstance(): R {
 
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
+    // (this._miraiContentToString())
     this.forEach {
         when {
             it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))
@@ -277,7 +279,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                 }
             }
             else -> {
-                println(it._miraiContentToString())
+                // println(it._miraiContentToString())
             }
         }
     }
