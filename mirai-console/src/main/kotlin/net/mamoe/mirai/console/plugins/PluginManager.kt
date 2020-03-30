@@ -23,6 +23,7 @@ import java.io.InputStream
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.net.URL
+import java.net.URLClassLoader
 import java.util.jar.JarFile
 
 
@@ -100,6 +101,9 @@ object PluginManager {
             }
         }
 
+        val pluginsClassLoader = PluginsClassLoader(pluginsLocation.values,this.javaClass.classLoader)
+
+        //不仅要解决A->B->C->A, 还要解决A->B->C->A
         fun checkNoCircularDepends(
             target: PluginDescription,
             needDepends: List<String>,
@@ -125,51 +129,41 @@ object PluginManager {
             }
         }
 
-
         pluginsFound.values.forEach {
             checkNoCircularDepends(it, it.depends, mutableListOf())
         }
 
-        //load
-
-
+        //load plugin
         fun loadPlugin(description: PluginDescription): Boolean {
             if (!description.noCircularDepend) {
                 logger.error("Failed to load plugin " + description.name + " because it has circular dependency")
                 return false
             }
 
-            //load depends first
+            if(description.loaded || nameToPluginBaseMap.containsKey(description.name)){
+                return true
+            }
+
             description.depends.forEach { dependent ->
                 if (!pluginsFound.containsKey(dependent)) {
                     logger.error("Failed to load plugin " + description.name + " because it need " + dependent + " as dependency")
                     return false
                 }
                 val depend = pluginsFound[dependent]!!
-                //还没有加载
-                if (!depend.loaded && !loadPlugin(pluginsFound[dependent]!!)) {
+
+                if (loadPlugin(depend)) {
                     logger.error("Failed to load plugin " + description.name + " because " + dependent + " as dependency failed to load")
                     return false
                 }
             }
-            //在这里所有的depends都已经加载了
 
-
-            //real load
             logger.info("loading plugin " + description.name)
 
             try {
-                val pluginClass = try {
-                    PluginClassLoader(
-                        (pluginsLocation[description.name]!!),
-                        this.javaClass.classLoader
-                    ).loadClass(description.basePath)
+                val pluginClass = try{
+                    pluginsClassLoader.loadClass(description.basePath)
                 } catch (e: ClassNotFoundException) {
-                    logger.info("failed to find Main: " + description.basePath + " checking if it's kotlin's path")
-                    PluginClassLoader(
-                        (pluginsLocation[description.name]!!),
-                        this.javaClass.classLoader
-                    ).loadClass("${description.basePath}Kt")
+                    pluginsClassLoader.loadClass("${description.basePath}Kt")
                 }
 
                 return try {
@@ -285,7 +279,6 @@ object PluginManager {
         return null
     }
 
-
     /**
      * 根据插件名字找Jar中的文件
      * null => 没找到
@@ -297,14 +290,13 @@ object PluginManager {
             jar.entries().asSequence().filter { it.name == toFind }.firstOrNull() ?: return null
         return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
-
-
 }
 
 
 private val trySetAccessibleMethod: Method? = runCatching {
     Class.forName("java.lang.reflect.AccessibleObject").getMethod("trySetAccessible")
 }.getOrNull()
+
 
 private fun Constructor<out PluginBase>.againstPermission() {
     kotlin.runCatching {
@@ -315,3 +307,5 @@ private fun Constructor<out PluginBase>.againstPermission() {
             }
     }
 }
+
+internal class PluginsClassLoader(files: Collection<File>, parent: ClassLoader) : URLClassLoader(files.map{it.toURI().toURL()}.toTypedArray(), parent)

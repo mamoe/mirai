@@ -141,11 +141,9 @@ class PluginDescription(
     internal var loaded: Boolean = false,
     internal var noCircularDepend: Boolean = true
 ) {
-
     override fun toString(): String {
         return "name: $name\nauthor: $author\npath: $basePath\nver: $version\ninfo: $info\ndepends: $depends"
     }
-
     companion object {
         fun readFromContent(content_: String): PluginDescription {
             with(Config.load(content_, "yml")) {
@@ -185,6 +183,3 @@ class PluginDescription(
         }
     }
 }
-
-internal class PluginClassLoader(file: File, parent: ClassLoader) :
-    URLClassLoader(arrayOf(file.toURI().toURL()), parent)
