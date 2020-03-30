@@ -30,6 +30,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
@@ -271,31 +272,34 @@ internal class GroupImpl(
         return members.delegate.filteringGetOrNull { it.id == id }
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
+    @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
-        val event = GroupMessageSendEvent(this, message.asMessageChain()).broadcast()
-        if (event.isCancelled) {
-            throw EventCancelledException("cancelled by GroupMessageSendEvent")
-        }
+
+        val msg: MessageChain
 
         if (message !is LongMessage) {
-            val length = event.message.toString().length
-            if (length > 4000
-                || event.message.count { it is Image } > 3
-                || (event.message.any<QuoteReply>() && (event.message.any<Image>() || length > 100))
-            ) {
-                return bot._lowLevelSendLongGroupMessage(this.id, message)
+            val event = GroupMessageSendEvent(this, message.asMessageChain()).broadcast()
+            if (event.isCancelled) {
+                throw EventCancelledException("cancelled by GroupMessageSendEvent")
             }
-        }
+
+            val length = event.message.estimateLength(4501)
+            check(length <= 4500 && event.message.count { it is Image } <= 50) { "message is too large. Allow up to 4500 chars or 50 images" }
+            if (length >= 800) {
+                return bot._lowLevelSendLongGroupMessage(this.id, event.message)
+            }
+
+            msg = event.message
+        } else msg = message.asMessageChain()
 
         lateinit var source: MessageSourceFromSendGroup
         bot.network.run {
             val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
                 bot.client,
                 id,
-                event.message
+                msg
             ) {
                 source = it
                 source.startWaitingSequenceId(this)

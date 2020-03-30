@@ -12,22 +12,28 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.*
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
-import net.mamoe.mirai.qqandroid.network.NoPacket
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.MemberImpl
-import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.checkIsInstance
+import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
+import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
+import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.message.toMessageChain
+import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
+import net.mamoe.mirai.qqandroid.network.NoPacket
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
@@ -35,10 +41,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
+import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.io.read
-import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.utils.io.toUHexString
 
 internal class OnlinePush {
@@ -185,10 +191,13 @@ internal class OnlinePush {
     }
 
     //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
-    internal object ReqPush : IncomingPacketFactory<Packet>("OnlinePush.ReqPush", "OnlinePush.RespPush") {
+    internal object ReqPush : IncomingPacketFactory<ReqPush.Response>(
+        "OnlinePush.ReqPush",
+        "OnlinePush.RespPush"
+    ) {
         @ExperimentalUnsignedTypes
         @OptIn(ExperimentalStdlibApi::class)
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Response {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
             val packets: Sequence<Packet> =
@@ -215,7 +224,9 @@ internal class OnlinePush {
                                             if (time == 0) {
                                                 return@flatMap sequenceOf(
                                                     GroupMuteAllEvent(
-                                                        origin = group.settings.isMuteAll.also { group._muteAll = false },
+                                                        origin = group.settings.isMuteAll.also {
+                                                            group._muteAll = false
+                                                        },
                                                         new = false,
                                                         operator = operator,
                                                         group = group
@@ -224,7 +235,9 @@ internal class OnlinePush {
                                             } else {
                                                 return@flatMap sequenceOf(
                                                     GroupMuteAllEvent(
-                                                        origin = group.settings.isMuteAll.also { group._muteAll = true },
+                                                        origin = group.settings.isMuteAll.also {
+                                                            group._muteAll = true
+                                                        },
                                                         new = true,
                                                         operator = operator,
                                                         group = group
@@ -400,12 +413,33 @@ internal class OnlinePush {
                         }
                     }
                 }
-            return MultiPacketBySequence(packets)
+            return Response(reqPushMsg.uin, reqPushMsg.svrip ?: 0, packets)
         }
 
-        override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
-            return buildResponseUniPacket(client, sequenceId = sequenceId) {
+        internal class Response(val uin: Long, val svrip: Int, sequence: Sequence<Packet>) :
+            MultiPacketBySequence<Packet>(sequence)
 
+        @Serializable
+        private class Resp(
+            @JceId(0) val var1: Long,
+            @JceId(2) val var2: Int
+        ) : JceStruct
+
+        override suspend fun QQAndroidBot.handle(packet: Response, sequenceId: Int): OutgoingPacket? {
+            return buildResponseUniPacket(client, sequenceId = sequenceId) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        sServantName = "OnlinePush.RespPush",
+                        sFuncName = "SvcRespPushMsg",
+                        iRequestId = 0,
+                        sBuffer = jceRequestSBuffer(
+                            "resp",
+                            Resp.serializer(),
+                            Resp(packet.uin, packet.svrip)
+                        )
+                    )
+                )
             }
         }
     }

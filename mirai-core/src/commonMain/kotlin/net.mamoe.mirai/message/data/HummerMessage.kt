@@ -59,7 +59,7 @@ class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") 
     }
 
     @OptIn(MiraiExperimentalAPI::class)
-    private val stringValue = "[mirai:Poke($type, $id)]"
+    private val stringValue = "[mirai:poke:$type,$id]"
 
     override fun toString(): String = stringValue
     override val length: Int get() = stringValue.length

@@ -22,9 +22,9 @@ class Face private constructor(val id: Int, private val stringValue: String) :
     MessageContent,
     CharSequence by stringValue, Comparable<String> by stringValue {
 
-    constructor(id: Int) : this(id, "[mirai:face$id]")
+    constructor(id: Int) : this(id, "[mirai:face:$id]")
 
-    override fun toString(): String = "[mirai:face$id]"
+    override fun toString(): String = stringValue
 
     /**
      * @author LamGC

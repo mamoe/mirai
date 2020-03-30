@@ -39,7 +39,7 @@ private constructor(val target: Long, val display: String) :
      */
     constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
 
-    override fun toString(): String = display
+    override fun toString(): String = "[mirai:at:$target]"
 
     companion object Key : Message.Key<At> {
         /**

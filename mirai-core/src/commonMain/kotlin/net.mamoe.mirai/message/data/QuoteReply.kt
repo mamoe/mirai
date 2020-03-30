@@ -33,7 +33,7 @@ open class QuoteReply
 @MiraiInternalAPI constructor(val source: MessageSource) : Message, MessageMetadata {
     companion object Key : Message.Key<QuoteReply>
 
-    final override fun toString(): String = ""
+    final override fun toString(): String = "[mirai:quote]"
 }
 
 /**
