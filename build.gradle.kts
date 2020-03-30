@@ -84,7 +84,7 @@ subprojects {
             dependsOn(shadowJvmJar)
 
             doFirst {
-                timeout.set(Duration.ofMinutes(10))
+                timeout.set(Duration.ofMinutes(60))
                 findLatestFile()?.let { (_, file) ->
                     val filename = file.name
                     println("Uploading file $filename")
@@ -108,7 +108,7 @@ subprojects {
             dependsOn(shadowJvmJar)
 
             doFirst {
-                timeout.set(Duration.ofMinutes(10))
+                timeout.set(Duration.ofMinutes(60))
                 findLatestFile()?.let { (_, file) ->
                     val filename = file.name
                     println("Uploading file $filename")
