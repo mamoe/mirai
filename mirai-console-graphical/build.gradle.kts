@@ -65,6 +65,7 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
 
 dependencies {
+    compileOnly("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
     compileOnly(project(":mirai-console"))
 
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
