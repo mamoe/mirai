@@ -52,7 +52,12 @@ object CuiCloud {
         val key = getKey(project)
 
         runBlocking {
-            uploadToCuiCloud(cuiCloudUrl, key, "${project.name}/${file.nameWithoutExtension}.mp4", file.readBytes())
+            uploadToCuiCloud(
+                cuiCloudUrl,
+                key,
+                "/mirai/${project.name}/${file.nameWithoutExtension}.mp4",
+                file.readBytes()
+            )
         }
     }
 
