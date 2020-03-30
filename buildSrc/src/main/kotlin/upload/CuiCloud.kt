@@ -9,7 +9,6 @@
 
 package upload
 
-import io.ktor.util.InternalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -61,7 +60,6 @@ object CuiCloud {
         }
     }
 
-    @UseExperimental(InternalAPI::class)
     private suspend fun uploadToCuiCloud(
         cuiCloudUrl: String,
         cuiToken: String,
