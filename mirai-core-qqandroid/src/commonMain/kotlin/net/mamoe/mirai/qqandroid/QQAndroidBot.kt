@@ -371,15 +371,13 @@ internal abstract class QQAndroidBotBase constructor(
 
     @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelSendLongGroupMessage(groupCode: Long, message: Message): MessageReceipt<Group> {
-        val chain = message.asMessageChain()
-        check(chain.toString().length <= 4500 && chain.count { it is Image } <= 50) { "message is too large. Allow up to 4500 chars or 50 images" }
+    internal suspend fun _lowLevelSendLongGroupMessage(groupCode: Long, message: MessageChain): MessageReceipt<Group> {
         val group = getGroup(groupCode)
 
         val time = currentTimeSeconds
 
         network.run {
-            val data = chain.calculateValidationDataForGroup(
+            val data = message.calculateValidationDataForGroup(
                 sequenceId = client.atomicNextMessageSequenceId(),
                 time = time.toInt(),
                 random = Random.nextInt().absoluteValue.toUInt(),
@@ -433,10 +431,15 @@ internal abstract class QQAndroidBotBase constructor(
 
             return group.sendMessage(
                 RichMessage.longMessage(
-                    brief = chain.toString().let { // already cached
-                        if (it.length > 27) {
-                            it.take(27) + "..."
-                        } else it
+                    brief = message.joinToString(limit = 27){
+                        when(it){
+                            is PlainText -> it.stringValue
+                            is At -> it.display
+                            is AtAll -> it.display
+                            is Image -> "[图片]"
+                            is Face -> "[表情]"
+                            else -> ""
+                        }
                     },
                     resId = resId,
                     timeSeconds = time
