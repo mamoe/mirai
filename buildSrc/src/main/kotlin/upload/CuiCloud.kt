@@ -9,9 +9,16 @@
 
 package upload
 
+import io.ktor.util.InternalAPI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.provideDelegate
+import org.jsoup.Connection
+import org.jsoup.Jsoup
 import java.io.File
+import java.util.*
 
 object CuiCloud {
     private fun getUrl(project: Project): String {
@@ -42,8 +49,31 @@ object CuiCloud {
 
     fun upload(file: File, project: Project) {
         val cuiCloudUrl = getUrl(project)
-        val key = getUrl(project)
+        val key = getKey(project)
 
+        runBlocking {
+            uploadToCuiCloud(cuiCloudUrl, key, "${project.name}/${file.nameWithoutExtension}.mp4", file.readBytes())
+        }
+    }
 
+    @UseExperimental(InternalAPI::class)
+    private suspend fun uploadToCuiCloud(
+        cuiCloudUrl: String,
+        cuiToken: String,
+        filePath: String,
+        content: ByteArray
+    ) {
+        val response = withContext(Dispatchers.IO) {
+            Jsoup.connect(cuiCloudUrl).method(Connection.Method.POST)
+                .data("base64", Base64.getEncoder().encodeToString(content))
+                .data("filePath", filePath)
+                .data("key", cuiToken)
+                .timeout(Int.MAX_VALUE)
+                .execute()
+        }
+        if (response.statusCode() != 200) {
+            println(response.body())
+            error("Cui Cloud Does Not Return 200")
+        }
     }
 }
