@@ -14,8 +14,7 @@ import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
-@Serializable
-class Generalflags : ProtoBuf {
+internal class Generalflags : ProtoBuf {
     @Serializable
     class ResvAttr(
         @ProtoId(1) val globalGroupLevel: Int = 0,
@@ -84,7 +83,7 @@ class Generalflags : ProtoBuf {
 }
 
 @Serializable
-class ResvAttrForGiftMsg : ProtoBuf {
+internal class ResvAttrForGiftMsg : ProtoBuf {
     @Serializable
     class ActivityGiftInfo(
         @ProtoId(1) val isActivityGift: Int = 0,
@@ -106,13 +105,13 @@ class ResvAttrForGiftMsg : ProtoBuf {
         @ProtoId(4) val buttonFlag: Int = 0,
         @ProtoId(5) val objColor: Int = 0,
         @ProtoId(6) val animationType: Int = 0,
-        @ProtoId(7) val msgInteractGift: ResvAttrForGiftMsg.InteractGift? = null,
-        @ProtoId(8) val activityGiftInfo: ResvAttrForGiftMsg.ActivityGiftInfo? = null
+        @ProtoId(7) val msgInteractGift: InteractGift? = null,
+        @ProtoId(8) val activityGiftInfo: ActivityGiftInfo? = null
     ) : ProtoBuf
 }
 
 @Serializable
-class SourceMsg : ProtoBuf {
+internal class SourceMsg : ProtoBuf {
     @Serializable
     class ResvAttr(
         @ProtoId(1) val richMsg2: ByteArray? = null,
@@ -122,7 +121,7 @@ class SourceMsg : ProtoBuf {
 }
 
 @Serializable
-class VideoFile : ProtoBuf {
+internal class VideoFile : ProtoBuf {
     @Serializable
     class ResvAttr(
         @ProtoId(1) val hotvideoIcon: ByteArray = EMPTY_BYTE_ARRAY,
