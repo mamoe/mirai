@@ -30,6 +30,17 @@ object CuiCloud {
         System.getProperty("cui_cloud_url", null)?.let {
             return it.trim()
         }
+        File(File(System.getProperty("user.dir")).parent, "/cuiUrl.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
+        File(File(System.getProperty("user.dir")), "/cuiUrl.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
         error("cannot find url for CuiCloud")
     }
 
@@ -43,6 +54,18 @@ object CuiCloud {
         System.getProperty("cui_cloud_key", null)?.let {
             return it.trim()
         }
+        File(File(System.getProperty("user.dir")).parent, "/cuiToken.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
+        File(File(System.getProperty("user.dir")), "/cuiToken.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
         error("cannot find key for CuiCloud")
     }
 
