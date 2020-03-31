@@ -18,6 +18,17 @@ import org.jsoup.Jsoup
 import java.io.File
 import java.util.*
 
+internal val Http = HttpClient(CIO) {
+    engine {
+        requestTimeout = 600_000
+    }
+    install(HttpTimeout) {
+        socketTimeoutMillis = 600_000
+        requestTimeoutMillis = 600_000
+        connectTimeoutMillis = 600_000
+    }
+}
+
 object GitHub {
 
     private fun getGithubToken(project: Project): String {
@@ -53,16 +64,7 @@ object GitHub {
     fun upload(file: File, url: String, project: Project) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
-        HttpClient(CIO) {
-            engine {
-                requestTimeout = 600_000
-            }
-            install(HttpTimeout) {
-                socketTimeoutMillis = 600_000
-                requestTimeoutMillis = 600_000
-                connectTimeoutMillis = 600_000
-            }
-        }.put<String>("$url?access_token=$token") {
+        Http.put<String>("$url?access_token=$token") {
             val sha = getGithubSha("mirai-repo", "shadow/${project.name}/${file.name}", "master", project)
             println("sha=$sha")
             val content = String(Base64.getEncoder().encode(file.readBytes()))

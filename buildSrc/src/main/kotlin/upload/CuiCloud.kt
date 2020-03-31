@@ -9,16 +9,20 @@
 
 package upload
 
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.post
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.provideDelegate
-import org.jsoup.Connection
-import org.jsoup.Jsoup
 import java.io.File
 import java.util.*
 
+@Suppress("DEPRECATION")
 object CuiCloud {
     private fun getUrl(project: Project): String {
         kotlin.runCatching {
@@ -83,23 +87,48 @@ object CuiCloud {
         }
     }
 
+    @UseExperimental(ExperimentalStdlibApi::class)
     private suspend fun uploadToCuiCloud(
         cuiCloudUrl: String,
         cuiToken: String,
         filePath: String,
         content: ByteArray
     ) {
+        println("uploading to $cuiCloudUrl")
+        println("filePath=$filePath")
+        println("key=$cuiToken")
+        println("content=${content.size / 1024 / 1024} MB")
+
         val response = withContext(Dispatchers.IO) {
-            Jsoup.connect(cuiCloudUrl).method(Connection.Method.POST)
-                .data("base64", Base64.getEncoder().encodeToString(content))
-                .data("filePath", filePath)
-                .data("key", cuiToken)
-                .timeout(Int.MAX_VALUE)
-                .execute()
+            Http.post<HttpResponse>(cuiCloudUrl) {
+                body = MultiPartFormDataContent(
+                    formData {
+                        append("base64", Base64.getEncoder().encodeToString(content))
+                        append("filePath", filePath)
+                        append("key", cuiToken)
+                    }
+                )
+            }
         }
-        if (response.statusCode() != 200) {
-            println(response.body())
-            error("Cui Cloud Does Not Return 200")
+        if (response.status.isSuccess()) {
+            println(response.status)
+
+            val buffer = ByteArray(4096)
+            val resp = buildList<Byte> {
+                while (true) {
+                    val read = response.content.readAvailable(buffer, 0, buffer.size)
+                    if (read == -1) {
+                        break
+                    }
+                    addAll(buffer.toList().take(read))
+                }
+            }
+            println(String(resp.toByteArray()))
+            error("Cui cloud response: ${response.status}")
         }
     }
+}
+
+inline fun <E> buildList(builderAction: MutableList<E>.() -> Unit): List<E> {
+    return ArrayList<E>().apply(builderAction)
 }
