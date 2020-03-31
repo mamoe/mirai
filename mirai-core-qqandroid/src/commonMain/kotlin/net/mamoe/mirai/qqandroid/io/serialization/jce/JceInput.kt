@@ -121,7 +121,7 @@ internal class JceInput(
         when (type) {
             Jce.BYTE -> this.input.discardExact(1)
             Jce.SHORT -> this.input.discardExact(2)
-            Jce.INT -> println("readInt=" + this.input.readInt())
+            Jce.INT -> this.input.discardExact(4)
             Jce.LONG -> this.input.discardExact(8)
             Jce.FLOAT -> this.input.discardExact(4)
             Jce.DOUBLE -> this.input.discardExact(8)

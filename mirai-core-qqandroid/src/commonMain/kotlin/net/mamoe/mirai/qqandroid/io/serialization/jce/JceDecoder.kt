@@ -291,10 +291,14 @@ internal class JceDecoder(
     }
 
     override fun decodeTaggedInt(tag: JceTag): Int =
-        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceIntValue(it) }
+        kotlin.runCatching {  jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceIntValue(it) } }.getOrElse {
+            throw IllegalStateException("$tag", it)
+        }
 
     override fun decodeTaggedByte(tag: JceTag): Byte =
-        jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceByteValue(it) }
+        kotlin.runCatching { jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceByteValue(it) } }.getOrElse {
+            throw IllegalStateException("$tag", it)
+        }
 
     override fun decodeTaggedBoolean(tag: JceTag): Boolean =
         jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceBooleanValue(it) }

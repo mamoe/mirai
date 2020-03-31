@@ -397,7 +397,6 @@ internal class TroopManagement {
                         sServantName = "mqq.IMService.FriendListServiceServantObj",
                         iVersion = 3,
                         cPacketType = 0x00,
-                        iMessageType = 0x00000,
                         iRequestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "MGCREQ",

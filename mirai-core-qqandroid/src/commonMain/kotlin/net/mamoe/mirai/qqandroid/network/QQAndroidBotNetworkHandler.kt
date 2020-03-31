@@ -36,11 +36,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
+import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.io.ByteArrayPool
 import net.mamoe.mirai.utils.io.PlatformSocket
-import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
-import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime
@@ -117,9 +117,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         channel = PlatformSocket()
         // TODO: 2020/2/14 连接多个服务器, #52
         withTimeoutOrNull(3000) {
-            channel.connect("113.96.13.208", 8080)
+            channel.connect("114.221.144.22", 8080)
         } ?: error("timeout connecting server")
-        logger.info("Connected to server 113.96.13.208:8080")
+        logger.info("Connected to server 114.221.144.22:8080")
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()

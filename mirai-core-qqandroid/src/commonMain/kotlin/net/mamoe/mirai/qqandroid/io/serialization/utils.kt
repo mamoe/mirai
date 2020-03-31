@@ -27,6 +27,7 @@ import net.mamoe.mirai.utils.firstValue
 import net.mamoe.mirai.utils.io.read
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.utils.io.toReadPacket
+import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 

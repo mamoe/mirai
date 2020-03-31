@@ -101,7 +101,6 @@ internal class FriendList {
                         sServantName = "mqq.IMService.FriendListServiceServantObj",
                         iVersion = 3,
                         cPacketType = 0x00,
-                        iMessageType = 0x00000,
                         iRequestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "GetTroopListReqV2Simplify",
@@ -156,7 +155,6 @@ internal class FriendList {
                         sServantName = "mqq.IMService.FriendListServiceServantObj",
                         iVersion = 3,
                         cPacketType = 0x003,
-                        iMessageType = 0x00000,
                         iRequestId = 1921334514,
                         sBuffer = jceRequestSBuffer(
                             "FL",
