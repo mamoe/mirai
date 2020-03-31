@@ -119,7 +119,7 @@ expect abstract class Group() : Contact, CoroutineScope {
     abstract suspend fun quit(): Boolean
 
     /**
-     * 构造一个 [newMember].
+     * 构造一个 [Member].
      * 非特殊情况请不要使用这个函数. 优先使用 [get].
      */
     @LowLevelAPI
