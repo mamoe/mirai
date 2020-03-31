@@ -44,6 +44,5 @@ interface PluginCenter {
      * null则没有
      */
     suspend fun findPlugin(name:String):PluginInfo?
-
 }
 

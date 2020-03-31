@@ -10,6 +10,7 @@ import javafx.scene.control.ButtonType
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
+import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
@@ -21,6 +22,7 @@ import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxListView
 import net.mamoe.mirai.console.graphical.util.jfxTabPane
 import tornadofx.*
+import tornadofx.Stylesheet.Companion.contextMenu
 
 class PrimaryView : View() {
 
@@ -194,6 +196,16 @@ private fun TabPane.logTab(
                 graphic = label(it.first) {
                     maxWidthProperty().bind(this@listview.widthProperty())
                     isWrapText = true
+
+
+                    contextmenu {
+                        item("复制").action {
+                            Clipboard.getSystemClipboard().putString(it.first)
+                        }
+                        item("删除").action {
+                            logs.remove(it)
+                        }
+                    }
                 }
             }
         }
