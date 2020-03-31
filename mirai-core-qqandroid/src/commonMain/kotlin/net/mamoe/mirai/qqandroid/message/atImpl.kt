@@ -12,11 +12,12 @@ package net.mamoe.mirai.qqandroid.message
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 
 
 internal fun At.toJceData(): ImMsgBody.Text {
-    val text = this.toString()
+    val text = this.display
     return ImMsgBody.Text(
         str = text,
         attr6Buf = buildPacket {
@@ -34,12 +35,12 @@ internal fun At.toJceData(): ImMsgBody.Text {
 
 internal val atAllData = ImMsgBody.Elem(
     text = ImMsgBody.Text(
-        str = "@全体成员",
+        str = AtAll.display,
         attr6Buf = buildPacket {
             // MessageForText$AtTroopMemberInfo
             writeShort(1) // const
             writeShort(0) // startPos
-            writeShort("@全体成员".length.toShort()) // textLen
+            writeShort(AtAll.display.length.toShort()) // textLen
             writeByte(1) // flag, may=1
             writeInt(0) // uin
             writeShort(0) // const
