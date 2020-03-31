@@ -70,7 +70,7 @@ object GitHub {
                     {
                       "message": "automatically upload on release",
                       "content": "$content"
-                      ${if (sha == null) "" else """, "sha": $sha """}
+                      ${if (sha == null) "" else """, "sha": "$sha" """}
                     }
                 """.trimIndent()
         }.let {
