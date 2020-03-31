@@ -94,9 +94,7 @@ object CuiCloud {
         filePath: String,
         content: ByteArray
     ) {
-        println("uploading to $cuiCloudUrl")
         println("filePath=$filePath")
-        println("key=$cuiToken")
         println("content=${content.size / 1024 / 1024} MB")
 
         val response = withContext(Dispatchers.IO) {
@@ -110,20 +108,21 @@ object CuiCloud {
                 )
             }
         }
-        if (response.status.isSuccess()) {
-            println(response.status)
+        println(response.status)
 
-            val buffer = ByteArray(4096)
-            val resp = buildList<Byte> {
-                while (true) {
-                    val read = response.content.readAvailable(buffer, 0, buffer.size)
-                    if (read == -1) {
-                        break
-                    }
-                    addAll(buffer.toList().take(read))
+        val buffer = ByteArray(4096)
+        val resp = buildList<Byte> {
+            while (true) {
+                val read = response.content.readAvailable(buffer, 0, buffer.size)
+                if (read == -1) {
+                    break
                 }
+                addAll(buffer.toList().take(read))
             }
-            println(String(resp.toByteArray()))
+        }
+        println(String(resp.toByteArray()))
+
+        if (!response.status.isSuccess()) {
             error("Cui cloud response: ${response.status}")
         }
     }
