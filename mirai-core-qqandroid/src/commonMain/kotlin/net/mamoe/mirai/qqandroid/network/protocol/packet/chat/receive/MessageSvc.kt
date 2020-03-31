@@ -327,7 +327,7 @@ internal class MessageSvc {
                     contentHead = MsgComm.ContentHead(pkgNum = 1),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(
-                            elems = message.toRichTextElems(false, true)
+                            elems = message.toRichTextElems(forGroup = false, withGeneralFlags = true)
                         )
                     ),
                     msgSeq = source.sequenceId,
@@ -380,7 +380,7 @@ internal class MessageSvc {
                     contentHead = MsgComm.ContentHead(pkgNum = 1),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(
-                            elems = message.toRichTextElems(true, true)
+                            elems = message.toRichTextElems(forGroup = true, withGeneralFlags = true)
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
