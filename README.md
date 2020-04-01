@@ -28,7 +28,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 目前可运行在 JVM 或 Android 平台。
 mirai 既可以作为你项目中的 QQ 协议支持库, 也可以作为单独的应用程序与插件承载 QQ 机器人服务。
 
-**一切开发旨在学习，请勿用于非法用途**  
+#### **一切开发旨在学习，请勿用于非法用途**
 
 加入 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), 或加入 QQ 群: 655057127
 
