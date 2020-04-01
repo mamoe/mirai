@@ -35,7 +35,7 @@ import kotlin.jvm.JvmSynthetic
 
 @OptIn(LowLevelAPI::class)
 @Suppress("MemberVisibilityCanBePrivate")
-internal class MemberImpl  constructor(
+internal class MemberImpl constructor(
     val qq: QQImpl, // 不要 WeakRef
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
@@ -144,10 +144,7 @@ internal class MemberImpl  constructor(
 
     @JvmSynthetic
     override suspend fun mute(durationSeconds: Int) {
-        if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
-            throw PermissionDeniedException()
-        }
-
+        checkBotPermissionHigherThanThis()
         bot.network.run {
             TroopManagement.Mute(
                 client = bot.client,
@@ -161,12 +158,18 @@ internal class MemberImpl  constructor(
         net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
     }
 
+    private fun checkBotPermissionHigherThanThis(){
+        check(group.botPermission > this.permission) {
+            throw PermissionDeniedException(
+                "`kick` operation requires bot to have a higher permission than the target member, " +
+                        "but bot's is ${group.botPermission}, target's is ${this.permission}"
+            )
+        }
+    }
+
     @JvmSynthetic
     override suspend fun unmute() {
-        if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
-            throw PermissionDeniedException()
-        }
-
+        checkBotPermissionHigherThanThis()
         bot.network.run {
             TroopManagement.Mute(
                 client = bot.client,
@@ -182,18 +185,17 @@ internal class MemberImpl  constructor(
 
     @JvmSynthetic
     override suspend fun kick(message: String) {
-        if (group.botPermission != MemberPermission.OWNER && (!group.botPermission.isOperator() || this.isOperator())) {
-            throw PermissionDeniedException()
-        }
-
+        checkBotPermissionHigherThanThis()
         bot.network.run {
-            TroopManagement.Kick(
+            val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
                 member = this@MemberImpl,
                 message = message
-            ).sendAndExpect<TroopManagement.Kick.Response>().success.also {
-                MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
-            }
+            ).sendAndExpect()
+
+            check(response.success) { "kick failed: $message" }
+
+            MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
     }
 

@@ -16,9 +16,9 @@ import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.*
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
@@ -136,7 +136,10 @@ internal class TroopManagement {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GroupInfoImpl {
-            with(this.readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x88d.RspBody.serializer()).stzrspgroupinfo!![0].stgroupinfo!!) {
+            with(
+                this.readBytes()
+                    .loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x88d.RspBody.serializer()).stzrspgroupinfo!![0].stgroupinfo!!
+            ) {
                 return GroupInfoImpl(this)
             }
         }
@@ -144,43 +147,43 @@ internal class TroopManagement {
 
     internal object Kick : OutgoingPacketFactory<Kick.Response>("OidbSvc.0x8a0_0") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            return Response(this.readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x8a0.RspBody.serializer()).msgKickResult!![0].optUint32Result == 1)
+            return Response(
+                this.readBytes()
+                    .loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x8a0.RspBody.serializer()).msgKickResult!![0].optUint32Result == 1
+            )
         }
 
         class Response(
             val success: Boolean
         ) : Packet {
-            override fun toString(): String = "Response(Kick Member)"
+            override fun toString(): String = "TroopManagement.Kick.Response($success)"
         }
 
         operator fun invoke(
             client: QQAndroidClient,
             member: Member,
             message: String
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 2208,
-                        serviceType = 0,//或者1
-                        result = 0,
-                        bodybuffer = Oidb0x8a0.ReqBody(
-                            optUint64GroupCode = member.group.id,
-                            msgKickList = listOf(
-                                Oidb0x8a0.KickMemberInfo(
-                                    optUint32Operate = 5,
-                                    optUint64MemberUin = member.id,
-                                    optUint32Flag = 1//或者0
-                                )
-                            ),
-                            kickMsg = message.toByteArray()
-                        ).toByteArray(Oidb0x8a0.ReqBody.serializer())
-                    )
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                OidbSso.OIDBSSOPkg.serializer(),
+                OidbSso.OIDBSSOPkg(
+                    command = 2208,
+                    serviceType = 0,//或者1
+                    result = 0,
+                    bodybuffer = Oidb0x8a0.ReqBody(
+                        optUint64GroupCode = member.group.id,
+                        msgKickList = listOf(
+                            Oidb0x8a0.KickMemberInfo(
+                                optUint32Operate = 5,
+                                optUint64MemberUin = member.id,
+                                optUint32Flag = 1//或者0
+                            )
+                        ),
+                        kickMsg = message.toByteArray()
+                    ).toByteArray(Oidb0x8a0.ReqBody.serializer())
                 )
-            }
+            )
         }
-
 
     }
 
