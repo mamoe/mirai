@@ -1,6 +1,6 @@
 # Mirai Guide - Getting Started
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-02-29```，对应版本```0.23.0```
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020-04-01```，对应版本```0.31.4```
 
 假如仅仅使用Mirai，不需要对整个项目进行Clone，只需在项目内添加Gradle Dependency或使用即可。
 
@@ -17,7 +17,8 @@
 
 ### 1 安装IDEA与JDK
 
-JDK要求6以上
+- JDK 要求6以上
+- IDEA 内设置 kotlin 插件为 EAP 版本，参考[本文](https://kotlinlang.org/eap/install-eap-plugin.html)
 
 ### 2 新建Gradle项目
 
@@ -39,12 +40,14 @@ JDK要求6以上
   //添加jcenter仓库
   /*
   repositories {
+      maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
       mavenCentral()
   }
   原文内容，更新为下文
   */
   
   repositories {
+      maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
       mavenCentral()
       jcenter()
   }
@@ -54,7 +57,7 @@ JDK要求6以上
 
   ```groovy
   dependencies {
-      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.23.0'//此处版本应替换为当前最新
+      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.31.4'//此处版本应替换为当前最新
       implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
       testCompile group: 'junit', name: 'junit', version: '4.12'
   }
