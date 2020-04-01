@@ -103,6 +103,7 @@ object CuiCloud {
                     formData {
                         append("base64", Base64.getEncoder().encodeToString(content))
                         append("filePath", filePath)
+                        append("large", "true")
                         append("key", cuiToken)
                     }
                 )
