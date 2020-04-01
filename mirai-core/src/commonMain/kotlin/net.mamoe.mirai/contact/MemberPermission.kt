@@ -13,24 +13,33 @@ package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 
 
 /**
- * 群成员的权限
+ * 群成员的权限.
+ *
+ * 可通过 [compareTo] 判断是否有更高的权限.
  */
-enum class MemberPermission {
-    /**
-     * 群主
-     */
-    OWNER,
-    /**
-     * 管理员
-     */
-    ADMINISTRATOR,
+enum class MemberPermission : Comparable<MemberPermission> {
     /**
      * 一般群成员
      */
-    MEMBER;
+    MEMBER, // ordinal = 0
+
+    /**
+     * 管理员
+     */
+    ADMINISTRATOR, // ordinal = 1
+
+    /**
+     * 群主
+     */
+    OWNER; // ordinal = 2
+
+    @SinceMirai("0.32.0")
+    val level: Int
+        get() = ordinal
 }
 
 /**
