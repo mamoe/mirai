@@ -107,17 +107,20 @@ expect abstract class Contact() : CoroutineScope, ContactJavaFriendlyAPI {
  * @see Bot.recall
  */
 @MiraiExperimentalAPI
+@JvmSynthetic
 suspend inline fun Contact.recall(source: MessageChain) = this.bot.recall(source)
 
 /**
  * @see Bot.recall
  */
+@JvmSynthetic
 suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(source)
 
 /**
  * @see Bot.recallIn
  */
 @MiraiExperimentalAPI
+@JvmSynthetic
 inline fun Contact.recallIn(
     message: MessageChain,
     millis: Long,
@@ -127,6 +130,7 @@ inline fun Contact.recallIn(
 /**
  * @see Bot.recallIn
  */
+@JvmSynthetic
 inline fun Contact.recallIn(
     source: MessageSource,
     millis: Long,
@@ -137,5 +141,6 @@ inline fun Contact.recallIn(
  * @see Contact.sendMessage
  */
 @Suppress("UNCHECKED_CAST")
+@JvmSynthetic
 suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> =
     sendMessage(plain.toMessage()) as? MessageReceipt<C> ?: error("Internal class cast mistake")
