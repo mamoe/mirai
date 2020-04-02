@@ -32,7 +32,7 @@ internal fun Int.toIpV4AddressString(): String {
 }
 
 internal fun String.chineseLength(upTo: Int): Int {
-    return this.sumUpTo(upTo) { if (it in '\u0391'..'\uFFE5') 3 else 1 }
+    return this.sumUpTo(upTo) { if (it in '\u0391'..'\uFFE5') 4 else 1 }
 }
 
 internal fun MessageChain.estimateLength(upTo: Int = Int.MAX_VALUE): Int =
