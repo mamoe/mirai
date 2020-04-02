@@ -12,10 +12,7 @@
 
 package net.mamoe.mirai.qqandroid.utils
 
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.QuoteReply
+import net.mamoe.mirai.message.data.*
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -40,13 +37,20 @@ internal fun String.chineseLength(upTo: Int): Int {
 
 internal fun MessageChain.estimateLength(upTo: Int = Int.MAX_VALUE): Int =
     sumUpTo(upTo) { it, up ->
-        when (it) {
-            is QuoteReply -> 700
-            is Image -> 300
-            is PlainText -> it.stringValue.chineseLength(up)
-            else -> it.toString().chineseLength(up)
-        }
+        it.estimateLength(up)
     }
+
+@OptIn(ExperimentalMessageSource::class)
+internal fun SingleMessage.estimateLength(upTo: Int = Int.MAX_VALUE): Int {
+    return when (this) {
+        is QuoteReply -> {
+            700 + source.originalMessage.estimateLength(upTo)
+        }
+        is Image -> 300
+        is PlainText -> stringValue.chineseLength(upTo)
+        else -> this.toString().chineseLength(upTo)
+    }
+}
 
 internal inline fun <T> Iterable<T>.sumUpTo(upTo: Int, selector: (T, remaining: Int) -> Int): Int {
     var sum = 0
