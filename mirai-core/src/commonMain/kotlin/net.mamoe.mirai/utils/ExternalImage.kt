@@ -184,7 +184,7 @@ internal operator fun ByteArray.get(range: IntRange): String = buildString {
 
 private fun Byte.fixToString(): String {
     return when (this.toInt()) {
-        in 0..15 -> "0${this.toString(16)}"
-        else -> this.toString(16)
+        in 0..15 -> "0${this.toString(16).toUpperCase()}"
+        else -> this.toString(16).toUpperCase()
     }
 }
