@@ -11,10 +11,10 @@ package net.mamoe.mirai.qqandroid.utils.cryptor
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.toByteArray
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.toByteArray
-import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.experimental.and
 import kotlin.experimental.xor
 import kotlin.jvm.JvmStatic

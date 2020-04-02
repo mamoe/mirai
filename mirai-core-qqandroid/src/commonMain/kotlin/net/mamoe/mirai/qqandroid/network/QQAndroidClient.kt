@@ -21,11 +21,30 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
+import net.mamoe.mirai.qqandroid.utils.*
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.qqandroid.utils.cryptor.ECDH
-import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.qqandroid.utils.read
+import net.mamoe.mirai.qqandroid.utils.toUHexString
+import net.mamoe.mirai.utils.*
+import kotlin.random.Random
+import kotlin.random.nextInt
+
+internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
+
+/**
+ * Defaults "%4;7t>;28<fc.5*6".toByteArray()
+ */
+@OptIn(MiraiInternalAPI::class)
+private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
+    MiraiPlatformUtils.md5(androidId + macAddress)
+
+/**
+ * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
+ */
+internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
 
 /*
  APP ID:
@@ -150,10 +169,12 @@ internal open class QQAndroidClient(
     var t150: Tlv? = null
     var rollbackSig: ByteArray? = null
     var ipFromT149: ByteArray? = null
+
     /**
      * 客户端与服务器时间差
      */
     var timeDifference: Long = 0
+
     /**
      * 真实 QQ 号. 使用邮箱等登录时则需获取这个 uin 进行后续一些操作.
      *
@@ -177,6 +198,7 @@ internal open class QQAndroidClient(
      * t186
      */
     var pwdFlag: Boolean = false
+
     /**
      * t537
      */
@@ -301,20 +323,33 @@ internal class WLoginSigInfo(
 }
 
 internal class UserStSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class LSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-internal class UserStWebSig(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-internal class UserA8(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class LSKey(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
+
+internal class UserStWebSig(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
+
+internal class UserA8(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
+
 internal class UserA5(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class SKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class SKey(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
+
 internal class UserSig64(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 internal class OpenKey(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
-internal class VKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class VKey(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
+
 internal class AccessToken(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 internal class D2(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
-internal class Sid(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class Sid(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
+
 internal class AqSig(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 
-internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class Pt4Token(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
 
 internal typealias PSKeyMap = MutableMap<String, PSKey>
 internal typealias Pt4TokenMap = MutableMap<String, Pt4Token>
@@ -323,7 +358,13 @@ internal inline fun Input.readUShortLVString(): String = kotlinx.io.core.String(
 
 internal inline fun Input.readUShortLVByteArray(): ByteArray = this.readBytes(this.readUShort().toInt())
 
-internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, expireTime: Long, outPSKeyMap: PSKeyMap, outPt4TokenMap: Pt4TokenMap) =
+internal fun parsePSKeyMapAndPt4TokenMap(
+    data: ByteArray,
+    creationTime: Long,
+    expireTime: Long,
+    outPSKeyMap: PSKeyMap,
+    outPt4TokenMap: Pt4TokenMap
+) =
     data.read {
         repeat(readShort().toInt()) {
             val domain = readUShortLVString()
@@ -337,7 +378,8 @@ internal fun parsePSKeyMapAndPt4TokenMap(data: ByteArray, creationTime: Long, ex
         }
     }
 
-internal class PSKey(data: ByteArray, creationTime: Long, expireTime: Long) : KeyWithExpiry(data, creationTime, expireTime)
+internal class PSKey(data: ByteArray, creationTime: Long, expireTime: Long) :
+    KeyWithExpiry(data, creationTime, expireTime)
 
 internal class WtSessionTicket(data: ByteArray, creationTime: Long) : KeyWithCreationTime(data, creationTime)
 

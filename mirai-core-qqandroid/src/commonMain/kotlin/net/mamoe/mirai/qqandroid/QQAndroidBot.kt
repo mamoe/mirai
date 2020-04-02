@@ -45,10 +45,11 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
+import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.encodeToString
-import net.mamoe.mirai.utils.io.toReadPacket
 import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.absoluteValue

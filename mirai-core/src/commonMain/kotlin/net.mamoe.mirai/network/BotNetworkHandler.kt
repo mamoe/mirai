@@ -18,7 +18,6 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.io.PlatformDatagramChannel
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.

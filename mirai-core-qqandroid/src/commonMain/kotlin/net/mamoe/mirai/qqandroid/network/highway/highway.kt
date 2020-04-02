@@ -24,9 +24,10 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.*
 import kotlinx.serialization.InternalSerializationApi
-import net.mamoe.mirai.utils.MiraiPlatformUtils
+import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
+import net.mamoe.mirai.qqandroid.utils.io.chunkedFlow
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal fun createImageDataPacketSequence( // RequestDataTrans

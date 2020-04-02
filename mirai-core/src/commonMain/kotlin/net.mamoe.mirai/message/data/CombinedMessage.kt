@@ -18,6 +18,9 @@ import kotlin.jvm.JvmName
 /**
  * 链接的两个消息.
  *
+ * 不要直接构造 [CombinedMessage], 使用 [Message.plus]
+ * 要连接多个 [Message], 使用 [buildMessageChain]
+ *
  * @see Message.plus
  *
  * Left-biased list

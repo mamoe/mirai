@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.ContextImpl
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.toReadPacket
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import java.nio.ByteBuffer
 
 @OptIn(MiraiInternalAPI::class)

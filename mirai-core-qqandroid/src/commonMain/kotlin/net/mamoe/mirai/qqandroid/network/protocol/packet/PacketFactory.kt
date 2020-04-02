@@ -27,19 +27,19 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.network.readUShortLVByteArray
+import net.mamoe.mirai.qqandroid.utils.*
+import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.qqandroid.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.qqandroid.utils.io.withUse
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.toInt
-import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.jvm.JvmName
-
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**
@@ -127,9 +127,6 @@ internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>,
 @PublishedApi
 internal val PacketLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet").withSwitch(false)
 
-/**
- * 已知的数据包工厂列表.
- */
 @OptIn(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
@@ -292,9 +289,6 @@ internal object KnownPacketFactories {
         lateinit var consumer: PacketConsumer<T>
     }
 
-    /**
-     * 解析 SSO 层包装
-     */
     @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket<*> {
         val commandName: String
@@ -363,14 +357,14 @@ internal object KnownPacketFactories {
     ) {
         @Suppress("DuplicatedCode")
         check(readByte().toInt() == 2)
-        this.discardExact(2) // 27 + 2 + body.size
-        this.discardExact(2) // const, =8001
-        this.readUShort() // commandId
-        this.readShort() // const, =0x0001
-        this.readUInt().toLong() // qq
+        this.discardExact(2)
+        this.discardExact(2)
+        this.readUShort()
+        this.readShort()
+        this.readUInt().toLong()
         val encryptionMethod = this.readUShort().toInt()
 
-        this.discardExact(1) // const = 0
+        this.discardExact(1)
         val packet = when (encryptionMethod) {
             4 -> {
                 var data = TEA.decrypt(this, bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())

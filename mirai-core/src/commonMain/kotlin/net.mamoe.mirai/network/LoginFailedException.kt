@@ -7,10 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.network
 
+import net.mamoe.mirai.Bot
+
 /**
- * 正常登录失败时抛出
+ * 在 [登录][Bot.login] 失败时抛出, 可正常地中断登录过程.
  */
 sealed class LoginFailedException : RuntimeException {
     constructor() : super()
@@ -19,4 +23,17 @@ sealed class LoginFailedException : RuntimeException {
     constructor(cause: Throwable?) : super(cause)
 }
 
+/**
+ * 密码输入错误
+ */
 class WrongPasswordException(message: String?) : LoginFailedException(message)
+
+/**
+ * 非 mirai 实现的异常
+ */
+abstract class CustomLoginFailedException : LoginFailedException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+}

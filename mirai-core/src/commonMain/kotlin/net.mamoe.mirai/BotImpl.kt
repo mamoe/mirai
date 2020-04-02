@@ -22,6 +22,7 @@ import net.mamoe.mirai.network.ForceOfflineException
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.closeAndJoin
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.internal.tryNTimesOrException
 import kotlin.coroutines.CoroutineContext
 
 /*

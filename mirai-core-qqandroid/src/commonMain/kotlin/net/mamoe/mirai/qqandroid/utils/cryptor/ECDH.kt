@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.utils.cryptor
 
-import net.mamoe.mirai.utils.io.chunkedHexToBytes
+import net.mamoe.mirai.qqandroid.utils.chunkedHexToBytes
 
 expect interface ECDHPrivateKey {
     fun getEncoded(): ByteArray

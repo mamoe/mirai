@@ -22,10 +22,11 @@ import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
+import net.mamoe.mirai.qqandroid.utils.encodeToString
+import net.mamoe.mirai.qqandroid.utils.hexToBytes
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.encodeToString
-import net.mamoe.mirai.utils.io.hexToBytes
-import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.qqandroid.utils.read
 
 
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")

@@ -6,7 +6,7 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialFormat
 import kotlinx.serialization.SerializationStrategy
 
-interface IOFormat : SerialFormat {
+internal interface IOFormat : SerialFormat {
 
     fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output)
 

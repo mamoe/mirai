@@ -36,11 +36,12 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.qqandroid.utils.PlatformSocket
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
+import net.mamoe.mirai.qqandroid.utils.tryNTimes
+import net.mamoe.mirai.qqandroid.utils.tryNTimesOrException
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.PlatformSocket
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime
@@ -570,10 +571,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
-     *
-     * @param retry 当不为 0 时将使用 [ByteArrayPool] 缓存. 因此若非必要, 请不要允许 retry
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 0): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 1): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry >= 0) { "retry must >= 0" }
 
@@ -599,7 +598,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             return withTimeoutOrNull(timeoutMillis) {
                 handler.await()
                 // 不要 `withTimeout`. timeout 的报错会不正常.
-            } as E? ?:  throw TimeoutException("timeout receiving response of $commandName")
+            } as E? ?: throw TimeoutException("timeout receiving response of $commandName")
         }
 
         if (retry == 0) {

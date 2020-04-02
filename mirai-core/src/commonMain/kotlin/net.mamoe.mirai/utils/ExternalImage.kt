@@ -15,6 +15,7 @@ import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.io.InputStream
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
@@ -22,8 +23,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.utils.io.toUHexString
-import kotlinx.serialization.InternalSerializationApi
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
@@ -150,6 +150,7 @@ class ExternalImage private constructor(
 /**
  * 将图片发送给指定联系人
  */
+@JvmSynthetic
 suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
     is Group -> contact.uploadImage(this).sendTo(contact)
     is QQ -> contact.uploadImage(this).sendTo(contact)
@@ -162,6 +163,7 @@ suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = 
  *
  * @see contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
  */
+@JvmSynthetic
 suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact) {
     is Group -> contact.uploadImage(this)
     is QQ -> contact.uploadImage(this)
@@ -171,10 +173,18 @@ suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact
 /**
  * 将图片发送给 [this]
  */
+@JvmSynthetic
 suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
 
-private operator fun ByteArray.get(range: IntRange): String = buildString {
+internal operator fun ByteArray.get(range: IntRange): String = buildString {
     range.forEach {
-        append(this@get[it].toUHexString())
+        append(this@get[it].fixToString())
+    }
+}
+
+private fun Byte.fixToString(): String {
+    return when (this.toInt()) {
+        in 0..15 -> "0${this.toString(16)}"
+        else -> this.toString(16)
     }
 }

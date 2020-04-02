@@ -18,6 +18,7 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.copyAndClose
 import net.mamoe.mirai.utils.copyTo
@@ -31,7 +32,7 @@ import java.net.URL
  * 一条从服务器接收到的消息事件.
  * JVM 平台相关扩展
  */
-@OptIn(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() : MessagePacketBase<TSender, TSubject>() {
     // region 上传图片
     suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)

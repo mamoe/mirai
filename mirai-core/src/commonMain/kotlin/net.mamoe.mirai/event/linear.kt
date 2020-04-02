@@ -84,6 +84,11 @@ inline fun <reified E : Event, R : Any> CoroutineScope.subscribingGetAsync(
 }
 
 
+//////////////
+//// internal
+//////////////
+
+
 @PublishedApi
 internal suspend inline fun <reified E : Event, R> subscribingGetOrNullImpl(
     coroutineScope: CoroutineScope,

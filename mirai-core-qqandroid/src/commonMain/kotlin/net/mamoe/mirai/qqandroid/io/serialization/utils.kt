@@ -23,11 +23,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.firstValue
-import net.mamoe.mirai.utils.io.read
+import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
-import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -76,6 +74,7 @@ internal fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: Deseria
         }
     }
 }
+private fun <K, V> Map<K, V>.firstValue(): V = this.entries.first().value
 
 internal fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
     val request = this.readJceStruct(RequestPacket.serializer())

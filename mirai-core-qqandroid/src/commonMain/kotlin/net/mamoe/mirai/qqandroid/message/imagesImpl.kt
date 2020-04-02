@@ -14,9 +14,8 @@ import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.message.data.OnlineFriendImage
 import net.mamoe.mirai.message.data.OnlineGroupImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.qqandroid.utils.hexToBytes
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.io.hexToBytes
-
 
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace

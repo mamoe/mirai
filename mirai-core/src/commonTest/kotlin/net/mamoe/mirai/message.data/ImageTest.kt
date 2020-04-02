@@ -7,12 +7,18 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.io.autoHexToBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+
+internal fun String.autoHexToBytes(): ByteArray =
+    this.replace("\n", "").replace(" ", "").asSequence().chunked(2).map {
+        (it[0].toString() + it[1]).toUByte(16).toByte()
+    }.toList().toByteArray()
 
 internal class ImageTest {
 

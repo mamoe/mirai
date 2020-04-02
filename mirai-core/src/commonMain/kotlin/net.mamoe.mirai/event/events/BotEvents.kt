@@ -18,8 +18,10 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
+import net.mamoe.mirai.message.data.ExperimentalMessageSource
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -96,6 +98,7 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
 /**
  * 消息撤回事件. 可是任意消息被任意人撤回.
  */
+@OptIn(ExperimentalMessageSource::class)
 sealed class MessageRecallEvent : BotEvent {
     /**
      * 消息原发送人
@@ -106,6 +109,7 @@ sealed class MessageRecallEvent : BotEvent {
      * 消息 id.
      * @see MessageSource.id
      */
+    @ExperimentalMessageSource
     abstract val messageId: Long
 
     /**
@@ -118,6 +122,7 @@ sealed class MessageRecallEvent : BotEvent {
      */
     data class FriendRecall(
         override val bot: Bot,
+        @ExperimentalMessageSource
         override val messageId: Long,
         override val messageTime: Int,
         /**
@@ -132,6 +137,7 @@ sealed class MessageRecallEvent : BotEvent {
     data class GroupRecall(
         override val bot: Bot,
         override val authorId: Long,
+        @ExperimentalMessageSource
         override val messageId: Long,
         override val messageTime: Int,
         /**

@@ -19,7 +19,7 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.copyTo
 import kotlinx.io.errors.IOException
 import kotlinx.io.streams.asOutput
-import net.mamoe.mirai.utils.io.getRandomString
+import net.mamoe.mirai.utils.internal.md5
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -72,7 +72,7 @@ fun File.toExternalImage(): ExternalImage {
     return ExternalImage(
         width = image.getWidth(0),
         height = image.getHeight(0),
-        md5 = MiraiPlatformUtils.md5(this.inputStream()), // dont change
+        md5 = this.inputStream().md5(), // dont change
         imageFormat = image.formatName,
         input = this.inputStream(),
         filename = this.name

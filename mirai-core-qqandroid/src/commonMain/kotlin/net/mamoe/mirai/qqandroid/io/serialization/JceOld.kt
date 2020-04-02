@@ -38,7 +38,7 @@ import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.ZERO_TYPE
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceHead
 import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.io.readString
-import net.mamoe.mirai.utils.io.toReadPacket
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
 
 @PublishedApi
 internal val CharsetGBK = Charset.forName("GBK")

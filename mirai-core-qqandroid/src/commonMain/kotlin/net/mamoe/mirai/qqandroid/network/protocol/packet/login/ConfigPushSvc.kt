@@ -21,7 +21,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.utils.io.toUHexString
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.PushReq as PushReqJceStruct
 
 

@@ -27,8 +27,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.utils.daysToSeconds
-import net.mamoe.mirai.utils.io.encodeToString
 import net.mamoe.mirai.data.GroupInfo as MiraiGroupInfo
 
 @OptIn(LowLevelAPI::class)

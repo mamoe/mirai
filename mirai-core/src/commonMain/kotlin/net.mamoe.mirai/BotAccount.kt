@@ -14,7 +14,7 @@ package net.mamoe.mirai
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiPlatformUtils
+import net.mamoe.mirai.utils.internal.md5
 import kotlin.annotation.AnnotationTarget.*
 
 @MiraiInternalAPI
@@ -28,7 +28,7 @@ data class BotAccount(
     @MiraiInternalAPI
     val passwordMd5: ByteArray // md5
 ) {
-    constructor(id: Long, passwordPlainText: String) : this(id, MiraiPlatformUtils.md5(passwordPlainText.toByteArray()))
+    constructor(id: Long, passwordPlainText: String) : this(id, passwordPlainText.toByteArray().md5())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

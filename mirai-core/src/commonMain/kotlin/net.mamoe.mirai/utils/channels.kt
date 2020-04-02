@@ -18,10 +18,8 @@ import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.readAvailable
 import kotlinx.io.OutputStream
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.io.core.Output
-import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.utils.io.ByteArrayPool
+import kotlinx.serialization.InternalSerializationApi
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -31,56 +29,38 @@ import kotlin.jvm.JvmName
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 @OptIn(InternalSerializationApi::class)
+@MiraiExperimentalAPI
 suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
-    @OptIn(MiraiInternalAPI::class)
-    ByteArrayPool.useInstance { buffer ->
-        var size: Int
-        while (this.readAvailable(buffer).also { size = it } > 0) {
-            dst.write(buffer, 0, size)
-        }
+    val buffer = ByteArray(2048)
+    var size: Int
+    while (this.readAvailable(buffer).also { size = it } > 0) {
+        dst.write(buffer, 0, size)
     }
 }
 
 /**
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
+@MiraiExperimentalAPI
 suspend fun ByteReadChannel.copyTo(dst: Output) {
-    @OptIn(MiraiInternalAPI::class)
-    ByteArrayPool.useInstance { buffer ->
-        var size: Int
-        while (this.readAvailable(buffer).also { size = it } > 0) {
-            dst.writeFully(buffer, 0, size)
-        }
+    val buffer = ByteArray(2048)
+    var size: Int
+    while (this.readAvailable(buffer).also { size = it } > 0) {
+        dst.writeFully(buffer, 0, size)
     }
 }
 
 /**
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
+@MiraiExperimentalAPI
 suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel) {
-    @OptIn(MiraiInternalAPI::class)
-    ByteArrayPool.useInstance { buffer ->
-        var size: Int
-        while (this.readAvailable(buffer).also { size = it } > 0) {
-            dst.writeFully(buffer, 0, size)
-        }
+    val buffer = ByteArray(2048)
+    var size: Int
+    while (this.readAvailable(buffer).also { size = it } > 0) {
+        dst.writeFully(buffer, 0, size)
     }
 }
-
-
-/* // 垃圾 kotlin, Unresolved reference: ByteWriteChannel
-/**
- * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
- */
-suspend fun ByteReadChannel.copyTo(dst: kotlinx.coroutines.io.ByteWriteChannel) {
-    ByteArrayPool.useInstance {
-        do {
-            val size = this.readAvailable(it)
-            dst.writeFully(it, 0, size)
-        } while (size != 0)
-    }
-}
-*/
 
 // copyAndClose
 
@@ -88,15 +68,14 @@ suspend fun ByteReadChannel.copyTo(dst: kotlinx.coroutines.io.ByteWriteChannel) 
 /**
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
+@MiraiExperimentalAPI
 @OptIn(InternalSerializationApi::class)
 suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) { // 在 JVM 这个 API 不是 internal 的
     try {
-        @OptIn(MiraiInternalAPI::class)
-        ByteArrayPool.useInstance { buffer ->
-            var size: Int
-            while (this.readAvailable(buffer).also { size = it } > 0) {
-                dst.write(buffer, 0, size)
-            }
+        val buffer = ByteArray(2048)
+        var size: Int
+        while (this.readAvailable(buffer).also { size = it } > 0) {
+            dst.write(buffer, 0, size)
         }
     } finally {
         dst.close()
@@ -106,14 +85,13 @@ suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) { // 在 JVM 这个 
 /**
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
+@MiraiExperimentalAPI
 suspend fun ByteReadChannel.copyAndClose(dst: Output) {
     try {
-        @OptIn(MiraiInternalAPI::class)
-        ByteArrayPool.useInstance { buffer ->
-            var size: Int
-            while (this.readAvailable(buffer).also { size = it } > 0) {
-                dst.writeFully(buffer, 0, size)
-            }
+        val buffer = ByteArray(2048)
+        var size: Int
+        while (this.readAvailable(buffer).also { size = it } > 0) {
+            dst.writeFully(buffer, 0, size)
         }
     } finally {
         dst.close()
@@ -123,15 +101,14 @@ suspend fun ByteReadChannel.copyAndClose(dst: Output) {
 /**
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
+@MiraiExperimentalAPI
 suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
-        @OptIn(MiraiInternalAPI::class)
-        ByteArrayPool.useInstance { buffer ->
-            var size: Int
-            while (this.readAvailable(buffer).also { size = it } > 0) {
-                dst.writeFully(buffer, 0, size)
-            }
+        val buffer = ByteArray(2048)
+        var size: Int
+        while (this.readAvailable(buffer).also { size = it } > 0) {
+            dst.writeFully(buffer, 0, size)
         }
     } finally {
         @Suppress("DuplicatedCode")
@@ -142,35 +119,17 @@ suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
 /**
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
+@MiraiExperimentalAPI
 suspend fun ByteReadChannel.copyAndClose(dst: io.ktor.utils.io.ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
-        @OptIn(MiraiInternalAPI::class)
-        ByteArrayPool.useInstance { buffer ->
-            var size: Int
-            while (this.readAvailable(buffer).also { size = it } > 0) {
-                dst.writeFully(buffer, 0, size)
-            }
+        val buffer = ByteArray(2048)
+        var size: Int
+        while (this.readAvailable(buffer).also { size = it } > 0) {
+            dst.writeFully(buffer, 0, size)
         }
     } finally {
         @Suppress("DuplicatedCode")
         dst.close(null)
     }
 }
-
-/*// 垃圾 kotlin, Unresolved reference: ByteWriteChannel
-/**
- * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
- */
-suspend fun ByteReadChannel.copyAndClose(dst: kotlinx.coroutines.io.ByteWriteChannel) {
-    dst.close(kotlin.runCatching {
-        ByteArrayPool.useInstance {
-            do {
-                val size = this.readAvailable(it)
-                dst.writeFully(it, 0, size)
-            } while (size != 0)
-        }
-    }.exceptionOrNull())
-}
-
- */

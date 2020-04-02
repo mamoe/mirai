@@ -19,7 +19,7 @@ import kotlinx.serialization.modules.SerialModule
 import net.mamoe.mirai.qqandroid.io.serialization.IOFormat
 import net.mamoe.mirai.qqandroid.io.serialization.JceCharset
 import net.mamoe.mirai.qqandroid.io.serialization.JceOld
-import net.mamoe.mirai.utils.io.toReadPacket
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
 
 /**
  * Jce 数据结构序列化和反序列化器.
