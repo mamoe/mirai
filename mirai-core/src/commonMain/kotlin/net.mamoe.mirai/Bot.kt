@@ -77,10 +77,15 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      */
     abstract val context: Context
 
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use id instead", replaceWith = ReplaceWith("id"))
+    abstract val uin: Long
+
     /**
      * QQ 号码. 实际类型为 uint
      */
-    abstract val uin: Long
+    @SinceMirai("0.32.0")
+    abstract val id: Long
 
     /**
      * 昵称

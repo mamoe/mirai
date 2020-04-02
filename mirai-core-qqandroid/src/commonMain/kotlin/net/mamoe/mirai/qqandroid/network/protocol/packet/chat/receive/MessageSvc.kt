@@ -154,7 +154,7 @@ internal class MessageSvc {
                     when (msg.msgHead.msgType) {
                         33 -> {
                             val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
-                            if (msg.msgHead.authUin == bot.uin) {
+                            if (msg.msgHead.authUin == bot.id) {
                                 if (group != null) {
                                     return@mapNotNull null
                                 }
@@ -217,7 +217,7 @@ internal class MessageSvc {
                             val friend = bot.getFriendOrNull(msg.msgHead.fromUin) ?: return@mapNotNull null
                             friend.checkIsQQImpl()
 
-                            if (msg.msgHead.fromUin == bot.uin || !bot.firstLoginSucceed) {
+                            if (msg.msgHead.fromUin == bot.id || !bot.firstLoginSucceed) {
                                 return@mapNotNull null
                             }
 

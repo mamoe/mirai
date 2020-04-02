@@ -131,7 +131,7 @@ sealed class MessageRecallEvent : BotEvent {
         val operator: Long
     ) : MessageRecallEvent(), Packet {
         override val authorId: Long
-            get() = bot.uin
+            get() = bot.id
     }
 
     data class GroupRecall(
@@ -150,9 +150,9 @@ sealed class MessageRecallEvent : BotEvent {
 
 @OptIn(MiraiExperimentalAPI::class)
 val MessageRecallEvent.GroupRecall.author: Member
-    get() = if (authorId == bot.uin) group.botAsMember else group[authorId]
+    get() = if (authorId == bot.id) group.botAsMember else group[authorId]
 
-val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.uin
+val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
 
 val MessageRecallEvent.isByBot: Boolean
     get() = when (this) {

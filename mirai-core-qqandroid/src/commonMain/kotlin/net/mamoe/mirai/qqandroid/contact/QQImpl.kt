@@ -105,7 +105,7 @@ internal class QQImpl(
         bot.network.run {
             val response = LongConn.OffPicUp(
                 bot.client, Cmd0x352.TryUpImgReq(
-                    srcUin = bot.uin.toInt(),
+                    srcUin = bot.id.toInt(),
                     dstUin = id.toInt(),
                     fileId = 0,
                     fileMd5 = image.md5,
@@ -133,7 +133,7 @@ internal class QQImpl(
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     MiraiPlatformUtils.Http.postImage(
                         "0x6ff0070",
-                        bot.uin,
+                        bot.id,
                         null,
                         imageInput = image.input,
                         inputSize = image.inputSize,

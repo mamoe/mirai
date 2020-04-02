@@ -25,12 +25,12 @@ open class BotConfiguration {
     /**
      * 日志记录器
      */
-    var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot(${it.uin})") }
+    var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot(${it.id})") }
 
     /**
      * 网络层日志构造器
      */
-    var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.uin})") }
+    var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.id})") }
 
     /**
      * 设备信息覆盖. 默认使用随机的设备信息.

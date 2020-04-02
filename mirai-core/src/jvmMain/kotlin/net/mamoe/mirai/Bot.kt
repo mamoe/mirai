@@ -67,10 +67,15 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      */
     actual abstract val context: Context
 
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use id instead", replaceWith = ReplaceWith("id"))
+    actual abstract val uin: Long
+
     /**
      * QQ 号码. 实际类型为 uint
      */
-    actual abstract val uin: Long
+    @SinceMirai("0.32.0")
+    actual abstract val id: Long
 
     /**
      * 昵称
@@ -97,9 +102,9 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
      */
     actual fun getFriend(id: Long): QQ {
-        if (id == uin) return selfQQ
+        if (id == this.id) return selfQQ
         return friends.delegate.getOrNull(id)
-            ?: throw NoSuchElementException("No such friend $id for bot ${this.uin}")
+            ?: throw NoSuchElementException("No such friend $id for bot ${this.id}")
     }
 
     /**
@@ -114,7 +119,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      */
     actual fun getGroup(id: Long): Group {
         return groups.delegate.getOrNull(id)
-            ?: throw NoSuchElementException("No such group $id for bot ${this.uin}")
+            ?: throw NoSuchElementException("No such group $id for bot ${this.id}")
     }
 
     // endregion
@@ -207,5 +212,5 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
     actual abstract fun close(cause: Throwable?)
 
     @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
-    actual final override fun toString(): String = "Bot(${uin})"
+    actual final override fun toString(): String = "Bot($id)"
 }

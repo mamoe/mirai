@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("FunctionName")
+@file:Suppress("FunctionName", "INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "DeprecatedCallableAddReplaceWith")
 
 package net.mamoe.mirai
 
@@ -22,7 +22,6 @@ import kotlin.jvm.JvmName
  * - `mirai-core-timpc`: `TIMPC`
  * - `mirai-core-qqandroid`: `QQAndroid`
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
 interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
@@ -55,8 +54,7 @@ inline fun BotFactory.Bot(
     qq: Long,
     password: String,
     configuration: (BotConfiguration.() -> Unit)
-): Bot =
-    this.Bot(context, qq, password, BotConfiguration().apply(configuration))
+): Bot = this.Bot(context, qq, password, BotConfiguration().apply(configuration))
 
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
@@ -64,7 +62,6 @@ inline fun BotFactory.Bot(
 inline fun BotFactory.Bot(
     context: Context,
     qq: Long,
-    passwordMd5: ByteArray,
+    password: ByteArray,
     configuration: (BotConfiguration.() -> Unit)
-): Bot =
-    this.Bot(context, qq, passwordMd5, BotConfiguration().apply(configuration))
+): Bot = this.Bot(context, qq, password, BotConfiguration().apply(configuration))

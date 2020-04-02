@@ -10,11 +10,11 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgRevokeUserDef
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
@@ -87,7 +87,7 @@ internal class PbMessageSvc {
                             subCmd = 1,
                             msgInfo = listOf(
                                 MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
-                                    fromUin = client.bot.uin,
+                                    fromUin = client.bot.id,
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
                                     msgUid = messageUid,

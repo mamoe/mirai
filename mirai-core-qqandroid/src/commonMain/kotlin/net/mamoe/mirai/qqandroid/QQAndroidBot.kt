@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.qqandroid
 
@@ -24,7 +24,6 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.json.int
-import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -52,22 +51,23 @@ import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmSynthetic
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @OptIn(MiraiInternalAPI::class)
-internal expect class QQAndroidBot constructor(
+internal class QQAndroidBot constructor(
     context: Context,
     account: BotAccount,
     configuration: BotConfiguration
-) : QQAndroidBotBase
+) : QQAndroidBotBase(context, account, configuration)
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal abstract class QQAndroidBotBase constructor(
     context: Context,
-    account: BotAccount,
+    private val account: BotAccount,
     configuration: BotConfiguration
-) : BotImpl<QQAndroidBotNetworkHandler>(context, account, configuration) {
+) : BotImpl<QQAndroidBotNetworkHandler>(context, configuration) {
     val client: QQAndroidClient =
         QQAndroidClient(
             context,
@@ -76,7 +76,9 @@ internal abstract class QQAndroidBotBase constructor(
             device = configuration.deviceInfo?.invoke(context) ?: SystemDeviceInfo(context)
         )
     internal var firstLoginSucceed: Boolean = false
-    override val uin: Long get() = client.uin
+
+    override val id: Long
+        get() = account.id
 
     companion object {
         @OptIn(UnstableDefault::class)
@@ -88,7 +90,7 @@ internal abstract class QQAndroidBotBase constructor(
     override val selfQQ: QQ by lazy {
         @OptIn(LowLevelAPI::class)
         _lowLevelNewQQ(object : FriendInfo {
-            override val uin: Long get() = this@QQAndroidBotBase.uin
+            override val uin: Long get() = this@QQAndroidBotBase.id
             override val nick: String get() = this@QQAndroidBotBase.nick
         })
     }
@@ -167,7 +169,7 @@ internal abstract class QQAndroidBotBase constructor(
 
     @ExperimentalMessageSource
     override suspend fun recall(source: MessageSource) {
-        if (source.senderId != uin && source.groupId != 0L) {
+        if (source.senderId != id && source.groupId != 0L) {
             getGroup(source.groupId).checkBotPermissionOperator()
         }
 
@@ -370,9 +372,10 @@ internal abstract class QQAndroidBotBase constructor(
         return json.parse(GroupActiveData.serializer(), rep)
     }
 
+    @JvmSynthetic
     @LowLevelAPI
     @MiraiExperimentalAPI
-    internal suspend fun _lowLevelSendLongGroupMessage(groupCode: Long, message: MessageChain): MessageReceipt<Group> {
+    internal suspend fun lowLevelSendLongGroupMessage(groupCode: Long, message: MessageChain): MessageReceipt<Group> {
         val group = getGroup(groupCode)
 
         val time = currentTimeSeconds
@@ -432,8 +435,8 @@ internal abstract class QQAndroidBotBase constructor(
 
             return group.sendMessage(
                 RichMessage.longMessage(
-                    brief = message.joinToString(limit = 27){
-                        when(it){
+                    brief = message.joinToString(limit = 27) {
+                        when (it) {
                             is PlainText -> it.stringValue
                             is At -> it.display
                             is AtAll -> it.display

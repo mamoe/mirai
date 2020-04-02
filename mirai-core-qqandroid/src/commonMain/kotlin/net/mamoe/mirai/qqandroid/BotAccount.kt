@@ -7,29 +7,27 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
 
-package net.mamoe.mirai
+package net.mamoe.mirai.qqandroid
 
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.internal.md5
-import kotlin.annotation.AnnotationTarget.*
+import kotlin.jvm.JvmSynthetic
 
-@MiraiInternalAPI
-data class BotAccount(
-    /**
-     * **注意**: 在 Android 协议, 总是使用 `QQAndroidClient.uin` 或 [Bot.uin], 而不要使用 [BotAccount.id]. 将来 [BotAccount.id] 可能会变为 [String]
-     */
-    @RawAccountIdUse
-    val id: Long,
+internal data class BotAccount(
+    @JvmSynthetic
+    internal val id: Long,
+    @JvmSynthetic
     @MiraiExperimentalAPI
     @MiraiInternalAPI
     val passwordMd5: ByteArray // md5
 ) {
-    constructor(id: Long, passwordPlainText: String) : this(id, passwordPlainText.toByteArray().md5())
+    constructor(id: Long, passwordPlainText: String) : this(id, MiraiPlatformUtils.md5(passwordPlainText.toByteArray()))
 
+    @OptIn(MiraiInternalAPI::class)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -42,18 +40,10 @@ data class BotAccount(
         return true
     }
 
+    @OptIn(MiraiInternalAPI::class)
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + passwordMd5.contentHashCode()
         return result
     }
 }
-
-/**
- * 标记直接访问 [BotAccount.id], 而不是访问 [Bot.uin]. 这可能会不兼容未来的 API 修改.
- */
-@MiraiInternalAPI
-@Retention(AnnotationRetention.SOURCE)
-@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-annotation class RawAccountIdUse

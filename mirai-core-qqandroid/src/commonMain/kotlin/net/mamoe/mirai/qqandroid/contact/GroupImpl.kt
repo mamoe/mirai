@@ -82,7 +82,7 @@ internal class GroupImpl(
             override val muteTimestamp: Int
                 get() = botMuteRemaining
             override val uin: Long
-                get() = bot.uin
+                get() = bot.id
             override val nick: String
                 get() = bot.nick
         })
@@ -101,7 +101,7 @@ internal class GroupImpl(
         }
 
     override val members: ContactList<Member> = ContactList(members.mapNotNull {
-        if (it.uin == bot.uin) {
+        if (it.uin == bot.id) {
             botPermission = it.permission
             if (it.permission == MemberPermission.OWNER) {
                 owner = botAsMember
@@ -298,7 +298,7 @@ internal class GroupImpl(
                 )
             }
             if (length >= 800) {
-                return bot._lowLevelSendLongGroupMessage(this.id, event.message)
+                return bot.lowLevelSendLongGroupMessage(this.id, event.message)
             }
 
             msg = event.message
@@ -334,7 +334,7 @@ internal class GroupImpl(
         bot.network.run {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                 bot.client,
-                uin = bot.uin,
+                uin = bot.id,
                 groupCode = id,
                 md5 = image.md5,
                 size = image.inputSize,

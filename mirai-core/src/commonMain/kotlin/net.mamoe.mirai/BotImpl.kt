@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "OverridingDeprecatedMember")
 
 package net.mamoe.mirai
 
@@ -32,27 +32,23 @@ import kotlin.coroutines.CoroutineContext
 @MiraiInternalAPI
 abstract class BotImpl<N : BotNetworkHandler> constructor(
     context: Context,
-    account: BotAccount,
     val configuration: BotConfiguration
 ) : Bot(), CoroutineScope {
-    private val botJob = SupervisorJob(configuration.parentCoroutineContext[Job])
     final override val coroutineContext: CoroutineContext =
-        configuration.parentCoroutineContext + botJob + (configuration.parentCoroutineContext[CoroutineExceptionHandler]
-            ?: CoroutineExceptionHandler { _, e ->
-                logger.error(
-                    "An exception was thrown under a coroutine of Bot",
-                    e
-                )
-            })
+        configuration.parentCoroutineContext + SupervisorJob(configuration.parentCoroutineContext[Job]) +
+                (configuration.parentCoroutineContext[CoroutineExceptionHandler]
+                    ?: CoroutineExceptionHandler { _, e ->
+                        logger.error(
+                            "An exception was thrown under a coroutine of Bot",
+                            e
+                        )
+                    })
+
     override val context: Context by context.unsafeWeakRef()
 
-    @OptIn(LowLevelAPI::class)
-    @Suppress("CanBePrimaryConstructorProperty", "OverridingDeprecatedMember") // for logger
-    final override val account: BotAccount = account
-
-    @OptIn(RawAccountIdUse::class)
+    @Deprecated("use id instead", replaceWith = ReplaceWith("id"))
     override val uin: Long
-        get() = this.account.id
+        get() = this.id
 
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
@@ -71,7 +67,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         fun getInstance(qq: Long): Bot {
             instances.forEach {
                 it.get()?.let { bot ->
-                    if (bot.uin == qq) {
+                    if (bot.id == qq) {
                         return bot
                     }
                 }
@@ -188,20 +184,20 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
             groups.delegate.clear() // job is cancelled, so child jobs are to be cancelled
             friends.delegate.clear()
-            instances.removeIf { it.get()?.uin == this.uin }
+            instances.removeIf { it.get()?.id == this.id }
         }
     }
 
     @OptIn(MiraiInternalAPI::class)
     override fun close(cause: Throwable?) {
-        if (!this.botJob.isActive) {
+        if (!this.isActive) {
             // already cancelled
             return
         }
         if (cause == null) {
-            this.botJob.cancel()
+            this.cancel()
         } else {
-            this.botJob.cancel(CancellationException("bot cancelled", cause))
+            this.cancel(CancellationException("bot cancelled", cause))
         }
     }
 }

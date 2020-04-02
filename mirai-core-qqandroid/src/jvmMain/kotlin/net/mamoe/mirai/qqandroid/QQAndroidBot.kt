@@ -16,26 +16,17 @@ import io.ktor.utils.io.core.readBytes
 import kotlinx.coroutines.io.*
 import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.BotAccount
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.ContextImpl
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import java.nio.ByteBuffer
 
 @OptIn(MiraiInternalAPI::class)
 @Suppress("FunctionName")
 internal fun QQAndroidBot(account: BotAccount, configuration: BotConfiguration): QQAndroidBot =
     QQAndroidBot(ContextImpl(), account, configuration)
-
-@OptIn(MiraiInternalAPI::class)
-internal actual class QQAndroidBot actual constructor(
-    context: Context,
-    account: BotAccount,
-    configuration: BotConfiguration
-) : QQAndroidBotBase(context, account, configuration)
 
 @OptIn(MiraiInternalAPI::class)
 @Suppress("DEPRECATION")

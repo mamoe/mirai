@@ -7,15 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.*
-import net.mamoe.mirai.RawAccountIdUse
 import net.mamoe.mirai.data.OnlineStatus
+import net.mamoe.mirai.qqandroid.BotAccount
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
@@ -58,7 +58,7 @@ internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Ra
 @PublishedApi
 internal open class QQAndroidClient(
     context: Context,
-    val id: Long,
+    val account: BotAccount,
     val ecdh: ECDH = ECDH(),
     val device: DeviceInfo = SystemDeviceInfo(context),
     bot: QQAndroidBot
@@ -89,7 +89,7 @@ internal open class QQAndroidClient(
     }
 
     override fun toString(): String { // extremely slow
-        return "QQAndroidClient(id=$id, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.toUHexString()}, randomKey=${randomKey.toUHexString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.toUHexString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.toUHexString()}, protocolVersion=$protocolVersion, apkId=${apkId.toUHexString()}, t150=${t150?.value?.toUHexString()}, rollbackSig=${rollbackSig?.toUHexString()}, ipFromT149=${ipFromT149?.toUHexString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.toUHexString()}, t528=${t528?.toUHexString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.toUHexString()}, qrPushSig=${qrPushSig.toUHexString()}, mainDisplayName='$mainDisplayName')"
+        return "QQAndroidClient(account=$account, ecdh=$ecdh, device=$device, tgtgtKey=${tgtgtKey.toUHexString()}, randomKey=${randomKey.toUHexString()}, miscBitMap=$miscBitMap, mainSigMap=$mainSigMap, subSigMap=$subSigMap, openAppId=$openAppId, apkVersionName=${apkVersionName.toUHexString()}, loginState=$loginState, appClientVersion=$appClientVersion, networkType=$networkType, apkSignatureMd5=${apkSignatureMd5.toUHexString()}, protocolVersion=$protocolVersion, apkId=${apkId.toUHexString()}, t150=${t150?.value?.toUHexString()}, rollbackSig=${rollbackSig?.toUHexString()}, ipFromT149=${ipFromT149?.toUHexString()}, timeDifference=$timeDifference, uin=$uin, t530=${t530?.toUHexString()}, t528=${t528?.toUHexString()}, ksid='$ksid', pwdFlag=$pwdFlag, loginExtraData=$loginExtraData, wFastLoginInfo=$wFastLoginInfo, reserveUinInfo=$reserveUinInfo, wLoginSigInfo=$wLoginSigInfo, tlv113=${tlv113?.toUHexString()}, qrPushSig=${qrPushSig.toUHexString()}, mainDisplayName='$mainDisplayName')"
     }
 
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
@@ -174,9 +174,8 @@ internal open class QQAndroidClient(
      */
     val uin: Long get() = _uin
 
-    @OptIn(RawAccountIdUse::class)
-    @Suppress("PropertyName", "DEPRECATION_ERROR")
-    internal var _uin: Long = bot.account.id
+    @Suppress("PropertyName")
+    internal var _uin: Long = account.id
 
     var t530: ByteArray? = null
     var t528: ByteArray? = null

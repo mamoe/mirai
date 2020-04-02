@@ -15,7 +15,6 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRef
 
@@ -37,15 +36,6 @@ annotation class LowLevelAPI
 @Suppress("FunctionName", "unused")
 @LowLevelAPI
 interface LowLevelBotAPIAccessor {
-    /**
-     * 账号信息
-     */
-    @Deprecated("将来会做修改", level = DeprecationLevel.ERROR)
-    @MiraiExperimentalAPI
-    @LowLevelAPI
-    @MiraiInternalAPI
-    val account: BotAccount
-
     /**
      * 构造一个 [_lowLevelNewQQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
      *

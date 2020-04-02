@@ -42,10 +42,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.readString
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.debug
 
 internal class OnlinePush {
     /**
@@ -70,7 +70,7 @@ internal class OnlinePush {
             val extraInfo: ImMsgBody.ExtraInfo? =
                 pbPushMsg.msg.msgBody.richText.elems.firstOrNull { it.extraInfo != null }?.extraInfo
 
-            if (pbPushMsg.msg.msgHead.fromUin == bot.uin) {
+            if (pbPushMsg.msg.msgHead.fromUin == bot.id) {
                 return SendGroupMessageReceipt(
                     pbPushMsg.msg.msgBody.richText.attr!!.random,
                     pbPushMsg.msg.msgHead.msgSeq
@@ -122,7 +122,7 @@ internal class OnlinePush {
                                         .toInt() == 1
                                 ) MemberPermission.ADMINISTRATOR else MemberPermission.MEMBER
 
-                            return if (target == bot.uin) {
+                            return if (target == bot.id) {
                                 BotGroupPermissionChangeEvent(
                                     group,
                                     group.botPermission.also { group.botPermission = newPermission },
@@ -211,7 +211,7 @@ internal class OnlinePush {
                                 when (val internalType = this.readByte().toInt().also { this.discardExact(1) }) {
                                     0x0c -> { // mute
                                         val operatorUin = this.readUInt().toLong()
-                                        if (operatorUin == bot.uin) {
+                                        if (operatorUin == bot.id) {
                                             return@flatMap sequenceOf()
                                         }
                                         val operator = group.getOrNull(operatorUin) ?: return@flatMap sequenceOf()
@@ -245,7 +245,7 @@ internal class OnlinePush {
                                                 )
                                             }
                                         } else {
-                                            if (target == bot.uin) {
+                                            if (target == bot.id) {
                                                 if (group._botMuteTimestamp == time) {
                                                     return@flatMap sequenceOf()
                                                 }
@@ -362,7 +362,7 @@ internal class OnlinePush {
                                                 group.getOrNull(recallReminder.uin) ?: return@flatMap sequenceOf()
                                             return@flatMap recallReminder.recalledMsgList.asSequence()
                                                 .mapNotNull { meta ->
-                                                    if (meta.authorUin == bot.uin) {
+                                                    if (meta.authorUin == bot.id) {
                                                         null
                                                     } else MessageRecallEvent.GroupRecall(
                                                         bot,
