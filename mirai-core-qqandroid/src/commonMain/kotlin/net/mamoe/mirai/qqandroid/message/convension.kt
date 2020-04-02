@@ -25,8 +25,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.hexToBytes
-import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.qqandroid.utils.read
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.debug
 
 
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
@@ -127,7 +130,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             }
             is QuoteReply, // already transformed above
             is MessageSource, // mirai only
-            is RichMessage, // already transformed above
+            is RichMessage // already transformed above
             -> {
 
             }
@@ -145,7 +148,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                             longTextFlag = 1,
                             longTextResid = longTextResId!!,
                             pbReserve = "78 00 F8 01 00 C8 02 00".hexToBytes()
-                        ),
+                        )
                     )
                 )
             }

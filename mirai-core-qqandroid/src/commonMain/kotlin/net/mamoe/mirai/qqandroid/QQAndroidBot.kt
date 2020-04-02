@@ -382,8 +382,8 @@ internal abstract class QQAndroidBotBase constructor(
                 sequenceId = client.atomicNextMessageSequenceId(),
                 time = time.toInt(),
                 random = Random.nextInt().absoluteValue.toUInt(),
-                groupCode,
-                group.botAsMember.nameCardOrNick
+                groupCode = groupCode,
+                botMemberNameCard = group.botAsMember.nameCardOrNick
             )
 
             val response =

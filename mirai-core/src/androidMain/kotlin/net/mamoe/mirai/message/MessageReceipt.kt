@@ -84,7 +84,7 @@ actual constructor(
         if (_isRecalled.compareAndSet(false, true)) {
             return when (val contact = target) {
                 is QQ,
-                is Group,
+                is Group
                 -> contact.bot.recallIn(source, millis)
                 else -> error("Unknown contact type")
             }

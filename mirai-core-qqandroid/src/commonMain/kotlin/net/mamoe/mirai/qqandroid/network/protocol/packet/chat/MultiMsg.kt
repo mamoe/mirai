@@ -34,7 +34,7 @@ import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 
 internal class MessageValidationData @OptIn(MiraiInternalAPI::class) constructor(
     val data: ByteArray,
-    val md5: ByteArray = MiraiPlatformUtils.md5(data),
+    val md5: ByteArray = MiraiPlatformUtils.md5(data)
 ) {
     override fun toString(): String {
         return "MessageValidationData(data=<size=${data.size}>, md5=${md5.contentToString()})"
@@ -66,7 +66,7 @@ internal fun MessageChain.calculateValidationDataForGroup(
                     msgType = 82, // troop
                     groupInfo = MsgComm.GroupInfo(
                         groupCode = groupCode,
-                        groupCard = botMemberNameCard, // Cinnamon
+                        groupCard = botMemberNameCard // Cinnamon
                     ),
                     isSrcMsg = false
                 ),
@@ -74,8 +74,8 @@ internal fun MessageChain.calculateValidationDataForGroup(
                     richText = ImMsgBody.RichText(
                         elems = richTextElems.toMutableList()
                     )
-                ),
-            ),
+                )
+            )
         )
     )
 
@@ -120,13 +120,13 @@ internal class MultiMsg {
                             msgMd5 = messageData.md5,
                             msgSize = messageData.data.size.toLong(),
                             msgType = 3 // TODO 3 for group?
-                        ),
+                        )
                     ),
                     netType = 3, // wifi=3, wap=5
                     platformType = 9,
                     subcmd = 1,
                     termType = 5,
-                    reqChannelType = 0,
+                    reqChannelType = 0
                 )
             )
         }

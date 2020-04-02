@@ -1,4 +1,4 @@
-@file:Suppress("unused", "unused")
+@file:Suppress("unused", "unused", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.qqandroid.utils
 

@@ -13,11 +13,11 @@ object Versions {
     }
 
     object Kotlin {
-        const val stdlib = "1.4-M1"
-        const val coroutines = "1.3.5-1.4-M1"
-        const val atomicFU = "0.14.2-1.4-M1"
-        const val serialization = "0.20.0-1.4-M1"
-        const val ktor = "1.3.2-1.4-M1"
+        const val stdlib = "1.3.71"
+        const val coroutines = "1.3.5"
+        const val atomicFU = "0.14.2"
+        const val serialization = "0.20.0"
+        const val ktor = "1.3.2"
 
         const val io = "0.1.16"
         const val coroutinesIo = "0.1.16"
