@@ -183,8 +183,8 @@ internal operator fun ByteArray.get(range: IntRange): String = buildString {
 }
 
 private fun Byte.fixToString(): String {
-    return when (this.toInt()) {
+    return when (val b = this.toInt() and 0xff) {
         in 0..15 -> "0${this.toString(16).toUpperCase()}"
-        else -> this.toString(16).toUpperCase()
+        else -> b.toString(16).toUpperCase()
     }
 }
