@@ -15,8 +15,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoId
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
-import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 class GroupOpenSysMsg : ProtoBuf {
     @Serializable

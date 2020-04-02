@@ -1,4 +1,4 @@
-package net.mamoe.mirai.qqandroid.io.serialization
+package net.mamoe.mirai.qqandroid.utils.io.serialization
 
 import kotlinx.io.core.Input
 import kotlinx.io.core.Output

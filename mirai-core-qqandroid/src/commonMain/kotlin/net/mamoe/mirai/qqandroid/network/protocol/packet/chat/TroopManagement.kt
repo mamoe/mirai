@@ -17,7 +17,6 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.*
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
@@ -28,6 +27,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.encodeToString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.utils.daysToSeconds
 import net.mamoe.mirai.data.GroupInfo as MiraiGroupInfo
 
@@ -413,7 +413,8 @@ internal class TroopManagement {
                                         gender = 0,
                                         dwuin = member.id,
                                         dwFlag = 31,
-                                        sName = newName.toByteArray(CharsetUTF8).encodeToString(CharsetGBK),
+                                        sName = newName.toByteArray(CharsetUTF8)
+                                            .encodeToString(CharsetGBK),
                                         sPhone = "",
                                         sEmail = "",
                                         sRemark = ""

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.io.serialization.jce
+package net.mamoe.mirai.qqandroid.utils.io.serialization.jce
 
 import kotlinx.io.core.Output
 import kotlinx.serialization.SerialDescriptor

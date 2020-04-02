@@ -21,12 +21,6 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.MemberImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsInstance
-import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.qqandroid.io.serialization.decodeUniPacket
-import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
-import net.mamoe.mirai.qqandroid.io.serialization.jceRequestSBuffer
-import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
-import net.mamoe.mirai.qqandroid.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
 import net.mamoe.mirai.qqandroid.network.NoPacket
@@ -41,7 +35,13 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
+import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jceRequestSBuffer
+import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.MiraiInternalAPI

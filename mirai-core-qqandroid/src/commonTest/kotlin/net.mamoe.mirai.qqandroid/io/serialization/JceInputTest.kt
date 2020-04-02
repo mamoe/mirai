@@ -7,8 +7,11 @@ import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.qqandroid.io.JceStruct
 import net.mamoe.mirai.qqandroid.io.serialization.jce.*
+import net.mamoe.mirai.qqandroid.utils.io.JceStruct
+import net.mamoe.mirai.qqandroid.utils.io.serialization.JceCharset
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.*
+import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

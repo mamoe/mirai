@@ -11,7 +11,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoId
-import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 internal interface ImgReq : ProtoBuf

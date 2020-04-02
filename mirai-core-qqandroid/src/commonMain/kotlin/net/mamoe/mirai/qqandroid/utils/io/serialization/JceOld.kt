@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.io.serialization
+package net.mamoe.mirai.qqandroid.utils.io.serialization
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
@@ -18,26 +18,26 @@ import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
-import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.qqandroid.io.ProtoBuf
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.BYTE
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.DOUBLE
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.FLOAT
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.INT
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.JCE_MAX_STRING_LENGTH
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.LIST
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.LONG
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.MAP
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.SHORT
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.SIMPLE_LIST
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRING1
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRING4
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRUCT_BEGIN
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.STRUCT_END
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce.Companion.ZERO_TYPE
-import net.mamoe.mirai.qqandroid.io.serialization.jce.JceHead
-import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
+import net.mamoe.mirai.qqandroid.utils.io.JceStruct
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.BYTE
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.DOUBLE
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.FLOAT
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.INT
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.JCE_MAX_STRING_LENGTH
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.LIST
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.LONG
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.MAP
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.SHORT
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.SIMPLE_LIST
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.STRING1
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.STRING4
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.STRUCT_BEGIN
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.STRUCT_END
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce.Companion.ZERO_TYPE
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceHead
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
 
 @PublishedApi
@@ -768,8 +768,10 @@ internal class JceOld private constructor(private val charset: JceCharset, overr
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
-        val UTF8 = JceOld(JceCharset.UTF8)
-        val GBK = JceOld(JceCharset.GBK)
+        val UTF8 =
+            JceOld(JceCharset.UTF8)
+        val GBK =
+            JceOld(JceCharset.GBK)
 
         fun byCharSet(c: JceCharset): JceOld {
             return if (c == JceCharset.UTF8) {

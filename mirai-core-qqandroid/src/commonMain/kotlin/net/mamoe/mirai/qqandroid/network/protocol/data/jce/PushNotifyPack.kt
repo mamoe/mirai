@@ -11,9 +11,9 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.network.Packet
-import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.qqandroid.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.utils.io.JceStruct
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 
 @Suppress("ArrayInDataClass")
 @Serializable

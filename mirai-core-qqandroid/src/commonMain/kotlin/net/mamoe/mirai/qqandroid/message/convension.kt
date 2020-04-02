@@ -17,14 +17,14 @@ import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.qqandroid.io.serialization.loadAs
-import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.hexToBytes
+import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
+import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI

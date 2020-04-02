@@ -7,6 +7,6 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.io
+package net.mamoe.mirai.qqandroid.utils.io
 
 internal interface JceStruct

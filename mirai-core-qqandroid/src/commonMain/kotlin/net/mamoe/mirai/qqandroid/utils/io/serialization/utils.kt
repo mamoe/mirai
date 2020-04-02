@@ -10,22 +10,22 @@
 @file:JvmName("SerializationUtils")
 @file:JvmMultifileClass
 
-package net.mamoe.mirai.qqandroid.io.serialization
+package net.mamoe.mirai.qqandroid.utils.io.serialization
 
 import kotlinx.io.core.*
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
-import net.mamoe.mirai.qqandroid.io.JceStruct
-import net.mamoe.mirai.qqandroid.io.ProtoBuf
-import net.mamoe.mirai.qqandroid.io.serialization.jce.Jce
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.qqandroid.utils.read
+import net.mamoe.mirai.qqandroid.utils.io.JceStruct
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce
+import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -102,14 +102,20 @@ internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: Serializ
  * dump
  */
 internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
-    return ProtoBufWithNullableSupport.dump(serializer, this)
+    return ProtoBufWithNullableSupport.dump(
+        serializer,
+        this
+    )
 }
 
 /**
  * load
  */
 internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
-    return ProtoBufWithNullableSupport.load(deserializer, this)
+    return ProtoBufWithNullableSupport.load(
+        deserializer,
+        this
+    )
 }
 
 /**
@@ -119,14 +125,22 @@ internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
 ): T {
-    return ProtoBufWithNullableSupport.load(serializer, this.readBytes(length))
+    return ProtoBufWithNullableSupport.load(
+        serializer,
+        this.readBytes(length)
+    )
 }
 
 /**
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]
  */
 internal fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: SerializationStrategy<T>, jceStruct: T): ByteArray {
-    return jceRequestSBuffer(name, serializer, jceStruct, JceCharset.GBK)
+    return jceRequestSBuffer(
+        name,
+        serializer,
+        jceStruct,
+        JceCharset.GBK
+    )
 }
 
 internal fun <T : JceStruct> jceRequestSBuffer(

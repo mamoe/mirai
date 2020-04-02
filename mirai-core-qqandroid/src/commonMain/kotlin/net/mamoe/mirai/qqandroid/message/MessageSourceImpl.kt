@@ -20,18 +20,23 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.messageRandom
 import net.mamoe.mirai.message.data.sequenceId
-import net.mamoe.mirai.qqandroid.io.serialization.loadAs
-import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
+import net.mamoe.mirai.qqandroid.utils._miraiContentToString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
+import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 internal class MessageSourceFromServer(
     val delegate: ImMsgBody.SourceMsg
 ) : MessageSource {
+    init {
+        println("MessageSourceFromServer: ${delegate._miraiContentToString()}")
+    }
+
     override val time: Long get() = delegate.time.toLong() and 0xFFFFFFFF
 
     override val originalMessage: MessageChain by lazy {

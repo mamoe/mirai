@@ -7,7 +7,7 @@
 
 @file:Suppress("DEPRECATION_ERROR")
 
-package net.mamoe.mirai.qqandroid.io.serialization
+package net.mamoe.mirai.qqandroid.utils.io.serialization
 
 import kotlinx.io.ByteArrayOutputStream
 import kotlinx.io.ByteBuffer
@@ -23,7 +23,7 @@ import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
-import net.mamoe.mirai.qqandroid.io.serialization.ProtoBufWithNullableSupport.Varint.encodeVarint
+import net.mamoe.mirai.qqandroid.utils.io.serialization.ProtoBufWithNullableSupport.Varint.encodeVarint
 
 internal typealias ProtoDesc = Pair<Int, ProtoNumberType>
 
@@ -110,7 +110,11 @@ internal class ProtoBufWithNullableSupport(override val context: SerialModule = 
     internal open inner class ObjectWriter(
         val parentTag: ProtoDesc?, private val parentEncoder: ProtobufEncoder,
         private val stream: ByteArrayOutputStream = ByteArrayOutputStream()
-    ) : ProtobufWriter(ProtobufEncoder(stream)) {
+    ) : ProtobufWriter(
+        ProtobufEncoder(
+            stream
+        )
+    ) {
         override fun endEncode(descriptor: SerialDescriptor) {
             if (parentTag != null) {
                 parentEncoder.writeBytes(stream.toByteArray(), parentTag.first)

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.io.serialization.jce
+package net.mamoe.mirai.qqandroid.utils.io.serialization.jce
 
 import kotlinx.io.core.*
 import kotlinx.serialization.BinaryFormat
@@ -16,9 +16,9 @@ import kotlinx.serialization.SerialFormat
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
-import net.mamoe.mirai.qqandroid.io.serialization.IOFormat
-import net.mamoe.mirai.qqandroid.io.serialization.JceCharset
-import net.mamoe.mirai.qqandroid.io.serialization.JceOld
+import net.mamoe.mirai.qqandroid.utils.io.serialization.IOFormat
+import net.mamoe.mirai.qqandroid.utils.io.serialization.JceCharset
+import net.mamoe.mirai.qqandroid.utils.io.serialization.JceOld
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
 
 /**
@@ -35,7 +35,12 @@ internal class Jce(
     }
 
     override fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T {
-        return JceDecoder(JceInput(input, charset), context).decodeSerializableValue(deserializer)
+        return JceDecoder(
+            JceInput(
+                input,
+                charset
+            ), context
+        ).decodeSerializableValue(deserializer)
     }
 
     override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray {
@@ -47,8 +52,14 @@ internal class Jce(
     }
 
     companion object {
-        val UTF_8 = Jce(EmptyModule, JceCharset.UTF8)
-        val GBK = Jce(EmptyModule, JceCharset.GBK)
+        val UTF_8 = Jce(
+            EmptyModule,
+            JceCharset.UTF8
+        )
+        val GBK = Jce(
+            EmptyModule,
+            JceCharset.GBK
+        )
 
         fun byCharSet(c: JceCharset): Jce {
             return if (c == JceCharset.UTF8) UTF_8 else GBK

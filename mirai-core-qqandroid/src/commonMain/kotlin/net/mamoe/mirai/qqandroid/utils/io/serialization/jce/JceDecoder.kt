@@ -9,7 +9,7 @@
 
 @file:Suppress("PrivatePropertyName")
 
-package net.mamoe.mirai.qqandroid.io.serialization.jce
+package net.mamoe.mirai.qqandroid.utils.io.serialization.jce
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.AbstractDecoder
@@ -273,7 +273,11 @@ internal class JceDecoder(
             repeat(descriptor.elementsCount) {
                 val tag = descriptor.getJceTagId(it)
                 if (tag == jceHead.tag) {
-                    println { "name=" + descriptor.getElementName(it) }
+                    println {
+                        "name=" + descriptor.getElementName(
+                            it
+                        )
+                    }
                     return it
                 }
             }

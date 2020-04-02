@@ -7,11 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.io.serialization.jce
+package net.mamoe.mirai.qqandroid.utils.io.serialization.jce
 
 import kotlinx.io.core.*
-import net.mamoe.mirai.qqandroid.io.serialization.JceCharset
 import net.mamoe.mirai.qqandroid.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.JceCharset
 
 
 /**
@@ -117,7 +117,11 @@ internal class JceInput(
     @OptIn(ExperimentalUnsignedTypes::class)
     @PublishedApi
     internal fun skipField(type: Byte): Unit {
-        JceDecoder.println { "skipping ${JceHead.findJceTypeName(type)}" }
+        JceDecoder.println {
+            "skipping ${JceHead.findJceTypeName(
+                type
+            )}"
+        }
         when (type) {
             Jce.BYTE -> this.input.discardExact(1)
             Jce.SHORT -> this.input.discardExact(2)

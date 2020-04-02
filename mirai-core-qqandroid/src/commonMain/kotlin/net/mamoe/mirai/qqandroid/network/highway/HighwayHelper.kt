@@ -26,15 +26,15 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readAvailable
 import kotlinx.io.core.use
 import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.copyAndClose
-import net.mamoe.mirai.qqandroid.utils.io.withUse
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
+import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.utils.io.withUse
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.copyAndClose
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 @Suppress("SpellCheckingInspection")
