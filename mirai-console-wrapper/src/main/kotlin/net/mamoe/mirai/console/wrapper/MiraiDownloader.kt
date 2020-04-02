@@ -79,7 +79,7 @@ private class MiraiDownloaderImpl(
                 val input= con.inputStream
                 totalSize.addAndGet(con.contentLength)
                 val outputStream = FileOutputStream(file)
-                var len = -1
+                var len: Int
                 val buff = ByteArray(1024)
                 while (input.read(buff).also { len = it } != -1) {
                     totalDownload.addAndGet(buff.size)

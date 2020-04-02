@@ -9,16 +9,13 @@
 
 package net.mamoe.mirai.console
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
-import net.mamoe.mirai.utils.io.encodeToString
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 
@@ -29,6 +26,7 @@ object MiraiConsole {
      */
     const val build = "Pkmon"
     lateinit var version: String
+        internal set
 
     /**
      * 获取从Console登陆上的Bot, Bots
@@ -36,7 +34,7 @@ object MiraiConsole {
     val bots get() = Bot.instances
 
     fun getBotOrNull(uin: Long): Bot? {
-        return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.uin == uin }
+        return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == uin }
     }
 
     /**
@@ -98,64 +96,12 @@ object MiraiConsole {
      */
     fun stop() {
         PluginManager.disablePlugins()
-            CommandManager.cancel()
+        CommandManager.cancel()
         try {
             bots.forEach {
                 it.get()?.close()
             }
-        } catch (ignored: Exception) { }
-    }
-
-    @Suppress("RedundantSuspendModifier") // binary compatibility
-    @Deprecated(
-        "Please use CommandManager directly, this will be removed in later release",
-        ReplaceWith(
-            "CommandManager",
-            "net.mamoe.mirai.console.command.CommandManager"
-        ),
-        level = DeprecationLevel.ERROR
-    )
-    object CommandProcessor {
-        @Deprecated(
-            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-                "CommandManager.runConsoleCommand(command)",
-                "net.mamoe.mirai.console.command.CommandManager"
-            ), level = DeprecationLevel.ERROR
-        )
-        suspend fun runConsoleCommand(command: String) {
-            CommandManager.runCommand(ConsoleCommandSender, command)
-        }
-
-        @Deprecated(
-            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-                "CommandManager.runCommand(sender, command)",
-                "net.mamoe.mirai.console.command.CommandManager"
-            ), level = DeprecationLevel.ERROR
-        )
-        suspend fun runCommand(sender: CommandSender, command: String) {
-            CommandManager.runCommand(sender, command)
-        }
-
-        @Deprecated(
-            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-                "CommandManager.runCommand(command)",
-                "net.mamoe.mirai.console.command.CommandManager",
-                "net.mamoe.mirai.console.command.ConsoleCommandSender"
-            ), level = DeprecationLevel.ERROR
-        )
-        fun runConsoleCommandBlocking(command: String) =
-            runBlocking { CommandManager.runCommand(ConsoleCommandSender, command) }
-
-
-        @Suppress("unused")
-        @Deprecated(
-            "Please use CommandManager directly, this will be removed in later release", ReplaceWith(
-                "CommandManager.runCommand(sender, command)",
-                "net.mamoe.mirai.console.command.CommandManager"
-            ), level = DeprecationLevel.ERROR
-        )
-        fun runCommandBlocking(sender: CommandSender, command: String) = runBlocking {
-            CommandManager.runCommand(sender, command)
+        } catch (ignored: Exception) {
         }
     }
 }
@@ -209,3 +155,8 @@ internal val Throwable.stacktraceString: String
         ByteArrayOutputStream().apply {
             printStackTrace(PrintStream(this))
         }.use { it.toByteArray().encodeToString() }
+
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun ByteArray.encodeToString(charset: Charset = Charsets.UTF_8): String =
+    kotlinx.io.core.String(this, charset = charset)

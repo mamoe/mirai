@@ -32,7 +32,6 @@ dependencies {
 
     testApi("net.mamoe:mirai-core-qqandroid-jvm:${Versions.Mirai.core}")
     testApi(kotlin("stdlib"))
-    testApi("org.jsoup:jsoup:1.12.1")
 }
 
 version = Versions.Mirai.console

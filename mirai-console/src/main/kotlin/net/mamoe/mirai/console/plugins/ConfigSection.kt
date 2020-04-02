@@ -17,8 +17,8 @@ import com.moandjiezana.toml.Toml
 import com.moandjiezana.toml.TomlWriter
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
+import net.mamoe.mirai.console.encodeToString
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.encodeToString
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.io.InputStream
@@ -486,7 +486,7 @@ abstract class FileConfigImpl internal constructor(
 
 }
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 class JsonConfig internal constructor(
     content: String
 ) : FileConfigImpl(content) {
@@ -513,7 +513,7 @@ class JsonConfig internal constructor(
     }
 }
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 class YamlConfig internal constructor(content: String) : FileConfigImpl(content) {
     constructor(file: File) : this(file.readText()) {
         this.file = file
@@ -536,7 +536,7 @@ class YamlConfig internal constructor(content: String) : FileConfigImpl(content)
 
 }
 
-@UseExperimental(MiraiInternalAPI::class)
+@OptIn(MiraiInternalAPI::class)
 class TomlConfig internal constructor(content: String) : FileConfigImpl(content) {
     constructor(file: File) : this(file.readText()) {
         this.file = file

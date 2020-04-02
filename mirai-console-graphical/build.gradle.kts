@@ -49,21 +49,6 @@ bintray {
     }
 }
 
-val kotlinVersion: String by rootProject.ext
-val atomicFuVersion: String by rootProject.ext
-val coroutinesVersion: String by rootProject.ext
-val kotlinXIoVersion: String by rootProject.ext
-val coroutinesIoVersion: String by rootProject.ext
-
-val klockVersion: String by rootProject.ext
-val ktorVersion: String by rootProject.ext
-
-val serializationVersion: String by rootProject.ext
-
-fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
-
-fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
-
 dependencies {
     compileOnly("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
     implementation(project(":mirai-console"))

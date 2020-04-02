@@ -16,8 +16,8 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.encodeToString
 import net.mamoe.mirai.utils.SimpleLogger
-import net.mamoe.mirai.utils.io.encodeToString
 import java.io.File
 import java.io.InputStream
 import java.lang.reflect.Constructor
