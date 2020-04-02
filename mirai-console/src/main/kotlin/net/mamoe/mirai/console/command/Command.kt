@@ -50,21 +50,9 @@ interface Command {
  */
 inline fun Command.register(commandOwner: CommandOwner) = CommandManager.register(commandOwner,this)
 
-
-/**
- * 构造并注册一个指令
- */
-@Deprecated("this will be removed in next few release")
-object AnonymousCommandOwner:CommandOwner
-@Deprecated("this will become internal in next few release, please use PluginBase.registerCommand() for plugin")
-inline fun registerCommand(builder: CommandBuilder.() -> Unit): Command {
-    return CommandBuilder().apply(builder).register(AnonymousCommandOwner)
-}
-
 internal inline fun registerConsoleCommands(builder: CommandBuilder.() -> Unit):Command{
     return CommandBuilder().apply(builder).register(ConsoleCommandOwner)
 }
-
 
 inline fun PluginBase.registerCommand(builder: CommandBuilder.() -> Unit):Command{
     return CommandBuilder().apply(builder).register(this.asCommandOwner())

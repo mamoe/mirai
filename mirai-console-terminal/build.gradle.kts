@@ -15,7 +15,7 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>() {
     }
 }
 dependencies {
-    api("net.mamoe:mirai-core-qqandroid-jvm:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
     api(project(":mirai-console"))
     api(group = "com.googlecode.lanterna", name = "lanterna", version = "3.0.2")
 }

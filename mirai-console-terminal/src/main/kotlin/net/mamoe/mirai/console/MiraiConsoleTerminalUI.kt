@@ -97,8 +97,8 @@ object MiraiConsoleTerminalUI : MiraiConsoleUI {
     }
 
     override fun pushBot(bot: Bot) {
-        botAdminCount[bot.uin] = 0
-        screens.add(bot.uin)
+        botAdminCount[bot.id] = 0
+        screens.add(bot.id)
         drawFrame(this.getScreenName(currentScreenId))
         if (terminal is SwingTerminalFrame) {
             terminal.flush()

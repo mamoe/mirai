@@ -119,13 +119,4 @@ internal object ConsoleUpdater {
         }
     }
 
-    private suspend fun downloadConsole(version: String) {
-
-        /*
-        tryNTimesOrQuit(3, "Failed to download Console, please seek for help") {
-            Http.downloadMavenArchive("net/mamoe", getProjectName(), version)
-                .saveToContent("${getProjectName()}-$version.jar")
-        }
-         */
-    }
 }

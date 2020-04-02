@@ -32,7 +32,6 @@ dependencies {
 
     testApi("net.mamoe:mirai-core-qqandroid-jvm:${Versions.Mirai.core}")
     testApi(kotlin("stdlib"))
-    testApi("org.jsoup:jsoup:1.12.1")
 }
 
 version = Versions.Mirai.console
@@ -103,4 +102,8 @@ compileKotlin.kotlinOptions {
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }

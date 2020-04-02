@@ -85,7 +85,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     }
 
     override fun pushBot(bot: Bot) = Platform.runLater {
-        cache[bot.uin]?.bot = bot
+        cache[bot.id]?.bot = bot
     }
 
     override fun pushVersion(consoleVersion: String, consoleBuild: String, coreVersion: String) {

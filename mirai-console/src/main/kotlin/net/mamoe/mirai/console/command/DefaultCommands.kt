@@ -19,7 +19,6 @@ import net.mamoe.mirai.console.utils.removeManager
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.getFriendOrNull
-import net.mamoe.mirai.utils.FileBasedDeviceInfo
 import net.mamoe.mirai.utils.SimpleLogger
 import java.util.*
 
@@ -117,7 +116,7 @@ object DefaultCommands {
                 try {
                     MiraiConsole.frontEnd.prePushBot(qqNumber)
                     val bot = Bot(qqNumber, qqPassword) {
-                        +FileBasedDeviceInfo
+                        fileBasedDeviceInfo()
                         this.loginSolver = MiraiConsole.frontEnd.createLoginSolver()
                         this.botLoggerSupplier = {
                             SimpleLogger("BOT $qqNumber]") { _, message, e ->
@@ -168,10 +167,10 @@ object DefaultCommands {
                         val bot = args[0]
                         var find = false
                         MiraiConsole.bots.forEach {
-                            if (it.get()?.uin.toString().contains(bot)) {
+                            if (it.get()?.id.toString().contains(bot)) {
                                 find = true
                                 appendMessage(
-                                    "" + it.get()?.uin + ": 在线中; 好友数量:" + it.get()?.friends?.size + "; 群组数量:" + it.get()
+                                    "" + it.get()?.id + ": 在线中; 好友数量:" + it.get()?.friends?.size + "; 群组数量:" + it.get()
                                         ?.groups?.size
                                 )
                             }

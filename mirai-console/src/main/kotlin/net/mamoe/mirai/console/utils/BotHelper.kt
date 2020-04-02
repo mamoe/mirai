@@ -24,23 +24,23 @@ internal object BotManagers {
 }
 
 fun Bot.addManager(long: Long) {
-    BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
-    BOT_MANAGERS[this.uin.toString()] =
-        (BOT_MANAGERS.getLongList(this.uin.toString()) as MutableList<Long>).apply { add(long) }
+    BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
+    BOT_MANAGERS[this.id.toString()] =
+        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply { add(long) }
     BotManagers.config.save()
 }
 
 fun Bot.removeManager(long: Long) {
-    BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
-    BOT_MANAGERS[this.uin.toString()] =
-        (BOT_MANAGERS.getLongList(this.uin.toString()) as MutableList<Long>).apply { add(long) }
+    BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
+    BOT_MANAGERS[this.id.toString()] =
+        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply { add(long) }
     BotManagers.config.save()
 }
 
 val Bot.managers: List<Long>
     get() {
-        BOT_MANAGERS.putIfAbsent(this.uin.toString(), mutableListOf<Long>())
-        return BOT_MANAGERS.getLongList(this.uin.toString())
+        BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
+        return BOT_MANAGERS.getLongList(this.id.toString())
     }
 
 fun Bot.checkManager(long: Long): Boolean {

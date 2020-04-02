@@ -13,7 +13,6 @@ import kotlinx.coroutines.GlobalScope;
 import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.ListeningStatus;
-import net.mamoe.mirai.event.internal.EventInternalJvmKt;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -35,7 +34,7 @@ public final class Events {
      */
     @NotNull
     public static <E extends Event> Listener<E> subscribe(@NotNull Class<E> eventClass, @NotNull Function<E, ListeningStatus> onEvent) {
-        return EventInternalJvmKt._subscribeEventForJaptOnly(eventClass, GlobalScope.INSTANCE, onEvent);
+        return EventsImplKt.subscribeEventForJaptOnly(eventClass, GlobalScope.INSTANCE, onEvent);
     }
 
     /**
@@ -49,7 +48,7 @@ public final class Events {
      */
     @NotNull
     public static <E extends Event> Listener<E> subscribeAlways(@NotNull Class<E> eventClass, @NotNull Consumer<E> onEvent) {
-        return EventInternalJvmKt._subscribeEventForJaptOnly(eventClass, GlobalScope.INSTANCE, onEvent);
+        return EventsImplKt.subscribeEventForJaptOnly(eventClass, GlobalScope.INSTANCE, onEvent);
     }
 
 
