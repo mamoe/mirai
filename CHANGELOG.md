@@ -2,12 +2,17 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
-## `0.32.0`
-- 将部分 internal API 从 `mirai-core` 移至 `mirai-core-qqandroid`
-- 将部分意外 public 的 API 改为 internal.
+## `0.32.0`  2020/4/2
 - 使用 Kotlin 1.3.71, 兼容原使用 Kotlin 1.4-M1 编译的代码.
 - 优化 `BotConfiguration`, 去掉 DSL 操作, 使用  `fileBasedDeviceInfo(filename)` 等函数替代. (兼容原操作方式, 计划于 `0.34.0` 删除)
 - 调整长消息判定权重, 具体为: Chinese char=4, English char=1, Quote=700, Image=800, 其他消息类型转换为字符串后判断长度.
+- 添加 `ContactMessage` 以替代 `MessagePacket<*, *>` 的情况
+- 添加 `MessageTooLargeException`
+- 使用 `Bot.id` 替代 `Bot.uin`
+- 在 `Dispatchers.IO` 协程调度器中执行 Java API 创建的事件处理.
+- 修复 Java API `Member.kick` 参数 `message` 没有正常传递的问题
+- 将部分意外定义为 public 的 API 改为 internal.
+- 将部分 internal API 从 `mirai-core` 移至 `mirai-core-qqandroid`
 
 ## `0.31.4`  2020/3/31
 - 修复 At 在手机上显示错误的问题
