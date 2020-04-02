@@ -91,7 +91,7 @@ fun Project.findLatestFile(): Map.Entry<String, File>? {
     return File(projectDir, "build/libs").walk()
         .filter { it.isFile }
         .onEach { println("all files=$it") }
-        .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*\.jar""")) }
+        .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*-all\.jar""")) }
         .onEach { println("matched file: ${it.name}") }
         .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
         .onEach { println("versions: $it") }
