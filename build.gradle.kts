@@ -93,7 +93,7 @@ fun Project.findLatestFile(): Map.Entry<String, File>? {
         .onEach { println("all files=$it") }
         .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*-all\.jar""")) }
         .onEach { println("matched file: ${it.name}") }
-        .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
+        .associateBy { it.nameWithoutExtension.substringAfterLast('-').replace("-all", "") }
         .onEach { println("versions: $it") }
         .maxBy {
             it.key.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
