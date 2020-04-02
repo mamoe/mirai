@@ -34,6 +34,7 @@ import net.mamoe.mirai.utils.debug
 
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
 private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最新版手机QQ体验新功能。")
+private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
@@ -115,6 +116,8 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
             is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is GroupFlashImageImpl -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
+            is FriendFlashImageImpl -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
             is QuoteReplyToSend -> {
@@ -156,6 +159,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                 // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
                 elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_RICH_MESSAGE)))
             }
+            this.any<FlashImage>() -> {
+                elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_DOUTU)))
+            }
             else -> elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE)))
         }
     }
@@ -165,6 +171,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
 private val PB_RESERVE_FOR_RICH_MESSAGE =
     "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes()
+private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
@@ -193,6 +200,13 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
+
+            println(element::class)
+            last?.apply { println(this::class) }
+            println(element is PlainText)
+            println(last is FlashImage)
+            println(element == UNSUPPORTED_FLASH_MESSAGE_PLAIN)
+
             if (last is LongMessage && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
                     last = element
@@ -201,6 +215,12 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             }
             if (last is PokeMessage && element is PlainText) {
                 if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
+                    last = element
+                    return@forEach
+                }
+            }
+            if (last is FlashImage && element is PlainText) {
+                if (element == UNSUPPORTED_FLASH_MESSAGE_PLAIN) {
                     last = element
                     return@forEach
                 }
@@ -279,6 +299,15 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                     2 -> {
                         val proto = it.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
                         message.add(PokeMessage(proto.pokeType, proto.vaspokeId))
+                    }
+                    3 -> {
+                        val proto = it.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
+                        if (proto.flashTroopPic != null) {
+                            message.add(GroupFlashImageImpl(OnlineGroupImageImpl(proto.flashTroopPic)))
+                        }
+                        if (proto.flashC2cPic != null) {
+                            message.add(FriendFlashImageImpl(OnlineFriendImageImpl(proto.flashC2cPic)))
+                        }
                     }
                 }
             }
