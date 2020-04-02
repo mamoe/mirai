@@ -69,7 +69,7 @@ expect abstract class Contact() : CoroutineScope, ContactJavaFriendlyAPI {
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
     @JvmSynthetic
-    abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
+    abstract suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
     /**
      * 上传一个图片以备发送.

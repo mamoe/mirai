@@ -75,7 +75,7 @@ internal class QQImpl(
 
     @JvmSynthetic
     @Suppress("DuplicatedCode")
-    override suspend fun sendMessage(message: Message): MessageReceipt<out QQ> {
+    override suspend fun sendMessage(message: Message): MessageReceipt<QQ> {
         val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")

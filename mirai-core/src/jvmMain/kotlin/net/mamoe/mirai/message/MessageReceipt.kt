@@ -29,7 +29,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  */
 @Suppress("FunctionName")
 @OptIn(MiraiInternalAPI::class)
-actual open class MessageReceipt<C : Contact> @OptIn(ExperimentalMessageSource::class)
+actual open class MessageReceipt<out C : Contact> @OptIn(ExperimentalMessageSource::class)
 actual constructor(
     actual val source: MessageSource,
     target: C,

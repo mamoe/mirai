@@ -20,9 +20,9 @@ import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.isOwner
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
-import net.mamoe.mirai.message.MessagePacket
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.first
 import net.mamoe.mirai.utils.SinceMirai
@@ -34,7 +34,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 
-typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessagePacket<*, *>, Listener<MessagePacket<*, *>>, Unit, Unit>
+typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<ContactMessage, Listener<ContactMessage>, Unit, Unit>
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
@@ -53,7 +53,7 @@ fun <R> CoroutineScope.subscribeMessages(
     }
 
     return MessagePacketSubscribersBuilder(Unit)
-    { filter, messageListener: MessageListener<MessagePacket<*, *>, Unit> ->
+    { filter, messageListener: MessageListener<ContactMessage, Unit> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
         // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
         subscribeAlways(coroutineContext, concurrencyKind) {
@@ -245,7 +245,7 @@ inline fun <reified E : BotEvent> Bot.incoming(
  * 消息事件的处理器.
  *
  * 注:
- * 接受者 T 为 [MessagePacket]
+ * 接受者 T 为 [ContactMessage]
  * 参数 String 为 转为字符串了的消息 ([Message.toString])
  */
 typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
@@ -262,7 +262,7 @@ typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  */
 @Suppress("unused", "DSL_SCOPE_VIOLATION_WARNING")
 @MessageDsl
-open class MessageSubscribersBuilder<M : MessagePacket<*, *>, out Ret, R : RR, RR>(
+open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     val stub: RR,
     /**
      * invoke 这个 lambda 时, 它将会把 [消息事件的处理器][MessageListener] 注册给事件, 并返回注册完成返回的监听器.

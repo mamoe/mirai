@@ -32,7 +32,7 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageReceipt.sourceSequenceId 源序列号
  * @see MessageReceipt.sourceTime 源时间
  */
-expect open class MessageReceipt<C : Contact> @OptIn(ExperimentalMessageSource::class) constructor(
+expect open class MessageReceipt<out C : Contact> @OptIn(ExperimentalMessageSource::class) constructor(
     source: MessageSource,
     target: C,
     botAsMember: Member?
@@ -100,7 +100,8 @@ expect open class MessageReceipt<C : Contact> @OptIn(ExperimentalMessageSource::
  */
 @get:JvmSynthetic
 @ExperimentalMessageSource
-inline val MessageReceipt<*>.sourceId: Long get() = this.source.id
+inline val MessageReceipt<*>.sourceId: Long
+    get() = this.source.id
 
 /**
  * 获取源消息 [MessageSource.sequenceId]
@@ -109,7 +110,8 @@ inline val MessageReceipt<*>.sourceId: Long get() = this.source.id
  */
 @get:JvmSynthetic
 @ExperimentalMessageSource
-inline val MessageReceipt<*>.sourceSequenceId: Int get() = this.source.sequenceId
+inline val MessageReceipt<*>.sourceSequenceId: Int
+    get() = this.source.sequenceId
 
 /**
  * 获取源消息 [MessageSource.time]
@@ -118,13 +120,14 @@ inline val MessageReceipt<*>.sourceSequenceId: Int get() = this.source.sequenceI
  */
 @get:JvmSynthetic
 @ExperimentalMessageSource
-inline val MessageReceipt<*>.sourceTime: Long get() = this.source.time
+inline val MessageReceipt<*>.sourceTime: Long
+    get() = this.source.time
 
-suspend inline fun MessageReceipt<out Contact>.quoteReply(message: Message) {
+suspend inline fun MessageReceipt<*>.quoteReply(message: Message) {
     return this.quoteReply(message.asMessageChain())
 }
 
-suspend inline fun MessageReceipt<out Contact>.quoteReply(message: String) {
+suspend inline fun MessageReceipt<*>.quoteReply(message: String) {
     return this.quoteReply(message.toMessage().asMessageChain())
 }
 

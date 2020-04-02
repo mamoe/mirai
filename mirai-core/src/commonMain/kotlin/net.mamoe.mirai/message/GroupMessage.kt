@@ -27,7 +27,7 @@ class GroupMessage(
     val permission: MemberPermission,
     sender: Member,
     override val message: MessageChain
-) : MessagePacket<Member, Group>(), Event {
+) : ContactMessage(), Event {
     override val sender: Member by sender.unsafeWeakRef()
     val group: Group get() = sender.group
     override val bot: Bot get() = sender.bot

@@ -7,7 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress(
+    "EXPERIMENTAL_UNSIGNED_LITERALS",
+    "EXPERIMENTAL_API_USAGE",
+    "unused",
+    "INVISIBLE_REFERENCE",
+    "INVISIBLE_MEMBER"
+)
+@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.message
 
@@ -33,20 +40,42 @@ import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
+
+/**
+ * 一条消息事件.
+ * 它是一个 [BotEvent], 因此可以被 [监听][Bot.subscribe]
+ *
+ * 支持的消息类型:
+ * [GroupMessage]
+ * [FriendMessage]
+ *
+ * @see isContextIdenticalWith 判断语境是否相同
+ */
+@Suppress("DEPRECATION")
+@SinceMirai("0.32.0")
+abstract class ContactMessage : MessagePacket<QQ, Contact>(), BotEvent
 
 /**
  * 一条从服务器接收到的消息事件.
  * 请查看各平台的 `actual` 实现的说明.
  */
-@OptIn(MiraiInternalAPI::class)
-expect abstract class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
+@Suppress("DEPRECATION")
+@Deprecated(
+    message = "use ContactMessage",
+    replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
+)
+expect sealed class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
 
 /**
- * 仅内部使用, 请使用 [MessagePacket]
+ * 仅内部使用, 请使用 [ContactMessage]
  */ // Tips: 在 IntelliJ 中 (左侧边栏) 打开 `Structure`, 可查看类结构
+@Deprecated(
+    message = "use ContactMessage",
+    replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
+)
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
-@MiraiInternalAPI
-abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, BotEvent {
+abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Packet, BotEvent {
     /**
      * 接受到这条消息的
      */
@@ -91,11 +120,6 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     suspend inline fun reply(plain: String): MessageReceipt<TSubject> =
         subject.sendMessage(plain.toMessage().asMessageChain()) as MessageReceipt<TSubject>
 
-    @JvmName("reply1")
-    suspend inline fun String.reply(): MessageReceipt<TSubject> = reply(this)
-
-    @JvmName("reply1")
-    suspend inline fun Message.reply(): MessageReceipt<TSubject> = reply(this)
     // endregion
 
     // region 撤回
@@ -131,6 +155,7 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     // endregion
 
 
+    // region 引用回复
     /**
      * 给这个消息事件的主体发送引用回复消息
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
@@ -151,11 +176,10 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
     @JvmName("reply2")
     suspend inline fun MessageChain.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
 
-    /**
-     * 引用这个消息
-     */
     @ExperimentalMessageSource
     inline fun MessageChain.quote(): QuoteReplyToSend = this.quote(sender)
+
+    // endregion
 
     operator fun <M : Message> get(at: Message.Key<M>): M {
         return this.message[at]
@@ -189,13 +213,22 @@ abstract class MessagePacketBase<TSender : QQ, TSubject : Contact> : Packet, Bot
      */
     suspend inline fun Image.channel(): ByteReadChannel = bot.openChannel(this)
     // endregion
+
+
+    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"))
+    @JvmName("reply1")
+    suspend inline fun String.reply(): MessageReceipt<TSubject> = reply(this)
+
+    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"))
+    @JvmName("reply1")
+    suspend inline fun Message.reply(): MessageReceipt<TSubject> = reply(this)
 }
 
 /**
  * 判断两个 [MessagePacket] 的 [MessagePacket.sender] 和 [MessagePacket.subject] 是否相同
  */
 @SinceMirai("0.29.0")
-fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Boolean {
+fun ContactMessage.isContextIdenticalWith(another: ContactMessage): Boolean {
     return this.sender == another.sender && this.subject == another.subject && this.bot == another.bot
 }
 
@@ -209,7 +242,8 @@ fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Bo
  *
  * @see subscribingGet
  */
-suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
+@JvmSynthetic
+suspend inline fun <reified P : ContactMessage> P.nextMessage(
     timeoutMillis: Long = -1,
     crossinline filter: suspend P.(P) -> Boolean
 ): MessageChain {
@@ -229,7 +263,8 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
  *
  * @see subscribingGetOrNull
  */
-suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
+@JvmSynthetic
+suspend inline fun <reified P : ContactMessage> P.nextMessageOrNull(
     timeoutMillis: Long = -1,
     crossinline filter: suspend P.(P) -> Boolean
 ): MessageChain? {
@@ -247,7 +282,8 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
  *
  * @see subscribingGet
  */
-suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
+@JvmSynthetic
+suspend inline fun <reified P : ContactMessage> P.nextMessage(
     timeoutMillis: Long = -1
 ): MessageChain {
     return subscribingGet<P, P>(timeoutMillis) {
@@ -259,7 +295,8 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessage(
  * @see nextMessage
  * @throws TimeoutCancellationException
  */
-inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
+@JvmSynthetic
+inline fun <reified P : ContactMessage> P.nextMessageAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Deferred<MessageChain> {
@@ -273,7 +310,8 @@ inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
 /**
  * @see nextMessage
  */
-inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
+@JvmSynthetic
+inline fun <reified P : ContactMessage> P.nextMessageAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline filter: suspend P.(P) -> Boolean
@@ -296,7 +334,8 @@ inline fun <reified P : MessagePacket<*, *>> P.nextMessageAsync(
  *
  * @see subscribingGetOrNull
  */
-suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
+@JvmSynthetic
+suspend inline fun <reified P : ContactMessage> P.nextMessageOrNull(
     timeoutMillis: Long = -1
 ): MessageChain? {
     return subscribingGetOrNull<P, P>(timeoutMillis) {
@@ -307,7 +346,8 @@ suspend inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNull(
 /**
  * @see nextMessageOrNull
  */
-inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNullAsync(
+@JvmSynthetic
+inline fun <reified P : ContactMessage> P.nextMessageOrNullAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Deferred<MessageChain?> {
@@ -329,21 +369,23 @@ inline fun <reified P : MessagePacket<*, *>> P.nextMessageOrNullAsync(
  * @see whileSelectMessages
  * @see selectMessages
  */
-suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContaining(
+@JvmSynthetic
+suspend inline fun <reified M : Message> ContactMessage.nextMessageContaining(
     timeoutMillis: Long = -1
 ): M {
-    return subscribingGet<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+    return subscribingGet<ContactMessage, ContactMessage>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageContaining) }
     }.message.first()
 }
 
-inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingAsync(
+@JvmSynthetic
+inline fun <reified M : Message> ContactMessage.nextMessageContainingAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Deferred<M> {
     return this.bot.async(coroutineContext) {
         @Suppress("RemoveExplicitTypeArguments")
-        subscribingGet<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+        subscribingGet<ContactMessage, ContactMessage>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageContainingAsync) }
         }.message.first<M>()
     }
@@ -359,21 +401,30 @@ inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingAsync(
  *
  * @see subscribingGetOrNull
  */
-suspend inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingOrNull(
+@JvmSynthetic
+suspend inline fun <reified M : Message> ContactMessage.nextMessageContainingOrNull(
     timeoutMillis: Long = -1
 ): M? {
-    return subscribingGetOrNull<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+    return subscribingGetOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNull) }
     }?.message?.first()
 }
 
-inline fun <reified M : Message> MessagePacket<*, *>.nextMessageContainingOrNullAsync(
+@JvmSynthetic
+inline fun <reified M : Message> ContactMessage.nextMessageContainingOrNullAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Deferred<M?> {
     return this.bot.async(coroutineContext) {
-        subscribingGetOrNull<MessagePacket<*, *>, MessagePacket<*, *>>(timeoutMillis) {
+        subscribingGetOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNullAsync) }
         }?.message?.first<M>()
     }
+}
+
+
+@Suppress("DEPRECATION")
+@Deprecated(level = DeprecationLevel.HIDDEN, message = "for binary compatibility")
+fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Boolean {
+    return (this as ContactMessage).isContextIdenticalWith(another as ContactMessage)
 }

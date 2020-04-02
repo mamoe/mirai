@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
 class FriendMessage(
     sender: QQ,
     override val message: MessageChain
-) : MessagePacket<QQ, QQ>(), BroadcastControllable {
+) : ContactMessage(), BroadcastControllable {
     override val sender: QQ by sender.unsafeWeakRef()
     override val bot: Bot get() = sender.bot
     override val subject: QQ get() = sender

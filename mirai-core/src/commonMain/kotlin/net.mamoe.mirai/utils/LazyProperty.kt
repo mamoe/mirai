@@ -14,4 +14,4 @@ package net.mamoe.mirai.utils
  */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
-annotation class LazyProperty
+internal annotation class LazyProperty

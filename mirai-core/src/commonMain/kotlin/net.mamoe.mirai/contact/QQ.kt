@@ -99,7 +99,7 @@ expect abstract class QQ() : Contact, CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    abstract override suspend fun sendMessage(message: Message): MessageReceipt<out QQ>
+    abstract override suspend fun sendMessage(message: Message): MessageReceipt<QQ>
 
     /**
      * 上传一个图片以备发送.
