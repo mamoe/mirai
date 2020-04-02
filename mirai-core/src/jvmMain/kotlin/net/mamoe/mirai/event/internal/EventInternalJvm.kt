@@ -22,9 +22,8 @@ import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.coroutines.EmptyCoroutineContext
 
-@MiraiInternalAPI
 @Suppress("FunctionName")
-fun <E : Event> Class<E>._subscribeEventForJaptOnly(
+internal fun <E : Event> Class<E>._subscribeEventForJaptOnly(
     scope: CoroutineScope,
     onEvent: Function<E, ListeningStatus>
 ): Listener<E> {
@@ -35,9 +34,8 @@ fun <E : Event> Class<E>._subscribeEventForJaptOnly(
         ) { withContext(Dispatchers.IO) { onEvent.apply(it) } })
 }
 
-@MiraiInternalAPI
 @Suppress("FunctionName")
-fun <E : Event> Class<E>._subscribeEventForJaptOnly(scope: CoroutineScope, onEvent: Consumer<E>): Listener<E> {
+internal fun <E : Event> Class<E>._subscribeEventForJaptOnly(scope: CoroutineScope, onEvent: Consumer<E>): Listener<E> {
     return this.kotlin.subscribeInternal(
         scope.Handler(
             EmptyCoroutineContext,

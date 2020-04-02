@@ -25,8 +25,8 @@ import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 
-@MiraiInternalAPI
-fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
+@PublishedApi
+internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     with(this.listeners()) {
         addLast(listener)
         listener.invokeOnCompletion {
