@@ -264,8 +264,8 @@ actual abstract class MemberJavaFriendlyAPI : QQ() {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kick")
-    open fun __kickBlockingForJava__(message: String) {
-        runBlocking { kick() }
+    open fun __kickBlockingForJava__(message: String = "") {
+        runBlocking { kick(message) }
     }
 
     /**
@@ -325,8 +325,8 @@ actual abstract class MemberJavaFriendlyAPI : QQ() {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kickAsync")
-    open fun __kickAsyncForJava__(message: String): Future<Unit> {
-        return future { kick() }
+    open fun __kickAsyncForJava__(message: String = ""): Future<Unit> {
+        return future { kick(message) }
     }
 
     /**
