@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.message
 
 import android.graphics.Bitmap
@@ -28,29 +30,66 @@ import java.net.URL
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
 @OptIn(MiraiInternalAPI::class)
-actual sealed class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() :
+actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() :
     MessagePacketBase<TSender, TSubject>() {
+
+    @JvmSynthetic
     suspend inline fun uploadImage(image: Bitmap): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
     suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
     suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
     suspend inline fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
     suspend inline fun uploadImage(image: File): Image = subject.uploadImage(image)
 
+    @JvmSynthetic
     suspend inline fun sendImage(image: Bitmap): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
     suspend inline fun sendImage(image: URL): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
     suspend inline fun sendImage(image: Input): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
     suspend inline fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
     suspend inline fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
 
+    @JvmSynthetic
     suspend inline fun Bitmap.upload(): Image = upload(subject)
+
+    @JvmSynthetic
     suspend inline fun URL.uploadAsImage(): Image = uploadAsImage(subject)
+
+    @JvmSynthetic
     suspend inline fun Input.uploadAsImage(): Image = uploadAsImage(subject)
+
+    @JvmSynthetic
     suspend inline fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+
+    @JvmSynthetic
     suspend inline fun File.uploadAsImage(): Image = uploadAsImage(subject)
 
+    @JvmSynthetic
     suspend inline fun Bitmap.send(): MessageReceipt<TSubject> = sendTo(subject)
+
+    @JvmSynthetic
     suspend inline fun URL.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+
+    @JvmSynthetic
     suspend inline fun Input.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+
+    @JvmSynthetic
     suspend inline fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+
+    @JvmSynthetic
     suspend inline fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
 }

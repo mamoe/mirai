@@ -65,7 +65,8 @@ abstract class ContactMessage : MessagePacket<QQ, Contact>(), BotEvent
     message = "use ContactMessage",
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
-expect sealed class MessagePacket<TSender : QQ, TSubject : Contact>() : MessagePacketBase<TSender, TSubject>
+expect abstract class MessagePacket<TSender : QQ, TSubject : Contact> constructor() :
+    MessagePacketBase<TSender, TSubject>
 
 /**
  * 仅内部使用, 请使用 [ContactMessage]

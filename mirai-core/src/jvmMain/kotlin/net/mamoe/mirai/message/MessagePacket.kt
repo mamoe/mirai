@@ -38,71 +38,99 @@ import java.net.URL
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
-actual sealed class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() : MessagePacketBase<TSender, TSubject>() {
+actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() :
+    MessagePacketBase<TSender, TSubject>() {
     // region 上传图片
+    @JvmSynthetic
     suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
 
+    @JvmSynthetic
     suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
+    @JvmSynthetic
     suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)
+    @JvmSynthetic
     suspend inline fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+    @JvmSynthetic
     suspend inline fun uploadImage(image: File): Image = subject.uploadImage(image)
     // endregion
 
     // region 发送图片
+    @JvmSynthetic
     suspend inline fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
+    @JvmSynthetic
     suspend inline fun sendImage(image: URL): MessageReceipt<TSubject> = subject.sendImage(image)
+    @JvmSynthetic
     suspend inline fun sendImage(image: Input): MessageReceipt<TSubject> = subject.sendImage(image)
+    @JvmSynthetic
     suspend inline fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
+    @JvmSynthetic
     suspend inline fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
     // endregion
 
     // region 上传图片 (扩展)
+    @JvmSynthetic
     suspend inline fun BufferedImage.upload(): Image = upload(subject)
+    @JvmSynthetic
     suspend inline fun URL.uploadAsImage(): Image = uploadAsImage(subject)
+    @JvmSynthetic
     suspend inline fun Input.uploadAsImage(): Image = uploadAsImage(subject)
+    @JvmSynthetic
     suspend inline fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+    @JvmSynthetic
     suspend inline fun File.uploadAsImage(): Image = uploadAsImage(subject)
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
+    @JvmSynthetic
     suspend inline fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
+    @JvmSynthetic
     suspend inline fun URL.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    @JvmSynthetic
     suspend inline fun Input.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    @JvmSynthetic
     suspend inline fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    @JvmSynthetic
     suspend inline fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
     // endregion 发送图片 (扩展)
 
     // region 下载图片 (扩展)
+    @JvmSynthetic
     suspend inline fun Image.downloadTo(file: File) = file.outputStream().use { downloadTo(it) }
 
     /**
      * 下载图片到 [output] 但不关闭这个 [output]
      */
+    @JvmSynthetic
     suspend inline fun Image.downloadTo(output: OutputStream) = channel().copyTo(output)
 
     /**
      * 下载图片到 [output] 并关闭这个 [output]
      */
+    @JvmSynthetic
     suspend inline fun Image.downloadAndClose(output: OutputStream) = channel().copyAndClose(output)
 
     /**
      * 下载图片到 [output] 但不关闭这个 [output]
      */
+    @JvmSynthetic
     suspend inline fun Image.downloadTo(output: Output) = channel().copyTo(output)
 
     /**
      * 下载图片到 [output] 并关闭这个 [output]
      */
+    @JvmSynthetic
     suspend inline fun Image.downloadAndClose(output: Output) = channel().copyAndClose(output)
 
     /**
      * 下载图片到 [output] 但不关闭这个 [output]
      */
+    @JvmSynthetic
     suspend inline fun Image.downloadTo(output: ByteWriteChannel) = channel().copyTo(output)
 
     /**
      * 下载图片到 [output] 并关闭这个 [output]
      */
+    @JvmSynthetic
     suspend inline fun Image.downloadAndClose(output: ByteWriteChannel) = channel().copyAndClose(output)
 
     /*
