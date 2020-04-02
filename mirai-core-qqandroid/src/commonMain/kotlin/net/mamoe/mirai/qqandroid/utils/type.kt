@@ -13,6 +13,7 @@
 package net.mamoe.mirai.qqandroid.utils
 
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.AtAll.display
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -48,6 +49,8 @@ internal fun SingleMessage.estimateLength(upTo: Int = Int.MAX_VALUE): Int {
         }
         is Image -> 300
         is PlainText -> stringValue.chineseLength(upTo)
+        is At -> display.chineseLength(upTo)
+        is AtAll -> display.chineseLength(upTo)
         else -> this.toString().chineseLength(upTo)
     }
 }

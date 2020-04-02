@@ -285,8 +285,18 @@ internal class GroupImpl(
                 throw EventCancelledException("cancelled by GroupMessageSendEvent")
             }
 
-            val length = event.message.estimateLength(4501)
-            check(length <= 4500 && event.message.count { it is Image } <= 50) { "message is too large. Allow up to 4500 chars or 50 images" }
+            val length = event.message.estimateLength(5001)
+            if (!(length <= 5000 && event.message.count { it is Image } <= 50)) {
+                throw MessageTooLargeException(
+                    this,
+                    message,
+                    event.message,
+                    "message(${event.message.joinToString(
+                        "",
+                        limit = 10
+                    )}) is too large. Allow up to 5000 in weight (Chinese char=4, English char=1, Quote=700, Image=800, others are estimated in String length.)"
+                )
+            }
             if (length >= 800) {
                 return bot._lowLevelSendLongGroupMessage(this.id, event.message)
             }
