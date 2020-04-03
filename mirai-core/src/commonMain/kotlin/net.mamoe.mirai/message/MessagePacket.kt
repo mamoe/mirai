@@ -376,6 +376,7 @@ suspend inline fun <reified M : Message> ContactMessage.nextMessageContaining(
 ): M {
     return subscribingGet<ContactMessage, ContactMessage>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageContaining) }
+            .takeIf { this.message.any<M>() }
     }.message.first()
 }
 
@@ -388,6 +389,7 @@ inline fun <reified M : Message> ContactMessage.nextMessageContainingAsync(
         @Suppress("RemoveExplicitTypeArguments")
         subscribingGet<ContactMessage, ContactMessage>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageContainingAsync) }
+                .takeIf { this.message.any<M>() }
         }.message.first<M>()
     }
 }
@@ -408,6 +410,7 @@ suspend inline fun <reified M : Message> ContactMessage.nextMessageContainingOrN
 ): M? {
     return subscribingGetOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNull) }
+            .takeIf { this.message.any<M>() }
     }?.message?.first()
 }
 
@@ -419,6 +422,7 @@ inline fun <reified M : Message> ContactMessage.nextMessageContainingOrNullAsync
     return this.bot.async(coroutineContext) {
         subscribingGetOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNullAsync) }
+                .takeIf { this.message.any<M>() }
         }?.message?.first<M>()
     }
 }
