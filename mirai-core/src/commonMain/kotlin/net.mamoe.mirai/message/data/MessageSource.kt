@@ -13,7 +13,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.LazyProperty
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -43,6 +42,8 @@ interface MessageSource : Message, MessageMetadata {
      * 在 Mirai 中使用的 id.
      * 高 32 位为 [sequenceId],
      * 低 32 位为 [messageRandom]
+     *
+     * @see ensureSequenceIdAvailable 确保 sequenceId 可用
      */
     val id: Long
 
@@ -59,7 +60,7 @@ interface MessageSource : Message, MessageMetadata {
     val time: Long
 
     /**
-     * 发送人. 可以为机器人自己
+     * 发送人. 可以为机器人自己 (`BotAsQQ`, `BotAsMember`)
      */
     val senderId: Long
 

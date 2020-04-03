@@ -25,7 +25,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
-import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -33,10 +32,6 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 internal class MessageSourceFromServer(
     val delegate: ImMsgBody.SourceMsg
 ) : MessageSource {
-    init {
-        println("MessageSourceFromServer: ${delegate._miraiContentToString()}")
-    }
-
     override val time: Long get() = delegate.time.toLong() and 0xFFFFFFFF
 
     override val originalMessage: MessageChain by lazy {
