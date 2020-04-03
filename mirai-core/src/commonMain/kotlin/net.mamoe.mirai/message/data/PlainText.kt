@@ -33,6 +33,14 @@ class PlainText(val stringValue: String) :
     override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
 
+    override fun equals(other: Any?): Boolean {
+        return other is PlainText && other.stringValue == this.stringValue
+    }
+
+    override fun hashCode(): Int {
+        return stringValue.hashCode()
+    }
+
     companion object Key : Message.Key<PlainText>
 }
 
