@@ -153,6 +153,9 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
     LightApp -> firstOrNull<LightApp>()
     PokeMessage -> firstOrNull<PokeMessage>()
     HummerMessage -> firstOrNull<HummerMessage>()
+    FlashImage -> firstOrNull<FlashImage>()
+    GroupFlashImage -> firstOrNull<GroupFlashImage>()
+    FriendFlashImage -> firstOrNull<FriendFlashImage>()
     else -> null
 } as M?
 

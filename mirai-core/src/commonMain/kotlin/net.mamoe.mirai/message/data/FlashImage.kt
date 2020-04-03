@@ -4,6 +4,8 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -14,6 +16,8 @@ import kotlin.jvm.JvmSynthetic
 @SinceMirai("")
 sealed class FlashImage : MessageContent {
     companion object Key : Message.Key<FlashImage> {
+        @JvmStatic
+        @JvmName("from")
         operator fun invoke(image: Image): FlashImage {
             @OptIn(MiraiInternalAPI::class)
             return when (image) {
@@ -56,9 +60,13 @@ inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFla
 /**
  * @see FlashImage.invoke
  */
-class GroupFlashImage @MiraiInternalAPI constructor(override val image: GroupImage) : FlashImage()
+class GroupFlashImage @MiraiInternalAPI constructor(override val image: GroupImage) : FlashImage() {
+    companion object Key : Message.Key<FlashImage>
+}
 
 /**
  * @see FlashImage.invoke
  */
-class FriendFlashImage @MiraiInternalAPI constructor(override val image: FriendImage) : FlashImage()
+class FriendFlashImage @MiraiInternalAPI constructor(override val image: FriendImage) : FlashImage() {
+    companion object Key : Message.Key<FlashImage>
+}
