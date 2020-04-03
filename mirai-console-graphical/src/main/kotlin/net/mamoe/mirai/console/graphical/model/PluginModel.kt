@@ -25,6 +25,6 @@ class PluginModel(
     val enabledProperty = SimpleBooleanProperty(this, "enabledProperty")
     var enabled by enabledProperty
 
-    val latestProperty = SimpleBooleanProperty(this, "latestProperty", true)
-    var latest by latestProperty
+    val expiredProperty = SimpleBooleanProperty(this, "expiredProperty", false)
+    var expired by expiredProperty
 }

@@ -129,7 +129,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         pluginList.forEach {
             if (it.name == plugin.name && it.author == plugin.author) {
                 if (plugin.version > it.version) {
-                    it.latest = false
+                    it.expired = true
                     return
                 }
             }
