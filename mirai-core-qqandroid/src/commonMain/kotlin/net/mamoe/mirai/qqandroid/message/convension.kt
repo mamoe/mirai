@@ -116,8 +116,10 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
             is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
-            is GroupFlashImageImpl -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
-            is FriendFlashImageImpl -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
+            is GroupFlashImage -> elements.add(it.toJceData())
+                .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
+            is FriendFlashImage -> elements.add(it.toJceData())
+                .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
             is QuoteReplyToSend -> {
@@ -303,10 +305,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilde
                     3 -> {
                         val proto = it.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
                         if (proto.flashTroopPic != null) {
-                            message.add(GroupFlashImageImpl(OnlineGroupImageImpl(proto.flashTroopPic)))
+                            message.add(GroupFlashImage(OnlineGroupImageImpl(proto.flashTroopPic)))
                         }
                         if (proto.flashC2cPic != null) {
-                            message.add(FriendFlashImageImpl(OnlineFriendImageImpl(proto.flashC2cPic)))
+                            message.add(FriendFlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
                         }
                     }
                 }
