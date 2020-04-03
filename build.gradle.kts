@@ -36,6 +36,27 @@ subprojects {
             (this as ExtensionAware).extensions.getByName("kotlin") as? org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
                 ?: return@afterEvaluate
 
+        tasks.getByName("shadowJar") {
+            doLast {
+                this.outputs.files.forEach {
+                    if (it.nameWithoutExtension.endsWith("-all")) {
+                        val output = File(
+                            it.path.substringBeforeLast(File.separator) + File.separator + it.nameWithoutExtension.substringBeforeLast(
+                                "-all"
+                            ) + "." + it.extension
+                        )
+
+                        println("Renaming to ${output.path}")
+                        if (output.exists()) {
+                            output.delete()
+                        }
+
+                        it.renameTo(output)
+                    }
+                }
+            }
+        }
+
         val githubUpload by tasks.creating {
             group = "mirai"
             dependsOn(tasks.getByName("shadowJar"))
@@ -91,9 +112,9 @@ fun Project.findLatestFile(): Map.Entry<String, File>? {
     return File(projectDir, "build/libs").walk()
         .filter { it.isFile }
         .onEach { println("all files=$it") }
-        .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*-all\.jar""")) }
+        .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*\.jar""")) }
         .onEach { println("matched file: ${it.name}") }
-        .associateBy { it.nameWithoutExtension.substringAfterLast('-').replace("-all", "") }
+        .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
         .onEach { println("versions: $it") }
         .maxBy {
             it.key.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
