@@ -37,7 +37,7 @@ internal fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrat
 internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
     struct: T,
-    charset: JceCharset = JceCharset.GBK
+    charset: JceCharset = JceCharset.UTF8
 ) {
     Jce.byCharSet(charset).dumpTo(serializer, struct, this)
 }
@@ -91,7 +91,7 @@ internal fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: Strin
     })
 }
 
-internal fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.GBK): ByteArray =
+internal fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.UTF8): ByteArray =
     Jce.byCharSet(c).dump(serializer, this)
 
 internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
@@ -139,7 +139,7 @@ internal fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: Seriali
         name,
         serializer,
         jceStruct,
-        JceCharset.GBK
+        JceCharset.UTF8
     )
 }
 

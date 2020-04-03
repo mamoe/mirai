@@ -87,8 +87,7 @@ msfwifi.3g.qq.com ?
                                     jcebuf = if (packet.type == 3) packet.jcebuf else null
                                 )
                             )
-                        ),
-                        charset = JceCharset.UTF8
+                        )
                     )
                     // writePacket(this.build().debugPrintThis())
                 }
