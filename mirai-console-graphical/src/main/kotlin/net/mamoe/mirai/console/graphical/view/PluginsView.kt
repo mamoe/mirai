@@ -1,12 +1,15 @@
 package net.mamoe.mirai.console.graphical.view
 
 import com.jfoenix.controls.JFXTreeTableColumn
+import javafx.scene.control.TreeTableCell
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.stylesheet.PluginViewStyleSheet
+import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxTreeTableView
 import tornadofx.View
 import tornadofx.addStylesheet
+import tornadofx.visibleWhen
 
 class PluginsView : View() {
 
@@ -50,15 +53,25 @@ class PluginsView : View() {
             JFXTreeTableColumn<PluginModel, PluginModel>("操作").apply {
                 prefWidthProperty().bind(this@jfxTreeTableView.widthProperty().multiply(0.08))
 
-//                setCellValueFactory { return@setCellValueFactory it.value.valueProperty() }
-//
-//                setCellFactory {
-//                    return@setCellFactory object : TreeTableCell<PluginModel, PluginModel>() {
-//                        override fun updateItem(item: PluginModel?, empty: Boolean) {
-//
-//                        }
-//                    }
-//                }
+                setCellValueFactory { return@setCellValueFactory it.value.valueProperty() }
+
+                setCellFactory {
+                    return@setCellFactory object : TreeTableCell<PluginModel, PluginModel>() {
+                        override fun updateItem(item: PluginModel?, empty: Boolean) {
+                            if (item != null && !empty) {
+                                graphic = jfxButton("更新") {
+                                    visibleWhen(item.expiredProperty)
+
+                                    // to do update
+                                }
+                                text = ""
+                            } else {
+                                graphic = null
+                                text = ""
+                            }
+                        }
+                    }
+                }
             }
         )
     }

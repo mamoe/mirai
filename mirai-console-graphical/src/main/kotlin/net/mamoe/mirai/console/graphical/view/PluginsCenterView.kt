@@ -99,15 +99,17 @@ class PluginsCenterView : View() {
                     val map = center.fetchPlugin(page++)
                     if (map.isEmpty()) return@runBlocking
                     map.forEach {
-                        ret.add(
-                            PluginModel(
-                                it.value.name,
-                                it.value.version,
-                                it.value.author,
-                                it.value.description,
-                                it.value
-                            )
-                        )
+                        with(PluginModel(
+                            it.value.name,
+                            it.value.version,
+                            it.value.author,
+                            it.value.description,
+                            it.value
+                        )) {
+                            ret.add(this)
+                            controller.checkUpdate(this)
+                            controller.checkAmbiguous(this)
+                        }
                     }
                 }
             }

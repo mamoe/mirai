@@ -125,7 +125,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         }
     }
 
-    fun checkLatest(plugin: PluginModel) {
+    fun checkUpdate(plugin: PluginModel) {
         pluginList.forEach {
             if (it.name == plugin.name && it.author == plugin.author) {
                 if (plugin.version > it.version) {
