@@ -26,6 +26,12 @@ sealed class FlashImage : MessageContent {
                 else -> throw IllegalArgumentException("不支持的图片类型(Please use GroupImage or FriendImage)")
             }
         }
+
+        @JvmStatic
+        @JvmName("from")
+        operator fun invoke(imageId: String): FlashImage {
+            return invoke(Image(imageId))
+        }
     }
 
     /**
