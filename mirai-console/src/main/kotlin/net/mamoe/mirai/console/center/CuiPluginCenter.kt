@@ -1,6 +1,5 @@
 package net.mamoe.mirai.console.center
 
-import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -24,20 +23,20 @@ object CuiPluginCenter: PluginCenter{
             if(plugins == null){
                 refresh()
             }
-            if(it > plugins!!.size()){
+            if(it >= plugins!!.size()){
                 return@forEach
             }
             val info = plugins!![it]
             with(info.asJsonObject){
                 map[this.get("name").asString] = PluginCenter.PluginInsight(
-                    this.get("name").asString,
-                    this.get("version").asString,
-                    this.get("core").asString,
-                    this.get("console").asString,
-                    this.get("author").asString,
-                    this.get("contact").asString,
-                    this.get("tags").asJsonArray.map { it.asString },
-                    this.get("commands").asJsonArray.map { it.asString }
+                    this.get("name")?.asString ?: "",
+                    this.get("version")?.asString ?: "",
+                    this.get("core")?.asString ?: "",
+                    this.get("console")?.asString ?: "",
+                    this.get("author")?.asString ?: "",
+                    this.get("contact")?.asString ?: "",
+                    this.get("tags")?.asJsonArray?.map { it.asString } ?: arrayListOf(),
+                    this.get("commands")?.asJsonArray?.map { it.asString } ?: arrayListOf()
                 )
             }
         }

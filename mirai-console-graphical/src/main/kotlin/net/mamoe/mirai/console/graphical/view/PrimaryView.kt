@@ -120,6 +120,8 @@ class PrimaryView : View() {
 
                 fixedTab("Plugins").content = find<PluginsView>().root
 
+                fixedTab("Plugins Center").content = find<PluginsCenterView>().root
+
                 fixedTab("Settings").content = find<SettingsView>().root
 
                 fixedTab("Login").content = find<LoginView>().root

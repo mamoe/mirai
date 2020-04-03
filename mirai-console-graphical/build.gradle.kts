@@ -57,7 +57,9 @@ dependencies {
     api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
 
     testApi(project(":mirai-console"))
+    testApi(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
     testApi(group = "org.yaml", name = "snakeyaml", version = "1.25")
+    testApi("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

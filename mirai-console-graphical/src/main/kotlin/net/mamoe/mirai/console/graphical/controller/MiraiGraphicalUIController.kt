@@ -125,6 +125,29 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         }
     }
 
+    fun checkLatest(plugin: PluginModel) {
+        pluginList.forEach {
+            if (it.name == plugin.name && it.author == plugin.author) {
+                if (plugin.version > it.version) {
+                    it.latest = false
+                    return
+                }
+            }
+        }
+    }
+
+    /**
+     * return `true` when command is ambiguous
+     */
+    fun checkAmbiguous(plugin: PluginModel) : Boolean {
+        plugin.insight?.commands?.forEach { name ->
+            CommandManager.commands.forEach {
+                if (name == it.name) return true
+            }
+        } ?: return false
+        return false
+    }
+
 }
 
 class GraphicalLoginSolver : LoginSolver() {
