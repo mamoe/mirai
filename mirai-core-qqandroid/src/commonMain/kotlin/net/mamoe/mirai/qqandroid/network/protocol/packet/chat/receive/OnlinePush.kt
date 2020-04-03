@@ -311,14 +311,18 @@ internal class OnlinePush {
                                         // println(dataBytes.toUHexString())
 
                                         if (dataBytes[0].toInt() != 59) {
-                                            return@flatMap sequenceOf(
-                                                GroupNameChangeEvent(
-                                                    origin = group.name.also { group._name = message },
-                                                    new = message,
-                                                    group = group,
-                                                    isByBot = false
+                                            return@flatMap if (group.name != message) {
+                                                sequenceOf(
+                                                    GroupNameChangeEvent(
+                                                        origin = group.name.also { group._name = message },
+                                                        new = message,
+                                                        group = group,
+                                                        isByBot = false
+                                                    )
                                                 )
-                                            )
+                                            } else {
+                                                sequenceOf()
+                                            }
                                         } else {
                                             //println(message + ":" + dataBytes.toUHexString())
                                             when (message) {
