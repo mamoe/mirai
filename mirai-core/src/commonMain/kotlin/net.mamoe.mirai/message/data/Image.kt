@@ -58,7 +58,7 @@ fun Image(imageId: String): Image = when {
 }
 
 @MiraiInternalAPI("使用 Image")
-abstract class AbstractImage internal constructor() : Image {
+sealed class AbstractImage : Image {
 
     private var _stringValue: String? = null
         get() {
