@@ -331,6 +331,20 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         return content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
     }
 
+    @JvmName("reply3")
+    @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
+    @SinceMirai("0.33.0")
+    open infix fun ListeningFilter.`->`(toReply: String): Ret {
+        return this.reply(toReply)
+    }
+
+    @JvmName("reply3")
+    @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
+    @SinceMirai("0.33.0")
+    open infix fun ListeningFilter.`->`(message: Message): Ret {
+        return this.reply(message)
+    }
+
     @SinceMirai("0.29.0")
     open infix fun ListeningFilter.reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
