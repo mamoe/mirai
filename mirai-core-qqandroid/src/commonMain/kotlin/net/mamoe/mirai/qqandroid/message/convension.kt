@@ -202,13 +202,6 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
-
-            println(element::class)
-            last?.apply { println(this::class) }
-            println(element is PlainText)
-            println(last is FlashImage)
-            println(element == UNSUPPORTED_FLASH_MESSAGE_PLAIN)
-
             if (last is LongMessage && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
                     last = element
