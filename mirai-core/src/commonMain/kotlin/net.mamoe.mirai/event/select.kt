@@ -63,8 +63,9 @@ import kotlin.jvm.JvmSynthetic
 @Suppress("unused")
 suspend inline fun <reified T : ContactMessage> T.whileSelectMessages(
     timeoutMillis: Long = -1,
+    filterContext: Boolean = true,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
-) = whileSelectMessagesImpl(timeoutMillis, selectBuilder)
+) = whileSelectMessagesImpl(timeoutMillis, filterContext, selectBuilder)
 
 /**
  * [selectMessages] 的 [Unit] 返回值捷径 (由于 Kotlin 无法推断 [Unit] 类型)
@@ -75,8 +76,9 @@ suspend inline fun <reified T : ContactMessage> T.whileSelectMessages(
 @JvmName("selectMessages1")
 suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
+    filterContext: Boolean = true,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
-) = selectMessagesImpl(timeoutMillis, true, selectBuilder)
+) = selectMessagesImpl(timeoutMillis, true, filterContext, selectBuilder)
 
 
 /**
@@ -104,9 +106,11 @@ suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
 // @BuilderInference // https://youtrack.jetbrains.com/issue/KT-37716
 suspend inline fun <reified T : ContactMessage, R> T.selectMessages(
     timeoutMillis: Long = -1,
+    filterContext: Boolean = true,
     // @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, R>.() -> Unit
-): R = selectMessagesImpl(timeoutMillis, false) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
+): R =
+    selectMessagesImpl(timeoutMillis, false, filterContext) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
 
 /**
  * [selectMessages] 时的 DSL 构建器.
@@ -490,6 +494,7 @@ internal val ExceptionHandlerIgnoringCancellationException = CoroutineExceptionH
 internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl(
     timeoutMillis: Long = -1,
     isUnit: Boolean,
+    filterContext: Boolean = true,
     @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, R>.() -> Unit
 ): R = withTimeoutOrCoroutineScope(timeoutMillis) {
@@ -539,7 +544,7 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
     // we don't have any way to reduce duplication yet,
     // until local functions are supported in inline functions
     @Suppress("DuplicatedCode") val subscribeAlways = subscribeAlways<T> { event ->
-        if (!this.isContextIdenticalWith(this@selectMessagesImpl))
+        if (filterContext && !this.isContextIdenticalWith(this@selectMessagesImpl))
             return@subscribeAlways
 
         val toString = event.message.toString()
@@ -587,6 +592,7 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
 @PublishedApi
 internal suspend inline fun <reified T : ContactMessage> T.whileSelectMessagesImpl(
     timeoutMillis: Long = -1,
+    filterContext: Boolean = true,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
 ) = withTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<Boolean>? = CompletableDeferred()
@@ -616,7 +622,7 @@ internal suspend inline fun <reified T : ContactMessage> T.whileSelectMessagesIm
 
     // ensure atomic completing
     val subscribeAlways = subscribeAlways<T>(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
-        if (!this.isContextIdenticalWith(this@whileSelectMessagesImpl))
+        if (filterContext && !this.isContextIdenticalWith(this@whileSelectMessagesImpl))
             return@subscribeAlways
 
         val toString = event.message.toString()
