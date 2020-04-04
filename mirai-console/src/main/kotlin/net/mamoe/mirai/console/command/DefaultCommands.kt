@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.addManager
 import net.mamoe.mirai.console.utils.checkManager
@@ -276,6 +277,59 @@ object DefaultCommands {
                 PluginManager.disablePlugins()
                 PluginManager.loadPlugins()
                 sendMessage("重新加载完成")
+                true
+            }
+        }
+
+        registerConsoleCommands {
+            name = "install"
+            description = "Install plugin from PC"
+            usage = "/install [plugin-name] to install plugin or /install [page-num] to show list "
+            onCommand {
+
+                val center = PluginCenter.Default
+
+                suspend fun showPage(num:Int){
+                    sendMessage("正在连接" + center.name)
+                    val list = PluginCenter.Default.fetchPlugin(num)
+                    list.values.forEach {
+                        appendMessage("=>" + it.name + " ;作者: " + it.author + " ;介绍: " + it.description)
+                    }
+                }
+
+                suspend fun installPlugin(name: String){
+                    sendMessage("正在连接" + center.name)
+                    val plugin = center.findPlugin(name)
+                    if(plugin == null){
+                        sendMessage("插件未找到, 请注意大小写")
+                        return
+                    }
+                    sendMessage("正在安装" + plugin.name)
+                    try{
+                       center.downloadPlugin(name){}
+                        sendMessage("安装" + plugin.name + "成功")
+                    }catch (e: Exception){
+                        sendMessage("安装" + plugin.name + "失败, "  + (e.message?:"未知原因"))
+                    }
+                }
+
+                if(it.isEmpty()){
+                    showPage(1)
+                }else{
+                    val arg = it[0]
+
+                    val id = try{
+                         arg.toInt()
+                    }catch (e:Exception){
+                        0
+                    }
+
+                    if(id > 0){
+                        showPage(id)
+                    }else{
+                        installPlugin(arg)
+                    }
+                }
                 true
             }
         }

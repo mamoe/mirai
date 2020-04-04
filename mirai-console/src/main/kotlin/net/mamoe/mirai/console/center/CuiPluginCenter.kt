@@ -5,10 +5,16 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.mamoe.mirai.console.plugins.PluginManager
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import java.io.File
+import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.system.exitProcess
 
-object CuiPluginCenter: PluginCenter{
+internal object CuiPluginCenter: PluginCenter{
 
     var plugins:JsonArray? = null
 
@@ -82,6 +88,26 @@ object CuiPluginCenter: PluginCenter{
             error("Failed to fetch plugin list from Cui Cloud")
         }
         plugins = results.get("result").asJsonArray//先不解析
+    }
+
+    override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit):Boolean {
+        val info = findPlugin(name) ?: error("Plugin Not Found")
+        withContext(Dispatchers.IO) {
+            val con = URL("https://pan.jasonczc.cn/?/mirai/plugins/$name/$name-" + info.version + ".mp4").openConnection() as HttpURLConnection
+            val input= con.inputStream
+            val size = con.contentLength
+            var totalDownload = 0F
+            val targetFile = File(PluginManager.pluginsPath , "$name-" + info.version + ".jar")
+            val outputStream = FileOutputStream(targetFile)
+            var len: Int
+            val buff = ByteArray(1024)
+            while (input.read(buff).also { len = it } != -1) {
+                totalDownload+=len
+                outputStream.write(buff, 0, len)
+                progressListener.invoke(this@downloadPlugin,totalDownload/size)
+            }
+        }
+        return true
     }
 
     override val name: String
