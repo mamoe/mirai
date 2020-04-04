@@ -6,6 +6,7 @@ import javafx.geometry.Pos
 import javafx.scene.control.TreeTableCell
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.center.CuiPluginCenter
+import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.stylesheet.PluginViewStyleSheet
@@ -16,7 +17,7 @@ import tornadofx.*
 class PluginsCenterView : View() {
 
     private val controller = find<MiraiGraphicalUIController>()
-    private val center = CuiPluginCenter
+    private val center = PluginCenter.Default
     private val plugins: ObservableList<PluginModel> by lazy(::fetch)
 
     override val root = jfxTreeTableView(plugins) {
