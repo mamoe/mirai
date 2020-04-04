@@ -43,7 +43,7 @@ class PluginScheduler(_coroutineContext: CoroutineContext) :CoroutineScope{
     override val coroutineContext: CoroutineContext = SupervisorJob() + _coroutineContext
 
 
-    data class RepeatTaskReceipt(@Volatile var cancelled:Boolean = false)
+    class RepeatTaskReceipt(@Volatile var cancelled:Boolean = false)
     /**
      * 新增一个Repeat Task(定时任务)
      *
