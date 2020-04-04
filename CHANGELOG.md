@@ -2,6 +2,19 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.33.0`  2020/4/4
+- 重构 [`MessageSource`](https://github.com/mamoe/mirai/blob/master/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/MessageSource.kt), 支持直接获取相关对象, 支持所有类型的引用.
+- 简化引用回复, 现在只需要 `source.quote()` 即可创建引用 (而不需要 `sender` 参数)
+- 现在可通过 `QuoteReply.source` 获取源消息, 且可以撤回该消息或再次引用.
+- 支持闪照: 可通过 `Image.flash()` 将普通图片转为闪照.
+- 支持 `Bot.nick` (#93)
+- 修复消息长度判断 (#195) (实验性)
+- 修复 Android 目标上 `SystemDeviceInfo.imei` 可能会抛出 NPE 的问题
+- 修复 `GroupNameChangeEvent` 重复广播的问题
+- 修复 `ContactMessage.nextMessageContaining`
+- 修复 `selectMessage` 时无法正常完结, 和 timeout 没有被取消的问题
+- 修复 #133, #197, #187,  #180, #77, #192
+
 ## `0.32.0`  2020/4/2
 - 使用 Kotlin 1.3.71, 兼容原使用 Kotlin 1.4-M1 编译的代码.
 - 优化 `BotConfiguration`, 去掉 DSL 操作, 使用  `fileBasedDeviceInfo(filename)` 等函数替代. (兼容原操作方式, 计划于 `0.34.0` 删除)
