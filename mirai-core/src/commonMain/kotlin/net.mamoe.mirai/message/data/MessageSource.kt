@@ -193,11 +193,13 @@ fun MessageChain.quote(): QuoteReply {
     return QuoteReply(this.source as? OnlineMessageSource ?: error("only online messages can be quoted"))
 }
 
+@JvmSynthetic
 suspend inline fun MessageSource.recall() = bot.recall(this)
 
 /**
  * 撤回这条消息
  */
+@JvmSynthetic
 inline fun MessageSource.recallIn(
     timeMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -247,8 +249,10 @@ inline val MessageChain.id: Int
 inline val MessageChain.source: MessageSource
     get() = this[MessageSource]
 
+@JvmSynthetic
 suspend inline fun MessageChain.recall() = this.source.recall()
 
+@JvmSynthetic
 inline fun MessageChain.recallIn(
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
