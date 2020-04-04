@@ -200,7 +200,7 @@ internal abstract class QQAndroidBotBase constructor(
                 group.checkBotPermissionOperator()
                 MessageRecallEvent.GroupRecall(
                     this,
-                    source.senderId,
+                    source.fromId,
                     source.id,
                     source.time,
                     null,
@@ -222,7 +222,7 @@ internal abstract class QQAndroidBotBase constructor(
             -> network.run {
                 PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
                     bot.client,
-                    source.senderId,
+                    source.fromId,
                     source.sequenceId,
                     source.id,
                     source.time
@@ -231,6 +231,8 @@ internal abstract class QQAndroidBotBase constructor(
             else -> error("stub!")
         }
 
+
+        // 1001: No message meets the requirements (实际上是没权限, 管理员在尝试撤回群主的消息)
         check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }
     }
 

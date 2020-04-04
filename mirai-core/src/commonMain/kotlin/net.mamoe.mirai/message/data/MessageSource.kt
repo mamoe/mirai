@@ -63,7 +63,7 @@ sealed class MessageSource : Message, MessageMetadata {
     /**
      * 发送人. 可能为机器人自己, 好友的 id, 或群 id
      */
-    abstract val senderId: Long
+    abstract val fromId: Long
 
     /**
      * 发送目标. 可能为机器人自己, 好友的 id, 或群 id
@@ -126,7 +126,7 @@ sealed class OnlineMessageSource : MessageSource() {
         abstract override val sender: Bot
         abstract override val target: Contact
 
-        final override val senderId: Long get() = sender.id
+        final override val fromId: Long get() = sender.id
         final override val targetId: Long get() = target.id
 
         abstract class ToFriend : Outgoing() {
@@ -155,7 +155,7 @@ sealed class OnlineMessageSource : MessageSource() {
         abstract override val sender: QQ // out QQ
         abstract override val target: Bot
 
-        final override val senderId: Long get() = sender.id
+        final override val fromId: Long get() = sender.id
         final override val targetId: Long get() = target.id
 
         abstract class FromFriend : Incoming() {
@@ -190,13 +190,10 @@ fun OnlineMessageSource.quote(): QuoteReply {
  */
 fun MessageChain.quote(): QuoteReply {
     @OptIn(MiraiInternalAPI::class)
-    return QuoteReply(this.source)
+    return QuoteReply(this.source as? OnlineMessageSource ?: error("only online messages can be quoted"))
 }
 
-/**
- * 撤回这条消息
- */
-suspend inline fun OnlineMessageSource.recall() = bot.recall(this)
+suspend inline fun MessageSource.recall() = bot.recall(this)
 
 /**
  * 撤回这条消息
@@ -238,3 +235,10 @@ inline val MessageChain.id: Int
 @get:JvmSynthetic
 inline val MessageChain.source: MessageSource
     get() = this[MessageSource]
+
+suspend inline fun MessageChain.recall() = this.source.recall()
+
+inline fun MessageChain.recallIn(
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = source.recallIn(millis, coroutineContext)

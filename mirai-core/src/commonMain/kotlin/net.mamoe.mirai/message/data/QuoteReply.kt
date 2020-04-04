@@ -9,11 +9,15 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
+@file:Suppress("NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -27,9 +31,16 @@ import kotlin.jvm.JvmName
  * @see MessageSource 获取更多信息
  */
 @SinceMirai("0.33.0")
-class QuoteReply(val source: MessageSource) : Message, MessageMetadata {
+class QuoteReply(val source: OnlineMessageSource) : Message, MessageMetadata {
     // TODO: 2020/4/4 Metadata or Content?
     companion object Key : Message.Key<QuoteReply>
 
     override fun toString(): String = "[mirai:quote]"
 }
+
+suspend inline fun QuoteReply.recall() = this.source.recall()
+
+inline fun QuoteReply.recallIn(
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.source.recallIn(millis, coroutineContext)

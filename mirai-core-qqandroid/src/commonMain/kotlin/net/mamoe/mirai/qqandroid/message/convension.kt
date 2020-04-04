@@ -241,7 +241,7 @@ internal inline fun <reified R> Iterable<*>.firstIsInstance(): R {
             return it
         }
     }
-    throw NoSuchElementException("Collection contains no element matching the predicate.")
+    throw NoSuchElementException("Collection contains no element is ${R::class}")
 }
 
 internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {

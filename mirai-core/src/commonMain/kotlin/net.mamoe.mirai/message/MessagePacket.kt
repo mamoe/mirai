@@ -34,8 +34,6 @@ import net.mamoe.mirai.event.subscribingGetOrNull
 import net.mamoe.mirai.event.whileSelectMessages
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.Packet
-import net.mamoe.mirai.recall
-import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -124,23 +122,7 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
     // endregion
 
     // region 撤回
-    suspend inline fun MessageChain.recall() = bot.recall(this)
-    suspend inline fun MessageSource.recall() = bot.recall(this)
-    suspend inline fun QuoteReply.recall() = bot.recall(this.source)
-    inline fun MessageChain.recallIn(
-        millis: Long,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ) = bot.recallIn(this, millis, coroutineContext)
 
-    inline fun MessageSource.recallIn(
-        millis: Long,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ) = bot.recallIn(this, millis, coroutineContext)
-
-    inline fun QuoteReply.recallIn(
-        millis: Long,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ) = bot.recallIn(this.source, millis, coroutineContext)
     // endregion
 
     // region 上传图片

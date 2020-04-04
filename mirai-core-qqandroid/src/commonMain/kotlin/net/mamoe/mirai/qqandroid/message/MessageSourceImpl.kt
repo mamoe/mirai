@@ -30,7 +30,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
-import net.mamoe.mirai.qqandroid.utils.coerceAtMostOrFail
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -146,6 +145,11 @@ internal class MessageSourceFromGroupImpl(
 internal class OfflineMessageSourceImpl( // from others' quotation
     val delegate: ImMsgBody.SourceMsg, override val bot: Bot
 ) : OfflineMessageSource(), MessageSourceImpl {
+
+    init {
+        println(delegate._miraiContentToString())
+    }
+
     private val isRecalled: AtomicBoolean = atomic(false)
     override var isRecalledOrPlanned: Boolean
         get() = isRecalled.value
@@ -164,11 +168,10 @@ internal class OfflineMessageSourceImpl( // from others' quotation
     */
 
     override val id: Int
-        get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!
-            .coerceAtMostOrFail(Int.MAX_VALUE.toLong()).toInt()
+        get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!.toInt()
 
     // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
-    override val senderId: Long get() = delegate.senderUin
+    override val fromId: Long get() = delegate.senderUin
     override val targetId: Long get() = Group.calculateGroupCodeByGroupUin(delegate.toUin)
 }
 
@@ -196,7 +199,7 @@ internal class MessageSourceToFriendImpl(
         val messageUid: Long = sequenceId.toLong().shl(32) or id.toLong().and(0xffFFffFF)
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(sequenceId),
-            senderUin = senderId,
+            senderUin = fromId,
             toUin = targetId,
             flag = 1,
             elems = elems,
@@ -207,7 +210,7 @@ internal class MessageSourceToFriendImpl(
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
-                    fromUin = senderId, // qq
+                    fromUin = fromId, // qq
                     toUin = targetId, // group
                     msgType = 9, // 82?
                     c2cCmd = 11,
@@ -271,7 +274,7 @@ internal class MessageSourceToGroupImpl(
     fun toJceDataImplForGroup(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(sequenceId),
-            senderUin = senderId,
+            senderUin = fromId,
             toUin = Group.calculateGroupUinByGroupCode(targetId),
             flag = 1,
             elems = elems,
@@ -282,7 +285,7 @@ internal class MessageSourceToGroupImpl(
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
-                    fromUin = senderId, // qq
+                    fromUin = fromId, // qq
                     toUin = Group.calculateGroupUinByGroupCode(targetId), // group
                     msgType = 82, // 82?
                     c2cCmd = 1,
