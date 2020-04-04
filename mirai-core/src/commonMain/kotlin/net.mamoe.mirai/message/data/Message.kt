@@ -52,6 +52,8 @@ import kotlin.jvm.JvmSynthetic
  * @see At 一个群成员的引用
  * @see AtAll 全体成员的引用
  * @see QuoteReply 一条消息的引用
+ * @see RichMessage 富文本消息, 如 [Xml][XmlMessage], [小程序][LightApp], [Json][JsonMessage]
+ * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage]
  *
  * @see MessageChain 消息链(即 `List<Message>`)
  * @see CombinedMessage 链接的两个消息

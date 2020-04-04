@@ -52,6 +52,7 @@ inline fun buildMessageChain(
 
 /**
  * [MessageChain] 构建器.
+ * 多个连续的 [String] 会被连接为单个 [PlainText] 以优化性能.
  *
  * @see buildMessageChain 推荐使用
  * @see asMessageChain 完成构建

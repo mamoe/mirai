@@ -274,7 +274,7 @@ internal class GroupImpl(
     @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
-        check(!isBotMuted) { "bot is muted. Remaining seconds=$botMuteRemaining" }
+        check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
         val msg: MessageChain
 

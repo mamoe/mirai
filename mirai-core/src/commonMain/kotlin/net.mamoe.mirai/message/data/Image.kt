@@ -28,16 +28,22 @@ import kotlin.jvm.JvmSynthetic
 
 /**
  * 自定义表情 (收藏的表情), 图片
+ *
+ * @see FlashImage 闪照
+ * @see Image.flash 转换普通图片为闪照
  */
 interface Image : Message, MessageContent {
     companion object Key : Message.Key<Image>
 
     /**
-     * 图片的 id. 只需要有这个 id 即可发送图片.
+     * 图片的 id.
+     * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
      *
      * 示例:
      * 好友图片的 id: `/f8f1ab55-bf8e-4236-b55e-955848d7069f` 或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
      * 群图片的 id: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png`
+     *
+     * @see Image 使用 id 构造图片
      */
     val imageId: String
 }
@@ -45,6 +51,7 @@ interface Image : Message, MessageContent {
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
  * 这个图片必须是服务器已经存在的图片.
+ * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
  *
  * 请查看 `ExternalImageJvm` 获取更多创建 [Image] 的方法
  */

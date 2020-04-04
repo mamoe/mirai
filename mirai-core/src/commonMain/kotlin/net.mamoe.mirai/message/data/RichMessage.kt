@@ -111,7 +111,7 @@ interface RichMessage : MessageContent {
 /**
  * Json 消息.
  *
- * @see LightApp 一些消息实际上是 [LightApp]
+ * @see LightApp 一些 json 消息实际上是 [LightApp]
  */
 @SinceMirai("0.27.0")
 @OptIn(MiraiExperimentalAPI::class)
@@ -123,7 +123,9 @@ class JsonMessage(override val content: String) : RichMessage {
 }
 
 /**
- * 小程序, 如音乐分享
+ * 小程序, 如音乐分享.
+ *
+ * @param content 一般是 json
  */
 @OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.27.0")
@@ -138,7 +140,7 @@ class LightApp constructor(override val content: String) : RichMessage {
 /**
  * XML 消息, 如分享, 卡片等.
  *
- * @see buildXmlMessage
+ * @see buildXmlMessage 使用 DSL 构造一个 XML 消息
  */
 @SinceMirai("0.27.0")
 @OptIn(MiraiExperimentalAPI::class)

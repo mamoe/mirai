@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
@@ -15,14 +15,28 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
+/**
+ * 一些特殊的消息
+ *
+ * @see PokeMessage 戳一戳
+ * @see FlashImage 闪照
+ */
 @SinceMirai("0.31.0")
 sealed class HummerMessage : MessageContent {
     companion object Key : Message.Key<HummerMessage>
+    // has service type etc.
 }
 
+////////////////////////////////////////
+///////////// POKE MESSAGE /////////////
+////////////////////////////////////////
+
 /**
- * 戳一戳
+ * 戳一戳. 可以发送给好友或群.
  */
 @SinceMirai("0.31.0")
 @OptIn(MiraiInternalAPI::class)
@@ -72,4 +86,92 @@ class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") 
     //businessType=0x00000001(1)
     //pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
     //serviceType=0x00000002(2)
+}
+
+
+///////////////////////////////////////
+///////////// FLASH IMAGE /////////////
+///////////////////////////////////////
+
+
+/**
+ * 闪照
+ *
+ * @see Image.flash 转换普通图片为闪照
+ */
+@SinceMirai("0.33.0")
+sealed class FlashImage : MessageContent, HummerMessage() {
+    companion object Key : Message.Key<FlashImage> {
+        /**
+         * 将普通图片转换为闪照.
+         */
+        @JvmStatic
+        @JvmName("from")
+        operator fun invoke(image: Image): FlashImage {
+            @OptIn(MiraiInternalAPI::class)
+            return when (image) {
+                is GroupImage -> GroupFlashImage(image)
+                is FriendImage -> FriendFlashImage(image)
+                else -> throw IllegalArgumentException("不支持的图片类型(Please use GroupImage or FriendImage)")
+            }
+        }
+
+        /**
+         * 将普通图片转换为闪照.
+         *
+         * @param imageId 图片 id, 详见 [Image.imageId]
+         */
+        @JvmStatic
+        @JvmName("from")
+        operator fun invoke(imageId: String): FlashImage {
+            return invoke(Image(imageId))
+        }
+    }
+
+    /**
+     * 闪照的内容图片, 即一个普通图片.
+     */
+    abstract val image: Image
+
+    private var stringValue: String? = null
+        get() {
+            return field ?: kotlin.run {
+                field = "[mirai:flash:${image.imageId}]"
+                field
+            }
+        }
+
+    override fun toString(): String = stringValue!!
+    override val length: Int get() = stringValue!!.length
+    override fun get(index: Int) = stringValue!![index]
+    override fun subSequence(startIndex: Int, endIndex: Int) = stringValue!!.subSequence(startIndex, endIndex)
+    override fun compareTo(other: String) = other.compareTo(stringValue!!)
+}
+
+@JvmSynthetic
+@SinceMirai("0.33.0")
+inline fun Image.flash(): FlashImage = FlashImage(this)
+
+@JvmSynthetic
+@SinceMirai("0.33.0")
+inline fun GroupImage.flash(): GroupFlashImage = FlashImage(this) as GroupFlashImage
+
+@JvmSynthetic
+@SinceMirai("0.33.0")
+inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFlashImage
+
+/**
+ * @see FlashImage.invoke
+ */
+@SinceMirai("0.33.0")
+class GroupFlashImage @MiraiInternalAPI constructor(override val image: GroupImage) : FlashImage() {
+    companion object Key : Message.Key<GroupFlashImage>
+}
+
+/**
+ * @see FlashImage.invoke
+ */
+@SinceMirai("0.33.0")
+class FriendFlashImage @MiraiInternalAPI constructor(override val image: FriendImage) : FlashImage() {
+    companion object Key : Message.Key<FriendFlashImage>
 }
