@@ -12,8 +12,6 @@
 
 package net.mamoe.mirai.qqandroid.utils
 
-import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.AtAll.display
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -32,6 +30,7 @@ internal fun Int.toIpV4AddressString(): String {
     }
 }
 
+/*
 internal fun String.chineseLength(upTo: Int): Int {
     return this.sumUpTo(upTo) { if (it in '\u0391'..'\uFFE5') 3 else 1 }
 }
@@ -41,11 +40,10 @@ internal fun MessageChain.estimateLength(upTo: Int = Int.MAX_VALUE): Int =
         it.estimateLength(up)
     }
 
-@OptIn(ExperimentalMessageSource::class)
 internal fun SingleMessage.estimateLength(upTo: Int = Int.MAX_VALUE): Int {
     return when (this) {
         is QuoteReply -> {
-            700 + source.originalMessage.estimateLength(upTo)
+            700
         }
         // is Image -> 300
         is PlainText -> stringValue.chineseLength(upTo)
@@ -76,3 +74,4 @@ internal inline fun CharSequence.sumUpTo(upTo: Int, selector: (Char) -> Int): In
     }
     return sum
 }
+*/

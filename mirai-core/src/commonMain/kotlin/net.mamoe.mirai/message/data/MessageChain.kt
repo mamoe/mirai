@@ -132,7 +132,7 @@ inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-@OptIn(ExperimentalMessageSource::class, MiraiExperimentalAPI::class)
+@OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {

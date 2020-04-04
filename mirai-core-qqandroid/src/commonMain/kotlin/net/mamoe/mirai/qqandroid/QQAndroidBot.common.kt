@@ -182,11 +182,11 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     @Suppress("RemoveExplicitTypeArguments") // false positive
-    @ExperimentalMessageSource
     override suspend fun recall(source: MessageSource) {
         // println(source._miraiContentToString())
 
         check(source is MessageSourceImpl)
+        source.ensureSequenceIdAvailable()
 
         val response: PbMessageSvc.PbMsgWithDraw.Response = when (source) {
             is MessageSourceToGroupImpl,
@@ -216,6 +216,7 @@ internal abstract class QQAndroidBotBase constructor(
                     ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                 }
             }
+            is OfflineMessageSource,
             is MessageSourceFromFriendImpl,
             is MessageSourceToFriendImpl
             -> network.run {
@@ -227,7 +228,7 @@ internal abstract class QQAndroidBotBase constructor(
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
-            else -> error("stub")
+            else -> error("stub!")
         }
 
         check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }

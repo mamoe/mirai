@@ -69,7 +69,7 @@ interface Message {
      *
      * @param M 指代持有这个 Key 的消息类型
      */
-    interface Key<M : Message>
+    interface Key<out M : Message>
 
     infix fun eq(other: Message): Boolean = this.toString() == other.toString()
 

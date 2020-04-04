@@ -11,7 +11,6 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.message.data.ExperimentalMessageSource
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.QuoteReply
@@ -24,16 +23,18 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  *
  * 此对象持有 [Contact] 的弱引用, [Bot] 离线后将会释放引用, 届时 [target] 将无法访问.
  *
+ * @param source 指代发送出去的消息
+ * @param target 消息发送对象
+ *
  * @see Group.sendMessage 发送群消息, 返回回执（此对象）
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
  *
  * @see MessageReceipt.sourceId 源 id
- * @see MessageReceipt.sourceSequenceId 源序列号
  * @see MessageReceipt.sourceTime 源时间
  */
 @Suppress("FunctionName")
 @OptIn(MiraiInternalAPI::class)
-actual open class MessageReceipt<out C : Contact> @OptIn(ExperimentalMessageSource::class)
+actual open class MessageReceipt<out C : Contact>
 actual constructor(
     actual val source: OnlineMessageSource.Outgoing,
     target: C,

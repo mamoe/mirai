@@ -29,12 +29,6 @@ import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
- * MessageSource 正计划于 0.32 或 0.33 或之后进行 API 不兼容的重写.
- */
-@RequiresOptIn(message = "MessageSource 正计划于 0.32 或 0.33 或之后进行 API 不兼容的重写", level = RequiresOptIn.Level.WARNING)
-annotation class ExperimentalMessageSource
-
-/**
  * 消息源, 它存在于 [MessageChain] 中, 用于表示这个消息的来源.
  *
  * 消息源只用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
@@ -103,6 +97,8 @@ sealed class MessageSource : Message, MessageMetadata {
  */
 @SinceMirai("0.33.0")
 sealed class OnlineMessageSource : MessageSource() {
+    companion object Key : Message.Key<OnlineMessageSource>
+
     /**
      * 消息发送人. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群员][Member].
      * 即类型必定为 [Bot], [QQ] 或 [Member]
@@ -125,6 +121,8 @@ sealed class OnlineMessageSource : MessageSource() {
      * 由 [机器人主动发送消息][Contact.sendMessage] 产生的 [MessageSource]
      */
     sealed class Outgoing : OnlineMessageSource() {
+        companion object Key : Message.Key<Outgoing>
+
         abstract override val sender: Bot
         abstract override val target: Contact
 
@@ -132,12 +130,16 @@ sealed class OnlineMessageSource : MessageSource() {
         final override val targetId: Long get() = target.id
 
         abstract class ToFriend : Outgoing() {
+            companion object Key : Message.Key<ToFriend>
+
             abstract override val target: QQ
             final override val subject: QQ get() = target
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.id})"
         }
 
         abstract class ToGroup : Outgoing() {
+            companion object Key : Message.Key<ToGroup>
+
             abstract override val target: Group
             final override val subject: Group get() = target
             //  final override fun toString(): String = "OnlineMessageSource.ToGroup(group=${target.id})"
@@ -148,6 +150,8 @@ sealed class OnlineMessageSource : MessageSource() {
      * 接收到的一条消息的 [MessageSource]
      */
     sealed class Incoming : OnlineMessageSource() {
+        companion object Key : Message.Key<Incoming>
+
         abstract override val sender: QQ // out QQ
         abstract override val target: Bot
 
@@ -155,12 +159,16 @@ sealed class OnlineMessageSource : MessageSource() {
         final override val targetId: Long get() = target.id
 
         abstract class FromFriend : Incoming() {
+            companion object Key : Message.Key<FromFriend>
+
             abstract override val sender: QQ
             final override val subject: QQ get() = sender
             // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.id})"
         }
 
         abstract class FromGroup : Incoming() {
+            companion object Key : Message.Key<FromGroup>
+
             abstract override val sender: Member
             final override val subject: Group get() = sender.group
             val group: Group get() = sender.group
@@ -207,6 +215,7 @@ inline fun MessageSource.recallIn(
  */
 @SinceMirai("0.33.0")
 abstract class OfflineMessageSource : MessageSource() {
+    companion object Key : Message.Key<OfflineMessageSource>
     // final override fun toString(): String = "OfflineMessageSource(sender=$senderId, target=$targetId)"
 } // TODO: 2020/4/4 可能要分群和好友
 

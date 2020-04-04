@@ -18,7 +18,6 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
-import net.mamoe.mirai.message.data.ExperimentalMessageSource
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -98,7 +97,6 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
 /**
  * 消息撤回事件. 可是任意消息被任意人撤回.
  */
-@OptIn(ExperimentalMessageSource::class)
 sealed class MessageRecallEvent : BotEvent {
     /**
      * 消息原发送人

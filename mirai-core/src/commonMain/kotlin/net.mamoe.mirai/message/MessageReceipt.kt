@@ -34,7 +34,7 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageReceipt.sourceId 源 id
  * @see MessageReceipt.sourceTime 源时间
  */
-expect open class MessageReceipt<out C : Contact> @OptIn(ExperimentalMessageSource::class) constructor(
+expect open class MessageReceipt<out C : Contact>(
     source: OnlineMessageSource.Outgoing,
     target: C,
     botAsMember: Member?
