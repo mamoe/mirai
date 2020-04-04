@@ -49,7 +49,6 @@ interface MiraiConsoleUI {
         bot: Bot
     )
 
-
     fun pushVersion(
         consoleVersion: String,
         consoleBuild: String,
