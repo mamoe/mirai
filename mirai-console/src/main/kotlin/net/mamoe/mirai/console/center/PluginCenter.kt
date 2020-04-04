@@ -28,7 +28,7 @@ interface PluginCenter {
         val description: String,
         val usage: String,
         val vcs: String,
-        val commands: String,
+        val commands: List<String>,
         val changeLog: List<String>
     )
 

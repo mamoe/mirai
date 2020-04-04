@@ -5,6 +5,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jsoup.Connection
 import org.jsoup.Jsoup
 
 object CuiPluginCenter: PluginCenter{
@@ -34,7 +35,7 @@ object CuiPluginCenter: PluginCenter{
                     this.get("core")?.asString ?: "",
                     this.get("console")?.asString ?: "",
                     this.get("author")?.asString ?: "",
-                    this.get("contact")?.asString ?: "",
+                    this.get("description")?.asString ?: "",
                     this.get("tags")?.asJsonArray?.map { it.asString } ?: arrayListOf(),
                     this.get("commands")?.asJsonArray?.map { it.asString } ?: arrayListOf()
                 )
@@ -44,7 +45,28 @@ object CuiPluginCenter: PluginCenter{
     }
 
     override suspend fun findPlugin(name: String): PluginCenter.PluginInfo? {
-        TODO()
+        val result = withContext(Dispatchers.IO){
+            Jsoup.connect("https://miraiapi.jasonczc.cn/getPluginDetailedInfo?name=$name").method(Connection.Method.GET).ignoreContentType(true).execute()
+        }.body()
+        if(result == "err:not found"){
+            return null
+        }
+        return result.asJson().run{
+            PluginCenter.PluginInfo(
+                this.get("name")?.asString ?: "",
+                this.get("version")?.asString ?: "",
+                this.get("core")?.asString ?: "",
+                this.get("console")?.asString ?: "",
+                this.get("tags")?.asJsonArray?.map { it.asString } ?: arrayListOf(),
+                this.get("author")?.asString ?: "",
+                this.get("contact")?.asString ?: "",
+                this.get("description")?.asString ?: "",
+                this.get("usage")?.asString ?: "",
+                this.get("vsc")?.asString ?: "",
+                this.get("commands")?.asJsonArray?.map { it.asString } ?: arrayListOf(),
+                this.get("changeLog")?.asJsonArray?.map { it.asString } ?: arrayListOf()
+            )
+        }
     }
 
     override suspend fun refresh() {
@@ -55,10 +77,11 @@ object CuiPluginCenter: PluginCenter{
                     .ignoreContentType(true)
                     .execute()
             }.body().asJson()
+
         if(!(results.has("success") && results["success"].asBoolean)){
             error("Failed to fetch plugin list from Cui Cloud")
         }
-        plugins = results.getAsJsonArray("result")//先不解析
+        plugins = results.get("result").asJsonArray//先不解析
     }
 
     override val name: String
