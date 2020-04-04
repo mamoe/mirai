@@ -84,7 +84,7 @@ internal class OnlinePush {
             return GroupMessage(
                 senderName = pbPushMsg.msg.msgHead.groupInfo.groupCard,
                 sender = group[pbPushMsg.msg.msgHead.fromUin],
-                message = pbPushMsg.msg.toMessageChain(),
+                message = pbPushMsg.msg.toMessageChain(bot, isGroup = true, addSource = true),
                 permission = when {
                     flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
                     flags and 8 != 0 -> MemberPermission.OWNER
@@ -369,13 +369,12 @@ internal class OnlinePush {
                                                     if (meta.authorUin == bot.id) {
                                                         null
                                                     } else MessageRecallEvent.GroupRecall(
-                                                        bot,
-                                                        meta.authorUin,
-                                                        meta.seq.toLong().shl(32) or
-                                                                meta.msgRandom.toLong().and(0xffffffff),
-                                                        meta.time,
-                                                        memebr,
-                                                        group
+                                                        bot = bot,
+                                                        authorId = meta.authorUin,
+                                                        messageId = meta.msgRandom,
+                                                        messageTime = meta.time,
+                                                        operator = memebr,
+                                                        group = group
                                                     )
                                                 }
                                         }

@@ -16,6 +16,7 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 
+
 private val indent: String = " ".repeat(4)
 
 /**
@@ -126,10 +127,12 @@ internal fun Any?._miraiContentToString(prefix: String = ""): String = when (thi
 internal expect fun KProperty1<*, *>.getValueAgainstPermission(receiver: Any): Any?
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-private val KProperty1<*, *>.isConst: Boolean get() = false // on JVM, it will be resolved to member function
+private val KProperty1<*, *>.isConst: Boolean
+    get() = false // on JVM, it will be resolved to member function
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-private val KClass<*>.isData: Boolean get() = false // on JVM, it will be resolved to member function
+private val KClass<*>.isData: Boolean
+    get() = false // on JVM, it will be resolved to member function
 
 private fun Any.contentToStringReflectively(
     prefix: String,

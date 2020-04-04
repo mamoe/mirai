@@ -29,10 +29,13 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OfflineFriendImage
+import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
+import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
+import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
@@ -80,12 +83,13 @@ internal class QQImpl(
         if (event.isCancelled) {
             throw EventCancelledException("cancelled by FriendMessageSendEvent")
         }
-        lateinit var source: MessageSource
+        event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+        lateinit var source: MessageSourceToFriendImpl
         bot.network.run {
             check(
-                MessageSvc.PbSendMsg.ToFriend(
+                MessageSvc.PbSendMsg.createToFriend(
                         bot.client,
-                        id,
+                        this@QQImpl,
                         event.message
                     ) {
                         source = it

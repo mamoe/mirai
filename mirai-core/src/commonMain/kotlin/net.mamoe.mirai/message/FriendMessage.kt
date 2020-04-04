@@ -13,6 +13,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
@@ -23,6 +25,7 @@ class FriendMessage(
     override val sender: QQ by sender.unsafeWeakRef()
     override val bot: Bot get() = sender.bot
     override val subject: QQ get() = sender
+    override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
 
     override fun toString(): String = "FriendMessage(sender=${sender.id}, message=$message)"
 }

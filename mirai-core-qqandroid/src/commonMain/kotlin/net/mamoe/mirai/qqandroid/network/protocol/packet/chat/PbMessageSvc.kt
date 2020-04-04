@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
@@ -40,7 +42,7 @@ internal class PbMessageSvc {
         }
 
         // 12 1A 08 01 10 00 18 E7 C1 AD B8 02 22 0A 08 BF BA 03 10 BF 81 CB B7 03 2A 02 08 00
-        fun Group(
+        fun createForGroupMessage(
             client: QQAndroidClient,
             groupCode: Long,
             messageSequenceId: Int, // 56639
@@ -71,12 +73,12 @@ internal class PbMessageSvc {
             )
         }
 
-        fun Friend(
+        fun createForFriendMessage(
             client: QQAndroidClient,
             toUin: Long,
             messageSequenceId: Int, // 56639
             messageRandom: Int, // 921878719
-            time: Long
+            time: Int
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
             val messageUid: Long = 262144L.shl(32) or messageRandom.toLong().and(0xffFFffFF)
             writeProtoBuf(
@@ -91,7 +93,7 @@ internal class PbMessageSvc {
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
                                     msgUid = messageUid,
-                                    msgTime = time and 0xffffffff,
+                                    msgTime = time.toULong().toLong(),
                                     routingHead = MsgSvc.RoutingHead(
                                         c2c = MsgSvc.C2C(
                                             toUin = toUin

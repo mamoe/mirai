@@ -177,8 +177,7 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
     @JvmName("reply2")
     suspend inline fun MessageChain.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
 
-    @ExperimentalMessageSource
-    inline fun MessageChain.quote(): QuoteReplyToSend = this.quote(sender)
+    open val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 
     // endregion
 

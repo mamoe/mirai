@@ -14,8 +14,8 @@ package net.mamoe.mirai.qqandroid.message
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelAPI
-import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
@@ -42,9 +42,11 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
     if (this.any<QuoteReply>()) {
         when (val source = this[QuoteReply].source) {
-            is MessageSourceFromServer -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
-            is MessageSourceFromMsg -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
-            is MessageSourceFromSend -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
+            is OfflineMessageSourceImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
+            is MessageSourceToFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
+            is MessageSourceToGroupImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForGroup()))
+            is MessageSourceFromFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
+            is MessageSourceFromGroupImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForGroup()))
             else -> error("unsupported MessageSource implementation: ${source::class.simpleName}")
         }
     }
@@ -122,19 +124,17 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                 .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
-            is QuoteReplyToSend -> {
+            is QuoteReply -> {
                 if (forGroup) {
-                    check(it is QuoteReplyToSend.ToGroup) {
-                        "sending a quote to group using QuoteReplyToSend.ToFriend is prohibited"
+                    when (val source = it.source) {
+                        is OnlineMessageSource.Incoming.FromGroup -> {
+                            transformOneMessage(At(source.sender))
+                            transformOneMessage(PlainText(" "))
+                        }
                     }
-                    if (it.sender is Member) {
-                        transformOneMessage(it.createAt())
-                    }
-                    transformOneMessage(PlainText(" "))
                 }
             }
-            is QuoteReply, // already transformed above
-            is MessageSource, // mirai only
+            is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
             -> {
 
@@ -173,28 +173,36 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
 private val PB_RESERVE_FOR_RICH_MESSAGE =
     "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes()
+
+@Suppress("SpellCheckingInspection")
 private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal fun MsgComm.Msg.toMessageChain(): MessageChain {
+internal fun MsgComm.Msg.toMessageChain(bot: Bot, isGroup: Boolean, addSource: Boolean): MessageChain {
     val elements = this.msgBody.richText.elems
 
     return buildMessageChain(elements.size + 1) {
-        +MessageSourceFromMsg(delegate = this@toMessageChain)
-        elements.joinToMessageChain(this)
+        if (addSource) {
+            if (isGroup) {
+                +MessageSourceFromGroupImpl(bot, this@toMessageChain)
+            } else {
+                +MessageSourceFromFriendImpl(bot, this@toMessageChain)
+            }
+        }
+        elements.joinToMessageChain(bot, this)
     }.cleanupRubbishMessageElements()
 }
 
 // These two functions have difference method signature, don't combine.
 
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal fun ImMsgBody.SourceMsg.toMessageChain(): MessageChain {
+internal fun ImMsgBody.SourceMsg.toMessageChain(bot: Bot): MessageChain {
     val elements = this.elems!!
 
     return buildMessageChain(elements.size + 1) {
-        +MessageSourceFromServer(delegate = this@toMessageChain)
-        elements.joinToMessageChain(this)
+        +OfflineMessageSourceImpl(delegate = this@toMessageChain, bot = bot)
+        elements.joinToMessageChain(bot, this)
     }.cleanupRubbishMessageElements()
 }
 
@@ -228,7 +236,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
 }
 
 internal inline fun <reified R> Iterable<*>.firstIsInstance(): R {
-    this.forEach {
+    for (it in this) {
         if (it is R) {
             return it
         }
@@ -236,12 +244,21 @@ internal inline fun <reified R> Iterable<*>.firstIsInstance(): R {
     throw NoSuchElementException("Collection contains no element matching the predicate.")
 }
 
+internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
+    for (it in this) {
+        if (it is R) {
+            return it
+        }
+    }
+    return null
+}
+
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
-internal fun List<ImMsgBody.Elem>.joinToMessageChain(message: MessageChainBuilder) {
+internal fun List<ImMsgBody.Elem>.joinToMessageChain(bot: Bot, message: MessageChainBuilder) {
     // (this._miraiContentToString())
     this.forEach {
         when {
-            it.srcMsg != null -> message.add(QuoteReply(MessageSourceFromServer(it.srcMsg)))
+            it.srcMsg != null -> message.add(QuoteReply(OfflineMessageSourceImpl(it.srcMsg, bot)))
             it.notOnlineImage != null -> message.add(OnlineFriendImageImpl(it.notOnlineImage))
             it.customFace != null -> message.add(OnlineGroupImageImpl(it.customFace))
             it.face != null -> message.add(Face(it.face.index))

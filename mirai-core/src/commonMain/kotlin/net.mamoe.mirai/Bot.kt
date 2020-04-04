@@ -19,10 +19,7 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.ExperimentalMessageSource
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
@@ -170,10 +167,8 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
      * @throws PermissionDeniedException 当 [Bot] 无权限操作时
      *
      * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
-     * @see _lowLevelRecallFriendMessage 低级 API
-     * @see _lowLevelRecallGroupMessage 低级 API
+     * @see MessageSource.recall
      */
-    @ExperimentalMessageSource
     @JvmSynthetic
     abstract suspend fun recall(source: MessageSource)
 
@@ -222,20 +217,19 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
 
 /**
  * 撤回这条消息.
- * 根据 [message] 内的 [MessageSource] 进行相关判断.
  *
- * [Bot] 撤回自己的消息不需要权限.
- * [Bot] 撤回群员的消息需要管理员权限.
+ * [Bot] 撤回自己的消息不需要权限, 但需要在发出后 2 分钟内撤回.
+ * [Bot] 撤回群员的消息需要管理员权限, 可在任意时间撤回.
  *
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
  * @see Bot.recall
  */
 @JvmSynthetic
-suspend inline fun Bot.recall(message: MessageChain) = this.recall(message[MessageSource])
+suspend inline fun Bot.recall(message: MessageChain) =
+    this.recall(message.source)
 
 /**
- * 在一段时间后撤回这条消息.
- * 将根据 [MessageSource.groupId] 判断消息是群消息还是好友消息.
+ * 在一段时间后撤回这个消息源所指代的消息.
  *
  * @param millis 延迟的时间, 单位为毫秒
  * @param coroutineContext 额外的 [CoroutineContext]

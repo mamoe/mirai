@@ -15,6 +15,8 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
@@ -33,6 +35,8 @@ class GroupMessage(
     override val bot: Bot get() = sender.bot
 
     override val subject: Group get() = group
+
+    override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
     inline fun Long.member(): Member = group[this]
 

@@ -8,6 +8,7 @@
  */
 
 @file: OptIn(LowLevelAPI::class)
+@file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
@@ -19,6 +20,7 @@ import kotlinx.io.core.discardExact
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -29,8 +31,8 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsQQImpl
-import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendFriend
-import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
+import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
+import net.mamoe.mirai.qqandroid.message.MessageSourceToGroupImpl
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.message.toRichTextElems
 import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
@@ -82,6 +84,7 @@ internal class MessageSvc {
      */
     @OptIn(MiraiInternalAPI::class)
     internal object PbGetMsg : OutgoingPacketFactory<PbGetMsg.Response>("MessageSvc.PbGetMsg") {
+        @Suppress("SpellCheckingInspection")
         operator fun invoke(
             client: QQAndroidClient,
             syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
@@ -226,7 +229,7 @@ internal class MessageSvc {
                                     if (friend.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
                                         return@mapNotNull FriendMessage(
                                             friend,
-                                            msg.toMessageChain()
+                                            msg.toMessageChain(bot, isGroup = false, addSource = true)
                                         )
                                     }
                                 } else return@mapNotNull null
@@ -289,34 +292,33 @@ internal class MessageSvc {
             }
         }
 
-        inline fun ToFriend(
+        inline fun createToFriend(
             client: QQAndroidClient,
-            toUin: Long,
+            qq: QQ,
             message: MessageChain,
-            crossinline sourceCallback: (MessageSourceFromSendFriend) -> Unit
+            crossinline sourceCallback: (MessageSourceToFriendImpl) -> Unit
         ): OutgoingPacket {
-            val source = MessageSourceFromSendFriend(
-                messageRandom = Random.nextInt().absoluteValue,
-                senderId = client.uin,
-                toUin = toUin,
-                time = currentTimeSeconds,
-                groupId = 0,
+            val source = MessageSourceToFriendImpl(
+                id = Random.nextInt().absoluteValue,
+                sender = client.bot,
+                target = qq,
+                time = currentTimeSeconds.toInt(),
                 sequenceId = client.atomicNextMessageSequenceId(),
                 originalMessage = message
             )
             sourceCallback(source)
-            return ToFriend(client, toUin, message, source)
+            return createToFriend(client, qq.id, message, source)
         }
 
         /**
          * 发送好友消息
          */
         @Suppress("FunctionName")
-        private fun ToFriend(
+        private fun createToFriend(
             client: QQAndroidClient,
             toUin: Long,
             message: MessageChain,
-            source: MessageSourceFromSendFriend
+            source: MessageSourceToFriendImpl
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
             ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
@@ -331,43 +333,42 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = source.sequenceId,
-                    msgRand = source.messageRandom,
-                    syncCookie = SyncCookie(time = source.time).toByteArray(SyncCookie.serializer())
+                    msgRand = source.id,
+                    syncCookie = SyncCookie(time = source.time.toULong().toLong()).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
         }
 
 
-        inline fun ToGroup(
+        inline fun createToGroup(
             client: QQAndroidClient,
-            groupCode: Long,
+            group: Group,
             message: MessageChain,
-            sourceCallback: (MessageSourceFromSendGroup) -> Unit
+            sourceCallback: (MessageSourceToGroupImpl) -> Unit
         ): OutgoingPacket {
 
-            val source = MessageSourceFromSendGroup(
-                messageRandom = Random.nextInt().absoluteValue,
-                senderId = client.uin,
-                toUin = Group.calculateGroupUinByGroupCode(groupCode),
-                time = currentTimeSeconds,
-                groupId = groupCode,
+            val source = MessageSourceToGroupImpl(
+                id = Random.nextInt().absoluteValue,
+                sender = client.bot,
+                target = group,
+                time = currentTimeSeconds.toInt(),
                 originalMessage = message//,
                 //   sourceMessage = message
             )
             sourceCallback(source)
-            return ToGroup(client, groupCode, message, source)
+            return createToGroup(client, group.id, message, source)
         }
 
         /**
          * 发送群消息
          */
         @Suppress("FunctionName")
-        private fun ToGroup(
+        private fun createToGroup(
             client: QQAndroidClient,
             groupCode: Long,
             message: MessageChain,
-            source: MessageSourceFromSendGroup
+            source: MessageSourceToGroupImpl
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
             ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
@@ -384,7 +385,7 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
-                    msgRand = source.messageRandom,
+                    msgRand = source.id,
                     syncCookie = EMPTY_BYTE_ARRAY,
                     msgVia = 1
                 )

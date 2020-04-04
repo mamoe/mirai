@@ -7,10 +7,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.LowLevelAPI
-import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.recallIn
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.message.data.ExperimentalMessageSource
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -31,7 +35,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
 @OptIn(MiraiInternalAPI::class)
 actual open class MessageReceipt<out C : Contact> @OptIn(ExperimentalMessageSource::class)
 actual constructor(
-    actual val source: MessageSource,
+    actual val source: OnlineMessageSource.Outgoing,
     target: C,
     private val botAsMember: Member?
 ) {
@@ -51,96 +55,33 @@ actual constructor(
 
     private val _isRecalled = atomic(false)
 
-    /**
-     * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
-     *
-     * @see Bot.recall
-     * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
-     */
-    @OptIn(ExperimentalMessageSource::class)
-    actual suspend fun recall() {
-        @Suppress("BooleanLiteralArgument")
-        if (_isRecalled.compareAndSet(false, true)) {
-            when (val contact = target) {
-                is Group -> {
-                    contact.bot.recall(source)
-                }
-                is QQ -> {
-                    TODO()
-                }
-                else -> error("Unknown contact type")
-            }
-        } else error("message is already or planned to be recalled")
+    @JavaFriendlyAPI
+    @JvmName("quoteReply")
+    fun __quoteReplyBlockingForJava__(message: Message): MessageReceipt<C> {
+        return runBlocking { return@runBlocking quoteReply(message) }
     }
-
-    /**
-     * 在一段时间后撤回这条消息.. [recall] 或 [recallIn] 只能被调用一次.
-     *
-     * @param millis 延迟时间, 单位为毫秒
-     * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
-     */
-    actual fun recallIn(millis: Long): Job {
-        @Suppress("BooleanLiteralArgument")
-        if (_isRecalled.compareAndSet(false, true)) {
-            return when (val contact = target) {
-                is QQ,
-                is Group
-                -> contact.bot.recallIn(source, millis)
-                else -> error("Unknown contact type")
-            }
-        } else error("message is already or planned to be recalled")
-    }
-
-    /**
-     * [确保 sequenceId可用][MessageSource.ensureSequenceIdAvailable] 然后引用这条消息.
-     * @see MessageChain.quote 引用一条消息
-     */
-    @OptIn(ExperimentalMessageSource::class)
-    actual open suspend fun quote(): QuoteReplyToSend {
-        this.source.ensureSequenceIdAvailable()
-        @OptIn(LowLevelAPI::class)
-        return _unsafeQuote()
-    }
-
-    /**
-     * 引用这条消息, 但不会 [确保 sequenceId可用][MessageSource.ensureSequenceIdAvailable].
-     * 在 sequenceId 可用前就发送这条消息则会导致一个异常.
-     * 当且仅当用于存储而不用于发送时使用这个方法.
-     *
-     * @see MessageChain.quote 引用一条消息
-     */
-    @OptIn(ExperimentalMessageSource::class)
-    @LowLevelAPI
-    @Suppress("FunctionName")
-    actual fun _unsafeQuote(): QuoteReplyToSend {
-        return this.source.quote(botAsMember as? QQ)
-    }
-
-    /**
-     * 引用这条消息并回复.
-     * @see MessageChain.quote 引用一条消息
-     */
-    @JvmSynthetic
-    actual suspend fun quoteReply(message: MessageChain) {
-        target.sendMessage(this.quote() + message)
-    }
-
 
     @JavaFriendlyAPI
     @JvmName("quoteReply")
-    fun __quoteReplyBlockingForJava__(message: Message) {
-        runBlocking { quoteReply(message) }
+    fun __quoteReplyBlockingForJava__(message: String): MessageReceipt<C> {
+        return runBlocking { quoteReply(message) }
     }
 
     @JavaFriendlyAPI
     @JvmName("recall")
     fun __recallBlockingForJava__() {
-        runBlocking { recall() }
+        return runBlocking { return@runBlocking recall() }
+    }
+
+    @JavaFriendlyAPI
+    @JvmName("recall")
+    fun __recallInBlockingForJava__(timeMillis: Long): Job {
+        return recallIn(timeMillis = timeMillis)
     }
 
     @JavaFriendlyAPI
     @JvmName("quote")
-    fun __quoteBlockingForJava__() {
-        runBlocking { quote() }
+    fun __quoteBlockingForJava__(): QuoteReply {
+        return this.quote()
     }
 }

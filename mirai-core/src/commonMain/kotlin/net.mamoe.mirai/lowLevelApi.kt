@@ -13,7 +13,6 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRef
@@ -70,21 +69,6 @@ interface LowLevelBotAPIAccessor {
     suspend fun _lowLevelQueryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo>
 
     /**
-     * 撤回一条由机器人发送给好友的消息
-     * @param messageId [MessageSource.id]
-     */
-    @MiraiExperimentalAPI("还未实现")
-    @LowLevelAPI
-    suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long, time: Long)
-
-    /**
-     * 撤回一条群里的消息. 可以是机器人发送也可以是其他群员发送.
-     * @param messageId [MessageSource.id]
-     */
-    @LowLevelAPI
-    suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long)
-
-    /**
      * 获取群公告列表
      * @param page 页码
      */
@@ -130,21 +114,4 @@ interface LowLevelBotAPIAccessor {
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData
-}
-
-/**
- * 撤回一条群里的消息. 可以是机器人发送也可以是其他群员发送.
- */
-@Suppress("FunctionName")
-@MiraiExperimentalAPI
-@LowLevelAPI
-suspend fun LowLevelBotAPIAccessor._lowLevelRecallGroupMessage(
-    groupId: Long,
-    messageSequenceId: Int,
-    messageRandom: Int
-) {
-    this._lowLevelRecallGroupMessage(
-        groupId,
-        messageSequenceId.toLong().shl(32) or messageRandom.toLong().and(0xFFFFFFFFL)
-    )
 }

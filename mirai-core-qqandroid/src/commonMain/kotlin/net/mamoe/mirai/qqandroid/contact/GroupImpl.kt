@@ -25,7 +25,9 @@ import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.message.MessageSourceFromSendGroup
+import net.mamoe.mirai.qqandroid.message.MessageSourceToGroupImpl
+import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
+import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
@@ -303,18 +305,17 @@ internal class GroupImpl(
                 || imageCount >= 4
                 || (event.message.any<QuoteReply>()
                         && (imageCount != 0 || length > 100))
-            ) {
-                return bot.lowLevelSendLongGroupMessage(this.id, event.message)
-            }
+            ) return bot.lowLevelSendLongGroupMessage(this.id, event.message)
 
             msg = event.message
         } else msg = message.asMessageChain()
+        msg.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
-        lateinit var source: MessageSourceFromSendGroup
+        lateinit var source: MessageSourceToGroupImpl
         bot.network.run {
-            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.ToGroup(
+            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.createToGroup(
                 bot.client,
-                id,
+                this@GroupImpl,
                 msg
             ) {
                 source = it

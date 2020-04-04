@@ -12,66 +12,24 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
 
 /**
- * 从服务器接收的或客户端构造用来发送的群内的或好友的引用回复.
+ * 引用回复.
  *
  * 可以引用一条群消息并发送给一个好友, 或是引用好友消息发送给群.
  * 可以引用自己发出的消息. 详见 [MessageReceipt.quote]
  *
- * 总是使用 [quote] 来构造这个实例.
+ * @see MessageSource 获取更多信息
  */
-open class QuoteReply
-@OptIn(ExperimentalMessageSource::class)
-@MiraiInternalAPI constructor(val source: MessageSource) : Message, MessageMetadata {
+@SinceMirai("0.33.0")
+class QuoteReply(val source: MessageSource) : Message, MessageMetadata {
+    // TODO: 2020/4/4 Metadata or Content?
     companion object Key : Message.Key<QuoteReply>
 
-    final override fun toString(): String = "[mirai:quote]"
-}
-
-/**
- * 用于发送的引用回复.
- * 总是使用 [quote] 来构造实例.
- */
-@OptIn(MiraiInternalAPI::class, ExperimentalMessageSource::class)
-sealed class QuoteReplyToSend
-@MiraiInternalAPI constructor(source: MessageSource) : QuoteReply(source) {
-    class ToGroup(source: MessageSource, val sender: QQ) : QuoteReplyToSend(source) {
-        fun createAt(): At = At(sender as Member)
-    }
-
-    class ToFriend(source: MessageSource) : QuoteReplyToSend(source)
-}
-
-/**
- * 引用这条消息.
- * @see sender 消息发送人.
- */
-@ExperimentalMessageSource
-@OptIn(MiraiInternalAPI::class)
-fun MessageChain.quote(sender: QQ?): QuoteReplyToSend {
-    this.firstOrNull<MessageSource>()?.let {
-        return it.quote(sender)
-    }
-    error("cannot find MessageSource")
-}
-
-/**
- * 引用这条消息.
- * @see from 消息来源. 若是好友发送
- */
-@ExperimentalMessageSource
-@OptIn(MiraiInternalAPI::class)
-fun MessageSource.quote(from: QQ?): QuoteReplyToSend {
-    return if (this.groupId != 0L) {
-        check(from is Member) { "sender must be Member to quote a GroupMessage" }
-        QuoteReplyToSend.ToGroup(this, from)
-    } else QuoteReplyToSend.ToFriend(this)
+    override fun toString(): String = "[mirai:quote]"
 }

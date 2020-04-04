@@ -24,6 +24,7 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.json.int
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -35,8 +36,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
-import net.mamoe.mirai.qqandroid.message.OnlineFriendImageImpl
-import net.mamoe.mirai.qqandroid.message.OnlineGroupImageImpl
+import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
@@ -50,10 +50,21 @@ import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+
+@OptIn(ExperimentalContracts::class)
+internal fun Bot.asQQAndroidBot(): QQAndroidBot {
+    contract {
+        returns() implies (this@asQQAndroidBot is QQAndroidBot)
+    }
+
+    return this as QQAndroidBot
+}
 
 @OptIn(MiraiInternalAPI::class)
 internal class QQAndroidBot constructor(
@@ -170,68 +181,57 @@ internal abstract class QQAndroidBotBase constructor(
         TODO("not implemented")
     }
 
+    @Suppress("RemoveExplicitTypeArguments") // false positive
     @ExperimentalMessageSource
     override suspend fun recall(source: MessageSource) {
-        if (source.senderId != id && source.groupId != 0L) {
-            getGroup(source.groupId).checkBotPermissionOperator()
-        }
-
         // println(source._miraiContentToString())
-        source.ensureSequenceIdAvailable()
 
-        network.run {
-            val response: PbMessageSvc.PbMsgWithDraw.Response =
-                if (source.groupId == 0L) {
-                    PbMessageSvc.PbMsgWithDraw.Friend(
-                        bot.client,
-                        source.senderId,
-                        source.sequenceId,
-                        source.messageRandom,
-                        source.time
-                    ).sendAndExpect()
-                } else {
-                    MessageRecallEvent.GroupRecall(
-                        bot,
-                        source.senderId,
-                        source.id,
-                        source.time.toInt(),
-                        null,
-                        getGroup(source.groupId)
-                    ).broadcast()
-                    PbMessageSvc.PbMsgWithDraw.Group(
-                        bot.client,
-                        source.groupId,
-                        source.sequenceId,
-                        source.messageRandom
-                    ).sendAndExpect()
+        check(source is MessageSourceImpl)
+
+        val response: PbMessageSvc.PbMsgWithDraw.Response = when (source) {
+            is MessageSourceToGroupImpl,
+            is MessageSourceFromGroupImpl
+            -> {
+                val group = when (source) {
+                    is MessageSourceToGroupImpl -> source.target
+                    is MessageSourceFromGroupImpl -> source.group
+                    else -> error("stub")
                 }
+                group.checkBotPermissionOperator()
+                MessageRecallEvent.GroupRecall(
+                    this,
+                    source.senderId,
+                    source.id,
+                    source.time,
+                    null,
+                    group
+                ).broadcast()
 
-            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }
+                network.run {
+                    PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
+                        bot.asQQAndroidBot().client,
+                        group.id,
+                        source.sequenceId,
+                        source.id
+                    ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                }
+            }
+            is MessageSourceFromFriendImpl,
+            is MessageSourceToFriendImpl
+            -> network.run {
+                PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
+                    bot.client,
+                    source.senderId,
+                    source.sequenceId,
+                    source.id,
+                    source.time
+                ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+            }
+            else -> error("stub")
         }
+
+        check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }
     }
-
-    @OptIn(LowLevelAPI::class)
-    override suspend fun _lowLevelRecallFriendMessage(friendId: Long, messageId: Long, time: Long) {
-        network.run {
-            val response: PbMessageSvc.PbMsgWithDraw.Response =
-                PbMessageSvc.PbMsgWithDraw.Friend(client, friendId, (messageId shr 32).toInt(), messageId.toInt(), time)
-                    .sendAndExpect()
-
-            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${messageId}: $response" }
-        }
-    }
-
-    @LowLevelAPI
-    override suspend fun _lowLevelRecallGroupMessage(groupId: Long, messageId: Long) {
-        network.run {
-            val response: PbMessageSvc.PbMsgWithDraw.Response =
-                PbMessageSvc.PbMsgWithDraw.Group(client, groupId, (messageId shr 32).toInt(), messageId.toInt())
-                    .sendAndExpect()
-
-            check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${messageId}: $response" }
-        }
-    }
-
 
     @LowLevelAPI
     @MiraiExperimentalAPI
@@ -382,6 +382,7 @@ internal abstract class QQAndroidBotBase constructor(
         val group = getGroup(groupCode)
 
         val time = currentTimeSeconds
+        message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
         network.run {
             val data = message.calculateValidationDataForGroup(

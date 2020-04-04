@@ -109,8 +109,7 @@ sealed class MessageRecallEvent : BotEvent {
      * 消息 id.
      * @see MessageSource.id
      */
-    @ExperimentalMessageSource
-    abstract val messageId: Long
+    abstract val messageId: Int
 
     /**
      * 原发送时间
@@ -122,8 +121,7 @@ sealed class MessageRecallEvent : BotEvent {
      */
     data class FriendRecall(
         override val bot: Bot,
-        @ExperimentalMessageSource
-        override val messageId: Long,
+        override val messageId: Int,
         override val messageTime: Int,
         /**
          * 撤回操作人, 可能为 [Bot.uin] 或好友的 [QQ.id]
@@ -137,8 +135,7 @@ sealed class MessageRecallEvent : BotEvent {
     data class GroupRecall(
         override val bot: Bot,
         override val authorId: Long,
-        @ExperimentalMessageSource
-        override val messageId: Long,
+        override val messageId: Int,
         override val messageTime: Int,
         /**
          * 操作人. 为 null 时则为 [Bot] 操作.
