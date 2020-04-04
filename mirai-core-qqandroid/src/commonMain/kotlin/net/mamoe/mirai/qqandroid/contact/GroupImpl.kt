@@ -30,7 +30,6 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
@@ -285,7 +284,7 @@ internal class GroupImpl(
                 throw EventCancelledException("cancelled by GroupMessageSendEvent")
             }
 
-            val length = event.message.estimateLength(5001)
+            val length = event.message.toString().length
             if (!(length <= 5000 && event.message.count { it is Image } <= 50)) {
                 throw MessageTooLargeException(
                     this,
@@ -294,10 +293,17 @@ internal class GroupImpl(
                     "message(${event.message.joinToString(
                         "",
                         limit = 10
-                    )}) is too large. Allow up to 5000 in weight (Chinese char=4, English char=1, Quote=700, Image=800, others are estimated in String length.)"
+                    )}) is too large. Allow up to 50 images or 5000 chars"
                 )
             }
-            if (length >= 800) {
+
+            val imageCount = event.message.count { it is Image }
+
+            if (length >= 800
+                || imageCount >= 4
+                || (event.message.any<QuoteReply>()
+                        && (imageCount != 0 || length > 100))
+            ) {
                 return bot.lowLevelSendLongGroupMessage(this.id, event.message)
             }
 

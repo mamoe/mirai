@@ -33,7 +33,7 @@ internal fun Int.toIpV4AddressString(): String {
 }
 
 internal fun String.chineseLength(upTo: Int): Int {
-    return this.sumUpTo(upTo) { if (it in '\u0391'..'\uFFE5') 4 else 1 }
+    return this.sumUpTo(upTo) { if (it in '\u0391'..'\uFFE5') 3 else 1 }
 }
 
 internal fun MessageChain.estimateLength(upTo: Int = Int.MAX_VALUE): Int =
@@ -47,7 +47,7 @@ internal fun SingleMessage.estimateLength(upTo: Int = Int.MAX_VALUE): Int {
         is QuoteReply -> {
             700 + source.originalMessage.estimateLength(upTo)
         }
-        is Image -> 300
+        // is Image -> 300
         is PlainText -> stringValue.chineseLength(upTo)
         is At -> display.chineseLength(upTo)
         is AtAll -> display.chineseLength(upTo)

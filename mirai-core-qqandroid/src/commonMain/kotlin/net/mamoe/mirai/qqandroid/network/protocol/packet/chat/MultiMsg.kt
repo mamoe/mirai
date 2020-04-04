@@ -49,7 +49,7 @@ internal fun MessageChain.calculateValidationDataForGroup(
     groupCode: Long,
     botMemberNameCard: String
 ): MessageValidationData {
-    val richTextElems = this.toRichTextElems(true, false)
+    val richTextElems = this.toRichTextElems(forGroup = true, withGeneralFlags = false)
 
     val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
         msg = listOf(

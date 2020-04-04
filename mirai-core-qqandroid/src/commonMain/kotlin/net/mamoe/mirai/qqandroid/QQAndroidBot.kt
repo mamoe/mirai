@@ -402,7 +402,12 @@ internal abstract class QQAndroidBotBase constructor(
             val resId: String
             when (response) {
                 is MultiMsg.ApplyUp.Response.MessageTooLarge ->
-                    error("message is too large")
+                    error(
+                        "Internal error: message is too large, but this should be handled before sending. Message content:" +
+                                message.joinToString {
+                                    "${it::class.simpleName}(l=${it.toString().length})"
+                                }
+                    )
                 is MultiMsg.ApplyUp.Response.RequireUpload -> {
                     resId = response.proto.msgResid
 
