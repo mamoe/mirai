@@ -9,6 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
+@file:Suppress("unused")
 
 package net.mamoe.mirai.message.data
 
@@ -44,7 +45,7 @@ inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> 
  */
 @JvmSynthetic
 inline fun buildMessageChain(
-    container: MutableCollection<Message>,
+    container: MutableCollection<SingleMessage>,
     block: MessageChainBuilder.() -> Unit
 ): MessageChain {
     return MessageChainBuilder(container).apply(block).asMessageChain()
@@ -59,24 +60,41 @@ inline fun buildMessageChain(
  */
 class MessageChainBuilder
 @JvmOverloads constructor(
-    private val container: MutableCollection<Message> = mutableListOf()
-) : MutableCollection<Message> by container, Appendable {
-    constructor(initialSize: Int) : this(ArrayList<Message>(initialSize))
+    private val container: MutableCollection<SingleMessage> = mutableListOf()
+) : MutableCollection<SingleMessage> by container, Appendable {
+    constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
 
-    override fun add(element: Message): Boolean {
+    override fun add(element: SingleMessage): Boolean {
         flushCache()
         return container.add(element)
     }
 
-    override fun addAll(elements: Collection<Message>): Boolean {
+    fun add(element: Message): Boolean {
         flushCache()
-        return container.addAll(elements)
+        @Suppress("UNCHECKED_CAST")
+        return when (element) {
+            is SingleMessage -> container.add(element)
+            is Iterable<*> -> this.addAll(element.flatten())
+            else -> error("stub")
+        }
+    }
+
+    override fun addAll(elements: Collection<SingleMessage>): Boolean {
+        flushCache()
+        return container.addAll(elements.flatten())
+    }
+
+    @JvmName("addAllFlatten") // erased generic type cause declaration clash
+    fun addAll(elements: Collection<Message>): Boolean {
+        flushCache()
+        return container.addAll(elements.flatten())
     }
 
     operator fun Message.unaryPlus() {
         flushCache()
         add(this)
     }
+
 
     operator fun String.unaryPlus() {
         add(this)
@@ -87,6 +105,11 @@ class MessageChainBuilder
     }
 
     operator fun plusAssign(message: Message) {
+        flushCache()
+        this.add(message)
+    }
+
+    operator fun plusAssign(message: SingleMessage) { // avoid resolution ambiguity
         flushCache()
         this.add(message)
     }
@@ -123,6 +146,6 @@ class MessageChainBuilder
 
     fun asMessageChain(): MessageChain {
         this.flushCache()
-        return (this as MutableCollection<Message>).asMessageChain()
+        return (this as MutableCollection<SingleMessage>).asMessageChain()
     }
 }
