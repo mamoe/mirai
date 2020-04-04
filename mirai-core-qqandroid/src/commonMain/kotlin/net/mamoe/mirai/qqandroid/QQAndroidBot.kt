@@ -87,6 +87,9 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val friends: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
+    override lateinit var nick: String
+        internal set
+
     override val selfQQ: QQ by lazy {
         @OptIn(LowLevelAPI::class)
         _lowLevelNewQQ(object : FriendInfo {

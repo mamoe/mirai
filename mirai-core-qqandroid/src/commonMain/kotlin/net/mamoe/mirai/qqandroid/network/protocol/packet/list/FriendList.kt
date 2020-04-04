@@ -126,6 +126,7 @@ internal class FriendList {
         OutgoingPacketFactory<GetFriendGroupList.Response>("friendlist.getFriendGroupList") {
 
         class Response(
+            val selfInfo: FriendInfo?,
             val totalFriendCount: Short,
             val friendList: List<FriendInfo>
         ) : Packet {
@@ -135,6 +136,7 @@ internal class FriendList {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.decodeUniPacket(GetFriendListResp.serializer())
             return Response(
+                res.stSelfInfo,
                 res.totoalFriendCount,
                 res.vecFriendInfo.orEmpty()
             )

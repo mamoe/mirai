@@ -70,9 +70,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
     /**
      * 昵称
      */
-    @MiraiExperimentalAPI("还未支持")
-    actual val nick: String
-        get() = ""// TODO("bot 昵称获取")
+    actual abstract val nick: String
 
     /**
      * 日志记录器

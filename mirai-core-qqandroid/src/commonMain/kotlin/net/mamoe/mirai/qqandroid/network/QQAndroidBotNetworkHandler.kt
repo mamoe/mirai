@@ -222,6 +222,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                             logger.error("稍后重试加载好友列表")
                             return@loadFriends
                         }
+
+                        // self info
+                        data.selfInfo?.apply {
+                            bot.nick = nick ?: ""
+//                            bot.remark = remark ?: ""
+//                            bot.sex = sex
+                        }
+
                         totalFriendCount = data.totalFriendCount
                         data.friendList.forEach {
                             // atomic add
