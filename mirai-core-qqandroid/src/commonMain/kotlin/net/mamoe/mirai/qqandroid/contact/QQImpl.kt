@@ -70,6 +70,7 @@ internal class QQImpl(
     override val id: Long,
     private val friendInfo: FriendInfo
 ) : QQ() {
+    @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()

@@ -216,23 +216,51 @@ internal abstract class QQAndroidBotBase constructor(
                     ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                 }
             }
-            is OfflineMessageSource,
             is MessageSourceFromFriendImpl,
             is MessageSourceToFriendImpl
             -> network.run {
+                check(source.fromId == this@QQAndroidBotBase.id) {
+                    "can only recall a message sent by bot"
+                }
                 PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
                     bot.client,
-                    source.fromId,
+                    source.targetId,
                     source.sequenceId,
                     source.id,
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+            }
+            is OfflineMessageSource -> network.run {
+                when (source.kind) {
+                    OfflineMessageSource.Kind.FRIEND -> {
+                        check(source.fromId == this@QQAndroidBotBase.id) {
+                            "can only recall a message sent by bot"
+                        }
+                        PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
+                            bot.client,
+                            source.targetId,
+                            source.sequenceId,
+                            source.id,
+                            source.time
+                        ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                    }
+                    OfflineMessageSource.Kind.GROUP -> {
+                        PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
+                            bot.client,
+                            source.targetId,
+                            source.sequenceId,
+                            source.id
+                        ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                    }
+                }
             }
             else -> error("stub!")
         }
 
 
         // 1001: No message meets the requirements (实际上是没权限, 管理员在尝试撤回群主的消息)
+        // 154: timeout
+        // 3: <no message>
         check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }
     }
 

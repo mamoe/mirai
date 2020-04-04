@@ -229,7 +229,7 @@ internal class MessageSvc {
                                     if (friend.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
                                         return@mapNotNull FriendMessage(
                                             friend,
-                                            msg.toMessageChain(bot, isGroup = false, addSource = true)
+                                            msg.toMessageChain(bot, groupIdOrZero = 0, addSource = true)
                                         )
                                     }
                                 } else return@mapNotNull null

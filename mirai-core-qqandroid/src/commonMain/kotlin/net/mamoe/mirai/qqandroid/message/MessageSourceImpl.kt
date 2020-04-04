@@ -60,7 +60,7 @@ internal class MessageSourceFromFriendImpl(
         }
     override val id: Int get() = msg.msgBody.richText.attr!!.random
     override val time: Int get() = msg.msgHead.msgTime
-    override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, isGroup = false, addSource = false) }
+    override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, groupIdOrZero = 0, addSource = false) }
     override val target: Bot get() = bot
     override val sender: QQ get() = bot.getFriend(msg.msgHead.fromUin)
 
@@ -117,7 +117,13 @@ internal class MessageSourceFromGroupImpl(
     override val sequenceId: Int get() = msg.msgHead.msgSeq
     override val id: Int get() = msg.msgBody.richText.attr!!.random
     override val time: Int get() = msg.msgHead.msgTime
-    override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, isGroup = true, addSource = false) }
+    override val originalMessage: MessageChain by lazy {
+        msg.toMessageChain(
+            bot,
+            groupIdOrZero = group.id,
+            addSource = false
+        )
+    }
     override val target: Bot get() = bot
     override val sender: Member
         get() = bot.getGroup(
@@ -143,12 +149,11 @@ internal class MessageSourceFromGroupImpl(
 }
 
 internal class OfflineMessageSourceImpl( // from others' quotation
-    val delegate: ImMsgBody.SourceMsg, override val bot: Bot
+    val delegate: ImMsgBody.SourceMsg,
+    override val bot: Bot,
+    groupIdOrZero: Long
 ) : OfflineMessageSource(), MessageSourceImpl {
-
-    init {
-        println(delegate._miraiContentToString())
-    }
+    override val kind: Kind get() = if (delegate.srcMsg == null) Kind.GROUP else Kind.FRIEND
 
     private val isRecalled: AtomicBoolean = atomic(false)
     override var isRecalledOrPlanned: Boolean
@@ -159,7 +164,7 @@ internal class OfflineMessageSourceImpl( // from others' quotation
     override val sequenceId: Int
         get() = delegate.origSeqs?.first() ?: error("cannot find sequenceId")
     override val time: Int get() = delegate.time
-    override val originalMessage: MessageChain by lazy { delegate.toMessageChain(bot) }
+    override val originalMessage: MessageChain by lazy { delegate.toMessageChain(bot, groupIdOrZero, false) }
     /*
     override val id: Long
         get() = (delegate.origSeqs?.firstOrNull()
@@ -172,7 +177,21 @@ internal class OfflineMessageSourceImpl( // from others' quotation
 
     // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val fromId: Long get() = delegate.senderUin
-    override val targetId: Long get() = Group.calculateGroupCodeByGroupUin(delegate.toUin)
+    override val targetId: Long by lazy {
+        when {
+            groupIdOrZero != 0L -> groupIdOrZero
+            delegate.toUin != 0L -> delegate.toUin
+            delegate.srcMsg != null -> delegate.srcMsg.loadAs(MsgComm.Msg.serializer()).msgHead.toUin
+            else -> 0/*error("cannot find targetId. delegate=${delegate._miraiContentToString()}, delegate.srcMsg=${
+            kotlin.runCatching { delegate.srcMsg?.loadAs(MsgComm.Msg.serializer())?._miraiContentToString() }
+                .fold(
+                    onFailure = { "<error: ${it.message}>" },
+                    onSuccess = { it }
+                )
+            }"
+            )*/
+        }
+    }
 }
 
 internal class MessageSourceToFriendImpl(

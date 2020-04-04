@@ -80,7 +80,6 @@ internal class PbMessageSvc {
             messageRandom: Int, // 921878719
             time: Int
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
-            val messageUid: Long = 262144L.shl(32) or messageRandom.toLong().and(0xffFFffFF)
             writeProtoBuf(
                 MsgSvc.PbMsgWithDrawReq.serializer(),
                 MsgSvc.PbMsgWithDrawReq(
@@ -92,8 +91,8 @@ internal class PbMessageSvc {
                                     fromUin = client.bot.id,
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
-                                    msgUid = messageUid,
-                                    msgTime = time.toULong().toLong(),
+                                    msgUid = 1000000000000000000L or messageRandom.toULong().toLong(),
+                                    msgTime = time.toLong(),
                                     routingHead = MsgSvc.RoutingHead(
                                         c2c = MsgSvc.C2C(
                                             toUin = toUin

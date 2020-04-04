@@ -31,11 +31,11 @@ import kotlin.jvm.JvmName
  * @see MessageSource 获取更多信息
  */
 @SinceMirai("0.33.0")
-class QuoteReply(val source: OnlineMessageSource) : Message, MessageMetadata {
+class QuoteReply(val source: MessageSource) : Message, MessageMetadata {
     // TODO: 2020/4/4 Metadata or Content?
     companion object Key : Message.Key<QuoteReply>
 
-    override fun toString(): String = "[mirai:quote]"
+    override fun toString(): String = "[mirai:quote:${source.id}]"
 }
 
 suspend inline fun QuoteReply.recall() = this.source.recall()

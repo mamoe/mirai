@@ -180,7 +180,7 @@ sealed class OnlineMessageSource : MessageSource() {
 /**
  * 引用这条消息
  */
-fun OnlineMessageSource.quote(): QuoteReply {
+fun MessageSource.quote(): QuoteReply {
     @OptIn(MiraiInternalAPI::class)
     return QuoteReply(this)
 }
@@ -213,8 +213,19 @@ inline fun MessageSource.recallIn(
 @SinceMirai("0.33.0")
 abstract class OfflineMessageSource : MessageSource() {
     companion object Key : Message.Key<OfflineMessageSource>
+
+    enum class Kind {
+        GROUP,
+        FRIEND
+    }
+
+    /**
+     * 消息种类
+     */
+    abstract val kind: Kind
+
     // final override fun toString(): String = "OfflineMessageSource(sender=$senderId, target=$targetId)"
-} // TODO: 2020/4/4 可能要分群和好友
+}
 
 // For MessageChain
 

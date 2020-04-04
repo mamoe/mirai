@@ -885,7 +885,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoId(6) val type: Int = 0,
         @ProtoId(7) val richMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(8) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val srcMsg: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) val srcMsg: ByteArray? = null,
         @ProtoId(10) val toUin: Long = 0L,
         @ProtoId(11) val troopName: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
