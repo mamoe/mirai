@@ -90,7 +90,7 @@ internal object CuiPluginCenter: PluginCenter{
         plugins = results.get("result").asJsonArray//先不解析
     }
 
-    override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit):Boolean {
+    override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit){
         val info = findPlugin(name) ?: error("Plugin Not Found")
         withContext(Dispatchers.IO) {
             val con = URL("https://pan.jasonczc.cn/?/mirai/plugins/$name/$name-" + info.version + ".mp4").openConnection() as HttpURLConnection
@@ -107,7 +107,6 @@ internal object CuiPluginCenter: PluginCenter{
                 progressListener.invoke(this@downloadPlugin,totalDownload/size)
             }
         }
-        return true
     }
 
     override val name: String
