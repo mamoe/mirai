@@ -40,10 +40,7 @@ class MessageTooLargeException(
  */
 @SinceMirai("0.33.0")
 class BotIsBeingMutedException(
-    val target: Group,
-    /**
-     * 被禁言剩余时间
-     * @see Group.botMuteRemaining
-     */
-    val remainingMillis: Int
-) : RuntimeException()
+    val target: Group
+) : RuntimeException("bot is being muted, remaining ${target.botMuteRemaining} seconds")
+
+val BotIsBeingMutedException.botMuteRemaining: Int get() = target.botMuteRemaining
