@@ -16,6 +16,8 @@ import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 发送消息时消息过长抛出的异常.
+ *
+ * @see Contact.sendMessage
  */
 @SinceMirai("0.32.0")
 class MessageTooLargeException(
@@ -30,3 +32,18 @@ class MessageTooLargeException(
     val messageAfterEvent: Message,
     exceptionMessage: String
 ) : RuntimeException(exceptionMessage)
+
+/**
+ * 发送消息时 bot 正处于被禁言状态时抛出的异常.
+ *
+ * @see Group.sendMessage
+ */
+@SinceMirai("0.33.0")
+class BotIsBeingMutedException(
+    val target: Group,
+    /**
+     * 被禁言剩余时间
+     * @see Group.botMuteRemaining
+     */
+    val remainingMillis: Int
+) : RuntimeException()

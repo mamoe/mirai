@@ -59,7 +59,7 @@ actual abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI() {
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
-     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
      * @throws MessageTooLargeException 当消息过长时抛出
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.

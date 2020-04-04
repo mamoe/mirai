@@ -259,16 +259,16 @@ internal class GroupImpl(
 
 
     override operator fun get(id: Long): Member {
-        return members.delegate.firstOrNull { it.id == id }
+        return members.firstOrNull { it.id == id }
             ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
-        return members.delegate.firstOrNull { it.id == id } != null
+        return members.firstOrNull { it.id == id } != null
     }
 
     override fun getOrNull(id: Long): Member? {
-        return members.delegate.firstOrNull { it.id == id }
+        return members.firstOrNull { it.id == id }
     }
 
     @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)

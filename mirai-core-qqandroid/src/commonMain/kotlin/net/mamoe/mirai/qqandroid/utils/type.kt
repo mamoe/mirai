@@ -67,7 +67,7 @@ internal inline fun <T> Iterable<T>.sumUpTo(upTo: Int, selector: (T, remaining: 
 }
 
 internal inline fun CharSequence.sumUpTo(upTo: Int, selector: (Char) -> Int): Int {
-    var sum: Int = 0
+    var sum = 0
     for (element in this) {
         sum += selector(element)
         if (sum >= upTo) {

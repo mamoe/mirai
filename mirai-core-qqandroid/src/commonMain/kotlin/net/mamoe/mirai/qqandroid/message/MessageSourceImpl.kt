@@ -81,7 +81,7 @@ internal class MessageSourceFromMsg(
         } else toJceDataImplForGroup()
     }
 
-    val elems by lazy {
+    private val elems by lazy {
         delegate.msgBody.richText.elems.toMutableList().also {
             if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
         }
@@ -256,7 +256,7 @@ internal class MessageSourceFromSendGroup(
     override val groupId: Long,
     override val originalMessage: MessageChain
 ) : MessageSourceFromSend() {
-    internal lateinit var sequenceIdDeferred: Deferred<Int>
+    private lateinit var sequenceIdDeferred: Deferred<Int>
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val id: Long
