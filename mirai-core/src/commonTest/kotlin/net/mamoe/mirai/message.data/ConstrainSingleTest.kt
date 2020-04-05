@@ -86,4 +86,48 @@ internal class ConstrainSingleTest {
         assertEquals(result.count(), 2)
         assertSame(result.first(), last)
     }
+
+
+    @Test
+    fun testConversions() {
+        val lastSingle = TestConstrainSingleMessage()
+        val list: List<SingleMessage> = listOf(
+            PlainText("test"),
+            TestConstrainSingleMessage(),
+            TestConstrainSingleMessage(),
+            PlainText("foo"),
+            TestConstrainSingleMessage(),
+            lastSingle
+        )
+
+        // Collection<SingleMessage>.asMessageChain()
+        assertEquals("test${lastSingle}foo", list.asMessageChain().toString())
+
+        // Collection<Message>.asMessageChain()
+        @Suppress("USELESS_CAST")
+        assertEquals(
+            "test${lastSingle}foo",
+            list.map { it as Message }.asMessageChain().toString()
+        )
+
+        // Iterable<SingleMessage>.asMessageChain()
+        assertEquals("test${lastSingle}foo", list.asIterable().asMessageChain().toString())
+
+        // Iterable<Message>.asMessageChain()
+        @Suppress("USELESS_CAST")
+        assertEquals(
+            "test${lastSingle}foo",
+            list.map { it as Message }.asIterable().asMessageChain().toString()
+        )
+
+        // Sequence<SingleMessage>.asMessageChain()
+        assertEquals("test${lastSingle}foo", list.asSequence().asMessageChain().toString())
+
+        // Sequence<Message>.asMessageChain()
+        @Suppress("USELESS_CAST")
+        assertEquals(
+            "test${lastSingle}foo",
+            list.map { it as Message }.asSequence().asMessageChain().toString()
+        )
+    }
 }
