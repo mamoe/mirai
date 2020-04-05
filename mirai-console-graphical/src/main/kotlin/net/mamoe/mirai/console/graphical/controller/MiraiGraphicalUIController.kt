@@ -33,9 +33,9 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     val botList = observableListOf<BotModel>()
     val pluginList: ObservableList<PluginModel> by lazy(::getPluginsFromConsole)
 
-    val consoleInfo = ConsoleInfo()
+    private val consoleInfo = ConsoleInfo()
 
-    val sdf by lazy {
+    private val sdf by lazy {
         SimpleDateFormat("HH:mm:ss")
     }
 
