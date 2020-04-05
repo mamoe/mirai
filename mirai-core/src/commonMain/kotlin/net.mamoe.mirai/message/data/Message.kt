@@ -16,6 +16,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -92,6 +93,8 @@ interface Message {
     /**
      * 把 `this` 连接到 [tail] 的头部. 类似于字符串相加.
      *
+     * 连接后无法保证 [ConstrainSingle] 的元素单独存在. 需在
+     *
      * 例:
      * ```kotlin
      * val a = PlainText("Hello ")
@@ -104,16 +107,22 @@ interface Message {
      * println(c) // "Hello world!"
      * ```
      */
+    @SinceMirai("0.34.0")
     @Suppress("DEPRECATION_ERROR")
     @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic // in java they should use `plus` instead
-    fun followedBy(tail: Message): CombinedMessage {
-        if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>
-            && this.key == tail.key
-        ) {
-            return CombinedMessage(EmptyMessageChain, tail)
+    fun followedBy(tail: Message): Message {
+        TODO()
+        if (this is SingleMessage && tail is SingleMessage) {
+            if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>) {
+                return if (this.key == tail.key) {
+                    tail
+                } else {
+                    CombinedMessage(this, tail)
+                }
+            }
+
         }
-        return CombinedMessage(left = this, tail = tail)
     }
 
     /**
@@ -138,15 +147,69 @@ interface Message {
     @SinceMirai("0.34.0")
     fun contentToString(): String
 
-    operator fun plus(another: Message): CombinedMessage = this.followedBy(another)
+    operator fun plus(another: Message): Message = this.followedBy(another)
 
     // avoid resolution ambiguity
-    operator fun plus(another: SingleMessage): CombinedMessage = this.followedBy(another)
+    operator fun plus(another: SingleMessage): Message = this.followedBy(another)
 
-    operator fun plus(another: String): CombinedMessage = this.followedBy(another.toMessage())
+    operator fun plus(another: String): Message = this.followedBy(another.toMessage())
 
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
-    operator fun plus(another: CharSequence): CombinedMessage = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: CharSequence): Message = this.followedBy(another.toString().toMessage())
+
+
+    // FOR BINARY COMPATIBILITY UNTIL 1.0.0
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("followedBy")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    fun followedBy1(tail: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(tail)
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("plus")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    fun plus1(another: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("plus")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    fun plus1(another: SingleMessage): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("plus")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    fun plus1(another: String): CombinedMessage = this.followedByInternalForBinaryCompatibility(another.toMessage())
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("plus")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    fun plus1(another: CharSequence): CombinedMessage =
+        this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
+}
+
+@OptIn(MiraiInternalAPI::class)
+@JvmSynthetic
+@Suppress("DEPRECATION_ERROR")
+internal fun Message.followedByInternalForBinaryCompatibility(tail: Message): CombinedMessage {
+    TODO()
+    if (this is ConstrainSingle<*>) {
+
+    }
+
+    if (this is SingleMessage && tail is SingleMessage) {
+        if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>
+            && this.key == tail.key
+        ) return CombinedMessage(EmptyMessageChain, tail)
+        return CombinedMessage(left = this, tail = tail)
+    } else {
+
+        //    return CombinedMessage(left = this.constrain)
+    }
 }
 
 @JvmSynthetic

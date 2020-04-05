@@ -387,10 +387,8 @@ fun Message.flatten(): Sequence<SingleMessage> {
 @JvmSynthetic // make Java user happier with less methods
 fun CombinedMessage.flatten(): Sequence<SingleMessage> {
     // already constrained single.
-    if (this.isFlat()) {
-        @Suppress("UNCHECKED_CAST")
-        return (this as Iterable<SingleMessage>).asSequence()
-    } else return this.asSequence().flatten()
+    @Suppress("UNCHECKED_CAST")
+    return (this as Iterable<SingleMessage>).asSequence()
 }
 
 @JvmSynthetic // make Java user happier with less methods
@@ -402,11 +400,17 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 /**
  * 不含任何元素的 [MessageChain]
  */
-object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
+object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, @MiraiExperimentalAPI SingleMessage {
     override fun contains(sub: String): Boolean = sub.isEmpty()
     override val size: Int get() = 0
     override fun toString(): String = ""
     override fun contentToString(): String = ""
+
+    override val length: Int get() = 0
+    override fun get(index: Int): Char = ""[index]
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = "".subSequence(startIndex, endIndex)
+    override fun compareTo(other: String): Int = "".compareTo(other)
+
     override fun iterator(): Iterator<SingleMessage> = this
     override fun hasNext(): Boolean = false
     override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
@@ -424,10 +428,6 @@ object NullMessageChain : MessageChain {
     override val size: Int get() = 0
     override fun equals(other: Any?): Boolean = other === this
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
-
-    @OptIn(MiraiInternalAPI::class)
-    @Suppress("DEPRECATION_ERROR")
-    override fun followedBy(tail: Message): CombinedMessage = error("accessing NullMessageChain")
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
 

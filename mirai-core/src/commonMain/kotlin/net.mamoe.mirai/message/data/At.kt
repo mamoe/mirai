@@ -56,8 +56,18 @@ private constructor(val target: Long, val display: String) :
     }
 
     // 自动为消息补充 " "
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmName("followedBy")
+    @JvmSynthetic
+    override fun followedBy1(tail: Message): CombinedMessage {
+        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
+            return followedByInternalForBinaryCompatibility(tail)
+        }
+        return followedByInternalForBinaryCompatibility(PlainText(" ") + tail)
+    }
 
-    override fun followedBy(tail: Message): CombinedMessage {
+    override fun followedBy(tail: Message): Message {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }

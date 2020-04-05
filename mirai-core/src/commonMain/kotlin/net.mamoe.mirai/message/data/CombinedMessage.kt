@@ -31,11 +31,12 @@ class CombinedMessage
 @Deprecated(message = "use Message.plus", level = DeprecationLevel.ERROR)
 @MiraiInternalAPI("CombinedMessage 构造器可能会在将来被改动") constructor(
     @MiraiExperimentalAPI("CombinedMessage.left 可能会在将来被改动")
-    val left: Message,
+    val left: SingleMessage,
     @MiraiExperimentalAPI("CombinedMessage.tail 可能会在将来被改动")
-    val tail: Message
-) : Iterable<Message>, Message {
+    val tail: SingleMessage
+) : Iterable<SingleMessage>, Message {
 
+    /*
     // 不要把它用作 local function, 会编译错误
     @OptIn(MiraiExperimentalAPI::class)
     private suspend fun SequenceScope<Message>.yieldCombinedOrElements(message: Message) {
@@ -66,12 +67,15 @@ class CombinedMessage
             }
         }
     }
+    */
 
-    fun asSequence(): Sequence<Message> = sequence {
-        yieldCombinedOrElements(this@CombinedMessage)
+    @OptIn(MiraiExperimentalAPI::class)
+    fun asSequence(): Sequence<SingleMessage> = sequence {
+        yield(left)
+        yield(tail)
     }
 
-    override fun iterator(): Iterator<Message> {
+    override fun iterator(): Iterator<SingleMessage> {
         return asSequence().iterator()
     }
 
@@ -82,10 +86,5 @@ class CombinedMessage
 
     override fun contentToString(): String {
         return toString()
-    }
-
-    @OptIn(MiraiExperimentalAPI::class)
-    fun isFlat(): Boolean {
-        return tail is SingleMessage && left is SingleMessage
     }
 }

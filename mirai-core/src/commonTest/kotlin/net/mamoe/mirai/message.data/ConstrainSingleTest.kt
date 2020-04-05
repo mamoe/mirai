@@ -52,7 +52,7 @@ internal class ConstrainSingleTest {
     @Test
     fun testConstrainSingleInPlus() {
         val new = TestConstrainSingleMessage()
-        val combined = TestConstrainSingleMessage() + new
+        val combined = (TestConstrainSingleMessage() + new) as CombinedMessage
 
         assertEquals(combined.left, EmptyMessageChain)
         assertSame(combined.tail, new)

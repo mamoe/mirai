@@ -15,6 +15,7 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 private const val displayA = "@全体成员"
 
@@ -41,8 +42,18 @@ object AtAll :
     override fun contentToString(): String = display
 
     // 自动为消息补充 " "
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("followedBy")
+    @JvmSynthetic
+    override fun followedBy1(tail: Message): CombinedMessage {
+        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
+            return followedByInternalForBinaryCompatibility(tail)
+        }
+        return followedByInternalForBinaryCompatibility(PlainText(" ") + tail)
+    }
 
-    override fun followedBy(tail: Message): CombinedMessage {
+    override fun followedBy(tail: Message): Message {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }
