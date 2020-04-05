@@ -6,6 +6,7 @@ import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.plugins.PluginManager
+import net.mamoe.mirai.console.utils.tryNTimes
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
@@ -52,11 +53,19 @@ internal object CuiPluginCenter: PluginCenter{
 
     override suspend fun findPlugin(name: String): PluginCenter.PluginInfo? {
         val result = withContext(Dispatchers.IO){
-            Jsoup.connect("https://miraiapi.jasonczc.cn/getPluginDetailedInfo?name=$name").method(Connection.Method.GET).ignoreContentType(true).execute()
+            tryNTimes {
+                Jsoup
+                    .connect("https://miraiapi.jasonczc.cn/getPluginDetailedInfo?name=$name")
+                    .method(Connection.Method.GET)
+                    .ignoreContentType(true)
+                    .execute()
+            }
         }.body()
+
         if(result == "err:not found"){
             return null
         }
+
         return result.asJson().run{
             PluginCenter.PluginInfo(
                 this.get("name")?.asString ?: "",
@@ -73,16 +82,19 @@ internal object CuiPluginCenter: PluginCenter{
                 this.get("changeLog")?.asJsonArray?.map { it.asString } ?: arrayListOf()
             )
         }
+
     }
 
     override suspend fun refresh() {
         val results =
-            withContext(Dispatchers.IO) {
-                Jsoup
-                    .connect("https://miraiapi.jasonczc.cn/getPluginList")
-                    .ignoreContentType(true)
-                    .execute()
-            }.body().asJson()
+                withContext(Dispatchers.IO) {
+                    tryNTimes {
+                        Jsoup
+                            .connect("https://miraiapi.jasonczc.cn/getPluginList")
+                            .ignoreContentType(true)
+                            .execute()
+                    }
+                }.body().asJson()
 
         if(!(results.has("success") && results["success"].asBoolean)){
             error("Failed to fetch plugin list from Cui Cloud")
@@ -93,18 +105,21 @@ internal object CuiPluginCenter: PluginCenter{
     override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit){
         val info = findPlugin(name) ?: error("Plugin Not Found")
         withContext(Dispatchers.IO) {
-            val con = URL("https://pan.jasonczc.cn/?/mirai/plugins/$name/$name-" + info.version + ".mp4").openConnection() as HttpURLConnection
-            val input= con.inputStream
-            val size = con.contentLength
-            var totalDownload = 0F
-            val targetFile = File(PluginManager.pluginsPath , "$name-" + info.version + ".jar")
-            val outputStream = FileOutputStream(targetFile)
-            var len: Int
-            val buff = ByteArray(1024)
-            while (input.read(buff).also { len = it } != -1) {
-                totalDownload+=len
-                outputStream.write(buff, 0, len)
-                progressListener.invoke(this@downloadPlugin,totalDownload/size)
+            tryNTimes {
+                val con =
+                    URL("https://pan.jasonczc.cn/?/mirai/plugins/$name/$name-" + info.version + ".mp4").openConnection() as HttpURLConnection
+                val input = con.inputStream
+                val size = con.contentLength
+                var totalDownload = 0F
+                val targetFile = File(PluginManager.pluginsPath, "$name-" + info.version + ".jar")
+                val outputStream = FileOutputStream(targetFile)
+                var len: Int
+                val buff = ByteArray(1024)
+                while (input.read(buff).also { len = it } != -1) {
+                    totalDownload += len
+                    outputStream.write(buff, 0, len)
+                    progressListener.invoke(this@downloadPlugin, totalDownload / size)
+                }
             }
         }
     }
@@ -118,3 +133,4 @@ internal object CuiPluginCenter: PluginCenter{
     }
 
 }
+
