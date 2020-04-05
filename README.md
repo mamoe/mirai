@@ -102,6 +102,9 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 [<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/20042607?s=60&v=4" />](https://github.com/PragmaTwice)
 [<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/25280943?s=60&v=4" />](https://github.com/HoshinoTented)
 [<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/40517459?s=60&v=4" />](https://github.com/Cyenoch)
+[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/31543961?s=60&v=4" />](https://github.com/Chenwe-i-lin)
+[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/13938334?s=60&v=4" />](https://github.com/lengthmin)
+
 
 ## 鸣谢
 
