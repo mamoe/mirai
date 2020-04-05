@@ -81,6 +81,7 @@ sealed class AbstractImage : Image {
 
     override fun compareTo(other: String): Int = _stringValue!!.compareTo(other)
     final override fun toString(): String = _stringValue!!
+    final override fun contentToString(): String = "[图片]"
 }
 
 // region 在线图片

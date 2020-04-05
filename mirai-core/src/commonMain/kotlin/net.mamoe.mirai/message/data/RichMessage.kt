@@ -31,6 +31,8 @@ import kotlin.jvm.JvmSynthetic
 @SinceMirai("0.27.0")
 interface RichMessage : MessageContent {
 
+    override fun contentToString(): String = this.content
+
     @SinceMirai("0.30.0")
     companion object Templates : Message.Key<RichMessage> {
 

@@ -25,6 +25,7 @@ class Face private constructor(val id: Int, private val stringValue: String) :
     constructor(id: Int) : this(id, "[mirai:face:$id]")
 
     override fun toString(): String = stringValue
+    override fun contentToString(): String = "[表情]"
 
     /**
      * @author LamGC

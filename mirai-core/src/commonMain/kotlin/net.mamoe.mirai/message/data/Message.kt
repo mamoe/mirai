@@ -13,6 +13,9 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -95,20 +98,37 @@ interface Message {
      * println(c) // "Hello world!"
      * ```
      */
+    @Suppress("DEPRECATION_ERROR")
+    @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic // in java they should use `plus` instead
     fun followedBy(tail: Message): CombinedMessage {
+        if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>
+            && this.key == tail.key
+        ) {
+            return CombinedMessage(EmptyMessageChain, this)
+        }
         return CombinedMessage(left = this, tail = tail)
     }
 
     /**
-     * 转换为易辨识的字符串.
+     * 得到包含 mirai 消息元素代码的, 易读的字符串. 如 `At(member) + "test"` 将转为 `"[mirai:at:qqId]test"`
      *
      * 各个 [SingleMessage] 的转换示例:
      * [PlainText]: "Hello"
-     * [GroupImage]: "[mirai:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png]"
-     * [FriendImage]: ""
+     * [GroupImage]: "[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png]"
+     * [FriendImage]: "[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"
+     * [PokeMessage]: "[mirai:poke:1,-1]"
+     * [MessageChain]: 直接无间隔地连接所有元素.
      */
     override fun toString(): String
+
+    /**
+     * 转为最接近官方格式的字符串. 如 `At(member) + "test"` 将转为 `"@群名片 test"`.
+     * 对于 [NullMessageChain], 这个函数返回空字符串 ""
+     * 对于其他 [MessageChain], 这个函数返回值同 [toString]
+     */
+    @SinceMirai("0.34.0")
+    fun contentToString(): String
 
     operator fun plus(another: Message): CombinedMessage = this.followedBy(another)
 
@@ -145,6 +165,17 @@ interface MessageMetadata : SingleMessage {
     override fun get(index: Int): Char = ""[index] // produce uniform exception
     override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = "".subSequence(startIndex, endIndex)
     override fun compareTo(other: String): Int = "".compareTo(other)
+}
+
+/**
+ * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 但不会保持原顺序.
+ *
+ * **MiraiExperimentalAPI**: 此 API 可能在将来版本修改
+ */
+@SinceMirai("0.34.0")
+@MiraiExperimentalAPI
+interface ConstrainSingle<M : Message> {
+    val key: Message.Key<M>
 }
 
 /**

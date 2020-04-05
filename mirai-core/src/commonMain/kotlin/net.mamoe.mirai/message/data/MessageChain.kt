@@ -47,11 +47,6 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     override operator fun contains(sub: String): Boolean
 
     /**
-     * 得到易读的字符串
-     */
-    override fun toString(): String
-
-    /**
      * 元素数量
      */
     @SinceMirai("0.31.1")
@@ -100,7 +95,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
 // region accessors
 
 /**
- * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply]
+ * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [PokeMessage], [FlashImage]
  */
 @JvmSynthetic
 inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
@@ -289,6 +284,7 @@ inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
 @JvmSynthetic
 fun CombinedMessage.asMessageChain(): MessageChain {
+    @OptIn(MiraiExperimentalAPI::class)
     if (left is SingleMessage && this.tail is SingleMessage) {
         @Suppress("UNCHECKED_CAST")
         return (this as Iterable<SingleMessage>).asMessageChain()
@@ -385,12 +381,13 @@ inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // 
 fun Message.flatten(): Sequence<SingleMessage> {
     return when (this) {
         is MessageChain -> this.asSequence()
-        is CombinedMessage -> this.flatten()
+        is CombinedMessage -> this.flatten() // already constrained single.
         else -> sequenceOf(this as SingleMessage)
     }
 }
 
 fun CombinedMessage.flatten(): Sequence<SingleMessage> {
+    // already constrained single.
     if (this.isFlat()) {
         @Suppress("UNCHECKED_CAST")
         return (this as Iterable<SingleMessage>).asSequence()
@@ -415,9 +412,13 @@ object EmptyMessageChain : MessageChain by MessageChainImplByCollection(emptyLis
  */
 object NullMessageChain : MessageChain {
     override fun toString(): String = "NullMessageChain"
+    override fun contentToString(): String = ""
     override val size: Int get() = 0
     override fun equals(other: Any?): Boolean = other === this
     override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
+
+    @OptIn(MiraiInternalAPI::class)
+    @Suppress("DEPRECATION_ERROR")
     override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, tail = tail)
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
@@ -439,6 +440,8 @@ internal class MessageChainImplByIterable constructor(
     override fun toString(): String =
         toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
 
+    override fun contentToString(): String = toString()
+
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
 }
 
@@ -454,6 +457,8 @@ internal class MessageChainImplByCollection constructor(
     private var toStringTemp: String? = null
     override fun toString(): String =
         toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
+
+    override fun contentToString(): String = toString()
 
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
 }
@@ -476,6 +481,8 @@ internal class MessageChainImplBySequence constructor(
     override fun toString(): String =
         toStringTemp ?: this.collected.joinToString("") { it.toString() }.also { toStringTemp = it }
 
+    override fun contentToString(): String = toString()
+
     override operator fun contains(sub: String): Boolean = collected.any { it.contains(sub) }
 }
 
@@ -488,6 +495,7 @@ internal class SingleMessageChainImpl constructor(
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int get() = 1
     override fun toString(): String = this.delegate.toString()
+    override fun contentToString(): String = this.delegate.toString()
     override fun iterator(): Iterator<SingleMessage> = iterator { yield(delegate) }
     override operator fun contains(sub: String): Boolean = sub in delegate
 }

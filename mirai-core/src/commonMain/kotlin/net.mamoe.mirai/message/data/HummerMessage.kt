@@ -81,6 +81,10 @@ class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") 
     override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
         stringValue.subSequence(startIndex, endIndex)
 
+    override fun contentToString(): String {
+        return "[戳一戳]"
+    }
+
     override fun compareTo(other: String): Int = stringValue.compareTo(other)
 
     //businessType=0x00000001(1)
@@ -146,9 +150,10 @@ sealed class FlashImage : MessageContent, HummerMessage() {
     override fun get(index: Int) = stringValue!![index]
     override fun subSequence(startIndex: Int, endIndex: Int) = stringValue!!.subSequence(startIndex, endIndex)
     override fun compareTo(other: String) = other.compareTo(stringValue!!)
+
+    override fun contentToString(): String = "[闪照]"
 }
 
-@JvmSynthetic
 @SinceMirai("0.33.0")
 inline fun Image.flash(): FlashImage = FlashImage(this)
 
@@ -164,7 +169,7 @@ inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFla
  * @see FlashImage.invoke
  */
 @SinceMirai("0.33.0")
-class GroupFlashImage @MiraiInternalAPI constructor(override val image: GroupImage) : FlashImage() {
+class GroupFlashImage(override val image: GroupImage) : FlashImage() {
     companion object Key : Message.Key<GroupFlashImage>
 }
 
@@ -172,6 +177,6 @@ class GroupFlashImage @MiraiInternalAPI constructor(override val image: GroupIma
  * @see FlashImage.invoke
  */
 @SinceMirai("0.33.0")
-class FriendFlashImage @MiraiInternalAPI constructor(override val image: FriendImage) : FlashImage() {
+class FriendFlashImage(override val image: FriendImage) : FlashImage() {
     companion object Key : Message.Key<FriendFlashImage>
 }

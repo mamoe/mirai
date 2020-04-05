@@ -36,6 +36,7 @@ object AtAll :
 
     @Suppress("SpellCheckingInspection")
     override fun toString(): String = "[mirai:atall]"
+    override fun contentToString(): String = "@全体成员"
 
     // 自动为消息补充 " "
 

@@ -32,6 +32,7 @@ class PlainText(val stringValue: String) :
 
     override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
+    override fun contentToString(): String = stringValue
 
     override fun equals(other: Any?): Boolean {
         return other is PlainText && other.stringValue == this.stringValue

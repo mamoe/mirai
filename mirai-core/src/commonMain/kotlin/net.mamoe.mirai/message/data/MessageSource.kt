@@ -20,6 +20,7 @@ import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.LazyProperty
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
@@ -31,9 +32,7 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 消息源, 它存在于 [MessageChain] 中, 用于表示这个消息的来源.
  *
- * 消息源只用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
- *
- * `mirai-core-qqandroid`: `net.mamoe.mirai.qqandroid.message.MessageSourceFromMsg`
+ * 消息源可用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
  *
  * @see Bot.recall 撤回一条消息
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
@@ -56,17 +55,24 @@ sealed class MessageSource : Message, MessageMetadata {
     abstract val id: Int // random
 
     /**
-     * 发送时间, 单位为秒. 撤回好友消息时可能需要
+     * 发送时间时间戳, 单位为秒.
+     * 撤回好友消息时需要
      */
     abstract val time: Int
 
     /**
-     * 发送人. 可能为机器人自己, 好友的 id, 或群 id
+     * 发送人.
+     * 当 [OnlineMessageSource.Outgoing] 时为 [机器人][Bot.id]
+     * 当 [OnlineMessageSource.Incoming] 时为发信 [目标好友][QQ.id] 或 [群][Group.id]
+     * 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][QQ.id] 或 [群][Group.id] (取决于 [OfflineMessageSource.kind])
      */
     abstract val fromId: Long
 
     /**
-     * 发送目标. 可能为机器人自己, 好友的 id, 或群 id
+     * 发送目标.
+     * 当 [OnlineMessageSource.Outgoing] 时为发信 [目标好友][QQ.id] 或 [群][Group.id]
+     * 当 [OnlineMessageSource.Incoming] 时为 [机器人][Bot.id]
+     * 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][QQ.id] 或 [群][Group.id] (取决于 [OfflineMessageSource.kind])
      */
     abstract val targetId: Long // groupCode / friendUin
 
@@ -76,7 +82,8 @@ sealed class MessageSource : Message, MessageMetadata {
     @LazyProperty
     abstract val originalMessage: MessageChain
 
-    final override fun toString(): String = ""
+    final override fun toString(): String = "[mirai:source:$id]"
+    final override fun contentToString(): String = ""
 }
 
 // ONLINE
@@ -96,8 +103,11 @@ sealed class MessageSource : Message, MessageMetadata {
  * 当机器人接收一条消息 [ContactMessage], 这条消息包含一个 [内向消息源][OnlineMessageSource.Incoming], 代表着接收到的这条消息的来源.
  */
 @SinceMirai("0.33.0")
-sealed class OnlineMessageSource : MessageSource() {
+@OptIn(MiraiExperimentalAPI::class)
+sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessageSource> {
     companion object Key : Message.Key<OnlineMessageSource>
+
+    override val key: Message.Key<OnlineMessageSource> get() = Key
 
     /**
      * 消息发送人. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群员][Member].

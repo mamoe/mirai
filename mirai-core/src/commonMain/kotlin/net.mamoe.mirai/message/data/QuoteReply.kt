@@ -15,6 +15,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -30,12 +31,16 @@ import kotlin.jvm.JvmName
  *
  * @see MessageSource 获取更多信息
  */
+@OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.33.0")
-class QuoteReply(val source: MessageSource) : Message, MessageMetadata {
+class QuoteReply(val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
     // TODO: 2020/4/4 Metadata or Content?
     companion object Key : Message.Key<QuoteReply>
 
+    override val key: Message.Key<QuoteReply> get() = Key
+
     override fun toString(): String = "[mirai:quote:${source.id}]"
+    override fun contentToString(): String = ""
 }
 
 suspend inline fun QuoteReply.recall() = this.source.recall()
