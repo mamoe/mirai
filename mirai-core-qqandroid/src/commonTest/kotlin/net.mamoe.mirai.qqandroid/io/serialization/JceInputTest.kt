@@ -2,6 +2,7 @@
 
 package net.mamoe.mirai.qqandroid.io.serialization
 
+/*
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
@@ -31,6 +32,7 @@ internal const val STRUCT_BEGIN: Byte = 10
 internal const val STRUCT_END: Byte = 11
 internal const val ZERO_TYPE: Byte = 12
 
+*/
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -38,7 +40,8 @@ internal const val ZERO_TYPE: Byte = 12
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
- */
+ *//*
+
 @Suppress("INVISIBLE_MEMBER") // bug
 internal class JceInputTest {
     init {
@@ -146,10 +149,12 @@ internal class JceInputTest {
 
         assertEquals(
             TestSerializableClassA(
-                /*mapOf(
+                */
+/*mapOf(
                     TestSerializableClassB(123, TestSerializableClassC(123123), 9)
                             to TestSerializableClassC(123123)
-                )*/
+                )*//*
+
                 "1"
             ),
             Jce.UTF_8.load(TestSerializableClassA.serializer(), input)
@@ -582,4 +587,4 @@ internal class JceInputTest {
         assertEquals(123456.0, input.useHead { input.readJceDoubleValue(it) })
         assertEquals(true, input.useHead { input.readJceBooleanValue(it) })
     }
-}
+}*/

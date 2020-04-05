@@ -32,6 +32,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
@@ -286,8 +287,10 @@ internal class GroupImpl(
                 throw EventCancelledException("cancelled by GroupMessageSendEvent")
             }
 
-            val length = event.message.toString().length
-            if (!(length <= 5000 && event.message.count { it is Image } <= 50)) {
+            val length = event.message.estimateLength(703) // 阈值为700左右，限制到3的倍数
+            var imageCnt = 0 // 通过下方逻辑短路延迟计算
+
+            if (length > 5000 || event.message.count { it is Image }.apply { imageCnt = this } > 50) {
                 throw MessageTooLargeException(
                     this,
                     message,
@@ -299,13 +302,8 @@ internal class GroupImpl(
                 )
             }
 
-            val imageCount = event.message.count { it is Image }
-
-            if (length >= 800
-                || imageCount >= 4
-                || (event.message.any<QuoteReply>()
-                        && (imageCount != 0 || length > 100))
-            ) return bot.lowLevelSendLongGroupMessage(this.id, event.message)
+            if (length > 702 || imageCnt > 2)
+                return bot.lowLevelSendLongGroupMessage(this.id, event.message)
 
             msg = event.message
         } else msg = message.asMessageChain()
