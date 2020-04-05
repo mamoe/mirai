@@ -22,8 +22,8 @@ import java.io.File
 import java.io.InputStream
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
+import java.net.JarURLConnection
 import java.net.URL
-import java.net.URLClassLoader
 import java.util.jar.JarFile
 
 
@@ -40,6 +40,7 @@ object PluginManager {
     //已完成加载的
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
     private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
+    private val pluginsClassLoader: PluginsClassLoader = PluginsClassLoader(this.javaClass.classLoader)
 
     internal fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
         nameToPluginBaseMap.values.forEach {
@@ -83,15 +84,20 @@ object PluginManager {
                 val jar = JarFile(file)
                 val pluginYml =
                     jar.entries().asSequence().filter { it.name.toLowerCase().contains("plugin.yml") }.firstOrNull()
+
                 if (pluginYml == null) {
                     logger.info("plugin.yml not found in jar " + jar.name + ", it will not be consider as a Plugin")
                 } else {
                     try {
-                        val description =
-                            PluginDescription.readFromContent(
-                                URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().inputStream.use {
-                                    it.readBytes().encodeToString()
-                                })
+                        val description = PluginDescription.readFromContent(
+                            URL("jar:file:" + file.absoluteFile + "!/" + pluginYml.name).openConnection().let {
+                                val res = it.inputStream.use { input ->
+                                    input.readBytes().encodeToString()
+                                }
+                                // 关闭jarFile，解决热更新插件问题
+                                (it as JarURLConnection).jarFile.close()
+                                res
+                            })
                         pluginsFound[description.name] = description
                         pluginsLocation[description.name] = file
                     } catch (e: Exception) {
@@ -100,8 +106,6 @@ object PluginManager {
                 }
             }
         }
-
-        val pluginsClassLoader = PluginsClassLoader(pluginsLocation.values,this.javaClass.classLoader)
 
         //不仅要解决A->B->C->A, 还要解决A->B->C->A
         fun checkNoCircularDepends(
@@ -132,6 +136,9 @@ object PluginManager {
         pluginsFound.values.forEach {
             checkNoCircularDepends(it, it.depends, mutableListOf())
         }
+
+        //插件加载器导入插件jar
+        pluginsClassLoader.loadPlugins(pluginsLocation)
 
         //load plugin
         fun loadPlugin(description: PluginDescription): Boolean {
@@ -167,7 +174,7 @@ object PluginManager {
                 }
 
                 return try {
-                    val subClass = pluginClass.asSubclass(PluginBase::class.java)
+                    val subClass = pluginClass!!.asSubclass(PluginBase::class.java)
 
                     lastPluginName = description.name
                     val plugin: PluginBase =
@@ -240,6 +247,7 @@ object PluginManager {
         plugin.disable(exception)
         nameToPluginBaseMap.remove(plugin.pluginName)
         pluginDescriptions.remove(plugin.pluginName)
+        pluginsClassLoader.remove(plugin.pluginName)
     }
 
 
@@ -251,12 +259,14 @@ object PluginManager {
         }
         nameToPluginBaseMap.clear()
         pluginDescriptions.clear()
+        pluginsClassLoader.clear()
     }
 
 
     /**
      * 根据插件名字找Jar的文件
      * null => 没找到
+     * 这里的url的jarFile没关，热更新插件可能出事
      */
     fun getJarFileByName(pluginName: String): File? {
         File(pluginsPath).listFiles()?.forEach { file ->
@@ -282,6 +292,7 @@ object PluginManager {
     /**
      * 根据插件名字找Jar中的文件
      * null => 没找到
+     * 这里的url的jarFile没关，热更新插件可能出事
      */
     fun getFileInJarByName(pluginName: String, toFind: String): InputStream? {
         val jarFile = getJarFileByName(pluginName) ?: return null
@@ -308,4 +319,3 @@ private fun Constructor<out PluginBase>.againstPermission() {
     }
 }
 
-internal class PluginsClassLoader(files: Collection<File>, parent: ClassLoader) : URLClassLoader(files.map{it.toURI().toURL()}.toTypedArray(), parent)
