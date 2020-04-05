@@ -13,10 +13,9 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.message.data.NullMessageChain.equals
-import net.mamoe.mirai.message.data.NullMessageChain.toString
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
@@ -25,10 +24,7 @@ import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KProperty
 
 /**
- * 消息链.
- * 它的一般实现为 [MessageChainImplByCollection] 或 [MessageChainImplBySequence],
- * 替代 `null` 情况的实现为 [NullMessageChain],
- * 空的实现为 [EmptyMessageChain]
+ * 消息链. 空的实现为 [EmptyMessageChain]
  *
  * 要获取更多信息, 请查看 [Message]
  *
@@ -419,9 +415,9 @@ object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
 /**
  * Null 的 [MessageChain].
  * 它不包含任何元素, 也没有创建任何 list.
- *
- * 除 [toString] 和 [equals] 外, 其他方法均 [error]
  */
+@PlannedRemoval("1.0.0")
+@Deprecated("ambiguous. use `null` or EmptyMessageChain instead", level = DeprecationLevel.ERROR)
 object NullMessageChain : MessageChain {
     override fun toString(): String = "NullMessageChain"
     override fun contentToString(): String = ""
