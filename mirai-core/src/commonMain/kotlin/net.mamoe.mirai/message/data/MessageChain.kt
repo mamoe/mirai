@@ -431,7 +431,7 @@ object NullMessageChain : MessageChain {
 
     @OptIn(MiraiInternalAPI::class)
     @Suppress("DEPRECATION_ERROR")
-    override fun followedBy(tail: Message): CombinedMessage = CombinedMessage(left = EmptyMessageChain, tail = tail)
+    override fun followedBy(tail: Message): CombinedMessage = error("accessing NullMessageChain")
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
 
