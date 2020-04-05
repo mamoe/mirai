@@ -12,6 +12,8 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -25,12 +27,17 @@ import kotlin.jvm.JvmName
  *
  * Left-biased list
  */
-class CombinedMessage(
+class CombinedMessage
+@Deprecated(message = "use Message.plus", level = DeprecationLevel.ERROR)
+@MiraiInternalAPI("CombinedMessage 构造器可能会在将来被改动") constructor(
+    @MiraiExperimentalAPI("CombinedMessage.left 可能会在将来被改动")
     val left: Message,
+    @MiraiExperimentalAPI("CombinedMessage.tail 可能会在将来被改动")
     val tail: Message
 ) : Iterable<Message>, Message {
 
     // 不要把它用作 local function, 会编译错误
+    @OptIn(MiraiExperimentalAPI::class)
     private suspend fun SequenceScope<Message>.yieldCombinedOrElements(message: Message) {
         when (message) {
             is CombinedMessage -> {
@@ -68,10 +75,16 @@ class CombinedMessage(
         return asSequence().iterator()
     }
 
+    @OptIn(MiraiExperimentalAPI::class)
     override fun toString(): String {
         return tail.toString() + left.toString()
     }
 
+    override fun contentToString(): String {
+        return toString()
+    }
+
+    @OptIn(MiraiExperimentalAPI::class)
     fun isFlat(): Boolean {
         return tail is SingleMessage && left is SingleMessage
     }
