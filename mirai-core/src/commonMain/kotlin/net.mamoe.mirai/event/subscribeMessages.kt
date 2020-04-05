@@ -57,8 +57,8 @@ fun <R> CoroutineScope.subscribeMessages(
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
         // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
         subscribeAlways(coroutineContext, concurrencyKind) {
-            // this.message.toString() 即为 messageListener 中 it 接收到的值
-            val toString = this.message.toString()
+            // this.message.contentToString() 即为 messageListener 中 it 接收到的值
+            val toString = this.message.contentToString()
             if (filter.invoke(this, toString))
                 messageListener.invoke(this, toString)
         }
@@ -83,7 +83,7 @@ fun <R> CoroutineScope.subscribeGroupMessages(
     }
     return GroupMessageSubscribersBuilder(Unit) { filter, listener ->
         subscribeAlways(coroutineContext, concurrencyKind) {
-            val toString = this.message.toString()
+            val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
         }
@@ -108,7 +108,7 @@ fun <R> CoroutineScope.subscribeFriendMessages(
     }
     return FriendMessageSubscribersBuilder(Unit) { filter, listener ->
         subscribeAlways(coroutineContext, concurrencyKind) {
-            val toString = this.message.toString()
+            val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
         }
@@ -131,7 +131,7 @@ fun <R> Bot.subscribeMessages(
     }
     return MessagePacketSubscribersBuilder(Unit) { filter, listener ->
         this.subscribeAlways(coroutineContext, concurrencyKind) {
-            val toString = this.message.toString()
+            val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
         }
@@ -156,7 +156,7 @@ fun <R> Bot.subscribeGroupMessages(
     }
     return GroupMessageSubscribersBuilder(Unit) { filter, listener ->
         this.subscribeAlways(coroutineContext, concurrencyKind) {
-            val toString = this.message.toString()
+            val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
         }
@@ -179,7 +179,7 @@ fun <R> Bot.subscribeFriendMessages(
     }
     return FriendMessageSubscribersBuilder(Unit) { filter, listener ->
         this.subscribeAlways(coroutineContext, concurrencyKind) {
-            val toString = this.message.toString()
+            val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
         }
@@ -420,7 +420,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     ): Ret {
         val toCheck = if (trim) equals.trim() else equals
         return content({ (if (trim) it.trim() else it).equals(toCheck, ignoreCase = ignoreCase) }, {
-            onEvent(this, this.message.toString())
+            onEvent(this, this.message.contentToString())
         })
     }
 
@@ -444,11 +444,11 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         return if (trim) {
             val toCheck = sub.trim()
             content({ it.contains(toCheck, ignoreCase = ignoreCase) }, {
-                onEvent(this, this.message.toString().trim())
+                onEvent(this, this.message.contentToString().trim())
             })
         } else {
             content({ it.contains(sub, ignoreCase = ignoreCase) }, {
-                onEvent(this, this.message.toString())
+                onEvent(this, this.message.contentToString())
             })
         }
     }
@@ -475,13 +475,13 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
             content({
                 list.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
             }, {
-                onEvent(this, this.message.toString().trim())
+                onEvent(this, this.message.contentToString().trim())
             })
         } else {
             content({
                 sub.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
             }, {
-                onEvent(this, this.message.toString())
+                onEvent(this, this.message.contentToString())
             })
         }
     }
@@ -508,13 +508,13 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
             content({
                 list.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
             }, {
-                onEvent(this, this.message.toString().trim())
+                onEvent(this, this.message.contentToString().trim())
             })
         } else {
             content({
                 sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
             }, {
-                onEvent(this, this.message.toString())
+                onEvent(this, this.message.contentToString())
             })
         }
     }
@@ -544,13 +544,13 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         return if (trim) {
             val toCheck = prefix.trim()
             content({ it.trimStart().startsWith(toCheck) }, {
-                if (removePrefix) this.onEvent(this.message.toString().substringAfter(toCheck).trim())
-                else onEvent(this, this.message.toString().trim())
+                if (removePrefix) this.onEvent(this.message.contentToString().substringAfter(toCheck).trim())
+                else onEvent(this, this.message.contentToString().trim())
             })
         } else {
             content({ it.startsWith(prefix) }, {
-                if (removePrefix) this.onEvent(this.message.toString().removePrefix(prefix))
-                else onEvent(this, this.message.toString())
+                if (removePrefix) this.onEvent(this.message.contentToString().removePrefix(prefix))
+                else onEvent(this, this.message.contentToString())
             })
         }
     }
@@ -575,13 +575,13 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         return if (trim) {
             val toCheck = suffix.trim()
             content({ it.trimEnd().endsWith(toCheck) }, {
-                if (removeSuffix) this.onEvent(this.message.toString().removeSuffix(toCheck).trim())
-                else onEvent(this, this.message.toString().trim())
+                if (removeSuffix) this.onEvent(this.message.contentToString().removeSuffix(toCheck).trim())
+                else onEvent(this, this.message.contentToString().trim())
             })
         } else {
             content({ it.endsWith(suffix) }, {
-                if (removeSuffix) this.onEvent(this.message.toString().removeSuffix(suffix))
-                else onEvent(this, this.message.toString())
+                if (removeSuffix) this.onEvent(this.message.contentToString().removeSuffix(suffix))
+                else onEvent(this, this.message.contentToString())
             })
         }
     }
@@ -713,7 +713,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     ): Ret = always {
         onEvent.invoke(
             this,
-            mapper.invoke(this, message.toString()) ?: return@always this@MessageSubscribersBuilder.stub
+            mapper.invoke(this, message.contentToString()) ?: return@always this@MessageSubscribersBuilder.stub
         )
     }
 
@@ -898,7 +898,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     @PublishedApi
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
-        when (val message = replier(m, m.message.toString())) {
+        when (val message = replier(m, m.message.contentToString())) {
             is Message -> m.reply(message)
             is Unit -> {
 
@@ -911,7 +911,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     @PublishedApi
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndQuoteReply(m: M, replier: suspend M.(String) -> Any?): RR {
-        when (val message = replier(m, m.message.toString())) {
+        when (val message = replier(m, m.message.contentToString())) {
             is Message -> m.quoteReply(message)
             is Unit -> {
 
