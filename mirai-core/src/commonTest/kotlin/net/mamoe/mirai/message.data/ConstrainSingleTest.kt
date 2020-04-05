@@ -15,44 +15,44 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
 
-internal class ConstrainSingleTest {
-
-    @OptIn(MiraiExperimentalAPI::class)
-    internal class TestMessage : ConstrainSingle<TestMessage>, Any() {
-        companion object Key : Message.Key<TestMessage> {
-            override val typeName: String
-                get() = "TestMessage"
-        }
-
-        override fun toString(): String = super.toString()
-
-        override fun contentToString(): String {
-            TODO("Not yet implemented")
-        }
-
-        override val key: Message.Key<TestMessage>
-            get() = Key
-        override val length: Int
-            get() = TODO("Not yet implemented")
-
-        override fun get(index: Int): Char {
-            TODO("Not yet implemented")
-        }
-
-        override fun subSequence(startIndex: Int, endIndex: Int): CharSequence {
-            TODO("Not yet implemented")
-        }
-
-        override fun compareTo(other: String): Int {
-            TODO("Not yet implemented")
-        }
+@OptIn(MiraiExperimentalAPI::class)
+internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleMessage>, Any() {
+    companion object Key : Message.Key<TestConstrainSingleMessage> {
+        override val typeName: String
+            get() = "TestMessage"
     }
+
+    override fun toString(): String = "<TestConstrainSingleMessage#${super.hashCode()}>"
+
+    override fun contentToString(): String {
+        TODO("Not yet implemented")
+    }
+
+    override val key: Message.Key<TestConstrainSingleMessage>
+        get() = Key
+    override val length: Int
+        get() = TODO("Not yet implemented")
+
+    override fun get(index: Int): Char {
+        TODO("Not yet implemented")
+    }
+
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence {
+        TODO("Not yet implemented")
+    }
+
+    override fun compareTo(other: String): Int {
+        TODO("Not yet implemented")
+    }
+}
+
+internal class ConstrainSingleTest {
 
     @OptIn(MiraiExperimentalAPI::class)
     @Test
     fun testConstrainSingleInPlus() {
-        val new = TestMessage()
-        val combined = TestMessage() + new
+        val new = TestConstrainSingleMessage()
+        val combined = TestConstrainSingleMessage() + new
 
         assertEquals(combined.left, EmptyMessageChain)
         assertSame(combined.tail, new)
@@ -60,10 +60,10 @@ internal class ConstrainSingleTest {
 
     @Test // net.mamoe.mirai/message/data/MessageChain.kt:441
     fun testConstrainSingleInSequence() {
-        val last = TestMessage()
+        val last = TestConstrainSingleMessage()
         val sequence: Sequence<SingleMessage> = sequenceOf(
-            TestMessage(),
-            TestMessage(),
+            TestConstrainSingleMessage(),
+            TestConstrainSingleMessage(),
             last
         )
 
@@ -74,11 +74,11 @@ internal class ConstrainSingleTest {
 
     @Test // net.mamoe.mirai/message/data/MessageChain.kt:441
     fun testConstrainSingleOrderInSequence() {
-        val last = TestMessage()
+        val last = TestConstrainSingleMessage()
         val sequence: Sequence<SingleMessage> = sequenceOf(
-            TestMessage(), // last should replace here
+            TestConstrainSingleMessage(), // last should replace here
             PlainText("test"),
-            TestMessage(),
+            TestConstrainSingleMessage(),
             last
         )
 

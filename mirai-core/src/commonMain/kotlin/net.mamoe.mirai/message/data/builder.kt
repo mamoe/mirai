@@ -13,9 +13,9 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -39,41 +39,49 @@ inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> 
 }
 
 /**
- * 使用特定的容器构建一个 [MessageChain]
- *
- * @see MessageChainBuilder
- */
-@JvmSynthetic
-inline fun buildMessageChain(
-    container: MutableCollection<SingleMessage>,
-    block: MessageChainBuilder.() -> Unit
-): MessageChain {
-    return MessageChainBuilder(container).apply(block).asMessageChain()
-}
-
-/**
  * [MessageChain] 构建器.
  * 多个连续的 [String] 会被连接为单个 [PlainText] 以优化性能.
+ * **注意:** 无并发安全性.
  *
  * @see buildMessageChain 推荐使用
  * @see asMessageChain 完成构建
  */
-class MessageChainBuilder
-@JvmOverloads constructor(
-    private val container: MutableCollection<SingleMessage> = mutableListOf()
-) : MutableCollection<SingleMessage> by container, Appendable {
+@OptIn(MiraiExperimentalAPI::class)
+class MessageChainBuilder private constructor(
+    private val container: MutableList<SingleMessage>
+) : MutableList<SingleMessage> by container, Appendable {
+    constructor() : this(mutableListOf())
     constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
+
+    private var firstConstrainSingleIndex = -1
+
+    private fun addAndCheckConstrainSingle(element: SingleMessage): Boolean {
+        if (element is ConstrainSingle<*>) {
+            if (firstConstrainSingleIndex == -1) {
+                firstConstrainSingleIndex = container.size
+                return container.add(element)
+            }
+            val key = element.key
+
+            container[container.indexOfFirst(firstConstrainSingleIndex) { it is ConstrainSingle<*> && it.key == key }] =
+                element
+            return true
+        } else {
+            return container.add(element)
+        }
+    }
 
     override fun add(element: SingleMessage): Boolean {
         flushCache()
-        return container.add(element)
+        return addAndCheckConstrainSingle(element)
     }
 
     fun add(element: Message): Boolean {
         flushCache()
         @Suppress("UNCHECKED_CAST")
         return when (element) {
-            is SingleMessage -> container.add(element)
+            is ConstrainSingle<*> -> addAndCheckConstrainSingle(element)
+            is SingleMessage -> container.add(element) // no need to constrain
             is Iterable<*> -> this.addAll(element.flatten())
             else -> error("stub")
         }
@@ -81,13 +89,13 @@ class MessageChainBuilder
 
     override fun addAll(elements: Collection<SingleMessage>): Boolean {
         flushCache()
-        return container.addAll(elements.flatten())
+        return addAll(elements.flatten())
     }
 
     @JvmName("addAllFlatten") // erased generic type cause declaration clash
     fun addAll(elements: Collection<Message>): Boolean {
         flushCache()
-        return container.addAll(elements.flatten())
+        return addAll(elements.flatten())
     }
 
     operator fun Message.unaryPlus() {
@@ -146,6 +154,6 @@ class MessageChainBuilder
 
     fun asMessageChain(): MessageChain {
         this.flushCache()
-        return (this as MutableCollection<SingleMessage>).asMessageChain()
+        return MessageChainImplByCollection(this) // fast-path, no need to constrain
     }
 }

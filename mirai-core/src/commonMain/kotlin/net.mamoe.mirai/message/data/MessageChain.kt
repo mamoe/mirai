@@ -466,18 +466,33 @@ internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessa
 internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
     val list = ArrayList<SingleMessage>()
 
+    var firstConstrainIndex = -1
+
     for (singleMessage in this) {
         if (singleMessage is ConstrainSingle<*>) {
-            val key = singleMessage.key
-            val index = list.indexOfFirst { it is ConstrainSingle<*> && it.key == key }
-            if (index != -1) {
-                list[index] = singleMessage
-                continue
+            if (firstConstrainIndex == -1) {
+                firstConstrainIndex = list.size // we are going to add one
+            } else {
+                val key = singleMessage.key
+                val index = list.indexOfFirst(firstConstrainIndex) { it is ConstrainSingle<*> && it.key == key }
+                if (index != -1) {
+                    list[index] = singleMessage
+                    continue
+                }
             }
         }
+
         list.add(singleMessage)
     }
     return list
+}
+
+internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Boolean): Int {
+    for (index in offset..this.lastIndex) {
+        if (predicate(this[index]))
+            return index
+    }
+    return -1
 }
 
 /**
