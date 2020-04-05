@@ -39,8 +39,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
-import net.mamoe.mirai.qqandroid.utils.tryNTimes
-import net.mamoe.mirai.qqandroid.utils.tryNTimesOrException
+import net.mamoe.mirai.qqandroid.utils.retryCatching
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
@@ -267,7 +266,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         lateinit var loadGroup: suspend () -> Unit
 
                         loadGroup = suspend {
-                            tryNTimesOrException(3) {
+                            retryCatching(3) {
                                 bot.groups.delegate.addLast(
                                     @Suppress("DuplicatedCode")
                                     (GroupImpl(
@@ -298,7 +297,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                                         )
                                     ))
                                 )
-                            }?.let {
+                            }.exceptionOrNull()?.let {
                                 logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
                                 logger.error(it)
                                 this@QQAndroidBotNetworkHandler.launch {
@@ -618,7 +617,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 packetListeners.remove(handler)
             }
         } else this.delegate.useBytes { data, length ->
-            return tryNTimes(retry + 1) {
+            return retryCatching(retry + 1) {
                 val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
                 packetListeners.addLast(handler)
                 try {
@@ -626,7 +625,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 } finally {
                     packetListeners.remove(handler)
                 }
-            }
+            }.getOrThrow()
         }
     }
 

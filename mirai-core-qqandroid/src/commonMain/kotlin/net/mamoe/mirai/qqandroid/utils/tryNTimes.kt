@@ -13,46 +13,32 @@
 
 package net.mamoe.mirai.qqandroid.utils
 
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+
 
 @PublishedApi
 internal expect fun Throwable.addSuppressedMirai(e: Throwable)
 
-@MiraiInternalAPI
-@Suppress("DuplicatedCode")
-internal inline fun <R> tryNTimes(repeat: Int, block: (Int) -> R): R {
-    var lastException: Throwable? = null
-
-    repeat(repeat) {
+@OptIn(ExperimentalContracts::class)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+internal inline fun <R> retryCatching(n: Int, block: () -> R): Result<R> {
+    contract {
+        callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
+    }
+    require(n >= 0) { "param n for retryCatching must not be negative" }
+    var exception: Throwable? = null
+    repeat(n) {
         try {
-            return block(it)
+            return Result.success(block())
         } catch (e: Throwable) {
-            if (lastException == null) {
-                lastException = e
-            } else lastException!!.addSuppressedMirai(e)
+            exception?.addSuppressedMirai(e)
+            exception = e
         }
     }
-
-    throw lastException!!
-}
-
-@MiraiInternalAPI
-@Suppress("DuplicatedCode")
-inline fun <R> tryNTimesOrException(repeat: Int, block: (Int) -> R): Throwable? {
-    var lastException: Throwable? = null
-
-    repeat(repeat) {
-        try {
-            block(it)
-            return null
-        } catch (e: Throwable) {
-            if (lastException == null) {
-                lastException = e
-            } else lastException!!.addSuppressedMirai(e)
-        }
-    }
-
-    return lastException!!
+    return Result.failure(exception!!)
 }
