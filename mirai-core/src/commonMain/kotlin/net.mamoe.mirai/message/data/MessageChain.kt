@@ -439,52 +439,51 @@ object NullMessageChain : MessageChain {
 // region implementations
 
 
-@Suppress("DuplicatedCode") // we don't have pattern matching
 @OptIn(MiraiExperimentalAPI::class)
 internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
-    val list = ArrayList<SingleMessage>(4)
-    val singleList = ArrayList<Message.Key<*>?>(4)
-
-    for (singleMessage in this) {
-        if (singleMessage is ConstrainSingle<*>) {
-            val key = singleMessage.key
-            val index = singleList.indexOf(key)
-            if (index != -1) {
-                list[index] = singleMessage
-                continue
-            } else {
-                singleList.add(list.size, key)
-            }
-        }
-        list.add(singleMessage)
+    val iterator = this.iterator()
+    return constrainSingleMessagesImpl supplier@{
+        if (iterator.hasNext()) {
+            iterator.next()
+        } else null
     }
-    return list
 }
 
-@Suppress("DuplicatedCode") // we don't have pattern matching
-@OptIn(MiraiExperimentalAPI::class)
-internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
+@MiraiExperimentalAPI
+internal inline fun constrainSingleMessagesImpl(iterator: () -> SingleMessage?): ArrayList<SingleMessage> {
     val list = ArrayList<SingleMessage>()
-
     var firstConstrainIndex = -1
 
-    for (singleMessage in this) {
-        if (singleMessage is ConstrainSingle<*>) {
-            if (firstConstrainIndex == -1) {
-                firstConstrainIndex = list.size // we are going to add one
-            } else {
-                val key = singleMessage.key
-                val index = list.indexOfFirst(firstConstrainIndex) { it is ConstrainSingle<*> && it.key == key }
-                if (index != -1) {
-                    list[index] = singleMessage
-                    continue
+    var next: SingleMessage?
+    do {
+        next = iterator()
+        next?.let { singleMessage ->
+            if (singleMessage is ConstrainSingle<*>) {
+                if (firstConstrainIndex == -1) {
+                    firstConstrainIndex = list.size // we are going to add one
+                } else {
+                    val key = singleMessage.key
+                    val index = list.indexOfFirst(firstConstrainIndex) { it is ConstrainSingle<*> && it.key == key }
+                    if (index != -1) {
+                        list[index] = singleMessage
+                        return@let
+                    }
                 }
             }
-        }
 
-        list.add(singleMessage)
+            list.add(singleMessage)
+        } ?: return list
+    } while (true)
+}
+
+@OptIn(MiraiExperimentalAPI::class)
+internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
+    val iterator = this.iterator()
+    return constrainSingleMessagesImpl supplier@{
+        if (iterator.hasNext()) {
+            iterator.next()
+        } else null
     }
-    return list
 }
 
 internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Boolean): Int {
