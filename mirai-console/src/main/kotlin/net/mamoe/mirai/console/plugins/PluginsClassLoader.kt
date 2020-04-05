@@ -20,7 +20,7 @@ internal class PluginsClassLoader(parent: ClassLoader) : ClassLoader(parent) {
      * 清除所有插件加载器
      */
     fun clear() {
-        pluginLoaders.values.map {
+        pluginLoaders.values.forEach {
             it.close()
         }
         pluginLoaders.clear()
