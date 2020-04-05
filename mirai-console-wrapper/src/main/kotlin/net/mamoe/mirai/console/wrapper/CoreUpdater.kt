@@ -56,8 +56,7 @@ internal object CoreUpdater {
                             host = "jcenter.bintray.com"
                             path("net/mamoe/mirai-core-qqandroid-jvm/")
                         }
-                    }
-                ).asSequence()
+                    }).asSequence()
                 .map { it.value.drop(1).dropLast(1) }
                 .maxBy {
                     it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->

@@ -5,7 +5,6 @@ import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.scene.control.TreeTableCell
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.console.center.CuiPluginCenter
 import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
 import net.mamoe.mirai.console.graphical.model.PluginModel
