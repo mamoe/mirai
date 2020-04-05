@@ -33,6 +33,8 @@ object AtAll :
 
     @SinceMirai("0.31.2")
     const val display = displayA
+    override val typeName: String
+        get() = "AtAll"
 
     @Suppress("SpellCheckingInspection")
     override fun toString(): String = "[mirai:atall]"

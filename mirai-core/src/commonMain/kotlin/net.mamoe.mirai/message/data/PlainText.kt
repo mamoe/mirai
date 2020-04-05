@@ -42,7 +42,10 @@ class PlainText(val stringValue: String) :
         return stringValue.hashCode()
     }
 
-    companion object Key : Message.Key<PlainText>
+    companion object Key : Message.Key<PlainText> {
+        override val typeName: String
+            get() = "PlainText"
+    }
 }
 
 /**

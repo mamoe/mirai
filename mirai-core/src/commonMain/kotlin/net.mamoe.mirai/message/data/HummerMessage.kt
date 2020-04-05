@@ -27,7 +27,10 @@ import kotlin.jvm.JvmSynthetic
  */
 @SinceMirai("0.31.0")
 sealed class HummerMessage : MessageContent {
-    companion object Key : Message.Key<HummerMessage>
+    companion object Key : Message.Key<HummerMessage> {
+        override val typeName: String
+            get() = "HummerMessage"
+    }
     // has service type etc.
 }
 
@@ -47,6 +50,9 @@ class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") 
     val id: Int
 ) : HummerMessage() {
     companion object Types : Message.Key<PokeMessage> {
+        override val typeName: String
+            get() = "PokeMessage"
+
         /** 戳一戳 */
         @JvmField
         val Poke = PokeMessage(1, -1)
@@ -130,6 +136,9 @@ sealed class FlashImage : MessageContent, HummerMessage() {
         operator fun invoke(imageId: String): FlashImage {
             return invoke(Image(imageId))
         }
+
+        override val typeName: String
+            get() = "FlashImage"
     }
 
     /**
@@ -170,7 +179,10 @@ inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFla
  */
 @SinceMirai("0.33.0")
 class GroupFlashImage(override val image: GroupImage) : FlashImage() {
-    companion object Key : Message.Key<GroupFlashImage>
+    companion object Key : Message.Key<GroupFlashImage> {
+        override val typeName: String
+            get() = "GroupFlashImage"
+    }
 }
 
 /**
@@ -178,5 +190,8 @@ class GroupFlashImage(override val image: GroupImage) : FlashImage() {
  */
 @SinceMirai("0.33.0")
 class FriendFlashImage(override val image: FriendImage) : FlashImage() {
-    companion object Key : Message.Key<FriendFlashImage>
+    companion object Key : Message.Key<FriendFlashImage> {
+        override val typeName: String
+            get() = "FriendFlashImage"
+    }
 }

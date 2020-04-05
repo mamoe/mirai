@@ -32,6 +32,9 @@ class Face private constructor(val id: Int, private val stringValue: String) :
      */
     @Suppress("SpellCheckingInspection", "unused")
     companion object IdList : Message.Key<Face> {
+        override val typeName: String
+            get() = "Face"
+
         const val unknown: Int = 0xff
         const val jingya: Int = 0
         const val piezui: Int = 1

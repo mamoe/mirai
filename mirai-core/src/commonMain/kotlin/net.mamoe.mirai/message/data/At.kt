@@ -43,6 +43,9 @@ private constructor(val target: Long, val display: String) :
     override fun contentToString(): String = this.display
 
     companion object Key : Message.Key<At> {
+        override val typeName: String
+            get() = "At"
+
         /**
          * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
          */

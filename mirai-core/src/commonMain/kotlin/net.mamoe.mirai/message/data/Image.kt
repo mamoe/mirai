@@ -33,7 +33,10 @@ import kotlin.jvm.JvmSynthetic
  * @see Image.flash 转换普通图片为闪照
  */
 interface Image : Message, MessageContent {
-    companion object Key : Message.Key<Image>
+    companion object Key : Message.Key<Image> {
+        override val typeName: String
+            get() = "Image"
+    }
 
     /**
      * 图片的 id.
@@ -92,7 +95,10 @@ sealed class AbstractImage : Image {
  * 一般由 [Contact.uploadImage] 得到
  */
 interface OnlineImage : Image {
-    companion object Key : Message.Key<OnlineImage>
+    companion object Key : Message.Key<OnlineImage> {
+        override val typeName: String
+            get() = "OnlineImage"
+    }
 
     /**
      * 原图下载链接. 包含域名
@@ -124,7 +130,10 @@ suspend fun Image.queryUrl(): String {
  * 一般由 [Contact.uploadImage] 得到
  */
 interface OfflineImage : Image {
-    companion object Key : Message.Key<OfflineImage>
+    companion object Key : Message.Key<OfflineImage> {
+        override val typeName: String
+            get() = "OfflineImage"
+    }
 }
 
 /**
@@ -149,7 +158,10 @@ suspend fun OfflineImage.queryUrl(): String {
 // CustomFace
 @OptIn(MiraiInternalAPI::class)
 sealed class GroupImage : AbstractImage() {
-    companion object Key : Message.Key<GroupImage>
+    companion object Key : Message.Key<GroupImage> {
+        override val typeName: String
+            get() = "GroupImage"
+    }
 
     abstract val filepath: String
     abstract val fileId: Int
@@ -222,7 +234,10 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
  */ // NotOnlineImage
 @OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {
-    companion object Key : Message.Key<FriendImage>
+    companion object Key : Message.Key<FriendImage> {
+        override val typeName: String
+            get() = "FriendImage"
+    }
 
     abstract val resourceId: String
     abstract val md5: ByteArray

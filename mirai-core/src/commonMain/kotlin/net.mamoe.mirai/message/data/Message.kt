@@ -26,9 +26,9 @@ import kotlin.jvm.JvmSynthetic
  * - [MessageMetadata] 消息元数据, 包括: [消息来源][MessageSource]
  * - [MessageContent] 单个消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
  * - [CombinedMessage] 通过 [plus] 连接的两个消息. 可通过 [asMessageChain] 转换为 [MessageChain]
- * - [MessageChain] 不可变消息链, 即 [List] 形式链接的多个 [Message] 实例.
+ * - [MessageChain] 不可变消息链, 链表形式链接的多个 [SingleMessage] 实例.
  *
- * **在 Kotlin 使用 [Message]**
+ * #### 在 Kotlin 使用 [Message]:
  * 这与使用 [String] 的使用非常类似.
  *
  * 比较 [Message] 与 [String] (使用 infix [Message.eq]):
@@ -72,7 +72,13 @@ interface Message {
      *
      * @param M 指代持有这个 Key 的消息类型
      */
-    interface Key<out M : Message>
+    interface Key<out M : Message> {
+        /**
+         * 此 [Key] 指代的 [Message] 类型名. 一般为 `class.simpleName`
+         */
+        @SinceMirai("0.34.0")
+        val typeName: String
+    }
 
     infix fun eq(other: Message): Boolean = this.toString() == other.toString()
 
@@ -105,7 +111,7 @@ interface Message {
         if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>
             && this.key == tail.key
         ) {
-            return CombinedMessage(EmptyMessageChain, this)
+            return CombinedMessage(EmptyMessageChain, tail)
         }
         return CombinedMessage(left = this, tail = tail)
     }
@@ -119,6 +125,8 @@ interface Message {
      * [FriendImage]: "[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"
      * [PokeMessage]: "[mirai:poke:1,-1]"
      * [MessageChain]: 直接无间隔地连接所有元素.
+     *
+     * @see contentToString
      */
     override fun toString(): String
 
@@ -141,17 +149,23 @@ interface Message {
     operator fun plus(another: CharSequence): CombinedMessage = this.followedBy(another.toString().toMessage())
 }
 
+@JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
     return contact.sendMessage(this) as MessageReceipt<C>
 }
 
 fun Message.repeat(count: Int): MessageChain {
+    if (this is ConstrainSingle<*>) {
+        // fast-path
+        return SingleMessageChainImpl(this)
+    }
     return buildMessageChain(count) {
         add(this@repeat)
     }
 }
 
+@JvmSynthetic
 inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 interface SingleMessage : Message, CharSequence, Comparable<String>
@@ -168,13 +182,13 @@ interface MessageMetadata : SingleMessage {
 }
 
 /**
- * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 但不会保持原顺序.
+ * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 保持原顺序.
  *
  * **MiraiExperimentalAPI**: 此 API 可能在将来版本修改
  */
 @SinceMirai("0.34.0")
 @MiraiExperimentalAPI
-interface ConstrainSingle<M : Message> {
+interface ConstrainSingle<M : Message> : SingleMessage {
     val key: Message.Key<M>
 }
 

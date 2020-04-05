@@ -21,6 +21,8 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -34,8 +36,10 @@ import kotlin.jvm.JvmName
 @OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.33.0")
 class QuoteReply(val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
-    // TODO: 2020/4/4 Metadata or Content?
-    companion object Key : Message.Key<QuoteReply>
+    companion object Key : Message.Key<QuoteReply> {
+        override val typeName: String
+            get() = "QuoteReply"
+    }
 
     override val key: Message.Key<QuoteReply> get() = Key
 
@@ -43,8 +47,10 @@ class QuoteReply(val source: MessageSource) : Message, MessageMetadata, Constrai
     override fun contentToString(): String = ""
 }
 
+@JvmSynthetic
 suspend inline fun QuoteReply.recall() = this.source.recall()
 
+@JvmOverloads
 inline fun QuoteReply.recallIn(
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext

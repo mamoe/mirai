@@ -42,7 +42,10 @@ import kotlin.jvm.JvmSynthetic
  */
 @SinceMirai("0.33.0")
 sealed class MessageSource : Message, MessageMetadata {
-    companion object Key : Message.Key<MessageSource>
+    companion object Key : Message.Key<MessageSource> {
+        override val typeName: String
+            get() = "MessageSource"
+    }
 
     /**
      * 所属 [Bot]
@@ -105,7 +108,10 @@ sealed class MessageSource : Message, MessageMetadata {
 @SinceMirai("0.33.0")
 @OptIn(MiraiExperimentalAPI::class)
 sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessageSource> {
-    companion object Key : Message.Key<OnlineMessageSource>
+    companion object Key : Message.Key<OnlineMessageSource> {
+        override val typeName: String
+            get() = "OnlineMessageSource"
+    }
 
     override val key: Message.Key<OnlineMessageSource> get() = Key
 
@@ -131,7 +137,10 @@ sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessag
      * 由 [机器人主动发送消息][Contact.sendMessage] 产生的 [MessageSource]
      */
     sealed class Outgoing : OnlineMessageSource() {
-        companion object Key : Message.Key<Outgoing>
+        companion object Key : Message.Key<Outgoing> {
+            override val typeName: String
+                get() = "OnlineMessageSource.Outgoing"
+        }
 
         abstract override val sender: Bot
         abstract override val target: Contact
@@ -140,7 +149,10 @@ sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessag
         final override val targetId: Long get() = target.id
 
         abstract class ToFriend : Outgoing() {
-            companion object Key : Message.Key<ToFriend>
+            companion object Key : Message.Key<ToFriend> {
+                override val typeName: String
+                    get() = "OnlineMessageSource.Outgoing.ToFriend"
+            }
 
             abstract override val target: QQ
             final override val subject: QQ get() = target
@@ -148,7 +160,10 @@ sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessag
         }
 
         abstract class ToGroup : Outgoing() {
-            companion object Key : Message.Key<ToGroup>
+            companion object Key : Message.Key<ToGroup> {
+                override val typeName: String
+                    get() = "OnlineMessageSource.Outgoing.ToGroup"
+            }
 
             abstract override val target: Group
             final override val subject: Group get() = target
@@ -160,7 +175,10 @@ sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessag
      * 接收到的一条消息的 [MessageSource]
      */
     sealed class Incoming : OnlineMessageSource() {
-        companion object Key : Message.Key<Incoming>
+        companion object Key : Message.Key<Incoming> {
+            override val typeName: String
+                get() = "OnlineMessageSource.Incoming"
+        }
 
         abstract override val sender: QQ // out QQ
         abstract override val target: Bot
@@ -169,7 +187,10 @@ sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessag
         final override val targetId: Long get() = target.id
 
         abstract class FromFriend : Incoming() {
-            companion object Key : Message.Key<FromFriend>
+            companion object Key : Message.Key<FromFriend> {
+                override val typeName: String
+                    get() = "OnlineMessageSource.Incoming.FromFriend"
+            }
 
             abstract override val sender: QQ
             final override val subject: QQ get() = sender
@@ -177,7 +198,10 @@ sealed class OnlineMessageSource : MessageSource(), ConstrainSingle<OnlineMessag
         }
 
         abstract class FromGroup : Incoming() {
-            companion object Key : Message.Key<FromGroup>
+            companion object Key : Message.Key<FromGroup> {
+                override val typeName: String
+                    get() = "OnlineMessageSource.Incoming.FromGroup"
+            }
 
             abstract override val sender: Member
             final override val subject: Group get() = sender.group
@@ -224,7 +248,10 @@ inline fun MessageSource.recallIn(
  */
 @SinceMirai("0.33.0")
 abstract class OfflineMessageSource : MessageSource() {
-    companion object Key : Message.Key<OfflineMessageSource>
+    companion object Key : Message.Key<OfflineMessageSource> {
+        override val typeName: String
+            get() = "OfflineMessageSource"
+    }
 
     enum class Kind {
         GROUP,

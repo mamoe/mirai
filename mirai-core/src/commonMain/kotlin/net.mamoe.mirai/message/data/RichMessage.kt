@@ -37,14 +37,6 @@ interface RichMessage : MessageContent {
     companion object Templates : Message.Key<RichMessage> {
 
         /**
-         * 合并转发.
-         */
-        @MiraiExperimentalAPI
-        fun mergedForward(): Nothing {
-            TODO()
-        }
-
-        /**
          * 长消息.
          *
          * @param brief 消息内容纯文本, 显示在图片的前面
@@ -100,6 +92,9 @@ interface RichMessage : MessageContent {
                     }
                 }
             }
+
+        override val typeName: String
+            get() = "RichMessage"
     }
 
     val content: String
@@ -118,7 +113,10 @@ interface RichMessage : MessageContent {
 @SinceMirai("0.27.0")
 @OptIn(MiraiExperimentalAPI::class)
 class JsonMessage(override val content: String) : RichMessage {
-    companion object Key : Message.Key<JsonMessage>
+    companion object Key : Message.Key<JsonMessage> {
+        override val typeName: String
+            get() = "JsonMessage"
+    }
 
     // serviceId = 1
     override fun toString(): String = "[mirai:json:$content]"
@@ -133,7 +131,10 @@ class JsonMessage(override val content: String) : RichMessage {
 @SinceMirai("0.27.0")
 class LightApp constructor(override val content: String) : RichMessage {
 
-    companion object Key : Message.Key<LightApp>
+    companion object Key : Message.Key<LightApp> {
+        override val typeName: String
+            get() = "LightApp"
+    }
 
     override fun toString(): String = "[mirai:app:$content]"
 }
@@ -147,7 +148,10 @@ class LightApp constructor(override val content: String) : RichMessage {
 @SinceMirai("0.27.0")
 @OptIn(MiraiExperimentalAPI::class)
 class XmlMessage constructor(override val content: String) : RichMessage {
-    companion object Key : Message.Key<XmlMessage>
+    companion object Key : Message.Key<XmlMessage> {
+        override val typeName: String
+            get() = "XmlMessage"
+    }
 
     // override val serviceId: Int get() = 60
 
@@ -161,7 +165,10 @@ class XmlMessage constructor(override val content: String) : RichMessage {
 @MiraiExperimentalAPI
 @MiraiInternalAPI
 class LongMessage(override val content: String, val resId: String) : RichMessage {
-    companion object Key : Message.Key<XmlMessage>
+    companion object Key : Message.Key<XmlMessage> {
+        override val typeName: String
+            get() = "LongMessage"
+    }
 
     // serviceId = 35
     override fun toString(): String = "[mirai:long:$content]"

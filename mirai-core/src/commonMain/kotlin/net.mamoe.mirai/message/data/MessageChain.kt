@@ -26,7 +26,7 @@ import kotlin.reflect.KProperty
 
 /**
  * 消息链.
- * 它的一般实现为 [MessageChainImplByIterable] 或 [MessageChainImplBySequence],
+ * 它的一般实现为 [MessageChainImplByCollection] 或 [MessageChainImplBySequence],
  * 替代 `null` 情况的实现为 [NullMessageChain],
  * 空的实现为 [EmptyMessageChain]
  *
@@ -170,7 +170,7 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 inline fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
-    firstOrNull(key) ?: throw NoSuchElementException("no such element: $key")
+    firstOrNull(key) ?: throw NoSuchElementException("Message type $key not found in chain $this")
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -264,7 +264,8 @@ fun Message.asMessageChain(): MessageChain = when (this) {
  * 直接将 [this] 委托为一个 [MessageChain]
  */
 @JvmSynthetic
-inline fun Collection<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByCollection(this)
+fun Collection<SingleMessage>.asMessageChain(): MessageChain =
+    MessageChainImplByCollection(this.constrainSingleMessages())
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
@@ -277,7 +278,8 @@ inline fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImpl
  * 直接将 [this] 委托为一个 [MessageChain]
  */
 @JvmSynthetic
-inline fun Iterable<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByIterable(this)
+fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
+    MessageChainImplByCollection(this.constrainSingleMessages())
 
 @JvmSynthetic
 inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
@@ -386,6 +388,7 @@ fun Message.flatten(): Sequence<SingleMessage> {
     }
 }
 
+@JvmSynthetic // make Java user happier with less methods
 fun CombinedMessage.flatten(): Sequence<SingleMessage> {
     // already constrained single.
     if (this.isFlat()) {
@@ -394,6 +397,7 @@ fun CombinedMessage.flatten(): Sequence<SingleMessage> {
     } else return this.asSequence().flatten()
 }
 
+@JvmSynthetic // make Java user happier with less methods
 inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
 // endregion converters
@@ -402,7 +406,15 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 /**
  * 不含任何元素的 [MessageChain]
  */
-object EmptyMessageChain : MessageChain by MessageChainImplByCollection(emptyList())
+object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
+    override fun contains(sub: String): Boolean = sub.isEmpty()
+    override val size: Int get() = 0
+    override fun toString(): String = ""
+    override fun contentToString(): String = ""
+    override fun iterator(): Iterator<SingleMessage> = this
+    override fun hasNext(): Boolean = false
+    override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
+}
 
 /**
  * Null 的 [MessageChain].
@@ -427,22 +439,45 @@ object NullMessageChain : MessageChain {
 // region implementations
 
 
-/**
- * 使用 [Iterable] 作为委托的 [MessageChain]
- */
-@PublishedApi
-internal class MessageChainImplByIterable constructor(
-    private val delegate: Iterable<SingleMessage>
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int by lazy { delegate.count() }
-    override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
-    private var toStringTemp: String? = null
-    override fun toString(): String =
-        toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
+@Suppress("DuplicatedCode") // we don't have pattern matching
+@OptIn(MiraiExperimentalAPI::class)
+internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
+    val list = ArrayList<SingleMessage>(4)
+    val singleList = ArrayList<Message.Key<*>?>(4)
 
-    override fun contentToString(): String = toString()
+    for (singleMessage in this) {
+        if (singleMessage is ConstrainSingle<*>) {
+            val key = singleMessage.key
+            val index = singleList.indexOf(key)
+            if (index != -1) {
+                list[index] = singleMessage
+                continue
+            } else {
+                singleList.add(list.size, key)
+            }
+        }
+        list.add(singleMessage)
+    }
+    return list
+}
 
-    override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
+@Suppress("DuplicatedCode") // we don't have pattern matching
+@OptIn(MiraiExperimentalAPI::class)
+internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
+    val list = ArrayList<SingleMessage>()
+
+    for (singleMessage in this) {
+        if (singleMessage is ConstrainSingle<*>) {
+            val key = singleMessage.key
+            val index = list.indexOfFirst { it is ConstrainSingle<*> && it.key == key }
+            if (index != -1) {
+                list[index] = singleMessage
+                continue
+            }
+        }
+        list.add(singleMessage)
+    }
+    return list
 }
 
 /**
@@ -450,7 +485,7 @@ internal class MessageChainImplByIterable constructor(
  */
 @PublishedApi
 internal class MessageChainImplByCollection constructor(
-    private val delegate: Collection<SingleMessage>
+    private val delegate: Collection<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
@@ -458,7 +493,10 @@ internal class MessageChainImplByCollection constructor(
     override fun toString(): String =
         toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
 
-    override fun contentToString(): String = toString()
+    private var contentToStringTemp: String? = null
+    override fun contentToString(): String =
+        contentToStringTemp ?: this.delegate.joinToString("") { it.contentToString() }.also { contentToStringTemp = it }
+
 
     override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
 }
@@ -468,20 +506,24 @@ internal class MessageChainImplByCollection constructor(
  */
 @PublishedApi
 internal class MessageChainImplBySequence constructor(
-    delegate: Sequence<SingleMessage>
+    delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int by lazy { collected.size }
 
     /**
      * [Sequence] 可能只能消耗一遍, 因此需要先转为 [List]
      */
-    private val collected: List<SingleMessage> by lazy { delegate.toList() }
+    private val collected: List<SingleMessage> by lazy { delegate.constrainSingleMessages() }
     override fun iterator(): Iterator<SingleMessage> = collected.iterator()
     private var toStringTemp: String? = null
     override fun toString(): String =
         toStringTemp ?: this.collected.joinToString("") { it.toString() }.also { toStringTemp = it }
 
-    override fun contentToString(): String = toString()
+    private var contentToStringTemp: String? = null
+    override fun contentToString(): String =
+        contentToStringTemp ?: this.collected.joinToString("") { it.contentToString() }
+            .also { contentToStringTemp = it }
+
 
     override operator fun contains(sub: String): Boolean = collected.any { it.contains(sub) }
 }
@@ -495,7 +537,7 @@ internal class SingleMessageChainImpl constructor(
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int get() = 1
     override fun toString(): String = this.delegate.toString()
-    override fun contentToString(): String = this.delegate.toString()
+    override fun contentToString(): String = this.delegate.contentToString()
     override fun iterator(): Iterator<SingleMessage> = iterator { yield(delegate) }
     override operator fun contains(sub: String): Boolean = sub in delegate
 }
