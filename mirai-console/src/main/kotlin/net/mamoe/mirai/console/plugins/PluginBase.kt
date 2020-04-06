@@ -131,17 +131,23 @@ abstract class PluginBase
     internal var pluginName: String = ""
 
 
+    /**
+     * Java API Scheduler
+     */
     private var scheduler:PluginScheduler? = null
     fun getScheduler():PluginScheduler{
-        if(scheduler == null){
+        if(scheduler === null){
             scheduler = SchedulerTaskManagerInstance.getPluginScheduler(this)
         }
         return scheduler!!
     }
 
+    /**
+     * Java API EventListener
+     */
     private var eventListener:EventListener? = null
     fun getEventListener():EventListener{
-        if(eventListener == null){
+        if(eventListener === null){
             eventListener = EventListener(this)
         }
         return eventListener!!
