@@ -116,6 +116,7 @@ class MiraiDownloaderProgressBarInTerminal(): MiraiDownloadProgressBar{
         println("Mirai Downloader")
         println("[Mirai国内镜像] 感谢崔Cloud慷慨提供免费的国内储存分发")
     }
+
     private val barLen = 40
 
     override fun update(rate: Float, message: String) {

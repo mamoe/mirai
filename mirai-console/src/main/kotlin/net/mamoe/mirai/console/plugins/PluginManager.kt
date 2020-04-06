@@ -37,13 +37,35 @@ object PluginManager {
         MiraiConsole.logger(p, "[Plugin Manager]", 0, e)
     }
 
-    //已完成加载的
+    /**
+     * 加载成功的插件, 名字->插件
+     */
     private val nameToPluginBaseMap: MutableMap<String, PluginBase> = mutableMapOf()
+
+    /**
+     * 加载成功的插件, 名字->插件摘要
+     */
     private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
+
+    /**
+     * 加载插件的ClassLoader
+     */
     private val pluginsClassLoader: PluginsClassLoader = PluginsClassLoader(this.javaClass.classLoader)
 
+    /**
+     * 插件优先级队列
+     * 任何操作应该按这个Sequence顺序进行
+     * 他的优先级取决于依赖,
+     * 在这个队列中, 被依赖的插件会在依赖的插件之前
+     */
+    private val pluginsSequence: MutableList<PluginBase> = mutableListOf()
+
+
+    /**
+     * 广播Command方法
+     */
     internal fun onCommand(command: Command, sender: CommandSender, args: List<String>) {
-        nameToPluginBaseMap.values.forEach {
+        pluginsSequence.forEach {
             try {
                 it.onCommand(command, sender, args)
             } catch (e: Throwable) {
@@ -52,7 +74,9 @@ object PluginManager {
         }
     }
 
-
+    /**
+     * 通过插件获取介绍
+     */
     fun getPluginDescription(base: PluginBase): PluginDescription {
         nameToPluginBaseMap.forEach { (s, pluginBase) ->
             if (pluginBase == base) {
@@ -62,6 +86,9 @@ object PluginManager {
         error("can not find plugin description")
     }
 
+    /**
+     * 获取所有插件摘要
+     */
     fun getAllPluginDescriptions(): Collection<PluginDescription> {
         return pluginDescriptions.values
     }
@@ -70,14 +97,20 @@ object PluginManager {
     @Volatile
     internal var lastPluginName: String = ""
 
-    /**
-     * 尝试加载全部插件
-     */
-    fun loadPlugins() {
-        val pluginsFound: MutableMap<String, PluginDescription> = mutableMapOf()
-        val pluginsLocation: MutableMap<String, File> = mutableMapOf()
 
-        logger.info("""开始加载${pluginsPath}下的插件""")
+
+    /**
+     * 寻找所有安装的插件（在文件夹）, 并将它读取, 记录位置
+     * 这个不等同于加载的插件, 可以理解为还没有加载的插件
+     */
+    data class FindPluginsResult(
+        val pluginsLocation: MutableMap<String, File>,
+        val pluginsFound: MutableMap<String, PluginDescription>
+    )
+
+    private fun findPlugins():FindPluginsResult{
+        val pluginsLocation: MutableMap<String, File> = mutableMapOf()
+        val pluginsFound: MutableMap<String, PluginDescription> = mutableMapOf()
 
         File(pluginsPath).listFiles()?.forEach { file ->
             if (file != null && file.extension == "jar") {
@@ -106,6 +139,17 @@ object PluginManager {
                 }
             }
         }
+        return FindPluginsResult(pluginsLocation, pluginsFound)
+    }
+
+    /**
+     * 尝试加载全部插件
+     */
+    fun loadPlugins() {
+        logger.info("""开始加载${pluginsPath}下的插件""")
+        val findPluginsResult = findPlugins()
+        val pluginsFound = findPluginsResult.pluginsFound
+        val pluginsLocation = findPluginsResult.pluginsLocation
 
         //不仅要解决A->B->C->A, 还要解决A->B->C->A
         fun checkNoCircularDepends(
@@ -140,7 +184,7 @@ object PluginManager {
         //插件加载器导入插件jar
         pluginsClassLoader.loadPlugins(pluginsLocation)
 
-        //load plugin
+        //load plugin individually
         fun loadPlugin(description: PluginDescription): Boolean {
             if (!description.noCircularDepend) {
                 logger.error("Failed to load plugin " + description.name + " because it has circular dependency")
@@ -190,6 +234,7 @@ object PluginManager {
                     nameToPluginBaseMap[description.name] = plugin
                     pluginDescriptions[description.name] = description
                     plugin.pluginName = description.name
+                    pluginsSequence.add(plugin)//按照实际加载顺序加入队列
                     true
                 } catch (e: ClassCastException) {
                     logger.error("failed to load plugin " + description.name + " , Main class does not extends PluginBase ")
@@ -202,11 +247,16 @@ object PluginManager {
             }
         }
 
+
+        //清掉优先级队列, 来重新填充
+        pluginsSequence.clear()
+
         pluginsFound.values.forEach {
             loadPlugin(it)
         }
 
-        nameToPluginBaseMap.values.forEach {
+
+        pluginsSequence.forEach {
             try {
                 it.onLoad()
             } catch (ignored: Throwable) {
@@ -221,7 +271,7 @@ object PluginManager {
             }
         }
 
-        nameToPluginBaseMap.values.forEach {
+        pluginsSequence.forEach {
             try {
                 it.enable()
             } catch (ignored: Throwable) {
@@ -248,18 +298,20 @@ object PluginManager {
         nameToPluginBaseMap.remove(plugin.pluginName)
         pluginDescriptions.remove(plugin.pluginName)
         pluginsClassLoader.remove(plugin.pluginName)
+        pluginsSequence.remove(plugin)
     }
 
 
     @JvmOverloads
     fun disablePlugins(throwable: CancellationException? = null) {
         CommandManager.clearPluginsCommands()
-        nameToPluginBaseMap.values.forEach {
+        pluginsSequence.forEach {
             it.disable(throwable)
         }
         nameToPluginBaseMap.clear()
         pluginDescriptions.clear()
         pluginsClassLoader.clear()
+        pluginsSequence.clear()
     }
 
 
