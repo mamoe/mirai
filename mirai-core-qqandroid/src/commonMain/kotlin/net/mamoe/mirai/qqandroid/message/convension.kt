@@ -40,7 +40,7 @@ private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
 
-    if (this.any<QuoteReply>()) {
+    if (this.anyIsInstance<QuoteReply>()) {
         when (val source = this[QuoteReply].source) {
             is OfflineMessageSourceImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
             is MessageSourceToFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
@@ -157,11 +157,11 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     )
                 )
             }
-            this.any<RichMessage>() -> {
+            this.anyIsInstance<RichMessage>() -> {
                 // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
                 elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_RICH_MESSAGE)))
             }
-            this.any<FlashImage>() -> {
+            this.anyIsInstance<FlashImage>() -> {
                 elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_DOUTU)))
             }
             else -> elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE)))

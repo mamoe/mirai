@@ -547,7 +547,7 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
         if (filterContext && !this.isContextIdenticalWith(this@selectMessagesImpl))
             return@subscribeAlways
 
-        val toString = event.message.toString()
+        val toString = event.message.contentToString()
         listeners.forEach { (filter, listener) ->
             if (deferred?.isCompleted == true || !isActive)
                 return@subscribeAlways
@@ -625,7 +625,7 @@ internal suspend inline fun <reified T : ContactMessage> T.whileSelectMessagesIm
         if (filterContext && !this.isContextIdenticalWith(this@whileSelectMessagesImpl))
             return@subscribeAlways
 
-        val toString = event.message.toString()
+        val toString = event.message.contentToString()
         listeners.forEach { (filter, listener) ->
             if (deferred?.isCompleted != false || !isActive)
                 return@subscribeAlways
