@@ -7,6 +7,7 @@
 - 修复长消息判定.
 - 为 `selectMessages`, `selectMessagesUnit` 添加可选筛选 context 的参数: `filterContext: Boolean`
 - 统一消息日志
+- 加快重连速度
 
 `Message` 改动 (二进制兼容):
 
