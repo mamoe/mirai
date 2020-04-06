@@ -48,3 +48,6 @@ fun Bot.checkManager(long: Long): Boolean {
 }
 
 
+fun getBotManagers(bot:Bot):List<Long>{
+    return bot.managers
+}

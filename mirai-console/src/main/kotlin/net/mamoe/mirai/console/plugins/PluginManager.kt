@@ -108,7 +108,7 @@ object PluginManager {
         val pluginsFound: MutableMap<String, PluginDescription>
     )
 
-    private fun findPlugins():FindPluginsResult{
+    internal fun findPlugins():FindPluginsResult{
         val pluginsLocation: MutableMap<String, File> = mutableMapOf()
         val pluginsFound: MutableMap<String, PluginDescription> = mutableMapOf()
 
@@ -202,7 +202,7 @@ object PluginManager {
                 }
                 val depend = pluginsFound[dependent]!!
 
-                if (!loadPlugin(depend)) {
+                if (!loadPlugin(depend)) {//先加载depend
                     logger.error("Failed to load plugin " + description.name + " because " + dependent + " as dependency failed to load")
                     return false
                 }

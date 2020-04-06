@@ -37,6 +37,11 @@ object MiraiConsole {
         return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == uin }
     }
 
+    class BotNotFoundException(uin: Long):Exception("Bot $uin Not Found")
+    fun getBotOrThrow(uin: Long):Bot{
+        return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == uin }?:throw BotNotFoundException(uin)
+    }
+
     /**
      * 与前端交互所使用的Logger
      */
