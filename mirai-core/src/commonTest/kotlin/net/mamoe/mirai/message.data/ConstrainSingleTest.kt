@@ -68,7 +68,6 @@ internal class ConstrainSingleTest {
             add(TestConstrainSingleMessage())
             add("st")
         }
-        assertTrue(result is MessageChainImplByCollection)
         assertEquals(3, result.size)
         assertEquals(result.contentToString(), "test")
     }
