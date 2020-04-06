@@ -45,7 +45,7 @@ object AtAll :
     // 自动为消息补充 " "
     @OptIn(MiraiInternalAPI::class)
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @JvmName("followedBy")
     @JvmSynthetic
     override fun followedBy1(tail: Message): CombinedMessage {
