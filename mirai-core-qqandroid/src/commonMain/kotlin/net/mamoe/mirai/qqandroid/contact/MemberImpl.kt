@@ -19,19 +19,15 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.data.PreviousNameList
 import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.MemberCardChangeEvent
+import net.mamoe.mirai.event.events.MemberLeaveEvent
+import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineFriendImage
-import net.mamoe.mirai.message.data.QuoteReply
-import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
-import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
-import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
@@ -59,27 +55,13 @@ internal class MemberImpl constructor(
     @MiraiExperimentalAPI
     override suspend fun queryRemark(): FriendNameRemark = qq.queryRemark()
 
+    @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic
-    @Suppress("DuplicatedCode")
+    @Suppress("DuplicatedCode", "UNCHECKED_CAST")
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
-        val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
-        if (event.isCancelled) {
-            throw EventCancelledException("cancelled by FriendMessageSendEvent")
-        }
-        lateinit var source: MessageSourceToFriendImpl
-        event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
-        bot.network.run {
-            check(
-                MessageSvc.PbSendMsg.createToFriend(
-                    bot.client,
-                    this@MemberImpl,
-                    event.message
-                ) {
-                    source = it
-                }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
-            ) { "send message failed" }
-        }
-        return MessageReceipt(source, this, null)
+        return sendMessageImpl(message).also {
+            logMessageSent(message)
+        } as MessageReceipt<Member>
     }
 
     @JvmSynthetic
@@ -162,7 +144,7 @@ internal class MemberImpl constructor(
         net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
     }
 
-    private fun checkBotPermissionHigherThanThis(){
+    private fun checkBotPermissionHigherThanThis() {
         check(group.botPermission > this.permission) {
             throw PermissionDeniedException(
                 "`kick` operation requires bot to have a higher permission than the target member, " +

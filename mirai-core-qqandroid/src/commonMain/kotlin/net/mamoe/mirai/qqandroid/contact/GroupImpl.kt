@@ -279,6 +279,14 @@ internal class GroupImpl(
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
+        return sendMessageImpl(message).also {
+            logMessageSent(message)
+        }
+    }
+
+    @OptIn(MiraiExperimentalAPI::class)
+    private suspend fun sendMessageImpl(message: Message): MessageReceipt<Group> {
+
         val msg: MessageChain
 
         if (message !is LongMessage) {
@@ -322,7 +330,13 @@ internal class GroupImpl(
             if (response is MessageSvc.PbSendMsg.Response.Failed) {
                 when (response.resultType) {
                     120 -> error("bot is being muted.")
-                    34 -> error("internal error: send message failed, illegal arguments: $response")
+                    34 -> {
+                        kotlin.runCatching { // allow retry once
+                            return bot.lowLevelSendLongGroupMessage(id, msg)
+                        }.getOrElse {
+                            throw IllegalStateException("internal error: send message failed(34)", it)
+                        }
+                    }
                     else -> error("send message failed: $response")
                 }
             }

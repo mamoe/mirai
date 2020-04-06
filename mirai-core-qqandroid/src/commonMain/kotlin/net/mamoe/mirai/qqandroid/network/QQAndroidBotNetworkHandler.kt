@@ -21,6 +21,8 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
+import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -445,11 +447,21 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     ) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
-            val logMessage = "Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}"
+            fun String.singleLine(): String {
+                return this.replace("\n", """\n""").replace("\r", "")
+            }
 
-            if (packet is Event) {
-                bot.logger.verbose(logMessage)
-            } else logger.verbose(logMessage)
+            when (packet) {
+                is GroupMessage -> bot.logger.verbose(
+                    "[${packet.group.name}(${packet.group.id})] ${packet.senderName}(${packet.sender.id}) -> ${packet.message.toString()
+                        .singleLine()}"
+                )
+                is FriendMessage -> bot.logger.verbose(
+                    "${packet.sender.nick}(${packet.sender.id}) -> ${packet.message.toString().singleLine()}"
+                )
+                is Event -> bot.logger.verbose("Event: ${packet.toString().singleLine()}")
+                else -> logger.verbose("Event: ${packet.toString().singleLine()}")
+            }
         }
 
         packetListeners.forEach { listener ->

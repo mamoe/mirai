@@ -26,20 +26,13 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
-import net.mamoe.mirai.event.events.MessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineFriendImage
-import net.mamoe.mirai.message.data.QuoteReply
-import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
-import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
-import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.*
@@ -80,25 +73,9 @@ internal class QQImpl(
     @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<QQ> {
-        val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
-        if (event.isCancelled) {
-            throw EventCancelledException("cancelled by FriendMessageSendEvent")
+        return sendMessageImpl(message).also {
+            logMessageSent(message)
         }
-        event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
-        lateinit var source: MessageSourceToFriendImpl
-        bot.network.run {
-            check(
-                MessageSvc.PbSendMsg.createToFriend(
-                        bot.client,
-                        this@QQImpl,
-                        event.message
-                    ) {
-                        source = it
-                    }
-                    .sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
-            ) { "send message failed" }
-        }
-        return MessageReceipt(source, this, null)
     }
 
     @JvmSynthetic
