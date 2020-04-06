@@ -67,7 +67,7 @@ class MessageChainBuilder private constructor(
             if (index != -1) {
                 container[index] = element
             } else {
-                add(element)
+                container.add(element)
             }
 
             return true
