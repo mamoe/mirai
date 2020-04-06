@@ -17,6 +17,7 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -56,6 +57,7 @@ private constructor(val target: Long, val display: String) :
     }
 
     // 自动为消息补充 " "
+    @OptIn(MiraiInternalAPI::class)
     @Suppress("INAPPLICABLE_JVM_NAME")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmName("followedBy")
@@ -67,7 +69,7 @@ private constructor(val target: Long, val display: String) :
         return followedByInternalForBinaryCompatibility(PlainText(" ") + tail)
     }
 
-    override fun followedBy(tail: Message): Message {
+    override fun followedBy(tail: Message): MessageChain {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }

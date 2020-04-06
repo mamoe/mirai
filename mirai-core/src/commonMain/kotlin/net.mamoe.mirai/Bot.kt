@@ -87,6 +87,7 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     /**
      * 昵称
      */
+    @SinceMirai("0.33.1")
     abstract val nick: String
 
     /**

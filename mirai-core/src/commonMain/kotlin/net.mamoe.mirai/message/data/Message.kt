@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -24,16 +25,16 @@ import kotlin.jvm.JvmSynthetic
  * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
  * [消息][Message] 分为
- * - [MessageMetadata] 消息元数据, 包括: [消息来源][MessageSource]
- * - [MessageContent] 单个消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
- * - [CombinedMessage] 通过 [plus] 连接的两个消息. 可通过 [asMessageChain] 转换为 [MessageChain]
- * - [MessageChain] 不可变消息链, 链表形式链接的多个 [SingleMessage] 实例.
+ * - [SingleMessage]:
+ *   - [MessageMetadata] 消息元数据, 包括: [消息来源][MessageSource], [引用回复][QuoteReply].
+ *   - [MessageContent] 含内容的消息, 包括: [纯文本][PlainText], [@群员][At], [@全体成员][AtAll] 等.
+ * - [MessageChain]: 不可变消息链, 链表形式链接的多个 [SingleMessage] 实例.
  *
  * #### 在 Kotlin 使用 [Message]:
  * 这与使用 [String] 的使用非常类似.
  *
- * 比较 [Message] 与 [String] (使用 infix [Message.eq]):
- *  `if(event eq "你好") qq.sendMessage(event)`
+ * 比较 [SingleMessage] 与 [String]:
+ *  `if(message.contentToString() == "你好") qq.sendMessage(event)`
  *
  * 连接 [Message] 与 [Message], [String], (使用 operator [Message.plus]):
  *  ```kotlin
@@ -65,6 +66,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see Contact.sendMessage 发送消息
  */
+@OptIn(MiraiInternalAPI::class)
 interface Message {
     /**
      * 类型 Key.
@@ -75,25 +77,16 @@ interface Message {
      */
     interface Key<out M : Message> {
         /**
-         * 此 [Key] 指代的 [Message] 类型名. 一般为 `class.simpleName`
+         * 此 [Key] 指代的 [Message] 类型名. 一般为 `class.simpleName`, 如 "QuoteReply", "PlainText"
          */
         @SinceMirai("0.34.0")
         val typeName: String
     }
 
-    infix fun eq(other: Message): Boolean = this.toString() == other.toString()
-
-    /**
-     * 将 [toString] 与 [other] 比较
-     */
-    infix fun eq(other: String): Boolean = this.toString() == other
-
-    operator fun contains(sub: String): Boolean = false
-
     /**
      * 把 `this` 连接到 [tail] 的头部. 类似于字符串相加.
      *
-     * 连接后无法保证 [ConstrainSingle] 的元素单独存在. 需在
+     * 连接后可以保证 [ConstrainSingle] 的元素单独存在.
      *
      * 例:
      * ```kotlin
@@ -111,17 +104,67 @@ interface Message {
     @Suppress("DEPRECATION_ERROR")
     @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic // in java they should use `plus` instead
-    fun followedBy(tail: Message): Message {
-        TODO()
-        if (this is SingleMessage && tail is SingleMessage) {
-            if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>) {
-                return if (this.key == tail.key) {
-                    tail
-                } else {
-                    CombinedMessage(this, tail)
+    fun followedBy(tail: Message): MessageChain {
+        when {
+            this is SingleMessage && tail is SingleMessage -> {
+                if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>) {
+                    if (this.key == tail.key)
+                        return SingleMessageChainImpl(tail)
                 }
+                return CombinedMessage(this, tail)
             }
 
+            this is SingleMessage -> { // tail is not
+                tail as MessageChain
+
+                if (this is ConstrainSingle<*>) {
+                    val key = this.key
+                    if (tail.any { (it as? ConstrainSingle<*>)?.key == key }) {
+                        return tail
+                    }
+                }
+                return CombinedMessage(this, tail)
+            }
+
+            tail is SingleMessage -> {
+                this as MessageChain
+
+                if (tail is ConstrainSingle<*> && this.hasDuplicationOfConstrain(tail.key)) {
+                    val iterator = this.iterator()
+                    var tailUsed = false
+                    return MessageChainImplByCollection(
+                        constrainSingleMessagesImpl {
+                            if (iterator.hasNext()) {
+                                iterator.next()
+                            } else if (!tailUsed) {
+                                tailUsed = true
+                                tail
+                            } else null
+                        }
+                    )
+                }
+
+                return CombinedMessage(this, tail)
+            }
+
+            else -> { // both chain
+                this as MessageChain
+                tail as MessageChain
+
+                var iterator = this.iterator()
+                var tailUsed = false
+                return MessageChainImplByCollection(
+                    constrainSingleMessagesImpl {
+                        if (iterator.hasNext()) {
+                            iterator.next()
+                        } else if (!tailUsed) {
+                            tailUsed = true
+                            iterator = tail.iterator()
+                            iterator.next()
+                        } else null
+                    }
+                )
+            }
         }
     }
 
@@ -147,43 +190,79 @@ interface Message {
     @SinceMirai("0.34.0")
     fun contentToString(): String
 
-    operator fun plus(another: Message): Message = this.followedBy(another)
+    operator fun plus(another: Message): MessageChain = this.followedBy(another)
 
-    // avoid resolution ambiguity
-    operator fun plus(another: SingleMessage): Message = this.followedBy(another)
+    // don't remove! avoid resolution ambiguity between `CharSequence` and `Message`
+    operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
 
-    operator fun plus(another: String): Message = this.followedBy(another.toMessage())
+    operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
 
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
-    operator fun plus(another: CharSequence): Message = this.followedBy(another.toString().toMessage())
+    operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
 
-
+    //////////////////////////////////////
     // FOR BINARY COMPATIBILITY UNTIL 1.0.0
+    //////////////////////////////////////
 
+    @PlannedRemoval("1.0.0")
+    @JvmSynthetic
+    @Deprecated(
+        "有歧义, 自行使用 contentToString() 比较",
+        ReplaceWith("this.contentToString() == other"),
+        DeprecationLevel.HIDDEN
+    )
+    infix fun eq(other: Message): Boolean = this.toString() == other.toString()
+
+    /**
+     * 将 [contentToString] 与 [other] 比较
+     */
+    @PlannedRemoval("1.0.0")
+    @JvmSynthetic
+    @Deprecated(
+        "有歧义, 自行使用 contentToString() 比较",
+        ReplaceWith("this.contentToString() == other"),
+        DeprecationLevel.HIDDEN
+    )
+    infix fun eq(other: String): Boolean = this.contentToString() == other
+
+    @PlannedRemoval("1.0.0")
+    @JvmSynthetic
+    @Deprecated(
+        "有歧义, 自行使用 contentToString() 比较",
+        ReplaceWith("this.contentToString() == other"),
+        DeprecationLevel.HIDDEN
+    )
+    operator fun contains(sub: String): Boolean = false
+
+    @PlannedRemoval("1.0.0")
     @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("followedBy")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun followedBy1(tail: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(tail)
 
+    @PlannedRemoval("1.0.0")
     @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun plus1(another: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
 
+    @PlannedRemoval("1.0.0")
     @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun plus1(another: SingleMessage): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
 
+    @PlannedRemoval("1.0.0")
     @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun plus1(another: String): CombinedMessage = this.followedByInternalForBinaryCompatibility(another.toMessage())
 
+    @PlannedRemoval("1.0.0")
     @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -192,24 +271,24 @@ interface Message {
         this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
 }
 
+
+@OptIn(MiraiInternalAPI::class)
+private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
+    return when (this) {
+        is SingleMessage -> (this as? ConstrainSingle<*>)?.key == key
+        is CombinedMessage -> return this.left.hasDuplicationOfConstrain(key) || this.tail.hasDuplicationOfConstrain(key)
+        is SingleMessageChainImpl -> (this.delegate as? ConstrainSingle<*>)?.key == key
+        is MessageChainImplByCollection -> this.delegate.any { (it as? ConstrainSingle<*>)?.key == key }
+        is MessageChainImplBySequence -> this.any { (it as? ConstrainSingle<*>)?.key == key }
+        else -> error("stub")
+    }
+}
+
 @OptIn(MiraiInternalAPI::class)
 @JvmSynthetic
 @Suppress("DEPRECATION_ERROR")
 internal fun Message.followedByInternalForBinaryCompatibility(tail: Message): CombinedMessage {
-    TODO()
-    if (this is ConstrainSingle<*>) {
-
-    }
-
-    if (this is SingleMessage && tail is SingleMessage) {
-        if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>
-            && this.key == tail.key
-        ) return CombinedMessage(EmptyMessageChain, tail)
-        return CombinedMessage(left = this, tail = tail)
-    } else {
-
-        //    return CombinedMessage(left = this.constrain)
-    }
+    return CombinedMessage(EmptyMessageChain, this.followedBy(tail))
 }
 
 @JvmSynthetic
@@ -218,7 +297,8 @@ suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
     return contact.sendMessage(this) as MessageReceipt<C>
 }
 
-fun Message.repeat(count: Int): MessageChain {
+// inline: for future removal
+inline fun Message.repeat(count: Int): MessageChain {
     if (this is ConstrainSingle<*>) {
         // fast-path
         return SingleMessageChainImpl(this)
@@ -231,7 +311,21 @@ fun Message.repeat(count: Int): MessageChain {
 @JvmSynthetic
 inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
-interface SingleMessage : Message, CharSequence, Comparable<String>
+@Suppress("OverridingDeprecatedMember")
+interface SingleMessage : Message, CharSequence, Comparable<String> {
+    override operator fun contains(sub: String): Boolean = sub in this.contentToString()
+
+    /**
+     * 比较两个消息的 [contentToString]
+     */
+    override infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
+
+    /**
+     * 将 [contentToString] 与 [other] 比较
+     */
+    override infix fun eq(other: String): Boolean = this.contentToString() == other
+
+}
 
 /**
  * 消息元数据, 即不含内容的元素.
@@ -251,7 +345,7 @@ interface MessageMetadata : SingleMessage {
  */
 @SinceMirai("0.34.0")
 @MiraiExperimentalAPI
-interface ConstrainSingle<M : Message> : SingleMessage {
+interface ConstrainSingle<M : Message> : MessageMetadata {
     val key: Message.Key<M>
 }
 
@@ -263,6 +357,7 @@ interface MessageContent : SingleMessage
 /**
  * 将 [this] 发送给指定联系人
  */
+@JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 suspend inline fun <C : Contact> MessageChain.sendTo(contact: C): MessageReceipt<C> =
     contact.sendMessage(this) as MessageReceipt<C>

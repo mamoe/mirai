@@ -223,8 +223,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         }
 
                         // self info
-                        data.selfInfo?.apply {
-                            bot.nick = nick ?: ""
+                        data.selfInfo?.run {
+                            bot.selfInfo = this
 //                            bot.remark = remark ?: ""
 //                            bot.sex = sex
                         }

@@ -24,7 +24,7 @@ import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.first
+import net.mamoe.mirai.message.data.firstIsInstance
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -700,7 +700,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     @MessageDsl
     @SinceMirai("0.30.0")
     inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
-        content({ message.any { it is N } }, { onEvent.invoke(this, message.first()) })
+        content({ message.any { it is N } }, { onEvent.invoke(this, message.firstIsInstance()) })
 
     /**
      * 如果 [mapper] 返回值非空, 就执行 [onEvent]

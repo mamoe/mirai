@@ -30,7 +30,6 @@ class PlainText(val stringValue: String) :
     @Suppress("unused")
     constructor(charSequence: CharSequence) : this(charSequence.toString())
 
-    override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
     override fun contentToString(): String = stringValue
 

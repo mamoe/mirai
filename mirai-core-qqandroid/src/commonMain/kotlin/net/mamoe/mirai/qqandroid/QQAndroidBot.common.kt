@@ -56,6 +56,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
 @OptIn(ExperimentalContracts::class)
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
@@ -98,8 +99,9 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val friends: ContactList<QQ> = ContactList(LockFreeLinkedList())
 
-    override lateinit var nick: String
-        internal set
+    override val nick: String get() = selfInfo.nick
+
+    internal lateinit var selfInfo: JceFriendInfo
 
     override val selfQQ: QQ by lazy {
         @OptIn(LowLevelAPI::class)

@@ -109,7 +109,7 @@ internal class FriendInfo(
     @JceId(11) val sqqOnLineStateV2: Byte? = null,
     @JceId(12) val sShowName: String? = "",
     @JceId(13) val isRemark: Byte? = null,
-    @JceId(14) val nick: String? = "",
+    @JceId(14) val nick: String = "",
     @JceId(15) val specialFlag: Byte? = null,
     @JceId(16) val vecIMGroupID: ByteArray? = null,
     @JceId(17) val vecMSFGroupID: ByteArray? = null,

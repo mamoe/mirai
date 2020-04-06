@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -42,6 +43,7 @@ object AtAll :
     override fun contentToString(): String = display
 
     // 自动为消息补充 " "
+    @OptIn(MiraiInternalAPI::class)
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("followedBy")
@@ -53,7 +55,7 @@ object AtAll :
         return followedByInternalForBinaryCompatibility(PlainText(" ") + tail)
     }
 
-    override fun followedBy(tail: Message): Message {
+    override fun followedBy(tail: Message): MessageChain {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }

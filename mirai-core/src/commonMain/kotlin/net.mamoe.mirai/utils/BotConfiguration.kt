@@ -97,30 +97,6 @@ open class BotConfiguration {
     fun fileBasedDeviceInfo(filename: String = "device.json") {
         deviceInfo = getFileBasedDeviceInfoSupplier(filename)
     }
-
-
-    @PlannedRemoval("0.34.0")
-    @Deprecated(
-        "use fileBasedDeviceInfo(filepath", level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("fileBasedDeviceInfo")
-    )
-    operator fun FileBasedDeviceInfo.unaryPlus() {
-        fileBasedDeviceInfo(this.filepath)
-    }
-}
-
-/**
- * 使用文件系统存储设备信息.
- */
-@PlannedRemoval("0.34.0")
-@Deprecated(
-    "use fileBasedDeviceInfo(filepath", level = DeprecationLevel.ERROR
-)
-inline class FileBasedDeviceInfo(val filepath: String) {
-    /**
-     * 使用 "device.json" 存储设备信息
-     */
-    companion object ByDeviceDotJson
 }
 
 @OptIn(ExperimentalMultiplatform::class)

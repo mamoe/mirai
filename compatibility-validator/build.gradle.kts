@@ -7,6 +7,11 @@ plugins {
 
 description = "Binary and source compatibility validator for mirai-core and mirai-core-qqandroid"
 
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
 kotlin {
     sourceSets {
         all {
@@ -17,7 +22,19 @@ kotlin {
         main {
             dependencies {
                 api(kotlin("stdlib"))
-                api(project(":mirai-core-qqandroid"))
+                runtimeOnly(project(":mirai-core-qqandroid"))
+                compileOnly("net.mamoe:mirai-core-qqandroid-jvm:0.33.0")
+                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
+            }
+        }
+
+        test {
+            dependencies {
+                api(kotlin("stdlib"))
+                api(kotlin("test"))
+                api(kotlin("test-junit"))
+                runtimeOnly(project(":mirai-core-qqandroid"))
+                compileOnly("net.mamoe:mirai-core-qqandroid-jvm:0.33.0")
                 api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
             }
         }

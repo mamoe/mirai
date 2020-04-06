@@ -40,10 +40,16 @@ import kotlin.reflect.KProperty
  * @see flatten 扁平化
  */
 interface MessageChain : Message, Iterable<SingleMessage> {
+    @PlannedRemoval("1.0.0")
+    @Deprecated(
+        "有歧义, 自行使用 contentToString() 比较",
+        ReplaceWith("this.contentToString() == other"),
+        DeprecationLevel.HIDDEN
+    )
     override operator fun contains(sub: String): Boolean
 
     /**
-     * 元素数量
+     * 元素数量. [EmptyMessageChain] 不参加计数.
      */
     @SinceMirai("0.31.1")
     val size: Int
@@ -104,20 +110,20 @@ inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
  * 获取第一个 [M] 类型的 [Message] 实例
  */
 @JvmSynthetic
-inline fun <reified M : Message?> MessageChain.firstOrNull(): M? = this.firstOrNull { it is M } as M?
+inline fun <reified M : Message?> MessageChain.firstIsInstanceOrNull(): M? = this.firstOrNull { it is M } as M?
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
 @JvmSynthetic
-inline fun <reified M : Message> MessageChain.first(): M = this.first { it is M } as M
+inline fun <reified M : Message> MessageChain.firstIsInstance(): M = this.first { it is M } as M
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
 @JvmSynthetic
-inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is M }
+inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = this.any { it is M }
 
 
 /**
@@ -127,35 +133,35 @@ inline fun <reified M : Message> MessageChain.any(): Boolean = this.any { it is 
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {
-    At -> firstOrNull<At>()
-    AtAll -> firstOrNull<AtAll>()
-    PlainText -> firstOrNull<PlainText>()
-    Image -> firstOrNull<Image>()
-    OnlineImage -> firstOrNull<OnlineImage>()
-    OfflineImage -> firstOrNull<OfflineImage>()
-    GroupImage -> firstOrNull<GroupImage>()
-    FriendImage -> firstOrNull<FriendImage>()
-    Face -> firstOrNull<Face>()
-    QuoteReply -> firstOrNull<QuoteReply>()
-    MessageSource -> firstOrNull<MessageSource>()
-    OnlineMessageSource -> firstOrNull<OnlineMessageSource>()
-    OfflineMessageSource -> firstOrNull<OfflineMessageSource>()
-    OnlineMessageSource.Outgoing -> firstOrNull<OnlineMessageSource.Outgoing>()
-    OnlineMessageSource.Outgoing.ToGroup -> firstOrNull<OnlineMessageSource.Outgoing.ToGroup>()
-    OnlineMessageSource.Outgoing.ToFriend -> firstOrNull<OnlineMessageSource.Outgoing.ToFriend>()
-    OnlineMessageSource.Incoming -> firstOrNull<OnlineMessageSource.Incoming>()
-    OnlineMessageSource.Incoming.FromGroup -> firstOrNull<OnlineMessageSource.Incoming.FromGroup>()
-    OnlineMessageSource.Incoming.FromFriend -> firstOrNull<OnlineMessageSource.Incoming.FromFriend>()
-    OnlineMessageSource -> firstOrNull<OnlineMessageSource>()
-    XmlMessage -> firstOrNull<XmlMessage>()
-    JsonMessage -> firstOrNull<JsonMessage>()
-    RichMessage -> firstOrNull<RichMessage>()
-    LightApp -> firstOrNull<LightApp>()
-    PokeMessage -> firstOrNull<PokeMessage>()
-    HummerMessage -> firstOrNull<HummerMessage>()
-    FlashImage -> firstOrNull<FlashImage>()
-    GroupFlashImage -> firstOrNull<GroupFlashImage>()
-    FriendFlashImage -> firstOrNull<FriendFlashImage>()
+    At -> firstIsInstanceOrNull<At>()
+    AtAll -> firstIsInstanceOrNull<AtAll>()
+    PlainText -> firstIsInstanceOrNull<PlainText>()
+    Image -> firstIsInstanceOrNull<Image>()
+    OnlineImage -> firstIsInstanceOrNull<OnlineImage>()
+    OfflineImage -> firstIsInstanceOrNull<OfflineImage>()
+    GroupImage -> firstIsInstanceOrNull<GroupImage>()
+    FriendImage -> firstIsInstanceOrNull<FriendImage>()
+    Face -> firstIsInstanceOrNull<Face>()
+    QuoteReply -> firstIsInstanceOrNull<QuoteReply>()
+    MessageSource -> firstIsInstanceOrNull<MessageSource>()
+    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
+    OfflineMessageSource -> firstIsInstanceOrNull<OfflineMessageSource>()
+    OnlineMessageSource.Outgoing -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing>()
+    OnlineMessageSource.Outgoing.ToGroup -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToGroup>()
+    OnlineMessageSource.Outgoing.ToFriend -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToFriend>()
+    OnlineMessageSource.Incoming -> firstIsInstanceOrNull<OnlineMessageSource.Incoming>()
+    OnlineMessageSource.Incoming.FromGroup -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromGroup>()
+    OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
+    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
+    XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
+    JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
+    RichMessage -> firstIsInstanceOrNull<RichMessage>()
+    LightApp -> firstIsInstanceOrNull<LightApp>()
+    PokeMessage -> firstIsInstanceOrNull<PokeMessage>()
+    HummerMessage -> firstIsInstanceOrNull<HummerMessage>()
+    FlashImage -> firstIsInstanceOrNull<FlashImage>()
+    GroupFlashImage -> firstIsInstanceOrNull<GroupFlashImage>()
+    FriendFlashImage -> firstIsInstanceOrNull<FriendFlashImage>()
     else -> null
 } as M?
 
@@ -191,7 +197,8 @@ inline fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstO
  * val image: Image by message
  */
 @JvmSynthetic
-inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T = this.first()
+inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T =
+    this.firstIsInstance()
 
 /**
  * 可空的委托
@@ -215,7 +222,8 @@ inline class OrNullDelegate<out R : Message?>(private val value: Any?) {
  * @see orElse 提供一个不存在则使用默认值的委托
  */
 @JvmSynthetic
-inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> = OrNullDelegate(this.firstOrNull<T>())
+inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> =
+    OrNullDelegate(this.firstIsInstanceOrNull<T>())
 
 /**
  * 提供一个类型的 [Message] 的委托, 若不存在这个类型的 [Message] 则委托会提供 `null`
@@ -234,7 +242,7 @@ inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> = OrN
 inline fun <reified T : Message?> MessageChain.orElse(
     lazyDefault: () -> T
 ): OrNullDelegate<T> =
-    OrNullDelegate<T>(this.firstOrNull<T>() ?: lazyDefault())
+    OrNullDelegate<T>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
 
 // endregion delegate
 
@@ -250,6 +258,7 @@ inline fun <reified T : Message?> MessageChain.orElse(
 @JvmName("newChain")
 @JsName("newChain")
 @Suppress("UNCHECKED_CAST")
+@OptIn(MiraiInternalAPI::class)
 fun Message.asMessageChain(): MessageChain = when (this) {
     is MessageChain -> this
     is CombinedMessage -> (this as Iterable<Message>).asMessageChain()
@@ -281,6 +290,7 @@ fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
 inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
 @JvmSynthetic
+@OptIn(MiraiInternalAPI::class)
 fun CombinedMessage.asMessageChain(): MessageChain {
     @OptIn(MiraiExperimentalAPI::class)
     if (left is SingleMessage && this.tail is SingleMessage) {
@@ -377,6 +387,7 @@ inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // 
  * - 其他: 返回 `sequenceOf(this)`
  */
 fun Message.flatten(): Sequence<SingleMessage> {
+    @OptIn(MiraiInternalAPI::class)
     return when (this) {
         is MessageChain -> this.asSequence()
         is CombinedMessage -> this.flatten() // already constrained single.
@@ -385,6 +396,7 @@ fun Message.flatten(): Sequence<SingleMessage> {
 }
 
 @JvmSynthetic // make Java user happier with less methods
+@OptIn(MiraiInternalAPI::class)
 fun CombinedMessage.flatten(): Sequence<SingleMessage> {
     // already constrained single.
     @Suppress("UNCHECKED_CAST")
@@ -400,16 +412,11 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 /**
  * 不含任何元素的 [MessageChain]
  */
-object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, @MiraiExperimentalAPI SingleMessage {
+object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
     override fun contains(sub: String): Boolean = sub.isEmpty()
     override val size: Int get() = 0
     override fun toString(): String = ""
     override fun contentToString(): String = ""
-
-    override val length: Int get() = 0
-    override fun get(index: Int): Char = ""[index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = "".subSequence(startIndex, endIndex)
-    override fun compareTo(other: String): Int = "".compareTo(other)
 
     override fun iterator(): Iterator<SingleMessage> = this
     override fun hasNext(): Boolean = false
@@ -495,20 +502,21 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
  */
 @PublishedApi
 internal class MessageChainImplByCollection constructor(
-    private val delegate: Collection<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
+    internal val delegate: Collection<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
+
     private var toStringTemp: String? = null
-    override fun toString(): String =
-        toStringTemp ?: this.delegate.joinToString("") { it.toString() }.also { toStringTemp = it }
+        get() = field ?: this.delegate.joinToString("") { it.toString() }.also { field = it }
+
+    override fun toString(): String = toStringTemp!!
 
     private var contentToStringTemp: String? = null
-    override fun contentToString(): String =
-        contentToStringTemp ?: this.delegate.joinToString("") { it.contentToString() }.also { contentToStringTemp = it }
+        get() = field ?: this.delegate.joinToString("") { it.contentToString() }.also { field = it }
 
-
-    override operator fun contains(sub: String): Boolean = delegate.any { it.contains(sub) }
+    override fun contentToString(): String = contentToStringTemp!!
+    override operator fun contains(sub: String): Boolean = sub in contentToStringTemp!!
 }
 
 /**
@@ -525,17 +533,17 @@ internal class MessageChainImplBySequence constructor(
      */
     private val collected: List<SingleMessage> by lazy { delegate.constrainSingleMessages() }
     override fun iterator(): Iterator<SingleMessage> = collected.iterator()
+
     private var toStringTemp: String? = null
-    override fun toString(): String =
-        toStringTemp ?: this.collected.joinToString("") { it.toString() }.also { toStringTemp = it }
+        get() = field ?: this.joinToString("") { it.toString() }.also { field = it }
+
+    override fun toString(): String = toStringTemp!!
 
     private var contentToStringTemp: String? = null
-    override fun contentToString(): String =
-        contentToStringTemp ?: this.collected.joinToString("") { it.contentToString() }
-            .also { contentToStringTemp = it }
+        get() = field ?: this.joinToString("") { it.contentToString() }.also { field = it }
 
-
-    override operator fun contains(sub: String): Boolean = collected.any { it.contains(sub) }
+    override fun contentToString(): String = contentToStringTemp!!
+    override operator fun contains(sub: String): Boolean = sub in contentToStringTemp!!
 }
 
 /**
@@ -543,7 +551,7 @@ internal class MessageChainImplBySequence constructor(
  */
 @PublishedApi
 internal class SingleMessageChainImpl constructor(
-    private val delegate: SingleMessage
+    internal val delegate: SingleMessage
 ) : Message, Iterable<SingleMessage>, MessageChain {
     override val size: Int get() = 1
     override fun toString(): String = this.delegate.toString()
