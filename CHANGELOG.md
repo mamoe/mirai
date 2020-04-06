@@ -2,6 +2,24 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.34.0`  2020/4/6
+
+- 修复长消息判定.
+- 为 `selectMessages`, `selectMessagesUnit` 添加可选筛选 context 的参数: `filterContext: Boolean`
+- 统一消息日志
+
+`Message` 改动 (二进制兼容):
+
+- 添加 `Message.contentToString` 以转换为最接近官方消息的字符串
+- 添加 `ConstrainSingle` 的 `Message` 类型以保证一个消息链中只存在一个 `QuoteReply` 和一个 `MessageSource`
+- `CombinedMessage` 现在实现接口 `MessageChian` 并变为 `internal` 以降低复杂度 (使用 `MessageChain` 替换 `CombinedMessage` 的引用).
+- `Message.plus` 现在返回 `MessageChain` 而不是 `CombinedMessage`
+- 弃用 `NullMessageChain` (使用 `null` 替代)
+- `Message` 中 `eq`, `contains` 等函数移动至 `SingleMessage` 以避免歧义.
+- 更名 `MessageChain.any<reified M>` 到 `MessageChain.anyInInstance<reified M>` 以与标准库的 `Iterable.any` 区分
+- 更名 `MessageChain.first<reified M>` 到 `MessageChain.firstIsInstance<reified M>` 以与标准库的 `Iterable.first` 区分
+- 更名 `MessageChain.firstOrNull<reified M>` 到 `MessageChain.firstIsInstanceOrNull<reified M>` 以与标准库的 `Iterable.firstOrNull` 区分
+
 ## `0.33.0`  2020/4/4
 - 重构 [`MessageSource`](https://github.com/mamoe/mirai/blob/master/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/MessageSource.kt), 支持直接获取相关对象, 支持所有类型的引用.
 - 简化引用回复, 现在只需要 `source.quote()` 即可创建引用 (而不需要 `sender` 参数)

@@ -29,6 +29,7 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.FriendInfoImpl
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
+import net.mamoe.mirai.qqandroid.contact.singleLine
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
@@ -447,10 +448,6 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     ) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
-            fun String.singleLine(): String {
-                return this.replace("\n", """\n""").replace("\r", "")
-            }
-
             when (packet) {
                 is GroupMessage -> bot.logger.verbose(
                     "[${packet.group.name}(${packet.group.id})] ${packet.senderName}(${packet.sender.id}) -> ${packet.message.toString()

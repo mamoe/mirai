@@ -52,6 +52,11 @@ internal suspend fun QQ.sendMessageImpl(message: Message): MessageReceipt<QQ> {
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun Contact.logMessageSent(message: Message) {
     if (message !is LongMessage) {
-        bot.logger.verbose("$this <- $message")
+        bot.logger.verbose("$this <- ${message.toString().singleLine()}")
     }
+}
+
+
+internal fun String.singleLine(): String {
+    return this.replace("\n", """\n""").replace("\r", "")
 }
