@@ -63,8 +63,13 @@ class MessageChainBuilder private constructor(
             }
             val key = element.key
 
-            container[container.indexOfFirst(firstConstrainSingleIndex) { it is ConstrainSingle<*> && it.key == key }] =
-                element
+            val index = container.indexOfFirst(firstConstrainSingleIndex) { it is ConstrainSingle<*> && it.key == key }
+            if (index != -1) {
+                container[index] = element
+            } else {
+                add(element)
+            }
+
             return true
         } else {
             return container.add(element)
