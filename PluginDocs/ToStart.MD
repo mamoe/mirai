@@ -122,8 +122,8 @@ PS: 如果要打包有依赖lib的插件, 请继续向后读<br>
     
 ## 下一步
 
-Java  玩家->[我的第一个插件](https://github.com/mamoe/mirai-console/blob/master/PluginDocs/java/MyFirstPlugin.MD)
-Kotlin玩家->[我的第一个插件](https://github.com/mamoe/mirai-console/blob/master/PluginDocs/kotlin/MyFirstPlugin.MD)
+Java  玩家->[我的第一个插件](https://github.com/mamoe/mirai-console/blob/master/PluginDocs/java/)
+Kotlin玩家->[我的第一个插件](https://github.com/mamoe/mirai-console/blob/master/PluginDocs/kotlin/)
 
 
 <i>本章部分章节引用自[搭建环境 - Nukkit插件从0开始](https://www.cnblogs.com/xtypr/p/nukkit_plugin_start_from_0_build_environment.html),</i>
