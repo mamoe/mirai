@@ -100,7 +100,20 @@ class PluginScheduler(_coroutineContext: CoroutineContext) :CoroutineScope{
             }
         )
     }
+
+    /**
+     * 异步执行一个任务, 没有返回
+     */
+    fun async(runnable: Runnable){
+        this.launch {
+            withContext(Dispatchers.IO){
+                runnable.run()
+            }
+        }
+    }
+
 }
+
 
 
 /**

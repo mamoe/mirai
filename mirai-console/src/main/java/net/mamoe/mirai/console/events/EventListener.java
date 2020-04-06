@@ -14,7 +14,7 @@ public class EventListener {
 
     PluginBase base;
 
-    protected EventListener(
+    public EventListener(
             PluginBase base
     ){
         this.base = base;
