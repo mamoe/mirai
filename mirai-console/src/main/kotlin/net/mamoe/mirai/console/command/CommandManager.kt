@@ -74,6 +74,8 @@ object CommandManager : Job by {
         }
     }
 
+    fun register(pluginBase:PluginBase, command: Command) = CommandManager.register(pluginBase.asCommandOwner(),command)
+
     fun unregister(command: Command) {
         command.alias.forEach {
             registeredCommand.remove(it)
