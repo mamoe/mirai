@@ -61,7 +61,6 @@ import kotlin.jvm.JvmSynthetic
  * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage]
  *
  * @see MessageChain 消息链(即 `List<Message>`)
- * @see CombinedMessage 链接的两个消息
  * @see buildMessageChain 构造一个 [MessageChain]
  *
  * @see Contact.sendMessage 发送消息
@@ -104,79 +103,19 @@ interface Message {
     @Suppress("DEPRECATION_ERROR")
     @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic // in java they should use `plus` instead
-    fun followedBy(tail: Message): MessageChain {
-        when {
-            this is SingleMessage && tail is SingleMessage -> {
-                if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>) {
-                    if (this.key == tail.key)
-                        return SingleMessageChainImpl(tail)
-                }
-                return CombinedMessage(this, tail)
-            }
-
-            this is SingleMessage -> { // tail is not
-                tail as MessageChain
-
-                if (this is ConstrainSingle<*>) {
-                    val key = this.key
-                    if (tail.any { (it as? ConstrainSingle<*>)?.key == key }) {
-                        return tail
-                    }
-                }
-                return CombinedMessage(this, tail)
-            }
-
-            tail is SingleMessage -> {
-                this as MessageChain
-
-                if (tail is ConstrainSingle<*> && this.hasDuplicationOfConstrain(tail.key)) {
-                    val iterator = this.iterator()
-                    var tailUsed = false
-                    return MessageChainImplByCollection(
-                        constrainSingleMessagesImpl {
-                            if (iterator.hasNext()) {
-                                iterator.next()
-                            } else if (!tailUsed) {
-                                tailUsed = true
-                                tail
-                            } else null
-                        }
-                    )
-                }
-
-                return CombinedMessage(this, tail)
-            }
-
-            else -> { // both chain
-                this as MessageChain
-                tail as MessageChain
-
-                var iterator = this.iterator()
-                var tailUsed = false
-                return MessageChainImplByCollection(
-                    constrainSingleMessagesImpl {
-                        if (iterator.hasNext()) {
-                            iterator.next()
-                        } else if (!tailUsed) {
-                            tailUsed = true
-                            iterator = tail.iterator()
-                            iterator.next()
-                        } else null
-                    }
-                )
-            }
-        }
-    }
+    fun followedBy(tail: Message): MessageChain = followedByImpl(tail)
 
     /**
      * 得到包含 mirai 消息元素代码的, 易读的字符串. 如 `At(member) + "test"` 将转为 `"[mirai:at:qqId]test"`
+     *
+     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
      *
      * 各个 [SingleMessage] 的转换示例:
      * [PlainText]: "Hello"
      * [GroupImage]: "[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png]"
      * [FriendImage]: "[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"
      * [PokeMessage]: "[mirai:poke:1,-1]"
-     * [MessageChain]: 直接无间隔地连接所有元素.
+     * [MessageChain]: 直接无间隔地连接所有元素 (`joinToString("")`)
      *
      * @see contentToString
      */
@@ -184,8 +123,11 @@ interface Message {
 
     /**
      * 转为最接近官方格式的字符串. 如 `At(member) + "test"` 将转为 `"@群名片 test"`.
-     * 对于 [NullMessageChain], 这个函数返回空字符串 ""
-     * 对于其他 [MessageChain], 这个函数返回值同 [toString]
+     *
+     * 对于 [NullMessageChain], 这个函数返回空字符串 "";
+     * 对于其他 [MessageChain], 这个函数返回值同 [toString].
+     *
+     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
      */
     @SinceMirai("0.34.0")
     fun contentToString(): String
@@ -209,9 +151,9 @@ interface Message {
     @Deprecated(
         "有歧义, 自行使用 contentToString() 比较",
         ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.HIDDEN
+        DeprecationLevel.ERROR
     )
-    infix fun eq(other: Message): Boolean = this.toString() == other.toString()
+    infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
 
     /**
      * 将 [contentToString] 与 [other] 比较
@@ -221,7 +163,7 @@ interface Message {
     @Deprecated(
         "有歧义, 自行使用 contentToString() 比较",
         ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.HIDDEN
+        DeprecationLevel.ERROR
     )
     infix fun eq(other: String): Boolean = this.contentToString() == other
 
@@ -230,40 +172,40 @@ interface Message {
     @Deprecated(
         "有歧义, 自行使用 contentToString() 比较",
         ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.HIDDEN
+        DeprecationLevel.ERROR
     )
     operator fun contains(sub: String): Boolean = false
 
     @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @JvmName("followedBy")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun followedBy1(tail: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(tail)
 
     @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun plus1(another: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
 
     @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun plus1(another: SingleMessage): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
 
     @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     fun plus1(another: String): CombinedMessage = this.followedByInternalForBinaryCompatibility(another.toMessage())
 
     @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @JvmName("plus")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
@@ -271,25 +213,6 @@ interface Message {
         this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
 }
 
-
-@OptIn(MiraiInternalAPI::class)
-private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
-    return when (this) {
-        is SingleMessage -> (this as? ConstrainSingle<*>)?.key == key
-        is CombinedMessage -> return this.left.hasDuplicationOfConstrain(key) || this.tail.hasDuplicationOfConstrain(key)
-        is SingleMessageChainImpl -> (this.delegate as? ConstrainSingle<*>)?.key == key
-        is MessageChainImplByCollection -> this.delegate.any { (it as? ConstrainSingle<*>)?.key == key }
-        is MessageChainImplBySequence -> this.any { (it as? ConstrainSingle<*>)?.key == key }
-        else -> error("stub")
-    }
-}
-
-@OptIn(MiraiInternalAPI::class)
-@JvmSynthetic
-@Suppress("DEPRECATION_ERROR")
-internal fun Message.followedByInternalForBinaryCompatibility(tail: Message): CombinedMessage {
-    return CombinedMessage(EmptyMessageChain, this.followedBy(tail))
-}
 
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
@@ -313,18 +236,20 @@ inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 @Suppress("OverridingDeprecatedMember")
 interface SingleMessage : Message, CharSequence, Comparable<String> {
-    override operator fun contains(sub: String): Boolean = sub in this.contentToString()
+    /**
+     * 即 `sub in this.contentToString()`
+     */
+    /* final */ override operator fun contains(sub: String): Boolean = sub in this.contentToString()
 
     /**
      * 比较两个消息的 [contentToString]
      */
-    override infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
+    /* final */ override infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
 
     /**
      * 将 [contentToString] 与 [other] 比较
      */
-    override infix fun eq(other: String): Boolean = this.contentToString() == other
-
+    /* final */ override infix fun eq(other: String): Boolean = this.contentToString() == other
 }
 
 /**
@@ -361,3 +286,92 @@ interface MessageContent : SingleMessage
 @Suppress("UNCHECKED_CAST")
 suspend inline fun <C : Contact> MessageChain.sendTo(contact: C): MessageReceipt<C> =
     contact.sendMessage(this) as MessageReceipt<C>
+
+
+/////////////////////
+/// IMPLEMENTATIONS
+//////////////////////
+
+
+@OptIn(MiraiInternalAPI::class)
+private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
+    return when (this) {
+        is SingleMessage -> (this as? ConstrainSingle<*>)?.key == key
+        is CombinedMessage -> return this.left.hasDuplicationOfConstrain(key) || this.tail.hasDuplicationOfConstrain(key)
+        is SingleMessageChainImpl -> (this.delegate as? ConstrainSingle<*>)?.key == key
+        is MessageChainImplByCollection -> this.delegate.any { (it as? ConstrainSingle<*>)?.key == key }
+        is MessageChainImplBySequence -> this.any { (it as? ConstrainSingle<*>)?.key == key }
+        else -> error("stub")
+    }
+}
+
+@OptIn(MiraiInternalAPI::class)
+@JvmSynthetic
+@Suppress("DEPRECATION_ERROR")
+internal fun Message.followedByInternalForBinaryCompatibility(tail: Message): CombinedMessage {
+    return CombinedMessage(EmptyMessageChain, this.followedBy(tail))
+}
+
+private fun Message.followedByImpl(tail: Message): MessageChain {
+    when {
+        this is SingleMessage && tail is SingleMessage -> {
+            if (this is ConstrainSingle<*> && tail is ConstrainSingle<*>) {
+                if (this.key == tail.key)
+                    return SingleMessageChainImpl(tail)
+            }
+            return CombinedMessage(this, tail)
+        }
+
+        this is SingleMessage -> { // tail is not
+            tail as MessageChain
+
+            if (this is ConstrainSingle<*>) {
+                val key = this.key
+                if (tail.any { (it as? ConstrainSingle<*>)?.key == key }) {
+                    return tail
+                }
+            }
+            return CombinedMessage(this, tail)
+        }
+
+        tail is SingleMessage -> {
+            this as MessageChain
+
+            if (tail is ConstrainSingle<*> && this.hasDuplicationOfConstrain(tail.key)) {
+                val iterator = this.iterator()
+                var tailUsed = false
+                return MessageChainImplByCollection(
+                    constrainSingleMessagesImpl {
+                        if (iterator.hasNext()) {
+                            iterator.next()
+                        } else if (!tailUsed) {
+                            tailUsed = true
+                            tail
+                        } else null
+                    }
+                )
+            }
+
+            return CombinedMessage(this, tail)
+        }
+
+        else -> { // both chain
+            this as MessageChain
+            tail as MessageChain
+
+            var iterator = this.iterator()
+            var tailUsed = false
+            return MessageChainImplByCollection(
+                constrainSingleMessagesImpl {
+                    if (iterator.hasNext()) {
+                        iterator.next()
+                    } else if (!tailUsed) {
+                        tailUsed = true
+                        iterator = tail.iterator()
+                        iterator.next()
+                    } else null
+                }
+            )
+        }
+    }
+}

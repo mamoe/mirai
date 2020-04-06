@@ -43,10 +43,10 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     @PlannedRemoval("1.0.0")
     @Deprecated(
         "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.HIDDEN
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("this.contentToString().contains(sub)")
     )
-    override operator fun contains(sub: String): Boolean
+    /* final */ override operator fun contains(sub: String): Boolean = this.contentToString().contains(sub)
 
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
@@ -289,17 +289,6 @@ fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
 @JvmSynthetic
 inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
-@JvmSynthetic
-@OptIn(MiraiInternalAPI::class)
-fun CombinedMessage.asMessageChain(): MessageChain {
-    @OptIn(MiraiExperimentalAPI::class)
-    if (left is SingleMessage && this.tail is SingleMessage) {
-        @Suppress("UNCHECKED_CAST")
-        return (this as Iterable<SingleMessage>).asMessageChain()
-    }
-    return (this as Iterable<Message>).asMessageChain()
-} // 避免套娃
-
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
@@ -390,17 +379,9 @@ fun Message.flatten(): Sequence<SingleMessage> {
     @OptIn(MiraiInternalAPI::class)
     return when (this) {
         is MessageChain -> this.asSequence()
-        is CombinedMessage -> this.flatten() // already constrained single.
+        is CombinedMessage -> this.asSequence() // already constrained single.
         else -> sequenceOf(this as SingleMessage)
     }
-}
-
-@JvmSynthetic // make Java user happier with less methods
-@OptIn(MiraiInternalAPI::class)
-fun CombinedMessage.flatten(): Sequence<SingleMessage> {
-    // already constrained single.
-    @Suppress("UNCHECKED_CAST")
-    return (this as Iterable<SingleMessage>).asSequence()
 }
 
 @JvmSynthetic // make Java user happier with less methods
@@ -410,10 +391,10 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 
 
 /**
- * 不含任何元素的 [MessageChain]
+ * 不含任何元素的 [MessageChain].
  */
 object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
-    override fun contains(sub: String): Boolean = sub.isEmpty()
+
     override val size: Int get() = 0
     override fun toString(): String = ""
     override fun contentToString(): String = ""
@@ -434,7 +415,6 @@ object NullMessageChain : MessageChain {
     override fun contentToString(): String = ""
     override val size: Int get() = 0
     override fun equals(other: Any?): Boolean = other === this
-    override fun contains(sub: String): Boolean = error("accessing NullMessageChain")
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
 
@@ -516,7 +496,6 @@ internal class MessageChainImplByCollection constructor(
         get() = field ?: this.delegate.joinToString("") { it.contentToString() }.also { field = it }
 
     override fun contentToString(): String = contentToStringTemp!!
-    override operator fun contains(sub: String): Boolean = sub in contentToStringTemp!!
 }
 
 /**
@@ -543,7 +522,6 @@ internal class MessageChainImplBySequence constructor(
         get() = field ?: this.joinToString("") { it.contentToString() }.also { field = it }
 
     override fun contentToString(): String = contentToStringTemp!!
-    override operator fun contains(sub: String): Boolean = sub in contentToStringTemp!!
 }
 
 /**
@@ -557,7 +535,6 @@ internal class SingleMessageChainImpl constructor(
     override fun toString(): String = this.delegate.toString()
     override fun contentToString(): String = this.delegate.contentToString()
     override fun iterator(): Iterator<SingleMessage> = iterator { yield(delegate) }
-    override operator fun contains(sub: String): Boolean = sub in delegate
 }
 
 // endregion

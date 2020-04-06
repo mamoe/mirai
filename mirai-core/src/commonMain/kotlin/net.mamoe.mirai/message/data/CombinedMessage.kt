@@ -14,7 +14,6 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -29,8 +28,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * Left-biased list
  */
-@MiraiInternalAPI("this API is going to be internal")
-class CombinedMessage
+internal class CombinedMessage
 internal constructor(
     internal val left: Message, // 必须已经完成 constrain single
     internal val tail: Message
@@ -44,22 +42,11 @@ internal constructor(
         return asSequence().iterator()
     }
 
-    @PlannedRemoval("1.0.0")
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.HIDDEN
-    )
-    override fun contains(sub: String): Boolean {
-        return contentToString().contains(sub)
-    }
-
-    override val size: Int = when {
-        left === EmptyMessageChain && tail !== EmptyMessageChain -> 1
-        left === EmptyMessageChain && tail === EmptyMessageChain -> 0
-        left !== EmptyMessageChain && tail === EmptyMessageChain -> 1
-        left !== EmptyMessageChain && tail !== EmptyMessageChain -> 2
-        else -> error("stub")
+    override val size: Int by lazy {
+        var size = 0
+        size += if (left is MessageChain) left.size else 1
+        size += if (tail is MessageChain) tail.size else 1
+        size
     }
 
     @OptIn(MiraiExperimentalAPI::class)
