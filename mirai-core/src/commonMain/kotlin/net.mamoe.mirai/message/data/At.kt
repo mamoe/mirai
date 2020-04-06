@@ -58,7 +58,7 @@ private constructor(val target: Long, val display: String) :
 
     // 自动为消息补充 " "
     @OptIn(MiraiInternalAPI::class)
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmName("followedBy")
     @JvmSynthetic
