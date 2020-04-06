@@ -3,7 +3,7 @@ package net.mamoe.mirai.console.plugins
 import java.io.File
 import java.net.URLClassLoader
 
-internal class PluginsClassLoader(parent: ClassLoader) : ClassLoader(parent) {
+internal class PluginsClassLoader(private val parent: ClassLoader) {
     private val pluginLoaders = mutableMapOf<String, PluginClassLoader>()
 
     /**
@@ -14,7 +14,6 @@ internal class PluginsClassLoader(parent: ClassLoader) : ClassLoader(parent) {
             pluginLoaders[key] = PluginClassLoader(value, this)
         }
     }
-
 
     /**
      * 清除所有插件加载器
@@ -35,43 +34,44 @@ internal class PluginsClassLoader(parent: ClassLoader) : ClassLoader(parent) {
         return true
     }
 
-    override fun loadClass(name: String): Class<*>? {
+    fun loadClass(name: String): Class<*>? {
         var c: Class<*>? = null
         // 循环插件classloader loadClass
         pluginLoaders.values.forEach {
-            it.runCatching {
-                c = this.loadClass(name)
+            try{
+                c = it.loadClass(name)
                 return@forEach
-            }
+            }catch (e : ClassNotFoundException){/*nothing*/}
         }
-        // 如果为null，交给mirai的classloader进行加载
-        if (c == null) {
-            c = parent.loadClass(name) // 如果无法加载这个类，这里会抛异常
+        if(c == null){
+            throw ClassNotFoundException("PluginsClassLoader can't load this class:${name}")
         }
         return c
     }
 
     fun loadDependClass(name: String): Class<*>? {
         var c: Class<*>? = null
-        // 依赖问题先交给mirai ClassLoader来处理
-        runCatching {
+
+        // 依赖问题先交给MiraiClassLoader来处理
+        try {
             c = parent.loadClass(name)
-        }
-        // 如果mirai加载不了依赖则交给插件的classloader进行加载
+        }catch (e : ClassNotFoundException){/*nothing*/}
+
+        // 然后再交给插件的classloader来加载依赖
         if (c == null) {
             pluginLoaders.values.forEach {
-                it.runCatching {
-                    c = this.loadDependClass(name)
+                try {
+                    c = it.loadDependClass(name)
                     return@forEach
-                }
+                }catch (e : ClassNotFoundException){/*nothing*/}
             }
         }
         return c
     }
 }
 
-internal class PluginClassLoader(files: File, parent: PluginsClassLoader?) :
-    URLClassLoader(arrayOf((files.toURI().toURL())), parent) {
+internal class PluginClassLoader(files: File,private val parent: PluginsClassLoader) :
+    URLClassLoader(arrayOf((files.toURI().toURL()))) {
 
     override fun loadClass(name: String): Class<*>? {
         synchronized(getClassLoadingLock(name)) {
@@ -79,11 +79,11 @@ internal class PluginClassLoader(files: File, parent: PluginsClassLoader?) :
             var c = findLoadedClass(name)
             if (c == null) {
                 c = try {
-                    // 自己尝试加载
-                    this.findClass(name)        //ClassNotFoundException
+                    // 父类去加载本插件的依赖
+                    parent.loadDependClass(name)
                 } catch (e: ClassNotFoundException) {
-                    // 交给父类去加载非本插件的依赖
-                    (this.parent as PluginsClassLoader).loadDependClass(name)
+                    // 自己加载本插件，按理说只有本插件的ClassName会到达这里
+                    this.findClass(name)//ClassNotFoundException or java.lang.LinkageError
                 }
             }
             return c
@@ -94,7 +94,7 @@ internal class PluginClassLoader(files: File, parent: PluginsClassLoader?) :
         synchronized(getClassLoadingLock(name)) {
             var c = findLoadedClass(name)
             if (c == null) {
-                // 加载依赖类，没有则丢出异常
+                // 加载依赖，没有则丢出异常
                 c = this.findClass(name)    // ClassNotFoundException
             }
             return c
