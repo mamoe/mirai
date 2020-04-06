@@ -24,7 +24,6 @@ public class Utils {
             }catch(Exception e){last=e;}
         }
 
-
         if(result != null){
             return result;
         }

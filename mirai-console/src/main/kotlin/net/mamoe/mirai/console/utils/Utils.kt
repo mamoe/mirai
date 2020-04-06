@@ -29,7 +29,7 @@ inline fun <R> retryCatching(n: Int, block: () -> R): Result<R> {
 }
 
 @OptIn(ExperimentalContracts::class)
-inline fun <T> tryNTimes(n: Int, block: () -> T):T {
+inline fun <T> tryNTimes(n: Int = 2, block: () -> T):T {
     contract {
         callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
     }
@@ -42,6 +42,8 @@ inline fun <T> tryNTimes(n: Int, block: () -> T):T {
             last = e
         }
     }
+
+    //给我编译
 
     throw last!!
 }
