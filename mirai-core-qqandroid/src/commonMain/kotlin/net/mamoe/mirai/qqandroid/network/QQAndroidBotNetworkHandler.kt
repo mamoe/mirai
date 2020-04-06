@@ -109,12 +109,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
         if (::channel.isInitialized) {
-            if (channel.isOpen) {
-                kotlin.runCatching {
-                    registerClientOnline(500)
-                }.exceptionOrNull() ?: return
-                logger.info("Cannot do fast relogin. Trying slow relogin")
-            }
+            // if (channel.isOpen) {
+            //     kotlin.runCatching {
+            //         registerClientOnline(500)
+            //     }.exceptionOrNull() ?: return
+            //     logger.info("Cannot do fast relogin. Trying slow relogin")
+            // }
             channel.close()
         }
         channel = PlatformSocket()
