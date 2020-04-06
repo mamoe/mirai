@@ -20,7 +20,6 @@ public class EventListener {
         this.base = base;
     }
 
-
     /**
      * 监听一个事件, 当 {@code onEvent} 返回 {@link ListeningStatus#STOPPED} 时停止监听.
      * 机器人离线后不会停止监听.
