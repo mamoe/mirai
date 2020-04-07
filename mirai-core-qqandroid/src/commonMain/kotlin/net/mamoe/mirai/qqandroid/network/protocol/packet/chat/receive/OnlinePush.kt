@@ -55,7 +55,7 @@ internal class OnlinePush {
         internal class SendGroupMessageReceipt(
             val messageRandom: Int,
             val sequenceId: Int
-        ) : Packet, Event {
+        ) : Packet, Event, Packet.NoLog {
             override fun toString(): String {
                 return "OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt(messageRandom=$messageRandom, sequenceId=$sequenceId)"
             }
