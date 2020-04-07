@@ -42,7 +42,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
     data: Any,
     dataSize: Int,
     fileMd5: ByteArray,
-    sizePerPacket: Int = 8192
+    sizePerPacket: Int = 8192.coerceAtMost(ByteArrayPool.BUFFER_SIZE)
 ): Flow<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }

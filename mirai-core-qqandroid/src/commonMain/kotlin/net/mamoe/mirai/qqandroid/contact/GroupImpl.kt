@@ -389,19 +389,30 @@ internal class GroupImpl(
                     ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    // 每 10KB 等 1 秒
-                    withTimeoutOrNull(image.inputSize * 1000 / 1024 / 10) {
-                        HighwayHelper.uploadImage(
-                            client = bot.client,
-                            serverIp = response.uploadIpList.first().toIpV4AddressString(),
-                            serverPort = response.uploadPortList.first(),
-                            imageInput = image.input,
-                            inputSize = image.inputSize.toInt(),
-                            fileMd5 = image.md5,
-                            ticket = response.uKey,
-                            commandId = 2
-                        )
-                    } ?: error("timeout uploading image: ${image.filename}")
+                    // 每 10KB 等 1 秒, 最少等待 5 秒
+                    val success = response.uploadIpList.zip(response.uploadPortList).any { (ip, port) ->
+                        withTimeoutOrNull((image.inputSize * 1000 / 1024 / 10).coerceAtLeast(5000)) {
+                            bot.network.logger.verbose { "[Highway] Uploading group image to ${ip.toIpV4AddressString()}:$port: size=${image.inputSize / 1024} KiB" }
+                            HighwayHelper.uploadImage(
+                                client = bot.client,
+                                serverIp = ip.toIpV4AddressString(),
+                                serverPort = port,
+                                imageInput = image.input,
+                                inputSize = image.inputSize.toInt(),
+                                fileMd5 = image.md5,
+                                ticket = response.uKey,
+                                commandId = 2
+                            )
+                            bot.network.logger.verbose { "[Highway] Uploading group image: succeed" }
+                            true
+                        } ?: kotlin.run {
+                            bot.network.logger.verbose { "[Highway] Uploading group image: timeout, retrying next server" }
+                            false
+                        }
+                    }
+
+                    check(success) { "cannot upload group image, failed on all servers." }
+
                     val resourceId = image.calculateImageResourceId()
                     // return NotOnlineImageFromFile(
                     //     resourceId = resourceId,

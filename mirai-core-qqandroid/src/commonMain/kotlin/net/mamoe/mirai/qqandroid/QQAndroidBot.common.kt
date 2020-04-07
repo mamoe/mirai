@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -417,11 +418,12 @@ internal abstract class QQAndroidBotBase constructor(
         val group = getGroup(groupCode)
 
         val time = currentTimeSeconds
+        val sequenceId = client.atomicNextMessageSequenceId()
         message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
         network.run {
             val data = message.calculateValidationDataForGroup(
-                sequenceId = client.atomicNextMessageSequenceId(),
+                sequenceId = sequenceId,
                 time = time.toInt(),
                 random = Random.nextInt().absoluteValue.toUInt(),
                 groupCode = groupCode,
@@ -464,16 +466,28 @@ internal abstract class QQAndroidBotBase constructor(
                         )
                     ).toByteArray(LongMsg.ReqBody.serializer())
 
-                    HighwayHelper.uploadImage(
-                        client,
-                        serverIp = response.proto.uint32UpIp!!.first().toIpV4AddressString(),
-                        serverPort = response.proto.uint32UpPort!!.first(),
-                        ticket = response.proto.msgSig, // 104
-                        imageInput = body.toReadPacket(),
-                        inputSize = body.size,
-                        fileMd5 = MiraiPlatformUtils.md5(body),
-                        commandId = 27 // long msg
-                    )
+                    val success = response.proto.uint32UpIp.zip(response.proto.uint32UpPort).any { (ip, port) ->
+                        withTimeoutOrNull((body.size * 1000L / 1024 / 10).coerceAtLeast(5000L)) {
+                            network.logger.verbose { "[Highway] Uploading group long message#$sequenceId to ${ip.toIpV4AddressString()}:$port: size=${body.size}" }
+                            HighwayHelper.uploadImage(
+                                client,
+                                serverIp = ip.toIpV4AddressString(),
+                                serverPort = port,
+                                ticket = response.proto.msgSig, // 104
+                                imageInput = body.toReadPacket(),
+                                inputSize = body.size,
+                                fileMd5 = MiraiPlatformUtils.md5(body),
+                                commandId = 27 // long msg
+                            )
+                            network.logger.verbose { "[Highway] Uploading group long message#$sequenceId: succeed" }
+                            true
+                        } ?: kotlin.run {
+                            network.logger.verbose { "[Highway] Uploading group long message: timeout, retrying next server" }
+                            false
+                        }
+                    }
+
+                    check(success) { "cannot upload group image, failed on all servers." }
                 }
             }
 

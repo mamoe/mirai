@@ -206,7 +206,8 @@ internal class OfflineMessageSourceImplBySourceMsg( // from others' quotation
     */
 
     override val id: Int
-        get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!.toInt()
+        get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids?.toInt()
+            ?: error("在读取 OfflineMessageSourceImplBySourceMsg.id 时找不到 origUids, delegate=${delegate._miraiContentToString()}")
 
     // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val fromId: Long get() = delegate.senderUin
