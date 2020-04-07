@@ -89,7 +89,9 @@ internal class MemberImpl constructor(
     override var nameCard: String
         get() = _nameCard
         set(newValue) {
-            group.checkBotPermissionOperator()
+            if (id != bot.id) {
+                group.checkBotPermissionOperator()
+            }
             if (_nameCard != newValue) {
                 val oldValue = _nameCard
                 _nameCard = newValue

@@ -35,8 +35,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.onlinePush0x210.OnlinePush0x210Factory
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jceRequestSBuffer
@@ -394,21 +397,11 @@ internal class OnlinePush {
                                     }
                                 }
                             }
-
-                            /* 528 -> {
-                                 val notifyMsgBody = msgInfo.vMsg.loadAs(Oidb0x858.NotifyMsgBody.serializer())
-                                 notifyMsgBody.optMsgRecallReminder?.let { messageRecallReminder ->
-                                     return@flatMap messageRecallReminder.recalledMsgList.asSequence().map {
-                                         MessageRecallEvent.FriendRecall(
-                                             bot,
-                                             it.seq.toLong().shl(32) or it.msgRandom.toLong().and(0xffffffff),
-                                             it.time,
-                                             messageRecallReminder.uin
-                                         )
-                                     }
-                                 }
-                                 return@flatMap sequenceOf()
-                             }*/
+//                            528 -> {
+//                                val notifyMsgBody = msgInfo.vMsg.loadAs(MsgType0x210.serializer())
+//                                OnlinePush0x210Factory.solve()
+//                                return@flatMap sequenceOf()
+//                            }
                             else -> {
                                 bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
                                 return@flatMap sequenceOf()
