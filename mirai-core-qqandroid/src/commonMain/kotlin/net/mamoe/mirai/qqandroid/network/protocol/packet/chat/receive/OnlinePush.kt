@@ -84,7 +84,7 @@ internal class OnlinePush {
             return GroupMessage(
                 senderName = pbPushMsg.msg.msgHead.groupInfo.groupCard,
                 sender = group[pbPushMsg.msg.msgHead.fromUin],
-                message = pbPushMsg.msg.toMessageChain(bot, groupIdOrZero = group.id, addSource = true),
+                message = pbPushMsg.msg.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = true),
                 permission = when {
                     flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
                     flags and 8 != 0 -> MemberPermission.OWNER

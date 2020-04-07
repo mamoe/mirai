@@ -42,7 +42,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
     if (this.anyIsInstance<QuoteReply>()) {
         when (val source = this[QuoteReply].source) {
-            is OfflineMessageSourceImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
+            is OfflineMessageSourceImplBySourceMsg -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
             is MessageSourceToFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
             is MessageSourceToGroupImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForGroup()))
             is MessageSourceFromFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
@@ -179,16 +179,18 @@ private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".h
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal fun MsgComm.Msg.toMessageChain(bot: Bot, groupIdOrZero: Long, addSource: Boolean): MessageChain {
+internal fun MsgComm.Msg.toMessageChain(bot: Bot, groupIdOrZero: Long, onlineSource: Boolean): MessageChain {
     val elements = this.msgBody.richText.elems
 
     return buildMessageChain(elements.size + 1) {
-        if (addSource) {
+        if (onlineSource) {
             if (groupIdOrZero != 0L) {
                 +MessageSourceFromGroupImpl(bot, this@toMessageChain)
             } else {
                 +MessageSourceFromFriendImpl(bot, this@toMessageChain)
             }
+        } else {
+            +OfflineMessageSourceImplByMsg(this@toMessageChain, bot)
         }
         elements.joinToMessageChain(groupIdOrZero, bot, this)
     }.cleanupRubbishMessageElements()
@@ -197,13 +199,11 @@ internal fun MsgComm.Msg.toMessageChain(bot: Bot, groupIdOrZero: Long, addSource
 // These two functions have difference method signature, don't combine.
 
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal fun ImMsgBody.SourceMsg.toMessageChain(bot: Bot, groupIdOrZero: Long, withSource: Boolean): MessageChain {
+internal fun ImMsgBody.SourceMsg.toMessageChain(bot: Bot, groupIdOrZero: Long): MessageChain {
     val elements = this.elems!!
 
     return buildMessageChain(elements.size + 1) {
-        if (withSource) {
-            +OfflineMessageSourceImpl(delegate = this@toMessageChain, bot = bot, groupIdOrZero = groupIdOrZero)
-        }
+        +OfflineMessageSourceImplBySourceMsg(delegate = this@toMessageChain, bot = bot, groupIdOrZero = groupIdOrZero)
         elements.joinToMessageChain(groupIdOrZero, bot, this)
     }.cleanupRubbishMessageElements()
 }
@@ -260,7 +260,15 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
     // (this._miraiContentToString())
     this.forEach {
         when {
-            it.srcMsg != null -> message.add(QuoteReply(OfflineMessageSourceImpl(it.srcMsg, bot, groupIdOrZero)))
+            it.srcMsg != null -> message.add(
+                QuoteReply(
+                    OfflineMessageSourceImplBySourceMsg(
+                        it.srcMsg,
+                        bot,
+                        groupIdOrZero
+                    )
+                )
+            )
             it.notOnlineImage != null -> message.add(OnlineFriendImageImpl(it.notOnlineImage))
             it.customFace != null -> message.add(OnlineGroupImageImpl(it.customFace))
             it.face != null -> message.add(Face(it.face.index))

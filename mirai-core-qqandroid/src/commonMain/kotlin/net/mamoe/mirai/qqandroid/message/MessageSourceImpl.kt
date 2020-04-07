@@ -38,7 +38,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 internal interface MessageSourceImpl {
     val sequenceId: Int
 
-    var isRecalledOrPlanned: Boolean
+    var isRecalledOrPlanned: Boolean // // TODO: 2020/4/7 实现 isRecalledOrPlanned
 }
 
 internal suspend inline fun MessageSource.ensureSequenceIdAvailable() {
@@ -60,7 +60,13 @@ internal class MessageSourceFromFriendImpl(
         }
     override val id: Int get() = msg.msgBody.richText.attr!!.random
     override val time: Int get() = msg.msgHead.msgTime
-    override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, groupIdOrZero = 0, addSource = false) }
+    override val originalMessage: MessageChain by lazy {
+        msg.toMessageChain(
+            bot,
+            groupIdOrZero = 0,
+            onlineSource = false
+        )
+    }
     override val target: Bot get() = bot
     override val sender: QQ get() = bot.getFriend(msg.msgHead.fromUin)
 
@@ -121,7 +127,7 @@ internal class MessageSourceFromGroupImpl(
         msg.toMessageChain(
             bot,
             groupIdOrZero = group.id,
-            addSource = false
+            onlineSource = false
         )
     }
     override val target: Bot get() = bot
@@ -148,7 +154,34 @@ internal class MessageSourceFromGroupImpl(
     }
 }
 
-internal class OfflineMessageSourceImpl( // from others' quotation
+internal class OfflineMessageSourceImplByMsg( // from other sources' originalMessage
+    val delegate: MsgComm.Msg,
+    override val bot: Bot
+) : OfflineMessageSource(), MessageSourceImpl {
+    override val kind: Kind = if (delegate.msgHead.groupInfo != null) Kind.GROUP else Kind.FRIEND
+    override val id: Int
+        get() = delegate.msgHead.msgUid.toInt()
+    override val time: Int
+        get() = delegate.msgHead.msgTime
+    override val fromId: Long
+        get() = delegate.msgHead.fromUin
+    override val targetId: Long
+        get() = delegate.msgHead.groupInfo?.groupCode ?: delegate.msgHead.toUin
+    override val originalMessage: MessageChain by lazy {
+        delegate.toMessageChain(bot, delegate.msgHead.groupInfo?.groupCode ?: 0, false)
+    }
+    override val sequenceId: Int
+        get() = delegate.msgHead.msgSeq
+
+    private val isRecalled: AtomicBoolean = atomic(false)
+    override var isRecalledOrPlanned: Boolean
+        get() = isRecalled.value
+        set(value) {
+            isRecalled.value = value
+        }
+}
+
+internal class OfflineMessageSourceImplBySourceMsg( // from others' quotation
     val delegate: ImMsgBody.SourceMsg,
     override val bot: Bot,
     groupIdOrZero: Long
@@ -164,7 +197,7 @@ internal class OfflineMessageSourceImpl( // from others' quotation
     override val sequenceId: Int
         get() = delegate.origSeqs?.first() ?: error("cannot find sequenceId")
     override val time: Int get() = delegate.time
-    override val originalMessage: MessageChain by lazy { delegate.toMessageChain(bot, groupIdOrZero, false) }
+    override val originalMessage: MessageChain by lazy { delegate.toMessageChain(bot, groupIdOrZero) }
     /*
     override val id: Long
         get() = (delegate.origSeqs?.firstOrNull()
