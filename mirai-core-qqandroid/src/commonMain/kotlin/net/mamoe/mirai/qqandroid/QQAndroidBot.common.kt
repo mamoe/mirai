@@ -199,7 +199,9 @@ internal abstract class QQAndroidBotBase constructor(
                     is MessageSourceFromGroupImpl -> source.group
                     else -> error("stub")
                 }
-                group.checkBotPermissionOperator()
+                if (this.id != source.fromId) {
+                    group.checkBotPermissionOperator()
+                }
                 MessageRecallEvent.GroupRecall(
                     this,
                     source.fromId,
