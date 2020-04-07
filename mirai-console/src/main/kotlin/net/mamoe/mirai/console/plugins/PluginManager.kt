@@ -48,9 +48,9 @@ object PluginManager {
     private val pluginDescriptions: MutableMap<String, PluginDescription> = mutableMapOf()
 
     /**
-     * 加载插件的ClassLoader
+     * 加载插件的PluginsLoader
      */
-    private val pluginsClassLoader: PluginsClassLoader = PluginsClassLoader(this.javaClass.classLoader)
+    private val pluginsLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
 
     /**
      * 插件优先级队列
@@ -181,9 +181,6 @@ object PluginManager {
             checkNoCircularDepends(it, it.depends, mutableListOf())
         }
 
-        //插件加载器导入插件jar
-        pluginsClassLoader.loadPlugins(pluginsLocation)
-
         //load plugin individually
         fun loadPlugin(description: PluginDescription): Boolean {
             if (!description.noCircularDepend) {
@@ -210,41 +207,31 @@ object PluginManager {
 
             logger.info("loading plugin " + description.name)
 
-            try {
-                val pluginClass = try{
-                    pluginsClassLoader.loadPluginMainClass(description.basePath)
-                } catch (e: ClassNotFoundException) {
-                    pluginsClassLoader.loadPluginMainClass("${description.basePath}Kt")
-                }
-
-                return try {
-                    val subClass = pluginClass!!.asSubclass(PluginBase::class.java)
-
-                    lastPluginName = description.name
-                    val plugin: PluginBase =
-                        subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().apply {
-                            againstPermission()
-                        }.newInstance()
-                    plugin.dataFolder // initialize right now
-
-                    description.loaded = true
-                    logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
-                    logger.info(description.info)
-
-                    nameToPluginBaseMap[description.name] = plugin
-                    pluginDescriptions[description.name] = description
-                    plugin.pluginName = description.name
-                    pluginsSequence.add(plugin)//按照实际加载顺序加入队列
-                    true
-                } catch (e: ClassCastException) {
-                    logger.error("failed to load plugin " + description.name + " , Main class does not extends PluginBase ")
-                    false
-                }
+            val jarFile = pluginsLocation[description.name]!!
+            val pluginClass = try{
+                pluginsLoader.loadPluginMainClassByJarFile(description.name,description.basePath,jarFile)
             } catch (e: ClassNotFoundException) {
-                logger.error("failed to load plugin " + description.name + " , Main class not found under " + description.basePath)
-                logger.error(e)
-                return false
+                pluginsLoader.loadPluginMainClassByJarFile(description.name,"${description.basePath}Kt",jarFile)
             }
+
+            val subClass = pluginClass.asSubclass(PluginBase::class.java)
+
+            lastPluginName = description.name
+            val plugin: PluginBase =
+                subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().apply {
+                    againstPermission()
+                }.newInstance()
+            plugin.dataFolder // initialize right now
+
+            description.loaded = true
+            logger.info("successfully loaded plugin " + description.name + " version " + description.version + " by " + description.author)
+            logger.info(description.info)
+
+            nameToPluginBaseMap[description.name] = plugin
+            pluginDescriptions[description.name] = description
+            plugin.pluginName = description.name
+            pluginsSequence.add(plugin)//按照实际加载顺序加入队列
+            return true
         }
 
 
@@ -252,7 +239,18 @@ object PluginManager {
         pluginsSequence.clear()
 
         pluginsFound.values.forEach {
-            loadPlugin(it)
+            try{
+                // 尝试加载插件
+                loadPlugin(it)
+            }catch (e: Throwable) {
+                pluginsLoader.remove(it.name)
+                when(e){
+                    is ClassCastException -> logger.error("failed to load plugin " + it.name + " , Main class does not extends PluginBase",e)
+                    is ClassNotFoundException -> logger.error("failed to load plugin " + it.name + " , Main class not found under " + it.basePath,e)
+                    is NoClassDefFoundError -> logger.error("failed to load plugin " + it.name + " , dependent class not found.",e)
+                    else -> logger.error("failed to load plugin " + it.name,e)
+                }
+            }
         }
 
 
@@ -297,7 +295,7 @@ object PluginManager {
         plugin.disable(exception)
         nameToPluginBaseMap.remove(plugin.pluginName)
         pluginDescriptions.remove(plugin.pluginName)
-        //pluginsClassLoader.remove(plugin.pluginName)
+        pluginsLoader.remove(plugin.pluginName)
         pluginsSequence.remove(plugin)
     }
 
@@ -310,7 +308,7 @@ object PluginManager {
         }
         nameToPluginBaseMap.clear()
         pluginDescriptions.clear()
-        pluginsClassLoader.clear()
+        pluginsLoader.clear()
         pluginsSequence.clear()
     }
 
