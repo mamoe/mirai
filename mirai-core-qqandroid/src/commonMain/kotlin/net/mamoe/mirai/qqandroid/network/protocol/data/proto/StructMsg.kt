@@ -6,16 +6,16 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 @Serializable
-class QPayReminderMsg : ProtoBuf {
+internal class QPayReminderMsg : ProtoBuf {
     @Serializable
-    class GetInfoReq(
+    internal class GetInfoReq(
         @ProtoId(1) val scene: String = "",
         @ProtoId(2) val subCmd: String = "",
         @ProtoId(3) val infoDate: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class GetInfoRsp(
+    internal class GetInfoRsp(
         @ProtoId(1) val resultCode: Int = 0,
         @ProtoId(2) val resultInfo: String = "",
         @ProtoId(3) val urgency: Int = 0,
@@ -26,15 +26,15 @@ class QPayReminderMsg : ProtoBuf {
 }
 
 @Serializable
-class Structmsg : ProtoBuf {
+internal class Structmsg : ProtoBuf {
     @Serializable
-    class AddFrdSNInfo(
+    internal class AddFrdSNInfo(
         @ProtoId(1) val notSeeDynamic: Int = 0,
         @ProtoId(2) val setSn: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class FlagInfo(
+    internal class FlagInfo(
         @ProtoId(1) val grpMsgKickAdmin: Int = 0,
         @ProtoId(2) val grpMsgHiddenGrp: Int = 0,
         @ProtoId(3) val grpMsgWordingDown: Int = 0,
@@ -55,13 +55,13 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class FriendInfo(
+    internal class FriendInfo(
         @ProtoId(1) val msgJointFriend: String = "",
         @ProtoId(2) val msgBlacklist: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class GroupInfo(
+    internal class GroupInfo(
         @ProtoId(1) val groupAuthType: Int = 0,
         @ProtoId(2) val displayAction: Int = 0,
         @ProtoId(3) val msgAlert: String = "",
@@ -71,20 +71,20 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgInviteExt(
+    internal class MsgInviteExt(
         @ProtoId(1) val srcType: Int = 0,
         @ProtoId(2) val srcCode: Long = 0L,
         @ProtoId(3) val waitState: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class MsgPayGroupExt(
+    internal class MsgPayGroupExt(
         @ProtoId(1) val joinGrpTime: Long = 0L,
         @ProtoId(2) val quitGrpTime: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class ReqNextSystemMsg(
+    internal class ReqNextSystemMsg(
         @ProtoId(1) val msgNum: Int = 0,
         @ProtoId(2) val followingFriendSeq: Long = 0L,
         @ProtoId(3) val followingGroupSeq: Long = 0L,
@@ -96,7 +96,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqSystemMsg(
+    internal class ReqSystemMsg(
         @ProtoId(1) val msgNum: Int = 0,
         @ProtoId(2) val latestFriendSeq: Long = 0L,
         @ProtoId(3) val latestGroupSeq: Long = 0L,
@@ -105,7 +105,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqSystemMsgAction(
+    internal class ReqSystemMsgAction(
         @ProtoId(1) val msgType: Int /* enum */ = 1,
         @ProtoId(2) val msgSeq: Long = 0L,
         @ProtoId(3) val reqUin: Long = 0L,
@@ -118,7 +118,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqSystemMsgNew(
+    internal class ReqSystemMsgNew(
         @ProtoId(1) val msgNum: Int = 0,
         @ProtoId(2) val latestFriendSeq: Long = 0L,
         @ProtoId(3) val latestGroupSeq: Long = 0L,
@@ -132,7 +132,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqSystemMsgRead(
+    internal class ReqSystemMsgRead(
         @ProtoId(1) val latestFriendSeq: Long = 0L,
         @ProtoId(2) val latestGroupSeq: Long = 0L,
         @ProtoId(3) val type: Int = 0,
@@ -140,13 +140,13 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspHead(
+    internal class RspHead(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val msgFail: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class RspNextSystemMsg(
+    internal class RspNextSystemMsg(
         @ProtoId(1) val head: Structmsg.RspHead? = null,
         @ProtoId(2) val msgs: List<Structmsg.StructMsg>? = null,
         @ProtoId(3) val followingFriendSeq: Long = 0L,
@@ -158,7 +158,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspSystemMsg(
+    internal class RspSystemMsg(
         @ProtoId(1) val head: Structmsg.RspHead? = null,
         @ProtoId(2) val msgs: List<Structmsg.StructMsg>? = null,
         @ProtoId(3) val unreadCount: Int = 0,
@@ -170,7 +170,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspSystemMsgAction(
+    internal class RspSystemMsgAction(
         @ProtoId(1) val head: Structmsg.RspHead? = null,
         @ProtoId(2) val msgDetail: String = "",
         @ProtoId(3) val type: Int = 0,
@@ -179,7 +179,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspSystemMsgNew(
+    internal class RspSystemMsgNew(
         @ProtoId(1) val head: Structmsg.RspHead? = null,
         @ProtoId(2) val unreadFriendCount: Int = 0,
         @ProtoId(3) val unreadGroupCount: Int = 0,
@@ -201,14 +201,14 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspSystemMsgRead(
+    internal class RspSystemMsgRead(
         @ProtoId(1) val head: Structmsg.RspHead? = null,
         @ProtoId(2) val type: Int = 0,
         @ProtoId(3) val checktype: Int /* enum */ = 1
     ) : ProtoBuf
 
     @Serializable
-    class StructMsg(
+    internal class StructMsg(
         @ProtoId(1) val version: Int = 0,
         @ProtoId(2) val msgType: Int /* enum */ = 1,
         @ProtoId(3) val msgSeq: Long = 0L,
@@ -219,7 +219,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class SystemMsg(
+    internal class SystemMsg(
         @ProtoId(1) val subType: Int = 0,
         @ProtoId(2) val msgTitle: String = "",
         @ProtoId(3) val msgDescribe: String = "",
@@ -275,7 +275,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class SystemMsgAction(
+    internal class SystemMsgAction(
         @ProtoId(1) val name: String = "",
         @ProtoId(2) val result: String = "",
         @ProtoId(3) val action: Int = 0,
@@ -284,7 +284,7 @@ class Structmsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class SystemMsgActionInfo(
+    internal class SystemMsgActionInfo(
         @ProtoId(1) val type: Int /* enum */ = 1,
         @ProtoId(2) val groupCode: Long = 0L,
         @ProtoId(3) val sig: ByteArray = EMPTY_BYTE_ARRAY,
@@ -297,9 +297,9 @@ class Structmsg : ProtoBuf {
 }
 
 @Serializable
-class Youtu : ProtoBuf {
+internal class Youtu : ProtoBuf {
     @Serializable
-    class NameCardOcrRsp(
+    internal class NameCardOcrRsp(
         @ProtoId(1) val errorcode: Int = 0,
         @ProtoId(2) val errormsg: String = "",
         @ProtoId(3) val uin: String = "",

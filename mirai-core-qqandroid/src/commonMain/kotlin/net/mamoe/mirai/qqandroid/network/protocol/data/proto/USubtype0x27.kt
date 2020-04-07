@@ -6,16 +6,16 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 
 @Serializable
-class SubMsgType0x27 : ProtoBuf {
+internal class SubMsgType0x27 : ProtoBuf {
     @Serializable
-    class AddGroup(
+    internal class AddGroup(
         @ProtoId(1) val groupid: Int = 0,
         @ProtoId(2) val sortid: Int = 0,
         @ProtoId(3) val groupname: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class AppointmentNotify(
+    internal class AppointmentNotify(
         @ProtoId(1) val fromUin: Long = 0L,
         @ProtoId(2) val appointId: String = "",
         @ProtoId(3) val notifytype: Int = 0,
@@ -30,13 +30,13 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class BinaryMsg(
+    internal class BinaryMsg(
         @ProtoId(1) val opType: Int = 0,
         @ProtoId(2) val opValue: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ChatMatchInfo(
+    internal class ChatMatchInfo(
         @ProtoId(1) val sig: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val uin: Long = 0L,
         @ProtoId(3) val matchUin: Long = 0L,
@@ -50,14 +50,14 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ConfMsgRoamFlag(
+    internal class ConfMsgRoamFlag(
         @ProtoId(1) val confid: Long = 0L,
         @ProtoId(2) val flag: Int = 0,
         @ProtoId(3) val timestamp: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class DaRenNotify(
+    internal class DaRenNotify(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val loginDays: Int = 0,
         @ProtoId(3) val days: Int = 0,
@@ -66,17 +66,17 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class DelFriend(
+    internal class DelFriend(
         @ProtoId(1) val uint64Uins: List<Long>? = null
     ) : ProtoBuf
 
     @Serializable
-    class DelGroup(
+    internal class DelGroup(
         @ProtoId(1) val groupid: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class FanpaiziNotify(
+    internal class FanpaiziNotify(
         @ProtoId(1) val fromUin: Long = 0L,
         @ProtoId(2) val fromNick: String = "",
         @ProtoId(3) val tipsContent: ByteArray = EMPTY_BYTE_ARRAY,
@@ -84,7 +84,7 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ForwardBody(
+    internal class ForwardBody(
         @ProtoId(1) val notifyType: Int = 0,
         @ProtoId(2) val opType: Int = 0,
         @ProtoId(3) val msgAddGroup: AddGroup? = null,
@@ -124,19 +124,19 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class FrdCustomOnlineStatusChange(
+    internal class FrdCustomOnlineStatusChange(
         @ProtoId(1) val uin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class FriendGroup(
+    internal class FriendGroup(
         @ProtoId(1) val fuin: Long = 0L,
         @ProtoId(2) val uint32OldGroupId: List<Int>? = null,
         @ProtoId(3) val uint32NewGroupId: List<Int>? = null
     ) : ProtoBuf
 
     @Serializable
-    class FriendRemark(
+    internal class FriendRemark(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val fuin: Long = 0L,
         @ProtoId(3) val rmkName: ByteArray = EMPTY_BYTE_ARRAY,
@@ -144,7 +144,7 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GPS(
+    internal class GPS(
         @ProtoId(1) val int32Lat: Int = 900000000,
         @ProtoId(2) val int32Lon: Int = 900000000,
         @ProtoId(3) val int32Alt: Int = -10000000,
@@ -152,32 +152,32 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GroupMemberProfileInfo(
+    internal class GroupMemberProfileInfo(
         @ProtoId(1) val field: Int = 0,
         @ProtoId(2) val value: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class GroupProfileInfo(
+    internal class GroupProfileInfo(
         @ProtoId(1) val field: Int = 0,
         @ProtoId(2) val value: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class GroupSort(
+    internal class GroupSort(
         @ProtoId(1) val groupid: Int = 0,
         @ProtoId(2) val sortid: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class GrpMsgRoamFlag(
+    internal class GrpMsgRoamFlag(
         @ProtoId(1) val groupcode: Long = 0L,
         @ProtoId(2) val flag: Int = 0,
         @ProtoId(3) val timestamp: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class HotFriendNotify(
+    internal class HotFriendNotify(
         @ProtoId(1) val dstUin: Long = 0L,
         @ProtoId(2) val praiseHotLevel: Int = 0,
         @ProtoId(3) val chatHotLevel: Int = 0,
@@ -198,14 +198,14 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ModConfProfile(
+    internal class ModConfProfile(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val confUin: Int = 0,
         @ProtoId(3) val msgProfileInfos: List<ProfileInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ModCustomFace(
+    internal class ModCustomFace(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val uin: Long = 0L,
         @ProtoId(3) val groupCode: Long = 0L,
@@ -213,22 +213,22 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ModFrdRoamPriv(
+    internal class ModFrdRoamPriv(
         @ProtoId(1) val msgRoamPriv: List<OneRoamPriv>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ModFriendGroup(
+    internal class ModFriendGroup(
         @ProtoId(1) val msgFrdGroup: List<FriendGroup>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ModFriendRemark(
+    internal class ModFriendRemark(
         @ProtoId(1) val msgFrdRmk: List<FriendRemark>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ModGroupMemberProfile(
+    internal class ModGroupMemberProfile(
         @ProtoId(1) val groupUin: Long = 0L,
         @ProtoId(2) val uin: Long = 0L,
         @ProtoId(3) val msgGroupMemberProfileInfos: List<GroupMemberProfileInfo>? = null,
@@ -236,13 +236,13 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ModGroupName(
+    internal class ModGroupName(
         @ProtoId(1) val groupid: Int = 0,
         @ProtoId(2) val groupname: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ModGroupProfile(
+    internal class ModGroupProfile(
         @ProtoId(1) val groupUin: Long = 0L,
         @ProtoId(2) val msgGroupProfileInfos: List<GroupProfileInfo>? = null,
         @ProtoId(3) val groupCode: Long = 0L,
@@ -250,29 +250,29 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ModGroupSort(
+    internal class ModGroupSort(
         @ProtoId(1) val msgGroupsort: List<GroupSort>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ModLongNick(
+    internal class ModLongNick(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val value: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ModProfile(
+    internal class ModProfile(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val msgProfileInfos: List<ProfileInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ModSnsGeneralInfo(
+    internal class ModSnsGeneralInfo(
         @ProtoId(1) val msgSnsGeneralInfos: List<SnsUpateBuffer>? = null
     ) : ProtoBuf
 
     @Serializable
-    class MQQCampusNotify(
+    internal class MQQCampusNotify(
         @ProtoId(1) val fromUin: Long = 0L,
         @ProtoId(2) val wording: String = "",
         @ProtoId(3) val target: String = "",
@@ -281,12 +281,12 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgBody(
+    internal class MsgBody(
         @ProtoId(1) val msgModInfos: List<ForwardBody>? = null
     ) : ProtoBuf
 
     @Serializable
-    class NewComeinUser(
+    internal class NewComeinUser(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val isFrd: Int = 0,
         @ProtoId(3) val remark: ByteArray = EMPTY_BYTE_ARRAY,
@@ -294,7 +294,7 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NewComeinUserNotify(
+    internal class NewComeinUserNotify(
         @ProtoId(1) val msgType: Int = 0,
         @ProtoId(2) val boolStrongNotify: Boolean = false,
         @ProtoId(3) val pushTime: Int = 0,
@@ -304,7 +304,7 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NewGroup(
+    internal class NewGroup(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val groupName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val ownerUin: Long = 0L,
@@ -313,7 +313,7 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NewGroupUser(
+    internal class NewGroupUser(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val int32Sex: Int = 0,
         @ProtoId(3) val int32Age: Int = 0,
@@ -322,27 +322,27 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class OneRoamPriv(
+    internal class OneRoamPriv(
         @ProtoId(1) val fuin: Long = 0L,
         @ProtoId(2) val privTag: Int = 0,
         @ProtoId(3) val privValue: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class PraiseRankNotify(
+    internal class PraiseRankNotify(
         @ProtoId(11) val isChampion: Int = 0,
         @ProtoId(12) val rankNum: Int = 0,
         @ProtoId(13) val msg: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ProfileInfo(
+    internal class ProfileInfo(
         @ProtoId(1) val field: Int = 0,
         @ProtoId(2) val value: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PushReportDev(
+    internal class PushReportDev(
         @ProtoId(1) val msgType: Int = 0,
         @ProtoId(4) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(5) val reportMaxNum: Int = 200,
@@ -350,7 +350,7 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PushSearchDev(
+    internal class PushSearchDev(
         @ProtoId(1) val msgType: Int = 0,
         @ProtoId(2) val msgGpsInfo: GPS? = null,
         @ProtoId(3) val devTime: Int = 0,
@@ -360,13 +360,13 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class QQPayPush(
+    internal class QQPayPush(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val boolPayOk: Boolean = false
     ) : ProtoBuf
 
     @Serializable
-    class SnsUpateBuffer(
+    internal class SnsUpateBuffer(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val code: Long = 0L,
         @ProtoId(3) val result: Int = 0,
@@ -375,18 +375,18 @@ class SubMsgType0x27 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class SnsUpdateFlag(
+    internal class SnsUpdateFlag(
         @ProtoId(1) val msgUpdateSnsFlag: List<SnsUpdateOneFlag>? = null
     ) : ProtoBuf
 
     @Serializable
-    class SnsUpdateItem(
+    internal class SnsUpdateItem(
         @ProtoId(1) val updateSnsType: Int = 0,
         @ProtoId(2) val value: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class SnsUpdateOneFlag(
+    internal class SnsUpdateOneFlag(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val id: Long = 0L,
         @ProtoId(3) val flag: Int = 0
