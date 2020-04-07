@@ -212,9 +212,9 @@ object PluginManager {
 
             try {
                 val pluginClass = try{
-                    pluginsClassLoader.loadClass(description.basePath)
+                    pluginsClassLoader.loadPluginMainClass(description.basePath)
                 } catch (e: ClassNotFoundException) {
-                    pluginsClassLoader.loadClass("${description.basePath}Kt")
+                    pluginsClassLoader.loadPluginMainClass("${description.basePath}Kt")
                 }
 
                 return try {
@@ -297,7 +297,7 @@ object PluginManager {
         plugin.disable(exception)
         nameToPluginBaseMap.remove(plugin.pluginName)
         pluginDescriptions.remove(plugin.pluginName)
-        pluginsClassLoader.remove(plugin.pluginName)
+        //pluginsClassLoader.remove(plugin.pluginName)
         pluginsSequence.remove(plugin)
     }
 
